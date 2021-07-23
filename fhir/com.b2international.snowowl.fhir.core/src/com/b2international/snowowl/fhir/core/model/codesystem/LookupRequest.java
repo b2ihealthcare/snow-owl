@@ -126,8 +126,8 @@ public class LookupRequest {
 	}
 
 	@JsonIgnore
-	public Collection<String> getPropertyCodes() {
-		return property.stream().map(p -> p.getCodeValue()).collect(Collectors.toSet());
+	public Set<String> getPropertyCodes() {
+		return property == null ? Collections.emptySet() : property.stream().map(p -> p.getCodeValue()).collect(Collectors.toSet());
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class LookupRequest {
 	 * @return <code>true</code> if the given code is present in the given collection of properties, returns <code>false</code> otherwise.
 	 */
 	public final boolean containsProperty(Code propertyCode) {
-		return property.contains(propertyCode);
+		return property != null && property.contains(propertyCode);
 	}
 
 	/**

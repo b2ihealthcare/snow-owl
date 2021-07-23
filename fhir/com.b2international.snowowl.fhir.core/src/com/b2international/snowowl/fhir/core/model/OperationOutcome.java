@@ -31,8 +31,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  *  "resourceType" : "OperationOutcome",
  * // from Resource: id, meta, implicitRules, and language
@@ -50,6 +48,7 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="http://hl7.org/fhir/operationoutcome.html">FHIR:OperationOutcome</a>
  * @since 6.3
  */
+<<<<<<< HEAD
 @ApiModel("Operation outcome")
 @JsonDeserialize(builder = OperationOutcome.Builder.class)
 public final class OperationOutcome extends DomainResource {
@@ -57,6 +56,9 @@ public final class OperationOutcome extends DomainResource {
 	private static final long serialVersionUID = 1L;
 
 	public static final String RESOURCE_TYPE_OPERATION_OUTCOME = "OperationOutcome";
+=======
+public final class OperationOutcome {
+>>>>>>> refs/remotes/origin/8.x
 	
 	@JsonProperty
 	private String resourceType;

@@ -178,6 +178,10 @@ public abstract class MetadataResource extends DomainResource {
 		this.copyright = copyright;
 	}
 	
+	public String getVersion() {
+		return version;
+	}
+	
 	public Uri getUrl() {
 		return url;
 	}

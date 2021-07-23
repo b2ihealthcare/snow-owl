@@ -73,10 +73,10 @@ public final class ComponentURI implements Serializable {
 	protected static final Splitter SLASH_SPLITTER = Splitter.on('/');
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
 		
-	public static final ComponentURI UNSPECIFIED = ComponentURI.of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
+	public static final ComponentURI UNSPECIFIED = ComponentURI.of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNKNOWN_COMPONENT_TYPE, "");
 	
 	private final ResourceURI resourceUri;
-	private final short terminologyComponentId;
+	private final String componentType;
 	private final String identifier;
 	
 	public ResourceURI resourceUri() {
@@ -87,8 +87,8 @@ public final class ComponentURI implements Serializable {
 		return resourceUri.getResourceId();
 	}
 	
-	public short terminologyComponentId() {
-		return terminologyComponentId;
+	public String componentType() {
+		return componentType;
 	}
 	
 	public String identifier() {
@@ -101,29 +101,29 @@ public final class ComponentURI implements Serializable {
 	}
 	
 	public final ComponentIdentifier toComponentIdentifier() {
-		return ComponentIdentifier.of(terminologyComponentId(), identifier());
+		return ComponentIdentifier.of(componentType(), identifier());
 	}
 
-	private ComponentURI(ResourceURI resourceUri, short terminologyComponentId, String identifier) {
+	private ComponentURI(ResourceURI resourceUri, String componentType, String identifier) {
 		checkNotNull(resourceUri, "ResourceURI argument should not be null.");
-		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, 
-				"TerminologyComponentId should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
+		checkArgument(!Strings.isNullOrEmpty(componentType), "Component Type should not be null or empty. Got: '%s'.", componentType);
+		checkArgument(!componentType.contains("."), "Component Type should be a single word. Got: '%s'.", componentType);
 		checkArgument(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
 		this.resourceUri = resourceUri;
-		this.terminologyComponentId = terminologyComponentId;
+		this.componentType = componentType;
 		this.identifier = Strings.nullToEmpty(identifier);
 	}
 	
-	public static ComponentURI of(ResourceURI resourceURI, short terminologyComponentId, String identifier) {
-		return getOrCache(new ComponentURI(resourceURI, terminologyComponentId, identifier));
+	public static ComponentURI of(ResourceURI resourceURI, String componentType, String identifier) {
+		return getOrCache(new ComponentURI(resourceURI, componentType, identifier));
 	}
 	
 	public static ComponentURI of(ResourceURI resourceURI, ComponentIdentifier componentIdentifier) {
-		return of(resourceURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+		return of(resourceURI, componentIdentifier.getComponentType(), componentIdentifier.getComponentId());
 	}
 	
-	public static ComponentURI of(String resourceURI, short terminologyComponentId, String identifier) {
-		return of(new ResourceURI(resourceURI), terminologyComponentId, identifier);
+	public static ComponentURI of(String resourceURI, String componentType, String identifier) {
+		return of(new ResourceURI(resourceURI), componentType, identifier);
 	}
 	
 	private static ComponentURI getOrCache(final ComponentURI componentURI) {
@@ -148,24 +148,28 @@ public final class ComponentURI implements Serializable {
 		int terminologyComponentTypeIndex = parts.size() - 2;
 		int componentIdIndex = parts.size() - 1;
 		ResourceURI resourceURI = new ResourceURI(SLASH_JOINER.join(parts.subList(0, terminologyComponentTypeIndex)));
-		Short terminologyComponentId = Short.valueOf(parts.get(terminologyComponentTypeIndex));
+		String componentType = parts.get(terminologyComponentTypeIndex);
 		String componentId = parts.get(componentIdIndex);
-		return new ComponentURI(resourceURI, terminologyComponentId, componentId);
+		return new ComponentURI(resourceURI, componentType, componentId);
 	}
 	
 	public static ComponentURI unspecified(String identifier) {
-		return of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, identifier);
+		return of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNKNOWN_COMPONENT_TYPE, identifier);
+	}
+	
+	public static ComponentURI unspecified(String componentType, String identifier) {
+		return of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), componentType, identifier);
 	}
 
 	@JsonValue
 	@Override
 	public String toString() {
-		return SLASH_JOINER.join(resourceUri(), terminologyComponentId(), identifier());
+		return SLASH_JOINER.join(resourceUri(), componentType(), identifier());
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(resourceUri, terminologyComponentId, identifier);
+		return Objects.hash(resourceUri, componentType, identifier);
 	}
 	
 	@Override
@@ -175,7 +179,7 @@ public final class ComponentURI implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		ComponentURI other = (ComponentURI) obj;
 		return Objects.equals(resourceUri, other.resourceUri)
-				&& terminologyComponentId == other.terminologyComponentId
+				&& Objects.equals(componentType, other.componentType)
 				&& Objects.equals(identifier, other.identifier);
 	}
 

@@ -21,7 +21,6 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionCompareDetail;
@@ -33,7 +32,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
@@ -101,15 +99,12 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			if (detail.isComponentChange()) {
 				affectedId = detail.getComponent();
 				if (!detail.getObject().isRoot() && !excludeComponentChanges) {
-					final short containerTerminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(detail.getObject().type()));
-					changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
+					changedContainers.add(ComponentIdentifier.of(detail.getObject().type(), detail.getObject().id()));
 				}
 			} else {
 				affectedId = detail.getObject();
 			}
-			final short terminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(affectedId.type()));
-			
-			final ComponentIdentifier identifier = ComponentIdentifier.of(terminologyComponentId, affectedId.id());
+			final ComponentIdentifier identifier = ComponentIdentifier.of(affectedId.type(), affectedId.id());
 			
 			switch (detail.getOp()) {
 			case ADD:

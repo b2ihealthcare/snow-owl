@@ -51,7 +51,6 @@ import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.plugin.Extensions;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.CommitResult;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -76,6 +75,8 @@ import com.google.common.collect.Multimap;
  * @since 7.0
  */
 final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
@@ -250,85 +251,79 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final Set<String> conceptIdsToSkip) {
 
-		final RelationshipChangeSearchRequestBuilder relationshipRequestBuilder = ClassificationRequests.prepareSearchRelationshipChange()
+		ClassificationRequests.prepareSearchRelationshipChange()
 				.setLimit(SCROLL_LIMIT)
 				.setExpand("relationship(inferredOnly:true)")
-				.filterByClassificationId(classificationId);
+				.filterByClassificationId(classificationId)
+				.stream(context)
+				.forEach(nextChanges -> {
+					final Set<String> conceptIds = nextChanges.stream()
+							.map(RelationshipChange::getRelationship)
+							.map(ReasonerRelationship::getSourceId)
+							.collect(Collectors.toSet());
+					
+					final Set<String> originRelationshipIds = nextChanges.stream()
+							.filter(change -> ChangeNature.NEW.equals(change.getChangeNature())
+								|| ChangeNature.UPDATED.equals(change.getChangeNature()))
+							.map(RelationshipChange::getRelationship)
+							.map(ReasonerRelationship::getOriginId)
+							.filter(id -> id != null)
+							.collect(Collectors.toSet());
 
-		final SearchResourceRequestIterator<RelationshipChangeSearchRequestBuilder, RelationshipChanges> relationshipIterator = 
-				new SearchResourceRequestIterator<>(relationshipRequestBuilder, 
-						r -> r.build().execute(context));
+					final Map<String, String> originSourceIds = SnomedRequests.prepareSearchRelationship()
+						.setLimit(originRelationshipIds.size())
+						.filterByIds(originRelationshipIds)
+						.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
+						.build()
+						.execute(context)
+						.stream()
+						.collect(Collectors.toMap(
+								SnomedRelationship::getId, // keys: ID of the "origin" relationship  
+								SnomedRelationship::getSourceId)); // values: source concept ID of the "origin" relationship
+					
+					conceptIds.removeAll(conceptIdsToSkip);
+					namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
 
-		while (relationshipIterator.hasNext()) {
-			final RelationshipChanges nextChanges = relationshipIterator.next();
+					for (final RelationshipChange change : nextChanges) {
+						final ReasonerRelationship relationship = change.getRelationship();
 
-			final Set<String> conceptIds = nextChanges.stream()
-					.map(RelationshipChange::getRelationship)
-					.map(ReasonerRelationship::getSourceId)
-					.collect(Collectors.toSet());
-			
-			final Set<String> originRelationshipIds = nextChanges.stream()
-					.filter(change -> ChangeNature.NEW.equals(change.getChangeNature())
-						|| ChangeNature.UPDATED.equals(change.getChangeNature()))
-					.map(RelationshipChange::getRelationship)
-					.map(ReasonerRelationship::getOriginId)
-					.filter(id -> id != null)
-					.collect(Collectors.toSet());
-
-			final Map<String, String> originSourceIds = SnomedRequests.prepareSearchRelationship()
-				.setLimit(originRelationshipIds.size())
-				.filterByIds(originRelationshipIds)
-				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
-				.build()
-				.execute(context)
-				.stream()
-				.collect(Collectors.toMap(
-						SnomedRelationship::getId, // keys: ID of the "origin" relationship  
-						SnomedRelationship::getSourceId)); // values: source concept ID of the "origin" relationship
-			
-			conceptIds.removeAll(conceptIdsToSkip);
-			namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
-
-			for (final RelationshipChange change : nextChanges) {
-				final ReasonerRelationship relationship = change.getRelationship();
-
-				// Relationship changes related to merged concepts should not be applied
-				if (conceptIdsToSkip.contains(relationship.getSourceId()) || conceptIdsToSkip.contains(relationship.getDestinationId())) {
-					continue;
-				}
-				
-				switch (change.getChangeNature()) {
-					case NEW: {
-							/*
-							 * Do not "infer" any relationship that is passed down from a concept that was
-							 * already merged by the equivalent concept merging step
-							 */
-							final String originSourceId = originSourceIds.get(relationship.getOriginId());
-							if (!conceptIdsToSkip.contains(originSourceId)) {
-								addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
-							}
+						// Relationship changes related to merged concepts should not be applied
+						if (conceptIdsToSkip.contains(relationship.getSourceId()) || conceptIdsToSkip.contains(relationship.getDestinationId())) {
+							continue;
 						}
-						break;
 						
-					case UPDATED: {
-							final String originSourceId = originSourceIds.get(relationship.getOriginId());
-							if (!conceptIdsToSkip.contains(originSourceId)) {
-								updateComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
-							}
+						switch (change.getChangeNature()) {
+							case NEW: {
+									/*
+									 * Do not "infer" any relationship that is passed down from a concept that was
+									 * already merged by the equivalent concept merging step
+									 */
+									final String originSourceId = originSourceIds.get(relationship.getOriginId());
+									if (!conceptIdsToSkip.contains(originSourceId)) {
+										addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
+									}
+								}
+								break;
+								
+							case UPDATED: {
+									final String originSourceId = originSourceIds.get(relationship.getOriginId());
+									if (!conceptIdsToSkip.contains(originSourceId)) {
+										updateComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
+									}
+								}
+								break;
+								
+							case REDUNDANT:
+								removeOrDeactivate(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
+								break;
+								
+							default:
+								throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
+										change.getChangeNature(), 
+										change.getRelationship().getOriginId()));
 						}
-						break;
-						
-					case REDUNDANT:
-						removeOrDeactivate(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
-						break;
-						
-					default:
-						throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
-								change.getChangeNature(), 
-								change.getRelationship().getOriginId()));
-				}
-			}
-		}
+					}
+				});
 
 		namespaceAndModuleAssigner.clear();
 	}
@@ -338,85 +333,79 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final Set<String> conceptIdsToSkip) {
 
-		final ConcreteDomainChangeSearchRequestBuilder concreteDomainRequestBuilder = ClassificationRequests.prepareSearchConcreteDomainChange()
+		ClassificationRequests.prepareSearchConcreteDomainChange()
 				.setLimit(SCROLL_LIMIT)
 				.setExpand("concreteDomainMember(inferredOnly:true)")
-				.filterByClassificationId(classificationId);
+				.filterByClassificationId(classificationId)
+				.stream(context)
+				.forEach(nextChanges -> {
+					final Set<String> conceptIds = nextChanges.stream()
+							.map(ConcreteDomainChange::getConcreteDomainMember)
+							.map(m -> m.getReferencedComponentId())
+							.collect(Collectors.toSet());
 
-		final SearchResourceRequestIterator<ConcreteDomainChangeSearchRequestBuilder, ConcreteDomainChanges> concreteDomainIterator =
-				new SearchResourceRequestIterator<>(concreteDomainRequestBuilder, 
-						r -> r.build().execute(context));
+					final Set<String> originMemberIds = nextChanges.stream()
+							.filter(change -> ChangeNature.NEW.equals(change.getChangeNature())
+									|| ChangeNature.UPDATED.equals(change.getChangeNature()))
+							.map(ConcreteDomainChange::getConcreteDomainMember)
+							.map(ReasonerConcreteDomainMember::getOriginMemberId)
+							.filter(id -> id != null)
+							.collect(Collectors.toSet());
+					
+					final Map<String, String> originReferencedComponentIds = SnomedRequests.prepareSearchMember()
+							.setLimit(originMemberIds.size())
+							.filterByIds(originMemberIds)
+							.build()
+							.execute(context)
+							.stream()
+							.collect(Collectors.toMap(
+									m -> m.getId(), // keys: ID of the "origin" CD member
+									m -> m.getReferencedComponent().getId())); // values: referenced component ID of the "origin" CD member
 
-		while (concreteDomainIterator.hasNext()) {
-			final ConcreteDomainChanges nextChanges = concreteDomainIterator.next();
+					// Concepts which will be inactivated as part of equivalent concept merging should be excluded
+					conceptIds.removeAll(conceptIdsToSkip);
+					namespaceAndModuleAssigner.collectConcreteDomainModules(conceptIds, context);
 
-			final Set<String> conceptIds = nextChanges.stream()
-					.map(ConcreteDomainChange::getConcreteDomainMember)
-					.map(m -> m.getReferencedComponentId())
-					.collect(Collectors.toSet());
+					for (final ConcreteDomainChange change : nextChanges) {
+						final ReasonerConcreteDomainMember referenceSetMember = change.getConcreteDomainMember();
 
-			final Set<String> originMemberIds = nextChanges.stream()
-					.filter(change -> ChangeNature.NEW.equals(change.getChangeNature())
-							|| ChangeNature.UPDATED.equals(change.getChangeNature()))
-					.map(ConcreteDomainChange::getConcreteDomainMember)
-					.map(ReasonerConcreteDomainMember::getOriginMemberId)
-					.filter(id -> id != null)
-					.collect(Collectors.toSet());
-			
-			final Map<String, String> originReferencedComponentIds = SnomedRequests.prepareSearchMember()
-					.setLimit(originMemberIds.size())
-					.filterByIds(originMemberIds)
-					.build()
-					.execute(context)
-					.stream()
-					.collect(Collectors.toMap(
-							m -> m.getId(), // keys: ID of the "origin" CD member
-							m -> m.getReferencedComponent().getId())); // values: referenced component ID of the "origin" CD member
-
-			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
-			conceptIds.removeAll(conceptIdsToSkip);
-			namespaceAndModuleAssigner.collectConcreteDomainModules(conceptIds, context);
-
-			for (final ConcreteDomainChange change : nextChanges) {
-				final ReasonerConcreteDomainMember referenceSetMember = change.getConcreteDomainMember();
-
-				// CD member changes related to merged concepts should not be applied
-				if (conceptIdsToSkip.contains(referenceSetMember.getReferencedComponentId())) {
-					continue;
-				}
-				
-				switch (change.getChangeNature()) {
-					case NEW: {
-							/*
-							 * Do not "infer" any CD member that is passed down from a concept that was
-							 * already merged by the equivalent concept merging step
-							 */
-							final String originReferencedComponentId = originReferencedComponentIds.get(referenceSetMember.getOriginMemberId());
-							if (!conceptIdsToSkip.contains(originReferencedComponentId)) {
-								addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
-							}
+						// CD member changes related to merged concepts should not be applied
+						if (conceptIdsToSkip.contains(referenceSetMember.getReferencedComponentId())) {
+							continue;
 						}
-						break;
 						
-					case UPDATED: {
-						final String originReferencedComponentId = originReferencedComponentIds.get(referenceSetMember.getOriginMemberId());
-							if (!conceptIdsToSkip.contains(originReferencedComponentId)) {
-								updateComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
-							}
+						switch (change.getChangeNature()) {
+							case NEW: {
+									/*
+									 * Do not "infer" any CD member that is passed down from a concept that was
+									 * already merged by the equivalent concept merging step
+									 */
+									final String originReferencedComponentId = originReferencedComponentIds.get(referenceSetMember.getOriginMemberId());
+									if (!conceptIdsToSkip.contains(originReferencedComponentId)) {
+										addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
+									}
+								}
+								break;
+								
+							case UPDATED: {
+								final String originReferencedComponentId = originReferencedComponentIds.get(referenceSetMember.getOriginMemberId());
+									if (!conceptIdsToSkip.contains(originReferencedComponentId)) {
+										updateComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
+									}
+								}
+								break;
+								
+							case REDUNDANT:
+								removeOrDeactivate(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
+								break;
+								
+							default:
+								throw new IllegalStateException(String.format("Unexpected CD member change '%s' found with UUID '%s'.", 
+										change.getChangeNature(), 
+										change.getConcreteDomainMember().getOriginMemberId()));
 						}
-						break;
-						
-					case REDUNDANT:
-						removeOrDeactivate(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
-						break;
-						
-					default:
-						throw new IllegalStateException(String.format("Unexpected CD member change '%s' found with UUID '%s'.", 
-								change.getChangeNature(), 
-								change.getConcreteDomainMember().getOriginMemberId()));
-				}
-			}
-		}
+					}
+				});
 
 		namespaceAndModuleAssigner.clear();
 	}
@@ -436,37 +425,22 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				+ "inboundRelationships(active:true),"
 				+ "members(active:true)))";
 		
-		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
+		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
+		
+		ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.setLimit(SCROLL_LIMIT)
 				.setExpand(expand)
-				.filterByClassificationId(classificationId);
+				.filterByClassificationId(classificationId)
+				.stream(context)
+				.flatMap(EquivalentConceptSets::stream)
+				.filter(equivalentSet -> !equivalentSet.isUnsatisfiable())
+				.forEach(equivalentSet -> {
+					final List<SnomedConcept> conceptsToRemove = newArrayList(equivalentSet.getEquivalentConcepts());
+					final SnomedConcept conceptToKeep = conceptsToRemove.remove(0);
+					equivalentConcepts.putAll(conceptToKeep, conceptsToRemove);
+				});
 
-		final SearchResourceRequestIterator<EquivalentConceptSetSearchRequestBuilder, EquivalentConceptSets> equivalentConceptIterator = 
-				new SearchResourceRequestIterator<>(equivalentConceptRequest, 
-						r -> r.build().execute(context));
-
-		// Are there any equivalent concepts present?
-		if (!equivalentConceptIterator.hasNext()) {
-			return Collections.emptySet();
-		}
-		
-		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
-
-		while (equivalentConceptIterator.hasNext()) {
-			final EquivalentConceptSets nextBatch = equivalentConceptIterator.next();
-
-			for (final EquivalentConceptSet equivalentSet : nextBatch) {
-				if (equivalentSet.isUnsatisfiable()) {
-					continue;
-				}
-
-				final List<SnomedConcept> conceptsToRemove = newArrayList(equivalentSet.getEquivalentConcepts());
-				final SnomedConcept conceptToKeep = conceptsToRemove.remove(0);
-				equivalentConcepts.putAll(conceptToKeep, conceptsToRemove);
-			}
-		}
-
-		// Were all equivalent concepts unsatisfiable?
+		// Are there any equivalent concepts present? or Were all equivalent concepts unsatisfiable?
 		if (equivalentConcepts.isEmpty()) {
 			return Collections.emptySet();
 		}
@@ -742,7 +716,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final boolean destinationNegated = relationship.isDestinationNegated();
 		final RelationshipValue value = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
-		final int group = relationship.getGroup();
+		final int group = relationship.getRelationshipGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
@@ -775,7 +749,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
 				.setValue(value)
-				.setGroup(group)
+				.setRelationshipGroup(group)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)
 				.setModuleId(moduleId);
@@ -804,7 +778,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final SnomedReferenceSetMember member) {
 		
 		final String referencedComponentId = member.getReferencedComponent().getId();
-		final String referenceSetId = member.getReferenceSetId();
+		final String referenceSetId = member.getRefsetId();
 		final String typeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID);
 		final String serializedValue = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
 		final int group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
@@ -830,7 +804,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setActive(true)
 				.setModuleId(moduleId)
 				.setReferencedComponentId(referencedComponentId)
-				.setReferenceSetId(referenceSetId)
+				.setRefsetId(referenceSetId)
 				.setProperties(ImmutableMap.of(
 						SnomedRf2Headers.FIELD_TYPE_ID, typeId,
 						SnomedRf2Headers.FIELD_VALUE, serializedValue,
@@ -868,7 +842,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final SnomedRelationshipUpdateRequestBuilder updateRequest = SnomedRequests
 				.prepareUpdateRelationship(relationship.getOriginId())
 				.setModuleId(namespaceAndModuleAssigner.getRelationshipModuleId(relationship.getSourceId()))
-				.setGroup(relationship.getGroup());
+				.setRelationshipGroup(relationship.getGroup());
 		
 		bulkRequestBuilder.add(updateRequest);
 	}

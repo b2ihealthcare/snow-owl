@@ -120,7 +120,7 @@ public class BranchCompareRequestTest {
 		// compare task branch and its parent
 		final BranchCompareResult compare = compare(branchPath, taskBranchPath);
 		assertThat(compare.getNewComponents()).isEmpty();
-		assertThat(compare.getChangedComponents()).contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, newConceptId));
+		assertThat(compare.getChangedComponents()).contains(ComponentIdentifier.of(SnomedConcept.TYPE, newConceptId));
 		assertThat(compare.getDeletedComponents()).isEmpty();
 	}
 	
@@ -131,7 +131,7 @@ public class BranchCompareRequestTest {
 		final String taskBranchPath = createBranch(branchPath, "taskBranch");
 		
 		final ComponentIdentifier concept = componentIdsToDelete.stream()
-				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.filter(ci -> ci.getComponentType() == SnomedConcept.TYPE)
 				.findFirst()
 				.get();
 		
@@ -172,7 +172,7 @@ public class BranchCompareRequestTest {
 		final String taskBranchPath = createBranch(branchPath, "taskBranch");
 		
 		final ComponentIdentifier concept = componentsOnParentBranch.stream()
-				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.filter(ci -> ci.getComponentType() == SnomedConcept.TYPE)
 				.findFirst()
 				.get();
 		
@@ -187,7 +187,7 @@ public class BranchCompareRequestTest {
 				.execute(bus)
 				.getSync(1, TimeUnit.MINUTES)
 				.getResultAs(String.class);
-		final ComponentIdentifier newDescription = ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, newDescriptionId);
+		final ComponentIdentifier newDescription = ComponentIdentifier.of(SnomedDescription.TYPE, newDescriptionId);
 		
 		final BranchCompareResult compareResult = compare(branchPath, taskBranchPath);
 		
@@ -246,15 +246,15 @@ public class BranchCompareRequestTest {
 		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId, "descriptions(expand(members())),relationships()")
 			.extract().as(SnomedConcept.class);
 		final Set<ComponentIdentifier> newIds = newHashSet();
-		newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()));
+		newIds.add(ComponentIdentifier.of(SnomedConcept.TYPE, concept.getId()));
 		for (SnomedDescription description : concept.getDescriptions()) {
-			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+			newIds.add(ComponentIdentifier.of(SnomedDescription.TYPE, description.getId()));
 			for (SnomedReferenceSetMember member : description.getMembers()) {
-				newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()));
+				newIds.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, member.getId()));
 			}
 		}
 		for (SnomedRelationship relationship : concept.getRelationships()) {
-			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+			newIds.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationship.getId()));
 		}
 		return newIds;
 	}

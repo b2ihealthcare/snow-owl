@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.hamcrest.Matchers;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
@@ -92,6 +93,10 @@ public abstract class SnomedComponentRestRequests {
 				.then();
 	}
 
+	public static ValidatableResponse getComponent(ResourceURI resourceURI, SnomedComponentType type, String id, String... expand) {
+		return getComponent(resourceURI.withoutResourceType(), type, id, expand);
+	}
+	
 	public static ValidatableResponse getComponent(IBranchPath branchPath, SnomedComponentType type, String id, String... expand) {
 		return getComponent(branchPath.getPath(), type, id, expand);
 	}

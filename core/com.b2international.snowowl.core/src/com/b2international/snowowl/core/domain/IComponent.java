@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,13 +56,13 @@ public interface IComponent extends Serializable {
 	 */
 	@JsonIgnore
 	default ComponentIdentifier getComponentIdentifier() {
-		return ComponentIdentifier.of(getTerminologyComponentId(), getId());
+		return ComponentIdentifier.of(getComponentType(), getId());
 	}
 	
 	/**
 	 * @return the associated terminology component type identifier of this component.
 	 */
 	@JsonIgnore
-	short getTerminologyComponentId();
+	String getComponentType();
 	
 }

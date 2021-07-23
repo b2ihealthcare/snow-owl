@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.reasoner.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
 import com.b2international.snowowl.snomed.reasoner.request.ConcreteDomainChangeSearchRequest.OptionKey;
 
@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.reasoner.request.ConcreteDomainChangeS
  * @since 7.0
  */
 public final class ConcreteDomainChangeSearchRequestBuilder
-		extends SearchResourceRequestBuilder<ConcreteDomainChangeSearchRequestBuilder, RepositoryContext, ConcreteDomainChanges> 
+		extends SearchPageableCollectionResourceRequestBuilder<ConcreteDomainChangeSearchRequestBuilder, RepositoryContext, ConcreteDomainChanges> 
 		implements RepositoryRequestBuilder<ConcreteDomainChanges> {
 
 	ConcreteDomainChangeSearchRequestBuilder() {}

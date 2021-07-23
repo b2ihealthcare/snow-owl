@@ -65,7 +65,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.prepareNewMember()
 					.setModuleId(moduleId)
 					.setReferencedComponentId(change.getReferencedComponent().getId())
-					.setReferenceSetId(evaluation.getReferenceSetId())
+					.setRefsetId(evaluation.getReferenceSetId())
 					.buildNoContent()
 					.execute(context);
 				break;

@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.ExpandParser;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -39,11 +40,14 @@ import com.google.common.collect.FluentIterable;
  */
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
 
-	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String term) {
+	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String term, boolean requestedExpand) {
 		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), term, snomedConcept.getScore());
 		concept.setAlternativeTerms(FluentIterable.from(snomedConcept.getPreferredDescriptions())
 				.transform(pd -> pd.getTerm())
 				.toSortedSet(Comparator.naturalOrder()));
+		if (requestedExpand) {
+			concept.setInternalConcept(snomedConcept);
+		}
 		return concept;
 	}
 	
@@ -101,14 +105,20 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 					.append(")");
 			}
 			
-			req.filterByQuery(query.toString());
+			req.filterByEcl(query.toString());
 		}
+		
+		boolean requestedExpand = search.containsKey(OptionKey.EXPAND);
+		// make sure preferredDescriptions() and displayTermType expansion data are always loaded
+		Options expand = ExpandParser.parse(String.join(",", "preferredDescriptions()", displayTermType.getExpand()))
+				.merge(requestedExpand ? search.getOptions(OptionKey.EXPAND) : Options.empty());
 		
 		SnomedConcepts matches = req
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
 				.setSearchAfter(search.getString(OptionKey.AFTER))
 				.setLimit(search.get(OptionKey.LIMIT, Integer.class))
-				.setExpand(String.join(",", "preferredDescriptions()", displayTermType.getExpand()))
+				.setFields(search.getList(OptionKey.FIELDS, String.class))
+				.setExpand(expand)
 				.sortBy(search.containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? search.getList(SearchResourceRequest.OptionKey.SORT_BY, SearchResourceRequest.Sort.class) : null)
 				.build()
 				.execute(context);
@@ -116,7 +126,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		return new Concepts(
 			matches
 				.stream()
-				.map(concept -> toConcept(uri, concept, displayTermType.getLabel(concept)))
+				.map(concept -> toConcept(uri, concept, displayTermType.getLabel(concept), requestedExpand))
 				.collect(Collectors.toList()), 
 			matches.getSearchAfter(), 
 			matches.getLimit(), 

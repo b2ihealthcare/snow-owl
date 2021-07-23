@@ -33,20 +33,15 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.b2international.snowowl.snomed.reasoner.request.ClassificationSearchRequestBuilder;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
@@ -284,7 +279,7 @@ public final class RelationshipChangeConverter
 							reasonerRelationship.setCharacteristicTypeId(expandedRelationship.getCharacteristicTypeId());
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
-							reasonerRelationship.setGroup(expandedRelationship.getGroup());
+							reasonerRelationship.setGroup(expandedRelationship.getRelationshipGroup());
 							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							reasonerRelationship.setSource(expandedRelationship.getSource());
@@ -309,16 +304,13 @@ public final class RelationshipChangeConverter
 				.collect(Collectors.toSet());
 
 		final Map<String, String> branchesByClassificationIdMap = newHashMap();
-		final ClassificationSearchRequestBuilder requestBuilder = ClassificationRequests.prepareSearchClassification()
+		ClassificationRequests.prepareSearchClassification()
 				.filterByIds(classificationTaskIds)
-				.setLimit(BATCH_LIMIT);
+				.setLimit(BATCH_LIMIT)
+				.stream(context())
+				.flatMap(ClassificationTasks::stream)
+				.forEach(task -> branchesByClassificationIdMap.put(task.getId(), task.getBranch()));
 		
-		final var requestIterator = new SearchResourceRequestIterator<>(requestBuilder, 
-				b -> b.build().execute(context()));
-		
-		requestIterator.forEachRemaining(tasks -> tasks.stream()
-				.forEachOrdered(t -> branchesByClassificationIdMap.put(t.getId(), t.getBranch())));
-
 		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, 
 				r -> branchesByClassificationIdMap.get(r.getClassificationId()));
 		

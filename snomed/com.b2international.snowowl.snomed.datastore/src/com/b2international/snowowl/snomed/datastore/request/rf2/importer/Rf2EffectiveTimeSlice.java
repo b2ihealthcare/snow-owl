@@ -210,7 +210,7 @@ public final class Rf2EffectiveTimeSlice {
 						
 						// Register container concept as visited component 
 						final String conceptId = getConceptId(component); 
-						visitedComponents.add(ComponentURI.of(codeSystemUri, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId));
+						visitedComponents.add(ComponentURI.of(codeSystemUri, SnomedConcept.TYPE, conceptId));
 					}
 					// add all members of this component to this batch as well
 					final Set<String> containerComponents = membersByReferencedComponent.remove(componentToImportL);
@@ -221,8 +221,8 @@ public final class Rf2EffectiveTimeSlice {
 								componentsToImport.add(containedComponent);
 								
 								// Register reference set as visited component
-								final String refSetId = containedComponent.getReferenceSetId();
-								visitedComponents.add(ComponentURI.of(codeSystemUri, SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId));
+								final String refSetId = containedComponent.getRefsetId();
+								visitedComponents.add(ComponentURI.of(codeSystemUri, SnomedConcept.REFSET_TYPE, refSetId));
 							}
 						}
 					}

@@ -21,8 +21,8 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequest.OptionKey;
 import com.b2international.snowowl.core.version.Versions;
 
@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.version.Versions;
  * @since 4.7
  */
 public final class VersionSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<VersionSearchRequestBuilder, RepositoryContext, Versions>
+		extends SearchPageableCollectionResourceRequestBuilder<VersionSearchRequestBuilder, RepositoryContext, Versions>
  		implements ResourceRepositoryRequestBuilder<Versions> {
 
 	public VersionSearchRequestBuilder() {
@@ -65,7 +65,7 @@ public final class VersionSearchRequestBuilder
 	 * @param versions - the version tags to look for.
 	 * @return
 	 */
-	public VersionSearchRequestBuilder filterByVersionId(Iterable<String> versions) {
+	public VersionSearchRequestBuilder filterByVersionIds(Iterable<String> versions) {
 		return addOption(OptionKey.VERSION, versions);
 	}
 	

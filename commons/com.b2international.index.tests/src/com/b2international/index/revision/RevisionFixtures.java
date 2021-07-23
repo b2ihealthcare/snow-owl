@@ -327,7 +327,7 @@ public class RevisionFixtures {
 		public int hashCode() {
 			return Objects.hash(field1, data);
 		}
-		
+
 	}
 	
 	@Doc
@@ -359,7 +359,7 @@ public class RevisionFixtures {
 		
 	}
 	
-	@Doc
+	@Doc(type = "container")
 	public static final class ContainerRevisionData extends Revision {
 
 		@JsonCreator
@@ -384,7 +384,7 @@ public class RevisionFixtures {
 		
 		@Override
 		protected ObjectId getContainerId() {
-			return ObjectId.of(ContainerRevisionData.class, container);
+			return ObjectId.of("container", container);
 		}
 		
 		public String getContainer() {

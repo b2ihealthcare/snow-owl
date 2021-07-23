@@ -15,17 +15,7 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.TOOLING_ID;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreate;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemGet;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemHasAttributeValue;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemSearch;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertVersionCreated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareVersionCreateRequestBody;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,9 +42,11 @@ import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -70,7 +62,7 @@ public class CodeSystemApiTest {
 	private static final Json SNOMED = Json.object(
 		ResourceDocument.Fields.ID, "SNOMEDCT",
 		ResourceDocument.Fields.TITLE, "SNOMED CT",
-		ResourceDocument.Fields.URL, SnomedTerminologyComponentConstants.SNOMED_URI_BASE,
+		ResourceDocument.Fields.URL, SnomedTerminologyComponentConstants.SNOMED_URI_SCT,
 		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TOOLING_ID,
 		ResourceDocument.Fields.OID, SnomedContentRule.SNOMEDCT_OID,
 		ResourceDocument.Fields.BUNDLE_ID, IComponent.ROOT_ID
@@ -162,7 +154,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreate(SNOMED)
 			.statusCode(201);
 		
-		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("url", "SNOMED CT-other"))
+		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("url", SnomedTerminologyComponentConstants.SNOMED_URI_DEV))
 			.statusCode(409)
 			.body("message", containsString("Resource with '2.16.840.1.113883.6.96' oid already exists."));
 	}
@@ -460,10 +452,25 @@ public class CodeSystemApiTest {
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
 		assertCodeSystemCreated(requestBody);
 		
-		final Json updateRequestBody = Json.object("bundleId", "updated-bundle-id");
+		final String bundleId = IDs.base64UUID();
+		BundleApiAssert.assertCreate(BundleApiAssert.prepareCreateRequestBody(bundleId))
+			.statusCode(201);
+		
+		final Json updateRequestBody = Json.object("bundleId", bundleId);
 		
 		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
-		assertCodeSystemHasAttributeValue(codeSystemId, "bundleId", "updated-bundle-id");
+		assertCodeSystemHasAttributeValue(codeSystemId, "bundleId", bundleId);
+	}
+
+	@Test
+	public void codesystem25_UpdateBundleIdNotExist() {
+		final String codeSystemId = "cs25";
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
+		assertCodeSystemCreated(requestBody);
+
+		final Json updateRequestBody = Json.object("bundleId", "not-existing-bundle");
+		
+		assertCodeSystemNotUpdated(codeSystemId, updateRequestBody);
 	}
 	
 	@After

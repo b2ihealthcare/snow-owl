@@ -31,7 +31,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	private String destinationId;
 	private boolean destinationNegated;
 	private RelationshipValue value;
-	private Integer group = 0;
+	private Integer relationshipGroup = 0;
 	private Integer unionGroup = 0;
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
@@ -86,11 +86,11 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	}
 
 	/**
-	 * @param group
+	 * @param relationshipGroup
 	 * @return
 	 */
-	public SnomedRelationshipCreateRequestBuilder setGroup(final Integer group) {
-		this.group = group;
+	public SnomedRelationshipCreateRequestBuilder setRelationshipGroup(final Integer relationshipGroup) {
+		this.relationshipGroup = relationshipGroup;
 		return getSelf();
 	}
 
@@ -129,7 +129,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		req.setDestinationId(destinationId);
 		req.setDestinationNegated(destinationNegated);
 		req.setValue(value);
-		req.setGroup(group);
+		req.setRelationshipGroup(relationshipGroup);
 		req.setUnionGroup(unionGroup);
 		req.setCharacteristicTypeId(characteristicTypeId);
 		req.setModifierId(modifierId);

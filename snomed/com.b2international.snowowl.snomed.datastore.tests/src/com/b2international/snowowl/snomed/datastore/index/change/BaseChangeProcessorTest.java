@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,19 +29,14 @@ import org.junit.Before;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.index.revision.BaseRevisionIndexTest;
-import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionBranch;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.index.revision.StagingArea;
+import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -141,7 +136,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return SnomedRelationshipIndexEntry.builder()
 				.id(generateRelationshipId())
 				.active(true)
-				.group(0)
+				.relationshipGroup(0)
 				.unionGroup(0)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
 				.moduleId(module())
@@ -176,7 +171,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.id(UUID.randomUUID().toString())
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referenceSetId(refSetId)
+				.refsetId(refSetId)
 				.build();
 	}
 	
@@ -225,7 +220,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return SnomedConceptDocument.builder()
 				.id(id)
 				.active(true)
-				.primitive(false)
+				.definitionStatusId(Concepts.FULLY_DEFINED)
 				.moduleId(module())
 				.exhaustive(false)
 				// defaults
@@ -243,8 +238,8 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.owlExpression(owlExpression)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
-				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referencedComponentType(SnomedConcept.TYPE)
+				.refsetId(Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM);
 	}
 

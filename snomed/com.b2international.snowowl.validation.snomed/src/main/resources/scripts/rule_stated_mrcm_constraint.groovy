@@ -8,7 +8,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConceptSetDefinition
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
@@ -123,7 +123,7 @@ if (params.isUnpublishedOnly) {
 			def predicateCharType = predicate.getCharacteristicTypeId()
 			if (predicate.getAttributeExpression().equals(typeId) && (Strings.isNullOrEmpty(predicateCharType) || charTypeId.equals(predicateCharType))) {
 				if (!getCachedApplicableConcepts(predicate.getRangeExpression()).contains(destinationId)) {
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
+					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId))
 				}
 			}
 		}
@@ -161,7 +161,7 @@ if (params.isUnpublishedOnly) {
 
 			searcher.scroll(query).forEach({ hits ->
 				hits.forEach({ id ->
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
 				})
 			})
 		}

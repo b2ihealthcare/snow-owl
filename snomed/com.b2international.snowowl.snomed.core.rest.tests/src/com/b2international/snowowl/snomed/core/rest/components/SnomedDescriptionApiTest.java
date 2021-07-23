@@ -376,7 +376,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		).extract().as(SnomedDescription.class);
 		
 		List<SnomedReferenceSetMember> inactivationIndicators = description.getMembers().stream()
-			.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+			.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getRefsetId()))
 			.collect(Collectors.toList());
 		
 		final SnomedReferenceSetMember inactivationIndicator = Iterables.getOnlyElement(inactivationIndicators); 
@@ -429,7 +429,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		assertEquals(beforeMember.getId(), afterMember.getId());
 		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, afterMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
-		assertEquals(Concepts.REFSET_LANGUAGE_TYPE_UK, afterMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_LANGUAGE_TYPE_UK, afterMember.getRefsetId());
 	}
 
 	@Test
@@ -469,7 +469,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
 		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
-				.body("members.items.referenceSetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				.body("members.items.refsetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				.extract().as(SnomedDescription.class)
 				.getMembers();
 
@@ -507,7 +507,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		// Check language member count and module
 		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
 				.statusCode(200)
-				.body("members.items.referenceSetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				.body("members.items.refsetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				.extract()
 				.as(SnomedDescription.class)
 				.getMembers();
@@ -555,7 +555,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.statusCode(204);
 		
 		members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
-				.body("members.items.referenceSetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				.body("members.items.refsetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				.extract().as(SnomedDescription.class)
 				.getMembers();
 
@@ -590,7 +590,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertEquals(1, members.getTotal());
 		SnomedReferenceSetMember member = Iterables.getOnlyElement(members);
 
-		assertEquals(Concepts.REFSET_LANGUAGE_TYPE_UK, member.getReferenceSetId());
+		assertEquals(Concepts.REFSET_LANGUAGE_TYPE_UK, member.getRefsetId());
 		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, member.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
 	}
 
@@ -651,7 +651,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.active(false)
 				.released(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referenceSetId(Concepts.REFSET_LANGUAGE_TYPE_UK)
+				.refsetId(Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.referencedComponentId(descriptionId)
 				.referenceSetType(SnomedRefSetType.LANGUAGE)
 				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)

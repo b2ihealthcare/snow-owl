@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
@@ -33,8 +34,8 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
@@ -103,7 +104,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		this.stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
 		this.statedTaxonomy = statedTaxonomy;
 		this.inferredTaxonomy = inferredTaxonomy;
-		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedConcept.TYPE);
 	}
 	
 	@Override
@@ -131,12 +132,12 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			// fetch all dirty concept documents by their ID
 			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
-					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
+					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConcept.TYPE, id)))
 					.collect(Collectors.toSet());
 
 			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, missingCurrentConceptIds), Revision::getId));
 			dirtyConceptIds.stream()
-				.map(id -> ObjectId.of(SnomedConceptDocument.class, id))
+				.map(id -> ObjectId.of(SnomedConcept.TYPE, id))
 				.filter(changedRevisions::containsKey)
 				.map(changedRevisions::get)
 				.map(diff -> (SnomedConceptDocument) diff.oldRevision)
@@ -155,6 +156,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				final Collection<SnomedDescriptionIndexEntry> affectedDescriptions = affectedDescriptionsByConcept.get(id);
 				if (!affectedDescriptions.isEmpty()) {
 					final Map<String, SnomedDescriptionFragment> updatedPreferredDescriptions = newHashMap(Maps.uniqueIndex(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
+					final SortedSet<String> updatedSemanticTags = new TreeSet<>(currentDoc.getSemanticTags());
 					
 					// add new/dirty fragments if they are preferred and active terms
 					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
@@ -163,6 +165,21 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 							if (affectedDescription.isActive() && !getPreferredLanguageMembers(affectedDescription).isEmpty()) {
 								updatedPreferredDescriptions.put(affectedDescription.getId(), toDescriptionFragment(affectedDescription));
 							}
+							// update semantic tag list
+							if (affectedDescription.isFsn()) {
+								if (staging.isNew(affectedDescription) && !CompareUtils.isEmpty(affectedDescription.getSemanticTag())) {
+									// add new tag from fsn
+									updatedSemanticTags.add(affectedDescription.getSemanticTag());
+								} else if (staging.isChanged(affectedDescription)) {
+									RevisionDiff diff = staging.getChangedRevisionDiff(affectedDescription.getClass(), affectedDescription.getId());
+									SnomedDescriptionIndexEntry oldVersion = (SnomedDescriptionIndexEntry) diff.oldRevision;
+									SnomedDescriptionIndexEntry newVersion = (SnomedDescriptionIndexEntry) diff.newRevision;
+									if (!Objects.equals(oldVersion.getSemanticTag(), newVersion.getSemanticTag())) {
+										updatedSemanticTags.remove(oldVersion.getSemanticTag());
+										updatedSemanticTags.add(newVersion.getSemanticTag());
+									}
+								}
+							}
 						}
 					}
 					
@@ -170,6 +187,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
 						if (staging.isRemoved(affectedDescription)) {
 							updatedPreferredDescriptions.remove(affectedDescription.getId());
+							if (affectedDescription.isFsn()) {
+								updatedSemanticTags.remove(affectedDescription.getSemanticTag());
+							}
 						}
 					}
 					
@@ -177,6 +197,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 							.stream()
 							.sorted(DESCRIPTION_FRAGMENT_ORDER)
 							.collect(Collectors.toList());
+					
+					doc.semanticTags(updatedSemanticTags);
 					
 					update(doc, preferredDescriptions, concept, currentDoc);
 				} else {
@@ -299,7 +321,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					.effectiveTime(newOrDirtyRevision.getEffectiveTime())
 					.moduleId(newOrDirtyRevision.getModuleId())
 					.exhaustive(newOrDirtyRevision.isExhaustive())
-					.primitive(newOrDirtyRevision.isPrimitive())
+					.definitionStatusId(newOrDirtyRevision.getDefinitionStatusId())
 					.refSetType(newOrDirtyRevision.getRefSetType())
 					.referencedComponentType(newOrDirtyRevision.getReferencedComponentType())
 					.mapTargetComponentType(newOrDirtyRevision.getMapTargetComponentType())
@@ -310,7 +332,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					.effectiveTime(cleanRevision.getEffectiveTime())
 					.moduleId(cleanRevision.getModuleId())
 					.exhaustive(cleanRevision.isExhaustive())
-					.primitive(cleanRevision.isPrimitive())
+					.definitionStatusId(cleanRevision.getDefinitionStatusId())
 					.refSetType(cleanRevision.getRefSetType())
 					.referencedComponentType(cleanRevision.getReferencedComponentType())
 					.mapTargetComponentType(cleanRevision.getMapTargetComponentType())

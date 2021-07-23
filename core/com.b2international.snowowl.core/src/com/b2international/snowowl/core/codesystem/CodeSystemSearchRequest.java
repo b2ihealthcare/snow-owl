@@ -39,8 +39,7 @@ final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystem
 	public enum OptionKey {
 		/** Search by specific tooling ID */
 		TOOLING_ID,
-		/** HL7 registry OID **/
-		OID, 
+
 		/**
 		 * Match CodeSystem by their Upgrade of property 
 		 */
@@ -57,7 +56,6 @@ final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystem
 		queryBuilder.filter(ResourceDocument.Expressions.resourceType(CodeSystem.RESOURCE_TYPE));
 		
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
-		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		addFilter(queryBuilder, OptionKey.UPGRADE_OF, ResourceURI.class, ResourceDocument.Expressions::upgradeOfs);
 	}
 	

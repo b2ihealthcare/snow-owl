@@ -31,9 +31,9 @@ import com.google.common.collect.Multimap;
  */
 final class ReferringMemberChangeProcessor {
 	
-	private final short referencedComponentType;
+	private final String referencedComponentType;
 
-	public ReferringMemberChangeProcessor(final short referencedComponentType) {
+	public ReferringMemberChangeProcessor(final String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
 	}
 	
@@ -63,7 +63,7 @@ final class ReferringMemberChangeProcessor {
 			.forEach(doc -> {
 				final String uuid = doc.getId();
 				final String referencedComponentId = doc.getReferencedComponentId();
-				final String refSetId = doc.getReferenceSetId();
+				final String refSetId = doc.getRefsetId();
 				memberChanges.put(referencedComponentId, new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, doc.isActive()));
 			});
 		
@@ -76,7 +76,7 @@ final class ReferringMemberChangeProcessor {
 
 	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMemberIndexEntry member, MemberChangeKind changeKind) {
 		final String uuid = member.getId();
-		final String refSetId = member.getReferenceSetId();
+		final String refSetId = member.getRefsetId();
 		memberChanges.put(member.getReferencedComponentId(), new RefSetMemberChange(uuid, refSetId, changeKind, member.isActive()));
 	}
 

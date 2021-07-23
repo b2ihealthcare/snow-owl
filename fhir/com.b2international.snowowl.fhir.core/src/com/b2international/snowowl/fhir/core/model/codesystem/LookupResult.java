@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -27,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Model object for the lookup service request response
@@ -36,38 +36,34 @@ import com.google.common.collect.ImmutableList;
  * @since 6.4
  */
 @JsonDeserialize(builder = LookupResult.Builder.class)
-@JsonPropertyOrder({"name", "version", "display", "designation", "property"})
+@JsonPropertyOrder({ "name", "version", "display", "designation", "property" })
 public final class LookupResult {
-	
-	//A display name for the code system (1..1)
+
+	// A display name for the code system (1..1)
 	@NotEmpty
 	private final String name;
-	
-	//The version that these details are based on (0..1)
+
+	// The version that these details are based on (0..1)
 	private final String version;
-	
-	//The preferred display for this concept (1..1)
+
+	// The preferred display for this concept (1..1)
 	@NotEmpty
 	private final String display;
-	
-	//Additional representations for this concept (0..*)
+
+	// Additional representations for this concept (0..*)
 	@FhirType(FhirDataType.PART)
-	private final Collection<Designation> designation;   
-	
+	private final Collection<Designation> designation;
+
 	/*
-	 * One or more properties that contain additional information about the code, 
-	 * including status. For complex terminologies (e.g. SNOMED CT, LOINC, medications), these properties serve to decompose the code
-	 * 0..*
+	 * One or more properties that contain additional information about the code, including status. For complex terminologies (e.g. SNOMED CT, LOINC,
+	 * medications), these properties serve to decompose the code 0..*
 	 */
 	@FhirType(FhirDataType.PART)
 	private final Collection<Property> property;
-	
-	private LookupResult(final String name, 
-			final String version, 
-			final String display, 
-			final Collection<Designation> designation,
+
+	private LookupResult(final String name, final String version, final String display, final Collection<Designation> designation,
 			final Collection<Property> property) {
-		
+
 		this.name = name;
 		this.version = version;
 		this.display = display;
@@ -78,85 +74,74 @@ public final class LookupResult {
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getVersion() {
 		return version;
 	}
-	
+
 	public String getDisplay() {
 		return display;
 	}
-	
+
 	public Collection<Designation> getDesignation() {
 		return designation;
 	}
-	
+
 	public Collection<Property> getProperty() {
 		return property;
 	}
-	
+
 	public static Builder builder() {
 		return new Builder();
 	}
-	
-	@JsonPOJOBuilder(withPrefix="")
+
+	@JsonPOJOBuilder(withPrefix = "")
 	public static final class Builder extends ValidatingBuilder<LookupResult> {
-		
+
 		private String name;
 		private String version;
 		private String display;
-		
-		private ImmutableList.Builder<Designation> designations = ImmutableList.builder();
-		private ImmutableList.Builder<Property> properties = ImmutableList.builder();
+
+		private List<Designation> designations;
+		private List<Property> properties;
 
 		public Builder name(final String name) {
 			this.name = name;
 			return this;
 		}
-		
-		public Builder version(String version) {
+
+		public Builder version(final String version) {
 			this.version = version;
 			return this;
 		}
-		
-		public Builder display(String display) {
+
+		public Builder display(final String display) {
 			this.display = display;
-			return this;
-		}
-		
-		public Builder value(String display) {
-			this.display = display;
-			return this;
-		}
-		
-		public Builder addDesignation(Designation designation) {
-			designations.add(designation);
-			return this;
-		}
-		
-		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public Builder designation(Collection<Designation> designs) {
-			designations = ImmutableList.builder();
-			designations.addAll(designs);
-			return this;
-		}
-		
-		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public Builder property(Collection<Property> props) {
-			properties = ImmutableList.builder();
-			properties.addAll(props);
 			return this;
 		}
 
-		public Builder addProperty(Property property) {
-			properties.add(property);
+		public Builder value(final String display) {
+			this.display = display;
 			return this;
 		}
-		
+
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder designation(final List<Designation> designations) {
+			this.designations = designations;
+			return this;
+		}
+
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder property(final List<Property> properties) {
+			this.properties = properties;
+			return this;
+		}
+
 		@Override
 		public LookupResult doBuild() {
-			return new LookupResult(name, version, display, designations.build(), properties.build());
+			return new LookupResult(name, version, display, designations, properties);
 		}
+
 	}
-	
+
 }

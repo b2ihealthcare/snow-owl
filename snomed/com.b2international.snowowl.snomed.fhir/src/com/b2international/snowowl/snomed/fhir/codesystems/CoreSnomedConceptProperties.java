@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties
 import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
 import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * FHIR additional SNOMED CT properties
@@ -59,15 +60,13 @@ public enum CoreSnomedConceptProperties implements IConceptProperty {
 	
 	private ConceptPropertyType conceptPropertyType;
 	
-	public final static String CODE_SYSTEM_URI = "http://snomed.info"; //$NON-NLS-N$
-	
 	private CoreSnomedConceptProperties(ConceptPropertyType conceptPropertyType) {
 		this.conceptPropertyType = conceptPropertyType;
 	}
 
 	@Override
 	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
+		return SnomedTerminologyComponentConstants.SNOMED_URI_BASE;
 	}
 	
 	@Override

@@ -19,10 +19,7 @@ import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSortedSet;
@@ -31,6 +28,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
+import com.b2international.index.mapping.Field;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.Revision;
@@ -54,13 +52,13 @@ import com.google.common.collect.ImmutableMap;
  * A transfer object representing a SNOMED CT concept.
  */
 @Doc(
-	type="concept",
+	type=SnomedConcept.TYPE,
 	revisionHash = { 
 		SnomedDocument.Fields.ACTIVE, 
 		SnomedDocument.Fields.EFFECTIVE_TIME, 
 		SnomedDocument.Fields.MODULE_ID,
 		SnomedDocument.Fields.RELEASED, // XXX required for SnomedComponentRevisionConflictProcessor CHANGED vs. DELETED detection 
-		SnomedConceptDocument.Fields.PRIMITIVE,
+		SnomedConceptDocument.Fields.DEFINITION_STATUS_ID,
 		SnomedConceptDocument.Fields.EXHAUSTIVE,
 		SnomedConceptDocument.Fields.MAP_TARGET_COMPONENT_TYPE
 	}
@@ -151,12 +149,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return matchAnyLong(Fields.STATED_ANCESTORS, toLongValues(statedAncestorIds));
 		}
 		
-		public static Expression primitive() {
-			return match(Fields.PRIMITIVE, true);
+		public static Expression definitionStatusId(String definitionStatusId) {
+			return exactMatch(Fields.DEFINITION_STATUS_ID, definitionStatusId);
 		}
 		
-		public static Expression defining() {
-			return match(Fields.PRIMITIVE, false);
+		public static Expression definitionStatusIds(Iterable<String> definitionStatusIds) {
+			return matchAny(Fields.DEFINITION_STATUS_ID, definitionStatusIds);
 		}
 		
 		public static Expression exhaustive() {
@@ -186,13 +184,21 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static Expression mapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
 			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
+
+		public static Expression semanticTag(String semanticTag) {
+			return exactMatch(Fields.SEMANTIC_TAGS, semanticTag);
+		}
+		
+		public static Expression semanticTags(Iterable<String> semanticTags) {
+			return matchAny(Fields.SEMANTIC_TAGS, semanticTags);
+		}
 		
 	}
 
 	public static class Fields extends SnomedComponentDocument.Fields {
 		
 		public static final String REFSET_STORAGEKEY = "refSetStorageKey";
-		public static final String PRIMITIVE = "primitive";
+		public static final String DEFINITION_STATUS_ID = "definitionStatusId";
 		public static final String EXHAUSTIVE = "exhaustive";
 		public static final String ANCESTORS = "ancestors";
 		public static final String STATED_ANCESTORS = "statedAncestors";
@@ -202,7 +208,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String DOI = "doi";
-		public static final String DESCRIPTIONS = "preferredDescriptions";
+		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
+		public static final String SEMANTIC_TAGS = "semanticTags";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
@@ -214,7 +221,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.released(input.isReleased())
 				.effectiveTime(input.getEffectiveTime())
 				.iconId(input.getIconId())
-				.primitive(input.isPrimitive())
+				.definitionStatusId(input.getDefinitionStatusId())
 				.exhaustive(input.isExhaustive())
 				.parents(input.getParents())
 				.ancestors(input.getAncestors())
@@ -236,7 +243,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.released(input.isReleased())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.iconId(input.getIconId())
-				.primitive(input.isPrimitive())
+				.definitionStatusId(input.getDefinitionStatusId())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
 				.parents(PrimitiveSets.newLongSortedSet(input.getParentIds()))
 				.ancestors(PrimitiveSets.newLongSortedSet(input.getAncestorIds()))
@@ -257,16 +264,17 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedConceptDocument> {
 
-		private Boolean primitive;
+		private String definitionStatusId;
 		private Boolean exhaustive;
 		private LongSortedSet parents;
 		private LongSortedSet ancestors;
 		private LongSortedSet statedParents;
 		private LongSortedSet statedAncestors;
 		private SnomedRefSetType refSetType;
-		private Short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
-		private Short mapTargetComponentType;
+		private String referencedComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+		private String mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
+		private SortedSet<String> semanticTags = Collections.emptySortedSet();
 		private float doi = DEFAULT_DOI;
 
 		@JsonCreator
@@ -279,8 +287,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return this;
 		}
 		
-		public Builder primitive(final Boolean primitive) {
-			this.primitive = primitive;
+		public Builder definitionStatusId(final String definitionStatusId) {
+			this.definitionStatusId = definitionStatusId;
 			return getSelf();
 		}
 
@@ -335,8 +343,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		
 		@JsonIgnore
 		public Builder clearRefSet() {
-			referencedComponentType = 0;
-			mapTargetComponentType = 0;
+			referencedComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+			mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 			refSetType = null;
 			return getSelf();
 		}
@@ -344,22 +352,22 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		@JsonIgnore
 		public Builder refSet(final SnomedReferenceSet refSet) {
 			if (!StringUtils.isEmpty(refSet.getMapTargetComponentType())) {
-				mapTargetComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(refSet.getMapTargetComponentType()).shortId());
+				mapTargetComponentType(refSet.getMapTargetComponentType());
 			}
 			
 			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
-				referencedComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(refSet.getReferencedComponentType()).shortId());
+				referencedComponentType(refSet.getReferencedComponentType());
 			}
 			
 			return refSetType(refSet.getType());
 		}
 		
-		public Builder mapTargetComponentType(Short mapTargetComponentType) {
+		public Builder mapTargetComponentType(String mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
 			return getSelf();
 		}
 		
-		public Builder referencedComponentType(Short referencedComponentType) {
+		public Builder referencedComponentType(String referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return getSelf();
 		}
@@ -382,6 +390,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
+		public Builder semanticTags(SortedSet<String> semanticTags) {
+			this.semanticTags = semanticTags;
+			return getSelf();
+		}
+		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					iconId, 
@@ -389,7 +402,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 					released, 
 					active, 
 					effectiveTime, 
-					primitive, 
+					definitionStatusId, 
 					exhaustive,
 					refSetType, 
 					referencedComponentType,
@@ -417,22 +430,28 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				entry.statedAncestors = statedAncestors;
 			}
 			
+			if (semanticTags != null) {
+				entry.semanticTags = semanticTags;
+			}
+			
 			return entry;
 		}
 
 	}
 
-	private final Boolean primitive;
+	private final String definitionStatusId;
 	private final Boolean exhaustive;
 	private final SnomedRefSetType refSetType;
-	private final Short referencedComponentType;
-	private final Short mapTargetComponentType;
+	private final String referencedComponentType;
+	private final String mapTargetComponentType;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSortedSet parents;
 	private LongSortedSet ancestors;
 	private LongSortedSet statedParents;
 	private LongSortedSet statedAncestors;
+	private SortedSet<String> semanticTags;
+	
 	private float doi;
 
 	private SnomedConceptDocument(final String id,
@@ -441,17 +460,17 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final Boolean released,
 			final Boolean active,
 			final Long effectiveTime,
-			final Boolean primitive,
+			final String definitionStatusId,
 			final Boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
-			final Short referencedComponentType,
-			final Short mapTargetComponentType,
+			final String referencedComponentType,
+			final String mapTargetComponentType,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
 		super(id, iconId, moduleId, released, active, effectiveTime, referringRefSets, referringMappingRefSets);
-		this.primitive = primitive;
+		this.definitionStatusId = definitionStatusId;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
@@ -469,10 +488,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	}
 	
 	/**
-	 * @return {@code true} if the concept definition status is 900000000000074008 (primitive), {@code false} otherwise
+	 * @return the concept's definition status id
 	 */
-	public Boolean isPrimitive() {
-		return primitive;
+	public String getDefinitionStatusId() {
+		return definitionStatusId;
 	}
 
 	/**
@@ -502,11 +521,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return refSetType;
 	}
 	
-	public Short getReferencedComponentType() {
+	public String getReferencedComponentType() {
 		return referencedComponentType;
 	}
 	
-	public Short getMapTargetComponentType() {
+	public String getMapTargetComponentType() {
 		return mapTargetComponentType;
 	}
 	
@@ -519,10 +538,14 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return preferredDescriptions;
 	}
 	
+	public SortedSet<String> getSemanticTags() {
+		return semanticTags;
+	}
+	
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("primitive", primitive)
+				.add("definitionStatusId", definitionStatusId)
 				.add("exhaustive", exhaustive)
 				.add("refSetType", refSetType)
 				.add("referencedComponentType", referencedComponentType)

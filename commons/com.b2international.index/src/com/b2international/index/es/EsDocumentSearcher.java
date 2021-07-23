@@ -53,6 +53,8 @@ import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.*;
 import com.b2international.index.aggregations.Aggregation;
@@ -69,12 +71,10 @@ import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.google.common.primitives.Ints;
 
 /**
@@ -130,6 +130,9 @@ public class EsDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
+		Stopwatch w = Stopwatch.createStarted();
+		admin.log().trace("Executing query '{}'", query);
+		
 		final EsClient client = admin.client();
 		final List<DocumentMapping> mappings = admin.mappings().getDocumentMapping(query);
 		final DocumentMapping primaryMapping = Iterables.getFirst(mappings, null);
@@ -247,7 +250,9 @@ public class EsDocumentSearcher implements Searcher {
 		final Class<T> select = query.getSelection().getSelect();
 		final List<Class<?>> from = query.getSelection().getFrom();
 		
-		return toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
+		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
+		admin.log().trace("Executed query '{}' in '{}'", query, w);
+		return hits;
 	}
 
 	private <T> boolean applySourceFiltering(List<String> fields, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
@@ -255,6 +260,13 @@ public class EsDocumentSearcher implements Searcher {
 		if (fields.isEmpty()) {
 			reqSource.fetchSource(true);
 			return true;
+		}
+
+		// check if any fields requested are not supported by the mapping and fail-fast
+		SortedSet<String> unrecognizedFields = getUnrecognizedFields(mapping, fields);
+		if (!unrecognizedFields.isEmpty()) {
+			throw new BadRequestException("Unrecognized %s model propert%s '%s'.", mapping.typeAsString(), unrecognizedFields.size() == 1 ? "y" : "ies", unrecognizedFields)
+				.withDeveloperMessage("Supported properties are '%s'.", mapping.getSelectableFields());
 		}
 		
 		// Any field requested that can only retrieved from _source? Use source filtering
@@ -267,6 +279,13 @@ public class EsDocumentSearcher implements Searcher {
 		fields.stream().forEach(field -> reqSource.docValueField(field));
 		reqSource.fetchSource(false);
 		return false;
+	}
+
+	private SortedSet<String> getUnrecognizedFields(DocumentMapping mapping, List<String> fields) {
+		if (CompareUtils.isEmpty(fields)) {
+			return Collections.emptySortedSet();
+		}
+		return ImmutableSortedSet.copyOf(Sets.difference(Set.copyOf(fields), mapping.getSelectableFields()));
 	}
 
 	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
@@ -363,7 +382,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 	}
 
-	private Object[] fromSearchAfterToken(final String searchAfterToken) {
+	private Object[] fromSearchAfterToken(final String searchAfterToken) throws BadRequestException {
 		if (Strings.isNullOrEmpty(searchAfterToken)) {
 			return null;
 		}
@@ -371,7 +390,7 @@ public class EsDocumentSearcher implements Searcher {
 		final byte[] decodedToken = Base64
 				.getUrlDecoder()
 				.decode(searchAfterToken);
-		
+
 		try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decodedToken))) {
 			JavaBinCodec codec = new JavaBinCodec();
 			List<?> obj = (List<?>) codec.unmarshal(dis);
@@ -379,6 +398,8 @@ public class EsDocumentSearcher implements Searcher {
 			return obj.toArray();
 		} catch (final IOException e) {
 			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
+		} catch (final IllegalArgumentException e) {
+			throw new BadRequestException("Invalid 'searchAfter' parameter value '%s'", searchAfterToken);
 		}
 	}
 

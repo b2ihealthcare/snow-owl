@@ -28,8 +28,8 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -55,7 +55,7 @@ public abstract class DocumentBuilders {
 				.exhaustive(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.primitive(true)
+				.definitionStatusId(Concepts.PRIMITIVE)
 				.parents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.ancestors(PrimitiveSets.newLongSortedSet())
 				.statedParents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
@@ -82,12 +82,13 @@ public abstract class DocumentBuilders {
 				.released(false);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
+	public static SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, String referencedComponentType, String referenceSetId) {
 		return SnomedRefSetMemberIndexEntry.builder()
 				.id(id)
 				.active(true)
 				.referencedComponentId(referencedComponentId)
-				.referenceSetId(referenceSetId)
+				.referencedComponentType(referencedComponentType)
+				.refsetId(referenceSetId)
 				.released(true);
 	}
 	
@@ -152,8 +153,8 @@ public abstract class DocumentBuilders {
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(sourceId)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
-				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referencedComponentType(SnomedConcept.TYPE)
+				.refsetId(Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(classAxioms);
 	}
 
@@ -179,7 +180,7 @@ public abstract class DocumentBuilders {
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
+				.refsetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId)
 				.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
@@ -208,7 +209,7 @@ public abstract class DocumentBuilders {
 				.sourceId(sourceId)
 				.typeId(typeId)
 				.value(value)
-				.group(0)
+				.relationshipGroup(0)
 				.unionGroup(0)
 				.characteristicTypeId(characteristicTypeId)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);

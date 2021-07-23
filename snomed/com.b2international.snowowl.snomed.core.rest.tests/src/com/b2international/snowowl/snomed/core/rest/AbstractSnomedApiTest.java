@@ -45,7 +45,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	}
 	
 	protected final ValidatableResponse assertGetConcept(ResourceURI codeSystemURI, String conceptId, String...expand) {
-		return SnomedComponentRestRequests.getComponent(codeSystemURI.toString(), SnomedComponentType.CONCEPT, conceptId, expand);
+		return SnomedComponentRestRequests.getComponent(codeSystemURI.withoutResourceType(), SnomedComponentType.CONCEPT, conceptId, expand);
 	}
 	
 	protected final SnomedConcept getConcept(String conceptId, String...expand) {
@@ -70,7 +70,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	}
 	
 	protected final ValidatableResponse assertGetDescription(ResourceURI codeSystemURI, String descriptionId, String...expand) {
-		return SnomedComponentRestRequests.getComponent(codeSystemURI.toString(), SnomedComponentType.DESCRIPTION, descriptionId, expand);
+		return SnomedComponentRestRequests.getComponent(codeSystemURI.withoutResourceType(), SnomedComponentType.DESCRIPTION, descriptionId, expand);
 	}
 	
 	protected final ValidatableResponse assertGetDescription(String descriptionId, String...expand) {
@@ -92,7 +92,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	}
 	
 	protected final ValidatableResponse assertGetRelationship(ResourceURI codeSystemURI, String relationshipId, String...expand) {
-		return SnomedComponentRestRequests.getComponent(codeSystemURI.toString(), SnomedComponentType.RELATIONSHIP, relationshipId, expand);
+		return SnomedComponentRestRequests.getComponent(codeSystemURI.withoutResourceType(), SnomedComponentType.RELATIONSHIP, relationshipId, expand);
 	}
 	
 	protected final ValidatableResponse assertGetRelationship(String relationshipId, String...expand) {
@@ -123,11 +123,11 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	}
 	
 	protected final void updateConcept(final ResourceURI codeSystemURI, String conceptId, Map<String, Object> update) {
-		assertUpdateConcept(codeSystemURI.toString(), conceptId, update).statusCode(204);
+		assertUpdateConcept(codeSystemURI.withoutResourceType(), conceptId, update).statusCode(204);
 	}
 	
 	protected final void updateDescription(final ResourceURI codeSystemURI, String descriptionId, Map<String, Object> update) {
-		assertUpdateDescription(codeSystemURI.toString(), descriptionId, update).statusCode(204);
+		assertUpdateDescription(codeSystemURI.withoutResourceType(), descriptionId, update).statusCode(204);
 	}
 	
 	protected final void updateDescription(final String descriptionId, Map<String, Object> update) {
@@ -143,7 +143,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	}
 	
 	protected final void updateRelationship(final ResourceURI codeSystemURI, String relationshipId, Map<String, Object> update) {
-		assertUpdateRelationship(codeSystemURI.toString(), relationshipId, update).statusCode(204);
+		assertUpdateRelationship(codeSystemURI.withoutResourceType(), relationshipId, update).statusCode(204);
 	}
 	
 	protected final void updateRelationship(final String relationshipId, Map<String, Object> update) {
@@ -168,7 +168,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	
 	protected final ValidatableResponse assertCreateConcept(ResourceURI codeSystemURI, Map<String, Object> body) {
 		return SnomedComponentRestRequests.createComponent(
-			codeSystemURI.toString(), 
+			codeSystemURI.withoutResourceType(), 
 			SnomedComponentType.CONCEPT, 
 			Json.assign(
 				Json.object("commitComment", "New Concept"),
@@ -188,12 +188,16 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 		);
 	}
 	
-	protected final SnomedConcepts searchConcept(ResourceURI codeSystem, Map<String, Object> filters, int limit) {
-		return SnomedComponentRestRequests.searchComponent(codeSystem.getUri(), SnomedComponentType.CONCEPT, Json.assign(filters, Json.object("limit", limit)))
+	protected final SnomedConcepts searchConcepts(ResourceURI codeSystem, Map<String, Object> filters, int limit) {
+		return assertSearchConcepts(codeSystem, filters, limit)
 				.assertThat()
 				.statusCode(200)
 				.extract()
 				.as(SnomedConcepts.class);
+	}
+
+	protected final ValidatableResponse assertSearchConcepts(ResourceURI codeSystem, Map<String, Object> filters, int limit) {
+		return SnomedComponentRestRequests.searchComponent(codeSystem.withoutResourceType(), SnomedComponentType.CONCEPT, Json.assign(filters, Json.object("limit", limit)));
 	}
 	
 	protected final String createDescription(ResourceURI codeSystemURI, Map<String, Object> body) {
@@ -202,7 +206,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	
 	protected final ValidatableResponse assertCreateDescription(ResourceURI codeSystemURI, Map<String, Object> body) {
 		return SnomedComponentRestRequests.createComponent(
-			codeSystemURI.toString(), 
+			codeSystemURI.withoutResourceType(), 
 			SnomedComponentType.DESCRIPTION, 
 			Json.assign(
 				Json.object("commitComment", "New Description"),
@@ -217,7 +221,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	
 	protected final ValidatableResponse assertCreateRelationship(ResourceURI codeSystemURI, Map<String, Object> body) {
 		return SnomedComponentRestRequests.createComponent(
-			codeSystemURI.toString(), 
+			codeSystemURI.withoutResourceType(), 
 			SnomedComponentType.RELATIONSHIP, 
 			Json.assign(
 				Json.object("commitComment", "New Relationship"),
@@ -232,7 +236,7 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	
 	protected final ValidatableResponse assertCreateMember(ResourceURI codeSystemURI, Map<String, Object> body) {
 		return SnomedComponentRestRequests.createComponent(
-			codeSystemURI.toString(), 
+			codeSystemURI.withoutResourceType(), 
 			SnomedComponentType.MEMBER, 
 			Json.assign(
 				Json.object("commitComment", "New Member"),

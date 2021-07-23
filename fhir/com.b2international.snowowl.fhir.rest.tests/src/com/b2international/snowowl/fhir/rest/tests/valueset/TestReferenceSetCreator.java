@@ -28,12 +28,10 @@ import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
@@ -82,7 +80,7 @@ public class TestReferenceSetCreator {
 			.setId(UUID.randomUUID().toString())
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setActive(true)
-			.setReferenceSetId(refsetId)
+			.setRefsetId(refsetId)
 			.setReferencedComponentId(referencedConceptId)
 			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Refset Member")
 			.execute(Services.bus())
@@ -148,7 +146,7 @@ public class TestReferenceSetCreator {
 			.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.QUERY)))
 			.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.QUERY)))
 			.setRefSet(SnomedRequests.prepareNewRefSet()
-				.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+				.setReferencedComponentType(SnomedConcept.TYPE)
 				.setType(SnomedRefSetType.QUERY))
 			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Query Type Reference Set")
 			.execute(Services.bus())
@@ -166,7 +164,7 @@ public class TestReferenceSetCreator {
 		memberMap.put(SnomedRf2Headers.FIELD_QUERY, "<<410607006"); //Organism (SNOMED MINI)
 		
 		String memberId = SnomedRequests.prepareNewMember()
-			.setReferenceSetId(refsetId)
+			.setRefsetId(refsetId)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setActive(true)
 			.setProperties(memberMap)
@@ -189,7 +187,7 @@ public class TestReferenceSetCreator {
 			.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
 			.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
 			.setRefSet(SnomedRequests.prepareNewRefSet()
-					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+					.setReferencedComponentType(SnomedConcept.TYPE)
 					.setType(SnomedRefSetType.SIMPLE))
 			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Reference Set")
 			.execute(Services.bus())

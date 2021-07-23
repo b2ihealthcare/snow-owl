@@ -69,6 +69,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedBranchingApiTest.class,
 	// Component API test cases
 	SnomedConceptApiTest.class,
+	SnomedConceptSearchApiTest.class,
 	SnomedConceptInactivationApiTest.class,
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,
@@ -85,7 +86,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Generic API
 	ConceptSearchRequestSnomedTest.class,
 	ValueSetMemberSearchSnomedReferenceSetTest.class,
-	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
+//	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
 	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
 	ConceptMapCompareDsvExportTest.class,
 	// Branch Merge API test cases

@@ -17,13 +17,16 @@ package com.b2international.snowowl.core.rest;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springdoc.core.SpringDocUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -61,12 +64,12 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.rate.HttpConfig;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
-import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
 import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -76,33 +79,54 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import springfox.documentation.schema.property.bean.AccessorsProvider;
-import springfox.documentation.schema.property.field.FieldProvider;
-import springfox.documentation.spi.schema.EnumTypeDeterminer;
-import springfox.documentation.spring.web.readers.parameter.ModelAttributeParameterExpander;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * The Spring configuration class for Snow Owl's internal REST services module.
  *
  * @since 1.0
  */
-@EnableSwagger2
 @Configuration
-@ComponentScan({"com.b2international.snowowl.core.rest"})
+@ComponentScan({"com.b2international.snowowl.core.rest", "org.springdoc"})
 @Import({ SnowOwlSecurityConfig.class })
 @PropertySource("classpath:com/b2international/snowowl/core/rest/service_configuration.properties")
 public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 
+	private static final String INCLUDE_NULL = "includeNull";
+	private static final int INCLUDE_NULL_IDX = 0;
+	private static final String PRETTY = "pretty";
+	private static final int PRETTY_IDX = 1;
+
+	static {
+		SpringDocUtils.getConfig().addResponseWrapperToIgnore(Promise.class);
+	}
+	
 	@Autowired
 	private org.springframework.context.ApplicationContext ctx;
+
+	private final LoadingCache<BitSet, ObjectMapper> objectMappers = CacheBuilder.newBuilder().build(new CacheLoader<BitSet, ObjectMapper>() {
+		@Override
+		public ObjectMapper load(BitSet configuration) throws Exception {
+			ObjectMapper mapper = createObjectMapper();
+			mapper.setSerializationInclusion(configuration.get(INCLUDE_NULL_IDX) ? Include.ALWAYS : Include.NON_NULL);
+			mapper.configure(SerializationFeature.INDENT_OUTPUT, configuration.get(PRETTY_IDX));
+			return mapper;
+		}
+	});
 	
 	@Bean
-	public ObjectMapper objectMapper() {
+	public OpenAPI openAPI() {
+		return new OpenAPI();
+	}
+	
+	public static ObjectMapper createObjectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
@@ -115,6 +139,42 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		return objectMapper;
 	}
 	
+	@Bean
+	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public ObjectMapper objectMapper(@Autowired HttpServletRequest request) {
+		return objectMappers.getUnchecked(toConfig(
+			extractBooleanQueryParameterValue(request, INCLUDE_NULL),
+			extractBooleanQueryParameterValue(request, PRETTY)
+		));
+	}
+
+	private BitSet toConfig(boolean...serializationFeatureValuesInOrder) {
+		if (serializationFeatureValuesInOrder == null) {
+			return new BitSet(0);
+		} 
+		BitSet config = new BitSet(serializationFeatureValuesInOrder.length);
+		for (int i = 0; i < serializationFeatureValuesInOrder.length; i++) {
+			config.set(i, serializationFeatureValuesInOrder[i]);
+		}
+		return config;
+	}
+
+	private boolean extractBooleanQueryParameterValue(HttpServletRequest request, String queryParameterKey) {
+		String[] values = request.getParameterMap().containsKey(queryParameterKey) ? request.getParameterMap().getOrDefault(queryParameterKey, null) : null;
+		if (values == null) {
+			// query parameter not present, means disable feature
+			return false;
+		} else if (values.length == 0) {
+			// no values present, but the key is present, enable feature 
+			return true;
+		} else {
+			// XXX due to a bug in jetty-server v9.x, query parameters are duplicated in the low-level request object
+			// allowing multiple values for now with empty or valid (true in this case) values here
+			// see this bug report for details https://github.com/eclipse/jetty.project/issues/2074
+			return Stream.of(values).allMatch(value -> value.isBlank() || "true".equals(value));
+		}
+	}
+
 	@Override
 	protected void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
 		returnValueHandlers.add(new PromiseMethodReturnValueHandler());
@@ -140,14 +200,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	    return multipartResolver;
 	}
 	
-	@Bean
-	public ModelAttributeParameterExpander modelAttributeParameterExpander(
-			@Autowired FieldProvider fieldProvider, 
-			@Autowired AccessorsProvider accessorsProvider,
-			@Autowired EnumTypeDeterminer enumTypeDeterminer) {
-		return new ModelAttributeParameterExpanderExt(fieldProvider, accessorsProvider, enumTypeDeterminer);
-	}
-
 	@Bean
 	public IdentityProvider identityProvider() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class);
@@ -207,10 +259,13 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
 		converters.add(new CsvMessageConverter());
+		// XXX using null value here as Spring calls a proxied method anyway which returns an already configured instance, see mapping2JacksonHttpMessageConverter Bean method
+		converters.add(mapping2JacksonHttpMessageConverter(null));
+	}
 
-		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
-		jacksonConverter.setObjectMapper(objectMapper());
-		converters.add(jacksonConverter);
+	@Bean
+	public MappingJackson2HttpMessageConverter mapping2JacksonHttpMessageConverter(ObjectMapper mapper) {
+		return new MappingJackson2HttpMessageConverter(mapper);
 	}
 	
 	@Override
@@ -253,7 +308,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 						info = typeInfo.combine(info);
 					}
 					String prefix = getPrefix(handlerType);
-					if (prefix != null) {
+					if (prefix != null && !prefix.equals("/")) {
 						BuilderConfiguration config = new BuilderConfiguration();
 						config.setPathMatcher(getPathMatcher());
 						config.setSuffixPatternMatch(false);

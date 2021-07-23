@@ -188,7 +188,7 @@ public class CodeSystem extends MetadataResource {
 			final String resourceType,
 			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
 			final Code content, final Uri supplements, final Integer count, 
-			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
+			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts, final String toolingId) {
 
 		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
@@ -205,6 +205,7 @@ public class CodeSystem extends MetadataResource {
 		this.filters = filters;
 		this.properties = properties;
 		this.concepts = concepts;
+		this.toolingId = toolingId;
 	}
 	
 	public String getResourceType() {
@@ -255,6 +256,34 @@ public class CodeSystem extends MetadataResource {
 		return concepts;
 	}
 	
+	@JsonProperty(CodeSystem.Fields.CONCEPT)
+	@JsonInclude(value = Include.NON_EMPTY)
+	public Collection<Concept> getConcepts() {
+		return concepts;
+	}
+	
+	@JsonProperty(CodeSystem.Fields.FILTER)
+	@JsonInclude(value = Include.NON_EMPTY)
+	public Collection<Filter> getFilters() {
+		return filters;
+	}
+	
+	@JsonProperty(CodeSystem.Fields.PROPERTY)
+	@JsonInclude(value = Include.NON_EMPTY)
+	public Collection<SupportedConceptProperty> getProperties() {
+		return properties;
+	}
+	
+	@JsonIgnore
+	public ResourceURI getResourceURI() {
+		return ResourceURI.of(com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE, getId().getIdValue());
+	}
+	
+	@JsonIgnore
+	public String getToolingId() {
+		return toolingId;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -289,6 +318,8 @@ public class CodeSystem extends MetadataResource {
 		private Collection<SupportedConceptProperty> properties;
 
 		private Collection<Concept> concepts;
+		
+		private String toolingId;
 
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -405,13 +436,18 @@ public class CodeSystem extends MetadataResource {
 			concepts.add(concept);
 			return getSelf();
 		}
+		
+		public Builder toolingId(String toolingId) {
+			this.toolingId = toolingId;
+			return getSelf();
+		}
 
 		@Override
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, identifiers, version, name, title, status, 
 				experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
 				resourceType, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
-				content, supplements, count, filters, properties, concepts);
+				content, supplements, count, filters, properties, concepts, toolingId);
 		}
 	}
 

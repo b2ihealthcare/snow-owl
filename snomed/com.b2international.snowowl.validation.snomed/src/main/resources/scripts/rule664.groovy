@@ -9,8 +9,8 @@ import com.b2international.index.query.Query
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
@@ -70,7 +70,7 @@ if (params.isUnpublishedOnly) {
 		// report all buckets with more than 1 item
 		if (descriptions.size() > 1) {
 			descriptions.each { description ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description))
+				issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, description))
 			}
 		}
 	}
@@ -83,7 +83,7 @@ if (params.isUnpublishedOnly) {
 			Expressions.builder()
 				.filter(SnomedDescriptionIndexEntry.Expressions.active())
 				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
-				.filter(SnomedDescriptionIndexEntry.Expressions.matchTermOriginal(descriptionsByTerm.keySet())) // send in all unpublished terms
+				.filter(SnomedDescriptionIndexEntry.Expressions.matchTerm(descriptionsByTerm.keySet())) // send in all unpublished terms
 				.mustNot(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)) // only published
 			.build()
 		)
@@ -93,7 +93,7 @@ if (params.isUnpublishedOnly) {
 			// all returned terms are duplicate of an unpublished term
 			publishedTermsBatch.each { publishedTerm ->
 				if (activeConceptIds.get().contains(publishedTerm[1])) {
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, publishedTerm[0]))
+					issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, publishedTerm[0]))
 				}
 			}
 		}
@@ -111,14 +111,14 @@ if (params.isUnpublishedOnly) {
 						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(activeConceptIds.get()))
 						.build()
 						)
-				.onFieldValue(SnomedDescriptionIndexEntry.Fields.TERM_ORIGINAL)
+				.onFieldValue(SnomedDescriptionIndexEntry.Fields.TERM)
 				.fields(SnomedDescriptionIndexEntry.Fields.ID)
 				.minBucketSize(2))
 		.getBuckets()
 		.values()
 		.each { bucket ->
 			bucket.each { id ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, id))
+				issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, id))
 			}
 		}
 }

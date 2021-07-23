@@ -33,19 +33,18 @@ import java.util.stream.Collectors;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.indices.GetMappingsRequest;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
 import org.elasticsearch.common.Strings;
-import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -162,7 +161,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 		// create number of indexes based on number of types
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
-			final String type = mapping.typeAsString();
 			final Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
 					.put("date_detection", false)
 					.put("numeric_detection", false)
@@ -172,16 +170,20 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			if (exists(mapping)) {
 				// update mapping if required
-				ImmutableOpenMap<String, MappingMetadata> currentIndexMapping;
+				final MappingMetadata currentIndexMapping;
+				
 				try {
-					currentIndexMapping = client.indices().getMapping(new GetMappingsRequest().types(type).indices(index)).mappings().get(index);
+					final GetMappingsRequest getMappingsRequest = new GetMappingsRequest().indices(index);
+					currentIndexMapping = client.indices().getMapping(getMappingsRequest)
+						.mappings()
+						.get(index);
 				} catch (Exception e) {
 					throw new IndexException(String.format("Failed to get mapping of '%s' for type '%s'", name, mapping.typeAsString()), e);
 				}
 				
 				try {
 					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping);
-					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
+					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.getSourceAsMap());
 					SortedSet<String> compatibleChanges = Sets.newTreeSet();
 					SortedSet<String> incompatibleChanges = Sets.newTreeSet();
 					JsonDiff.diff(currentTypeMapping, newTypeMapping).forEach(change -> {
@@ -195,7 +197,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, incompatibleChanges);
 					} else if (!compatibleChanges.isEmpty()) {
 						log.info("Applying mapping changes {} in index {}", compatibleChanges, index);
-						AcknowledgedResponse response = client.indices().updateMapping(new PutMappingRequest(index).type(type).source(typeMapping));
+						PutMappingRequest putMappingRequest = new PutMappingRequest(index).source(typeMapping);
+						AcknowledgedResponse response = client.indices().updateMapping(putMappingRequest);
 						checkState(response.isAcknowledged(), "Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString());
 						// if there are field alias changes, then run update_by_query on all documents to simply reindex them
 						// new fields do not require reindex, they will be added to new documents, existing documents don't have any data that needs reindex 
@@ -219,9 +222,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 					throw new IndexException("Couldn't prepare settings for index " + index, e);
 				}
 				
-				final CreateIndexRequest createIndexRequest = new CreateIndexRequest(index);
-				createIndexRequest.mapping(type, typeMapping);
-				createIndexRequest.settings(indexSettings);
+				final CreateIndexRequest createIndexRequest = new CreateIndexRequest(index)
+					.mapping(typeMapping)
+					.settings(indexSettings);
 				
 				try {
 					final CreateIndexResponse response = client.indices().create(createIndexRequest);

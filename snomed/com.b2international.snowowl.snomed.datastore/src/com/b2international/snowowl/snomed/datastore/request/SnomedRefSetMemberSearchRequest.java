@@ -104,11 +104,11 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEffectiveTimeClause(queryBuilder);
-		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::referenceSetId);
+		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::refsetIds);
 		addComponentClause(queryBuilder);
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
-			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Short.class)));
+			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, String.class)));
 		}
 		
 		if (!referencedComponentIds.isEmpty()) {
@@ -155,10 +155,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::mapCategoryIds);
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::targetComponents);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class), SnomedRefSetMemberIndexEntry.Expressions::targetComponents);
+				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::targetComponentIds);
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_TARGET)) {
 				queryBuilder.filter(mapTargets(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_TARGET, String.class)));

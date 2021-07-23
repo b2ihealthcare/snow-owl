@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.10.2</elasticsearch.version>
+		<elasticsearch.version>7.13.3</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -71,6 +71,15 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+	<repositories>
+		<repository>
+			<id>codelibs</id>
+			<url>https://maven.codelibs.org/</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
+	</repositories>
     
     <build>
 		<plugins>

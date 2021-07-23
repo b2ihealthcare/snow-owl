@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import java.util.List;
+
 import com.google.common.base.MoreObjects;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 8.0
@@ -25,26 +28,39 @@ import io.swagger.annotations.ApiParam;
 public class FhirResourceSearchParameters extends FhirResourceSelectors {
 
 	// filters
-	@ApiParam(value = "_id")
+	@Parameter(description = "_id")
 	private String[] _id;
-	@ApiParam(value = "name")
+	
+	@Parameter(description = "name")
 	private String[] name;
-	@ApiParam(value = "title")
+	
+	@Parameter(description = "title")
 	private String title;
-	@ApiParam(value = "_lastUpdated")
+	
+	@Parameter(description = "_lastUpdated")
 	private String _lastUpdated;
-	@ApiParam
+	
+	@Parameter(description = "_content")
 	private String _content;
 	
+	@Parameter(description = "url")
+	private List<String> url;
+	
+	@Parameter(description = "system")
+	private List<String> system;
+	
+	@Parameter(description = "version")
+	private List<String> version;
+	
 	// paging
-	@ApiParam(value = "The maximum number of items to return", defaultValue = "10")
+	@Parameter(description = "The maximum number of items to return", schema = @Schema(defaultValue = "10"))
 	private int _count = 10;
 	
-	@ApiParam
+	@Schema
 	private String[] _sort;
 	
 	// extensions (paging)
-	@ApiParam
+	@Schema
 	private String _after;
 
 	public String[] get_id() {
@@ -79,6 +95,18 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		return title;
 	}
 	
+	public List<String> getUrl() {
+		return url;
+	}
+	
+	public List<String> getSystem() {
+		return system;
+	}
+	
+	public List<String> getVersion() {
+		return version;
+	}
+	
 	public void set_id(String[] _id) {
 		this._id = _id;
 	}
@@ -111,6 +139,18 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		this.title = title;
 	}
 	
+	public void setUrl(List<String> url) {
+		this.url = url;
+	}
+	
+	public void setSystem(List<String> system) {
+		this.system = system;
+	}
+	
+	public void setVersion(List<String> version) {
+		this.version = version;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
@@ -120,6 +160,8 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 				.add("title", title)
 				.add("_lastUpdated", _lastUpdated)
 				.add("_content", _content)
+				.add("url", url)
+				.add("system", system)
 				.add("_summary", get_summary())
 				.add("_elements", get_elements())
 				.add("_count", _count)

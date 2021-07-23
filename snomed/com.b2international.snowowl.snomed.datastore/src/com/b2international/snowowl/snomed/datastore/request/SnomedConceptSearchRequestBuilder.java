@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,16 +103,15 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return {@link SnomedConceptSearchRequestBuilder}
 	 * @see SnomedDescription
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByDescriptionSemanticTags(Iterable<String> semanticTags) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_SEMANTIC_TAG, semanticTags);
+	public final SnomedConceptSearchRequestBuilder filterBySemanticTags(Iterable<String> semanticTags) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.SEMANTIC_TAG, semanticTags);
 	}
 
 	/**
 	 * Filter matches by the specified Expression Constraint Language (ECL) expression. The currently supported ECL version is v1.1. See
 	 * <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
 	 * 
-	 * @param expression
-	 *            - the ECL expression
+	 * @param expression - the ECL expression
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByEcl(String expression) {
@@ -123,23 +122,11 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * Filter matches in the stated tree by the specified Expression Constraint Language (ECL) expression. The currently supported ECL version is
 	 * v1.3. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
 	 * 
-	 * @param expression
-	 *            ECL expression
+	 * @param expression - ECL expression
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedEcl(String expression) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ECL, expression);
-	}
-
-	/**
-	 * Filter matches by the specified Snomed Query Language (QL) expression.
-	 * 
-	 * @param expression
-	 *            QL expression
-	 * @return SnomedConceptSearchRequestBuilder
-	 */
-	public final SnomedConceptSearchRequestBuilder filterByQuery(String expression) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.QUERY, expression);
 	}
 
 	/**
@@ -149,7 +136,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @param parentId
 	 *            the SNOMED CT concept ID of the parent concept
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentId);
@@ -162,7 +148,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @param parentIds
 	 *            set of parent ids
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByParents(Iterable<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentIds);
@@ -174,7 +159,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * 
 	 * @param parentId
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentId);
@@ -187,7 +171,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @param parentIds
 	 *            set of parent ids
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedParents(Iterable<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentIds);
@@ -199,7 +182,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * 
 	 * @param ancestorId
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorId);
@@ -212,7 +194,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @param ancestorIds
 	 *            collection of ancestor IDs
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByAncestors(Iterable<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorIds);
@@ -224,7 +205,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * 
 	 * @param ancestorId
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorId);
@@ -236,19 +216,16 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * 
 	 * @param ancestorIds
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedAncestors(Iterable<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorIds);
 	}
 
 	/**
-	 * Filter matches to have the specified definition status.
+	 * Filter matches to have the specified definition status. Supports ECL expressions.
 	 * 
-	 * @param definitionStatusId
-	 *            id of the definition status {@link DefinitionStatus}
+	 * @param definitionStatusId - id of the definition status concept or an ECL expression 
 	 * @return SnomedConceptSearchRequestBuilder
-	 * @see DefinitionStatus
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByDefinitionStatus(String definitionStatusId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DEFINITION_STATUS, definitionStatusId);

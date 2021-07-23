@@ -40,7 +40,7 @@ final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setType(SnomedRefSetType.EXTENDED_MAP);
-		component.setReferenceSetId(values[4]);
+		component.setRefsetId(values[4]);
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
 		component.setProperties(

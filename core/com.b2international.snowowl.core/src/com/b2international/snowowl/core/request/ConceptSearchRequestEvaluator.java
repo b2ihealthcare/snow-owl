@@ -77,6 +77,17 @@ public interface ConceptSearchRequestEvaluator {
 		LIMIT,
 		
 		/**
+		 * Specific fields to load when requested content (consumers of the API must be familiar with the underlying schema)
+		 */
+		FIELDS,
+		
+		/**
+		 * Expand additional data requested by the client. If set, implementers should set the {@link Concept#setInternalConcept(Object)} to the
+		 * fully loaded internal tooling representation of the code and return it along with the generic {@link Concept} object.
+		 */
+		EXPAND,
+		
+		/**
 		 * Set the preferred display type to return
 		 */
 		DISPLAY,
@@ -117,12 +128,13 @@ public interface ConceptSearchRequestEvaluator {
 	Concepts evaluate(ResourceURI uri, BranchContext context, Options search);
 
 	default Concept toConcept(ResourceURI codeSystem, IComponent concept, String iconId, String term, Float score) {
-		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
+		Concept result = new Concept(codeSystem.toString(), concept.getComponentType());
 		result.setId(concept.getId());
 		result.setReleased(concept.isReleased());
 		result.setIconId(iconId);
 		result.setTerm(term);
 		result.setScore(score);
+		result.setInternalConcept(concept);
 		return result;
 	}
 

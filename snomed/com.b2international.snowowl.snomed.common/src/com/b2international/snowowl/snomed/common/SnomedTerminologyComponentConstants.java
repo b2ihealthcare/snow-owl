@@ -27,79 +27,38 @@ public abstract class SnomedTerminologyComponentConstants {
 
 	public static final String TOOLING_ID = "snomed";
 	
-	public static final String CONCEPT = "com.b2international.snowowl.terminology.snomed.concept";
-	public static final short CONCEPT_NUMBER = 100;
-	public static final String DESCRIPTION = "com.b2international.snowowl.terminology.snomed.description";
-	public static final short DESCRIPTION_NUMBER = 101;
-	public static final String RELATIONSHIP = "com.b2international.snowowl.terminology.snomed.relationship";
-	public static final short RELATIONSHIP_NUMBER = 102;
-	public static final String REFSET = "com.b2international.snowowl.terminology.snomed.refset";
-	public static final short REFSET_NUMBER = 103;
-	public static final String REFSET_MEMBER = "com.b2international.snowowl.terminology.snomed.refsetmember";
-	public static final short REFSET_MEMBER_NUMBER = 104;
-	public static final String CONSTRAINT = "com.b2international.snowowl.terminology.snomed.constraint";
-	public static final short CONSTRAINT_NUMBER = 105;
-	public static final String TEMPLATE = "com.b2international.snowowl.terminology.snomed.template";
-	public static final short TEMPLATE_NUMBER = 106;
-	
-	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
 
 	// configuration keys for managing Module and Namespace configuration in CodeSystem entries
 	public static final String CODESYSTEM_MODULES_CONFIG_KEY = "moduleIds";
 	public static final String CODESYSTEM_NAMESPACE_CONFIG_KEY = "namespace";
 	public static final String CODESYSTEM_DESCRIPTION_COPY_POLICY_CONFIG_KEY = "descriptionCopyPolicy";
-
-	// FHIR specific constants
-	public static final String SNOMED_URI_BASE = "http://snomed.info/sct";
-	public static final String SNOMED_URI_BASE_DEV = "http://snomed.info/xsct";
+	public static final String CODESYSTEM_MAINTAINER_TYPE_CONFIG_KEY = "maintainerType";
+	public static final String CODESYSTEM_RF2_EXPORT_LAYOUT_CONFIG_KEY = "refSetExportLayout";
+	public static final String CODESYSTEM_NRC_COUNTRY_CODE_CONFIG_KEY = "nrcCountryCode";
 	
-	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
-		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);
-		if (-1 == s) {
-			throw new IllegalArgumentException("'" + referencedComponentId + "' referenced component type is unknown.");
-		} else {
-			return s;
-		}
-	}
-
-	public static short getTerminologyComponentIdValueSafe(final String referencedComponentId) {
-		if (Strings.isNullOrEmpty(referencedComponentId)) {
-			return -1;
-		}
-		
-		if (!PATTERN.matcher(referencedComponentId).matches() || referencedComponentId.length() < 6 || referencedComponentId.length() > 18) {
-			return -1;
-		}
-
-		if (!VerhoeffCheck.validateLastChecksumDigit(referencedComponentId)) {
-			return -1;
-		}
-
-		switch (referencedComponentId.charAt(referencedComponentId.length() - 2)) {
-			case '0': return CONCEPT_NUMBER;
-			case '1': return DESCRIPTION_NUMBER;
-			case '2': return RELATIONSHIP_NUMBER;
-			default: return -1;
-		}
-	}
-
-	public static String getTerminologyComponentId(final String referencedComponentId) {
-		switch (getTerminologyComponentIdValue(referencedComponentId)) {
-			case CONCEPT_NUMBER: return CONCEPT;
-			case DESCRIPTION_NUMBER: return DESCRIPTION;
-			case RELATIONSHIP_NUMBER: return RELATIONSHIP;
-			default: throw new IllegalArgumentException("'" + referencedComponentId + "' referenced component type is unknown");
-		}
-	}
-
-	public static boolean isCoreComponentId(String componentId) {
-		return isCoreComponentType(getTerminologyComponentIdValueSafe(componentId));
-	}
-
-	public static boolean isCoreComponentType(short componentType) {
-		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == componentType || 
-				SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == componentType || 
-				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == componentType;
-	}
+	// FHIR specific constants
+	public static final String SNOMED_URI_BASE = "http://snomed.info";
+	public static final String SNOMED_URI_SCT = SNOMED_URI_BASE + "/sct";
+	public static final String SNOMED_URI_DEV = SNOMED_URI_BASE + "/xsct";
+	public static final String SNOMED_URI_ID = SNOMED_URI_BASE + "/id";
+	
+//	public static String getTerminologyComponentId(final String referencedComponentId) {
+//		switch (getTerminologyComponentIdValue(referencedComponentId)) {
+//			case CONCEPT_NUMBER: return CONCEPT;
+//			case DESCRIPTION_NUMBER: return DESCRIPTION;
+//			case RELATIONSHIP_NUMBER: return RELATIONSHIP;
+//			default: throw new IllegalArgumentException("'" + referencedComponentId + "' referenced component type is unknown");
+//		}
+//	}
+//
+//	public static boolean isCoreComponentId(String componentId) {
+//		return isCoreComponentType(getTerminologyComponentIdValueSafe(componentId));
+//	}
+//
+//	public static boolean isCoreComponentType(short componentType) {
+//		return SnomedConcept.TYPE == componentType || 
+//				SnomedDescription.TYPE == componentType || 
+//				SnomedRelationship.TYPE == componentType;
+//	}
 	
 }

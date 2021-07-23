@@ -16,31 +16,31 @@
 package com.b2international.snowowl.core.rest.commit;
 
 import java.util.List;
-import java.util.Set;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.google.common.base.Strings;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.0
  */
-@Api(value = "Commits", description = "Commits", tags = "commits")
+@Tag(description = "Commits", name = "commits")
 @RequestMapping(value="/commits")
 public abstract class RepositoryCommitRestService extends AbstractRestService {
 
@@ -51,101 +51,63 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 		this.repositoryId = repositoryId;
 	}
 	
-	@ApiOperation(
-		value = "Retrieve commit entries",
-		notes = "Returns all SNOMED CT commits"
+	@Operation(
+		summary = "Retrieve commit entries",
+		description = "Returns all SNOMED CT commits"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=CommitInfos.class)
+		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CommitInfos> search(
-			@ApiParam(value = "The author of the commit to match")
-			@RequestParam(value="author", required=false)
-			final String author,
-			
-			@ApiParam(value = "The identifier(s) to match")
-			@RequestParam(value="id", required=false)
-			final Set<String> id,
-			
-			@ApiParam(value = "Affected component identifier to match")
-			@RequestParam(value="affectedComponentId", required=false)
-			final String affectedComponentId,
-			
-			@ApiParam(value = "Commit comment term to match")
-			@RequestParam(value="comment", required=false)
-			final String comment,
-			
-			@ApiParam(value = "One or more branch paths to match")
-			@RequestParam(value="branch", required=false)
-			final List<String> branch,
-			
-			@ApiParam(value = "Commit timestamp to match")
-			@RequestParam(value="timestamp", required=false)
-			final Long timestamp,
-			
-			@ApiParam(value = "Minimum commit timestamp to search matches from")
-			@RequestParam(value="timestampFrom", required=false)
-			final Long timestampFrom,
-			
-			@ApiParam(value = "Maximum commit timestamp to search matches to")
-			@RequestParam(value="timestampTo", required=false)
-			final Long timestampTo,
-			
-			@ApiParam(value = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
-			
-			@ApiParam(value = "The search key to use for retrieving the next page of results")
-			@RequestParam(value="searchAfter", required=false)
-			final String searchAfter,
-			
-			@ApiParam(value = "Sort keys")
-			@RequestParam(value="sort", required=false)
-			final List<String> sort,
-			
-			@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+	public Promise<CommitInfos> search(@ParameterObject CommitInfoRestSearch params) {
+		
+		final List<String> fields;
+		if (!CompareUtils.isEmpty(params.getField())) {
+			fields = params.getField();
+		} else if (CompareUtils.isEmpty(params.getExpand())) {
+			fields = CommitInfo.Fields.DEAFULT_FIELD_SELECTION;
+		} else {
+			fields = null;
+		}
+		
 		return RepositoryRequests
 					.commitInfos()
 					.prepareSearchCommitInfo()
-					.filterByIds(id)
-					.filterByAuthor(author)
-					.filterByAffectedComponent(affectedComponentId)
-					.filterByComment(comment)
-					.filterByBranches(branch)
-					.filterByTimestamp(timestamp)
-					.filterByTimestamp(timestampFrom, timestampTo)
-					.setFields(Strings.isNullOrEmpty(expand) ? List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID) : null)
-					.setExpand(expand)
-					.setSearchAfter(searchAfter)
-					.setLimit(limit)
-					.sortBy(extractSortFields(sort))
+					.filterByIds(params.getId())
+					.filterByAuthor(params.getAuthor())
+					.filterByAffectedComponent(params.getAffectedComponentId())
+					.filterByComment(params.getComment())
+					.filterByBranches(params.getBranch())
+					.filterByTimestamp(params.getTimestamp())
+					.filterByTimestamp(params.getTimestampFrom(), params.getTimestampTo())
+					.setFields(fields)
+					.setExpand(params.getExpand())
+					.setSearchAfter(params.getSearchAfter())
+					.setLimit(params.getLimit())
+					.sortBy(extractSortFields(params.getSort()))
 					.build(repositoryId)
 					.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value = "Retrieve a commit",
-		notes = "Returns a single commit entry from SNOMED CT commits"
+	@Operation(
+		summary = "Retrieve a commit",
+		description = "Returns a single commit entry from SNOMED CT commits"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK")
+		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@GetMapping(value = "/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CommitInfo> get(
-			@ApiParam(value = "Commit ID to match")
+			@Parameter(description = "Commit ID to match")
 			@PathVariable(value="commitId")
 			final String commitId, 
 			
-			@ApiParam(value = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand) {
-		return RepositoryRequests
-					.commitInfos()
+			@ParameterObject
+			final ResourceSelectors selectors) {
+		return RepositoryRequests.commitInfos()
 					.prepareGetCommitInfo(commitId)
-					.setExpand(expand)
+					.setExpand(selectors.getExpand())
+					.setFields(selectors.getField())
 					.build(repositoryId)
 					.execute(getBus());
 	}

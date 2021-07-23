@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -48,10 +47,6 @@ public final class MapTypeRefSetUpdateRequest implements SnomedComponentRequest<
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		
-		// fail fast if map target component does not exist
-		short terminologyComponentShortId = context.service(TerminologyRegistry.class).getTerminologyComponentById(mapTargetComponent).shortId();
-		
 		// fail fast if refset identifier concept does not exist
 		SnomedConceptDocument conceptDocument = context.lookup(referenceSetId, SnomedConceptDocument.class);
 		
@@ -66,16 +61,16 @@ public final class MapTypeRefSetUpdateRequest implements SnomedComponentRequest<
 		
 		if (conceptDocument.getMapTargetComponentType() != null) {
 			
-			String currentMapTargetComponent = context.service(TerminologyRegistry.class).getTerminologyComponentByShortId(conceptDocument.getMapTargetComponentType()).id();
+			String currentMapTargetComponent = conceptDocument.getMapTargetComponentType();
 			
 			if (!mapTargetComponent.equals(currentMapTargetComponent)) {
-				conceptBuilder.mapTargetComponentType(terminologyComponentShortId).build();
+				conceptBuilder.mapTargetComponentType(mapTargetComponent).build();
 				changed = true;
 			}
 			
 		} else {
 			
-			conceptBuilder.mapTargetComponentType(terminologyComponentShortId).build();
+			conceptBuilder.mapTargetComponentType(mapTargetComponent).build();
 			changed = true;
 			
 		}

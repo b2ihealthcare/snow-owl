@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.rest.codesystem;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,19 +35,22 @@ import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 1.0
  */
-@Api(value = "Resources", description="Resources", tags = { "resources" })
+@Tag(description = "Resources", name = "resources")
 @RestController
 @RequestMapping(value = "/versions")
 public class VersionRestService extends AbstractRestService {
@@ -55,57 +59,60 @@ public class VersionRestService extends AbstractRestService {
 		super(VersionDocument.Fields.SORT_FIELDS);
 	}
 	
-	@ApiOperation(
-			value="Retrieve all resource versions",
-			notes="Returns a list containing all published resource versions.")
+	@Operation(
+		summary="Retrieve all resource versions",
+		description="Returns a list containing all published resource versions."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Invalid search config")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Versions> searchVersions(
-			VersionRestSearch config) {
+			@ParameterObject
+			VersionRestSearch params) {
 		return ResourceRequests.prepareSearchVersion()
-				.filterByResources(config.getResource())
-				.setLimit(config.getLimit())
-				.setExpand(config.getExpand())
-				.setSearchAfter(config.getSearchAfter())
-				.sortBy(extractSortFields(config.getSort()))
+				.filterByResources(params.getResource())
+				.setLimit(params.getLimit())
+				.setExpand(params.getExpand())
+				.setFields(params.getField())
+				.setSearchAfter(params.getSearchAfter())
+				.sortBy(extractSortFields(params.getSort()))
 				.buildAsync()
 				.execute(getBus());
 		
 	}
 
-	@ApiOperation(
-			value="Retrieve a resource version by identifier (<resourceType/resourceId/version>)",
-			notes="Returns a published resource version for the specified resource with the given version identifier.")
+	@Operation(
+			summary="Retrieve a resource version by identifier (<resourceType/resourceId/version>)",
+			description="Returns a published resource version for the specified resource with the given version identifier.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Version Not Found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Version Not Found")
 	})
 	@GetMapping(value = "/{versionUri:**}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Version> getVersion(
-			@ApiParam(value="The resource version uri")
+			@Parameter(description="The resource version uri")
 			@PathVariable(value="versionUri") 
 			final ResourceURI versionUri) {
 		return ResourceRequests.prepareGetVersion(versionUri).buildAsync().execute(getBus());
 
 	}
 	
-	@ApiOperation(
-			value="Create a new resource version",
-			notes="Creates a new resource version. "
+	@Operation(
+			summary="Create a new resource version",
+			description="Creates a new resource version. "
 					+ "The version tag (represented by an empty branch) is created on the resource's current working branch. "
 					+ "Where applicable, effective times are set on the unpublished content as part of this operation.")
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class),
-		@ApiResponse(code = 409, message = "Code system version conflicts with existing branch", response = RestApiError.class)
+		@ApiResponse(responseCode = "201", description = "Created"),
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "409", description = "Code system version conflicts with existing branch")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public ResponseEntity<Void> createVersion(
-			@ApiParam(value="Version parameters")
+			@Parameter(description="Version parameters")
 			@RequestBody final VersionRestInput input) {
 		ApiValidation.checkInput(input);
 		String jobId = ResourceRequests.prepareNewVersion()

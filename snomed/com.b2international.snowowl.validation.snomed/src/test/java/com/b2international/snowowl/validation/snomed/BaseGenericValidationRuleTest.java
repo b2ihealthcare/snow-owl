@@ -26,12 +26,14 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -86,7 +88,14 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	@Override
 	protected void configureContext(Builder context) {
+		super.configureContext(context);
+		
+		final CodeSystem cs = new CodeSystem();
+		cs.setBranchPath(MAIN);
+		cs.setId(CODESYSTEM);
+		
 		context
+			.with(TerminologyResource.class, cs)
 			.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
 			.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)));
 	}
@@ -182,7 +191,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	}
 	
 	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, String referenceSetId) {
-		return DocumentBuilders.member(id, referencedComponentId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId), referenceSetId).effectiveTime(effectiveTime);
+		return DocumentBuilders.member(id, referencedComponentId, SnomedComponent.getType(referencedComponentId), referenceSetId).effectiveTime(effectiveTime);
 	}
 	
 	protected final HierarchyDefinitionFragment hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {

@@ -1,15 +1,14 @@
 {
   "name": "snow-owl-api-docs",
-  "version": "7.6.0",
+  "version": "8.0.0",
   "private": true,
   "homepage": "./site",
   "dependencies": {
-    "antd": "^3.26.9",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "react-scripts": "^3.4.0",
-    "swagger-ui-react": "^3.25.0",
-    "ua-parser-js": "^0.7.21"
+    "antd": "^4.15.2",
+    "rapidoc": "^9.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "^4.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -24,14 +23,12 @@
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all",
-      "ie 11"
+      "not op_mini all"
     ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
-      "last 1 safari version",
-      "ie 11"
+      "last 1 safari version"
     ]
   }
 }

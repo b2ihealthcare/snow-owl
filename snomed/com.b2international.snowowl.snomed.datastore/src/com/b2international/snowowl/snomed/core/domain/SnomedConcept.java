@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -39,7 +38,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a SNOMED&nbsp;CT concept.
@@ -81,8 +79,6 @@ import com.google.common.collect.ImmutableSet;
  * @see SnomedReferenceSetMember
  */
 @TerminologyComponent(
-	id = SnomedTerminologyComponentConstants.CONCEPT, 
-	shortId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
 	name = "SNOMED CT Concept", 
 	componentCategory = ComponentCategory.CONCEPT,
 	docType = SnomedConceptDocument.class,
@@ -102,6 +98,9 @@ public final class SnomedConcept extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String TYPE = "concept";
+	public static final String REFSET_TYPE = "refset";
+	
 	/**
 	 * Enumerates expandable property keys.
 	 * 
@@ -121,6 +120,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 		public static final String PREFERRED_TERM = "pt";
 		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 		public static final String DEFINITION_STATUS = "definitionStatus";
+		public static final String SEMANTIC_TAGS = "semanticTags";
 
 	}
 	
@@ -131,15 +131,16 @@ public final class SnomedConcept extends SnomedCoreComponent {
 
 		public static final String DEFINITION_STATUS_ID = SnomedRf2Headers.FIELD_DEFINITION_STATUS_ID;
 		
-		public static final Set<String> ALL = ImmutableSet.of(
-				// RF2 properties
-				ID,
-				EFFECTIVE_TIME,
-				ACTIVE,
-				MODULE_ID,
-				DEFINITION_STATUS_ID,
-				// additional fields
-				RELEASED);
+		public static final Set<String> ALL = Set.of(
+			// RF2 properties
+			ID,
+			EFFECTIVE_TIME,
+			ACTIVE,
+			MODULE_ID,
+			DEFINITION_STATUS_ID,
+			// additional fields
+			RELEASED
+		);
 		
 	}
 	
@@ -194,6 +195,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	private long[] statedAncestorIds;
 	private long[] statedParentIds;
 	private SnomedReferenceSet referenceSet;
+	private List<String> semanticTags;
 
 	public SnomedConcept() {
 	}
@@ -203,8 +205,8 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	@Override
-	public short getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+	public String getComponentType() {
+		return SnomedConcept.TYPE;
 	}
 	
 	public SnomedConcept getDefinitionStatus() {
@@ -374,7 +376,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	public void setDefinitionStatusId(String definitionStatusId) {
-		setDefinitionStatus(new SnomedConcept(definitionStatusId));
+		setDefinitionStatus(ifNotNull(definitionStatusId, SnomedConcept::new));
 	}
 
 	public void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
@@ -472,6 +474,22 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	@JsonIgnore
 	public boolean isPrimitive() {
 		return Concepts.PRIMITIVE.equals(getDefinitionStatusId());
+	}
+	
+	/**
+	 * @param semanticTags
+	 * @since 8.0
+	 */
+	public void setSemanticTags(List<String> semanticTags) {
+		this.semanticTags = semanticTags;
+	}
+	
+	/**
+	 * @return the current semantic tags of the concept
+	 * @since 8.0
+	 */
+	public List<String> getSemanticTags() {
+		return semanticTags;
 	}
 	
 	@Override

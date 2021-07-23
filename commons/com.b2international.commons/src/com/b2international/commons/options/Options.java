@@ -21,10 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
+
 /**
  * @since 4.5
  */
 public interface Options {
+
+	Options EMPTY = new HashMapOptions(0);
 
 	/**
 	 * Returns the number of key-value mappings in this map. If the map contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
@@ -306,5 +310,17 @@ public interface Options {
 	static OptionsBuilder builder() {
 		return OptionsBuilder.newBuilder();
 	}
+
+	static Options empty() {
+		return EMPTY;
+	}
 	
+	default Options merge(Options other) {
+		if (CompareUtils.isEmpty(other)) return this;
+		return Options.builder()
+				.putAll(this)
+				.putAll(other)
+				.build();
+	}
+
 }

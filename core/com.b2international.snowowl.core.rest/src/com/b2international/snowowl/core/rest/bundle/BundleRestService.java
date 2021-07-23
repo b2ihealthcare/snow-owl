@@ -17,25 +17,29 @@ package com.b2international.snowowl.core.rest.bundle;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
-import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 8.0
  */
-@Api(value = "Resources", tags = { "resources" })
+@Tag(description = "Resources", name = "resources")
 @RestController
 @RequestMapping("/bundles")
 public class BundleRestService extends AbstractRestService {
@@ -44,72 +48,80 @@ public class BundleRestService extends AbstractRestService {
 		super(ResourceDocument.Fields.SORT_FIELDS);
 	}
 	
-	@ApiOperation(
-		value="Retrieve bundles", 
-		notes="Returns a collection resource containing all/filtered registered bundles."
+	@Operation(
+		summary="Retrieve bundles", 
+		description="Returns a collection resource containing all/filtered registered bundles."
 			+ "<p>Results are by default sorted by ID."
 			+ "<p>The following properties can be expanded:"
 			+ "<p>"
 			+ "&bull; resources() &ndash; this list of resources this bundle contains"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Bundles> searchByGet(final BundleRestSearch params) {
+	public Promise<Bundles> searchByGet(@ParameterObject final BundleRestSearch params) {
 		return ResourceRequests.bundles().prepareSearch()
 				.filterByIds(params.getId())
 				.filterByTitle(params.getTitle())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setSearchAfter(params.getSearchAfter())
 				.sortBy(extractSortFields(params.getSort()))
 				.buildAsync()
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value="Retrieve bundles", 
-		notes="Returns a collection resource containing all/filtered registered bundles."
+	@Operation(
+		summary="Retrieve bundles", 
+		description="Returns a collection resource containing all/filtered registered bundles."
 			+ "<p>Results are by default sorted by ID."
 			+ "<p>The following properties can be expanded:"
 			+ "<p>"
 			+ "&bull; resources() &ndash; this list of resources this bundle contains"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
-		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Invalid search config"),
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundles> searchByPost(final BundleRestSearch params) {
 		return searchByGet(params);
 	}
 	
-	@ApiOperation(
-			value="Retrieve budnle by its unique identifier",
-			notes="Returns generic information about a single bundle associated to the given unique identifier.")
+	@Operation(
+		summary="Retrieve bundle by its unique identifier",
+		description="Returns generic information about a single bundle associated to the given unique identifier."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
 	})
 	@GetMapping(value = "/{bundleId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundle> get(
-			@ApiParam(value="The bundle identifier")
-			@PathVariable(value="bundleId") final String bundleId) {
+			@Parameter(description="The bundle identifier")
+			@PathVariable(value="bundleId", required = true) 
+			final String bundleId,
+			
+			@ParameterObject
+			final ResourceSelectors selectors) {
 		return ResourceRequests.bundles().prepareGet(bundleId)
+				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
 				.buildAsync()
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value="Create a bundle",
-		notes="Create a new bundle with the given parameters"
+	@Operation(
+		summary="Create a bundle",
+		description="Create a new bundle with the given parameters"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created", response = Void.class),
-		@ApiResponse(code = 400, message = "Invalid input arguments", response = RestApiError.class),
-		@ApiResponse(code = 409, message = "Bundle already exists in the system", response = RestApiError.class)
+		@ApiResponse(responseCode = "201", description = "Created"),
+		@ApiResponse(responseCode = "400", description = "Invalid input arguments"),
+		@ApiResponse(responseCode = "409", description = "Bundle already exists in the system")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
@@ -144,17 +156,17 @@ public class BundleRestService extends AbstractRestService {
 		return ResponseEntity.created(getResourceLocationURI(codeSystemId)).build();
 	}
 	
-	@ApiOperation(
-			value="Update a bundle",
-			notes="Update a bundle with the given parameters")
+	@Operation(
+			summary = "Update a bundle",
+			description="Update a bundle with the given parameters")
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No content", response = Void.class),
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "No content"),
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@PutMapping(value = "/{bundleId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@ApiParam(value="The bundle identifier")
+			@Parameter(description = "The bundle identifier")
 			@PathVariable(value="bundleId") 
 			final String bundleId,
 			
@@ -184,17 +196,17 @@ public class BundleRestService extends AbstractRestService {
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
-	@ApiOperation(
-			value="Delete a bundle",
-			notes="Delete a bundle with the given parameters")
+	@Operation(
+			summary = "Delete a bundle",
+			description = "Delete a bundle with the given parameters")
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Deletion successful", response = Void.class),
-		@ApiResponse(code = 409, message = "Bundle cannot be deleted", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "Deletion successful"),
+		@ApiResponse(responseCode = "409", description = "Bundle cannot be deleted")
 	})
 	@DeleteMapping(value = "/{bundleId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@ApiParam(value="The bundle identifier")
+			@Parameter(description = "The bundle identifier")
 			@PathVariable(value="bundleId") 
 			final String bundleId,
 			

@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
@@ -54,7 +51,9 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
@@ -72,7 +71,7 @@ import io.restassured.response.ValidatableResponse;
 @BranchBase(isolateTests = false) // run all tests on the same branch so we can reuse the same reference sets through all tests
 public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
-	private static final List<String> REFERENCED_COMPONENT_TYPES = List.of(CONCEPT, DESCRIPTION, RELATIONSHIP);
+	private static final List<String> REFERENCED_COMPONENT_TYPES = List.of(SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE);
 	
 	private static final Map<SnomedRefSetType, String> REFSET_CACHE = Maps.newHashMap();
 
@@ -369,11 +368,11 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	private SnomedComponentType getSnomedComponentType(String referencedComponentType) {
 		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT:
+		case SnomedConcept.TYPE:
 			return SnomedComponentType.CONCEPT;
-		case SnomedTerminologyComponentConstants.DESCRIPTION:
+		case SnomedDescription.TYPE:
 			return SnomedComponentType.DESCRIPTION;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+		case SnomedRelationship.TYPE:
 			return SnomedComponentType.RELATIONSHIP;
 		default:
 			throw new UnsupportedOperationException("Not implemented case for: " + referencedComponentType);
@@ -388,7 +387,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return Json.object(
-				SnomedRf2Headers.FIELD_TARGET_COMPONENT, Json.object("id", Concepts.NAMESPACE_ROOT)
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, Concepts.NAMESPACE_ROOT
 			);
 		case ATTRIBUTE_VALUE:
 			return Json.object(
@@ -495,7 +494,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return Json.object(
-				SnomedRf2Headers.FIELD_TARGET_COMPONENT, ""
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, ""
 			);
 		case ATTRIBUTE_VALUE:
 			return Json.object(

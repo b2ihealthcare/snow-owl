@@ -49,16 +49,16 @@ public final class IndexSelection<T> {
 		return from;
 	}
 	
-	public List<String> getFromDocumentTypes() {
-		return getFrom().stream().map(DocumentMapping::getType).collect(Collectors.toList());
+	List<String> getFromDocumentTypes() {
+		return getFrom().stream().map(DocumentMapping::getDocType).collect(Collectors.toList());
 	}
 	
 	public Class<?> getParentScope() {
 		return parentScope;
 	}
 	
-	public String getParentScopeDocumentType() {
-		return parentScope != null ? DocumentMapping.getType(parentScope) : null;
+	String getParentScopeDocumentType() {
+		return parentScope != null ? DocumentMapping.getDocType(parentScope) : null;
 	}
 	
 	public static <T> Builder<T> builder(Class<T> select) {

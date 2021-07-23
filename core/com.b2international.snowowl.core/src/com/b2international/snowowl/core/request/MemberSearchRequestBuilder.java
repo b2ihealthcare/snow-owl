@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableSet;
 * @since 7.7
 */
 public final class MemberSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
+		extends SearchPageableCollectionResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
 		implements TerminologyResourceContentRequestBuilder<SetMembers> {
 	
 	public MemberSearchRequestBuilder filterBySet(String setId) {

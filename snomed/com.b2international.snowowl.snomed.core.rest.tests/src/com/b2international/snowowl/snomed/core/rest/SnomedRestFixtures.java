@@ -41,11 +41,7 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -139,21 +135,23 @@ public abstract class SnomedRestFixtures {
 	public static String createNewDescription(IBranchPath descriptionPath, String conceptId, String typeId, Map<String, Acceptability> acceptabilityMap, final String languageCode) {
 		Map<?, ?> requestBody = Json.assign(createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap, Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE, languageCode))
 				.with("commitComment", "Created new description");
-
-		return assertCreated(createComponent(descriptionPath, SnomedComponentType.DESCRIPTION, requestBody));
+		return createNewDescription(descriptionPath, requestBody);
 	}
-	
+
 	public static String createNewDescription(IBranchPath descriptionPath, String conceptId, String typeId, Map<String, Acceptability> acceptabilityMap) {
 		Map<?, ?> requestBody = Json.assign(createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap))
 				.with("commitComment", "Created new description");
 
-		return assertCreated(createComponent(descriptionPath, SnomedComponentType.DESCRIPTION, requestBody));
+		return createNewDescription(descriptionPath, requestBody);
 	}
 
 	public static String createNewTextDefinition(IBranchPath descriptionPath, Map<String, Acceptability> acceptabilityMap) {
 		Map<?, ?> requestBody = Json.assign(createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.TEXT_DEFINITION, Concepts.MODULE_SCT_CORE, acceptabilityMap))
 				.with("commitComment", "Created new text definition");
-
+		return createNewDescription(descriptionPath, requestBody);
+	}
+	
+	public static String createNewDescription(IBranchPath descriptionPath, Map<?, ?> requestBody) {
 		return assertCreated(createComponent(descriptionPath, SnomedComponentType.DESCRIPTION, requestBody));
 	}
 
@@ -228,14 +226,14 @@ public abstract class SnomedRestFixtures {
 		return createRelationshipRequestBody(sourceId, typeId, destinationId, moduleId, characteristicTypeId, 0);
 	}
 
-	public static Json createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId, String characteristicTypeId, int group) {
+	public static Json createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId, String characteristicTypeId, int relationshipGroup) {
 		return Json.object(
 			"moduleId", moduleId,
 			"sourceId", sourceId,
 			"typeId", typeId,
 			"destinationId", destinationId,
 			"characteristicTypeId", characteristicTypeId,
-			"group", group
+			"relationshipGroup", relationshipGroup
 		);
 	}
 
@@ -278,7 +276,7 @@ public abstract class SnomedRestFixtures {
 			"typeId", typeId,
 			"value", value.toLiteral(),
 			"characteristicTypeId", characteristicTypeId,
-			"group", relationshipGroup
+			"relationshipGroup", relationshipGroup
 		);
 	}
 	
@@ -349,7 +347,7 @@ public abstract class SnomedRestFixtures {
 	public static Json createRefSetMemberRequestBody(String refSetId, String referencedComponentId) {
 		return Json.object(
 			"moduleId", Concepts.MODULE_SCT_CORE,
-			"referenceSetId", refSetId,
+			"refsetId", refSetId,
 			"referencedComponentId", referencedComponentId
 		);
 	}
@@ -489,7 +487,7 @@ public abstract class SnomedRestFixtures {
 			SnomedComponentType.RELATIONSHIP, 
 			relationshipId, 
 			Json.object(
-				"group", 99,
+				"relationshipGroup", 99,
 				"commitComment", "Changed group on relationship"
 			)
 		).statusCode(204);
@@ -506,11 +504,11 @@ public abstract class SnomedRestFixtures {
 
 	public static String createNewComponent(IBranchPath branchPath, String referencedComponentType) {
 		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT:
+		case SnomedConcept.TYPE:
 			return createNewConcept(branchPath);
-		case SnomedTerminologyComponentConstants.DESCRIPTION:
+		case SnomedDescription.TYPE:
 			return createNewDescription(branchPath);
-		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+		case SnomedRelationship.TYPE:
 			return createNewRelationship(branchPath);
 		default:
 			throw new IllegalStateException("Can't create a referenced component of type '" + referencedComponentType + "'.");
@@ -524,11 +522,11 @@ public abstract class SnomedRestFixtures {
 	public static ComponentCategory getFirstAllowedReferencedComponentCategory(SnomedRefSetType refSetType) {
 		String referencedComponentType = getFirstAllowedReferencedComponentType(refSetType);
 		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT:
+		case SnomedConcept.TYPE:
 			return ComponentCategory.CONCEPT;
-		case SnomedTerminologyComponentConstants.DESCRIPTION:
+		case SnomedDescription.TYPE:
 			return ComponentCategory.DESCRIPTION;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+		case SnomedRelationship.TYPE:
 			return ComponentCategory.RELATIONSHIP;
 		default:
 			throw new IllegalStateException("Can't convert referenced component type '" + referencedComponentType + "' to a category.");
@@ -537,11 +535,11 @@ public abstract class SnomedRestFixtures {
 	
 	public static SnomedComponentType getSnomedComponentType(String referencedComponentType) {
 		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT:
+		case SnomedConcept.TYPE:
 			return SnomedComponentType.CONCEPT;
-		case SnomedTerminologyComponentConstants.DESCRIPTION:
+		case SnomedDescription.TYPE:
 			return SnomedComponentType.DESCRIPTION;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+		case SnomedRelationship.TYPE:
 			return SnomedComponentType.RELATIONSHIP;
 		default:
 			throw new IllegalStateException("Can't convert referenced component type '" + referencedComponentType + "' to a component type.");
@@ -594,7 +592,7 @@ public abstract class SnomedRestFixtures {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return Json.object(
-				SnomedRf2Headers.FIELD_TARGET_COMPONENT, Json.object("id", Concepts.ROOT_CONCEPT)
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, Concepts.ROOT_CONCEPT
 			);
 		case ATTRIBUTE_VALUE:
 			return Json.object(

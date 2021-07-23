@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -231,6 +232,7 @@ public class PreferredDescriptionPreCommitHookTest extends BaseConceptPreCommitH
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = docWithDefaults(concept)
+				.semanticTags(ImmutableSortedSet.of("changed"))
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), "Term (changed)", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))

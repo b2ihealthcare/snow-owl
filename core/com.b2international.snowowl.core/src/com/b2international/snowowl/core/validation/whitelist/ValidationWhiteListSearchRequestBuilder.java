@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequest.OptionKey;
 
@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList
  * @since 6.1
  */
 public final class ValidationWhiteListSearchRequestBuilder 
-	extends SearchResourceRequestBuilder<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteLists> 
+	extends SearchPageableCollectionResourceRequestBuilder<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteLists> 
 	implements SystemRequestBuilder<ValidationWhiteLists> {
 
 	ValidationWhiteListSearchRequestBuilder() {}
@@ -50,12 +50,12 @@ public final class ValidationWhiteListSearchRequestBuilder
 		return addOption(OptionKey.COMPONENT_ID, componentIdentifiers);
 	}
 	
-	public ValidationWhiteListSearchRequestBuilder filterByComponentType(short terminologyComponentId) {
-		return addOption(OptionKey.COMPONENT_TYPE, terminologyComponentId);
+	public ValidationWhiteListSearchRequestBuilder filterByComponentType(String componentType) {
+		return addOption(OptionKey.COMPONENT_TYPE, componentType);
 	}
 
-	public ValidationWhiteListSearchRequestBuilder filterByComponentType(Iterable<Short> terminologyComponentIds) {
-		return addOption(OptionKey.COMPONENT_TYPE, terminologyComponentIds);
+	public ValidationWhiteListSearchRequestBuilder filterByComponentTypes(Iterable<String> componentTypes) {
+		return addOption(OptionKey.COMPONENT_TYPE, componentTypes);
 	}
 	
 	public ValidationWhiteListSearchRequestBuilder filterByReporter(String reporter) {

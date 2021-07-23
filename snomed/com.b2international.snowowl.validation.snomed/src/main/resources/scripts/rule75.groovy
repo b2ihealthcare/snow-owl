@@ -11,7 +11,7 @@ import com.b2international.index.query.SortBy.Order
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.Lists
 
@@ -25,7 +25,7 @@ if (params.isUnpublishedOnly) {
 Query<String[]> query = Query.select(String[].class)
 	.from(SnomedRelationshipIndexEntry.class)
 	.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0 
-		SnomedRelationshipIndexEntry.Fields.GROUP, // 1
+		SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP, // 1
 		SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 2
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4
@@ -36,7 +36,7 @@ Query<String[]> query = Query.select(String[].class)
 	.where(effectiveTimeExpressionBuilder.build())
 	.sortBy(SortBy.builder()
 		.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
-		.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+		.sortByField(SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP, Order.ASC)
 		.build())
 	.limit(50_000)
 	.build()
@@ -55,7 +55,7 @@ for (Hits<String[]> page : searcher.scroll(query)) {
 		if ("0".equals(relationship[1])) {
 			buckets.add(key);
 		} else if (buckets.contains(key)) { // report duplication of ungrouped relationship in a group
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship[0]));					
+			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationship[0]));					
 		}
 	}
 }

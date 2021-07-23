@@ -42,7 +42,7 @@ public class Issue3019FixDeletionOfReferringMembersTest extends AbstractSnomedAp
 		
 		final Map<?, ?> memberRequest = ImmutableMap.<String, Object>builder()
 				.put(SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE)
-				.put("referenceSetId", queryRefsetId)
+				.put(SnomedRf2Headers.FIELD_REFSET_ID, queryRefsetId)
 				.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, queryMemberRefsetId)
 				.put(SnomedRf2Headers.FIELD_QUERY, "<" + Concepts.REFSET_ROOT_CONCEPT)
 				.put("commitComment", "Created new query reference set member")

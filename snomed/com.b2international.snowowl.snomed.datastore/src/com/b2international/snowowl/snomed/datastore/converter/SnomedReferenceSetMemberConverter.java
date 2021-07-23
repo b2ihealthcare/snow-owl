@@ -31,11 +31,9 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -48,12 +46,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionC
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 /**
  * @since 4.5
@@ -80,14 +73,14 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 	}
 
 	private void expandTargetComponent(List<SnomedReferenceSetMember> results) {
-		if (expand().containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-			final Options expandOptions = expand().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT, Options.class);
+		if (expand().containsKey(SnomedReferenceSetMember.Expand.TARGET_COMPONENT)) {
+			final Options expandOptions = expand().get(SnomedReferenceSetMember.Expand.TARGET_COMPONENT, Options.class);
 			
 			final Multimap<String, SnomedReferenceSetMember> membersByTargetComponent = HashMultimap.create();
 			for (SnomedReferenceSetMember member : results) {
 				final Map<String, Object> props = member.getProperties();
-				if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-					membersByTargetComponent.put(((SnomedCoreComponent) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId(), member);
+				if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)) {
+					membersByTargetComponent.put(((String) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)), member);
 				}
 			}
 			
@@ -106,7 +99,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 					if (targetComponent != null) {
 						for (SnomedReferenceSetMember member : membersByTargetComponent.get(targetComponentId)) {
 							final Map<String, Object> newProps = newHashMap(member.getProperties());
-							newProps.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent);
+							newProps.put(SnomedReferenceSetMember.Expand.TARGET_COMPONENT, targetComponent);
 							((SnomedReferenceSetMember) member).setProperties(newProps);
 						}
 					}
@@ -205,14 +198,11 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
 		member.setIconId(entry.getIconId());
-		member.setReferenceSetId(entry.getReferenceSetId());
+		member.setRefsetId(entry.getRefsetId());
 		member.setType(entry.getReferenceSetType());
 		member.setScore(entry.getScore());
 
 		final Map<String, Object> props = newHashMap(entry.getAdditionalFields());
-
-		// convert ID to resources where possible to override value with nested object in JSON
-		props.computeIfPresent(SnomedRf2Headers.FIELD_TARGET_COMPONENT, (key, value) -> convertToResource((String) value));
 
 		// convert stored long values to short date format
 		props.computeIfPresent(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, (key, currentValue) -> toEffectiveTime((long) currentValue));
@@ -226,7 +216,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		member.setProperties(props);
 		
 		String owlExpression = entry.getOwlExpression();
-		if (Concepts.REFSET_OWL_AXIOM.equals(entry.getReferenceSetId()) &&
+		if (Concepts.REFSET_OWL_AXIOM.equals(entry.getRefsetId()) &&
 				expand().containsKey("owlRelationships") && 
 				!Strings.isNullOrEmpty(owlExpression)) {
 			if (!CompareUtils.isEmpty(entry.getClassAxiomRelationships())) {
@@ -244,40 +234,27 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		return member;
 	}
 	
-	private SnomedCoreComponent convertToResource(String targetComponentId) {
-		switch (SnomedIdentifiers.getComponentCategory(targetComponentId)) {
-		case CONCEPT: return new SnomedConcept(targetComponentId);
-		case DESCRIPTION: return new SnomedDescription(targetComponentId);
-		case RELATIONSHIP: return new SnomedRelationship(targetComponentId);
-		default: throw new NotImplementedException("Cannot convert '%s' to component, unknown type.", targetComponentId);
-		}
-	}
-
-	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, short referencedComponentType) {
+	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, String referencedComponentType) {
+		// XXX: partial field loading support
+		if (referencedComponentType == null || referencedComponentId == null) return;
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {
 			// TODO support query type refset refcomp expansion, currently it's a concept
-			case SnomedTerminologyComponentConstants.REFSET_NUMBER:
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+			case SnomedConcept.REFSET_TYPE:
+			case SnomedConcept.TYPE:
 				component = new SnomedConcept();
 				((SnomedConcept) component).setId(referencedComponentId);
 				break;
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+			case SnomedDescription.TYPE:
 				component = new SnomedDescription();
 				((SnomedDescription) component).setId(referencedComponentId);
 				break;
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+			case SnomedRelationship.TYPE:
 				component = new SnomedRelationship();
 				((SnomedRelationship) component).setId(referencedComponentId);
 				break;
 			default: 
-				// XXX: partial field loading support
-				if (referencedComponentType < TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT || referencedComponentType > 0) {
-					throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
-				} else {
-					component = null;
-				}
-				break;
+				throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
 		}
 		member.setReferencedComponent(component);
 	}

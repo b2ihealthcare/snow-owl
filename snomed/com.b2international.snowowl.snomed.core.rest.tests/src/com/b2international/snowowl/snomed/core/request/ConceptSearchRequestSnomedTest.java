@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
@@ -31,7 +32,7 @@ import com.b2international.snowowl.test.commons.SnomedContentRule;
  */
 public class ConceptSearchRequestSnomedTest {
 
-	private static final String CODESYSTEM = SnomedContentRule.SNOMEDCT.withPath("2018-01-31").toString();
+	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT.withPath("2018-01-31");
 	
 	private static final String ID = "105590001";
 	private static final String PT = "Substance";

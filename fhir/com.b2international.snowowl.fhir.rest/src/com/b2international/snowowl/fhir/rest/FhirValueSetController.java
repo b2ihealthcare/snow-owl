@@ -46,6 +46,16 @@ import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Value Set contains codes from one or more code systems.
@@ -54,7 +64,7 @@ import io.swagger.annotations.*;
  * @see <a href="https://www.hl7.org/fhir/valueset-operations.html">FHIR:ValueSet:Operations</a>
  * @since 6.4
  */
-@Api(value = "ValueSet", description="FHIR ValueSet Resource", tags = { "ValueSet" })
+@Tag(description = "ValueSet", name = "ValueSet")
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/ValueSet", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirValueSetController extends AbstractFhirResourceController<ValueSet> {
@@ -72,11 +82,12 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	 * @param parameters - request parameters
 	 * @return bundle of value sets
 	 */
-	@ApiOperation(
-			value="Retrieve all value sets",
-			notes="Returns a collection of the supported value sets.")
+	@Operation(
+		summary="Retrieve all value sets",
+		description="Returns a collection of the supported value sets."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK")
+		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getValueSets(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
@@ -100,11 +111,7 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 			for (ValueSet valueSet : valueSets) {
 				applyResponseContentFilter(valueSet, requestParameters.getA());
 				String resourceUrl = String.join("/", uri, valueSet.getId().getIdValue());
-				
-				ResourceResponseEntry entry = ResourceResponseEntry.builder()
-						.fullUrl(resourceUrl)
-						.resource(valueSet)
-						.build();
+				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
 				builder.addEntry(entry);
 				total++;
 			}
@@ -118,14 +125,14 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	 * @param parameters - request parameters
 	 * @return
 	 */
-	@ApiOperation(
-			response=ValueSet.class,
-			value="Retrieve the value set by id",
-			notes="Retrieves the value set specified by its logical id.")
+	@Operation(
+		summary="Retrieve the value set by id",
+		description="Retrieves the value set specified by its logical id."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
 	@RequestMapping(value="/{valueSetId:**}", method=RequestMethod.GET)
 	public MappingJacksonValue getValueSet(@PathVariable("valueSetId") String valueSetId, 
@@ -147,17 +154,17 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	 * @param valueSetId
 	 * @return expanded {@link ValueSet}
 	 */
-	@ApiOperation(
-			response=ValueSet.class,
-			value="Expand a value set",
-			notes="Expand a value set specified by its logical id.")
+	@Operation(
+		summary="Expand a value set",
+		description="Expand a value set specified by its logical id."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
 	@RequestMapping(value="/{valueSetId:**}/$expand", method=RequestMethod.GET)
-	public ValueSet expand(@ApiParam(value="The id of the value set to expand") @PathVariable("valueSetId") String valueSetId) {
+	public ValueSet expand(@Parameter(description = "The id of the value set to expand") @PathVariable("valueSetId") String valueSetId) {
 		
 		ComponentURI componentURI = ComponentURI.of(valueSetId);
 		
@@ -173,17 +180,18 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	 * @param url
 	 * @return expanded {@link ValueSet}
 	 */
-	@ApiOperation(
-			value="Expand a value set",
-			notes="Expand a value set specified by its url.")
+	@Operation(
+		summary="Expand a value set",
+		description="Expand a value set specified by its url."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
 	@RequestMapping(value="/$expand", method=RequestMethod.GET)
 	public ValueSet expandByURL(
-			@ApiParam(value="Canonical URL of the value set") @RequestParam(value="url") final String url) {
+			@Parameter(description = "Canonical URL of the value set") @RequestParam(value="url") final String url) {
 		
 		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, url);
 		ValueSet valueSet = valueSetProvider.expandValueSet(url);
@@ -194,22 +202,25 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	
 	/**
 	 * HTTP Post request to expand a value set
-	 * @param in - FHIR parameters
+	 * @param body - FHIR parameters
 	 * @return expanded {@link ValueSet}
 	 */
-	@ApiOperation(
-			value="Expand a value set",
-			notes="Expand a value set specified by a request body.")
+	@Operation(
+		summary="Expand a value set",
+		description="Expand a value set specified by a request body."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
 	@RequestMapping(value="/$expand", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public ValueSet expandBodyRequest(@ApiParam(name = "body", value = "The lookup request parameters")
-		@RequestBody Parameters.Fhir in) {
+	public ValueSet expandBodyRequest(
+			@Parameter(description = "The lookup request parameters")
+			@RequestBody 
+			Parameters.Fhir body) {
 		
-		final ExpandValueSetRequest request = toRequest(in, ExpandValueSetRequest.class);
+		final ExpandValueSetRequest request = toRequest(body, ExpandValueSetRequest.class);
 		
 		if (request.getUrl() == null && request.getValueSet() == null) {
 			throw new BadRequestException("Both URL and ValueSet parameters are null.", "ExpandValueSetRequest");
@@ -245,20 +256,21 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	 *
 	 * @return validation results as {@link OperationOutcome}
 	 */
-	@ApiOperation(
-			value="Validate a code in a value set",
-			notes="Validate that a coded value is in the set of codes allowed by a value set.")
+	@Operation(
+		summary="Validate a code in a value set",
+		description="Validate that a coded value is in the set of codes allowed by a value set."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
 	@RequestMapping(value="/{valueSetId:**}/$validate-code", method=RequestMethod.GET)
 	public Parameters.Fhir validateCode(
-			@ApiParam(value="The id of the value set to validate against") @PathVariable("valueSetId") String valueSetId, 
-			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
-			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
+			@Parameter(description = "The id of the value set to validate against") @PathVariable("valueSetId") String valueSetId, 
+			@Parameter(description = "The code to to be validated") @RequestParam(value="code") final String code,
+			@Parameter(description = "The system uri of the code to be validated") @RequestParam(value="system") final String system,
+			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
 		
 		ComponentURI componentURI = ComponentURI.of(valueSetId);
 		
@@ -283,20 +295,21 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	 * @param systemVersion the optional version of the code to validate
 	 * @return validation results as {@link OperationOutcome}
 	 */
-	@ApiOperation(
-			value="Validate a code in a value set defined by its URL",
-			notes="Validate that a coded value is in the set of codes allowed by a value set.")
+	@Operation(
+		summary="Validate a code in a value set defined by its URL",
+		description="Validate that a coded value is in the set of codes allowed by a value set."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
 	@RequestMapping(value="/$validate-code", method=RequestMethod.GET)
 	public Parameters.Fhir validateCodeByURL(
-			@ApiParam(value="Canonical URL of the value set") @RequestParam(value="url") final String url,
-			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
-			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
+			@Parameter(description = "Canonical URL of the value set") @RequestParam(value="url") final String url,
+			@Parameter(description = "The code to to be validated") @RequestParam(value="code") final String code,
+			@Parameter(description = "The system uri of the code to be validated") @RequestParam(value="system") final String system,
+			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
 		
 		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, url);
 		

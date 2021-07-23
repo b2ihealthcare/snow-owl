@@ -2,8 +2,6 @@ package scripts
 
 import java.util.stream.Collectors
 
-import javax.validation.Constraint
-
 import com.b2international.index.Hits
 import com.b2international.index.query.Expression
 import com.b2international.index.query.Expressions
@@ -12,8 +10,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
@@ -85,7 +83,7 @@ def getApplicableRules = { String conceptId, String typeId ->
 	if (mrcmRulesByAttributeType.keySet().contains(typeId)) {
 		for (SnomedConstraint constraint : mrcmRulesByAttributeType.get(typeId)) {
 			if (getCachedApplicableConcepts(constraint.getDomain().toEcl()).contains(conceptId)) {
-				applicableConstraints.add(Constraint)
+				applicableConstraints.add(constraint)
 			}
 		}
 	}
@@ -118,7 +116,7 @@ if (params.isUnpublishedOnly) {
 		def typeId = hit[2]
 		
 		if (!typeId.equals(Concepts.IS_A) && getApplicableRules(sourceId, typeId).isEmpty()) {
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))			
+			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId))			
 		}
 	}
 	
@@ -147,7 +145,7 @@ if (params.isUnpublishedOnly) {
 		searcher.scroll(query).forEach({ hits ->
 			hits.forEach({ id ->
 				println(id + " type yes source no")
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+				issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
 			})
 		})
 	}
@@ -170,7 +168,7 @@ if (params.isUnpublishedOnly) {
 	searcher.scroll(query).forEach({ hits ->
 		hits.forEach({ id ->
 			println(id + " type not found")
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
 		})
 	})
 }

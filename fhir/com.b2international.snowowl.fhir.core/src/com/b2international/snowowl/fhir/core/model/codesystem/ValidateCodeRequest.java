@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 public class ValidateCodeRequest {
 
 	// CodeSystem URL to validate against (0..1)
-	private final Uri url;
+	private Uri url;
 	
 	// The codeSystem is provided directly as part of the request. (0..1) - not supported
 	private final CodeSystem codeSystem;
@@ -93,6 +93,10 @@ public class ValidateCodeRequest {
 	
 	public Uri getUrl() {
 		return url;
+	}
+	
+	public void setUrl(Uri url) {
+		this.url = url;
 	}
 	
 	public CodeSystem getCodeSystem() {

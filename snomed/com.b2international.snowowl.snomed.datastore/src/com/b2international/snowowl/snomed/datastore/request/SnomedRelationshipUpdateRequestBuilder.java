@@ -25,7 +25,7 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 	private String typeId;
 	private String destinationId;
 	private RelationshipValue value;
-	private Integer group;
+	private Integer relationshipGroup;
 	private Integer unionGroup;
 	private String characteristicTypeId;
 	private String modifierId;
@@ -62,11 +62,11 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 	}
 
 	/**
-	 * @param group
+	 * @param relationshipGroup
 	 * @return
 	 */
-	public SnomedRelationshipUpdateRequestBuilder setGroup(final Integer group) {
-		this.group = group;
+	public SnomedRelationshipUpdateRequestBuilder setRelationshipGroup(final Integer relationshipGroup) {
+		this.relationshipGroup = relationshipGroup;
 		return getSelf();
 	}
 
@@ -108,7 +108,7 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 		req.setTypeId(typeId);
 		req.setDestinationId(destinationId);
 		req.setValue(value);
-		req.setGroup(group);
+		req.setRelationshipGroup(relationshipGroup);
 		req.setUnionGroup(unionGroup);
 		req.setCharacteristicTypeId(characteristicTypeId);
 		req.setModifierId(modifierId);

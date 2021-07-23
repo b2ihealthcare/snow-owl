@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.Suggestions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -49,6 +48,8 @@ import com.google.common.collect.Multisets;
  */
 public final class ConceptSuggestionRequest extends SearchResourceRequest<BranchContext, Suggestions> {
 
+	private static final long serialVersionUID = 1L;
+	
 	private static final Enum<?> QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
 	private static final Enum<?> MUST_NOT_QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
 	
@@ -82,6 +83,10 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 
 	@Override
 	protected Suggestions doExecute(BranchContext context) throws IOException {
+		// Gather tokens
+		final Multiset<String> tokenOccurrences = HashMultiset.create(); 
+		final EnglishStemmer stemmer = new EnglishStemmer();
+		
 		// Get the suggestion base set of concepts
 		final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
 			.setLimit(SCROLL_LIMIT)
@@ -94,26 +99,15 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		if (containsKey(MUST_NOT_QUERY)) {
 			baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
 		}
-		
-		final SearchResourceRequestIterator<ConceptSearchRequestBuilder, Concepts> itr = new SearchResourceRequestIterator<>(
-				baseRequestBuilder, 
-				builder -> builder.build().execute(context));
-		
-		// Gather tokens
-		final Multiset<String> tokenOccurrences = HashMultiset.create(); 
-		final EnglishStemmer stemmer = new EnglishStemmer();
 
-		while (itr.hasNext()) {
-			final Concepts suggestionBase = itr.next();
+		baseRequestBuilder.stream(context)
+			.flatMap(Concepts::stream)
+			.flatMap(concept -> getAllTerms(concept).stream())
+			.map(term -> term.toLowerCase(Locale.US))
+			.flatMap(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm).stream())
+			.map(token -> stemToken(stemmer, token))
+			.forEach(tokenOccurrences::add);
 
-			FluentIterable.from(suggestionBase)
-				.transformAndConcat(concept -> getAllTerms(concept))
-				.transform(term -> term.toLowerCase(Locale.US))
-				.transformAndConcat(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm))
-				.transform(token -> stemToken(stemmer, token))
-				.copyInto(tokenOccurrences);
-		}
-		
 		topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
 				.elementSet()
 				.stream()

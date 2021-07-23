@@ -39,7 +39,6 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -160,7 +159,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 			final Map<String, ? extends SnomedDocument> existingComponents = lookup(componentsToLookup, type);
 			final Map<String, SnomedConceptDocument> existingRefSets;
 			if (SnomedRefSetMemberIndexEntry.class == type) {
-				existingRefSets = lookup(rf2Components.stream().map(member -> ((SnomedReferenceSetMember) member).getReferenceSetId()).collect(Collectors.toSet()), SnomedConceptDocument.class);
+				existingRefSets = lookup(rf2Components.stream().map(member -> ((SnomedReferenceSetMember) member).getRefsetId()).collect(Collectors.toSet()), SnomedConceptDocument.class);
 			} else {
 				existingRefSets = Collections.emptyMap();
 			}
@@ -188,16 +187,16 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 				if (rf2Component instanceof SnomedReferenceSetMember) {
 					final SnomedReferenceSetMember member = (SnomedReferenceSetMember) rf2Component;
 					// seed the refset if missing
-					final String refSetId = member.getReferenceSetId();
+					final String refSetId = member.getRefsetId();
 					SnomedConceptDocument conceptDocToUpdate = existingRefSets.get(refSetId);
 					if (conceptDocToUpdate == null || newComponents.containsKey(refSetId)) {
 						conceptDocToUpdate = (SnomedConceptDocument) newComponents.get(refSetId);
 					}
 					if (conceptDocToUpdate.getRefSetType() == null) {
-						final String referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(member.getReferencedComponent().getId());
-						String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
+						final String referencedComponentType = SnomedComponent.getType(member.getReferencedComponentId());
+						String mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 						try {
-							mapTargetComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));
+							mapTargetComponentType = SnomedComponent.getType((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));
 						} catch (IllegalArgumentException e) {
 							// ignored
 						}
@@ -361,7 +360,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					.withDestinationNegated(false)
 					.withValue(relationship.getValueAsObject())
 					.withCharacteristicTypeId(relationship.getCharacteristicTypeId())
-					.withGroup(relationship.getGroup())
+					.withRelationshipGroup(relationship.getRelationshipGroup())
 					.withUnionGroup(relationship.getUnionGroup())
 					.withModifierId(relationship.getModifierId());
 		} else {
@@ -483,6 +482,6 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 				.withEffectiveTime(rf2Component.getEffectiveTime())
 				.withModuleId(rf2Component.getModuleId())
 				.withReferencedComponent(rf2Component.getReferencedComponent().getId())
-				.withRefSet(rf2Component.getReferenceSetId());
+				.withRefSet(rf2Component.getRefsetId());
 	}
 }

@@ -36,12 +36,13 @@ import org.assertj.core.util.Files;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
+import com.b2international.snowowl.core.conceptmap.ConceptMapRequests;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.test.commons.Services;
 
 /**
@@ -64,7 +65,7 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExport() throws IOException {
-		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+		final File file = ConceptMapRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
 				.delimiter(';')
 				.changeKids(ALL)
 				.build()
@@ -76,7 +77,7 @@ public class ConceptMapCompareDsvExportTest {
 
 	@Test
 	public void testFilteredExport() throws IOException {
-		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+		final File file = ConceptMapRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
 				.delimiter(';')
 				.changeKids(Set.of(DIFFERENT_TARGET, MISSING))
 				.build()
@@ -92,7 +93,7 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExportEmptyList() throws IOException {
-		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(Collections.emptyList(), Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+		final File file = ConceptMapRequests.prepareConceptMapCompareDsvExport(Collections.emptyList(), Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
 				.delimiter(';')
 				.changeKids(ALL)
 				.build()
@@ -142,7 +143,7 @@ public class ConceptMapCompareDsvExportTest {
 	private static ConceptMapCompareResultItem createItemUnspecifiedTarget(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
 				.containerTerm(containerTerm)
-				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), (short) 100, sourceId))
+				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), SnomedConcept.TYPE, sourceId))
 				.sourceTerm(sourceTerm)
 				.targetComponentURI(ComponentURI.UNSPECIFIED)
 				.targetTerm("")
@@ -153,9 +154,9 @@ public class ConceptMapCompareDsvExportTest {
 	private static ConceptMapCompareResultItem createItem(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm, String targetId, String targetTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
 				.containerTerm(containerTerm)
-				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), (short) 100, sourceId))
+				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), SnomedConcept.TYPE, sourceId))
 				.sourceTerm(sourceTerm)
-				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), (short) 300, targetId))
+				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), "concept", targetId))
 				.targetTerm(targetTerm)
 				.build();
 		return new ConceptMapCompareResultItem(changeKind, mapping);

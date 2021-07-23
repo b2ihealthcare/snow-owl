@@ -254,7 +254,7 @@ public final class CompareResultsDsvExporter {
 //			this.changeKind = changeKind;
 //			this.component = component;
 //			this.label = label;
-//			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getTerminologyComponentId()).name();
+//			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getComponentType()).name();
 //			this.attribute = attribute;
 //			this.from = from;
 //			this.to = to;

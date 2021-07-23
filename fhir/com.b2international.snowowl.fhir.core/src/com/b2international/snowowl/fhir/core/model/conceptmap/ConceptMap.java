@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  * A concept map defines a mapping from a set of concepts defined in a code
  * system to one or more concepts defined in other code systems.
@@ -51,7 +49,6 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/conceptmap.html">FHIR:ConceptMap</a>
  * @since 6.10
  */
-@ApiModel("ConceptMap")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class ConceptMap extends MetadataResource {
 

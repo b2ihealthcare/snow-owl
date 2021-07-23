@@ -3,7 +3,6 @@ package scripts
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.Acceptability
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept
@@ -38,7 +37,7 @@ SnomedConceptSearchRequestBuilder conceptsRequestBuilder = SnomedRequests.prepar
 if (params.isUnpublishedOnly) {
 
 	def descriptionsIdsWithUnpublishedLanguageMembers = SnomedRequests.prepareSearchMember()
-		.filterByReferencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+		.filterByReferencedComponentType(SnomedDescription.TYPE)
 		.filterByRefSetType(SnomedRefSetType.LANGUAGE)
 		.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 		.filterByActive(true)
@@ -103,7 +102,7 @@ while(iterator.hasNext()) {
 		}
 		
 		if (shouldReport) {
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()))
+			issues.add(ComponentIdentifier.of(SnomedConcept.TYPE, concept.getId()))
 		}
 		
 	}

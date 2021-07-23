@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public final class ObjectId {
 
-	private static final String SEPARATOR = "/";
+	public static final String SEPARATOR = "/";
 
 	public static final String ROOT = "-1";
 	
@@ -85,13 +85,13 @@ public final class ObjectId {
 		return new ObjectId(String.join(SEPARATOR, type, id), type, id);
 	}
 	
-	public static ObjectId of(Class<?> type, String id) {
-		final String typeAsString = DocumentMapping.getType(type);
-		return new ObjectId(String.join(SEPARATOR, typeAsString, id), typeAsString, id);
-	}
-	
 	public static ObjectId rootOf(String type) {
 		return of(type, ROOT);
+	}
+	
+	public static ObjectId of(Class<?> type, String id) {
+		final String typeAsString = DocumentMapping.getDocType(type);
+		return new ObjectId(String.join(SEPARATOR, typeAsString, id), typeAsString, id);
 	}
 	
 	public static ObjectId toObjectId(Object obj, String id) {
@@ -101,5 +101,5 @@ public final class ObjectId {
 			return ObjectId.of(obj.getClass(), id);
 		}
 	}
-
+	
 }

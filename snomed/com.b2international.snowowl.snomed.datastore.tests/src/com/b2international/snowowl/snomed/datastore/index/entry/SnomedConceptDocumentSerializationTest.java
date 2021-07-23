@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,8 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,7 +58,7 @@ public class SnomedConceptDocumentSerializationTest extends BaseRevisionIndexTes
 				.effectiveTime(new Date().getTime())
 				.moduleId(Concepts.MODULE_ROOT)
 				.exhaustive(true)
-				.primitive(true)
+				.definitionStatusId(Concepts.PRIMITIVE)
 				.parents(PrimitiveSets.newLongSortedSet(-1L))
 				.ancestors(PrimitiveSets.newLongSortedSet(-1L))
 				.statedAncestors(PrimitiveSets.newLongSortedSet(-1L))
@@ -80,14 +81,14 @@ public class SnomedConceptDocumentSerializationTest extends BaseRevisionIndexTes
 				.effectiveTime(new Date().getTime())
 				.moduleId(Concepts.MODULE_ROOT)
 				.exhaustive(true)
-				.primitive(true)
+				.definitionStatusId(Concepts.PRIMITIVE)
 				.parents(PrimitiveSets.newLongSortedSet(-1L))
 				.ancestors(PrimitiveSets.newLongSortedSet(-1L))
 				.statedAncestors(PrimitiveSets.newLongSortedSet(-1L))
 				.statedParents(PrimitiveSets.newLongSortedSet(-1L))
 				.refSetType(SnomedRefSetType.ASSOCIATION)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
-				.mapTargetComponentType(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
+				.referencedComponentType(SnomedConcept.TYPE)
+				.mapTargetComponentType(SnomedRelationship.TYPE)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, concept);

@@ -6,7 +6,6 @@ import java.util.stream.Collectors
 
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions
@@ -43,7 +42,7 @@ SnomedDescriptions results = descRequestBuilder
 	.execute(ctx)
 
 for (SnomedDescription desc : results) {
-	ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, desc.getId());
+	ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedDescription.TYPE, desc.getId());
 	issues.add(affectedComponent)
 }
 	

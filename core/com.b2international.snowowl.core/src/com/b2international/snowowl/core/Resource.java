@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
@@ -197,5 +198,11 @@ public abstract class Resource implements Serializable {
 	public void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
 	}
+
+	/**
+	 * Converts this {@link Resource} to a commitable {@link ResourceDocument.Builder}
+	 * @return
+	 */
+	public abstract ResourceDocument.Builder toDocumentBuilder();
 	
 }

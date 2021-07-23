@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.bundle;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
@@ -68,6 +69,24 @@ public final class Bundle extends Resource {
 				.setBundleId(getBundleId());
 	}
 
+	@Override
+	public Builder toDocumentBuilder() {
+		return ResourceDocument.builder()
+				.resourceType(getResourceType())
+				.id(getId())
+				.url(getUrl())
+				.title(getTitle())
+				.language(getLanguage())
+				.description(getDescription())
+				.status(getStatus())
+				.copyright(getCopyright())
+				.owner(getOwner())
+				.contact(getContact())
+				.usage(getUsage())
+				.purpose(getPurpose())
+				.bundleId(getBundleId());
+	}
+	
 	public static Bundle from(ResourceDocument doc) {
 		final Bundle bundle = new Bundle();
 		bundle.setId(doc.getId());
@@ -84,4 +103,5 @@ public final class Bundle extends Resource {
 		bundle.setBundleId(doc.getBundleId());
 		return bundle;
 	}
+	
 }

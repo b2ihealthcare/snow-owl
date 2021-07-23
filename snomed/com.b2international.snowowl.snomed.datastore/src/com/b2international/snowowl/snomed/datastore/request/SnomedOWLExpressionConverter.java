@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,11 +34,11 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Stopwatch;
@@ -168,27 +166,19 @@ public final class SnomedOWLExpressionConverter {
 	}
 
 	private static Set<Long> getUngroupedAttributes(BranchContext context) {
-		final SnomedRefSetMemberSearchRequestBuilder searchRequestBuilder = SnomedRequests.prepareSearchMember()
+		return SnomedRequests.prepareSearchMember()
 			.setLimit(1000)
 			.filterByActive(true)
 			.filterByProps(Options.builder()
 				.put(SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED, false)
 				.build())
-			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
-			
-		final var iterator = new SearchResourceRequestIterator<>(searchRequestBuilder, 
-			b -> b.build().execute(context));
-			
-		final Set<Long> ungroupedAttributeIds = newHashSet();
-		iterator.forEachRemaining(batch -> {
-			batch.stream()
-				.map(SnomedReferenceSetMember::getReferencedComponent)
-				.map(SnomedCoreComponent::getId)
-				.map(Long::valueOf)
-				.forEachOrdered(ungroupedAttributeIds::add);
-		});
-		
-		return ungroupedAttributeIds;
+			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+			.stream(context)
+			.flatMap(SnomedReferenceSetMembers::stream)
+			.map(SnomedReferenceSetMember::getReferencedComponent)
+			.map(SnomedCoreComponent::getId)
+			.map(Long::valueOf)
+			.collect(Collectors.toSet());
 	}
 	
 	private static <T> T withTccl(final Callable<T> callable) {

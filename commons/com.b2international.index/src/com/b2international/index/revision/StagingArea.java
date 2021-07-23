@@ -37,6 +37,7 @@ import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Hooks.Hook;
@@ -62,6 +63,7 @@ import com.google.common.collect.*;
 public final class StagingArea {
 
 	private final DefaultRevisionIndex index;
+	private final Mappings mappings;
 	private final String branchPath;
 	private final ObjectMapper mapper;
 	private final int maxTermsCount;
@@ -79,6 +81,7 @@ public final class StagingArea {
 
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
+		this.mappings = index.admin().mappings();
 		this.branchPath = branchPath;
 		this.mapper = mapper;
 		this.maxTermsCount = Integer.parseInt((String) index.admin().settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
@@ -92,6 +95,10 @@ public final class StagingArea {
 	 */
 	public RevisionIndex getIndex() {
 		return index;
+	}
+	
+	public Mappings mappings() {
+		return mappings;
 	}
 	
 	/**
@@ -223,6 +230,17 @@ public final class StagingArea {
 				.stream()
 				.filter(entry -> entry.getValue().isChanged())
 				.map(e -> e.getValue().getObject());
+	}
+	
+	/**
+	 * @param type
+	 * @param key
+	 * @return the underlying revision difference if the given type/key object was changed in this staging area, or <code>null</code> if not. 
+	 */
+	public RevisionDiff getChangedRevisionDiff(Class<? extends Revision> type, String key) {
+		final ObjectId objectId = ObjectId.of(type, key);
+		checkArgument(stagedObjects.containsKey(objectId), "The given object '%s' is not staged in this staging area.", objectId);
+		return stagedObjects.get(ObjectId.of(type, key)).getDiff();
 	}
 	
 	/**
@@ -360,7 +378,7 @@ public final class StagingArea {
 					Revision rev = (Revision) object;
 					removedComponentsByContainer.put(rev.getContainerId(), key);
 				} else {
-					removedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(object.getClass())), key);
+					removedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getDocType(object.getClass())), key);
 				}
 			}
 		});
@@ -388,7 +406,7 @@ public final class StagingArea {
 						revisionsToReviseOnMergeSource.put(document.getClass(), key.id());
 					}
 				} else {
-					newComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(document.getClass())), key);
+					newComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getDocType(document.getClass())), key);
 				}
 			}
 		});
@@ -428,7 +446,7 @@ public final class StagingArea {
 					
 				} else {
 					writer.put(object);
-					changedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(object.getClass())), key);
+					changedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getDocType(object.getClass())), key);
 				}
 			}
 		});
@@ -1354,5 +1372,5 @@ public final class StagingArea {
 	private StagedObject removed(Object object, RevisionDiff diff, boolean commit) {
 		return new StagedObject(StageKind.REMOVED, object, diff, commit);
 	}
-	
+
 }

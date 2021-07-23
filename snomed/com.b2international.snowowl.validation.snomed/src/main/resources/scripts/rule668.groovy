@@ -10,8 +10,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
@@ -46,7 +46,7 @@ if (params.isUnpublishedOnly) {
 		.where(
 			Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_OWL_AXIOM))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 			.build()
 		)
@@ -59,19 +59,19 @@ if (params.isUnpublishedOnly) {
 		def Set<String> inactiveConcepts = inactiveConceptIds.get()
 		unpublishedFirstHits.each { hit ->
 			if (inactiveConcepts.contains(hit.getReferencedComponentId())) {
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
+				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, hit.getId()))
 			} else if (!CompareUtils.isEmpty(hit.getClassAxiomRelationships())) {
 				for (SnomedOWLRelationshipDocument classAxiomRelationship : hit.getClassAxiomRelationships()) {
 					if (!classAxiomRelationship.hasValue() && 
 						(inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId()))) {
-						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
+						issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, hit.getId()))
 					}
 				}
 			} else if (!CompareUtils.isEmpty(hit.getGciAxiomRelationships())) {
 				for (SnomedOWLRelationshipDocument classAxiomRelationship : hit.getGciAxiomRelationships()) {
 					if (!classAxiomRelationship.hasValue() &&
 						(inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId()))) {
-						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
+						issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, hit.getId()))
 					}
 				}
 			}
@@ -82,7 +82,7 @@ if (params.isUnpublishedOnly) {
 
 ExpressionBuilder invalidOWLAxiomExpression = Expressions.builder()
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM))
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_OWL_AXIOM))
 		.should(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept(inactiveConceptIds.get()))
 		.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactiveConceptIds.get()))
 
@@ -99,7 +99,7 @@ searcher
 	.build())
 	.each { memberIds ->
 		memberIds.each { memberId ->
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, memberId))
+			issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, memberId))
 		}
 	}
 

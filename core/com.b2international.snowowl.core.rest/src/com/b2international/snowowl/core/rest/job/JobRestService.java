@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -34,55 +28,55 @@ import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.1
  */
-@Api(value = "Jobs", description="Jobs", tags = { "jobs" })
+@Tag(description="Jobs", name = "jobs")
 @RestController
 @RequestMapping(value = "/jobs")
 public class JobRestService extends AbstractRestService {
 
 	public JobRestService() {
 		super(RemoteJobEntry.Fields.SORT_FIELDS);
-	}
+	}	
 	
-	@ApiOperation(
-		value="Returns a list of asynchronous jobs",
-		notes="Retrieve currently available asynchronously running/completed jobs."
+	@Operation(
+		summary="Returns a list of asynchronous jobs",
+		description="Retrieve currently available asynchronously running/completed jobs."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 400, message = "Bad Request")
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<RemoteJobs> searchJobs(
-			@ApiParam(value = "The Job identifier(s) to match")
+			@Parameter(description = "The Job identifier(s) to match")
 			@RequestParam(value = "id", required = false) 
 			final Set<String> ids,
 			
-			@ApiParam(value = "The usernames to match")
+			@Parameter(description = "The usernames to match")
 			@RequestParam(value = "user", required = false) 
 			final String[] users,
 
-			@ApiParam(value = "The job state values to match (accepted values: 'scheduled', 'running', 'finished', 'failed', 'cancel_requested', 'canceled')")
+			@Parameter(description = "The job state values to match (accepted values: 'scheduled', 'running', 'finished', 'failed', 'cancel_requested', 'canceled')")
 			@RequestParam(value = "state", required = false)
 			final String[] state,
 			
-			@ApiParam(value="The search key to use for retrieving the next page of results")
+			@Parameter(description = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
 			
-			@ApiParam(value="The maximum number of items to return", defaultValue = "50")
+			@Parameter(description = "The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit,
 			
-			@ApiParam(value="Sort keys")
+			@Parameter(description = "Sort keys")
 			@RequestParam(value="sort", required=false)
 			final List<String> sort) {
 		return JobRequests.prepareSearch()
@@ -96,17 +90,17 @@ public class JobRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value="Returns a single asynchronous job",
-		notes="Retrieve a single asynchronously running/completed job by its unique identifier."
+	@Operation(
+		summary="Returns a single asynchronous job",
+		description="Retrieve a single asynchronously running/completed job by its unique identifier."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 400, message = "Bad Request")
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<RemoteJobEntry> getJob(
-			@ApiParam(value = "Job identifier", required = true)
+			@Parameter(description = "Job identifier", required = true)
 			@PathVariable(value = "id", required = true) 
 			final String id) {
 		return JobRequests.prepareGet(id)
@@ -114,17 +108,17 @@ public class JobRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value="Deletes a single asynchronous job",
-		notes="Cancel the operation of a scheduled/running job and then delete it."
+	@Operation(
+		summary="Deletes a single asynchronous job",
+		description="Cancel the operation of a scheduled/running job and then delete it."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No Content"),
+		@ApiResponse(responseCode = "204", description = "No Content"),
 	})
 	@DeleteMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(		
-			@ApiParam(value = "Job identifier", required = true)
+			@Parameter(description = "Job identifier", required = true)
 			@PathVariable(value = "id", required = true) 
 			final String id) {
 		JobRequests.prepareDelete(id).buildAsync().execute(getBus());

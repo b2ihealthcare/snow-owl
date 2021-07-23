@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -32,8 +33,8 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -44,15 +45,13 @@ import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.7
  */
 public class ValueSetMemberSearchSnomedReferenceSetTest {
 
-	private static final String CODESYSTEM = SnomedContentRule.SNOMEDCT.withPath(ResourceURI.LATEST).toString();
+	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT.asLatest();
 	
 	private static final String SYNONYM = "Synonym (core metadata concept)";
 	private static final String FSN = "Fully specified name (core metadata concept)";
@@ -100,11 +99,11 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, filteredId);
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, Concepts.IS_A);
 		
-		final ComponentURI uri = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filteredId);
+		final ComponentURI uri = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedConcept.TYPE, filteredId);
 		
 		final SnomedReferenceSetMembers refSetMembers = SnomedRequests.prepareSearchMember()
 			.filterByRefSet(refSetId)
-			.filterByComponentIds(ImmutableSet.of(uri.toString(), uri.identifier()))
+			.filterByComponentIds(Set.of(uri.toString(), uri.identifier()))
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
@@ -126,7 +125,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 				.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP)))
 				.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP)))
 				.setRefSet(SnomedRequests.prepareNewRefSet()
-						.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+						.setReferencedComponentType(SnomedConcept.TYPE)
 						.setType(SnomedRefSetType.SIMPLE_MAP))
 				.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 				.execute(Services.bus())
@@ -143,7 +142,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 			.setTypeId(type)
 			.setTerm(term)
 			.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-			.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+			.setAcceptability(Map.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
 	}
 	
 	private static SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String characteristicTypeId, String destinationId) {
@@ -160,11 +159,11 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 	private void createSimpleMapTypeRefSetMember(final String rfId, final String sourceCode, final String targetCode) {
 		SnomedRequests.prepareNewMember()
 			.setId(UUID.randomUUID().toString())
-			.setReferenceSetId(rfId)
+			.setRefsetId(rfId)
 			.setReferencedComponentId(sourceCode)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_MAP_TARGET, targetCode))
+			.setProperties(Map.of(SnomedRf2Headers.FIELD_MAP_TARGET, targetCode))
 			.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);

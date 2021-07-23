@@ -88,17 +88,12 @@ public abstract class Revision {
 		this.created = created;
 	}
 	
-	final RevisionBranchPoint getCreated() {
+	protected final RevisionBranchPoint getCreated() {
 		return created;
 	}
 	
-	final List<RevisionBranchPoint> getRevised() {
+	protected final List<RevisionBranchPoint> getRevised() {
 		return revised;
-	}
-	
-	@JsonIgnore
-	public final ObjectId getObjectId() {
-		return ObjectId.of(getClass(), getId());
 	}
 	
 	/**
@@ -109,7 +104,12 @@ public abstract class Revision {
 	 */
 	@JsonIgnore
 	protected ObjectId getContainerId() {
-		return ObjectId.rootOf(DocumentMapping.getType(getClass()));
+		return ObjectId.rootOf(DocumentMapping.getDocType(getClass()));
+	}
+	
+	@JsonIgnore
+	public ObjectId getObjectId() {
+		return ObjectId.of(DocumentMapping.getDocType(getClass()), getId());
 	}
 	
 	@Override
@@ -129,7 +129,7 @@ public abstract class Revision {
 	 * @param <B>
 	 * @param <T>
 	 */
-	@JsonIgnoreProperties(value = { "_hash", "created", "revised" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
+	@JsonIgnoreProperties(value = { "created", "revised" })
 	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> {
 		
 		protected abstract B getSelf();

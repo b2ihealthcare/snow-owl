@@ -15,195 +15,24 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.Map;
-import java.util.Optional;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.b2international.commons.StringUtils;
-import com.b2international.commons.exceptions.AlreadyExistsException;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branches;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
-import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.version.Version;
-import com.google.common.base.Strings;
+import com.b2international.snowowl.core.request.BaseTerminologyResourceCreateRequest;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
+final class CodeSystemCreateRequest extends BaseTerminologyResourceCreateRequest {
 
-	private static final long serialVersionUID = 2L;
-
-	// specialized resource fields
-	// optional OID, but if defined it must be unique
-	String oid;
-	
-	String branchPath;
-	
-	@NotEmpty
-	String toolingId;
-	
-	ResourceURI extensionOf;
-	ResourceURI upgradeOf;
-	Map<String, Object> settings;
-	
-	private transient String parentPath;
-	
-	CodeSystemCreateRequest() {}
+	private static final long serialVersionUID = 3L;
 
 	@Override
-	protected Builder completeResource(Builder builder) {
-		return builder.resourceType(CodeSystem.RESOURCE_TYPE)
-				.oid(oid)
-				.branchPath(branchPath)
-				.toolingId(toolingId)
-				.extensionOf(extensionOf)
-				.upgradeOf(upgradeOf)
-				.settings(settings);
+	protected String getResourceType() {
+		return CodeSystem.RESOURCE_TYPE;
 	}
-	
+
 	@Override
-	protected void preExecute(final TransactionContext context) {
-		// Create branch if null or empty path was specified in the request
-		final boolean createBranch = StringUtils.isEmpty(branchPath);
-		
-		final Optional<Version> extensionOfVersion = checkCodeSystem(context, createBranch);
-		
-		// Set the parent path if a branch needs to be created
-		if (createBranch) {
-			parentPath = extensionOfVersion
-				.map(Version::getBranchPath)
-				.orElse(Branch.MAIN_PATH); // TODO totally separate branching system?? MAIN could be removed
-		}
-
-		checkBranchPath(context, createBranch);
-		checkSettings();
-		
-		// Set branchPath to the path of the created branch 
-		if (createBranch) {
-			branchPath = RepositoryRequests.branching()
-				.prepareCreate()
-				.setParent(parentPath)
-				.setName(getId())
-				.build(toolingId)
-				.getRequest()
-				.execute(context);
-		}
+	protected ResourceURLSchemaSupport getResourceURLSchemaSupport(ServiceProvider context) {
+		return validateAndGetToolingRepository(context).service(ResourceURLSchemaSupport.class);
 	}
-
-	private void checkBranchPath(final RepositoryContext context, final boolean create) {
-		// If no branch is created, the branch should already exist
-		if (!create && !branchExists(branchPath, context)) {
-			throw new BadRequestException("Branch path '%s' should point to an existing branch if given.", branchPath);
-		}
-		
-		// If the branch should be created, it branch should not exist, however 
-		if (create) {
-			final String newBranchPath = Branch.get(parentPath, getId());
-			if (branchExists(newBranchPath, context)) {
-				throw new AlreadyExistsException("Code system branch", newBranchPath);
-			}
-		}
-	}
-
-	private Optional<Version> checkCodeSystem(final RepositoryContext context, final boolean create) {
-		// toolingId must be supported
-		context.service(RepositoryManager.class)
-			.repositories()
-			.stream()
-			.filter(repository -> repository.id().equals(toolingId))
-			.findFirst()
-			.orElseThrow(() -> new BadRequestException("ToolingId '%s' is not supported by this server.", toolingId));
-
-		// OID must be unique if defined
-		if (!Strings.isNullOrEmpty(oid)) {
-			final boolean existingOid = CodeSystemRequests.prepareSearchCodeSystem()
-					.setLimit(0)
-					.filterByOid(oid)
-					.build()
-					.execute(context)
-					.getTotal() > 0;
-			if (existingOid) {
-				throw new AlreadyExistsException("Resource", "oid", oid);
-			}
-		}
-		
-		
-		if (extensionOf != null) {
-			
-			if (extensionOf.isHead() || extensionOf.isLatest()) {
-				throw new BadRequestException("Base code system version was not expicitly given (can not be empty, "
-						+ "LATEST or HEAD) in extensionOf URI %s.", extensionOf);
-			}
-			
-			final String versionId = extensionOf.getPath();
-			
-			final Optional<Version> extensionOfVersion = ResourceRequests.prepareSearchVersion()
-					.one()
-					.filterByResource(extensionOf.withoutPath())
-					.filterByVersionId(versionId)
-					.build()
-					.execute(context)
-					.first();
-			
-			if (!extensionOfVersion.isPresent()) {
-				throw new BadRequestException("Couldn't find base code system version for extensionOf URI %s.", extensionOf);
-			}
-			
-			// The working branch prefix is determined by the extensionOf code system version's path
-			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), getId());
-			
-			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
-			if (upgradeOf == null && !create && !branchPath.equals(newResourceBranchPath)) {
-				throw new BadRequestException("Branch path is inconsistent with extensionOf URI ('%s' given, should be '%s').",
-						branchPath, newResourceBranchPath);
-			}
-
-			return extensionOfVersion;
-		}
-		
-		return Optional.empty();
-	}
-
-	private void checkSettings() {
-		if (settings != null) {
-			final Optional<String> nullValueProperty = settings.entrySet()
-				.stream()
-				.filter(e -> e.getValue() == null)
-				.map(e -> e.getKey())
-				.findFirst();
-			
-			nullValueProperty.ifPresent(key -> {
-				throw new BadRequestException("Setting value for key '%s' is null.", key);	
-			});
-		}
-	}
-	
-	private boolean branchExists(final String path, final ServiceProvider context) {
-		Branches branches = RepositoryRequests.branching()
-				.prepareSearch()
-				.setLimit(1)
-				.filterById(path)
-				.build(toolingId)
-				.getRequest()
-				.execute(context);
-		
-		if (branches.isEmpty()) {
-			return false;
-		}
-		
-		return branches.stream().filter(b -> !b.isDeleted()).findFirst().isPresent();
-		
-	}
-	
 }

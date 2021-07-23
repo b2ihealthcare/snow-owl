@@ -84,7 +84,8 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		if (!matcher.matches()) {
 			throw new BadRequestException("Malformed Resource URI value: '%s' must be in format '<resourceType>/<resourceId>/<path>'.", uri);
 		}
-		this.uri = uri;
+		// ignore HEAD in path part by automatically removing it from the uri
+		this.uri = uri.replaceAll("/HEAD", ""); 
 		this.resourceType = matcher.group(1);
 		this.resourceId = matcher.group(2);
 		this.path = CompareUtils.isEmpty(matcher.group(3)) ? HEAD : matcher.group(3).substring(1); // removes the leading slash character
@@ -125,6 +126,11 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	@JsonIgnore
 	public ResourceURI withoutPath() {
 		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
+	}
+	
+	@JsonIgnore
+	public String withoutResourceType() {
+		return isHead() ? resourceId : String.join(Branch.SEPARATOR, resourceId, path);
 	}
 	
 	public ResourceURI asLatest() {

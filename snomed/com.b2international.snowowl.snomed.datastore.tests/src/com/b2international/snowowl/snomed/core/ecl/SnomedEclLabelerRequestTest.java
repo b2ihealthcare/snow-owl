@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,15 +35,10 @@ import com.b2international.index.Index;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
-import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
-import com.b2international.snowowl.snomed.core.ecl.EclParser;
-import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -51,17 +46,14 @@ import com.b2international.snowowl.test.commons.snomed.DocumentBuilders;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
 /**
  * @since 7.6
  */
-public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
+public class SnomedEclLabelerRequestTest extends BaseRevisionIndexTest {
 
 	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-	private static final Injector QUERY_INJECTOR = new QLStandaloneSetup().createInjectorAndDoEMFRegistration();
 
 	private BranchContext context;
 
@@ -79,18 +71,18 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 
 	@Before
 	public void setup() {
+		final IParser parser = ECL_INJECTOR.getInstance(IParser.class);
+		final IResourceValidator resourceValidator = ECL_INJECTOR.getInstance(IResourceValidator.class);
+		final ISerializer serializer = ECL_INJECTOR.getInstance(ISerializer.class);
+		
 		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class,
-						new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)))
-				.with(SnomedQueryParser.class,
-						new DefaultSnomedQueryParser(QUERY_INJECTOR.getInstance(IParser.class), QUERY_INJECTOR.getInstance(IResourceValidator.class)))
-				.with(SnomedQuerySerializer.class, new DefaultSnomedQuerySerializer(QUERY_INJECTOR.getInstance(ISerializer.class)))
-				.with(Index.class, rawIndex()).with(RevisionIndex.class, index()).build();
+			.with(EclParser.class, new DefaultEclParser(parser, resourceValidator))
+			.with(EclSerializer.class, new DefaultEclSerializer(serializer))
+			.with(Index.class, rawIndex()).with(RevisionIndex.class, index()).build();
 	}
 
 	private String label(String expression) {
-		return label(expression, SnomedConcept.Expand.FULLY_SPECIFIED_NAME, Collections.emptyList());
+		return label(expression, SnomedConcept.Expand.FULLY_SPECIFIED_NAME);
 	}
 	
 	private String label(String expression, String descriptionType) {
@@ -107,8 +99,8 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 				.get();
 	}
 	
-	private Expressions bulkLabel(List<String> expressions, String descriptionType, List<ExtendedLocale> locales) {
-		return new RevisionIndexReadRequest<>(SnomedRequests.prepareQueryLabeler(expressions)
+	private LabeledEclExpressions bulkLabel(List<String> expressions, String descriptionType, List<ExtendedLocale> locales) {
+		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclLabeler(expressions)
 				.setLocales(locales)
 				.setDescriptionType(descriptionType)
 				.build())
@@ -147,7 +139,7 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 		// list
 		String fsn = "SNOMED CT Concept (SNOMED RT+CTV3)";
 		indexRevision(MAIN,
-				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(ImmutableList.of(
+				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(List.of(
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, fsn, Concepts.REFSET_LANGUAGE_TYPE_UK)))
 						.build());
 		String result = label(Concepts.ROOT_CONCEPT);
@@ -159,11 +151,11 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 		String fsnUk = "SNOMED CT Concept (uk)";
 		String fsnUs = "SNOMED CT Concept (us)";
 		indexRevision(MAIN,
-				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(ImmutableList.of(
+				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(List.of(
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, fsnUk, Concepts.REFSET_LANGUAGE_TYPE_UK),
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, fsnUs, Concepts.REFSET_LANGUAGE_TYPE_US)))
 						.build());
-		String result = label(Concepts.ROOT_CONCEPT, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
+		String result = label(Concepts.ROOT_CONCEPT, List.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
 		assertEquals(Concepts.ROOT_CONCEPT + " |" + fsnUs + "|", result);
 	}
 	
@@ -172,11 +164,11 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 		String ptUk = "SNOMED CT Concept UK";
 		String ptUs = "SNOMED CT Concept US";
 		indexRevision(MAIN,
-				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(ImmutableList.of(
+				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(List.of(
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, ptUk, Concepts.REFSET_LANGUAGE_TYPE_UK),
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, ptUs, Concepts.REFSET_LANGUAGE_TYPE_US)))
 						.build());
-		String result = label(Concepts.ROOT_CONCEPT, SnomedConcept.Expand.PREFERRED_TERM, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
+		String result = label(Concepts.ROOT_CONCEPT, SnomedConcept.Expand.PREFERRED_TERM, List.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
 		assertEquals(Concepts.ROOT_CONCEPT + " |" + ptUs + "|", result);
 	}
 	
@@ -187,17 +179,17 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 		String isaPtUk = "Is a UK";
 		String isaPtUs = "Is a US";
 		indexRevision(MAIN,
-				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(ImmutableList.of(
+				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(List.of(
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, rootPtUk, Concepts.REFSET_LANGUAGE_TYPE_UK),
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, rootPtUs, Concepts.REFSET_LANGUAGE_TYPE_US)))
 						.build());
 		indexRevision(MAIN,
-				DocumentBuilders.concept(Concepts.IS_A).preferredDescriptions(ImmutableList.of(
+				DocumentBuilders.concept(Concepts.IS_A).preferredDescriptions(List.of(
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, isaPtUk, Concepts.REFSET_LANGUAGE_TYPE_UK),
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, isaPtUs, Concepts.REFSET_LANGUAGE_TYPE_US)))
 						.build());
 		
-		Expressions result = bulkLabel(List.of(Concepts.ROOT_CONCEPT, Concepts.IS_A), SnomedConcept.Expand.PREFERRED_TERM, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
+		LabeledEclExpressions result = bulkLabel(List.of(Concepts.ROOT_CONCEPT, Concepts.IS_A), SnomedConcept.Expand.PREFERRED_TERM, List.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
 		assertThat(result).containsSequence(
 			Concepts.ROOT_CONCEPT + " |" + rootPtUs + "|",
 			Concepts.IS_A + " |" + isaPtUs + "|"
@@ -208,21 +200,20 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 	public void wrongExpression() throws Exception {
 		String ptUk = "SNOMED CT Concept UK";
 		indexRevision(MAIN,
-				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(ImmutableList.of(
+				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(List.of(
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, ptUk, Concepts.REFSET_LANGUAGE_TYPE_UK)))
 						.build());
 
-		Throwable exception = Assertions.catchThrowable(() -> bulkLabel(List.of("A", "B", Concepts.ROOT_CONCEPT), SnomedConcept.Expand.PREFERRED_TERM, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))));
+		Throwable exception = Assertions.catchThrowable(() -> bulkLabel(List.of("A", "B", Concepts.ROOT_CONCEPT), SnomedConcept.Expand.PREFERRED_TERM, List.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))));
 
-		LinkedHashMap<String, Collection<String>> errors = Maps.newLinkedHashMap();
-		errors.put("A", List.of("no viable alternative at character '<EOF>'"));
-		errors.put("B", List.of("no viable alternative at character 'B'"));
-
-		HashMap<String, Object> erroneousExpressions = Maps.newHashMap();
-		erroneousExpressions.put("erroneousExpressions", errors);
-
-		Assertions.assertThat(exception).isExactlyInstanceOf(BadRequestException.class)
-		.hasFieldOrPropertyWithValue("additionalInfo", erroneousExpressions);
+		Assertions.assertThat(exception)
+			.isExactlyInstanceOf(BadRequestException.class)
+			.hasFieldOrPropertyWithValue("additionalInfo", Map.of(
+				"erroneousExpressions", Map.of(
+					"A", List.of("Invalid character 'A' at [1:1]"),
+					"B", List.of("Invalid character 'B' at [1:1]")
+				)				
+			));
 	}
 
 }

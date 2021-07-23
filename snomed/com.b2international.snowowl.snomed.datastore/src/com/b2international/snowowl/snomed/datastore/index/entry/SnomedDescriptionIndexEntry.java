@@ -52,7 +52,7 @@ import com.google.common.collect.Sets;
  * A transfer object representing a SNOMED CT description.
  */
 @Doc(
-	type="description",
+	type=SnomedDescription.TYPE,
 	revisionHash = { 
 		SnomedDocument.Fields.ACTIVE, 
 		SnomedDocument.Fields.EFFECTIVE_TIME, 

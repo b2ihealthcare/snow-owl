@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public final class Uri {
 	 */
 	@JsonIgnore
 	public boolean isSnomedUri() {
-		return uriValue !=null && uriValue.startsWith(SNOMED_BASE_URI_STRING);
+		return uriValue != null && uriValue.startsWith(SNOMED_BASE_URI_STRING);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public final class Uri {
 
 	@Override
 	public String toString() {
-		return "Uri [uriValue=" + uriValue + "]";
+		return getUriValue();
 	}
 
 }

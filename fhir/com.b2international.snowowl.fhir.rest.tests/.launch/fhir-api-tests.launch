@@ -41,7 +41,6 @@
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
         <setEntry value="com.b2international.snomed.ecl@default:default"/>
-        <setEntry value="com.b2international.snomed.ql@default:default"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-annotations@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-core@default:default"/>
@@ -72,8 +71,8 @@
         <setEntry value="io.netty.resolver@default:default"/>
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
-        <setEntry value="io.swagger.annotations@default:default"/>
-        <setEntry value="io.swagger.models@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-annotations@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-models@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
         <setEntry value="javax.activation-api@default:default"/>
         <setEntry value="javax.annotation@default:default"/>

@@ -8,8 +8,8 @@ import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
@@ -44,7 +44,7 @@ for (Integer length : descriptionTypesByMaxLength.keySet()) {
     final ExpressionBuilder activeDescriptionFilter = Expressions.builder()
             .filter(SnomedDescriptionIndexEntry.Expressions.active())
             .filter(SnomedDescriptionIndexEntry.Expressions.types(descriptionTypes))
-            .filter(Expressions.scriptQuery("doc['term.original'].value.length() > params.length", ImmutableMap.of("length", length)))
+            .filter(Expressions.scriptQuery("doc['term'].value.length() > params.length", ImmutableMap.of("length", length)))
 
     if (params.isUnpublishedOnly) {
         activeDescriptionFilter.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
@@ -59,7 +59,7 @@ for (Integer length : descriptionTypesByMaxLength.keySet()) {
 
     invalidDescriptions.each({ descriptionBatch ->
         descriptionBatch.each({ id ->
-            issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, id))
+            issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, id))
         })
     })
 }

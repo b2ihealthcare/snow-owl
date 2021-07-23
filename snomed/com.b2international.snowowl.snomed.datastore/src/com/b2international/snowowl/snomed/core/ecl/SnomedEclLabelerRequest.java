@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.core.ecl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,7 +27,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.tree.NoopTreeVisitor;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
-import com.b2international.snomed.ql.ql.Query;
+import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.emf.EObjectTreeNode;
@@ -44,7 +44,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.6.0
  */
-final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Expressions> implements BranchAccessControl {
+final class SnomedEclLabelerRequest extends ResourceRequest<BranchContext, LabeledEclExpressions> implements BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -69,18 +69,19 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 	}
 
 	@Override
-	public Expressions execute(BranchContext context) {
-		SnomedQuerySerializer querySerializer = context.service(SnomedQuerySerializer.class);
+	public LabeledEclExpressions execute(BranchContext context) {
+		final EclSerializer eclSerializer = context.service(EclSerializer.class);
+		final EclParser eclParser = context.service(EclParser.class);
 		final Set<String> conceptIdsToLabel = Sets.newHashSetWithExpectedSize(expressions.size());
-		final Map<String, Query> queries = Maps.newHashMapWithExpectedSize(expressions.size());
-		LinkedHashMap <String, Object> errors = Maps.newLinkedHashMap();
+		final Map<String, ExpressionConstraint> queries = Maps.newHashMapWithExpectedSize(expressions.size());
+		final LinkedHashMap <String, Object> errors = Maps.newLinkedHashMap();
 		
 		for (String expression : expressions) {
 			if (Strings.isNullOrEmpty(expression)) {
 				continue;
 			}
 			try {
-				Query query = queries.computeIfAbsent(expression, (key) -> context.service(SnomedQueryParser.class).parse(key));
+				ExpressionConstraint query = queries.computeIfAbsent(expression, (key) -> eclParser.parse(key));
 				conceptIdsToLabel.addAll(collect(query));
 			} catch (ApiException e) {
 				if (e instanceof SyntaxException) {
@@ -94,7 +95,7 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 		}
 		
 		if (!errors.isEmpty()) {
-			BadRequestException badRequestException = new BadRequestException("One or more QL syntax errors");
+			BadRequestException badRequestException = new BadRequestException("One or more ECL syntax errors");
 			badRequestException.withAdditionalInfo("erroneousExpressions", errors);
 
 			throw badRequestException;
@@ -117,15 +118,14 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 				if (Strings.isNullOrEmpty(expression)) {
 					return expression;
 				} else {
-					Query query = queries.get(expression);
+					ExpressionConstraint query = queries.get(expression);
 					expand(query, labels);
-					return querySerializer.serialize(query);
+					return eclSerializer.serialize(query);
 				}
 			})
 			.collect(Collectors.toList());
 		
-		
-		return new Expressions(results);
+		return new LabeledEclExpressions(results);
 	}
 	
 	private String extractLabel(SnomedConcept concept) {
@@ -145,7 +145,7 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 		return concept.getId(); 
 	}
 
-	private Set<String> collect(Query query) {
+	private Set<String> collect(ExpressionConstraint constraint) {
 		final Set<String> conceptIds = Sets.newHashSet();
 		
 		EObjectWalker.createContainmentWalker(new NoopTreeVisitor<EObjectTreeNode>() {
@@ -156,12 +156,12 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 					conceptIds.add(ref.getId());
 				}
 			}
-		}).walk(query);
+		}).walk(constraint);
 		
 		return conceptIds;
 	}
 	
-	private void expand(Query query, final Map<String, String> labels) {
+	private void expand(ExpressionConstraint constraint, final Map<String, String> labels) {
 		EObjectWalker.createContainmentWalker(new NoopTreeVisitor<EObjectTreeNode>() {
 			@Override
 			protected void doVisit(EObjectTreeNode node) {
@@ -175,7 +175,6 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 					// TODO report missing labels?
 				}
 			}
-		}).walk(query);
+		}).walk(constraint);
 	}
-
 }

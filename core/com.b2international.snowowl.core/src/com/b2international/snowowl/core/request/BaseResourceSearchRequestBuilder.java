@@ -16,14 +16,15 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceSearchRequest.OptionKey;
 
 /**
  * @since 8.0
  */
-public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSearchRequestBuilder<RB, R>, R>
-		extends SearchResourceRequestBuilder<RB, RepositoryContext, R>
+public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSearchRequestBuilder<RB, R>, R extends PageableCollectionResource<?>>
+		extends SearchPageableCollectionResourceRequestBuilder<RB, RepositoryContext, R>
 		implements ResourceRepositoryRequestBuilder<R> {
 
 	public RB filterByUrl(String url) {
@@ -33,7 +34,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	public RB filterByUrls(Iterable<String> urls) {
 		return addOption(OptionKey.URL, urls);
 	}
-	
+
 	/**
 	 * Filter matches by a {@link TermFilter} configuration
 	 * 
@@ -90,6 +91,22 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 
 	public RB filterByBundleIds(Iterable<String> bundleIds) {
 		return addOption(OptionKey.BUNDLE_ID, bundleIds);
+	}
+
+	public RB filterByOid(String oid) {
+		return addOption(OptionKey.OID, oid);
+	}
+	
+	public RB filterByOids(Iterable<String> oids) {
+		return addOption(OptionKey.OID, oids);
+	}
+
+	public RB filterByStatus(String status) {
+		return addOption(OptionKey.STATUS, status);
+	}
+
+	public RB filterByStatus(Iterable<String> status) {
+		return addOption(OptionKey.STATUS, status);
 	}
 
 }

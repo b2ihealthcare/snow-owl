@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
@@ -26,7 +27,6 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.asser
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -62,9 +62,7 @@ import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
-import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.core.rest.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -174,6 +172,82 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.with("commitComment", "Created an IS A cycle with three relationships");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
+	}
+	
+	@Test
+	public void createConceptWithSemanticTag() throws Exception {
+		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		SnomedConcept concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
+		
+		SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+			"conceptId", conceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", "My awesome fsn (tag)",
+			"languageCode", "en",
+			"acceptability", UK_PREFERRED_MAP,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "New FSN"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("tag");
+	}
+	
+	@Test
+	public void updateConceptSemanticTag() throws Exception {
+		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		SnomedConcept concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
+		
+		String fsnId = SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+			"conceptId", conceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", "My awesome fsn (tag)",
+			"languageCode", "en",
+			"acceptability", UK_PREFERRED_MAP,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "New FSN"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("tag");
+		
+		SnomedComponentRestRequests.updateComponent(branchPath, SnomedComponentType.DESCRIPTION, fsnId, Json.object(
+			"term", "My awesome fsn (updated)",
+			"commitComment", "Update FSN semantic tag"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("updated");
+	}
+	
+	@Test
+	public void deleteConceptSemanticTag() throws Exception {
+		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		SnomedConcept concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
+		
+		String fsnId = SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+			"conceptId", conceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", "My awesome fsn (tag)",
+			"languageCode", "en",
+			"acceptability", UK_PREFERRED_MAP,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "New FSN"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("tag");
+		
+		SnomedComponentRestRequests.deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, fsnId, false);
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
 	}
 
 	@Test
@@ -290,7 +364,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void updateInactivationIndicatorOnActiveConceptWithAssociationTargets() throws Exception {
 		String conceptId = createNewConcept(branchPath);
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, conceptId)
-				.with(SnomedRf2Headers.FIELD_TARGET_COMPONENT, Concepts.ROOT_CONCEPT)
+				.with(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, Concepts.ROOT_CONCEPT)
 				.with("commitComment", "Created new reference set member");
 
 		final String associationMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
@@ -395,19 +469,19 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithMember() throws Exception {
-		String refSetId = createNewRefSet(branchPath);
+		String refsetId = createNewRefSet(branchPath);
 
 		Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
 				.with("members", Json.array(Json.object(
 					"moduleId", Concepts.MODULE_SCT_CORE,
-					"referenceSetId", refSetId
+					"refsetId", refsetId
 				)))
 				.with("commitComment", "Created concept with reference set member");
 
 		String conceptId = assertCreated(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody));
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()").statusCode(200)
-			.body("members.items[0].referenceSetId", equalTo(refSetId));
+			.body("members.items[0].refsetId", equalTo(refsetId));
 	}
 
 	@Test
@@ -465,7 +539,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		newRelationship.setTypeId(Concepts.PART_OF);
 		newRelationship.setDestinationId(Concepts.NAMESPACE_ROOT);
 		newRelationship.setModuleId(Concepts.MODULE_SCT_CORE);
-		newRelationship.setGroup(0);
+		newRelationship.setRelationshipGroup(0);
 		newRelationship.setUnionGroup(0);
 		newRelationship.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
@@ -501,7 +575,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(refSetId);
+		newMember.setRefsetId(refSetId);
 		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
 
 		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
@@ -667,7 +741,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				"id", conceptId,
 				"members", Json.array(Json.object(
 					"moduleId", Concepts.MODULE_SCT_CORE,
-					"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+					"refsetId", Concepts.REFSET_OWL_AXIOM,
 					SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression
 				)),
 				"commitComment", "Created concept with owl axiom reference set member"
@@ -698,7 +772,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 					"id", conceptId,
 					"members", Json.array(Json.object(
 						"moduleId", Concepts.MODULE_SCT_CORE,
-						"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+						"refsetId", Concepts.REFSET_OWL_AXIOM,
 						SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression
 					)),
 					"commitComment", "Created concept with owl axiom reference set member"
@@ -724,7 +798,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String owlSubClassOfExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:100106001 :100102001))) :"+conceptId+")";
 		final Map<?, ?> memberRequestBody = Json.object(
 			"moduleId", Concepts.MODULE_SCT_CORE,
-			"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+			"refsetId", Concepts.REFSET_OWL_AXIOM,
 			SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubClassOfExpression
 		);
 		
@@ -798,7 +872,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setRefsetId(Concepts.REFSET_OWL_AXIOM);
 		newMember.setProperties(
 			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT))
 		);
@@ -831,7 +905,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setRefsetId(Concepts.REFSET_OWL_AXIOM);
 		newMember.setProperties(
 			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT))
 		);
@@ -870,7 +944,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setRefsetId(Concepts.REFSET_OWL_AXIOM);
 		newMember.setProperties(
 			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", conceptId, Concepts.AMBIGUOUS))
 		);
@@ -997,7 +1071,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 					"id", owlAxiomMemberId,
 					"active", true,
 					"moduleId", Concepts.MODULE_SCT_CORE,
-					"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+					"refsetId", Concepts.REFSET_OWL_AXIOM,
 					SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression
 				)),
 				"commitComment", "Created concept with owl axiom reference set member"

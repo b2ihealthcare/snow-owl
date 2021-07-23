@@ -184,7 +184,7 @@ public class JavaBinCodec {
     DataInputStream dis = wrapInputStream(is);
     version = dis.readByte();
     if (version != VERSION) {
-      throw new RuntimeException("Invalid version (expected " + VERSION +
+      throw new IllegalArgumentException("Invalid version (expected " + VERSION +
           ", but " + version + ") or the data in not in 'javabin' format");
     }
 

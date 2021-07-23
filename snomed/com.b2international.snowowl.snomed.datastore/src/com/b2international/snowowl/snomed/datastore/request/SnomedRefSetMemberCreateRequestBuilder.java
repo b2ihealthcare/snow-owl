@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.Requests;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 
 /**
  * <i>Builder</i> class to build requests responsible for creating SNOMED CT reference set members.
@@ -64,7 +65,7 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 		return getSelf();
 	}
 	
-	public SnomedRefSetMemberCreateRequestBuilder setReferenceSetId(String referenceSetId) {
+	public SnomedRefSetMemberCreateRequestBuilder setRefsetId(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
 		return getSelf();
 	}
@@ -75,9 +76,9 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setSource(Map<String, Object> source) {
-		setModuleId((String) source.get("moduleId"));
-		setReferencedComponentId((String) source.get("referencedComponentId"));
-		setReferenceSetId((String) source.get("referenceSetId"));
+		setModuleId((String) source.get(SnomedRf2Headers.FIELD_MODULE_ID));
+		setReferencedComponentId((String) source.get(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID));
+		setRefsetId((String) source.get(SnomedRf2Headers.FIELD_REFSET_ID));
 		setProperties(source);
 		return getSelf();
 	}

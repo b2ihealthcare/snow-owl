@@ -20,11 +20,12 @@ import java.util.Map;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberUpdateRequestBuilder extends BaseRequestBuilder<QueryRefSetMemberUpdateRequestBuilder, TransactionContext, Boolean> {
+public final class QueryRefSetMemberUpdateRequestBuilder extends BaseRequestBuilder<QueryRefSetMemberUpdateRequestBuilder, TransactionContext, Boolean> implements TransactionalRequestBuilder<Boolean> {
 
 	private String memberId;
 	private String moduleId;

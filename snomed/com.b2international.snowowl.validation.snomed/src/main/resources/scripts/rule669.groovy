@@ -10,7 +10,9 @@ import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.terminology.ComponentCategory
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
@@ -32,7 +34,7 @@ if (params.isUnpublishedOnly) {
 	
 	searcher.scroll(Query.select(String[].class)
 		.from(SnomedRefSetMemberIndexEntry.class)
-		.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+		.fields(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 		.where(
 			Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
@@ -55,7 +57,7 @@ if (params.isUnpublishedOnly) {
 	
 	// attach refset and refComp filter to reduce visibility of rule to unpublished member references
 	queryBuilder
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(unpublishedRefSetIds))
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(unpublishedRefSetIds))
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(unpublishedReferencedComponentIds))
 	
 } 
@@ -65,11 +67,11 @@ def String previousMemberKey
 // search ALL relevant members by the current query and sort them by refset and refComp and moduleId
 searcher.scroll(Query.select(String[].class)
 	.from(SnomedRefSetMemberIndexEntry.class)
-	.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedDocument.Fields.MODULE_ID)
+	.fields(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedDocument.Fields.MODULE_ID)
 	.where(queryBuilder.build())
 	.sortBy(
 		SortBy.builder()
-			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, Order.ASC)
+			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, Order.ASC)
 			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
 			.sortByField(SnomedDocument.Fields.MODULE_ID, Order.ASC)
 		.build()
@@ -87,13 +89,13 @@ searcher.scroll(Query.select(String[].class)
 		} else {
 			switch (SnomedIdentifiers.getComponentCategory(referencedComponentId)) {
 				case ComponentCategory.CONCEPT:
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, referencedComponentId));
+					issues.add(ComponentIdentifier.of(SnomedConcept.TYPE, referencedComponentId));
 					break;
 				case ComponentCategory.DESCRIPTION:
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, referencedComponentId));
+					issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, referencedComponentId));
 					break;
 				case ComponentCategory.RELATIONSHIP:
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, referencedComponentId))
+					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, referencedComponentId))
 					break;
 				default: // ignore
 					break;

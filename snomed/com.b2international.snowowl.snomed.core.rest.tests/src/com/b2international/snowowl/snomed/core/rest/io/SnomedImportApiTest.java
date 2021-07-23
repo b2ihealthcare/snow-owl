@@ -30,29 +30,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2ImportRequestBuilder;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.response.ValidatableResponse;
@@ -64,16 +64,6 @@ import io.restassured.response.ValidatableResponse;
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
-
-	@Before
-	public void before() {
-		SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
-	}
-	
-	@After
-	public void after() {
-		SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
-	}
 	
 	private void importArchive(final String fileName) {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
@@ -332,30 +322,30 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		SnomedConcept oldRoot = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
 		assertTrue(oldRoot.getMembers().getItems().stream()
-			.noneMatch(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM) || m.getReferenceSetId().equals(Concepts.REFSET_OWL_ONTOLOGY)));
+			.noneMatch(m -> m.getRefsetId().equals(Concepts.REFSET_OWL_AXIOM) || m.getRefsetId().equals(Concepts.REFSET_OWL_ONTOLOGY)));
 		
 		importArchive("SnomedCT_Release_INT_20170731_new_owl_expression_members.zip");
 		SnomedConcept root = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
 		
 		Optional<SnomedReferenceSetMember> axiomMember = root.getMembers().getItems().stream()
-			.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM))
+			.filter(m -> m.getRefsetId().equals(Concepts.REFSET_OWL_AXIOM))
 			.findFirst();
 		
 		assertTrue(axiomMember.isPresent());
 		assertEquals("ec2cc6be-a10b-44b1-a2cc-42a3f11d406e", axiomMember.get().getId());
 		assertEquals(Concepts.MODULE_SCT_CORE, axiomMember.get().getModuleId());
-		assertEquals(Concepts.REFSET_OWL_AXIOM, axiomMember.get().getReferenceSetId());
+		assertEquals(Concepts.REFSET_OWL_AXIOM, axiomMember.get().getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, axiomMember.get().getReferencedComponent().getId());
 		assertEquals(OWL_EXPRESSION, axiomMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 		
 		Optional<SnomedReferenceSetMember> ontologyMember = root.getMembers().getItems().stream()
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_ONTOLOGY))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_OWL_ONTOLOGY))
 				.findFirst();
 			
 		assertTrue(ontologyMember.isPresent());
 		assertEquals("f81c24fb-c40a-4b28-9adb-85f748f71395", ontologyMember.get().getId());
 		assertEquals(Concepts.MODULE_SCT_CORE, ontologyMember.get().getModuleId());
-		assertEquals(Concepts.REFSET_OWL_ONTOLOGY, ontologyMember.get().getReferenceSetId());
+		assertEquals(Concepts.REFSET_OWL_ONTOLOGY, ontologyMember.get().getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, ontologyMember.get().getReferencedComponent().getId());
 		assertEquals("Ontology(<http://snomed.info/sct/900000000000207008>)", ontologyMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 	}
@@ -368,10 +358,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.as(SnomedConcept.class);
 		
 		assertTrue(StreamSupport.stream(rootConcept.getMembers().spliterator(), false).noneMatch(m -> {
-			return m.getReferenceSetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL) ||
-			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL) ||
-			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL) ||
-			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE);
+			return m.getRefsetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL) ||
+			m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL) ||
+			m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL) ||
+			m.getRefsetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE);
 		}));
 		
 		importArchive("SnomedCT_Release_INT_20170731_new_mrcm_members.zip");
@@ -381,7 +371,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.as(SnomedConcept.class);
 		
 		Optional<SnomedReferenceSetMember> mrcmDomainMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-			.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL))
+			.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL))
 			.findFirst();
 		
 		assertTrue(mrcmDomainMemberCandidate.isPresent());
@@ -389,7 +379,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("28ecaa32-8f0e-4ff8-b6b1-b642e40519d8", mrcmDomainMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmDomainMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrcmDomainMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrcmDomainMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrcmDomainMember.getReferencedComponent().getId());
 		Map<String, Object> domainMemberProps = mrcmDomainMember.getProperties();
 		assertEquals("domainConstraint", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT));
@@ -401,7 +391,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals("guideURL", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE));
 		
 		Optional<SnomedReferenceSetMember> mrcmAttributeDomainMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
 				.findFirst();
 			
 		assertTrue(mrcmAttributeDomainMemberCandidate.isPresent());
@@ -409,7 +399,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("126bf3f1-4f34-439d-ba0a-a832824d072a", mrcmAttributeDomainMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmAttributeDomainMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL, mrcmAttributeDomainMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL, mrcmAttributeDomainMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrcmAttributeDomainMember.getReferencedComponent().getId());
 		Map<String, Object> attributeDomainMemberProps = mrcmAttributeDomainMember.getProperties();
 		assertEquals(Concepts.ROOT_CONCEPT, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID));
@@ -420,7 +410,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.ROOT_CONCEPT, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
 		
 		Optional<SnomedReferenceSetMember> mrcmAttributeRangeMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL))
 				.findFirst();
 			
 		assertTrue(mrcmAttributeRangeMemberCandidate.isPresent());
@@ -428,7 +418,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("ae090cc3-2827-4e39-80c6-364435d30c17", mrcmAttributeRangeMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmAttributeRangeMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL, mrcmAttributeRangeMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL, mrcmAttributeRangeMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrcmAttributeRangeMember.getReferencedComponent().getId());
 		Map<String, Object> attributeRangeMemberProps = mrcmAttributeRangeMember.getProperties();
 		assertEquals("rangeConstraint", attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT));
@@ -437,7 +427,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.ROOT_CONCEPT, attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
 		
 		Optional<SnomedReferenceSetMember> mrcmModuleScopeMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE))
 				.findFirst();
 			
 		assertTrue(mrcmModuleScopeMemberCandidate.isPresent());
@@ -445,7 +435,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("52d29f1b-f7a3-4a0f-828c-383c6259c3f5", mrmcModuleScopeMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrmcModuleScopeMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_MODULE_SCOPE, mrmcModuleScopeMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_MODULE_SCOPE, mrmcModuleScopeMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrmcModuleScopeMember.getReferencedComponent().getId());
 		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrmcModuleScopeMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
 	}
@@ -522,18 +512,13 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void import33CreateVersionFromBranch() throws Exception {
-		try {
-			SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
-			final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-					.put("type", Rf2ReleaseType.DELTA.name())
-					.put("createVersions", true)
-					.build();
-			final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
-					.extract().header("Location"));
-			waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
-		} finally {
-			SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
-		}
+		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("createVersions", true)
+				.build();
+		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
+				.extract().header("Location"));
+		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
@@ -549,6 +534,21 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		assertEquals("Base and head timestamp must be equal after branch creation", baseTimestamp, headTimestamp);
 
+		if (createVersions) {
+			// Create a code system with the test branch path as its working branch
+			final String codeSystemId = branch.lastSegment();
+			
+			CodeSystemRequests.prepareNewCodeSystem()
+				.setBranchPath(branch.getPath())
+				.setId(codeSystemId)
+				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+				.setTitle(codeSystemId)
+				.build("info@b2international.com", "Created new code system " + codeSystemId)
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+		}
+		
 		importArchive(branch, createVersions, Rf2ReleaseType.DELTA, importArchiveFileName);
 
 		ValidatableResponse response2 = branching.getBranch(branch);

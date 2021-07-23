@@ -91,6 +91,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	public static final String MAIN_PATH = "MAIN";
 	
 	/**
+	 * The internal ID of the MAIN branch.
+	 */
+	public static final long MAIN_BRANCH_ID = 0L;
+	
+	/**
 	 * Segment separator in {@link RevisionBranch#getPath()} values.
 	 */
 	public static final String SEPARATOR = "/";
