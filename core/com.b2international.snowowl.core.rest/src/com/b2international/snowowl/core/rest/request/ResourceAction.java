@@ -38,7 +38,7 @@ public enum ResourceAction {
 			}
 		}
 
-		throw new BadRequestException("Invalid value set clause action type '%s'. Only {%s} are allowed", action,
+		throw new BadRequestException("Invalid action type '%s'. Only {%s} are allowed", action,
 				String.join(",", List.of(ResourceAction.values())
 						.stream()
 						.map(actionType -> actionType.name())
