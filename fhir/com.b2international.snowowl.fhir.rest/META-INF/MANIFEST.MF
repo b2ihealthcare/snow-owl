@@ -7,4 +7,5 @@ Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.core.rest
 Automatic-Module-Name: com.b2international.snowowl.fhir.rest
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: com.b2international.snowowl.fhir.core
+Require-Bundle: com.b2international.snowowl.fhir.core,
+ com.b2international.snowowl.lcs.core

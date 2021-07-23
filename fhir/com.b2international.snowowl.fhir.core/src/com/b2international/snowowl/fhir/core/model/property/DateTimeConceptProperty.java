@@ -19,11 +19,16 @@ import java.util.Date;
 
 import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty.Builder;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * DateTime concept property
  * @since 6.3
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = DateTimeConceptProperty.Builder.class)
 public class DateTimeConceptProperty extends ConceptProperty<Date> {
 
 	DateTimeConceptProperty(Code code, Date value) {
@@ -39,10 +44,19 @@ public class DateTimeConceptProperty extends ConceptProperty<Date> {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ConceptProperty.Builder<Builder, DateTimeConceptProperty, Date> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueDateTime(final Date value) {
+			this.value = value;
 			return this;
 		}
 

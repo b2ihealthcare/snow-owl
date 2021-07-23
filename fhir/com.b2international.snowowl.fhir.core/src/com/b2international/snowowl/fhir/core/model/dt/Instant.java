@@ -23,6 +23,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -46,7 +47,7 @@ public class Instant extends Element {
 	
 	@JsonCreator
 	Instant(String instant) {
-		this(null, null, java.time.Instant.parse(instant));
+		this(null, null, FhirDates.parseDate(instant).toInstant());
 	}
 	
 	@SuppressWarnings("rawtypes")

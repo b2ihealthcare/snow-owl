@@ -38,7 +38,7 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
 import io.restassured.path.json.JsonPath;
 
 /**
- * Test for checking the serialization from model->JSON.
+ * Tests for {@link Meta}
  * @since 6.3
  */
 public class MetaTest extends FhirTest {

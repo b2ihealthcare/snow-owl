@@ -19,7 +19,9 @@ import java.util.Date;
 
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -30,6 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 6.3
  */
 @JsonDeserialize(builder = Identifier.Builder.class)
+@JsonInclude(Include.NON_NULL)
 public class Identifier {
 
 	@JsonProperty

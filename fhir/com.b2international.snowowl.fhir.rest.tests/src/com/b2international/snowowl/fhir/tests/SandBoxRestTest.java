@@ -19,22 +19,32 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.BatchRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.ParametersRequestEntry;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -43,9 +53,12 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.rest.tests.AllFhirRestTests;
+import com.b2international.snowowl.fhir.tests.domain.CodeSystemTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
+
+import io.restassured.http.ContentType;
 
 /**
  * @since 6.6
@@ -64,6 +77,25 @@ public class SandBoxRestTest extends FhirRestTest {
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(false))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
+	
+	@Test
+	public void createCodeSystem() throws Exception {
+		
+		File jsonFilePath = PlatformUtil.toAbsolutePathBundleEntry(this.getClass(), "/src/com/b2international/snowowl/fhir/tests/dd_codesystem.json").toFile();
+		
+		System.out.println(jsonFilePath);
+		CodeSystem codeSystem = objectMapper.readValue(jsonFilePath, CodeSystem.class);
+		printPrettyJson(codeSystem);
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType(ContentType.JSON)
+			.body(codeSystem)
+			.when().post("/CodeSystem")
+			.then()
+			.statusCode(200);
+			
+	}
+	
 	
 	//@Test
 	public void restTemplateCallTest() {
@@ -106,7 +138,7 @@ public class SandBoxRestTest extends FhirRestTest {
 	}
 	
 	
-	@Test
+	//@Test
 	public void bulkRequestTest() {
 		
 		LookupRequest lookupRequest = LookupRequest.builder()

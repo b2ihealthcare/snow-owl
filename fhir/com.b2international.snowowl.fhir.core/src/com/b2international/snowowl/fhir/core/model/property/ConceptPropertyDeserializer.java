@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.property;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
+import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -28,54 +28,68 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.google.common.collect.Sets;
 
 /**
- * Polymorphic deserializer to handle different types of {@link Extension}s.
- * @see {@link Extension}
+ * Polymorphic deserializer to handle different types of {@link ConceptProperty}s.
+ * @see {@link ConceptProperty}
  * @since 8.0.0
  */
-public class ExtensionDeserializer extends StdDeserializer<Extension<?>> {
+public class ConceptPropertyDeserializer extends StdDeserializer<ConceptProperty<?>> {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	private static final String VALUE_PREFIX = "value";
 
-	protected ExtensionDeserializer() {
-		super(Extension.class);
+	protected ConceptPropertyDeserializer() {
+		super(ConceptProperty.class);
 	}
-
+	
 	@Override
-	public Extension<?> deserialize(JsonParser parser, DeserializationContext ctx)
+	public ConceptProperty<?> deserialize(JsonParser parser, DeserializationContext arg1)
 			throws IOException, JsonProcessingException {
 		
 		TreeNode node = parser.readValueAsTree();
 		ObjectCodec objectCodec = parser.getCodec();
-		Iterator<String> fieldNames = node.fieldNames();
-
-		ExtensionType[] extensionTypes = ExtensionType.values();
 		
-		ExtensionType extensionType = null;
+		Iterator<String> fieldNames = node.fieldNames();
+		
+		PropertyType[] propertyTypes = PropertyType.values();
+		PropertyType propertyType = null;
+		
 		while (fieldNames.hasNext()) {
 			String fieldName = (String) fieldNames.next();
 			if (fieldName.startsWith(VALUE_PREFIX)) {
 				
 				String type = fieldName.replace(VALUE_PREFIX, "");
-				extensionType = Sets.newHashSet(extensionTypes).stream()
+				propertyType = Sets.newHashSet(propertyTypes).stream()
 					.filter(t -> t.getDisplayName().equalsIgnoreCase(type))
 					.findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown extension type '" + fieldName + "'."));
 				
 				break;
 			}
 		}
-		
-		if (extensionType == null) {
-			throw new IllegalArgumentException("Invalid extension with null value type.");
+
+		if (propertyType == null) {
+			throw new IllegalArgumentException("Invalid property type with null value.");
 		}
 		
-		switch (extensionType) {
+		switch (propertyType) {
+		case CODING:
+			return objectCodec.treeToValue(node, CodingConceptProperty.class);
+		case CODE:
+			return objectCodec.treeToValue(node, CodeConceptProperty.class);
+		case DATETIME:
+			return objectCodec.treeToValue(node, DateTimeConceptProperty.class);
+		case STRING:
+			return objectCodec.treeToValue(node, StringConceptProperty.class);
+		case BOOLEAN:
+			return objectCodec.treeToValue(node, BooleanConceptProperty.class);
+		case DECIMAL:
+			return objectCodec.treeToValue(node, DecimalConceptProperty.class);
 		case INTEGER:
-			return objectCodec.treeToValue(node, IntegerExtension.class);
+			return objectCodec.treeToValue(node, IntegerConceptProperty.class);
 		default:
-			throw new IllegalArgumentException("Unsupported extension type '" + extensionType + "'.");
+			throw new IllegalArgumentException("Unsupported property type '" + propertyType + "'.");
 		}
 	}
-
+	
+	
 }

@@ -288,7 +288,7 @@ public class CodeSystem extends MetadataResource {
 
 		private Collection<SupportedConceptProperty> properties;
 
-		private Collection<Concept> concepts = Sets.newHashSet();
+		private Collection<Concept> concepts;
 
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -390,9 +390,19 @@ public class CodeSystem extends MetadataResource {
 			this.properties.add(property);
 			return getSelf();
 		}
+		
+		@JsonProperty("concept")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder concepts(Collection<Concept> concepts) {
+			this.concepts = concepts;
+			return getSelf();
+		}
 
 		public Builder addConcept(Concept concept) {
-			this.concepts.add(concept);
+			if (concepts == null) {
+				concepts = Sets.newHashSet();
+			}
+			concepts.add(concept);
 			return getSelf();
 		}
 

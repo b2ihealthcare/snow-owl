@@ -54,8 +54,6 @@ public class IntegerExtension extends Extension<Integer> {
 		
 		/*
 		 * For deserialization support.
-		 * @param value
-		 * @return
 		 */
 		protected Builder valueInteger(final Integer value) {
 			this.value = value;

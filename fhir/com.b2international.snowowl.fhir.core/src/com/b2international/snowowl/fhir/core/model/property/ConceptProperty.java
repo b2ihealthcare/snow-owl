@@ -19,11 +19,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
+import com.b2international.snowowl.fhir.core.model.ExtensionDeserializer;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -31,6 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 6.3
  */
 @JsonSerialize(using=ConceptPropertySerializer.class)
+@JsonDeserialize(using = ConceptPropertyDeserializer.class)
 @JsonInclude(Include.NON_EMPTY) //covers nulls as well
 public abstract class ConceptProperty<T> {
 	

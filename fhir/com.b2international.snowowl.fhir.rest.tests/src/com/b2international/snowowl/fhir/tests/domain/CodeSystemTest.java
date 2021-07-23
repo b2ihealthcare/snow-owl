@@ -225,7 +225,7 @@ public class CodeSystemTest extends FhirTest {
 	@Test
 	public void loadCodeSystem() throws Exception {
 			
-		URI uri = CodeSystemTest.class.getResource("dd_codesystem.json").toURI();
+		URI uri = CodeSystemTest.class.getResource("../dd_codesystem.json").toURI();
 		CodeSystem codeSystem = objectMapper.readValue(Paths.get(uri).toFile(), CodeSystem.class);
 		
 		System.out.println("Code system: " + codeSystem.getName());

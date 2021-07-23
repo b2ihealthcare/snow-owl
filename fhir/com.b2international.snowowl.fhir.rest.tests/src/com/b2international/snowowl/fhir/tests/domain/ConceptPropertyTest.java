@@ -150,8 +150,8 @@ public class ConceptPropertyTest extends FhirTest {
 		assertThat(jsonPath.getString("system"), equalTo("uri"));
 	}
 	
-	//@Test
-	public void deserialize() throws Exception {
+	@Test
+	public void deserializeCodingProperty() throws Exception {
 		
 		CodingConceptProperty conceptProperty = CodingConceptProperty.builder()
 				.code(CommonConceptProperties.CHILD.getCode())
