@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.conceptmap.ConceptMapRequests;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -73,7 +73,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		final String refSetId = createSimpleMapTypeRefSet();
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByReferencedComponentId(REFERENCED_COMPONENT)
 				.setLocales("en")
@@ -90,7 +90,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		final String refSetId = createSimpleMapTypeRefSet();
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByMapTarget(MAP_TARGET_1)
 				.setLocales("en")
@@ -113,7 +113,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, "Random map target");
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, uri.toString());
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByComponentIds(Set.of(uri.toString(), uri.identifier()))
 				.filterByConceptMap(refSetId)
@@ -139,7 +139,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, uri2.toString());
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, "Random map target");
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByComponentIds(Set.of(uri.toString(), uri2.toString()))
 				.filterByConceptMap(refSetId)
@@ -159,7 +159,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_2);
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
@@ -175,7 +175,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		final String refSetId = createSimpleMapTypeRefSet();
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
@@ -194,7 +194,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		final String refSetId = createSimpleMapTypeRefSet();
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
@@ -214,7 +214,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		final String refSetId = createSimpleMapTypeRefSet();
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
 		
-		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByConceptMap(refSetId)
 				.setPreferredDisplay("FSN")

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.conceptmap;
 
 import java.util.List;
 import java.util.Set;
@@ -24,29 +24,31 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.compare.*;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
-import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.collect.*;
 
 /**
-* @since 7.8
-*/
-final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, ConceptMapCompareResult> {
+ * @since 7.8
+ */
+final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, ConceptMapCompareResult> {
 	
 	private static final long serialVersionUID = 2L;
 	
 	private static final int DEFAULT_MEMBER_SCROLL_LIMIT = 10_000;
 	
 	@NotNull
-	private final ComponentURI baseConceptMapURI;
+	private final ResourceURI baseConceptMapURI;
 	
 	@NotNull
-	private final ComponentURI compareConceptMapURI;
+	private final ResourceURI compareConceptMapURI;
 	
 	@NotEmpty
 	private final String preferredDisplay;
@@ -59,7 +61,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	@Min(0)
 	private int limit;
 	
-	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, int limit, Set<ConceptMapCompareConfigurationProperties> selectedConfig, String preferredDisplay) {
+	ConceptMapCompareRequest(ResourceURI baseConceptMapURI, ResourceURI compareConceptMapURI, int limit, Set<ConceptMapCompareConfigurationProperties> selectedConfig, String preferredDisplay) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
 		this.limit = limit;
@@ -68,23 +70,22 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	}
 
 	@Override
-	public ConceptMapCompareResult execute(BranchContext context) {
-		List<ConceptMapMapping> baseMappings = fetchConceptMapMappings(context, baseConceptMapURI.identifier());
-		List<ConceptMapMapping> compareMappings = fetchConceptMapMappings(context, compareConceptMapURI.identifier());
+	public ConceptMapCompareResult execute(RepositoryContext context) {
+		List<ConceptMapMapping> baseMappings = fetchConceptMapMappings(context, baseConceptMapURI);
+		List<ConceptMapMapping> compareMappings = fetchConceptMapMappings(context, compareConceptMapURI);
 
 		mapCompareEquivalence = new MapCompareSourceAndTargetEquivalence(selectedConfig);
 		
 		return compareDifferences(baseMappings, compareMappings);
 	}
 
-	private List<ConceptMapMapping> fetchConceptMapMappings(BranchContext context, String conceptMapId) {
-		return CodeSystemRequests.prepareSearchConceptMapMappings()
-			.filterByConceptMap(conceptMapId)
+	private List<ConceptMapMapping> fetchConceptMapMappings(ServiceProvider context, ResourceURI conceptMapUri) {
+		return ConceptMapRequests.prepareSearchConceptMapMappings()
 			.filterByActive(true)
 			.setLocales(locales())
 			.setPreferredDisplay(preferredDisplay)
 			.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT)
-			.stream(context)
+			.streamAsync(context.service(IEventBus.class), req -> req.build(conceptMapUri))
 			.flatMap(ConceptMapMappings::stream)
 			.collect(Collectors.toList());
 	}
