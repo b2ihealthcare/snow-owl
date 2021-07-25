@@ -24,37 +24,38 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.ConceptMapMappings;
+import com.b2international.snowowl.core.domain.ValueSetMembers;
 
 /**
-* @since 7.8
+* @since 7.7
 */
-public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<ServiceProvider, ConceptMapMappings> {
+public final class ValueSetMemberSearchRequest extends SearchResourceRequest<ServiceProvider, ValueSetMembers> {
 
 	private static final long serialVersionUID = 1L;
 	
 	@Override
-	protected ConceptMapMappings createEmptyResult(int limit) {
-		return new ConceptMapMappings(limit, 0);
+	protected ValueSetMembers createEmptyResult(int limit) {
+		return new ValueSetMembers(limit, 0);
 	}
 	
 	@Override
-	protected ConceptMapMappings doExecute(ServiceProvider context) throws IOException {
+	protected ValueSetMembers doExecute(ServiceProvider context) throws IOException {
 		final int limit = limit();
 		
 		Options options = Options.builder()
 				.putAll(options())
-				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
-				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.LIMIT, limit())
-				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.LOCALES, locales())
+				.put(MemberSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
+				.put(MemberSearchRequestEvaluator.OptionKey.LIMIT, limit)
+				.put(MemberSearchRequestEvaluator.OptionKey.LOCALES, locales())
 				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
 		
-		List<ConceptMapMappings> evaluatedMappings = context.service(RepositoryManager.class)
+		// extract all ValueSetMemberSearchRequestEvaluator from all connected toolings and determine which ones can handle this request
+		List<ValueSetMembers> evaluatedMembers = context.service(RepositoryManager.class)
 			.repositories()
 			.stream()
 			.flatMap(repository -> {
-				ConceptMapMappingSearchRequestEvaluator evaluator = repository.service(ConceptMapMappingSearchRequestEvaluator.class);
+				ValueSetMemberSearchRequestEvaluator evaluator = repository.service(ValueSetMemberSearchRequestEvaluator.class);
 				Set<ResourceURI> targets = evaluator.evaluateSearchTargetResources(context, options);
 				return targets.stream()
 					.map(uri -> {
@@ -65,12 +66,12 @@ public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<
 		
 		// calculate grand total
 		int total = 0;
-		for (ConceptMapMappings evaluatedMember : evaluatedMappings) {
+		for (ValueSetMembers evaluatedMember : evaluatedMembers) {
 			total += evaluatedMember.getTotal();
 		}
 		
-		return new ConceptMapMappings(
-			evaluatedMappings.stream().flatMap(ConceptMapMappings::stream).limit(limit).collect(Collectors.toList()), // TODO add manual sorting here if multiple resources have been fetched 
+		return new ValueSetMembers(
+			evaluatedMembers.stream().flatMap(ValueSetMembers::stream).limit(limit).collect(Collectors.toList()), // TODO add manual sorting here if multiple resources have been fetched 
 			null /* not supported across resources, TODO support it when a single ValueSet is being fetched */, 
 			limit, 
 			total

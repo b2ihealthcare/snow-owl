@@ -69,7 +69,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(VersioningRequestBuilder.class, getVersioningRequestBuilder())
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
-					.bind(SetMemberSearchRequestEvaluator.class, getMemberSearchRequestEvaluator())
+					.bind(ValueSetMemberSearchRequestEvaluator.class, getMemberSearchRequestEvaluator())
 					.bind(ConceptMapMappingSearchRequestEvaluator.class, getConceptMapMappingSearchRequestEvaluator())
 					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
@@ -133,13 +133,13 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	}
 	
 	/**
-	 * An evaluator that can evaluate generic {@link MemberSearchRequest member search requests}. 
+	 * An evaluator that can evaluate generic {@link ValueSetMemberSearchRequest member search requests}. 
 	 * @return a {@link SetMemberSearchRequestEvaluator} instance
-	 * @see MemberSearchRequestBuilder
-	 * @see MemberSearchRequest
+	 * @see ValueSetMemberSearchRequestBuilder
+	 * @see ValueSetMemberSearchRequest
 	 */
-	protected SetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
-		return SetMemberSearchRequestEvaluator.NOOP;
+	protected ValueSetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
+		return ValueSetMemberSearchRequestEvaluator.NOOP;
 	}
 	
 	/**

@@ -53,7 +53,7 @@ import com.google.common.collect.Sets;
  */
 public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	
-	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT.withPath(ResourceURI.LATEST);
+	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT;
 	
 	private static final String REFERENCED_COMPONENT = Concepts.SUBSTANCE;
 	
@@ -77,7 +77,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.all()
 				.filterByReferencedComponentId(REFERENCED_COMPONENT)
 				.setLocales("en")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -94,7 +94,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.all()
 				.filterByMapTarget(MAP_TARGET_1)
 				.setLocales("en")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -118,7 +118,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.filterByComponentIds(Set.of(uri.toString(), uri.identifier()))
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -144,7 +144,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.filterByComponentIds(Set.of(uri.toString(), uri2.toString()))
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -163,7 +163,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.all()
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -179,7 +179,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.all()
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -199,7 +199,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
 				.setPreferredDisplay("PT")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -219,7 +219,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.filterByConceptMap(refSetId)
 				.setPreferredDisplay("FSN")
 				.setLocales("en")
-				.build(CODESYSTEM)
+				.buildAsync()
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 		

@@ -26,12 +26,13 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMapping.Builder;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.MappingCorrelation;
@@ -56,9 +57,23 @@ import com.google.common.collect.Multimaps;
 public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMappingSearchRequestEvaluator {
 
 	//RefsetID -> targetComponentURI
+	
+	@Override
+	public Set<ResourceURI> evaluateSearchTargetResources(ServiceProvider context, Options search) {
+		// any SNOMED CT CodeSystem can be target resource, so search all by default
+		// TODO support proper refset SNOMED URIs when needed
+		return CodeSystemRequests.prepareSearchCodeSystem()
+				.all()
+				.setFields(ResourceDocument.Fields.RESOURCE_TYPE, ResourceDocument.Fields.ID)
+				.buildAsync()
+				.execute(context)
+				.stream()
+				.map(CodeSystem::getResourceURI)
+				.collect(Collectors.toSet());
+	}
 
 	@Override
-	public ConceptMapMappings evaluate(ResourceURI uri, BranchContext context, Options search) {
+	public ConceptMapMappings evaluate(ResourceURI uri, ServiceProvider context, Options search) {
 		final String preferredDisplay = search.get(OptionKey.DISPLAY, String.class);
 		final SnomedDisplayTermType snomedDisplayTermType = SnomedDisplayTermType.getEnum(preferredDisplay);
 
@@ -66,7 +81,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		return toCollectionResource(referenceSetMembers, uri, context, search, snomedDisplayTermType);
 	}
 
-	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, ResourceURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
+	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, ResourceURI uri, ServiceProvider context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
 		final Set<String> refSetsToFetch = referenceSetMembers.stream()
 				.map(SnomedReferenceSetMember::getRefsetId)
 				.collect(Collectors.toSet());
@@ -137,7 +152,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		);
 	}
 
-	private Map<String, ComponentURI> getTargetComponentsByRefSetId(BranchContext context, Map<String, SnomedConcept> refSetsById) {
+	private Map<String, ComponentURI> getTargetComponentsByRefSetId(ServiceProvider context, Map<String, SnomedConcept> refSetsById) {
 		// TODO figure out a better way to access codesystems from the perspective of a refset/mapset
 		
 		// extract toolingIds from mapTargetComponentTypes
@@ -153,7 +168,6 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.all()
 				.filterByToolingIds(mapTargetCodeSystemToolings)
 				.buildAsync()
-				.getRequest()
 				.execute(context)
 				.stream()
 				// XXX if multiple CodeSystems use the same toolingId (like in case of SNOMED), then fall back to the first one
@@ -255,7 +269,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		}
 	}
 
-	private SnomedReferenceSetMembers fetchRefsetMembers(ResourceURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
+	private SnomedReferenceSetMembers fetchRefsetMembers(ResourceURI uri, ServiceProvider context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
 
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
@@ -266,8 +280,8 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
 
-		if (search.containsKey(OptionKey.SET)) {
-			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
+		if (search.containsKey(OptionKey.URI)) {
+			final Collection<String> refsetId = search.getCollection(OptionKey.URI, String.class);
 			requestBuilder.filterByRefSet(refsetId);
 		}
 		
@@ -284,7 +298,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.setExpand(String.format("referencedComponent(%s)", !Strings.isNullOrEmpty(snomedDisplayTermType.getExpand()) ? "expand(" + snomedDisplayTermType.getExpand() + ")" : ""))
 				.setLimit(limit)
 				.setSearchAfter(searchAfter)
-				.build()
+				.build(uri)
 				.execute(context);
 	}
 

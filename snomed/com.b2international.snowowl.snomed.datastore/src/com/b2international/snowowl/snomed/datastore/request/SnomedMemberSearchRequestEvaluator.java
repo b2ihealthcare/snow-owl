@@ -17,15 +17,19 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMember;
-import com.b2international.snowowl.core.domain.SetMembers;
-import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.ValueSetMember;
+import com.b2international.snowowl.core.domain.ValueSetMembers;
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.ValueSetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -36,24 +40,38 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 /**
  * @since 7.7
  */
-public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearchRequestEvaluator {
+public final class SnomedMemberSearchRequestEvaluator implements ValueSetMemberSearchRequestEvaluator {
 
 	private static final List<SnomedRefSetType> SUPPORTED_REFSET_TYPES = List.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.DESCRIPTION_TYPE); 
 	
 	@Override
-	public SetMembers evaluate(ResourceURI uri, BranchContext context, Options search) {
+	public Set<ResourceURI> evaluateSearchTargetResources(ServiceProvider context, Options search) {
+		// any SNOMED CT CodeSystem can be target resource, so search all by default
+		// TODO support proper refset SNOMED URIs when needed
+		return CodeSystemRequests.prepareSearchCodeSystem()
+				.all()
+				.setFields(ResourceDocument.Fields.RESOURCE_TYPE, ResourceDocument.Fields.ID)
+				.buildAsync()
+				.execute(context)
+				.stream()
+				.map(CodeSystem::getResourceURI)
+				.collect(Collectors.toSet());
+	}
+	
+	@Override
+	public ValueSetMembers evaluate(ResourceURI uri, ServiceProvider context, Options search) {
 		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
 		return toCollectionResource(referenceSetMembers, uri);
 	}
 
-	private SetMembers toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, ResourceURI uri) {
-		return new SetMembers(referenceSetMembers.stream().map(m -> toMember(m, uri)).collect(Collectors.toList()),
+	private ValueSetMembers toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, ResourceURI uri) {
+		return new ValueSetMembers(referenceSetMembers.stream().map(m -> toMember(m, uri)).collect(Collectors.toList()),
 				referenceSetMembers.getSearchAfter(),
 				referenceSetMembers.getLimit(),
 				referenceSetMembers.getTotal());
 	}
 
-	private SetMember toMember(SnomedReferenceSetMember member, ResourceURI codeSystemURI) {	 		
+	private ValueSetMember toMember(SnomedReferenceSetMember member, ResourceURI codeSystemURI) {	 		
 		final String term;		
 		final String iconId = member.getReferencedComponent().getIconId();
 		String terminologyComponentId = member.getReferencedComponent().getComponentType();
@@ -69,14 +87,14 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 		default: term = member.getReferencedComponentId();
 		}
 
-		return new SetMember(
+		return new ValueSetMember(
 			ComponentURI.of(codeSystemURI, terminologyComponentId, member.getReferencedComponentId()),
 			term, 
 			iconId
 		);
 	}
 
-	private SnomedReferenceSetMembers fetchRefsetMembers(ResourceURI uri, BranchContext context, Options search) {
+	private SnomedReferenceSetMembers fetchRefsetMembers(ResourceURI uri, ServiceProvider context, Options search) {
 
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
@@ -84,8 +102,8 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
 
-		if (search.containsKey(OptionKey.SET)) {
-			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
+		if (search.containsKey(OptionKey.URI)) {
+			final Collection<String> refsetId = search.getCollection(OptionKey.URI, String.class);
 			requestBuilder.filterByRefSet(refsetId);
 		}
 		
@@ -96,7 +114,7 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 				.setExpand("referencedComponent(expand(fsn()))")
 				.setLimit(limit)
 				.setSearchAfter(searchAfter)
-				.build()
+				.build(uri)
 				.execute(context);
 	}
 

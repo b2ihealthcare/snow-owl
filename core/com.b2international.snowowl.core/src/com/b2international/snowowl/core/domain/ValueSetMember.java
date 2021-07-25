@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.google.common.base.MoreObjects;
 /**
  * @since 7.7
  */
-public final class SetMember implements Serializable {
+public final class ValueSetMember implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -33,7 +33,7 @@ public final class SetMember implements Serializable {
 	private final String term;
 	private final String iconId;
 	
-	public SetMember(ComponentURI referencedComponentURI, String term, String iconId) {
+	public ValueSetMember(ComponentURI referencedComponentURI, String term, String iconId) {
 		this.referencedComponentURI = referencedComponentURI;
 		this.term = term;
 		this.iconId = iconId;
@@ -53,7 +53,7 @@ public final class SetMember implements Serializable {
 	
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper("SetMember")
+		return MoreObjects.toStringHelper(getClass())
 				.add("referencedComponentURI", referencedComponentURI)
 				.add("term", term)
 				.add("iconId", iconId)
@@ -70,7 +70,7 @@ public final class SetMember implements Serializable {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		SetMember other = (SetMember) obj;
+		ValueSetMember other = (ValueSetMember) obj;
 		return Objects.equals(referencedComponentURI, other.referencedComponentURI)
 				&& Objects.equals(term, other.term)
 				&& Objects.equals(iconId, other.iconId);

@@ -220,7 +220,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	protected SetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
+	protected ValueSetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
 		return new SnomedMemberSearchRequestEvaluator();
 	}
 	

@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.SetMembers;
+import com.b2international.snowowl.core.domain.ValueSetMembers;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -51,7 +51,7 @@ import com.google.common.collect.FluentIterable;
  */
 public class ValueSetMemberSearchSnomedReferenceSetTest {
 
-	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT.asLatest();
+	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT;
 	
 	private static final String SYNONYM = "Synonym (core metadata concept)";
 	private static final String FSN = "Fully specified name (core metadata concept)";
@@ -67,10 +67,10 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
 		
-		SetMembers setMembers = CodeSystemRequests.prepareSearchMembers()
+		ValueSetMembers setMembers = CodeSystemRequests.prepareSearchMembers()
 			.all()
-			.filterBySet(Concepts.REFSET_DESCRIPTION_TYPE)		
-			.build(CODESYSTEM)
+			.filterByValueSet(Concepts.REFSET_DESCRIPTION_TYPE)		
+			.buildAsync()
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
 				

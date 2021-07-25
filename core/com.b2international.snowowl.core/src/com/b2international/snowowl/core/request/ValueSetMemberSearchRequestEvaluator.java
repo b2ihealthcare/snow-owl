@@ -17,23 +17,22 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMembers;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.ValueSetMembers;
 
 /**
  * @since 7.7
  */
-public interface SetMemberSearchRequestEvaluator extends SetSearchRequestEvaluator<SetMembers> {
+public interface ValueSetMemberSearchRequestEvaluator extends MemberSearchRequestEvaluator<ValueSetMembers> {
 
 	/**
 	 * No-op request evaluator that returns zero results
 	 * @since 7.7
 	 */
-	SetMemberSearchRequestEvaluator NOOP = new SetMemberSearchRequestEvaluator() {
-		
+	ValueSetMemberSearchRequestEvaluator NOOP = new ValueSetMemberSearchRequestEvaluator() {
 		@Override
-		public SetMembers evaluate(ResourceURI uri, BranchContext context, Options search) {
-			return new SetMembers(search.get(OptionKey.LIMIT, Integer.class), 0);
+		public ValueSetMembers evaluate(ResourceURI uri, ServiceProvider context, Options search) {
+			return new ValueSetMembers(search.get(OptionKey.LIMIT, Integer.class), 0);
 		}
 	};
 
