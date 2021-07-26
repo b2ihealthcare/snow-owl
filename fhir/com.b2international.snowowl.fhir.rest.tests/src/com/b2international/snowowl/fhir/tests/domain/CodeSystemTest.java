@@ -225,21 +225,10 @@ public class CodeSystemTest extends FhirTest {
 	}
 	
 	@Test
-	public void loadCodeSystem() throws Exception {
+	public void deserializeCodeSystem() throws Exception {
 			
-		URI uri = CodeSystemTest.class.getResource("../dd_codesystem.json").toURI();
+		URI uri = CodeSystemTest.class.getResource("../test_codesystem.json").toURI();
 		CodeSystem codeSystem = objectMapper.readValue(Paths.get(uri).toFile(), CodeSystem.class);
-		printPrettyJson(codeSystem);
-		
-		System.out.println("Code system: " + codeSystem.getName());
-		
-		CodeSystem readCodeSystem = objectMapper.readValue(objectMapper.writeValueAsString(codeSystem), CodeSystem.class);
-		Collection<SupportedConceptProperty> properties = readCodeSystem.getProperties();
-		for (SupportedConceptProperty supportedConceptProperty : properties) {
-			//supportedConceptProperty.
-		}
-		System.out.println("Date:" + Arrays.toString(properties.toArray()));
-
 	}
 
 }

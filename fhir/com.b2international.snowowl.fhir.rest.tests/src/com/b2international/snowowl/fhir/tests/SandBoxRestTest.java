@@ -74,7 +74,7 @@ public class SandBoxRestTest extends FhirRestTest {
 	@Test
 	public void createCodeSystem() throws Exception {
 		
-		File jsonFilePath = PlatformUtil.toAbsolutePathBundleEntry(this.getClass(), "/src/com/b2international/snowowl/fhir/tests/dd_codesystem.json").toFile();
+		File jsonFilePath = PlatformUtil.toAbsolutePathBundleEntry(this.getClass(), "/src/com/b2international/snowowl/fhir/tests/test_codesystem.json").toFile();
 		
 		System.out.println(jsonFilePath);
 		CodeSystem codeSystem = objectMapper.readValue(jsonFilePath, CodeSystem.class);

@@ -1,0 +1,128 @@
+{
+    "resourceType": "CodeSystem",
+    "id": "123456",
+    "meta": {
+        "versionId": "1",
+        "lastUpdated": "2021-05-06T18:42:29.389+00:00"
+    },
+    "language": "en-GB",
+    "url": "https://b2i.sg/code_system/example_codesystem",
+    "identifier": [
+        {
+            "system": "https://b2i.sg",
+            "value": "https://b2i.sg/code_system/example_codesystem.html"
+        }
+    ],
+    "version": "1.0.0",
+    "name": "EXAMPLE CODE SYSTEM",
+    "title": "Example code system",
+    "status": "active",
+    "experimental": false,
+    "date": "2021-01-13T08:22:32+00:00",
+    "publisher": "B2i Healthcare",
+    "contact": [
+        {
+            "name": "B2i Healthcare",
+            "telecom": [
+                {
+                    "system": "email",
+                    "value": "infos@b2i.sg"
+                },
+                {
+                    "system": "url",
+                    "value": "https://b2i.sg/"
+                }
+            ]
+        }
+    ],
+    "description": "This is an example code system",
+    "copyright": "Copyright © B2i",
+    "caseSensitive": false,
+    "hierarchyMeaning": "is-a",
+    "compositional": false,
+    "versionNeeded": false,
+    "content": "complete",
+    "count": 2,
+    "filter": [
+        {
+            "code": "Filter1",
+            "description": "Example filter 1",
+            "operator": [
+                "in",
+                "=",
+                "exists",
+                "not-in"
+            ],
+            "value": "Filter1"
+        },
+        {
+            "code": "Filter2",
+            "description": "Example Filter2",
+            "operator": [
+                "in",
+                "=",
+                "exists",
+                "not-in"
+            ],
+            "value": "Data Attribute"
+        }
+    ],
+    "property": [
+        {
+            "code": "Property1",
+            "description": "String property example",
+            "type": "string"
+        },
+        {
+            "code": "Property2",
+            "description": "Date-time property example",
+            "type": "dateTime"
+        },
+        {
+            "code": "Property3",
+            "description": "Integer property example",
+            "type": "integer"
+        }
+    ],
+    "concept": [
+        {
+            "code": "Code1",
+            "display": "Code 1 term",
+            "definition": "This is code 1 definition",
+            "property": [
+                {
+                    "code": "Property1",
+                    "valueString": "test"
+                },
+                {
+                    "code": "Property2",
+                    "valueDateTime": "2021-01-13T00:00:00+00:00"
+                },
+                {
+                    "code": "Property3",
+                    "valueInteger": 1
+                }
+            ]
+        },
+		{
+            "code": "Code2",
+            "display": "Code 2 term",
+            "definition": "This is code 2 definition",
+            "property": [
+                {
+                    "code": "Property1",
+                    "valueString": "test2"
+                },
+                {
+                    "code": "Property2",
+                    "valueDateTime": "2021-01-14T00:00:00+00:00"
+                },
+                {
+                    "code": "Property3",
+                    "valueInteger": 2
+                }
+            ]
+        }
+        
+    ]
+}
