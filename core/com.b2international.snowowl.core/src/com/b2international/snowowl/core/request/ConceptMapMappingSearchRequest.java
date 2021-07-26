@@ -71,7 +71,7 @@ public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<
 		
 		return new ConceptMapMappings(
 			evaluatedMappings.stream().flatMap(ConceptMapMappings::stream).limit(limit).collect(Collectors.toList()), // TODO add manual sorting here if multiple resources have been fetched 
-			null /* not supported across resources, TODO support it when a single ValueSet is being fetched */, 
+			null /* not supported across resources, TODO support it when a single Conceptmap is being fetched */, 
 			limit, 
 			total
 		);
