@@ -32,8 +32,8 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMapping.Builder;
-import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
@@ -56,12 +56,22 @@ import com.google.common.collect.Multimaps;
  */
 public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMappingSearchRequestEvaluator {
 
-	//RefsetID -> targetComponentURI
-	
 	@Override
 	public Set<ResourceURI> evaluateSearchTargetResources(ServiceProvider context, Options search) {
+		if (search.containsKey(OptionKey.URI)) {
+			// TODO support proper refset SNOMED URIs as well
+			Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
+				.filter(ComponentURI::isValid)
+				.map(ComponentURI::of)
+				.map(ComponentURI::resourceUri)
+				.collect(Collectors.toSet());
+			
+			if (!targetResources.isEmpty()) {
+				return targetResources;
+			}
+		}
+
 		// any SNOMED CT CodeSystem can be target resource, so search all by default
-		// TODO support proper refset SNOMED URIs when needed
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
 				.setFields(ResourceDocument.Fields.RESOURCE_TYPE, ResourceDocument.Fields.ID)
@@ -281,7 +291,19 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
 
 		if (search.containsKey(OptionKey.URI)) {
-			final Collection<String> refsetId = search.getCollection(OptionKey.URI, String.class);
+			// extract refset IDs from pontential URI-like filter values
+			final Set<String> refsetId = search.getCollection(OptionKey.URI, String.class).stream()
+					.map(uriValue -> {
+						// TODO support SNOMED URIs
+						try {
+							return ComponentURI.of(uriValue).identifier();
+						} catch (Exception e) {
+							return uriValue;
+						}
+					})
+					.collect(Collectors.toSet());;
+			
+			
 			requestBuilder.filterByRefSet(refsetId);
 		}
 		
