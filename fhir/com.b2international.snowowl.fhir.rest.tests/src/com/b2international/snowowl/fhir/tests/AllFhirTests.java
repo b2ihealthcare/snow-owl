@@ -42,8 +42,6 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	
 	//Data type tests
 	PrimitiveDataTypeTest.class,
-	ComplexDataTypeSerializationTest.class,
-	//New format
 	CodingTest.class,
 	CodeableConcepTest.class,
 	IdentiferTest.class,
@@ -51,6 +49,12 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	ReferenceTest.class,
 	ContactPointTest.class,
 	ContactDetailTest.class,
+	MetaTest.class,
+	NarrativeTest.class,
+	QuantityTest.class,
+	SimpleQuantityTest.class,
+	RangeTest.class,
+	SignatureTest.class,
 	
 	//parameterized
 	ParameterDeserializationTest.class,
@@ -75,7 +79,6 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	OperationOutcomeTest.class,
 	BundleEntryTest.class,
 	BundleTest.class,
-	MetaTest.class,
 	ConceptPropertyTest.class,
 	FilterTest.class,
 	CodeSystemTest.class,

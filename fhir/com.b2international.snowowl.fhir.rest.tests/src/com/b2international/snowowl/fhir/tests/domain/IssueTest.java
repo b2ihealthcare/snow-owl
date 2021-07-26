@@ -19,14 +19,19 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.Lists;
 
@@ -64,6 +69,23 @@ public class IssueTest extends FhirTest {
 		Coding coding = details.getCodings().iterator().next();
 		assertEquals("A", coding.getCode().getCodeValue());
 		assertEquals("A display", coding.getDisplay());
+	}
+	
+	@Test
+	public void buildInvalid() {
+		
+		ValidationException exception = assertThrows(ValidationException.class, () -> {
+			Instant.builder().build();
+		});
+		
+		assertEquals("1 validation error", exception.getMessage());
+		
+		Issue expectedIssue = validationErrorIssueBuilder
+				.addLocation("Instant.instant")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'instant' content is invalid [null]. Violation: may not be null.")
+				.build();
+		
+		assertThat(exception, FhirExceptionIssueMatcher.issue(expectedIssue));
 	}
 	
 	@Test
