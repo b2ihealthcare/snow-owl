@@ -26,6 +26,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -801,7 +802,11 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		);
 
 		executeMemberAction(branchPath, memberId, invalidActionRequest).statusCode(400)
-		.body("message", CoreMatchers.equalTo("Invalid action type 'invalid'."));
+		.body("message", containsString("Invalid"))
+		.body("message", containsString("CREATE"))
+		.body("message", containsString("UPDATE"))
+		.body("message", containsString("DELETE"))
+		.body("message", containsString("SYNC"));
 	}
 
 	@Test

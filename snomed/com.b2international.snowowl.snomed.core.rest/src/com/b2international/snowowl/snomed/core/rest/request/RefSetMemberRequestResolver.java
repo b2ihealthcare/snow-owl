@@ -21,6 +21,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.DeleteRequestBuilder;
+import com.b2international.snowowl.core.rest.request.ResourceAction;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -31,7 +32,7 @@ public class RefSetMemberRequestResolver implements RequestResolver<TransactionC
 
 	@Override
 	public Request<TransactionContext, ?> resolve(String action, Map<String, Object> source) {
-		switch (Action.get(action)) {
+		switch (ResourceAction.get(action)) {
 		case CREATE: return SnomedRequests.prepareNewMember().setSource(source).build();
 		case UPDATE: {
 			final SnomedRefSetMemberUpdateRequestBuilder req = SnomedRequests.prepareUpdateMember(null).setSource(source);
