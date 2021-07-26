@@ -188,7 +188,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		assertEquals(1, conceptMaps.getTotal());
 		final ConceptMapMapping conceptMapMapping = conceptMaps.first().get();
 		assertEquals(ID, conceptMapMapping.getSourceTerm());
-		assertEquals(testName.getMethodName(), conceptMapMapping.getContainerTerm());
+		assertEquals(testName.getMethodName(), conceptMapMapping.getConceptMapTerm());
 	}
 	
 	@Test
@@ -208,7 +208,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		assertEquals(1, conceptMaps.getTotal());
 		final ConceptMapMapping conceptMapMapping = conceptMaps.first().get();
 		assertEquals(PT, conceptMapMapping.getSourceTerm());
-		assertEquals(testName.getMethodName(), conceptMapMapping.getContainerTerm());
+		assertEquals(testName.getMethodName(), conceptMapMapping.getConceptMapTerm());
 	}
 	
 	@Test
@@ -228,7 +228,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		assertEquals(1, conceptMaps.getTotal());
 		final ConceptMapMapping conceptMapMapping = conceptMaps.first().get();
 		assertEquals(FSN, conceptMapMapping.getSourceTerm());
-		assertEquals(testName.getMethodName(), conceptMapMapping.getContainerTerm());
+			assertEquals(testName.getMethodName(), conceptMapMapping.getConceptMapTerm());
 	}
 	
 	private Set<ComponentURI> getComponentUris(ConceptMapMappings maps) {

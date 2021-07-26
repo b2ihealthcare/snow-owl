@@ -232,14 +232,14 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final SnomedConcept referenceSet = refSetsByIds.get(member.getRefsetId());
 
 		return mappingBuilder
-				.uri(ComponentURI.of(codeSystemURI, SnomedReferenceSetMember.TYPE, member.getId()))
-				.containerIconId(referenceSet.getIconId())
-				.containerTerm(referenceSet.getPt().getTerm())
-				.containerSetURI(ComponentURI.of(codeSystemURI, SnomedConcept.REFSET_TYPE, member.getRefsetId()))
+				.uri(ComponentURI.of(codeSystemURI, SnomedReferenceSetMember.TYPE, member.getId()).toString())
+				.conceptMapUri(ComponentURI.of(codeSystemURI, SnomedConcept.REFSET_TYPE, member.getRefsetId()).toString())
+				.conceptMapTerm(referenceSet.getPt().getTerm())
+				.conceptMapIconId(referenceSet.getIconId())
+				.sourceComponentURI(ComponentURI.of(codeSystemURI, componentType, member.getReferencedComponentId()))
 				.sourceIconId(iconId)
 				.sourceTerm(term)
-				.sourceComponentURI(ComponentURI.of(codeSystemURI, componentType, member.getReferencedComponentId()))
-				.targetTerm((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET))
+				.targetTerm(mapTarget)
 				.active(member.isActive())
 				.mappingCorrelation(getEquivalence(member))
 				.build();

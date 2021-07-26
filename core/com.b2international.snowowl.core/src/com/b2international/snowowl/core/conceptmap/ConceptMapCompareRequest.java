@@ -114,7 +114,9 @@ final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, 
 		List<ConceptMapCompareResultItem> allUnchanged = Set.copyOf(Sets.intersection(baseMappingsByHash.keySet(), compareMappingsByHash.keySet()))
 			.stream()
 			.map(hash -> ImmutableList.<ConceptMapMapping>builder().addAll(baseMappingsByHash.removeAll(hash)).addAll(compareMappingsByHash.removeAll(hash)).build())
-			.map(mappings -> mappings.stream().reduce((result, next) -> result.mergeComments(next.getComments())).get())
+			// TODO comments will be handled different in 8.x, now just select the first and move on
+//			reduce((result, next) -> result.mergeComments(next.getComments())).get()
+			.map(mappings -> mappings.stream().findFirst().get()) 
 			.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.SAME, mapping))
 			.collect(Collectors.toList());
 		

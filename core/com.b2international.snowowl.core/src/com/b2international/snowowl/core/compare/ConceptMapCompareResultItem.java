@@ -42,7 +42,7 @@ public final class ConceptMapCompareResultItem implements Serializable, Comparab
 	
 	@JsonGetter
 	public String conceptMap() {
-		return ConceptMapCompareChangeKind.SAME.equals(changeKind) ? "Both" : mapping .getContainerTerm();
+		return ConceptMapCompareChangeKind.SAME.equals(changeKind) ? "Both" : mapping .getConceptMapTerm();
 	}
 	
 	@JsonGetter
