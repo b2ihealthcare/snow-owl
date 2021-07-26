@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,14 +39,26 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 /**
  * @since 7.7
  */
-public final class SnomedMemberSearchRequestEvaluator implements ValueSetMemberSearchRequestEvaluator {
+public final class SnomedValueSetMemberSearchRequestEvaluator implements ValueSetMemberSearchRequestEvaluator {
 
 	private static final List<SnomedRefSetType> SUPPORTED_REFSET_TYPES = List.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.DESCRIPTION_TYPE); 
 	
 	@Override
 	public Set<ResourceURI> evaluateSearchTargetResources(ServiceProvider context, Options search) {
+		if (search.containsKey(OptionKey.URI)) {
+			// TODO support proper refset SNOMED URIs as well
+			Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
+				.filter(ComponentURI::isValid)
+				.map(ComponentURI::of)
+				.map(ComponentURI::resourceUri)
+				.collect(Collectors.toSet());
+			
+			if (!targetResources.isEmpty()) {
+				return targetResources;
+			}
+		}
+		
 		// any SNOMED CT CodeSystem can be target resource, so search all by default
-		// TODO support proper refset SNOMED URIs when needed
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
 				.setFields(ResourceDocument.Fields.RESOURCE_TYPE, ResourceDocument.Fields.ID)
@@ -103,7 +114,19 @@ public final class SnomedMemberSearchRequestEvaluator implements ValueSetMemberS
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
 
 		if (search.containsKey(OptionKey.URI)) {
-			final Collection<String> refsetId = search.getCollection(OptionKey.URI, String.class);
+			// extract refset IDs from pontential URI-like filter values
+			final Set<String> refsetId = search.getCollection(OptionKey.URI, String.class).stream()
+					.map(uriValue -> {
+						// TODO support SNOMED URIs
+						try {
+							return ComponentURI.of(uriValue).identifier();
+						} catch (Exception e) {
+							return uriValue;
+						}
+					})
+					.collect(Collectors.toSet());;
+			
+			
 			requestBuilder.filterByRefSet(refsetId);
 		}
 		

@@ -51,14 +51,14 @@ import com.google.common.collect.FluentIterable;
  */
 public class ValueSetMemberSearchSnomedReferenceSetTest {
 
-	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT;
+	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT.asLatest();
 	
 	private static final String SYNONYM = "Synonym (core metadata concept)";
 	private static final String FSN = "Fully specified name (core metadata concept)";
 	private static final String DEFINITION = "Definition (core metadata concept)";
 	
 	@Test
-	public void filterByRefset() throws Exception {
+	public void filterByRefsetUri() throws Exception {
 		
 		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
 			.all()
@@ -69,7 +69,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 		
 		ValueSetMembers setMembers = CodeSystemRequests.prepareSearchMembers()
 			.all()
-			.filterByValueSet(Concepts.REFSET_DESCRIPTION_TYPE)		
+			.filterByValueSet(ComponentURI.of(CODESYSTEM, SnomedConcept.REFSET_TYPE, Concepts.REFSET_DESCRIPTION_TYPE).toString())
 			.buildAsync()
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
@@ -90,7 +90,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 	}
 	
 	@Test
-	public void filterByComponent() {
+	public void filterByComponentIdAndUri() {
 		final String filteredId = Concepts.FINDING_SITE;
 		
 		final String refSetId = createSimpleMapTypeRefSet();

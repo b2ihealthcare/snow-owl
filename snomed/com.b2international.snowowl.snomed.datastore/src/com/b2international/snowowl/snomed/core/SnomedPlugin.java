@@ -70,7 +70,7 @@ import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositor
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptMapSearchRequestEvaluator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedMemberSearchRequestEvaluator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedValueSetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.Synonyms;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
@@ -221,7 +221,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	protected ValueSetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
-		return new SnomedMemberSearchRequestEvaluator();
+		return new SnomedValueSetMemberSearchRequestEvaluator();
 	}
 	
 	@Override
