@@ -23,6 +23,8 @@ import javax.validation.Valid;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
@@ -31,6 +33,9 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * A value set contains a set of codes from those defined by one or more code systems to specify which codes can be used in a particular context.
@@ -45,14 +50,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 6.3
  */
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
+@JsonDeserialize(builder = ValueSet.Builder.class, using = JsonDeserializer.None.class)
 public class ValueSet extends MetadataResource {
 	
 	private static final long serialVersionUID = 1L;
+	
+	public static final String RESOURCE_TYPE_VALUE_SET = "ValueSet";
 
 	//FHIR header "resourceType" : "ValueSet",
 	@Mandatory
 	@JsonProperty
-	private final String resourceType = "ValueSet";
+	private final String resourceType;
 	
 	@Summary
 	@JsonProperty
@@ -72,12 +80,14 @@ public class ValueSet extends MetadataResource {
 			final Uri url, final Collection<Identifier> identifiers, final String version, final String name, final String title, Code status, 
 			final Boolean experimental, final Date date, String publisher, 
 			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
-			final Collection<CodeableConcept> jurisdictions, final Boolean immutable, final String purpose, final String copyright,
+			final Collection<CodeableConcept> jurisdictions, 
+			final String resourceType, final Boolean immutable, final String purpose, final String copyright,
 			final Compose compose, final Expansion expansion) {
 		
 		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, 
 				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
+		this.resourceType = resourceType;
 		this.immutable = immutable;
 		this.compose = compose;
 		this.expansion = expansion;
@@ -91,14 +101,28 @@ public class ValueSet extends MetadataResource {
 		return new Builder(valueSetId);
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends MetadataResource.Builder<Builder, ValueSet> {
 
+		private String resourceType = RESOURCE_TYPE_VALUE_SET;
+		
 		private Boolean immutable;
 		private Compose compose;
 		private Expansion expansion;
 		
+		/**
+		 * Use this constructor when a new resource is sent to the server to be created.
+		 */
+		public Builder() {
+		}
+		
 		public Builder(String valueSetId) {
 			super(valueSetId);
+		}
+		
+		public Builder resourceType(String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
 		}
 		
 		public Builder immutable(Boolean immutable) {
@@ -131,7 +155,7 @@ public class ValueSet extends MetadataResource {
 			
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifiers, version, name, 
 					title, status, experimental, date, publisher, contacts, description, usageContexts, 
-					jurisdictions, immutable, purpose, copyright, compose, expansion);
+					jurisdictions, resourceType, immutable, purpose, copyright, compose, expansion);
 		}
 	}
 		

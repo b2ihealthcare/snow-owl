@@ -18,6 +18,8 @@ package com.b2international.snowowl.fhir.core.model;
 import java.io.IOException;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
@@ -49,6 +51,9 @@ public class FhirResourceDeserializer extends StdDeserializer<FhirResource> {
 			
 			case CodeSystem.RESOURCE_TYPE_CODE_SYSTEM:
 				return p.getCodec().treeToValue(node, CodeSystem.class); 
+			
+			case ValueSet.RESOURCE_TYPE_VALUE_SET:
+				return p.getCodec().treeToValue(node, ValueSet.class); 
 
 			case Bundle.RESOURCE_TYPE_BUNDLE:
 				return p.getCodec().treeToValue(node, Bundle.class);
