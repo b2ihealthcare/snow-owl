@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.7
  */
-public final class SetMembers extends PageableCollectionResource<SetMember> {
+public final class ValueSetMembers extends PageableCollectionResource<ValueSetMember> {
 
 	private static final long serialVersionUID = 1L;
 	
-	public SetMembers(int limit, int total) {
+	public ValueSetMembers(int limit, int total) {
 		super(Collections.emptyList(), null, limit, total);
 	}
 	
 	@JsonCreator
-	public SetMembers(
-			@JsonProperty("items") List<SetMember> items, 
+	public ValueSetMembers(
+			@JsonProperty("items") List<ValueSetMember> items, 
 			@JsonProperty("searchAfter") String searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {

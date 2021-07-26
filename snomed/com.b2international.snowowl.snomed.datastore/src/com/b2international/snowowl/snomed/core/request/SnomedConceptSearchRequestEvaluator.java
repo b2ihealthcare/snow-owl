@@ -22,7 +22,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
@@ -52,7 +52,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	}
 	
 	@Override
-	public Concepts evaluate(ResourceURI uri, BranchContext context, Options search) {
+	public Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search) {
 		
 		final String preferredDisplay = search.getString(OptionKey.DISPLAY);
 		SnomedDisplayTermType displayTermType;
@@ -120,7 +120,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 				.setFields(search.getList(OptionKey.FIELDS, String.class))
 				.setExpand(expand)
 				.sortBy(search.containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? search.getList(SearchResourceRequest.OptionKey.SORT_BY, SearchResourceRequest.Sort.class) : null)
-				.build()
+				.build(uri)
 				.execute(context);
 
 		return new Concepts(

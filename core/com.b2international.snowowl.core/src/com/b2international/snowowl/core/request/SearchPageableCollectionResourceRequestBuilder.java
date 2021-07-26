@@ -39,6 +39,10 @@ public abstract class SearchPageableCollectionResourceRequestBuilder<B extends S
 		return Streams.stream(new SearchResourceRequestIterator<B, R>(getSelf(), (builder) -> builder.build().execute(context)));
 	}
 	
+	public final Stream<R> streamAsync(ServiceProvider context, Function<B, AsyncRequest<R>> build) {
+		return streamAsync(context.service(IEventBus.class), build);
+	}
+	
 	public final Stream<R> streamAsync(IEventBus bus, Function<B, AsyncRequest<R>> build) {
 		return Streams.stream(new SearchResourceRequestIterator<B, R>(getSelf(), (builder) -> build.apply(builder).execute(bus).getSync(3, TimeUnit.MINUTES)));
 	}

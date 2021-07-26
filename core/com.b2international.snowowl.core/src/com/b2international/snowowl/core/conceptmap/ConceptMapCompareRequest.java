@@ -82,10 +82,11 @@ final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, 
 	private List<ConceptMapMapping> fetchConceptMapMappings(ServiceProvider context, ResourceURI conceptMapUri) {
 		return ConceptMapRequests.prepareSearchConceptMapMappings()
 			.filterByActive(true)
+			.filterByConceptMapUri(conceptMapUri)
 			.setLocales(locales())
 			.setPreferredDisplay(preferredDisplay)
 			.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT)
-			.streamAsync(context.service(IEventBus.class), req -> req.build(conceptMapUri))
+			.streamAsync(context.service(IEventBus.class), req -> req.buildAsync())
 			.flatMap(ConceptMapMappings::stream)
 			.collect(Collectors.toList());
 	}
