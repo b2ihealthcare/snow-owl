@@ -44,7 +44,6 @@ import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptProperty;
 import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition;
 import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition.PropertyValueType;
-import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition.PropertyValueType;
 import com.b2international.snowowl.lcs.core.domain.property.PropertyCardinality;
 import com.b2international.snowowl.lcs.core.request.LcsRequests;
 import com.google.common.collect.ImmutableList;
@@ -131,16 +130,9 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			.setId(codeSystem.getId().getIdValue())
 			.setDescription(codeSystem.getDescription())
 			.setLanguage(codeSystem.getLanguage().getCodeValue())
-<<<<<<< Upstream, based on branch 'feature/SO-4872_FHIR_Batch_support' of https://github.com/b2ihealthcare/snow-owl.git
 			//.setCopyright(codeSystem.getCopyright())
 			//.setStatus(codeSystem.getStatus().getCodeValue())
 			//.setOwner(codeSystem.getPublisher())
-			//.setUrl(url)
-=======
-			.setCopyright(codeSystem.getCopyright())
-			.setStatus(codeSystem.getStatus().getCodeValue())
-			.setOwner(codeSystem.getPublisher())
->>>>>>> 597d812 SO-4872 Test case and skeleton endpoint added.
 			.setPropertyDefinitions(propertyDefinitions)
 			.setTitle(codeSystem.getTitle())
 			.buildAsync()
