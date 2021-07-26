@@ -67,7 +67,7 @@ public class SandBoxRestTest extends FhirRestTest {
 	 */
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(false))
+		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(true))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
@@ -86,10 +86,14 @@ public class SandBoxRestTest extends FhirRestTest {
 			.when().post("/CodeSystem")
 			.then()
 			.statusCode(200);
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when().get(CODESYSTEM)
+			.prettyPrint();
 			
 	}
 	
-	@Test
+	//@Test
 	public void listCodeSystems() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get(CODESYSTEM)

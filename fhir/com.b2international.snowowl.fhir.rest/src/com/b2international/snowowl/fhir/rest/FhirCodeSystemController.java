@@ -38,16 +38,16 @@ import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptProperty;
 import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition;
 import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition.PropertyValueType;
+import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition.PropertyValueType;
+import com.b2international.snowowl.lcs.core.domain.property.PropertyCardinality;
 import com.b2international.snowowl.lcs.core.request.LcsRequests;
 import com.google.common.collect.ImmutableList;
-import com.b2international.snowowl.lcs.core.domain.property.PropertyCardinality;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -91,15 +91,33 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			Code type = p.getType();
 			PropertyType propertyType = PropertyType.forValue(type.getCodeValue());
 			
+			
 			switch (propertyType) {
 			case BOOLEAN:
 				builder.valueType(PropertyValueType.BOOLEAN);
 				break;
-
-			default:
-				builder.valueType(PropertyValueType.BOOLEAN);
+			case INTEGER:
+				builder.valueType(PropertyValueType.INTEGER);
 				break;
+			case DECIMAL:
+				builder.valueType(PropertyValueType.DECIMAL);
+				break;
+			case STRING:
+				builder.valueType(PropertyValueType.STRING);
+				break;
+			case CODE:
+				builder.valueType(PropertyValueType.URI);
+				break;
+			case CODING:
+				builder.valueType(PropertyValueType.URI);
+				break;
+			case DATETIME:
+				builder.valueType(PropertyValueType.DATE);
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown type: " + propertyType);
 			}
+			
 			return builder.build();
 			
 		}).collect(Collectors.toList());
@@ -113,14 +131,21 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			.setId(codeSystem.getId().getIdValue())
 			.setDescription(codeSystem.getDescription())
 			.setLanguage(codeSystem.getLanguage().getCodeValue())
+<<<<<<< Upstream, based on branch 'feature/SO-4872_FHIR_Batch_support' of https://github.com/b2ihealthcare/snow-owl.git
 			//.setCopyright(codeSystem.getCopyright())
 			//.setStatus(codeSystem.getStatus().getCodeValue())
 			//.setOwner(codeSystem.getPublisher())
 			//.setUrl(url)
+=======
+			.setCopyright(codeSystem.getCopyright())
+			.setStatus(codeSystem.getStatus().getCodeValue())
+			.setOwner(codeSystem.getPublisher())
+>>>>>>> 597d812 SO-4872 Test case and skeleton endpoint added.
 			.setPropertyDefinitions(propertyDefinitions)
 			.setTitle(codeSystem.getTitle())
 			.buildAsync()
-			.execute(getBus());
+			.execute(getBus())
+			.getSync();
 		
 		Collection<Concept> concepts = codeSystem.getConcepts();
 		
@@ -135,7 +160,10 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 							.orElseThrow(() -> new IllegalArgumentException("Undefined property"));
 					
 					LocalTerminologyConceptProperty lcsProperty = definition.createProperty();
-					lcsProperty.setValue(p.getValue());
+					
+					if (p.getPropertyType() != PropertyType.DATETIME) {
+						lcsProperty.setValue(p.getValue());
+					}
 					return lcsProperty;
 				
 			}).collect(Collectors.toList());
@@ -144,11 +172,13 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			LcsRequests.localTerminologyConcepts()
 				.prepareCreate()
 				.setActive(true)
+				.setId(concept.getCode().getCodeValue())
 				.setTerm(concept.getDisplay())
 				.setAlternativeTerms(ImmutableList.of(concept.getDefinition()))
 				.setProperties(lcsProperties)
 				.build(uri, "user", "Commit comment")
-				.execute(getBus());
+				.execute(getBus())
+				.getSync();
 			
 		}
 		
