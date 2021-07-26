@@ -60,6 +60,6 @@ public abstract class ResourcesExportRequest implements Request<ServiceProvider,
 	 * @return
 	 * @throws IOException
 	 */
-	protected abstract File doExport(ServiceProvider context, Set<String> resourceIds2) throws IOException;
+	protected abstract File doExport(ServiceProvider context, Set<String> resourceIds) throws IOException;
 	
 }
