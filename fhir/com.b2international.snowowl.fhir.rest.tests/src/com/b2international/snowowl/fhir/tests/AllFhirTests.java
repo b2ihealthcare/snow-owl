@@ -19,7 +19,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.tests.domain.*;
+import com.b2international.snowowl.fhir.tests.domain.valueset.ValueSetSerializationTest;
 import com.b2international.snowowl.fhir.tests.dt.*;
 import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
 import com.b2international.snowowl.fhir.tests.filter.FhirRequestParameterTest;
@@ -82,8 +84,11 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	ConceptPropertyTest.class,
 	FilterTest.class,
 	CodeSystemTest.class,
-
+	
+	//ValueSet
+	Compose.class,
 	ValueSetSerializationTest.class,
+
 	ConceptMapSerializationTest.class,
 	ConceptMapFilterTest.class,
 	ElementDefinitionSerializationTest.class,

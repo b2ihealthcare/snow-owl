@@ -23,14 +23,18 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 
 /**
  * FHIR Value set compose backbone element
  * 
  * @since 6.4
  */
+@JsonDeserialize(builder = Compose.Builder.class)
 public class Compose {
 	
 	@JsonProperty
@@ -67,15 +71,16 @@ public class Compose {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Compose> {
 		
 		private Date lockedDate;
 		
 		private Boolean isInactive;
 		
-		private Collection<Include> includes = Sets.newHashSet();
+		private Collection<Include> includes;
 
-		private Collection<Include> excludes = Sets.newHashSet();
+		private Collection<Include> excludes;
 		
 		public Builder lockedDate(final Date lockedDate) {
 			this.lockedDate = lockedDate;
@@ -87,13 +92,35 @@ public class Compose {
 			return this;
 		}
 		
+		@JsonProperty("include")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder profiles(Collection<Include> includes) {
+			this.includes = includes;
+			return this;
+		}
+		
 		public Builder addInclude(final Include include) {
-			this.includes.add(include);
+			
+			if (includes == null) {
+				includes = Lists.newArrayList();
+			}
+			includes.add(include);
+			return this;
+		}
+		
+		@JsonProperty("excludes")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder excludes(Collection<Include> excludes) {
+			this.excludes = excludes;
 			return this;
 		}
 		
 		public Builder addExclude(final Include exclude) {
-			this.excludes.add(exclude);
+			
+			if (excludes == null) {
+				excludes = Lists.newArrayList();
+			}
+			excludes.add(exclude);
 			return this;
 		}
 		
