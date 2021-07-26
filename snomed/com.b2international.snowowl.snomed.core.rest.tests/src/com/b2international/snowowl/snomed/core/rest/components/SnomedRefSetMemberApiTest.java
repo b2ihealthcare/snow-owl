@@ -26,6 +26,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -800,7 +801,12 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			"commitComment", "Executed invalid action on reference set member"
 		);
 
-		executeMemberAction(branchPath, memberId, invalidActionRequest).statusCode(400);
+		executeMemberAction(branchPath, memberId, invalidActionRequest).statusCode(400)
+		.body("message", containsString("Invalid"))
+		.body("message", containsString("CREATE"))
+		.body("message", containsString("UPDATE"))
+		.body("message", containsString("DELETE"))
+		.body("message", containsString("SYNC"));
 	}
 
 	@Test
