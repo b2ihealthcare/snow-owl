@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Narrative status code system
@@ -55,5 +56,10 @@ public enum NarrativeStatus implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
+	
+	@JsonCreator
+    public static NarrativeStatus forValue(String value) {
+		return NarrativeStatus.valueOf(value.toUpperCase());
+    }
 	
 }

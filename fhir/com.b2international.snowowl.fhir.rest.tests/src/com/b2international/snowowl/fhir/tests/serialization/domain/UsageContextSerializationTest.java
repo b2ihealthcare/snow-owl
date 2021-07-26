@@ -16,7 +16,7 @@
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Test;
 
@@ -120,7 +120,7 @@ public class UsageContextSerializationTest extends FhirTest {
 			.build();
 				
 			
-		Range range = new Range(low, high);
+		Range range = Range.builder().low(low).high(high).build();
 		
 		RangeUsageContext usageContext = RangeUsageContext.builder()
 			.code(Coding.builder()
