@@ -83,8 +83,13 @@ public final class StatementFragmentOrdering extends Ordering<StatementFragment>
 			final StatementFragmentWithValue v1 = (StatementFragmentWithValue) o1;
 			final StatementFragmentWithValue v2 = (StatementFragmentWithValue) o2;
 			
-			final int valueDelta = v1.getValue().compareTo(v2.getValue());
-			return valueDelta;
+			final int typeDelta = v1.getValueType().compareTo(v2.getValueType());
+			if (typeDelta != 0) {
+				return typeDelta;
+			}
+			
+			final int rawValueDelta = v1.getRawValue().compareTo(v2.getRawValue());
+			return rawValueDelta;
 		}
 		
 		throw new IllegalStateException("Statement fragment ordering is incomplete.");
