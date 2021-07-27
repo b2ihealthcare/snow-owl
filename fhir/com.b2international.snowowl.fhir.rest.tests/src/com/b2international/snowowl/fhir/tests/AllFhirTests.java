@@ -23,11 +23,11 @@ import com.b2international.snowowl.fhir.tests.domain.*;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.CodeSystemTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptPropertyTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.FilterTest;
+import com.b2international.snowowl.fhir.tests.domain.conceptmap.ConceptMapTest;
 import com.b2international.snowowl.fhir.tests.domain.valueset.*;
 import com.b2international.snowowl.fhir.tests.dt.*;
 import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
 import com.b2international.snowowl.fhir.tests.filter.FhirRequestParameterTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.ConceptMapSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.ElementDefinitionSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 
@@ -100,7 +100,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	CodeableConceptUsageContextTest.class,
 	ValueSetTest.class,
 
-	ConceptMapSerializationTest.class,
+	ConceptMapTest.class,
 	ConceptMapFilterTest.class,
 	ElementDefinitionSerializationTest.class,
 	

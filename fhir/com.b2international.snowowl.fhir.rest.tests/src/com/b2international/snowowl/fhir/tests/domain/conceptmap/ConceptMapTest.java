@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.serialization.domain;
+package com.b2international.snowowl.fhir.tests.domain.conceptmap;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
@@ -31,16 +32,20 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.usagecontext.CodeableConceptUsageContext;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.restassured.path.json.JsonPath;
 
 /**
- * Test for checking the ConceptMap serialization
+ * Tests for {@link ConceptMap}
  * @since 7.0
  */
-public class ConceptMapSerializationTest extends FhirTest {
+public class ConceptMapTest extends FhirTest {
 	
+	private ConceptMap conceptMap;
+
 	@Test
 	public void unMappedTest() throws Exception {
 		
@@ -267,10 +272,10 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertNull(jsonPath.get("unmapped"));
 	}
 	
-	@Test
+	@Before
 	public void conceptMapTest() throws Exception {
 	
-		ConceptMap conceptMap = ConceptMap.builder("-1")
+		conceptMap = ConceptMap.builder("-1")
 				.url("http://who.org")
 				.addIdentifier(Identifier.builder()
 					.build())
@@ -301,6 +306,12 @@ public class ConceptMapSerializationTest extends FhirTest {
 				.copyright("Copyright")
 				.sourceUri("SourceUri")
 				.targetUri("TargetUri")
+				.addGroup(Group.builder()
+						.addElement(ConceptMapElement.builder()
+								.code("ElementCode")
+								.display("ElementDisplay")
+								.build())
+						.build())
 				.build();
 		
 		applyFilter(conceptMap);
@@ -313,6 +324,11 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertThat(jsonPath.get("purpose"), equalTo("Purpose"));
 		assertThat(jsonPath.get("sourceUri"), equalTo("SourceUri"));
 		assertThat(jsonPath.get("useContext.valueCodeableConcept.text"), hasItem("CodeableConceptText"));
+	}
+	
+	@Test
+	public void deserialize() throws Exception, JsonProcessingException {
+		ConceptMap readValueSet = objectMapper.readValue(objectMapper.writeValueAsString(conceptMap), ConceptMap.class);
 	}
 
 }
