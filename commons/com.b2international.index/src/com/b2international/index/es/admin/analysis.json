@@ -10,6 +10,40 @@
 				"unique_token"
 			]
 		},
+		"tokenized_synonyms": {
+			"tokenizer": "whitespace",
+			"filter": [
+				"asciifolding",
+				"lowercase",
+				"possessive",
+				"synonyms",
+				"word_splitter",
+				"unique_token"
+			]
+		},
+		"tokenized_ignore_stopwords": {
+			"tokenizer": "whitespace",
+			"filter": [
+				"asciifolding",
+				"lowercase",
+				"stop_words",
+				"possessive",
+				"word_splitter",
+				"unique_token"				
+			]
+		},
+		"tokenized_synonyms_ignore_stopwords": {
+			"tokenizer": "whitespace",
+			"filter": [
+				"asciifolding",
+				"lowercase",
+				"stop_words",
+				"possessive",
+				"synonyms",
+				"word_splitter",
+				"unique_token"				
+			]
+		},
 		"exact": {
 			"tokenizer": "keyword",
 			"filter": [
@@ -81,17 +115,6 @@
 				"unique_token",
 				"edge_ngram"
 			]
-		},
-		"tokenized_ignore_stopwords": {
-			"tokenizer": "whitespace",
-			"filter": [
-				"asciifolding",
-				"lowercase",
-				"stop_words",
-				"possessive",
-				"word_splitter",
-				"unique_token"				
-			]
 		}
 	},
 	"normalizer": {
@@ -136,6 +159,11 @@
 		"stop_words": {
 			"type": "stop",
 			"stopwords": ["a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", "into", "is", "it", "of", "on", "or", "such", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "will", "with"]
+		},
+		"synonyms": {
+			"type": "synonym",
+			"synonyms_path": "analysis/synonym.txt",
+			"lenient": true
 		}
 	}
 }

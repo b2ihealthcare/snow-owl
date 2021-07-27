@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 import org.elasticsearch.common.collect.List;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.b2international.index.mapping.Field;
@@ -36,6 +37,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class AnalyzerTest extends BaseIndexTest {
 
+	@ClassRule
+	public static SynonymsRule synonyms = new SynonymsRule(
+		"stone,calculus",
+		"bbq,barbecue"
+	);
+	
 	@Doc
 	private static final class DataWithTokenizedText {
 		
@@ -84,9 +91,8 @@ public class AnalyzerTest extends BaseIndexTest {
 	@Test
 	public void tokenizedIgnoreStopwords() throws Exception {
 		DataWithTokenizedText withStopwords = new DataWithTokenizedText(KEY1, "a quick fox jumps over the lazy dog and cat");
-		indexDocument(withStopwords);
 		DataWithTokenizedText withoutStopwords = new DataWithTokenizedText(KEY2, "quick fox jumps over lazy dog cat");
-		indexDocument(withoutStopwords);
+		indexDocuments(withStopwords, withoutStopwords);
 		
 		// search with stopwords enabled
 		Hits<DataWithTokenizedText> hits = search(Query.select(DataWithTokenizedText.class)
@@ -101,6 +107,23 @@ public class AnalyzerTest extends BaseIndexTest {
 				.build());
 		// should return both document
 		assertThat(hits).containsOnly(withStopwords, withoutStopwords);
+	}
+	
+	@Test
+	public void tokenizedWithSynonyms() throws Exception {
+		DataWithTokenizedText bbq = new DataWithTokenizedText(KEY1, "bbq weekend");
+		DataWithTokenizedText stone = new DataWithTokenizedText(KEY2, "kidney stone");
+		indexDocuments(bbq, stone);
+		
+		// without specific synonym analyzer searches for synonyms return no hits
+		Hits<DataWithTokenizedText> hits = search(Query.select(DataWithTokenizedText.class)
+				.where(Expressions.dismax(
+					Expressions.matchTextAll("text.tokenized", "barbecue").withSynonyms(true),
+					Expressions.matchTextAll("text.tokenized", "calculus")
+				))
+				.limit(Integer.MAX_VALUE)
+				.build());
+		assertThat(hits).containsOnly(bbq);
 	}
 	
 }

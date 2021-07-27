@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,6 +51,9 @@ import net.jodah.failsafe.RetryPolicy;
  */
 public final class EsNode extends Node {
 
+	public static final String CONFIG_DIR = "config";
+	public static final String SYNONYMS_FILE = "analysis/synonym.txt";
+	
 	private static final String CONFIG_FILE = "elasticsearch.yml";
 	private static final Logger LOG = LoggerFactory.getLogger("elastic.snowowl");
 	
@@ -118,9 +122,28 @@ public final class EsNode extends Node {
 		}
 
 		// configure es home directory
-		putSettingIfAbsent(esSettings, "path.home", dataPath.resolve(clusterName).toString());
+		Path esHomeDirectory = dataPath.resolve(clusterName);
+		putSettingIfAbsent(esSettings, "path.home", esHomeDirectory.toString());
 		putSettingIfAbsent(esSettings, "cluster.name", clusterName);
 		putSettingIfAbsent(esSettings, "node.name", clusterName);
+		
+		// make sure embedded node always has an analysis/synonym.txt file inside the configuration directory
+		Path soConfigSynonymsFile = configPath.resolve(SYNONYMS_FILE);
+		Path esConfigSynonymsFile = esHomeDirectory.resolve(CONFIG_DIR).resolve(SYNONYMS_FILE);
+		if (Files.exists(soConfigSynonymsFile)) {
+			// always override synonyms file with the one coming from Snow Owl config directory
+			Files.copy(soConfigSynonymsFile, esConfigSynonymsFile, StandardCopyOption.REPLACE_EXISTING);
+		} else {
+			// if there is no custom synonym file, then create an empty one if not present
+			Path synonyms = esConfigSynonymsFile;
+			if (!Files.exists(synonyms)) {
+				if (!Files.exists(synonyms.getParent())) {
+					Files.createDirectories(synonyms.getParent());
+				}
+				synonyms = Files.createFile(synonyms);
+			}
+		}
+		
 		
 		// node.master is no longer supported, node.roles can be set here, but the default for the embedded mode is good enough
 		// see https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html
