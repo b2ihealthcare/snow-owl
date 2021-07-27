@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +39,7 @@ import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -158,11 +160,20 @@ public final class SnomedOWLExpressionConverter {
 	}
 
 	private RelationshipValue toRelationshipValue(ConcreteValue value) {
+		/*
+		 * XXX: preserve the OWL2 XSD type, but use the exact numeric representation
+		 * given; eg. "50"^^decimal should have decimal type, with "50", a fraction-less
+		 * BigDecimal as its value.
+		 * 
+		 * It is an implementation-dependent feature that "asString" returns the
+		 * raw value for numbers as well, this might change in the future!
+		 */
+		final String rawValue = value.asString();
 		final ConcreteValue.Type type = value.getType();
 		switch (type) {
-			case DECIMAL: return new RelationshipValue(value.asDecimal());
-			case INTEGER: return new RelationshipValue(value.asInt());
-			case STRING: return new RelationshipValue(value.asString());
+			case DECIMAL: return RelationshipValue.fromTypeAndObjects(RelationshipValueType.DECIMAL, new BigDecimal(rawValue), null);
+			case INTEGER: return RelationshipValue.fromTypeAndObjects(RelationshipValueType.INTEGER, new BigDecimal(rawValue), null);
+			case STRING: return new RelationshipValue(rawValue);
 			default: throw new IllegalStateException("Unexpected concrete value type '" + type + "'.");
 		}
 	}
