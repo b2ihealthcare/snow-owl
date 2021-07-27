@@ -28,6 +28,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -53,6 +54,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.index.util.DecimalUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
@@ -516,13 +518,12 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,      // 3 
 						SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED, // 4
 						SnomedRelationshipIndexEntry.Fields.VALUE_TYPE,          // 5
-						SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE,       // 6
-						SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE,       // 7
-						SnomedRelationshipIndexEntry.Fields.STRING_VALUE,        // 8
-						SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP,  // 9
-						SnomedRelationshipIndexEntry.Fields.UNION_GROUP,         // 10
-						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,         // 11
-						SnomedRelationshipIndexEntry.Fields.RELEASED)            // 12
+						SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,       // 6
+						SnomedRelationshipIndexEntry.Fields.STRING_VALUE,        // 7
+						SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP,  // 8
+						SnomedRelationshipIndexEntry.Fields.UNION_GROUP,         // 9 
+						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,         // 10
+						SnomedRelationshipIndexEntry.Fields.RELEASED)            // 11
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						// XXX: Need to group relationships by source ID
@@ -558,24 +559,24 @@ public final class ReasonerTaxonomyBuilder {
 				final Long destinationId = ifNotNull(relationship[3], Long::valueOf);
 				final boolean destinationNegated = Boolean.parseBoolean(relationship[4]);
 				final RelationshipValueType valueType = ifNotNull(relationship[5], RelationshipValueType::valueOf);
-				final Integer integerValue = ifNotNull(relationship[6], Integer::valueOf);
-				final Double decimalValue = ifNotNull(relationship[7], Double::valueOf);
-				final String stringValue = relationship[8];
-				final int group = Integer.parseInt(relationship[9]);
-				final int unionGroup = Integer.parseInt(relationship[10]);
-				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[11]);
-				final boolean released = Boolean.parseBoolean(relationship[12]);
+				final BigDecimal decimalValue = ifNotNull(relationship[6], DecimalUtils::decode);
+				final String stringValue = relationship[7];
+				final int group = Integer.parseInt(relationship[8]);
+				final int unionGroup = Integer.parseInt(relationship[9]);
+				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[10]);
+				final boolean released = Boolean.parseBoolean(relationship[11]);
 				
 				final StatementFragment statement;
 				if (destinationId != null) {
 					statement = new StatementFragmentWithDestination(
 						typeId, group, unionGroup, universal, statementId, -1L, released, destinationId, destinationNegated);
 				} else {
-					final RelationshipValue value = RelationshipValue.fromTypeAndObjects(
-						valueType, integerValue, decimalValue, stringValue);
+					final String rawValue = RelationshipValueType.STRING.equals(valueType)
+						? stringValue
+						: decimalValue.toPlainString();	
 					
 					statement = new StatementFragmentWithValue(
-						typeId, group, unionGroup, universal, statementId, -1L, released, value.toLiteral());
+						typeId, group, unionGroup, universal, statementId, -1L, released, valueType, rawValue);
 				}
 				
 				fragments.add(statement);
@@ -635,7 +636,7 @@ public final class ReasonerTaxonomyBuilder {
 						typeId, group, unionGroup, universal, statementId, -1L, false, destinationId, destinationNegated);
 				} else {
 					statement = new StatementFragmentWithValue(
-						typeId, group, unionGroup, universal, statementId, -1L, false, value.toLiteral());
+						typeId, group, unionGroup, universal, statementId, -1L, false, value.type(), value.toRawValue());
 				}
 
 				fragments.add(statement);
