@@ -24,6 +24,7 @@ import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 6.7
  */
 @JsonSerialize(using=ExpansionParameterSerializer.class)
+@JsonDeserialize(using = ExpansionParameterDeserializer.class)
 @JsonInclude(Include.NON_EMPTY) //covers nulls as well
 public abstract class Parameter<T> {
 

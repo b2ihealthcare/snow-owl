@@ -108,7 +108,7 @@ public class Compose {
 			return this;
 		}
 		
-		@JsonProperty("excludes")
+		@JsonProperty("exclude")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder excludes(Collection<Include> excludes) {
 			this.excludes = excludes;

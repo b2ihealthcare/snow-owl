@@ -26,6 +26,8 @@ import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Quantity;
 import com.b2international.snowowl.fhir.core.model.dt.Range;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -38,6 +40,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 6.6
  */
 @JsonSerialize(using=UsageContextSerializer.class)
+@JsonDeserialize(using = UsageContextDeserializer.class)
 public abstract class UsageContext<T> extends Element {
 
 	//Type of the context being specified (1..1)
@@ -55,7 +58,7 @@ public abstract class UsageContext<T> extends Element {
 	 * @param id
 	 * @param extensions
 	 */
-	protected UsageContext(final String id, final List<Extension> extensions,
+	UsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Coding code, final T value) {
 		super(id, extensions);
 		this.code = code;
@@ -66,6 +69,8 @@ public abstract class UsageContext<T> extends Element {
 		return code;
 	}
 	
+	//Ignored as it is serialized via the custom serializer on the class
+	@JsonIgnore 
 	public T getValue() {
 		return value;
 	}
@@ -73,6 +78,7 @@ public abstract class UsageContext<T> extends Element {
 	/**
 	 * @return the type to append during serialization
 	 */
+	@JsonIgnore
 	public abstract String getType();
 	
 	public static abstract class Builder<B extends Builder<B, UC, T>, UC extends UsageContext<T>, T> extends Element.Builder<B, UC> {

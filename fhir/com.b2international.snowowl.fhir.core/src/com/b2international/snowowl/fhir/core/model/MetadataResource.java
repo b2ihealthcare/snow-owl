@@ -378,7 +378,7 @@ public abstract class MetadataResource extends DomainResource {
 		}
 		
 		@SuppressWarnings("rawtypes")
-		@JsonProperty("usageContext")
+		@JsonProperty("useContext")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public B usageContexts(Collection<UsageContext> usageContexts) {
 			this.usageContexts = usageContexts;

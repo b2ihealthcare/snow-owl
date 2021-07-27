@@ -22,7 +22,10 @@ import javax.validation.Valid;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Sets;
 
 /**
@@ -30,6 +33,7 @@ import com.google.common.collect.Sets;
  * 
  * @since 6.4
  */
+@JsonDeserialize(builder = Include.Builder.class)
 public class Include {
 	
 	@Valid
@@ -57,6 +61,18 @@ public class Include {
 		this.valueSets = valueSets;
 	}
 	
+	public Uri getSystem() {
+		return system;
+	}
+	
+	public String getVersion() {
+		return version;
+	}
+	
+	public Collection<ValueSetConcept> getConcepts() {
+		return concepts;
+	}
+	
 	public Collection<ValueSetFilter> getFilters() {
 		return filters;
 	}
@@ -69,17 +85,18 @@ public class Include {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Include> {
 		
 		private Uri system;
 		
 		private String version;
 		
-		private Collection<ValueSetConcept> concepts = Sets.newHashSet();
+		private Collection<ValueSetConcept> concepts;
 		
-		private Collection<ValueSetFilter> filters = Sets.newHashSet();
+		private Collection<ValueSetFilter> filters;
 		
-		private Collection<Uri> valueSets = Sets.newHashSet();
+		private Collection<Uri> valueSets;
 		
 		public Builder system(final String uriValue) {
 			this.system = new Uri(uriValue);
@@ -91,22 +108,57 @@ public class Include {
 			return this;
 		}
 		
+		@JsonProperty("concept")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder profiles(Collection<ValueSetConcept> concepts) {
+			this.concepts = concepts;
+			return this;
+		}
+		
 		public Builder addConcept(final ValueSetConcept concept) {
-			this.concepts.add(concept);
+			
+			if (concepts == null) {
+				concepts = Sets.newHashSet();
+			}
+			
+			concepts.add(concept);
+			return this;
+		}
+		
+		@JsonProperty("filter")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder filters(Collection<ValueSetFilter> filters) {
+			this.filters = filters;
 			return this;
 		}
 		
 		public Builder addFilters(final ValueSetFilter filter) {
-			this.filters.add(filter);
+			
+			if (filters == null) {
+				filters = Sets.newHashSet();
+			}
+			
+			filters.add(filter);
+			return this;
+		}
+		
+		@JsonProperty("valueSet")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder valueSets(Collection<Uri> valueSetUris) {
+			this.valueSets = valueSetUris;
 			return this;
 		}
 		
 		public Builder addValueSet(final String valueSetUriValue) {
-			this.valueSets.add(new Uri(valueSetUriValue));
+			
+			if (valueSets == null) {
+				valueSets = Sets.newHashSet();
+			}
+			
+			valueSets.add(new Uri(valueSetUriValue));
 			return this;
 		}
 		
-
 		@Override
 		protected Include doBuild() {
 			return new Include(system, version, concepts, filters, valueSets);

@@ -17,49 +17,35 @@ package com.b2international.snowowl.fhir.tests.domain.valueset;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.codesystems.QuantityComparator;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Quantity;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.QuantityUsageContext;
-import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.DateTimeParameter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.StringParameter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.restassured.path.json.JsonPath;
 
 /**
- * Test for checking the valueset serialization
+ * Tests for {@link ValueSet}
  * @since 6.3
  */
-public class ValueSetSerializationTest extends FhirTest {
+public class ValueSetTest extends FhirTest {
 	
 	private ValueSet valueSet;
 
@@ -158,6 +144,16 @@ public class ValueSetSerializationTest extends FhirTest {
 	}
 	
 	@Test
+	public void build() {
+		validate(valueSet);
+	}
+	
+	private void validate(ValueSet valueSet) {
+		assertEquals("-1", valueSet.getId().getIdValue());
+		
+	}
+
+	@Test
 	public void serialize() throws Exception {
 		
 		JsonPath jsonPath = getJsonPath(valueSet);
@@ -173,103 +169,7 @@ public class ValueSetSerializationTest extends FhirTest {
 	@Test
 	public void deserialize() throws Exception, JsonProcessingException {
 		ValueSet readValueSet = objectMapper.readValue(objectMapper.writeValueAsString(valueSet), ValueSet.class);
-	}
-
-	
-	@Test
-	public void stringParameterTest() throws Exception {
-		
-		StringParameter parameter = StringParameter.builder()
-			.name("paramName")
-			.value("paramValue")
-			.build();
-		
-		JsonPath jsonPath = getJsonPath(parameter);
-		assertThat(jsonPath.getString("name"), equalTo("paramName"));
-		assertThat(jsonPath.get("valueString"), equalTo("paramValue"));
-	}
-	
-	@Test
-	public void uriParameterTest() throws Exception {
-		
-		UriParameter parameter = UriParameter.builder()
-			.name("paramName")
-			.value(new Uri("paramValue"))
-			.build();
-		
-		JsonPath jsonPath = getJsonPath(parameter);
-		assertThat(jsonPath.getString("name"), equalTo("paramName"));
-		assertThat(jsonPath.get("valueUri"), equalTo("paramValue"));
-	}
-	
-	@Test
-	public void dateTimeParameterTest() throws Exception {
-		
-		Date date = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT).parse(TEST_DATE_STRING);
-		
-		DateTimeParameter parameter = DateTimeParameter.builder()
-			.name("paramName")
-			.value(date)
-			.build();
-		
-		JsonPath jsonPath = getJsonPath(parameter);
-		assertThat(jsonPath.getString("name"), equalTo("paramName"));
-		assertThat(jsonPath.get("valueDateTime"), equalTo(TEST_DATE_STRING));
-	}
-	
-	@Test
-	public void expansionTest() throws Exception {
-		
-		UriParameter stringParameter = UriParameter.builder()
-			.name("paramName")
-			.value(new Uri("paramValue"))
-			.build();
-		
-		UriParameter uriParameter = UriParameter.builder()
-			.name("uriParamName")
-			.value(new Uri("uriParamValue"))
-			.build();
-		
-		Expansion expansion = Expansion.builder()
-			.identifier("identifier")
-			.timestamp(TEST_DATE_STRING)
-			.total(200)
-			.addParameter(stringParameter)
-			.addParameter(uriParameter)
-			.build();
-		
-		JsonPath jsonPath = getJsonPath(expansion);
-		assertThat(jsonPath.getString("identifier"), equalTo("identifier"));
-		assertThat(jsonPath.get("parameter.name"), hasItem("uriParamName"));
-		assertThat(jsonPath.get("parameter.name"), hasItem("paramName"));
-	}
-	
-	@Test
-	public void containsTest() throws Exception {
-		
-		Contains contains = Contains.builder()
-			.system("systemUri")
-			.isAbstract(true)
-			.inactive(false)
-			.version("20140131")
-			.code("Code")
-			.display("displayValue")
-			.addDesignation(Designation.builder()
-				.language("en-us")
-				.value("pt")
-				.build())
-			.addContains(Contains.builder().build())
-			.build();
-		
-		JsonPath jsonPath = getJsonPath(contains);
-		assertThat(jsonPath.getString("system"), equalTo("systemUri"));
-		assertThat(jsonPath.getBoolean("abstract"), equalTo(true));
-		assertThat(jsonPath.getBoolean("inactive"), equalTo(false));
-		assertThat(jsonPath.getString("version"), equalTo("20140131"));
-		assertThat(jsonPath.getString("code"), equalTo("Code"));
-		assertThat(jsonPath.getString("display"), equalTo("displayValue"));
-		assertThat(jsonPath.getString("designation"), notNullValue());
-		assertThat(jsonPath.getString("contains"), notNullValue());
+		validate(readValueSet);
 	}
 	
 }

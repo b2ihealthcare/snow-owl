@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Filter Operator Code system
@@ -93,5 +94,12 @@ public enum FilterOperator implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
+	
+	@JsonCreator
+    public static FilterOperator forValue(String value) {
+		if ("=".equals(value)) return EQUALS;
+		
+		return FilterOperator.valueOf(value.toUpperCase().replaceAll("-", "_"));
+    }
 
 }

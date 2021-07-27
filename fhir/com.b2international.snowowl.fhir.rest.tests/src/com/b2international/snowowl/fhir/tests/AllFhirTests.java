@@ -19,13 +19,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.tests.domain.*;
-import com.b2international.snowowl.fhir.tests.domain.valueset.ValueSetSerializationTest;
+import com.b2international.snowowl.fhir.tests.domain.valueset.*;
 import com.b2international.snowowl.fhir.tests.dt.*;
 import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
 import com.b2international.snowowl.fhir.tests.filter.FhirRequestParameterTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.*;
+import com.b2international.snowowl.fhir.tests.serialization.domain.ConceptMapSerializationTest;
+import com.b2international.snowowl.fhir.tests.serialization.domain.ElementDefinitionSerializationTest;
+import com.b2international.snowowl.fhir.tests.serialization.domain.UsageContextSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 
 /**
@@ -86,8 +87,17 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	CodeSystemTest.class,
 	
 	//ValueSet
-	Compose.class,
-	ValueSetSerializationTest.class,
+	ValueSetConceptTest.class,
+	ValueSetFilterTest.class,
+	IncludeTest.class,
+	ComposeTest.class,
+	ExpansionParameterTest.class,
+	ContainsTest.class,
+	ExpansionTest.class,
+	QuantityUsageContextTest.class,
+	RangeUsageContextTest.class,
+	CodeableConceptUsageContextTest.class,
+	ValueSetTest.class,
 
 	ConceptMapSerializationTest.class,
 	ConceptMapFilterTest.class,

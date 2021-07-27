@@ -23,7 +23,12 @@ import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.valueset.Include;
+import com.b2international.snowowl.fhir.core.model.valueset.Compose.Builder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Sets;
 
 /**
@@ -31,6 +36,7 @@ import com.google.common.collect.Sets;
  * 
  * @since 6.7
  */
+@JsonDeserialize(builder = Contains.Builder.class)
 public class Contains {
 	
 	@Valid
@@ -73,10 +79,43 @@ public class Contains {
 		this.contains = contains;
 	}
 	
+	public Uri getSystem() {
+		return system;
+	}
+	
+	public Boolean getIsAbstract() {
+		return isAbstract;
+	}
+
+	public Boolean getInactive() {
+		return inactive;
+	}
+	
+	public String getVersion() {
+		return version;
+	}
+	
+	public Code getCode() {
+		return code;
+	}
+	
+	public String getDisplay() {
+		return display;
+	}
+	
+	public Collection<Designation> getDesignations() {
+		return designations;
+	}
+	
+	public Collection<Contains> getContains() {
+		return contains;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Contains> {
 		
 		private Uri system;
@@ -91,9 +130,9 @@ public class Contains {
 		
 		private String display;
 		
-		private Collection<Designation> designations =  Sets.newHashSet();;
+		private Collection<Designation> designations;
 		
-		private Collection<Contains> contains = Sets.newHashSet();;
+		private Collection<Contains> contains;
 		
 		public Builder system(final String systemString) {
 			this.system = new Uri(systemString);
@@ -105,6 +144,7 @@ public class Contains {
 			return this;
 		}
 		
+		@JsonProperty("abstract")
 		public Builder isAbstract(Boolean isAbstract) {
 			this.isAbstract = isAbstract;
 			return this;
@@ -135,12 +175,33 @@ public class Contains {
 			return this;
 		}
 		
+		@JsonProperty("designation")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder designations(Collection<Designation> designations) {
+			this.designations = designations;
+			return this;
+		}
+		
 		public Builder addDesignation(final Designation designation) {
-			this.designations.add(designation);
+			
+			if (designations == null) {
+				designations = Sets.newHashSet();
+			}
+			designations.add(designation);
+			return this;
+		}
+		
+		@JsonProperty("contains")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder contains(Collection<Contains> contains) {
+			this.contains = contains;
 			return this;
 		}
 		
 		public Builder addContains(Contains content) {
+			if (contains == null) {
+				contains = Sets.newHashSet();
+			}
 			contains.add(content);
 			return this;
 		}

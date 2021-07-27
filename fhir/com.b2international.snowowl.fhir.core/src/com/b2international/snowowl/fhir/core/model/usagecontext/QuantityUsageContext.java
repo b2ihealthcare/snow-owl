@@ -20,6 +20,9 @@ import java.util.List;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Quantity;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * 
@@ -28,30 +31,37 @@ import com.b2international.snowowl.fhir.core.model.dt.Quantity;
  * https://www.hl7.org/fhir/metadatatypes.html#UsageContext
  * @since 6.6
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = QuantityUsageContext.Builder.class)
 public class QuantityUsageContext extends UsageContext<Quantity> {
 
-	protected QuantityUsageContext(final String id, final List<Extension> extensions, final Coding code, final Quantity value) {
+	public static final String CONTEXT_TYPE = "Quantity";
+
+	QuantityUsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions, final Coding code, final Quantity value) {
 		super(id, extensions, code, value);
 	}
 	
 	@Override
-	public Coding getCode() {
-		return code;
-	}
-	
-	@Override
 	public String getType() {
-		return "Quantity";
+		return CONTEXT_TYPE;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends UsageContext.Builder<Builder, QuantityUsageContext, Quantity> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueQuantity(final Quantity value) {
+			this.value = value;
 			return this;
 		}
 

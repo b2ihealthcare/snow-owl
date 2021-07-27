@@ -19,8 +19,11 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
 
 /**
  * Custom serializer for usage context.
@@ -32,9 +35,21 @@ public class UsageContextSerializer extends JsonSerializer<UsageContext<?>> {
 	public void serialize(UsageContext<?> usageContext, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
 		jGen.writeStartObject();
-		jGen.writeObjectField("code",usageContext.getCode());
+		////jGen.writeObjectField("code", usageContext.getCode());
 		jGen.writeObjectField("value" + usageContext.getType(), usageContext.getValue());
+		serializeFields(usageContext, jGen, sp);
 		jGen.writeEndObject();
 	}
+	
+	private void serializeFields(UsageContext bean, JsonGenerator gen, SerializerProvider provider)
+            throws IOException {
+        
+		JavaType javaType = provider.constructType(UsageContext.class);
+        BeanDescription beanDesc = provider.getConfig().introspect(javaType);
+        JsonSerializer<Object> serializer = BeanSerializerFactory.instance.findBeanSerializer(provider,
+                javaType,
+                beanDesc);
+        serializer.unwrappingSerializer(null).serialize(bean, gen, provider);
+    }
 
 }

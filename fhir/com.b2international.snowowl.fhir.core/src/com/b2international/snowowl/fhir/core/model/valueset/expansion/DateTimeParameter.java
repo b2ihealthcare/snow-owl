@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 import java.util.Date;
 
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * Datetime expansion parameter
@@ -25,6 +28,7 @@ import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
  * 
  * @since 6.19
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = DateTimeParameter.Builder.class)
 public class DateTimeParameter extends Parameter<Date> {
 
 	DateTimeParameter(String name, Date value) {
@@ -40,10 +44,19 @@ public class DateTimeParameter extends Parameter<Date> {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Parameter.Builder<Builder, DateTimeParameter, Date> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueDateTime(final Date value) {
+			this.value = value;
 			return this;
 		}
 

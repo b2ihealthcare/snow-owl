@@ -19,23 +19,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.IntegerExtension;
-import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Instant;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSetConcept;
@@ -87,34 +76,32 @@ public class ComposeTest extends FhirTest {
 	
 	@Test
 	public void build() throws Exception {
-		
-		printPrettyJson(compose);
-		
-		//assertEquals(securityCoding, meta.getSecurities().iterator().next());
-		
+		validate(compose);
 	}
 	
+	private void validate(Compose compose2) {
+
+		assertEquals(1, compose.getIncludes().size());
+		assertEquals("includeSystem", compose.getIncludes().iterator().next().getSystem().getUriValue());
+		assertEquals("excludeSystem", compose.getExcludes().iterator().next().getSystem().getUriValue());
+		assertEquals(1, compose.getExcludes().size());
+	}
+
 	@Test
 	public void serialize() throws Exception {
 		
+		printPrettyJson(compose);
+		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(compose));
-		assertThat(jsonPath.getString("versionId"), equalTo("VersionID"));
-		assertThat(jsonPath.getString("lastUpdated"), equalTo("2018-03-23T07:49:40Z"));
-		assertThat(jsonPath.getString("security[0].code"), equalTo("A"));
-		assertThat(jsonPath.getString("tag[0].code"), equalTo("TagA"));
-		assertThat(jsonPath.getString("profile[0]"), equalTo("profile"));
+		assertThat(jsonPath.getString("include[0].system"), equalTo("includeSystem"));
+		assertThat(jsonPath.getString("exclude[0].system"), equalTo("excludeSystem"));
 	}
 	
 	@Test
 	public void deserialize() throws Exception {
 		
 		Compose readCompose = objectMapper.readValue(objectMapper.writeValueAsString(compose), Compose.class);
-		
-//		assertEquals("ID", readMeta.getId());
-//		assertEquals(new Id("VersionID"), readMeta.getVersionId());
-//		assertEquals(tagCoding, readMeta.getTags().iterator().next());
-//		assertEquals(new Uri("profile"), readMeta.getProfiles().iterator().next());
-//		assertEquals(securityCoding, readMeta.getSecurities().iterator().next());
+		validate(readCompose);
 	}
 
 }
