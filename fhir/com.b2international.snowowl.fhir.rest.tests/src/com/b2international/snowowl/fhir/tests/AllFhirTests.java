@@ -20,13 +20,15 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.tests.domain.*;
+import com.b2international.snowowl.fhir.tests.domain.codesystem.CodeSystemTest;
+import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptPropertyTest;
+import com.b2international.snowowl.fhir.tests.domain.codesystem.FilterTest;
 import com.b2international.snowowl.fhir.tests.domain.valueset.*;
 import com.b2international.snowowl.fhir.tests.dt.*;
 import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
 import com.b2international.snowowl.fhir.tests.filter.FhirRequestParameterTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.ConceptMapSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.ElementDefinitionSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.UsageContextSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 
 /**
@@ -75,7 +77,6 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 
 	//Domain models
 	TypedPropertySerializationTest.class,
-	UsageContextSerializationTest.class,
 	
 	//New format
 	IssueTest.class,
