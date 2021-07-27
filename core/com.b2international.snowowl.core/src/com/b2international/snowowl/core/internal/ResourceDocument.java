@@ -425,7 +425,7 @@ public final class ResourceDocument extends RevisionDocument {
 	@Field(
 		aliases = {
 			@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED),
-			@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer=Analyzers.TOKENIZED),
+			@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer=Analyzers.TOKENIZED, searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS),
 			@FieldAlias(name = "exact", type = FieldAliasType.KEYWORD, normalizer = Normalizers.LOWER_ASCII)
 		}
 	)
