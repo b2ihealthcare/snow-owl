@@ -250,10 +250,10 @@ public class SnomedConceptRestService extends AbstractRestService {
 				+ "&bull; inactivation indicator<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No Content"),
 		@ApiResponse(responseCode = "404", description = "Branch or Concept not found")
 	})
-	@PostMapping(value = "/{conceptId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{conceptId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
 			@Parameter(description = "The resource path", required = true)

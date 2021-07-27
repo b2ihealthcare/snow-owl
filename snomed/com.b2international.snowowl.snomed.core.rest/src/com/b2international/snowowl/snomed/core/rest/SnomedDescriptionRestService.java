@@ -209,10 +209,10 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		description="Updates properties of the specified Description, also managing language reference set membership."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No content"),
 		@ApiResponse(responseCode = "404", description = "Branch or Description not found")
 	})
-	@PostMapping(value = "/{descriptionId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{descriptionId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
 			@Parameter(description = "The resource path", required = true)

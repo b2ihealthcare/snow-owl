@@ -198,10 +198,10 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 		description="Updates properties of the specified Relationship."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No content"),
 		@ApiResponse(responseCode = "404", description = "Branch or Relationship not found")
 	})
-	@PostMapping(value = "/{relationshipId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{relationshipId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
 			@Parameter(description = "The resource path", required = true)

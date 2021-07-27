@@ -293,7 +293,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "204", description = "No content"),
 		@ApiResponse(responseCode = "404", description = "Branch or reference set not found")
 	})
-	@PutMapping(value="/{id}/members", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value="/{id}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void updateMembers(
 			@Parameter(description = "The resource path", required = true)

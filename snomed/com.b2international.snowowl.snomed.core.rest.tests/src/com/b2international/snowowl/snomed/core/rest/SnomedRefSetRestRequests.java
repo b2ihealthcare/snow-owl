@@ -51,7 +51,7 @@ public abstract class SnomedRefSetRestRequests {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(bulkRequest)
-				.put("/{path}/refsets/{id}/members", branchPath.getPath(), refSetId)
+				.put("/{path}/refsets/{id}", branchPath.getPath(), refSetId)
 				.then();
 	}
 
