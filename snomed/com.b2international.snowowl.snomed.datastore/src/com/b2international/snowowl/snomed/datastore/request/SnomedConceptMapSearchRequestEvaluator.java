@@ -245,15 +245,15 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.build();
 	}
 
-	private MappingCorrelation getEquivalence(SnomedReferenceSetMember mappingSetMember) {
+	private MappingCorrelation getEquivalence(SnomedReferenceSetMember conceptMapMember) {
 
-		SnomedRefSetType snomedRefSetType = mappingSetMember.type();
+		SnomedRefSetType snomedRefSetType = conceptMapMember.type();
 
 		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP || snomedRefSetType == SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION) {
 			return MappingCorrelation.EXACT_MATCH; //probably true
 		}
 
-		Map<String, Object> properties = mappingSetMember.getProperties();
+		Map<String, Object> properties = conceptMapMember.getProperties();
 
 		if (properties == null || properties.isEmpty()) {
 			return MappingCorrelation.NOT_SPECIFIED; 

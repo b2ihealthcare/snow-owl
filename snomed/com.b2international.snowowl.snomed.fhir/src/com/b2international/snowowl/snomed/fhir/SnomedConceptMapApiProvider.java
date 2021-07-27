@@ -443,19 +443,19 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			elementBuilder.display(getPreferredTermOrId(concept));
 			
 			//Targets - potentially many
-			for (SnomedReferenceSetMember mappingSetMember : targetMembers) {
-				elementBuilder.addTarget(getTarget(mappingSetMember));
+			for (SnomedReferenceSetMember conceptMapMember : targetMembers) {
+				elementBuilder.addTarget(getTarget(conceptMapMember));
 			}
 			groupBuilder.addElement(elementBuilder.build());
 		}
 		return groupBuilder.build();
 	}
 
-	private Target getTarget(SnomedReferenceSetMember mappingSetMember) {
+	private Target getTarget(SnomedReferenceSetMember conceptMapMember) {
 		
 		Target.Builder targetBuilder = Target.builder();
 		
-		Map<String, Object> properties = mappingSetMember.getProperties();
+		Map<String, Object> properties = conceptMapMember.getProperties();
 		if (properties != null && !properties.isEmpty()) {
 			String mapTarget = (String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET);
 			
@@ -463,20 +463,20 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 				targetBuilder.code(mapTarget);
 			}
 		}
-		targetBuilder.equivalence(getEquivalence(mappingSetMember));
+		targetBuilder.equivalence(getEquivalence(conceptMapMember));
 		
 		return targetBuilder.build();
 	}
 
-	private ConceptMapEquivalence getEquivalence(SnomedReferenceSetMember mappingSetMember) {
+	private ConceptMapEquivalence getEquivalence(SnomedReferenceSetMember conceptMapMember) {
 		
-		SnomedRefSetType snomedRefSetType = mappingSetMember.type();
+		SnomedRefSetType snomedRefSetType = conceptMapMember.type();
 		
 		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP) {
 			return ConceptMapEquivalence.EQUIVALENT; //probably true
 		}
 		
-		Map<String, Object> properties = mappingSetMember.getProperties();
+		Map<String, Object> properties = conceptMapMember.getProperties();
 		
 		if (properties == null || properties.isEmpty()) {
 			return ConceptMapEquivalence.RELATEDTO; //?
