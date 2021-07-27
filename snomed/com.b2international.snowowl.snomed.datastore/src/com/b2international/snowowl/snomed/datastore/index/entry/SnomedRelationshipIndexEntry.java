@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -60,8 +61,7 @@ import com.google.common.collect.FluentIterable;
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID,
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED,
-		SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE,
-		SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE,
+		SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,
 		SnomedRelationshipIndexEntry.Fields.STRING_VALUE
 	}
 )
@@ -150,8 +150,9 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		}
 
 		public static Expression values(final Collection<RelationshipValue> values) {
+			// We are only interested in whether all values are numeric or are strings
 			final long types = values.stream()
-				.map(RelationshipValue::type)
+				.map(v -> RelationshipValueType.STRING.equals(v.type()))
 				.distinct()
 				.count();
 			
@@ -159,25 +160,20 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				throw new BadRequestException("All relationship values should have the same type");
 			}
 			
-			final Set<Integer> integerValues = newHashSet();
-			final Set<Double> decimalValues = newHashSet();
+			final Set<BigDecimal> numericValues = newHashSet();
 			final Set<String> stringValues = newHashSet();
 			
 			values.forEach(value -> value
-				.ifInteger(integerValues::add) 
-				.ifDecimal(decimalValues::add) 
+				.ifInteger(i -> numericValues.add(new BigDecimal(i))) 
+				.ifDecimal(numericValues::add) 
 				.ifString(stringValues::add));
 			
 			if (!stringValues.isEmpty()) {
 				return matchAny(Fields.STRING_VALUE, stringValues);
 			}
 			
-			if (!integerValues.isEmpty()) {
-				return matchAnyInt(Fields.INTEGER_VALUE, integerValues);
-			}
-
-			if (!decimalValues.isEmpty()) {
-				return matchAnyDouble(Fields.DECIMAL_VALUE, decimalValues);
+			if (!numericValues.isEmpty()) {
+				return matchAnyDecimal(Fields.NUMERIC_VALUE, numericValues);
 			}
 			
 			throw new IllegalStateException("Unreachable code");
@@ -185,15 +181,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 
 		public static Expression valueLessThan(final RelationshipValue upper, final boolean includeUpper) {
 			return upper.map(
-				i -> matchRange(Fields.INTEGER_VALUE, null, i, true, includeUpper), 
-				d -> matchRange(Fields.DECIMAL_VALUE, null, d, true, includeUpper), 
+				i -> matchRange(Fields.NUMERIC_VALUE, null, new BigDecimal(i), true, includeUpper), 
+				d -> matchRange(Fields.NUMERIC_VALUE, null, d, true, includeUpper), 
 				s -> matchRange(Fields.STRING_VALUE, null, s, true, includeUpper)); 
 		}
 		
 		public static Expression valueGreaterThan(final RelationshipValue lower, final boolean includeLower) {
 			return lower.map(
-				i -> matchRange(Fields.INTEGER_VALUE, i, null, includeLower, true), 
-				d -> matchRange(Fields.DECIMAL_VALUE, d, null, includeLower, true), 
+				i -> matchRange(Fields.NUMERIC_VALUE, new BigDecimal(i), null, includeLower, true), 
+				d -> matchRange(Fields.NUMERIC_VALUE, d, null, includeLower, true), 
 				s -> matchRange(Fields.STRING_VALUE, s, null, includeLower, true)); 
 		}
 		
@@ -247,8 +243,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
 		public static final String DESTINATION_NEGATED = "destinationNegated";
 		public static final String VALUE_TYPE = "valueType";
-		public static final String INTEGER_VALUE = "integerValue";
-		public static final String DECIMAL_VALUE = "decimalValue";
+		public static final String NUMERIC_VALUE = "numericValue";
 		public static final String STRING_VALUE = "stringValue";
 		public static final String GROUP = "group"; // XXX different than RF2 header
 		public static final String UNION_GROUP = "unionGroup";
@@ -264,8 +259,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		private String destinationId;
 		private boolean destinationNegated;
 		private RelationshipValueType valueType;
-		private Integer integerValue;
-		private Double decimalValue;
+		private BigDecimal numericValue;
 		private String stringValue;
 		private int group = DEFAULT_GROUP;
 		private int unionGroup = DEFAULT_UNION_GROUP;
@@ -300,9 +294,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			 */
 			if (destinationId != null) {
 				valueType = null;
-				
-				integerValue = null;
-				decimalValue = null;
+				numericValue = null;
 				stringValue = null;
 
 				this.destinationId = destinationId;
@@ -332,8 +324,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				destinationId = null;
 				
 				value
-					.ifInteger(i -> { valueType = RelationshipValueType.INTEGER; integerValue = i; })
-					.ifDecimal(d -> { valueType = RelationshipValueType.DECIMAL; decimalValue = d; })
+					.ifInteger(i -> { valueType = RelationshipValueType.INTEGER; numericValue = new BigDecimal(i); })
+					.ifDecimal(d -> { valueType = RelationshipValueType.DECIMAL; numericValue = d; })
 					.ifString(s -> { valueType = RelationshipValueType.STRING; stringValue = s; });
 			}
 
@@ -346,13 +338,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			return getSelf();
 		}
 
-		Builder integerValue(final Integer integerValue) {
-			this.integerValue = integerValue;
-			return getSelf();
-		}
-
-		Builder decimalValue(final Double decimalValue) {
-			this.decimalValue = decimalValue;
+		Builder numericValue(final BigDecimal numericValue) {
+			this.numericValue = numericValue;
 			return getSelf();
 		}
 
@@ -405,8 +392,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				typeId, 
 				destinationId, 
 				valueType,
-				integerValue,
-				decimalValue,
+				numericValue,
 				stringValue,
 				characteristicTypeId, 
 				modifierId, 
@@ -430,8 +416,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	private final boolean destinationNegated;
 
 	private final String destinationId;
-	private final Integer integerValue;
-	private final Double decimalValue;
+	private final BigDecimal numericValue;
 	private final String stringValue;
 
 	private final RelationshipValueType valueType;
@@ -447,8 +432,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		final String typeId,
 		final String destinationId,
 		final RelationshipValueType valueType,
-		final Integer integerValue, 
-		final Double decimalValue,
+		final BigDecimal numericValue,
 		final String stringValue,
 		final String characteristicTypeId,
 		final String modifierId,
@@ -477,8 +461,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		this.typeId = typeId;
 		this.destinationId = destinationId;
 		this.valueType = valueType;
-		this.integerValue = integerValue;
-		this.decimalValue = decimalValue;
+		this.numericValue = numericValue;
 		this.stringValue = stringValue;
 		this.characteristicTypeId = characteristicTypeId;
 		this.modifierId = modifierId;
@@ -526,17 +509,12 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 
 	@JsonIgnore
 	public RelationshipValue getValueAsObject() {
-		return RelationshipValue.fromTypeAndObjects(valueType, integerValue, decimalValue, stringValue);
+		return RelationshipValue.fromTypeAndObjects(valueType, numericValue, stringValue);
 	}
 
 	@JsonProperty
-	Double getDecimalValue() {
-		return decimalValue;
-	}
-
-	@JsonProperty
-	Integer getIntegerValue() {
-		return integerValue;
+	BigDecimal getNumericValue() {
+		return numericValue;
 	}
 
 	@JsonProperty

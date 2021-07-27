@@ -398,7 +398,12 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 						RelationshipValue value = r.getValueAsObject();
 						value.map(
 							i -> propertyBuilder.valueInteger(i),
-							d -> propertyBuilder.valueDecimal(d),
+							/*
+							 * XXX: The officially supported range of values should fit in a 64-bit double;
+							 * loss of precision and/or saturation to infinity can happen when the stored
+							 * value is outside this range.
+							 */
+							d -> propertyBuilder.valueDecimal(d.doubleValue()), 
 							s -> propertyBuilder.valueString(s));
 					} else {
 						propertyBuilder.valueCode(r.getDestinationId());
