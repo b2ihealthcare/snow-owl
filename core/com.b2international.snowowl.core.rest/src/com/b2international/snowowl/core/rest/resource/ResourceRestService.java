@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.commit.CommitInfoRestSearch;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -147,5 +148,39 @@ public class ResourceRestService extends AbstractRestService {
 		 }
 		 .buildAsync()
 		 .execute(getBus());
+	}
+	
+	@Operation(
+			summary = "Retrieve a commit",
+			description = "Returns a single commit entry from resource commits"
+			)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK")
+	})
+	@GetMapping(value = "/commits/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<CommitInfo> get(
+			@Parameter(description = "Commit ID to match")
+			@PathVariable(value="commitId")
+			final String commitId, 
+
+			@ParameterObject
+			final ResourceSelectors selectors) {
+
+		Request<RepositoryContext, CommitInfo> req = RepositoryRequests.commitInfos()
+				.prepareGetCommitInfo(commitId)
+				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
+				.build();
+
+		return new ResourceRepositoryRequestBuilder<CommitInfo>() {
+
+			@Override
+			public Request<RepositoryContext, CommitInfo> build() {
+				return req;
+			}
+
+		}
+		.buildAsync()
+		.execute(getBus());
 	}
 }
