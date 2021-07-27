@@ -258,7 +258,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				+ "- query field of query type reference set members"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No Content"),
 		@ApiResponse(responseCode = "404", description = "Branch or member not found")
 	})
 	@PutMapping(value = "/{id}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
