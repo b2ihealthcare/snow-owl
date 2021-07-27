@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.core.rest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -51,7 +51,7 @@ public abstract class SnomedRefSetRestRequests {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(bulkRequest)
-				.put("/{path}/refsets/{id}", branchPath.getPath(), refSetId)
+				.put("/{path}/refsets/{id}/members", branchPath.getPath(), refSetId)
 				.then();
 	}
 
