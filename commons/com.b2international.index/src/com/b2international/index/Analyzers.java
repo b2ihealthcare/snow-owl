@@ -69,6 +69,29 @@ public enum Analyzers {
 	TOKENIZED,
 	
 	/**
+	 * "tokenized_synonyms": {
+	       "tokenizer": "whitespace",
+	       "filter": [
+	          "asciifolding",
+	          "lowercase",
+	          "possessive",
+	          "synonyms",
+	          "word_splitter",
+	          "unique_token"
+	       ]
+	    }
+	    "word_splitter": {
+            "type": "word_delimiter",
+            "split_on_case_change": "false",
+            "split_on_numerics": "false",
+            "preserve_original": "true",
+            "stem_english_possessive": "false",
+            "type_table": [", => DIGIT", ". => DIGIT"]
+        }
+	 */
+	TOKENIZED_SYNONYMS,
+	
+	/**
 	 * "tokenized_ignore_stopwords": {
 			"tokenizer": "whitespace",
 			"filter": [
@@ -82,6 +105,22 @@ public enum Analyzers {
 		}
 	 */
 	TOKENIZED_IGNORE_STOPWORDS,
+	
+	/**
+	 * "tokenized_synonyms_ignore_stopwords": {
+			"tokenizer": "whitespace",
+			"filter": [
+				"asciifolding",
+				"lowercase",
+				"stop_words",
+				"possessive",
+				"synonyms",
+				"word_splitter",
+				"unique_token"				
+			]
+		}
+	 */
+	TOKENIZED_SYNONYMS_IGNORE_STOPWORDS,
 	
 	/**
 	 * "stemming": {
@@ -191,7 +230,9 @@ public enum Analyzers {
 		case KEYWORD: return "keyword";
 		case EXACT: return "exact";
 		case TOKENIZED: return "tokenized";
+		case TOKENIZED_SYNONYMS: return "tokenized_synonyms";
 		case TOKENIZED_IGNORE_STOPWORDS: return "tokenized_ignore_stopwords";
+		case TOKENIZED_SYNONYMS_IGNORE_STOPWORDS: return "tokenized_synonyms_ignore_stopwords";
 		case STEMMING: return "stemming";
 		case SEARCH_STEMMING: return "search_stemming";
 		case CASE_SENSITIVE: return "case_sensitive";
