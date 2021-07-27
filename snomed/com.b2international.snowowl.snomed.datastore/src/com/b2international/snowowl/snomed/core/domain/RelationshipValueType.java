@@ -27,7 +27,7 @@ import com.b2international.commons.StringUtils;
  */
 public enum RelationshipValueType {
 	INTEGER,
-	DECIMAL, // XXX: stored as double-precision floating point
+	DECIMAL,
 	STRING;
 	
 	public String getDisplayName() {

@@ -93,8 +93,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
 		
 		public static final String VALUE_TYPE = SnomedRelationshipIndexEntry.Fields.VALUE_TYPE;
-		public static final String INTEGER_VALUE = SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE;
-		public static final String DECIMAL_VALUE = SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE;
+		public static final String NUMERIC_VALUE = SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE;
 		public static final String STRING_VALUE = SnomedRelationshipIndexEntry.Fields.STRING_VALUE;
 		public static final String UNION_GROUP = SnomedRelationshipIndexEntry.Fields.UNION_GROUP;
 
@@ -106,8 +105,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			MODULE_ID,
 			SOURCE_ID,
 			DESTINATION_ID,
-			INTEGER_VALUE,
-			DECIMAL_VALUE,
+			NUMERIC_VALUE,
 			STRING_VALUE,
 			RELATIONSHIP_GROUP,
 			UNION_GROUP,
