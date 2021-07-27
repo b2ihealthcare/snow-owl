@@ -133,8 +133,8 @@ public abstract class DocumentBuilders {
 			final RelationshipValue relationshipValue;
 			if (value instanceof Integer) {
 				relationshipValue = new RelationshipValue((Integer) value);
-			} else if (value instanceof Double) {
-				relationshipValue = new RelationshipValue((Double) value);
+			} else if (value instanceof BigDecimal) {
+				relationshipValue = new RelationshipValue((BigDecimal) value);
 			} else if (value instanceof String) {
 				relationshipValue = new RelationshipValue((String) value);
 			} else {
@@ -188,7 +188,7 @@ public abstract class DocumentBuilders {
 				.field(SnomedRf2Headers.FIELD_VALUE, value);
 	}
 	
-	public static SnomedRelationshipIndexEntry.Builder decimalValue(final String referencedComponentId, final String typeId, final Double value, final String characteristicTypeId) {
+	public static SnomedRelationshipIndexEntry.Builder decimalValue(final String referencedComponentId, final String typeId, final BigDecimal value, final String characteristicTypeId) {
 		return relationshipWithValue(referencedComponentId, typeId, new RelationshipValue(value), characteristicTypeId);
 	}
 	

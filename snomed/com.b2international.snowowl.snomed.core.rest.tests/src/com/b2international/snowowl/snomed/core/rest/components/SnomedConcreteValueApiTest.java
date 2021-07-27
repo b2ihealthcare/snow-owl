@@ -31,6 +31,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConcreteValueInvalidSource() {
 		Json requestBody = createConcreteValueRequestBody(
-			"11110000", Concepts.PART_OF, new RelationshipValue(3.334d))
+			"11110000", Concepts.PART_OF, new RelationshipValue(new BigDecimal("3.334")))
 			.with("commitComment", "Created new concrete value with invalid sourceId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
