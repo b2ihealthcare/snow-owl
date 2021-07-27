@@ -41,6 +41,7 @@ import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
@@ -515,6 +516,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 							r.isDestinationNegated());
 					} else {
 						final NormalFormValue v = (NormalFormValue) property;
+						final RelationshipValue relationshipValue = v.getValue();
 						return new StatementFragmentWithValue(
 							v.getTypeId(), 
 							groupNumber, 
@@ -523,7 +525,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 							v.getStatementId(), 
 							-1L, 
 							v.isReleased(), 
-							v.getValue().toLiteral());
+							relationshipValue.type(),
+							relationshipValue.toRawValue());
 					}
 				});
 	}

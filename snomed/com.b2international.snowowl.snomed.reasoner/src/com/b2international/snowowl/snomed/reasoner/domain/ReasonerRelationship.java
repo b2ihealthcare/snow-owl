@@ -112,6 +112,12 @@ public final class ReasonerRelationship implements Serializable {
 		return value;
 	}
 	
+	/*
+	 * XXX: Serializing to-from JSON representation may lose value type information,
+	 * eg. it is not possible to tell whether #50 should be an integer or a decimal
+	 * value. Java-based serialization has no such issue, as the RelationshipValue
+	 * instance is transferred.
+	 */
 	public String getValue() {
 		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
