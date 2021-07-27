@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,20 @@ import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.collect.Sets;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * FHIR Concept map target backbone element
  * <br> Concept in target system for element
  * @since 6.10
  */
+@JsonDeserialize(builder = Target.Builder.class)
 public class Target {
 
 	@Valid
@@ -60,6 +64,30 @@ public class Target {
 	@JsonInclude(Include.NON_EMPTY)
 	private final Collection<DependsOn> products;
 
+	public Code getCode() {
+		return code;
+	}
+	
+	public String getDisplay() {
+		return display;
+	}
+	
+	public Code getEquivalence() {
+		return equivalence;
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
+	public Collection<DependsOn> getDependsOnElements() {
+		return dependsOnElements;
+	}
+	
+	public Collection<DependsOn> getProducts() {
+		return products;
+	}
+	
 	Target(Code code, String display, Code equivalence, String comment, Collection<DependsOn> dependsOnElements,
 			Collection<DependsOn> products) {
 		this.code = code;
@@ -74,14 +102,15 @@ public class Target {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Target> {
 
 		private Code code;
 		private String display;
 		private Code equivalence;
 		private String comment;
-		private Collection<DependsOn> dependsOnElements = Sets.newHashSet();
-		private Collection<DependsOn> products = Sets.newHashSet();
+		private ImmutableList.Builder<DependsOn> dependsOnElements = ImmutableList.builder();
+		private ImmutableList.Builder<DependsOn> products = ImmutableList.builder();
 	
 		public Builder code(final Code code) {
 			this.code = code;
@@ -108,25 +137,38 @@ public class Target {
 			return this;
 		}
 		
-		
 		public Builder comment(final String comment) {
 			this.comment = comment;
 			return this;
 		}
 		
+		@JsonProperty("dependsOn")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder dependsOns(Collection<DependsOn> dependsOns) {
+			dependsOnElements.addAll(dependsOns);
+			return this;
+		}
+		
 		public Builder addDependsOn(final DependsOn dependsOn) {
-			this.dependsOnElements.add(dependsOn);
+			dependsOnElements.add(dependsOn);
+			return this;
+		}
+		
+		@JsonProperty("product")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder products(Collection<DependsOn> products) {
+			this.products.addAll(products);
 			return this;
 		}
 		
 		public Builder addProduct(final DependsOn product) {
-			this.products.add(product);
+			products.add(product);
 			return this;
 		}
 		
 		@Override
 		protected Target doBuild() {
-			return new Target(code, display, equivalence, comment, dependsOnElements, products);
+			return new Target(code, display, equivalence, comment, dependsOnElements.build(), products.build());
 		}
 	}
 
