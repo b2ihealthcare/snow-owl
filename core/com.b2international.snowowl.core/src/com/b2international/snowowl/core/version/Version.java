@@ -24,9 +24,7 @@ import java.time.ZoneOffset;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 /**
@@ -82,6 +80,7 @@ public final class Version implements Serializable {
 		return createdAt;
 	}
 	
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	@JsonFormat(shape=Shape.STRING, pattern=DateFormats.SHORT, timezone="UTC")
 	public LocalDateTime getCreatedAtDateTime() {
 		return createdAt == null ? null : LocalDateTime.ofInstant(Instant.ofEpochMilli(createdAt), ZoneOffset.UTC);
