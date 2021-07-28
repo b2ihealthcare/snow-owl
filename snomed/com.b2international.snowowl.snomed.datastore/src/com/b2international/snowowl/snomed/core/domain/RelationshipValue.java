@@ -226,6 +226,11 @@ public final class RelationshipValue implements Serializable {
 		if (!(obj instanceof RelationshipValue)) { return false; }
 		
 		final RelationshipValue other = (RelationshipValue) obj;
+		if (!type().equals(other.type())) {
+			// Automatic type conversion is not supported; #5 is not equal to #5.0
+			return false;
+		}
+		
 		return map(
 			i -> i.equals(other.numericIntValue()),
 			d -> d.equals(other.numericValue),
@@ -234,7 +239,7 @@ public final class RelationshipValue implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(numericValue, stringValue);
+		return Objects.hash(type, numericValue, stringValue);
 	}
 	
 	@Override
