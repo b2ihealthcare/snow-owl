@@ -27,6 +27,14 @@ public abstract class Resource implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * @since 8.0
+	 */
+	public static final class Fields {
+		public static final String ID = ResourceDocument.Fields.ID;
+		public static final String TITLE = ResourceDocument.Fields.TITLE;
+	}
+	
 	// unique identifier for each resource, can be auto-generated or manually specified
 	private String id;
 
