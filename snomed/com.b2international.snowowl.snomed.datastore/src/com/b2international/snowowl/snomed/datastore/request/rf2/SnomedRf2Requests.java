@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.jobs.RemoteJobEntry;
  */
 public final class SnomedRf2Requests {
 
-	public static final String SNOMED_IMPORT_PREFIX = "snomed-import-"; 
+	public static final String SNOMED_IMPORT_PREFIX = "import-"; 
 	
 	public SnomedRf2ExportRequestBuilder prepareExport() {
 		return new SnomedRf2ExportRequestBuilder();
