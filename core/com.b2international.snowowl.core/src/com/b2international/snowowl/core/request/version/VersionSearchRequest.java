@@ -88,7 +88,10 @@ public final class VersionSearchRequest
 
 		addIdFilter(query, VersionDocument.Expressions::ids);
 		addFilter(query, OptionKey.RESOURCE_TYPE, String.class, VersionDocument.Expressions::resourceTypes);
-		addFilter(query, OptionKey.RESOURCE, String.class, VersionDocument.Expressions::resources);
+		addFilter(query, OptionKey.RESOURCE, String.class, resources -> Expressions.builder()
+				.should(VersionDocument.Expressions.resources(resources))
+				.should(VersionDocument.Expressions.resourceIds(resources))
+				.build());
 		addFilter(query, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		addFilter(query, OptionKey.RESOURCE_BRANCHPATH, String.class, VersionDocument.Expressions::resourceBranchPaths);
 		addFilter(query, OptionKey.AUTHOR, String.class, VersionDocument.Expressions::authors);

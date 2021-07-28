@@ -69,6 +69,7 @@ public final class VersionDocument implements Serializable {
 		// derived fields
 		public static final String RESOURCE_BRANCH_PATH = "resourceBranchPath";
 		public static final String RESOURCE_TYPE = "resourceType";
+		public static final String RESOURCE_ID = "resourceId";
 		
 		public static final Set<String> SORT_FIELDS = Set.of(ID, VERSION, DESCRIPTION, EFFECTIVE_TIME, RESOURCE, BRANCH_PATH, AUTHOR, CREATED_AT, TOOLING_ID, URL);
 	}
@@ -91,12 +92,16 @@ public final class VersionDocument implements Serializable {
 			return exactMatch(Fields.RESOURCE, resourceUri);
 		}
 		
-		public static Expression resources(Collection<String> resourceUris) {
+		public static Expression resources(Iterable<String> resourceUris) {
 			return matchAny(Fields.RESOURCE, resourceUris);
 		}
 		
-		public static Expression resourceTypes(Collection<String> resourceTypes) {
+		public static Expression resourceTypes(Iterable<String> resourceTypes) {
 			return matchAny(Fields.RESOURCE_TYPE, resourceTypes);
+		}
+		
+		public static Expression resourceIds(Iterable<String> resourceIds) {
+			return matchAny(Fields.RESOURCE_ID, resourceIds);
 		}
 		
 		public static Expression effectiveTime(long effectiveTime) {
@@ -245,6 +250,10 @@ public final class VersionDocument implements Serializable {
 	
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
+	
+	// search only fields
+	private String resourceId;
+	private String resourceType;
 
 	private VersionDocument(
 			final String id, 
@@ -262,6 +271,8 @@ public final class VersionDocument implements Serializable {
 		this.description = description;
 		this.effectiveTime = effectiveTime;
 		this.resource = resource;
+		this.resourceId = resource != null ? resource.getResourceId() : null;
+		this.resourceType = resource != null ? resource.getResourceType() : null;
 		this.branchPath = branchPath;
 		this.createdAt = createdAt;
 		this.toolingId = toolingId;
@@ -290,8 +301,12 @@ public final class VersionDocument implements Serializable {
 		return resource;
 	}
 	
+	public String getResourceId() {
+		return resourceId;
+	}
+	
 	public String getResourceType() {
-		return getResource() != null ? getResource().getResourceType() : null;
+		return resourceType;
 	}
 	
 	public String getBranchPath() {
