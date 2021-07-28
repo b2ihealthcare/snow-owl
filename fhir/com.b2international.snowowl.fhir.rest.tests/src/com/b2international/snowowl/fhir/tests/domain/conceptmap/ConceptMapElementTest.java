@@ -16,16 +16,16 @@
 package com.b2international.snowowl.fhir.tests.domain.conceptmap;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMapElement;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Group;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Target;
-import com.b2international.snowowl.fhir.core.model.conceptmap.UnMapped;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -56,7 +56,7 @@ public class ConceptMapElementTest extends FhirTest {
 	public void build() throws Exception {
 		validate(element);
 	}
-	
+		
 	private void validate(ConceptMapElement element) {
 
 		assertEquals("Code", element.getCode().getCodeValue());
@@ -75,6 +75,21 @@ public class ConceptMapElementTest extends FhirTest {
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(element));
 		assertThat(jsonPath.getString("code"), equalTo("Code"));
 		assertThat(jsonPath.getString("display"), equalTo("Display"));
+		assertThat(jsonPath.get("target.equivalence"), hasItem("Equivalence"));
+	}
+	
+	@Test
+	public void serializeWithMissingOptionalFields() throws Exception{
+		
+		ConceptMapElement element = ConceptMapElement.builder()
+				.build();
+		
+		JsonPath jsonPath = getJsonPath(element);
+		
+		assertNull(jsonPath.get("code"));
+		assertNull(jsonPath.get("display"));
+		assertNull(jsonPath.get("target"));
+		assertNull(jsonPath.get("target"));
 	}
 	
 	@Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.serialization.domain;
+package com.b2international.snowowl.fhir.tests.domain.structuredefinition;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.DiscriminatorType;
@@ -24,19 +29,37 @@ import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.Discriminator;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.ElementDefinition;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.Slicing;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
+import io.restassured.path.json.JsonPath;
+
 /**
- * Tests for validating the serialization of the {@link ElementDefinition} class.
- * @since 7.1
+ * Tests for {@link Discriminator}
+ * @since 8.0.0
  */
-public class ElementDefinitionSerializationTest extends FhirTest {
+public class DiscriminatorTest extends FhirTest {
+	
+	private Discriminator discriminator;
+
+	@Before
+	public void setup() throws Exception {
+		
+		discriminator = Discriminator.builder()
+			.id("id")
+			.path("path")
+			.type(DiscriminatorType.VALUE)
+			.build();
+	}
 	
 	@Test
-	public void invalidDiscriminatorTest() {
+	public void build() throws Exception {
+		printPrettyJson(discriminator);
+		validate(discriminator);
+	}
+	
+	@Test
+	public void buildInvalid() {
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("2 validation errors");
@@ -44,7 +67,7 @@ public class ElementDefinitionSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void missingPathDiscriminatorTest() {
+	public void buildWithMissingField() {
 		
 		Issue expectedIssue = Issue.builder()
 				.code(IssueType.INVALID)
@@ -61,30 +84,27 @@ public class ElementDefinitionSerializationTest extends FhirTest {
 		Discriminator.builder().type(DiscriminatorType.EXISTS).build();
 	}
 	
+	private void validate(Discriminator discriminator) {
+		assertEquals("id", discriminator.getId());
+		assertEquals("path", discriminator.getPath());
+		assertEquals(DiscriminatorType.VALUE.getCode(), discriminator.getType());
+		
+	}
+
 	@Test
-	public void missingRulesFromSlicingTest() {
+	public void serialize() throws Exception {
 		
-		Issue expectedIssue = Issue.builder()
-				.code(IssueType.INVALID)
-				.severity(IssueSeverity.ERROR)
-				.diagnostics("1 validation error")
-				.addLocation("Slicing.rules")
-				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'rules' content is invalid [null]. Violation: may not be null.")
-				.build();
-			
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
-		
-		Slicing.builder().build();
+		printPrettyJson(discriminator);
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(discriminator));
+		assertThat(jsonPath.getString("id"), equalTo("id"));
+		assertThat(jsonPath.getString("type"), equalTo("value"));
+		assertThat(jsonPath.getString("path"), equalTo("path"));
 	}
 	
-	//@Test
-	public void slicingTest() {
-		Slicing.builder()
-			.addDiscriminator(Discriminator.builder()
-					.build())
-			.build();
+	@Test
+	public void deserialize() throws Exception {
+		Discriminator readDiscriminator = objectMapper.readValue(objectMapper.writeValueAsString(discriminator), Discriminator.class);
+		validate(readDiscriminator);
 	}
 
 }

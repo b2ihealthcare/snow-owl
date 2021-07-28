@@ -16,8 +16,10 @@
 package com.b2international.snowowl.fhir.tests.domain.conceptmap;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +64,6 @@ public class GroupTest extends FhirTest {
 	}
 	
 	private void validate(Group group) {
-
 		assertEquals("Source", group.getSource().getUriValue());
 	}
 
@@ -74,6 +75,32 @@ public class GroupTest extends FhirTest {
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(group));
 		assertThat(jsonPath.getString("source"), equalTo("Source"));
 		assertThat(jsonPath.getString("sourceVersion"), equalTo("SourceVersion"));
+		assertThat(jsonPath.get("target"), equalTo("Target"));
+		assertThat(jsonPath.get("targetVersion"), equalTo("TargetVersion"));
+		assertThat(jsonPath.get("element.code"), hasItem("ElementCode") );
+		assertThat(jsonPath.get("element.display"), hasItem("ElementDisplay"));
+		assertThat(jsonPath.get("unmapped.mode"), equalTo("Mode") );
+	}
+	
+	@Test
+	public void serializeWithMissingOptionalFields() throws Exception {
+		
+		Group group = Group.builder()
+			.addElement(ConceptMapElement.builder()
+				.code("ElementCode")
+				.display("ElementDisplay")
+				.build())
+			.build();
+		
+		JsonPath jsonPath = getJsonPath(group);
+		
+		assertNull(jsonPath.get("source"));
+		assertNull(jsonPath.get("sourceVersion"));
+		assertNull(jsonPath.get("target"));
+		assertNull(jsonPath.get("targetVersion"));
+		assertThat(jsonPath.get("element.code"), hasItem("ElementCode") );
+		assertThat(jsonPath.get("element.display"), hasItem("ElementDisplay"));
+		assertNull(jsonPath.get("unmapped"));
 	}
 	
 	@Test

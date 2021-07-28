@@ -68,17 +68,17 @@ public class MetaTest extends FhirTest {
 	
 	@Test
 	public void build() throws Exception {
-		
-		printPrettyJson(meta);
-		
+		validate(meta);
+	}
+	
+	private void validate(Meta meta) {
 		assertEquals("ID", meta.getId());
 		assertEquals(new Id("VersionID"), meta.getVersionId());
 		assertEquals(tagCoding, meta.getTags().iterator().next());
 		assertEquals(new Uri("profile"), meta.getProfiles().iterator().next());
 		assertEquals(securityCoding, meta.getSecurities().iterator().next());
-		
 	}
-	
+
 	@Test
 	public void serialize() throws Exception {
 		
@@ -94,12 +94,7 @@ public class MetaTest extends FhirTest {
 	public void deserialize() throws Exception {
 		
 		Meta readMeta = objectMapper.readValue(objectMapper.writeValueAsString(meta), Meta.class);
-		
-		assertEquals("ID", readMeta.getId());
-		assertEquals(new Id("VersionID"), readMeta.getVersionId());
-		assertEquals(tagCoding, readMeta.getTags().iterator().next());
-		assertEquals(new Uri("profile"), readMeta.getProfiles().iterator().next());
-		assertEquals(securityCoding, readMeta.getSecurities().iterator().next());
+		validate(readMeta);
 	}
 
 }

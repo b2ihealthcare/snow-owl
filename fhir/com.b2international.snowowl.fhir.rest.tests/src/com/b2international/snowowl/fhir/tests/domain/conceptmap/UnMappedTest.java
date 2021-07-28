@@ -18,11 +18,13 @@ package com.b2international.snowowl.fhir.tests.domain.conceptmap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapGroupUnmappedMode;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.conceptmap.UnMapped;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
@@ -52,6 +54,17 @@ public class UnMappedTest extends FhirTest {
 		validate(unMapped);
 	}
 	
+	@Test
+	public void buildInvalid() throws Exception {
+		
+		exception.expect(ValidationException.class);
+		UnMapped.builder()
+			.code("Code")
+			.display("Display")
+			.url("Url")
+			.build();
+	}
+	
 	private void validate(UnMapped unMapped) {
 
 		assertEquals("code", unMapped.getCode().getCodeValue());
@@ -70,6 +83,17 @@ public class UnMappedTest extends FhirTest {
 		assertThat(jsonPath.getString("display"), equalTo("display"));
 		assertThat(jsonPath.getString("code"), equalTo("code"));
 		assertThat(jsonPath.getString("mode"), equalTo("fixed"));
+	}
+	
+	@Test
+	public void serializeWithMissingOptionalFields() throws Exception {
+		
+		UnMapped unMapped = UnMapped.builder()
+			.mode("Mode")
+			.build();
+
+		JsonPath jsonPath = getJsonPath(unMapped);
+		assertNull(jsonPath.get("code"));
 	}
 	
 	@Test

@@ -18,10 +18,12 @@ package com.b2international.snowowl.fhir.tests.domain.conceptmap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.conceptmap.DependsOn;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
@@ -50,6 +52,18 @@ public class DependsOnTest extends FhirTest {
 	public void build() throws Exception {
 		validate(dependsOn);
 	}
+		
+	@Test
+	public void buildInvalid() {
+
+		exception.expect(ValidationException.class);
+		
+		DependsOn.builder()
+			.value("Value")
+			.system("System")
+			.display("Display")
+			.build();
+	}
 	
 	private void validate(DependsOn dependsOn) {
 
@@ -70,6 +84,22 @@ public class DependsOnTest extends FhirTest {
 		assertThat(jsonPath.getString("system"), equalTo("system"));
 		assertThat(jsonPath.getString("value"), equalTo("value"));
 		assertThat(jsonPath.getString("display"), equalTo("dependsOnDisplay"));
+	}
+	
+	@Test
+	public void serializeWithMissingOptionalFields() throws Exception {
+		
+		DependsOn dependsOn = DependsOn.builder()
+		.property("Property")
+		.value("Value")
+		.build();
+		
+		JsonPath jsonPath = getJsonPath(dependsOn);
+		
+		assertThat(jsonPath.get("property"), equalTo("Property"));
+		assertNull(jsonPath.get("system"));
+		assertThat(jsonPath.get("value"), equalTo("Value"));
+		assertNull(jsonPath.get("display"));
 	}
 	
 	@Test

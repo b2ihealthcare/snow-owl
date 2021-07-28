@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.tests.domain.conceptmap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -86,6 +87,21 @@ public class TargetTest extends FhirTest {
 		assertThat(jsonPath.getString("code"), equalTo("code"));
 		assertThat(jsonPath.getString("display"), equalTo("Display"));
 		assertThat(jsonPath.getString("equivalence"), equalTo("Equivalence"));
+	}
+	
+	@Test
+	public void serializeWithMissingOptionalFields() throws Exception{
+		
+		Target target = Target.builder().build();
+		
+		JsonPath jsonPath = getJsonPath(target);
+		
+		assertNull(jsonPath.get("code"));
+		assertNull(jsonPath.get("display"));
+		assertNull(jsonPath.get("equivalence"));
+		assertNull(jsonPath.get("comment"));
+		assertNull(jsonPath.get("dependsOn"));
+		assertNull(jsonPath.get("product"));
 	}
 	
 	@Test

@@ -57,7 +57,7 @@ import io.restassured.path.json.JsonPath;
 public class CodeSystemTest extends FhirTest {
 	
 	//status(code)/content(code)
-	//@Test
+	@Test
 	public void incompleteCodeSystemTest() throws Exception {
 		
 		exception.expect(ValidationException.class);
@@ -66,7 +66,7 @@ public class CodeSystemTest extends FhirTest {
 		CodeSystem.builder().build();
 	}
 	
-	//@Test 
+	@Test 
 	public void serializeMinimalCodeSystem() throws Exception {
 		
 		CodeSystem codeSystem = CodeSystem.builder()
@@ -112,7 +112,7 @@ public class CodeSystemTest extends FhirTest {
 		
 	}
 	
-	//@Test 
+	@Test 
 	public void buildCodeSystemWithNegativeCount() throws Exception {
 		
 		Issue expectedIssue = Issue.builder()
@@ -134,7 +134,7 @@ public class CodeSystemTest extends FhirTest {
 			.build();
 	}
 	
-	//@Test 
+	@Test 
 	public void serializeCodeSystem() throws Exception {
 		
 		Identifier identifier = Identifier.builder()
@@ -227,7 +227,7 @@ public class CodeSystemTest extends FhirTest {
 	@Test
 	public void deserializeCodeSystem() throws Exception {
 			
-		URI uri = CodeSystemTest.class.getResource("../test_codesystem.json").toURI();
+		URI uri = CodeSystemTest.class.getResource("test_codesystem.json").toURI();
 		CodeSystem codeSystem = objectMapper.readValue(Paths.get(uri).toFile(), CodeSystem.class);
 	}
 
