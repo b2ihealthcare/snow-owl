@@ -57,14 +57,16 @@ public class ContactDetailTest extends FhirTest {
 	
 	@Test
 	public void build() {
-		
+		validate(contactDetail);
+	}
+	
+	private void validate(ContactDetail contactDetail) {
 		assertEquals("name", contactDetail.getName());
 		ContactPoint telecom = contactDetail.getTelecoms().iterator().next();
 		assertEquals(new Code("system"), telecom.getSystem());
 		assertEquals("value", telecom.getValue());
-		
 	}
-	
+
 	@Test
 	public void serialize() throws Exception {
 		
@@ -82,10 +84,7 @@ public class ContactDetailTest extends FhirTest {
 	public void deserialize() throws Exception {
 		
 		ContactDetail readContactDetail = objectMapper.readValue(objectMapper.writeValueAsString(contactDetail), ContactDetail.class);
-		assertEquals("name", readContactDetail.getName());
-		ContactPoint telecom = readContactDetail.getTelecoms().iterator().next();
-		assertEquals(new Code("system"), telecom.getSystem());
-		assertEquals("value", telecom.getValue());
+		validate(readContactDetail);
 	}
 
 }

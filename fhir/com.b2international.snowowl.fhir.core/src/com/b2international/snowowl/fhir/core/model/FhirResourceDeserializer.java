@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
+import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -57,6 +58,9 @@ public class FhirResourceDeserializer extends StdDeserializer<FhirResource> {
 			
 			case ConceptMap.RESOURCE_TYPE_CONCEPT_MAP:
 				return p.getCodec().treeToValue(node, ConceptMap.class); 
+
+			case StructureDefinition.RESOURCE_TYPE_STRUCTURE_DEFINITION:
+				return p.getCodec().treeToValue(node, StructureDefinition.class); 
 
 			case Bundle.RESOURCE_TYPE_BUNDLE:
 				return p.getCodec().treeToValue(node, Bundle.class);
