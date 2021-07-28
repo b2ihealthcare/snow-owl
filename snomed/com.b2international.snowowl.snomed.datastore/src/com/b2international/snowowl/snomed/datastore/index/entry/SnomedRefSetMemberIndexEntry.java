@@ -382,6 +382,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return match(Fields.MRCM_GROUPED, grouped);
 		}
 		
+		public static Expression rangeConstraint(String rangeConstraint) {
+			return exactMatch(Fields.MRCM_RANGE_CONSTRAINT, rangeConstraint);
+		}
+		
 		public static Expression values(DataType type, Collection<? extends Object> values) {
 			switch (type) {
 			case BOOLEAN:
