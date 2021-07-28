@@ -45,13 +45,8 @@ import com.google.common.base.MoreObjects;
 @JsonDeserialize(builder = VersionDocument.Builder.class)
 public final class VersionDocument implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	/**
-	 * Unique terminology component identifier for versions.
-	 */
-	public static final short TERMINOLOGY_COMPONENT_ID = 2;
-	
 	/**
 	 * @since 8.0
 	 */
@@ -69,12 +64,13 @@ public final class VersionDocument implements Serializable {
 		public static final String CREATED_AT = "createdAt";
 		public static final String TOOLING_ID = "toolingId";
 		public static final String URL = "url";
+		public static final String AUTHOR = "author";
 		
 		// derived fields
 		public static final String RESOURCE_BRANCH_PATH = "resourceBranchPath";
 		public static final String RESOURCE_TYPE = "resourceType";
 		
-		public static final Set<String> SORT_FIELDS = Set.of(ID, VERSION, DESCRIPTION, EFFECTIVE_TIME, RESOURCE, BRANCH_PATH);
+		public static final Set<String> SORT_FIELDS = Set.of(ID, VERSION, DESCRIPTION, EFFECTIVE_TIME, RESOURCE, BRANCH_PATH, AUTHOR, CREATED_AT, TOOLING_ID, URL);
 	}
 
 	public static class Expressions {
@@ -115,6 +111,10 @@ public final class VersionDocument implements Serializable {
 			return matchAny(Fields.RESOURCE_BRANCH_PATH, resourceBranchPaths);
 		}
 		
+		public static Expression authors(Iterable<String> authors) {
+			return matchAny(Fields.AUTHOR, authors);
+		}
+		
 	}
 	
 	public static Builder builder() {
@@ -133,6 +133,7 @@ public final class VersionDocument implements Serializable {
 		private Long createdAt;
 		private String toolingId;
 		private String url;
+		private String author;
 		
 		public Builder id(String id) {
 			this.id = id;
@@ -166,6 +167,11 @@ public final class VersionDocument implements Serializable {
 		
 		public Builder createdAt(Long createdAt) {
 			this.createdAt = createdAt;
+			return this;
+		}
+		
+		public Builder author(String author) {
+			this.author = author;
 			return this;
 		}
 		
@@ -211,10 +217,11 @@ public final class VersionDocument implements Serializable {
 				branchPath,
 				createdAt,
 				toolingId,
-				url
+				url,
+				author
 			);
 		}
-		
+
 	}
 	
 	@ID
@@ -227,6 +234,7 @@ public final class VersionDocument implements Serializable {
 	private final Long createdAt;
 	private final String toolingId;
 	private final String url;
+	private final String author;
 	
 	/**
 	 * Same as Revision.created and revised to allow running queries against both Resource and Version documents. 
@@ -237,7 +245,7 @@ public final class VersionDocument implements Serializable {
 	
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
-	
+
 	private VersionDocument(
 			final String id, 
 			final String version,
@@ -247,7 +255,8 @@ public final class VersionDocument implements Serializable {
 			final String branchPath,
 			final Long createdAt,
 			final String toolingId,
-			final String url) {
+			final String url,
+			final String author) {
 		this.id = id;
 		this.version = version;
 		this.description = description;
@@ -257,6 +266,7 @@ public final class VersionDocument implements Serializable {
 		this.createdAt = createdAt;
 		this.toolingId = toolingId;
 		this.url = url;
+		this.author = author;
 		this.created = createdAt != null ? new RevisionBranchPoint(RevisionBranch.MAIN_BRANCH_ID, createdAt) : null;
 	}
 	
@@ -304,6 +314,10 @@ public final class VersionDocument implements Serializable {
 		return url;
 	}
 	
+	public String getAuthor() {
+		return author;
+	}
+	
 	// additional helpers
 	
 	/**
@@ -348,6 +362,7 @@ public final class VersionDocument implements Serializable {
 				.add("toolingId", toolingId)
 				.add("createdAt", createdAt)
 				.add("url", url)
+				.add("author", author)
 				.toString();
 	}
 

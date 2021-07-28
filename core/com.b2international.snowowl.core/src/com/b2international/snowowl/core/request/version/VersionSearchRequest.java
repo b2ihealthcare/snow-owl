@@ -72,7 +72,12 @@ public final class VersionSearchRequest
 		/**
 		 * Filter matches by corresponding resource branch path (formerly parent branch path).
 		 */
-		RESOURCE_BRANCHPATH,
+		RESOURCE_BRANCHPATH, 
+		
+		/**
+		 * Filter by the author's username who have created the version.
+		 */
+		AUTHOR,
 	}
 	
 	VersionSearchRequest() { }
@@ -86,6 +91,7 @@ public final class VersionSearchRequest
 		addFilter(query, OptionKey.RESOURCE, String.class, VersionDocument.Expressions::resources);
 		addFilter(query, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		addFilter(query, OptionKey.RESOURCE_BRANCHPATH, String.class, VersionDocument.Expressions::resourceBranchPaths);
+		addFilter(query, OptionKey.AUTHOR, String.class, VersionDocument.Expressions::authors);
 
 		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
 			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
@@ -118,6 +124,8 @@ public final class VersionSearchRequest
 		version.setEffectiveTime(doc.getEffectiveTimeAsLocalDate());
 		version.setResource(doc.getResource());
 		version.setBranchPath(doc.getBranchPath());
+		version.setCreatedAt(doc.getCreatedAt());
+		version.setAuthor(doc.getAuthor());
 		return version;
 	}
 	

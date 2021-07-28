@@ -187,6 +187,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
 							.resource(resource)
 							.branchPath(resourceToVersion.getRelativeBranchPath(version))
+							.author(user)
 							.createdAt(Instant.now().toEpochMilli())
 							.toolingId(resourceToVersion.getToolingId())
 							.url(buildVersionUrl(context, resourceToVersion))
