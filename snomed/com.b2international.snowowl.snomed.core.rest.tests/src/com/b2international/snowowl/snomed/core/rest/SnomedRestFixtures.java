@@ -274,7 +274,11 @@ public abstract class SnomedRestFixtures {
 			"moduleId", moduleId,
 			"sourceId", sourceId,
 			"typeId", typeId,
-			"value", value.toLiteral(),
+			"value", value.map(
+				i -> Json.object("type", value.type(), "numericValue", i.toString()),
+				d -> Json.object("type", value.type(), "numericValue", d.toPlainString()),
+				s -> Json.object("type", value.type(), "stringValue", s)
+			),
 			"characteristicTypeId", characteristicTypeId,
 			"relationshipGroup", relationshipGroup
 		);

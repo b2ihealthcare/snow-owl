@@ -302,7 +302,10 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	public void updateUnreleasedConcreteValue() throws Exception {
 		String relationshipId = createNewConcreteValue(branchPath);
 		Json update = Json.object(
-			"value", "#15",
+			"value", Json.object(
+				"type", "INTEGER", 
+				"numericValue", "15"
+			),
 			"commitComment", "Updated value of unreleased concrete value"
 		);
 
@@ -311,7 +314,8 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("value", equalTo("#15"));
+			.body("value.type", equalTo("INTEGER"))
+			.body("value.numericValue", equalTo("15"));
 	}
 	
 	@Test
@@ -349,7 +353,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("value", equalTo("\"Hello World!\""));
+			.body("value.stringValue", equalTo("Hello World!"));
 	}
 	
 	@Test(expected = ConflictException.class)

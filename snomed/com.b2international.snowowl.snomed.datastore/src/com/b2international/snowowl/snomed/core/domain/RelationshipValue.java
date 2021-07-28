@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
@@ -25,6 +26,8 @@ import java.util.function.Function;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represents a "union class" holder for all supported relationship value types.
@@ -38,6 +41,14 @@ public final class RelationshipValue implements Serializable {
 	// Only one of the fields below should be non-null
 	private final BigDecimal numericValue;
 	private final String stringValue;
+
+	private static <T, U> U ifNotNull(final T value, final Function<T, U> mapper) {
+		if (value != null) {
+			return mapper.apply(value);
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 * @param literal
@@ -112,20 +123,68 @@ public final class RelationshipValue implements Serializable {
 	 * @param stringValue
 	 */
 	public RelationshipValue(final String stringValue) {
-		this(RelationshipValueType.STRING, null, checkNotNull(stringValue, "Value may not be null."));
+		this(RelationshipValueType.STRING, (BigDecimal) null, checkNotNull(stringValue, "Value may not be null."));
 	}
 
 	private RelationshipValue(final RelationshipValueType type, final BigDecimal numericValue, final String stringValue) {
+		switch (type) {
+			case DECIMAL: //$FALL-THROUGH$
+			case INTEGER:
+				checkArgument(numericValue != null, "Numeric value is required for %s type.", type);
+				checkArgument(stringValue == null, "No string value should be set for %s type.", type);
+				break;
+			case STRING:
+				checkArgument(numericValue == null, "No numeric value should be set for %s type.", type);
+				checkArgument(stringValue != null, "String value is required for %s type.", type);
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected relationship value type: " + type);
+		}
+		
+		if (RelationshipValueType.INTEGER.equals(type)) {
+			try {
+				numericValue.intValueExact();
+			} catch (final ArithmeticException e) {
+				throw new IllegalArgumentException("Value " + numericValue.toPlainString() + " is not an integer or is outside the allowed range.");
+			}
+		}
+		
 		this.type = type;
 		this.numericValue = numericValue;
 		this.stringValue = stringValue;
+	}
+	
+	@JsonCreator
+	private RelationshipValue(
+		final @JsonProperty("type") RelationshipValueType type, 
+		final @JsonProperty("numericValue") String numericValueAsString, 
+		final @JsonProperty("stringValue") String stringValue
+	) {
+		this(type, ifNotNull(numericValueAsString, BigDecimal::new), stringValue);
 	}
 
 	/**
 	 * @return
 	 */
+	@JsonProperty("type")
 	public RelationshipValueType type() {
 		return type;
+	}
+
+	/**
+	 * @return
+	 */
+	@JsonProperty("numericValue")
+	String numericValueAsString() {
+		return ifNotNull(numericValue, BigDecimal::toPlainString);
+	}
+	
+	/**
+	 * @return
+	 */
+	@JsonProperty("stringValue")
+	String stringValue() {
+		return stringValue;
 	}
 
 	/**
