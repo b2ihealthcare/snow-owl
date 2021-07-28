@@ -107,17 +107,12 @@ public final class ReasonerRelationship implements Serializable {
 		return destination;
 	}
 	
-	@JsonIgnore
+	@JsonProperty("value")
 	public RelationshipValue getValueAsObject() {
 		return value;
 	}
 	
-	/*
-	 * XXX: Serializing to-from JSON representation may lose value type information,
-	 * eg. it is not possible to tell whether #50 should be an integer or a decimal
-	 * value. Java-based serialization has no such issue, as the RelationshipValue
-	 * instance is transferred.
-	 */
+	@JsonIgnore
 	public String getValue() {
 		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
@@ -205,15 +200,11 @@ public final class ReasonerRelationship implements Serializable {
 		setDestination(ifNotNull(destinationId, SnomedConcept::new));
 	}
 	
-	@JsonIgnore
+	@JsonProperty("value")
 	public void setValueAsObject(final RelationshipValue value) {
 		this.value = value;
 	}
 
-	public void setValue(final String literal) {
-		setValueAsObject(RelationshipValue.fromLiteral(literal));
-	}
-	
 	public void setType(final SnomedConcept type) {
 		this.type = type;
 	}

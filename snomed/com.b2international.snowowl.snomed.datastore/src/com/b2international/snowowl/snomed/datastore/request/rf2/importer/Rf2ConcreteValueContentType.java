@@ -49,7 +49,7 @@ final class Rf2ConcreteValueContentType implements Rf2ContentType<SnomedRelation
 	@Override
 	public void resolve(SnomedRelationship component, String[] values) {
 		component.setSourceId(values[4]);
-		// XXX: all imported numbers will be of decimal type
+		// XXX: imported numbers' type may differ from the required one
 		component.setValue(values[5]);
 		component.setGroup(Integer.parseInt(values[6]));
 		component.setTypeId(values[7]);

@@ -26,7 +26,7 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 
 	private String typeId;
 	private String destinationId;
-	private String value;
+	private RelationshipValue value;
 	private Integer group;
 	private Integer unionGroup;
 	private String characteristicTypeId;
@@ -40,7 +40,7 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 		return destinationId;
 	}
 
-	public String getValue() {
+	public RelationshipValue getValue() {
 		return value;
 	}
 
@@ -68,7 +68,7 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 		this.destinationId = destinationId;
 	}
 
-	public void setValue(final String value) {
+	public void setValue(final RelationshipValue value) {
 		this.value = value;
 	}
 
@@ -96,7 +96,7 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 			// .setSource(...) is not called
 			.setTypeId(typeId)
 			.setDestinationId(destinationId)
-			.setValue(RelationshipValue.fromLiteral(value))
+			.setValue(value)
 			.setGroup(group)
 			.setUnionGroup(unionGroup)
 			.setCharacteristicTypeId(characteristicTypeId)
