@@ -37,7 +37,7 @@ public final class ConceptSearchRequestBuilder
 	 * @return
 	 */
 	public ConceptSearchRequestBuilder filterByCodeSystem(String codeSystemId) {
-		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, CodeSystem.uri(codeSystemId));
+		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, codeSystemId == null ? null : CodeSystem.uri(codeSystemId));
 	}
 	
 	/**
@@ -47,7 +47,7 @@ public final class ConceptSearchRequestBuilder
 	 * @return
 	 */
 	public ConceptSearchRequestBuilder filterByCodeSystems(Iterable<String> codeSystemIds) {
-		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, FluentIterable.from(codeSystemIds).transform(CodeSystem::uri).toSet());
+		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, codeSystemIds == null ? null : FluentIterable.from(codeSystemIds).transform(CodeSystem::uri).toSet());
 	}
 	
 	/**

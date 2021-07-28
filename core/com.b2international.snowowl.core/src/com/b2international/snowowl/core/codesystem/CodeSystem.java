@@ -56,11 +56,11 @@ public final class CodeSystem extends TerminologyResource {
 	}
 	
 	public static ResourceURI uri(String codeSystemId) {
-		return ResourceURI.of(RESOURCE_TYPE, codeSystemId);
+		return codeSystemId.startsWith(RESOURCE_TYPE) ? new ResourceURI(codeSystemId) : ResourceURI.of(RESOURCE_TYPE, codeSystemId);
 	}
 	
 	public static ResourceURI uri(String codeSystemId, String path) {
-		return ResourceURI.branch(RESOURCE_TYPE, codeSystemId, path);
+		return uri(codeSystemId).withPath(path);
 	}
 	
 	public static CodeSystem from(ResourceDocument doc) {
