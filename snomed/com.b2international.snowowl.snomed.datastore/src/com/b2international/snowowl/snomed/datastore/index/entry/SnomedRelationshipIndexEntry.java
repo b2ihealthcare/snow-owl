@@ -61,6 +61,7 @@ import com.google.common.collect.FluentIterable;
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID,
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED,
+		SnomedRelationshipIndexEntry.Fields.VALUE_TYPE,
 		SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,
 		SnomedRelationshipIndexEntry.Fields.STRING_VALUE
 	}
