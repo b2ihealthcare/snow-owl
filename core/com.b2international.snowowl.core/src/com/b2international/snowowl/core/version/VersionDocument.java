@@ -198,6 +198,11 @@ public final class VersionDocument implements Serializable {
 		}
 		
 		@JsonSetter
+		Builder revised(List<RevisionBranchPoint> revised) {
+			return this;
+		}
+		
+		@JsonSetter
 		Builder resourceBranchPath(String resourceBranchPath) {
 			return this;
 		}
@@ -208,7 +213,7 @@ public final class VersionDocument implements Serializable {
 		}
 		
 		@JsonSetter
-		Builder revised(List<RevisionBranchPoint> revised) {
+		Builder resourceId(String resourceId) {
 			return this;
 		}
 		
