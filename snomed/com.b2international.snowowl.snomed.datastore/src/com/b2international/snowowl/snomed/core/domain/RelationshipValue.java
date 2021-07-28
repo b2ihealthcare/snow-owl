@@ -49,9 +49,13 @@ public final class RelationshipValue implements Serializable {
 		}
 
 		if (literal.startsWith("#")) {
-			// Remove prefix, parse number (treat it as a decimal value even if it has no fractional part)
+			// Remove prefix, parse number
 			final String numericLiteral = literal.substring(1);
-			return new RelationshipValue(new BigDecimal(numericLiteral));
+			if (numericLiteral.contains(".")) {
+				return new RelationshipValue(new BigDecimal(numericLiteral));
+			} else {
+				return new RelationshipValue(Integer.valueOf(numericLiteral));
+			}
 		}
 
 		if (literal.startsWith("\"") && literal.endsWith("\"")) {
