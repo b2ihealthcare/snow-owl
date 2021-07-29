@@ -25,69 +25,61 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.Discriminator;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.Slicing;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.structuredefinition.*;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
 
 /**
- * Tests for {@link Slicing}
+ * Tests for {@link StructureView}
  * @since 8.0.0
  */
-public class SlicingTest extends FhirTest {
+public class StructureViewTest extends FhirTest {
 	
-	private Slicing slicing;
+	private StructureView structureView;
 
 	@Before
 	public void setup() throws Exception {
 		
-		slicing = Slicing.builder()
-				.ordered(true)
-				.rules(SlicingRules.OPEN)
-				.addDiscriminator(Discriminator.builder()
-						.id("id")
+		structureView = StructureView.builder()
+				.addElementDefinition(ElementDefinition.builder()
+						.addAlias("alias")
+						.addCode(Coding.builder()
+							.code("coding")
+							.display("codingDisplay")
+							.build())
+						.addCondition(new Id("condition"))
+						.addMapping(MappingElement.builder()
+							.comment("comment")
+							.id("id")
+							.identity("identity")
+							.language("en")
+							.map("map")
+							.build())
 						.path("path")
-						.type(DiscriminatorType.VALUE)
 						.build())
 				.build();
 	}
 	
 	@Test
-	public void buildInvalid() {
-		
-		Issue expectedIssue = Issue.builder()
-				.code(IssueType.INVALID)
-				.severity(IssueSeverity.ERROR)
-				.diagnostics("1 validation error")
-				.addLocation("Slicing.rules")
-				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'rules' content is invalid [null]. Violation: may not be null.")
-				.build();
-			
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
-		
-		Slicing.builder().build();
-	}
-	
-	@Test
 	public void build() throws Exception {
-		printPrettyJson(slicing);
-		validate(slicing);
+		printPrettyJson(structureView);
+		validate(structureView);
 	}
 	
-	private void validate(Slicing slicing) {
-		assertEquals(true, slicing.getOrdered());
+	private void validate(StructureView structureView) {
+		assertEquals(false, structureView.getElementDefinitions().isEmpty());
 		
 	}
 
 	@Test
 	public void serialize() throws Exception {
 		
-		printPrettyJson(slicing);
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(slicing));
+		printPrettyJson(structureView);
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(structureView));
 		assertThat(jsonPath.getBoolean("ordered"), equalTo(true));
 		assertThat(jsonPath.getString("rules"), equalTo("open"));
 		assertThat(jsonPath.getString("discriminator[0].id"), equalTo("id"));
@@ -97,8 +89,8 @@ public class SlicingTest extends FhirTest {
 	
 	@Test
 	public void deserialize() throws Exception {
-		Slicing readSlicing = objectMapper.readValue(objectMapper.writeValueAsString(slicing), Slicing.class);
-		validate(readSlicing);
+		StructureView readStructureView = objectMapper.readValue(objectMapper.writeValueAsString(structureView), StructureView.class);
+		validate(readStructureView);
 	}
 
 }

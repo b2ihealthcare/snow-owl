@@ -19,16 +19,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
 import com.b2international.snowowl.fhir.tests.domain.*;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.CodeSystemTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptPropertyTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.FilterTest;
 import com.b2international.snowowl.fhir.tests.domain.conceptmap.*;
-import com.b2international.snowowl.fhir.tests.domain.structuredefinition.DiscriminatorTest;
-import com.b2international.snowowl.fhir.tests.domain.structuredefinition.SlicingTest;
-import com.b2international.snowowl.fhir.tests.domain.structuredefinition.StructureDefinitionTest;
+import com.b2international.snowowl.fhir.tests.domain.structuredefinition.*;
 import com.b2international.snowowl.fhir.tests.domain.valueset.*;
 import com.b2international.snowowl.fhir.tests.dt.*;
 import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
@@ -119,6 +116,8 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	//StructureDefinition
 	DiscriminatorTest.class,
 	SlicingTest.class,
+	ElementDefinitionTest.class,
+	StructureViewTest.class,
 	StructureDefinitionTest.class
 	
 	
