@@ -30,23 +30,35 @@ import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects;
 
 /**
  * @since 6.14
  */
 @Doc(type = "owlRelationship", nested = true)
+@JsonDeserialize(builder = SnomedOWLRelationshipDocument.Builder.class)
 public final class SnomedOWLRelationshipDocument implements Serializable {
 
 	public static SnomedOWLRelationshipDocument create(final String typeId, final String destinationId, final int group) {
-		return new SnomedOWLRelationshipDocument(typeId, destinationId, null, null, null, group);
+		return new Builder()
+			.typeId(typeId)
+			.destinationId(destinationId)
+			.group(group)
+			.build();
 	}
 	
 	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int group) {
+		final Builder builder = new Builder()
+			.typeId(typeId)
+			.group(group);
+		
 		return value.map(
-			i -> new SnomedOWLRelationshipDocument(typeId, null, new BigDecimal(i), null, RelationshipValueType.INTEGER, group),
-			d -> new SnomedOWLRelationshipDocument(typeId, null, d, null, RelationshipValueType.DECIMAL, group),
-			s -> new SnomedOWLRelationshipDocument(typeId, null, null, s, RelationshipValueType.STRING, group));
+			i -> builder.valueType(RelationshipValueType.INTEGER).integerValue(i),
+			d -> builder.valueType(RelationshipValueType.DECIMAL).numericValue(d),
+			s -> builder.valueType(RelationshipValueType.STRING).stringValue(s))
+		.build();
 	}
 	
 	public static SnomedOWLRelationshipDocument createFrom(final SnomedRelationship r) {
@@ -57,21 +69,86 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		}
 	}
 
+	@JsonPOJOBuilder(withPrefix="")
+	public static final class Builder {
+		private String typeId;
+		private String destinationId;
+		private BigDecimal numericValue;
+		private String stringValue;
+		private RelationshipValueType valueType;
+		private int group;
+		
+		@JsonCreator
+		private Builder() { }
+		
+		public Builder typeId(final String typeId) {
+			this.typeId = typeId;
+			return this;
+		}
+		
+		public Builder destinationId(final String destinationId) {
+			this.destinationId = destinationId;
+			return this;
+		}
+		
+		public Builder numericValue(final BigDecimal numericValue) {
+			this.numericValue = numericValue;
+			return this;
+		}
+		
+		// XXX: Used above as well as for de-serialization of earlier documents
+		public Builder integerValue(final Integer integerValue) {
+			this.numericValue = new BigDecimal(integerValue);
+			return this;
+		}
+		
+		// Used for de-serialization of earlier documents only
+		public Builder decimalValue(final Double decimalValue) {
+			this.numericValue = BigDecimal.valueOf(decimalValue);
+			return this;
+		}
+		
+		public Builder stringValue(final String stringValue) {
+			this.stringValue = stringValue;
+			return this;
+		}
+		
+		public Builder valueType(final RelationshipValueType valueType) {
+			this.valueType = valueType;
+			return this;
+		}
+		
+		public Builder group(final int group) {
+			this.group = group;
+			return this;
+		}
+		
+		public SnomedOWLRelationshipDocument build() {
+			return new SnomedOWLRelationshipDocument(typeId, destinationId, numericValue, stringValue, valueType, group);
+		}
+	}
+	
 	private final String typeId;
 	private final String destinationId;
 	private final BigDecimal numericValue;
 	private final String stringValue;
 	private final RelationshipValueType valueType;
 	private final int group;
+	
+	// Fields kept for backwards compatibility with earlier documents
+	@JsonIgnore
+	private final Integer integerValue = null;
+	
+	@JsonIgnore
+	private final Double decimalValue = null;
 
-	@JsonCreator
 	private SnomedOWLRelationshipDocument(
-			@JsonProperty("typeId") final String typeId, 
-			@JsonProperty("destinationId") final String destinationId,
-			@JsonProperty("numericValue") final BigDecimal numericValue,
-			@JsonProperty("stringValue") final String stringValue,
-			@JsonProperty("valueType") final RelationshipValueType valueType,
-			@JsonProperty("group") final int group) {
+			final String typeId, 
+			final String destinationId,
+			final BigDecimal numericValue,
+			final String stringValue,
+			final RelationshipValueType valueType,
+			final int group) {
 		this.typeId = typeId;
 		this.destinationId = destinationId;
 		this.numericValue = numericValue;
