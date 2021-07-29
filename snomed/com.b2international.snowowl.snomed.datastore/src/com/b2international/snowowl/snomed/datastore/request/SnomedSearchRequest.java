@@ -138,7 +138,8 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 					idFilter = EclExpression.of(expression, eclExpressionForm()).resolve(context).getSync(3, TimeUnit.MINUTES);
 				} catch (SyntaxException e) {
 					// incase of syntax errors, report them as incorrect values instead of syntax errors
-					throw new BadRequestException("'%s' is not a valid SNOMED CT ID or ECL Expression.", expression);
+//					throw new BadRequestException("'%s' is not a valid SNOMED CT ID or ECL Expression.", expression);
+					throw new SearchResourceRequest.NoResultException();
 				}
 				
 				if (idFilter.isEmpty()) {
