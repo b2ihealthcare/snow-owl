@@ -141,7 +141,8 @@ public final class RelationshipValue implements Serializable {
 				throw new IllegalArgumentException("Unexpected relationship value type: " + type);
 		}
 		
-		if (RelationshipValueType.INTEGER.equals(type)) {
+		// XXX: the null check is here to satisfy LGTM, a non-null value is ensured by the checkArgument calls above
+		if (RelationshipValueType.INTEGER.equals(type) && numericValue != null) {
 			try {
 				numericValue.intValueExact();
 			} catch (final ArithmeticException e) {
