@@ -88,7 +88,9 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Invalid search config"),
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Bundles> searchByPost(final BundleRestSearch params) {
+	public Promise<Bundles> searchByPost(
+			@RequestBody
+			final BundleRestSearch params) {
 		return searchByGet(params);
 	}
 	

@@ -177,7 +177,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 			
-			@Parameter(description ="Accepted language tags, in order of preference")
+			@Parameter(description ="Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
@@ -247,7 +247,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //			@PathVariable(value="conceptId")
 //			final String conceptId,
 //
-//			@Parameter(value ="Language codes and reference sets, in order of preference")
+//			@Parameter(value ="Language codes and reference sets, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 //			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
 //			final String languageSetting) {
 //

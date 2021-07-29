@@ -76,7 +76,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedDescriptionRestSearch params,
 
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -130,7 +130,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedDescriptionRestSearch body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
