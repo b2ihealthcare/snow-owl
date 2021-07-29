@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.id.IDs;
 /**
  * @since 8.0
  */
-public abstract class BaseResourceCreateRestInput {
+public abstract class BaseResourceRestInput {
 	
 	//Mandatory properties
 	private String id = IDs.randomBase64UUID();

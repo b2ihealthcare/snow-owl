@@ -20,12 +20,12 @@ import java.util.Map;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.rest.BaseResourceCreateRestInput;
+import com.b2international.snowowl.core.rest.BaseResourceRestInput;
 
 /**
  * @since 8.0
  */
-public final class CodeSystemCreateRestInput extends BaseResourceCreateRestInput {
+public final class CodeSystemCreateRestInput extends BaseResourceRestInput {
 	
 	private String oid;
 	private String branchPath;
