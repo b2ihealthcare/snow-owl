@@ -721,14 +721,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
-		final RelationshipValue value = relationship.getValueAsObject();
+		final RelationshipValue valueAsObject = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
-				sourceId, typeId, destinationId, destinationNegated, value,
+				sourceId, typeId, destinationId, destinationNegated, valueAsObject,
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
@@ -757,7 +757,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final String typeId, 
 			final String destinationId, 
 			final boolean destinationNegated,
-			final RelationshipValue value,
+			final RelationshipValue valueAsObject,
 			final String characteristicTypeId, 
 			final int group, 
 			final int unionGroup,
@@ -774,7 +774,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setSourceId(sourceId)
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
-				.setValue(value)
+				.setValue(valueAsObject)
 				.setGroup(group)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)

@@ -519,34 +519,34 @@ final class SnomedEclRefinementEvaluator {
 			value = new RelationshipValue(((IntegerValueNotEquals) comparison).getValue());
 			operator = SearchResourceRequest.Operator.NOT_EQUALS;
 		} else if (comparison instanceof DecimalValueEquals) {
-			value = new RelationshipValue(((DecimalValueEquals) comparison).getValue().doubleValue());
+			value = new RelationshipValue(((DecimalValueEquals) comparison).getValue());
 			operator = SearchResourceRequest.Operator.EQUALS;
 		} else if (comparison instanceof DecimalValueNotEquals) {
-			value = new RelationshipValue(((DecimalValueNotEquals) comparison).getValue().doubleValue());
+			value = new RelationshipValue(((DecimalValueNotEquals) comparison).getValue());
 			operator = SearchResourceRequest.Operator.NOT_EQUALS;
 		} else if (comparison instanceof IntegerValueLessThan) {
 			value = new RelationshipValue(((IntegerValueLessThan) comparison).getValue());
 			operator = SearchResourceRequest.Operator.LESS_THAN;
 		} else if (comparison instanceof DecimalValueLessThan) {
-			value = new RelationshipValue(((DecimalValueLessThan) comparison).getValue().doubleValue());
+			value = new RelationshipValue(((DecimalValueLessThan) comparison).getValue());
 			operator = SearchResourceRequest.Operator.LESS_THAN;
 		} else if (comparison instanceof IntegerValueLessThanEquals) {
 			value = new RelationshipValue(((IntegerValueLessThanEquals) comparison).getValue());
 			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
 		} else if (comparison instanceof DecimalValueLessThanEquals) {
-			value = new RelationshipValue(((DecimalValueLessThanEquals) comparison).getValue().doubleValue());
+			value = new RelationshipValue(((DecimalValueLessThanEquals) comparison).getValue());
 			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
 		} else if (comparison instanceof IntegerValueGreaterThan) {
 			value = new RelationshipValue(((IntegerValueGreaterThan) comparison).getValue());
 			operator = SearchResourceRequest.Operator.GREATER_THAN;
 		} else if (comparison instanceof DecimalValueGreaterThan) {
-			value = new RelationshipValue(((DecimalValueGreaterThan) comparison).getValue().doubleValue());
+			value = new RelationshipValue(((DecimalValueGreaterThan) comparison).getValue());
 			operator = SearchResourceRequest.Operator.GREATER_THAN;
 		} else if (comparison instanceof IntegerValueGreaterThanEquals) {
 			value = new RelationshipValue(((IntegerValueGreaterThanEquals) comparison).getValue());
 			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
 		} else if (comparison instanceof DecimalValueGreaterThanEquals) {
-			value = new RelationshipValue(((DecimalValueGreaterThanEquals) comparison).getValue().doubleValue());
+			value = new RelationshipValue(((DecimalValueGreaterThanEquals) comparison).getValue());
 			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
@@ -572,7 +572,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValueType(value.type()) 
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
-				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
+				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
 				.build(context.id(), context.path())
 				.execute(context.service(IEventBus.class))
 				.then(matchingMembers -> FluentIterable.from(matchingMembers)

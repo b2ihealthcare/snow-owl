@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,6 +195,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_GROUPED)) {
 				queryBuilder.filter(grouped(propsFilter.getBoolean(SnomedRf2Headers.FIELD_MRCM_GROUPED)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)) {
+				queryBuilder.filter(rangeConstraint(propsFilter.getString(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
 				queryBuilder.filter(Expressions.exactMatch(SnomedRf2Headers.FIELD_OWL_EXPRESSION, propsFilter.getString(SnomedRf2Headers.FIELD_OWL_EXPRESSION)));

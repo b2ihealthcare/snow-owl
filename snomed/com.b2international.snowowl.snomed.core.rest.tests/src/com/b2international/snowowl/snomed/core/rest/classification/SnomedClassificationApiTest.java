@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +184,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void persistDataHasValueAxiom_Decimal() throws Exception {
-		persistDataHasValueAxiom("\"3.6\"^^xsd:decimal", new RelationshipValue(3.6d));
+		persistDataHasValueAxiom("\"3.6\"^^xsd:decimal", new RelationshipValue(new BigDecimal("3.6")));
 	}
 	
 	@Test
@@ -213,7 +214,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void persistInferredRelationshipWithValue_Decimal() throws Exception {
-		persistInferredRelationshipWithValue(new RelationshipValue(3.6d));
+		persistInferredRelationshipWithValue(new RelationshipValue(new BigDecimal("3.6")));
 	}
 	
 	@Test

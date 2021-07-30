@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,9 @@ import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
@@ -36,16 +31,16 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongKeyMap;
-import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.*;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
@@ -53,21 +48,18 @@ import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDe
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 /**
@@ -206,6 +198,9 @@ public final class Rf2EffectiveTimeSlice {
 		final String commitMessage = isUnpublishedSlice() ? "Imported unpublished components" : String.format("Imported components from %s", effectiveTime);
 		final boolean doCreateVersion = !isUnpublishedSlice() && !isSnapshotSlice() && importConfig.isCreateVersions();
 		
+		// Collect the type ID for all integer relationship values
+		final LongKeyLongMap integerTypeIdsByValueId = PrimitiveMaps.newLongKeyLongOpenHashMap();
+		
 		LOG.info(importingMessage);
 		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT), loadOnDemand, importConfig)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
@@ -219,6 +214,17 @@ public final class Rf2EffectiveTimeSlice {
 					final SnomedComponent component = getComponent(componentToImport);
 					if (component != null) {
 						componentsToImport.add(component);
+						
+						// Record value types across the entire effective time slice
+						if (component instanceof SnomedRelationship) {
+							final SnomedRelationship relationship = (SnomedRelationship) component;
+							final RelationshipValue relationshipValue = relationship.getValueAsObject();
+							if (relationshipValue != null) {
+								if (RelationshipValueType.INTEGER.equals(relationshipValue.type())) {
+									integerTypeIdsByValueId.put(componentToImportL, Long.parseLong(relationship.getTypeId()));
+								}
+							}
+						}
 						
 						// Register container concept as visited component 
 						final String conceptId = getConceptId(codeSystem, component); 
@@ -258,8 +264,13 @@ public final class Rf2EffectiveTimeSlice {
 				tx.commit(commitMessage);
 			}
 			
+			// Check if any integer values should actually be decimals, indicated by the range constraint on MRCM members
+			final LongSet decimalTypeIds = collectAttributesWithRangeConstraint(context, "dec(>#0..)");
+			final LongSet decimalValueIds = collectValueTypeChanges(integerTypeIdsByValueId, decimalTypeIds);
+			swapValueType(context, decimalValueIds);
+			
 			if (doCreateVersion) {
-				// do actually create a branch with the effective time name
+				// Actually create a branch with the effective time name
 				RepositoryRequests
 					.branching()
 					.prepareCreate()
@@ -269,7 +280,89 @@ public final class Rf2EffectiveTimeSlice {
 					.execute(context);
 			}
 		}
+		
 		LOG.info("{} in {}", commitMessage, w);
+	}
+
+	private LongSet collectAttributesWithRangeConstraint(final BranchContext context, final String rangeConstraint) {
+		final LongSet typeIds = PrimitiveSets.newLongOpenHashSet();
+		
+		SnomedRequests.prepareSearchMember()
+			.filterByActive(true)
+			.filterByRefSet("<" + Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_ROOT) // all MRCM range reference sets
+			.filterByProps(Options.builder()
+				.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, rangeConstraint)
+				.build())
+			.setLimit(1000)
+			.setFields(
+				// ID and referenced component type is required by the reference set member converter 
+				SnomedRefSetMemberIndexEntry.Fields.ID, 
+				SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID,
+				SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_TYPE)
+			.build()
+			.execute(context)
+			.stream()
+			.mapToLong(m -> Long.parseLong(m.getReferencedComponentId()))
+			.forEachOrdered(typeIds::add);
+		
+		return typeIds;
+	}
+
+	private LongSet collectValueTypeChanges(final LongKeyLongMap typeIdsByValueId, final LongSet oppositeTypeIds) {
+		if (typeIdsByValueId.isEmpty() || oppositeTypeIds.isEmpty()) {
+			return LongCollections.emptySet();
+		}
+		
+		final LongSet valueIds = typeIdsByValueId.keySet();
+		final LongSet needsValueTypeChange = PrimitiveSets.newLongOpenHashSet();
+		
+		for (final LongIterator itr = valueIds.iterator(); itr.hasNext(); /* empty */) {
+			final long valueId = itr.next();
+			final long typeId = typeIdsByValueId.get(valueId);
+			
+			if (oppositeTypeIds.contains(typeId)) {
+				// The relationship's value should have the "opposite" numeric type
+				needsValueTypeChange.add(valueId);
+			}
+		}
+		
+		return needsValueTypeChange;
+	}
+
+	private void swapValueType(final BranchContext context, final LongSet idsToUpdate) throws Exception {
+		if (idsToUpdate.isEmpty()) {
+			return;
+		}
+		
+		final Set<String> idsAsString = LongSets.toStringSet(idsToUpdate);
+		idsToUpdate.clear();
+		
+		try (final TransactionContext tx = context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT)) {
+			for (final List<String> batch : Iterables.partition(idsAsString, BATCH_SIZE)) {
+				final Map<String, SnomedRelationshipIndexEntry> entriesById = tx.lookup(batch, SnomedRelationshipIndexEntry.class);
+
+				for (final SnomedRelationshipIndexEntry existingEntry : entriesById.values()) {
+					final RelationshipValue oldValue = existingEntry.getValueAsObject();
+					final BigDecimal numericValue = oldValue.map(
+						i -> new BigDecimal(i),
+						d -> null,
+						s -> null);
+							
+					if (numericValue != null) {
+						final RelationshipValue newValue = RelationshipValue.fromTypeAndObjects(RelationshipValueType.DECIMAL, numericValue, null);
+						final SnomedRelationshipIndexEntry updatedEntry = SnomedRelationshipIndexEntry.builder(existingEntry)
+							.value(newValue)
+							.build();
+
+						tx.update(existingEntry, updatedEntry);
+					} else {
+						LOG.warn("Non-integer value found on relationship {}, can not convert value type", existingEntry.getId());
+					}
+				}
+			}
+		
+			tx.commit("Update value types using MRCM range constraints");
+		}
 	}
 
 	private String getConceptId(final String codeSystem, SnomedComponent component) {
@@ -323,5 +416,4 @@ public final class Rf2EffectiveTimeSlice {
 		default: throw new UnsupportedOperationException(String.format("Cannot determine document type from component ID and type: [%s,%s]", componentId, type));
 		}
 	}
-
 }
