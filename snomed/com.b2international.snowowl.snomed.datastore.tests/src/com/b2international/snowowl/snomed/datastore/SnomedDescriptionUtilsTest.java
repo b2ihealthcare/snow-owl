@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2020-2021 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.snomed.datastore;
 
@@ -19,6 +19,8 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 
 /**
  * @since 7.10.0
@@ -38,6 +40,8 @@ public class SnomedDescriptionUtilsTest {
 	private static SnomedDescription englishAdditionalDescription;
 
 	private static SnomedDescription sgAdditionalDescription;
+	
+	private static ListMultimap<String, String> languageMap;
 
 	@BeforeClass
 	public static void before() {
@@ -77,86 +81,91 @@ public class SnomedDescriptionUtilsTest {
 		
 		descriptions = List.of(gbPreferredDescription, usPreferredDescription, englishAdditionalDescription, sgPreferredDescription, sgAdditionalDescription);
 		
+		languageMap = ArrayListMultimap.create();
+		
+		languageMap.put(US_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_US);
+		languageMap.put(GB_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_UK);
+		languageMap.put(SG_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_SG);
 	}
 	
 	@Test
 	public void testGBEnglishOrdering1() {
-		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE, US_LOCALE, SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE, US_LOCALE, SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testGBEnglishOrdering2() {
-		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE, SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE, SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testGBEnglishOrdering3() {
-		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE, US_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE, US_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testGBEnglishOrdering4() {
-		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(GB_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 
 	@Test
 	public void testUSEnglishOrdering1() {
-		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE, GB_LOCALE, SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE, GB_LOCALE, SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testUSEnglishOrdering2() {
-		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE, GB_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE, GB_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testUSEnglishOrdering3() {
-		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE, SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE, SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testUSEnglishOrdering4() {
-		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(US_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testSgEnglishOrdering1() {
-		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE, US_LOCALE, GB_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE, US_LOCALE, GB_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testSgEnglishOrdering2() {
-		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE, GB_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE, GB_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testSgEnglishOrdering3() {
-		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE, US_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE, US_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testSgEnglishOrdering4() {
-		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testCustomLanguageRefsetOrdering1() {
-		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"), SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(sgPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"), SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testCustomLanguageRefsetOrdering2() {
-		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"), US_LOCALE, SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(usPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"), US_LOCALE, SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testCustomLanguageRefsetOrdering3() {
-		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"), GB_LOCALE, US_LOCALE, SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"), GB_LOCALE, US_LOCALE, SG_LOCALE), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@Test
 	public void testCustomLanguageRefsetOrdering4() {
-		assertNull(indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"))).get(Concepts.ROOT_CONCEPT));
+		assertNull(indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234")), languageMap).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@SuppressWarnings("deprecation")

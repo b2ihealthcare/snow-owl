@@ -19,7 +19,10 @@ import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdenti
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.xtext.parser.IParser;
@@ -35,17 +38,23 @@ import com.b2international.index.Index;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.snomed.DocumentBuilders;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.inject.Injector;
 
 /**
@@ -54,7 +63,13 @@ import com.google.inject.Injector;
 public class SnomedEclLabelerRequestTest extends BaseRevisionIndexTest {
 
 	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-
+	
+	private static final ExtendedLocale US_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_US);
+	private static final ExtendedLocale GB_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_UK);
+	private static final ExtendedLocale SG_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_SG);
+	
+	private static ListMultimap<String, String> languageMap;
+	
 	private BranchContext context;
 
 	@Override
@@ -75,10 +90,22 @@ public class SnomedEclLabelerRequestTest extends BaseRevisionIndexTest {
 		final IResourceValidator resourceValidator = ECL_INJECTOR.getInstance(IResourceValidator.class);
 		final ISerializer serializer = ECL_INJECTOR.getInstance(ISerializer.class);
 		
+		languageMap = ArrayListMultimap.create();
+		
+		languageMap.put(US_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_US);
+		languageMap.put(GB_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_UK);
+		languageMap.put(SG_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_SG);
+		
+		final CodeSystem cs = new CodeSystem();
+		cs.setBranchPath(MAIN);
+		cs.setId(SnomedContentRule.SNOMEDCT_ID);
+		cs.setSettings(Map.of(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, languageMap));
+		
 		context = TestBranchContext.on(MAIN)
 			.with(EclParser.class, new DefaultEclParser(parser, resourceValidator))
 			.with(EclSerializer.class, new DefaultEclSerializer(serializer))
-			.with(Index.class, rawIndex()).with(RevisionIndex.class, index()).build();
+			.with(Index.class, rawIndex()).with(RevisionIndex.class, index())
+			.with(TerminologyResource.class, cs).build();
 	}
 
 	private String label(String expression) {

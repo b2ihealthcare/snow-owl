@@ -29,6 +29,7 @@ import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.Test;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.TerminologyResource;
@@ -54,9 +55,7 @@ import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder
 import com.b2international.snowowl.test.commons.validation.BaseValidationTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.*;
 import com.google.inject.Injector;
 
 /**
@@ -65,6 +64,12 @@ import com.google.inject.Injector;
 public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 
 	private static final Injector INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+	
+	private static final ExtendedLocale US_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_US);
+	private static final ExtendedLocale GB_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_UK);
+	private static final ExtendedLocale SG_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_SG);
+	
+	private static ListMultimap<String, String> languageMap;
 	
 	private SnomedQueryValidationRuleEvaluator evaluator;
 	
@@ -81,9 +86,16 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 	protected void configureContext(Builder context) {
 		super.configureContext(context);
 		
+		languageMap = ArrayListMultimap.create();
+		
+		languageMap.put(US_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_US);
+		languageMap.put(GB_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_UK);
+		languageMap.put(SG_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_SG);
+		
 		final CodeSystem cs = new CodeSystem();
 		cs.setBranchPath(MAIN);
 		cs.setId(SnomedContentRule.SNOMEDCT_ID);
+		cs.setSettings(Map.of(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, languageMap));
 
 		context
 			.with(TerminologyResource.class, cs)
