@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -87,7 +88,9 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Invalid search config"),
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Bundles> searchByPost(final BundleRestSearch params) {
+	public Promise<Bundles> searchByPost(
+			@RequestBody
+			final BundleRestSearch params) {
 		return searchByGet(params);
 	}
 	
@@ -127,28 +130,15 @@ public class BundleRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@RequestBody
-			final BundleCreateRestInput params,
+			final ResourceRequest<BundleRestInput> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		final String commitComment = String.format("Created new bundle %s", params.getTitle());
-		final String codeSystemId = ResourceRequests.bundles().prepareCreate()
-				.setId(params.getId())
-				.setBundleId(params.getBundleId())
-				.setUrl(params.getUrl())
-				.setTitle(params.getTitle())
-				.setLanguage(params.getLanguage())
-				.setDescription(params.getDescription())
-				.setStatus(params.getStatus())
-				.setCopyright(params.getCopyright())
-				.setOwner(params.getOwner())
-				.setContact(params.getContact())
-				.setUsage(params.getUsage())
-				.setPurpose(params.getPurpose())
-				.commit() 
-				.setAuthor(author)
-				.setCommitComment(commitComment)
-				.buildAsync()
+		
+		final String commitComment = body.getCommitComment() == null ? String.format("Created new bundle %s", body.getChange().getTitle()) : body.getCommitComment();
+		
+		final String codeSystemId = body.getChange().toCreateRequest()
+				.build(author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 				.getResultAs(String.class);
@@ -171,29 +161,21 @@ public class BundleRestService extends AbstractRestService {
 			final String bundleId,
 			
 			@RequestBody
-			final BundleUpdateRestinput params,
+			final ResourceRequest<BundleRestUpdate> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		final String commitComment = String.format("Update bundle %s", bundleId);
-		ResourceRequests.bundles().prepareUpdate(bundleId)
-				.setUrl(params.getUrl())
-				.setTitle(params.getTitle())
-				.setLanguage(params.getLanguage())
-				.setDescription(params.getDescription())
-				.setStatus(params.getStatus())
-				.setCopyright(params.getCopyright())
-				.setOwner(params.getOwner())
-				.setContact(params.getContact())
-				.setUsage(params.getUsage())
-				.setPurpose(params.getPurpose())
-				.setBundleId(params.getBundleId())
-				.commit()
-				.setAuthor(author)
-				.setCommitComment(commitComment)
-				.buildAsync()
+		
+		final String commitComment = body.getCommitComment() == null ? String.format("Update bundle %s", getBundleTitle(bundleId, body)) : body.getCommitComment();
+		
+		body.getChange().toUpdateRequest(bundleId)
+				.build(author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+	}
+
+	private String getBundleTitle(final String bundleId, final ResourceRequest<BundleRestUpdate> body) {
+		return body.getChange().getTitle() != null ? body.getChange().getTitle() : ResourceRequests.bundles().prepareGet(bundleId).buildAsync().execute(getBus()).getSync(1, TimeUnit.MINUTES).getTitle();
 	}
 	
 	@Operation(

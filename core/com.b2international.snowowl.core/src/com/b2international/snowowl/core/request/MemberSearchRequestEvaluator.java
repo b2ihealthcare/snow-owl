@@ -15,23 +15,26 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collections;
+import java.util.Set;
+
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 
 /**
  * @since 7.8
  */
-public interface SetSearchRequestEvaluator<R> {
+public interface MemberSearchRequestEvaluator<R> {
 	
 	public enum OptionKey {
 
 		/**
 		 * Search for mappings in the specified set.
 		 */
-		SET,
+		URI,
 		
 		/**
 		 * Language locales (tag, Accept-Language header, etc.) to use in order of preference when determining the display label or term for a match.
@@ -80,14 +83,25 @@ public interface SetSearchRequestEvaluator<R> {
 	}
 	
 	/**
+	 * Returns a {@link Set} of ResourceURI instances where the system can evaluate the given search.
+	 * 
+	 * @param context - the context to use to determine the target resources
+	 * @param search - the search to handle
+	 * @return a {@link Set} of ResourceURI instances where the system can evaluate the given search, never <code>null</code>.
+	 */
+	default Set<ResourceURI> evaluateSearchTargetResources(ServiceProvider context, Options search) {
+		return Collections.emptySet();
+	}
+	
+	/**
 	 * Evaluate the given search options on the given context and return generic {@link ConceptMapMapping} instances back in a {@link ConceptMapMappings} pageable
 	 * resource.
 	 * 
 	 * @param uri - the code system uri where the search is being evaluated
-	 * @param context - the context prepared for the search
+	 * @param context - the context to perform the search on
 	 * @param search - the search filters and options to apply to the code system specific search
 	 * @return resource 
 	 */
-	R evaluate(ResourceURI uri, BranchContext context, Options search);
+	R evaluate(ResourceURI uri, ServiceProvider context, Options search);
 
 }

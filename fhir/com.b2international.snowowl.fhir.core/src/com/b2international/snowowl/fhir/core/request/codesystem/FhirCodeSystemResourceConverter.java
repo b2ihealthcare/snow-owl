@@ -45,8 +45,8 @@ public interface FhirCodeSystemResourceConverter {
 	default int count(ServiceProvider context, ResourceURI resourceUri) {
 		return CodeSystemRequests.prepareSearchConcepts()
 				.setLimit(0)
-				.build(resourceUri)
-				.getRequest()
+				.filterByCodeSystemUri(resourceUri)
+				.buildAsync()
 				.execute(context)
 				.getTotal();
 	}

@@ -78,11 +78,11 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 		
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
+			.filterByCodeSystemUri(codeSystem.getResourceURI())
 			.filterById(request.getCode())
 			.setLocales(acceptLanguage)
 			.setExpand(conceptExpand)
-			.build(codeSystem.getResourceURI())
-			.getRequest()
+			.buildAsync()
 			.execute(context)
 			.first()
 			.orElseThrow(() -> new NotFoundException("Concept", request.getCode()));

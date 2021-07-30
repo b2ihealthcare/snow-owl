@@ -29,12 +29,23 @@ public class VersionRestSearch extends ObjectRestSearch {
 	@Parameter(description="The corresponding resource identifier(s) to match")
 	private List<String> resource;
 	
+	@Parameter(description = "The types of resources to get the versions for")
+	private List<String> resourceType;
+	
 	public List<String> getResource() {
 		return resource;
 	}
 	
 	public void setResource(List<String> resource) {
 		this.resource = resource;
+	}
+
+	public List<String> getResourceType() {
+		return resourceType;
+	}
+
+	public void setResourceType(List<String> resourceType) {
+		this.resourceType = resourceType;
 	}
 	
 }

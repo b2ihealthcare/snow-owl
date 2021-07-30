@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public final class TextPredicate extends Predicate {
 	private final MatchType type;
 	private final int minShouldMatch;
 	
-	private String analyzer;
+	private Analyzers analyzer;
 	
 	TextPredicate(String field, String term, MatchType type) {
 		this(field, term, type, 1);
@@ -57,11 +57,11 @@ public final class TextPredicate extends Predicate {
 	}
 	
 	public String analyzer() {
-		return analyzer;
+		return analyzer == null ? null : analyzer.getAnalyzer();
 	}
 	
 	public TextPredicate withAnalyzer(Analyzers analyzer) {
-		this.analyzer = analyzer == null ? null : analyzer.getAnalyzer();
+		this.analyzer = analyzer;
 		return this;
 	}
 	
@@ -72,11 +72,18 @@ public final class TextPredicate extends Predicate {
 
 	public TextPredicate withIgnoreStopwords(boolean ignoreStopwords) {
 		if (ignoreStopwords) {
-			analyzer = Analyzers.TOKENIZED_IGNORE_STOPWORDS.getAnalyzer();
+			return withAnalyzer((analyzer == Analyzers.TOKENIZED_SYNONYMS || analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS) ? Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS : Analyzers.TOKENIZED_IGNORE_STOPWORDS);
 		} else {
-			analyzer = null;
+			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_SYNONYMS : null);
 		}
-		return this;
+	}
+	
+	public TextPredicate withSynonyms(boolean enableSynonyms) {
+		if (enableSynonyms) {
+			return withAnalyzer((analyzer == Analyzers.TOKENIZED_IGNORE_STOPWORDS || analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS) ? Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS : Analyzers.TOKENIZED_SYNONYMS);
+		} else {
+			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_IGNORE_STOPWORDS : null);
+		}
 	}
 
 }

@@ -71,8 +71,8 @@ public class CodeSystemRequests {
 	 * 
 	 * @return the builder to configure for generic set member search
 	 */
-	public static MemberSearchRequestBuilder prepareSearchMembers() {
-		return new MemberSearchRequestBuilder();
+	public static ValueSetMemberSearchRequestBuilder prepareSearchMembers() {
+		return new ValueSetMemberSearchRequestBuilder();
 	}
 	
 	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {

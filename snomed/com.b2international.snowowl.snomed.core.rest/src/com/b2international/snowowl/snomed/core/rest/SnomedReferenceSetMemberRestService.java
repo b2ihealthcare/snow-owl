@@ -78,7 +78,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedReferenceSetMemberRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
@@ -124,7 +124,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedReferenceSetMemberRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return searchByGet(branch, params, acceptLanguage);
@@ -154,7 +154,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@ParameterObject
 			final ResourceSelectors selectors,
 
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return SnomedRequests
@@ -258,7 +258,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				+ "- query field of query type reference set members"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No Content"),
 		@ApiResponse(responseCode = "404", description = "Branch or member not found")
 	})
 	@PutMapping(value = "/{id}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })

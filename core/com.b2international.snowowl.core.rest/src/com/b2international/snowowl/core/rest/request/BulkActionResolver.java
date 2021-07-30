@@ -13,13 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest.bundle;
+package com.b2international.snowowl.core.rest.request;
 
-import com.b2international.snowowl.core.rest.BaseResourceCreateRestInput;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 8.0
  */
-public final class BundleCreateRestInput extends BaseResourceCreateRestInput {
-	//No additional property
+/**
+ * Classes that implement this interface can convert an action and the additional data 
+ *  to {@link Request}s
+ * 
+ * @param <S> - the type of Request to Resolve the actions to
+ * @param <T> - The Type of the additional data for the resolve operation
+ */
+public interface BulkActionResolver<S extends ServiceProvider, T> {
+	Request<S, ?> resolve(String action, T additionalResolveData);
 }

@@ -74,7 +74,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedRelationshipRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return SnomedRequests
@@ -125,7 +125,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedRelationshipRestSearch params,
 		
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return searchByGet(path, params, acceptLanguage);
@@ -198,10 +198,10 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 		description="Updates properties of the specified Relationship."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No content"),
 		@ApiResponse(responseCode = "404", description = "Branch or Relationship not found")
 	})
-	@PostMapping(value = "/{relationshipId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{relationshipId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
 			@Parameter(description = "The resource path", required = true)

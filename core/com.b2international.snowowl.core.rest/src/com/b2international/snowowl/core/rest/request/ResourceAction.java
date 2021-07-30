@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest.request;
+package com.b2international.snowowl.core.rest.request;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
 
 /**
- * @since 4.5
+ * @since 8.0
  */
-public enum Action {
-
-	CREATE,
-	UPDATE,
+public enum ResourceAction {
+	CREATE, 
+	UPDATE, 
 	DELETE,
 	SYNC;
-	
-	public static Action get(String action) {
-		for (Action type : values()) {
-			if (type.name().toLowerCase().equals(action)) {
+
+	public static ResourceAction get(String action) {
+		for (ResourceAction type : values()) {
+			if (type.name()
+					.toLowerCase()
+					.equals(action.toLowerCase())) {
 				return type;
 			}
 		}
-		throw new BadRequestException("Invalid action type '%s'.", action);
+
+		throw new BadRequestException("Invalid action type '%s'. Only {%s} are allowed", action,
+				String.join(",", List.of(ResourceAction.values())
+						.stream()
+						.map(actionType -> actionType.name())
+						.collect(Collectors.toList())));
 	}
-	
 }

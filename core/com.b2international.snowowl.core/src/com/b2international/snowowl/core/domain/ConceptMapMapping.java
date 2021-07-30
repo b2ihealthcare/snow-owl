@@ -18,9 +18,9 @@ package com.b2international.snowowl.core.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
@@ -38,9 +38,9 @@ public final class ConceptMapMapping implements Serializable {
 	public static Builder builder(ConceptMapMapping from) {
 		return builder()
 				.uri(from.getUri())
-				.containerIconId(from.getContainerIconId())
-				.containerTerm(from.getContainerTerm())
-				.containerSetURI(from.getContainerSetURI())
+				.conceptMapUri(from.getConceptMapUri())
+				.conceptMapTerm(from.getConceptMapTerm())
+				.conceptMapIconId(from.getConceptMapUri())
 				.active(from.isActive())
 				.mapAdvice(from.getMapAdvice())
 				.mapGroup(from.getMapGroup())
@@ -58,11 +58,11 @@ public final class ConceptMapMapping implements Serializable {
 	
 	public final static class Builder {
 		
-		private ComponentURI uri;
+		private String uri;
 		
-		private String containerIconId;
-		private String containerTerm;
-		private ComponentURI containerSetURI;
+		private String conceptMapIconId;
+		private String conceptMapTerm;
+		private String conceptMapUri;
 		
 		private String sourceIconId;
 		private String sourceTerm;
@@ -82,25 +82,35 @@ public final class ConceptMapMapping implements Serializable {
 		
 		private boolean approximate;
 		
-		private String comments;
-		
 		public Builder uri(ComponentURI uri) {
+			return uri(uri.toString());
+		}
+		
+		public Builder uri(String uri) {
 			this.uri = uri;
 			return this;
 		}
 		
-		public Builder containerIconId(final String containerIconId) {
-			this.containerIconId = containerIconId;
+		public Builder conceptMapTerm(final String conceptMapTerm) {
+			this.conceptMapTerm = conceptMapTerm;
 			return this;
 		}
 		
-		public Builder containerTerm(final String containerTerm) {
-			this.containerTerm = containerTerm;
+		public Builder conceptMapUri(final ResourceURI conceptMapUri) {
+			return conceptMapUri(conceptMapUri.toString());
+		}
+		
+		public Builder conceptMapUri(final ComponentURI conceptMapUri) {
+			return conceptMapUri(conceptMapUri.toString());
+		}
+		
+		public Builder conceptMapUri(final String conceptMapUri) {
+			this.conceptMapUri = conceptMapUri;
 			return this;
 		}
 		
-		public Builder containerSetURI(final ComponentURI containerSetURI) {
-			this.containerSetURI = containerSetURI;
+		public Builder conceptMapIconId(final String conceptMapIconId) {
+			this.conceptMapIconId = conceptMapIconId;
 			return this;
 		}
 		
@@ -169,30 +179,25 @@ public final class ConceptMapMapping implements Serializable {
 			return this;
 		}
 		
-		public Builder comments(final String comments) {
-			this.comments = Strings.nullToEmpty(comments);
-			return this;
-		}
-		
 		public ConceptMapMapping build() {
 			return new ConceptMapMapping(
-					uri,
-					containerIconId, containerTerm, containerSetURI, 
-					sourceIconId, sourceTerm, sourceComponentURI, 
-					targetIconId, targetTerm, targetComponentURI, 
-					active, 
-					mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice,
-					approximate,
-					comments);
+				uri,
+				conceptMapUri, conceptMapTerm, conceptMapIconId, 
+				sourceComponentURI, sourceTerm, sourceIconId, 
+				targetComponentURI, targetTerm, targetIconId, 
+				active, 
+				mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice,
+				approximate
+			);
 		}
 	
 	}
 
-	private final ComponentURI uri; 
+	private final String uri; 
 	
-	private final String containerIconId;
-	private final String containerTerm;
-	private final ComponentURI containerSetURI;
+	private final String conceptMapIconId;
+	private final String conceptMapTerm;
+	private final String conceptMapUri;
 	
 	private final String sourceIconId;
 	private final String sourceTerm;
@@ -212,38 +217,35 @@ public final class ConceptMapMapping implements Serializable {
 	
 	private final boolean approximate;
 	
-	private String comments;
-	
 	ConceptMapMapping(
-			ComponentURI uri,
-			String containerIconId,
-			String containerTerm,
-			ComponentURI containerSetURI,
-			String sourceIconId, 
-			String sourceTerm,
+			String uri,
+			String conceptMapUri,
+			String conceptMapTerm,
+			String conceptMapIconId,
 			ComponentURI sourceComponentURI, 
-			String targetIconId,
-			String targetTerm, 
+			String sourceTerm,
+			String sourceIconId, 
 			ComponentURI targetComponentURI, 
+			String targetTerm, 
+			String targetIconId,
 			Boolean active,
 			MappingCorrelation mappingCorrelation,
 			Integer mapGroup,
 			Integer mapPriority, 
 			String mapRule, 
 			String mapAdvice,
-			boolean approximate,
-			String comments) {
+			boolean approximate) {
 		
 		this.uri = uri; 
-		this.containerIconId = containerIconId;
-		this.containerTerm = containerTerm;
-		this.containerSetURI = containerSetURI;
-		this.sourceIconId = sourceIconId;
-		this.sourceTerm = sourceTerm;
+		this.conceptMapUri = conceptMapUri;
+		this.conceptMapTerm = conceptMapTerm;
+		this.conceptMapIconId = conceptMapIconId;
 		this.sourceComponentURI = sourceComponentURI;
-		this.targetIconId = targetIconId;
-		this.targetTerm = targetTerm;
+		this.sourceTerm = sourceTerm;
+		this.sourceIconId = sourceIconId;
 		this.targetComponentURI = targetComponentURI;
+		this.targetTerm = targetTerm;
+		this.targetIconId = targetIconId;
 		this.active = active;
 		this.mappingCorrelation = mappingCorrelation;
 		this.mapGroup = mapGroup;
@@ -251,27 +253,22 @@ public final class ConceptMapMapping implements Serializable {
 		this.mapRule = mapRule;
 		this.mapAdvice = mapAdvice;
 		this.approximate = approximate;
-		this.comments = comments;
 	}
 
-	public String getId() {
-		return uri.identifier();
-	}
-	
-	public ComponentURI getUri() {
+	public String getUri() {
 		return uri;
 	}
-	
-	public String getContainerIconId() {
-		return containerIconId;
+
+	public String getConceptMapUri() {
+		return conceptMapUri;
 	}
 	
-	public String getContainerTerm() {
-		return containerTerm;
+	public String getConceptMapTerm() {
+		return conceptMapTerm;
 	}
 	
-	public ComponentURI getContainerSetURI() {
-		return containerSetURI;
+	public String getConceptMapIconId() {
+		return conceptMapIconId;
 	}
 	
 	public String getSourceIconId() {
@@ -326,28 +323,14 @@ public final class ConceptMapMapping implements Serializable {
 		return approximate;
 	}
 	
-	@JsonIgnore
-	public String getComments() {
-		return comments;
-	}
-	
-	public ConceptMapMapping mergeComments(String comments) {
-		if (Strings.isNullOrEmpty(comments)) {
-			return this;
-		} else {
-			this.comments = String.join(" ", this.comments, comments);
-			return this;
-		}
-	}
-	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
 				.add("uri", uri)
 				.add("active", active)
-				.add("containerSetURI", containerSetURI)
-				.add("containerTerm", containerTerm)
-				.add("containerIconId", containerIconId)
+				.add("conceptMapUri", conceptMapUri)
+				.add("conceptMapTerm", conceptMapTerm)
+				.add("conceptMapIconId", conceptMapIconId)
 				.add("sourceComponentURI", sourceComponentURI)
 				.add("sourceTerm", sourceTerm)
 				.add("sourceIconId", sourceIconId)
@@ -360,7 +343,6 @@ public final class ConceptMapMapping implements Serializable {
 				.add("mapRule", mapRule)
 				.add("mapAdvice", mapAdvice)
 				.add("approximate", approximate)
-				.add("comments", comments)
 				.toString();
 	}
 
@@ -368,7 +350,7 @@ public final class ConceptMapMapping implements Serializable {
 	public int hashCode() {
 		return Objects.hash(
 			uri,
-			containerSetURI,
+			conceptMapUri,
 			active, 
 			sourceComponentURI,
 			sourceTerm,
@@ -390,7 +372,7 @@ public final class ConceptMapMapping implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		ConceptMapMapping other = (ConceptMapMapping) obj;
 		return Objects.equals(uri, other.uri)
-				&& Objects.equals(containerSetURI, other.containerSetURI)
+				&& Objects.equals(conceptMapUri, other.conceptMapUri)
 				&& Objects.equals(active, other.active)
 				&& Objects.equals(sourceComponentURI, other.sourceComponentURI)
 				&& Objects.equals(sourceTerm, other.sourceTerm)

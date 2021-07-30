@@ -16,8 +16,9 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.CodeType;
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
 import com.google.common.collect.FluentIterable;
@@ -26,9 +27,49 @@ import com.google.common.collect.FluentIterable;
  * @since 7.5
  */
 public final class ConceptSearchRequestBuilder 
-		extends SearchPageableCollectionResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
-		implements TerminologyResourceContentRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
+		extends SearchPageableCollectionResourceRequestBuilder<ConceptSearchRequestBuilder, ServiceProvider, Concepts>
+		implements SystemRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
 
+	/**
+	 * Filters matches from a single CodeSystem. 
+	 * 
+	 * @param codeSystemId
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByCodeSystem(String codeSystemId) {
+		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, codeSystemId == null ? null : CodeSystem.uri(codeSystemId));
+	}
+	
+	/**
+	 * Filters matches from a set of CodeSystems. 
+	 * 
+	 * @param codeSystemIds
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByCodeSystems(Iterable<String> codeSystemIds) {
+		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, codeSystemIds == null ? null : FluentIterable.from(codeSystemIds).transform(CodeSystem::uri).toSet());
+	}
+	
+	/**
+	 * Filters matches from a single CodeSystem. 
+	 * 
+	 * @param codeSystemUri
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByCodeSystemUri(ResourceURI codeSystemUri) {
+		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, codeSystemUri);
+	}
+	
+	/**
+	 * Filters matches from a set of CodeSystems. 
+	 * 
+	 * @param codeSystemUris
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByCodeSystemUris(Iterable<ResourceURI> codeSystemUris) {
+		return addOption(ConceptSearchRequest.OptionKey.CODESYSTEM, codeSystemUris);
+	}
+	
 	/**
 	 * Filters matches by their active/inactive status. 
 	 * 
@@ -200,7 +241,7 @@ public final class ConceptSearchRequestBuilder
 	}
 
 	@Override
-	protected SearchResourceRequest<BranchContext, Concepts> createSearch() {
+	protected SearchResourceRequest<ServiceProvider, Concepts> createSearch() {
 		return new ConceptSearchRequest();
 	}
 

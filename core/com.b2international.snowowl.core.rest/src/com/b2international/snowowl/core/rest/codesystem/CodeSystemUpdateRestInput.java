@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.rest.codesystem;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemUpdateRequestBuilder;
 import com.b2international.snowowl.core.rest.BaseResourceUpdateRestInput;
 
 /**
@@ -60,5 +62,24 @@ public final class CodeSystemUpdateRestInput extends BaseResourceUpdateRestInput
 	
 	public ResourceURI getExtensionOf() {
 		return extensionOf;
+	}
+
+	public CodeSystemUpdateRequestBuilder toCodeSystemUpdateRequest(String codeSystemId) {
+		return CodeSystemRequests.prepareUpdateCodeSystem(codeSystemId)
+			.setUrl(getUrl())
+			.setTitle(getTitle())
+			.setLanguage(getLanguage())
+			.setDescription(getDescription())
+			.setStatus(getStatus())
+			.setCopyright(getCopyright())
+			.setOwner(getOwner())
+			.setContact(getContact())
+			.setUsage(getUsage())
+			.setPurpose(getPurpose())
+			.setBundleId(getBundleId())
+			.setOid(getOid())
+			.setBranchPath(getBranchPath())
+			.setExtensionOf(getExtensionOf())
+			.setSettings(getSettings());
 	}
 }

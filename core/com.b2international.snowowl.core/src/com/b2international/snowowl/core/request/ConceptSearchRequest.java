@@ -16,11 +16,19 @@
 package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequestBuilder;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.google.common.collect.Maps;
 
 /**
  * A generic concept search request that can be executed in any code system using generic query expressions and filters to get back primary
@@ -30,28 +38,78 @@ import com.b2international.snowowl.core.domain.Concepts;
  * @see ConceptSearchRequestEvaluator
  * @see ConceptSearchRequestBuilder
  */
-public final class ConceptSearchRequest extends SearchResourceRequest<BranchContext, Concepts> {
+public final class ConceptSearchRequest extends SearchResourceRequest<ServiceProvider, Concepts> {
 
 	private static final long serialVersionUID = 1L;
 
+	public enum OptionKey {
+		
+		/**
+		 * Filters concepts by their associated resource.
+		 */
+		CODESYSTEM,
+		
+	}
+	
 	@Override
 	protected Concepts createEmptyResult(int limit) {
 		return new Concepts(limit, 0);
 	}
 
 	@Override
-	protected Concepts doExecute(BranchContext context) throws IOException {
-		Options options = Options.builder()
+	protected Concepts doExecute(ServiceProvider context) throws IOException {
+		final int limit = limit();
+		
+		Options conceptSearchOptions = Options.builder()
 				.putAll(options())
 				.put(ConceptSearchRequestEvaluator.OptionKey.ID, componentIds())
 				.put(ConceptSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
-				.put(ConceptSearchRequestEvaluator.OptionKey.LIMIT, limit())
+				.put(ConceptSearchRequestEvaluator.OptionKey.LIMIT, limit)
 				.put(ConceptSearchRequestEvaluator.OptionKey.LOCALES, locales())
 				.put(ConceptSearchRequestEvaluator.OptionKey.FIELDS, fields())
 				.put(ConceptSearchRequestEvaluator.OptionKey.EXPAND, expand())
 				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
-		return context.service(ConceptSearchRequestEvaluator.class).evaluate(context.service(ResourceURI.class), context, options);
+		
+		final CodeSystemSearchRequestBuilder codeSystemSearchReq = CodeSystemRequests.prepareSearchCodeSystem()
+				.all();
+		
+		final Map<ResourceURI, ResourceURI> codeSystemResourceFiltersByResource;
+		if (containsKey(OptionKey.CODESYSTEM)) {
+			// remove path so we can use the code resource URI as key
+			codeSystemResourceFiltersByResource = Maps.uniqueIndex(getCollection(OptionKey.CODESYSTEM, ResourceURI.class), uri -> uri.withoutPath()); 
+			// for filtering use the keys
+			codeSystemSearchReq.filterByIds(codeSystemResourceFiltersByResource.keySet().stream().map(ResourceURI::getResourceId).collect(Collectors.toSet())); 
+		} else {
+			codeSystemResourceFiltersByResource = Collections.emptyMap();
+		}
+//				.filterByToolingIds(toolingIds) TODO perform TOOLING filtering
+//				.filterByUrls(urls) TODO perform URL filtering
+		
+		List<Concepts> concepts = codeSystemSearchReq
+			.buildAsync()
+			.execute(context)
+			.stream()
+			.map(codeSystem -> {
+				final ResourceURI uriToEvaluateOn = codeSystemResourceFiltersByResource.getOrDefault(codeSystem.getResourceURI(), codeSystem.getResourceURI());
+				return context.service(RepositoryManager.class).get(codeSystem.getToolingId()).service(ConceptSearchRequestEvaluator.class).evaluate(uriToEvaluateOn, context, conceptSearchOptions);
+			})
+//			.sorted(comparator) // TODO perform Java SORT on Concept fields
+//			.limit(limit)
+			.collect(Collectors.toList());
+		
+		// calculate grand total
+		int total = 0;
+		for (Concepts conceptsToAdd : concepts) {
+			total += conceptsToAdd.getTotal();
+		}
+		
+		return new Concepts(
+			concepts.stream().flatMap(Concepts::stream).limit(limit).collect(Collectors.toList()), // TODO add manual sorting here if multiple resources have been fetched 
+			null /* not supported across codesystems, TODO support it when a single CodeSystem is being fetched */, 
+			limit, 
+			total
+		);
 	}
 
 }

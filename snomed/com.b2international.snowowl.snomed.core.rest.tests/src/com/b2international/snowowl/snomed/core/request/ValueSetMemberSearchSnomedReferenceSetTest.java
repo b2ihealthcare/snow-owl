@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.SetMembers;
+import com.b2international.snowowl.core.domain.ValueSetMembers;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -58,7 +58,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 	private static final String DEFINITION = "Definition (core metadata concept)";
 	
 	@Test
-	public void filterByRefset() throws Exception {
+	public void filterByRefsetUri() throws Exception {
 		
 		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
 			.all()
@@ -67,10 +67,10 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
 		
-		SetMembers setMembers = CodeSystemRequests.prepareSearchMembers()
+		ValueSetMembers setMembers = CodeSystemRequests.prepareSearchMembers()
 			.all()
-			.filterBySet(Concepts.REFSET_DESCRIPTION_TYPE)		
-			.build(CODESYSTEM)
+			.filterByValueSet(ComponentURI.of(CODESYSTEM, SnomedConcept.REFSET_TYPE, Concepts.REFSET_DESCRIPTION_TYPE).toString())
+			.buildAsync()
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
 				
@@ -90,7 +90,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 	}
 	
 	@Test
-	public void filterByComponent() {
+	public void filterByComponentIdAndUri() {
 		final String filteredId = Concepts.FINDING_SITE;
 		
 		final String refSetId = createSimpleMapTypeRefSet();

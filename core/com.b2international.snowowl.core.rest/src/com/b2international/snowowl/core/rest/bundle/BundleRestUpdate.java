@@ -15,11 +15,27 @@
  */
 package com.b2international.snowowl.core.rest.bundle;
 
+import com.b2international.snowowl.core.bundle.BundleUpdateRequestBuilder;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.BaseResourceUpdateRestInput;
 
 /**
  * @since 8.0
  */
-public final class BundleUpdateRestinput extends BaseResourceUpdateRestInput {
-	//No additional property
+public final class BundleRestUpdate extends BaseResourceUpdateRestInput {
+
+	public BundleUpdateRequestBuilder toUpdateRequest(String bundleId) {
+		return ResourceRequests.bundles().prepareUpdate(bundleId)
+				.setUrl(getUrl())
+				.setTitle(getTitle())
+				.setLanguage(getLanguage())
+				.setDescription(getDescription())
+				.setStatus(getStatus())
+				.setCopyright(getCopyright())
+				.setOwner(getOwner())
+				.setContact(getContact())
+				.setUsage(getUsage())
+				.setPurpose(getPurpose())
+				.setBundleId(getBundleId());
+	}
 }

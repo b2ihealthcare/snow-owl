@@ -131,7 +131,7 @@ public class ConceptMapCompareDsvExportTest {
 		final ConceptMapMapping mapping = item.getMapping();
 		return new String[] {
 				item.getChangeKind().name(),
-				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping .getContainerTerm(),
+				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping.getConceptMapTerm(),
 				mapping.getSourceComponentURI().resourceId(),
 				mapping.getSourceComponentURI().identifier(),
 				mapping.getSourceTerm(),
@@ -140,9 +140,9 @@ public class ConceptMapCompareDsvExportTest {
 				mapping.getTargetTerm()};
 	}
 
-	private static ConceptMapCompareResultItem createItemUnspecifiedTarget(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm) {
+	private static ConceptMapCompareResultItem createItemUnspecifiedTarget(ConceptMapCompareChangeKind changeKind, String conceptMapTerm, String sourceId, String sourceTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
-				.containerTerm(containerTerm)
+				.conceptMapTerm(conceptMapTerm)
 				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), SnomedConcept.TYPE, sourceId))
 				.sourceTerm(sourceTerm)
 				.targetComponentURI(ComponentURI.UNSPECIFIED)
@@ -151,9 +151,9 @@ public class ConceptMapCompareDsvExportTest {
 		return new ConceptMapCompareResultItem(changeKind, mapping);
 	}
 	
-	private static ConceptMapCompareResultItem createItem(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm, String targetId, String targetTerm) {
+	private static ConceptMapCompareResultItem createItem(ConceptMapCompareChangeKind changeKind, String conceptMapTerm, String sourceId, String sourceTerm, String targetId, String targetTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
-				.containerTerm(containerTerm)
+				.conceptMapTerm(conceptMapTerm)
 				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), SnomedConcept.TYPE, sourceId))
 				.sourceTerm(sourceTerm)
 				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), "concept", targetId))

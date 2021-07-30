@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.rest.codesystem;
 
 import java.util.concurrent.TimeUnit;
 
+import org.elasticsearch.common.Strings;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.resource.ResourceRestSearch;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -118,40 +120,22 @@ public class CodeSystemRestService extends AbstractRestService {
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "Created"),
-		@ApiResponse(responseCode = "400", description = "CodeSystem already exists in the system")
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "409", description = "CodeSystem already exists in the system")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@RequestBody
-			final CodeSystemCreateRestInput params,
+			final ResourceRequest<CodeSystemCreateRestInput> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
-		final String commitComment = String.format("Created new Code System %s", params.getId());
-		final String codeSystemId = CodeSystemRequests.prepareNewCodeSystem()
-				.setId(params.getId())
-				.setBundleId(params.getBundleId())
-				.setUrl(params.getUrl())
-				.setTitle(params.getTitle())
-				.setLanguage(params.getLanguage())
-				.setDescription(params.getDescription())
-				.setStatus(params.getStatus())
-				.setCopyright(params.getCopyright())
-				.setOwner(params.getOwner())
-				.setContact(params.getContact())
-				.setUsage(params.getUsage())
-				.setPurpose(params.getPurpose())
-				.setOid(params.getOid())
-				.setBranchPath(params.getBranchPath())
-				.setToolingId(params.getToolingId())
-				.setExtensionOf(params.getExtensionOf())
-				.setSettings(params.getSettings())
-				.commit() 
-				.setAuthor(author)
-				.setCommitComment(commitComment)
-				.buildAsync()
+		
+		final String commitComment = Strings.isNullOrEmpty(body.getCommitComment()) ? String.format("Created new Code System %s", body.getChange().getId()) : body.getCommitComment();
+		final String codeSystemId = body.getChange().toCodeSystemCreateRequest()
+				.build(author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 				.getResultAs(String.class);
@@ -165,7 +149,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "204", description = "No content"),
-		@ApiResponse(responseCode = "400", description = "Code System cannot be updated")
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@PutMapping(value = "/{codeSystemId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -175,31 +159,13 @@ public class CodeSystemRestService extends AbstractRestService {
 			final String codeSystemId,
 			
 			@RequestBody
-			final CodeSystemUpdateRestInput params,
+			final ResourceRequest<CodeSystemUpdateRestInput> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		final String commitComment = String.format("Updated Code System %s", codeSystemId);
-		CodeSystemRequests.prepareUpdateCodeSystem(codeSystemId)
-				.setUrl(params.getUrl())
-				.setTitle(params.getTitle())
-				.setLanguage(params.getLanguage())
-				.setDescription(params.getDescription())
-				.setStatus(params.getStatus())
-				.setCopyright(params.getCopyright())
-				.setOwner(params.getOwner())
-				.setContact(params.getContact())
-				.setUsage(params.getUsage())
-				.setPurpose(params.getPurpose())
-				.setBundleId(params.getBundleId())
-				.setOid(params.getOid())
-				.setBranchPath(params.getBranchPath())
-				.setExtensionOf(params.getExtensionOf())
-				.setSettings(params.getSettings())
-				.commit()
-				.setAuthor(author)
-				.setCommitComment(commitComment)
-				.buildAsync()
+		final String commitComment = Strings.isNullOrEmpty(body.getCommitComment()) ? String.format("Updated Code System %s", codeSystemId) : body.getCommitComment();
+		body.getChange().toCodeSystemUpdateRequest(codeSystemId)
+				.build(author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -222,7 +188,7 @@ public class CodeSystemRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		ResourceRequests.prepareDelete(codeSystemId)
-			.build(author, "Delete ".concat(codeSystemId))
+			.build(author, "Deleted ".concat(codeSystemId))
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}

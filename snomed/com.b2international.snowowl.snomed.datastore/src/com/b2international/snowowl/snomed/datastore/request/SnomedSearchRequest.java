@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
@@ -132,7 +134,14 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 				}
 				
 				// TODO replace sync call to concept search with async promise
-				idFilter = EclExpression.of(expression, eclExpressionForm()).resolve(context).getSync(3, TimeUnit.MINUTES);
+				try {
+					idFilter = EclExpression.of(expression, eclExpressionForm()).resolve(context).getSync(3, TimeUnit.MINUTES);
+				} catch (SyntaxException e) {
+					// incase of syntax errors, report them as incorrect values instead of syntax errors
+//					throw new BadRequestException("'%s' is not a valid SNOMED CT ID or ECL Expression.", expression);
+					throw new SearchResourceRequest.NoResultException();
+				}
+				
 				if (idFilter.isEmpty()) {
 					throw new SearchResourceRequest.NoResultException();
 				}

@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.domain;
 
 import java.util.SortedSet;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -29,7 +30,7 @@ public final class Concept extends BaseComponent {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String codeSystem;
+	private final ResourceURI codeSystemUri;
 	private final String componentType;
 	
 	private String term;
@@ -40,13 +41,13 @@ public final class Concept extends BaseComponent {
 	
 	private Object internalConcept;
 	
-	public Concept(String codeSystem, String componentType) {
-		this.codeSystem = codeSystem;
+	public Concept(ResourceURI codeSystemUri, String componentType) {
+		this.codeSystemUri = codeSystemUri;
 		this.componentType = componentType;
 	}
 	
-	public String getCodeSystem() {
-		return codeSystem;
+	public ResourceURI getCodeSystemUri() {
+		return codeSystemUri;
 	}
 	
 	public String getTerm() {
@@ -104,7 +105,7 @@ public final class Concept extends BaseComponent {
 
 	@JsonIgnore
 	public ComponentURI getCode() {
-		return ComponentURI.of(codeSystem, componentType, getId());
+		return ComponentURI.of(codeSystemUri, componentType, getId());
 	}
 	
 	@Override

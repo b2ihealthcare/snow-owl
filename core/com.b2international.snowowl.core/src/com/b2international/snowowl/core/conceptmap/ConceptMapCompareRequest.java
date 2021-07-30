@@ -82,10 +82,11 @@ final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, 
 	private List<ConceptMapMapping> fetchConceptMapMappings(ServiceProvider context, ResourceURI conceptMapUri) {
 		return ConceptMapRequests.prepareSearchConceptMapMappings()
 			.filterByActive(true)
+			.filterByConceptMapUri(conceptMapUri)
 			.setLocales(locales())
 			.setPreferredDisplay(preferredDisplay)
 			.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT)
-			.streamAsync(context.service(IEventBus.class), req -> req.build(conceptMapUri))
+			.streamAsync(context.service(IEventBus.class), req -> req.buildAsync())
 			.flatMap(ConceptMapMappings::stream)
 			.collect(Collectors.toList());
 	}
@@ -113,7 +114,9 @@ final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, 
 		List<ConceptMapCompareResultItem> allUnchanged = Set.copyOf(Sets.intersection(baseMappingsByHash.keySet(), compareMappingsByHash.keySet()))
 			.stream()
 			.map(hash -> ImmutableList.<ConceptMapMapping>builder().addAll(baseMappingsByHash.removeAll(hash)).addAll(compareMappingsByHash.removeAll(hash)).build())
-			.map(mappings -> mappings.stream().reduce((result, next) -> result.mergeComments(next.getComments())).get())
+			// TODO comments will be handled different in 8.x, now just select the first and move on
+//			reduce((result, next) -> result.mergeComments(next.getComments())).get()
+			.map(mappings -> mappings.stream().findFirst().get()) 
 			.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.SAME, mapping))
 			.collect(Collectors.toList());
 		
