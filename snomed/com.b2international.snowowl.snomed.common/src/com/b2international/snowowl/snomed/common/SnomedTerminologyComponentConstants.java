@@ -36,6 +36,8 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String CODESYSTEM_RF2_EXPORT_LAYOUT_CONFIG_KEY = "refSetExportLayout";
 	public static final String CODESYSTEM_NRC_COUNTRY_CODE_CONFIG_KEY = "nrcCountryCode";
 	
+	public static final String CODESYSTEM_LANGUAGE_CONFIG_KEY = "languages";
+	
 	// FHIR specific constants
 	public static final String SNOMED_URI_BASE = "http://snomed.info";
 	public static final String SNOMED_URI_SCT = SNOMED_URI_BASE + "/sct";
