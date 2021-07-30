@@ -71,7 +71,7 @@ public final class MrcmCommand extends Command {
 		@Parameters(paramLabel = "FILE", description = "The JSON file with MRCM rules to import")
 		String file;
 		
-		@Parameters(paramLabel = "BRANCH", description = "The JSON file withMRCM rules to import")
+		@Parameters(paramLabel = "BRANCH", description = "The branch to import MRCM rules to")
 		String branch;
 		
 		@Override
