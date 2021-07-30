@@ -20,7 +20,6 @@ import java.util.List;
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * @since 8.0

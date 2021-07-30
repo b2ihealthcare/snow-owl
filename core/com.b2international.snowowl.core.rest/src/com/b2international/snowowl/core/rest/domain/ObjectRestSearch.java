@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 7.3
@@ -35,7 +36,7 @@ public class ObjectRestSearch extends ResourceSelectors {
 	@Parameter(description = "Sort keys")
 	private List<String> sort;
 	
-	@Parameter(description = "The maximum number of items to return")
+	@Parameter(description = "The maximum number of items to return", example = "50", schema = @Schema(defaultValue = "50"))
 	private int limit = 50;
 
 	public final Set<String> getId() {
