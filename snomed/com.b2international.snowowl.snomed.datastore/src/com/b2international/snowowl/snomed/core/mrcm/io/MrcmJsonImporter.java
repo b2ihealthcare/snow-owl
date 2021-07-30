@@ -52,9 +52,8 @@ public class MrcmJsonImporter implements MrcmImporter {
 	}
 	
 	@Override
-	public void doImport(String authorizationToken, String username, InputStream source) {
+	public void doImport(String authorizationToken, String username, String branch, InputStream source) {
 		
-		final String branch = Branch.MAIN_PATH;
 		ObjectMapper mapper = ApplicationContext.getServiceForClass(ObjectMapper.class);
 		
 		final IEventBus bus = new AuthorizedEventBus(this.bus.get(), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken));
@@ -95,9 +94,9 @@ public class MrcmJsonImporter implements MrcmImporter {
 	}
 	
 	@Override
-	public void doImport(User user, InputStream source) {
+	public void doImport(User user, String branch, InputStream source) {
 		String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(user);
-		doImport(authorizationToken, user.getUsername(), source);
+		doImport(authorizationToken, user.getUsername(), branch, source);
 	}
 
 }
