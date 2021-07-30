@@ -33,11 +33,13 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -50,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 
 /**
  * @since 4.5
@@ -245,7 +248,9 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			SortField sortField = (SortField) sort;
 			if (SnomedConceptSearchRequestBuilder.TERM_SORT.equals(sortField.getField())) {
 				final Set<String> synonymIds = context.service(Synonyms.class).get();
-				final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionUtils.getLanguageRefSetIds(locales()), "synonymIds", synonymIds);
+				@SuppressWarnings("unchecked")
+				ListMultimap<String, String> languageMap = (ListMultimap<String, String>) context.service(TerminologyResource.class).getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY);
+				final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionUtils.getLanguageRefSetIds(locales(), languageMap), "synonymIds", synonymIds);
 				sortBuilder.sortByScript("termSort", args, sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
+import com.google.common.collect.ListMultimap;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT descriptions.
@@ -201,8 +202,8 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #filterByLanguageRefSet(Iterable)
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByLanguageRefSets(List<ExtendedLocale> locales) {
-		return filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
+	public SnomedDescriptionSearchRequestBuilder filterByLanguageRefSets(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
+		return filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
 	}
 	
 	/**
@@ -244,8 +245,8 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #filterByPreferredIn(Iterable)
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByPreferredIn(List<ExtendedLocale> locales) {
-		return filterByPreferredIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
+	public SnomedDescriptionSearchRequestBuilder filterByPreferredIn(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
+		return filterByPreferredIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
 	}
 	
 	/**
@@ -287,8 +288,8 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #filterByAcceptableIn(Iterable)
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByAcceptableIn(List<ExtendedLocale> locales) {
-		return filterByAcceptableIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
+	public SnomedDescriptionSearchRequestBuilder filterByAcceptableIn(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
+		return filterByAcceptableIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
 	}
 	
 	@Override

@@ -1,44 +1,33 @@
 /*******************************************************************************
- * Copyright (c) 2020 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2020-2021 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.snomed.datastore;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ExplicitFirstOrdering;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 /**
  * @since 7.10.0
  */
 public final class SnomedDescriptionUtils {
 
-	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(final Iterable<SnomedDescription> descriptions, final List<ExtendedLocale> extendedLocales) {
+	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(final Iterable<SnomedDescription> descriptions, final List<ExtendedLocale> extendedLocales, final ListMultimap<String, String> languageMap) {
 
 		if (extendedLocales.isEmpty()) {
 			return Map.of();
 		}
 		
-		final List<String> languageRefSetIds = getLanguageRefSetIds(extendedLocales);
+		final List<String> languageRefSetIds = getLanguageRefSetIds(extendedLocales, languageMap);
 		final ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
 		final Multimap<String, SnomedDescription> conceptIdToDescriptionsMap = Multimaps.index(descriptions, SnomedDescription::getConceptId);
 
@@ -106,7 +95,7 @@ public final class SnomedDescriptionUtils {
 	 * @param locales  the extended locale list to process (may not be {@code null})
 	 * @return the converted language reference set identifiers or an empty {@link List}, never <code>null</code>
 	 */
-	public static List<String> getLanguageRefSetIds(final List<ExtendedLocale> locales) {
+	public static List<String> getLanguageRefSetIds(final List<ExtendedLocale> locales, final ListMultimap<String, String> languageMap) {
 		if (CompareUtils.isEmpty(locales)) {
 			return Collections.emptyList();
 		}
@@ -119,7 +108,7 @@ public final class SnomedDescriptionUtils {
 			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
 				mappedRefSetIds = Collections.singleton(extendedLocale.getLanguageRefSetId());
 			} else {
-				mappedRefSetIds = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getMappedLanguageRefSetIds(extendedLocale.getLanguageTag());
+				mappedRefSetIds = languageMap.get(extendedLocale.getLanguageTag());
 			}
 
 			if (mappedRefSetIds.isEmpty()) {
