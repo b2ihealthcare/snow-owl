@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.config;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.constraints.Max;
@@ -25,7 +26,10 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 
 /**
  * SNOMED CT related application level configuration parameters.
@@ -87,6 +91,9 @@ public class SnomedCoreConfiguration {
 	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
+	
+	private List<SnomedLanguageConfig> languages = Collections.emptyList();
+	private ListMultimap<String, String> languageMap;
 	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
@@ -332,4 +339,27 @@ public class SnomedCoreConfiguration {
 		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
 	}
 
+	public List<SnomedLanguageConfig> getLanguages() {
+		return languages;
+	}
+	
+	public void setLanguages(List<SnomedLanguageConfig> languages) {
+		this.languages = languages;
+	}
+
+	public List<String> getMappedLanguageRefSetIds(String languageCode) {
+		return getLanguageMap().get(languageCode);
+	}
+
+	@JsonIgnore
+	private ListMultimap<String, String> getLanguageMap() {
+		if (languageMap == null) {
+			languageMap = ArrayListMultimap.create();
+			for (SnomedLanguageConfig languageConfig : getLanguages()) {
+				languageMap.putAll(languageConfig.getCode(), languageConfig.getRefSetIds());
+			}
+		}
+		return languageMap;
+	}
+	
 }
