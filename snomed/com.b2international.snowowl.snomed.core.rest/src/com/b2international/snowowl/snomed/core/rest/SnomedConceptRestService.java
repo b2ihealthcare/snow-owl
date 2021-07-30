@@ -112,7 +112,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByEcl(params.getEcl())
 					.filterByStatedEcl(params.getStatedEcl())
 					.filterByTerm(params.getTerm())
-					.filterByDescriptionLanguageRefSet(acceptLanguage)
+					.filterByDescriptionLanguageRefSet(acceptLanguage, params.getLanguages())
 					.filterByDescriptionType(params.getDescriptionType())
 					.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
 					.withDoi(params.getDoi())
