@@ -116,11 +116,10 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	//StructureDefinition
 	DiscriminatorTest.class,
 	SlicingTest.class,
+	BaseTest.class,
 	ElementDefinitionTest.class,
 	StructureViewTest.class,
 	StructureDefinitionTest.class
-	
-	
 	
 })
 public class AllFhirTests {
