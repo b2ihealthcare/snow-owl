@@ -55,7 +55,7 @@ public class MrcmImportExportTest {
 		final Path path = PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_import_test.json");
 		
 		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
-			Services.service(MrcmImporter.class).doImport(Services.getAuthorizationToken(), RestExtensions.USER, stream);
+			Services.service(MrcmImporter.class).doImport(Services.getAuthorizationToken(), RestExtensions.USER, IBranchPath.MAIN_BRANCH, stream);
 		} 
 		
 		// verify content

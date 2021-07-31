@@ -71,6 +71,9 @@ public final class MrcmCommand extends Command {
 		@Parameters(paramLabel = "FILE", description = "The JSON file with MRCM rules to import")
 		String file;
 		
+		@Parameters(paramLabel = "BRANCH", description = "The branch to import MRCM rules to")
+		String branch;
+		
 		@Override
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate(getBus());
@@ -81,7 +84,7 @@ public final class MrcmCommand extends Command {
 			}
 			
 			try (final InputStream content = Files.newInputStream(Paths.get(file), StandardOpenOption.READ)) {
-				ApplicationContext.getServiceForClass(MrcmImporter.class).doImport(user, content);
+				ApplicationContext.getServiceForClass(MrcmImporter.class).doImport(user, branch, content);
 			} catch (IOException e) {
 				out.println("Failed to import MRCM JSON file: " + file);
 			}			

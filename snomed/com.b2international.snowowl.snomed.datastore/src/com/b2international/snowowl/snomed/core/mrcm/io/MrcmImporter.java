@@ -31,8 +31,8 @@ public interface MrcmImporter {
 	 * @param user - the author of the import
 	 * @param source - the MRCM file to process and import.
 	 */
-	void doImport(User user, InputStream source);
+	void doImport(User user, String branch, InputStream source);
 	
-	void doImport(String authorizationToken, String username, InputStream source);
+	void doImport(String authorizationToken, String username, String branch, InputStream source);
 
 }
