@@ -117,6 +117,8 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	DiscriminatorTest.class,
 	SlicingTest.class,
 	BaseTest.class,
+	BindingTest.class,
+	TypeTest.class,
 	ElementDefinitionTest.class,
 	StructureViewTest.class,
 	StructureDefinitionTest.class

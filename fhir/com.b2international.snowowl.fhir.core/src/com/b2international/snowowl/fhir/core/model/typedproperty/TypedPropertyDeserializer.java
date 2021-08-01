@@ -2,7 +2,6 @@ package com.b2international.snowowl.fhir.core.model.typedproperty;
 
 import java.io.IOException;
 
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.ElementDefinition;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,7 +36,7 @@ public class TypedPropertyDeserializer extends StdDeserializer<ElementDefinition
 	    ElementDefinition elementDefinition = null;
 
 	    DeserializationConfig config = ctxt.getConfig();
-	    JavaType type = TypeFactory.defaultInstance().constructType(User.class);
+	    JavaType type = TypeFactory.defaultInstance().constructType(ElementDefinition.class);
 	    JsonDeserializer<Object> defaultDeserializer = BeanDeserializerFactory.instance.buildBeanDeserializer(ctxt, type, config.introspect(type));
 
 	    

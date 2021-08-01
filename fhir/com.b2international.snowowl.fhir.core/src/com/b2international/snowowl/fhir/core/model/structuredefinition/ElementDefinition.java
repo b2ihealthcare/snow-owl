@@ -23,20 +23,18 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
-import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.typedproperty.ElementDefinitionSerializer;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
-import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertyDeserializer;
-import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertySerializer;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -47,7 +45,8 @@ import com.google.common.collect.Sets;
  * FHIR definition of an element in a resource or an extension.
  * @since 7.1
  */
-@JsonDeserialize(builder = ElementDefinition.Builder.class, using = TypedPropertyDeserializer.class)
+@JsonDeserialize(builder = ElementDefinition.Builder.class) //, using = TypedPropertyDeserializer.class)
+@JsonSerialize(using = ElementDefinitionSerializer.class)
 public class ElementDefinition extends Element {
 
 	@NotNull
@@ -123,9 +122,9 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
-	@JsonUnwrapped
-	@JsonProperty
+	//@JsonSerialize(using = ElementDefinitionSerializer.class)
+	//@JsonUnwrapped
+	@JsonIgnore //serialized by the custom serializer
 	private final TypedProperty<?> defaultValue;
 	
 	@Summary
@@ -138,15 +137,15 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
-	@JsonUnwrapped
+	//@JsonSerialize(using = ElementDefinitionSerializer.class)
+	//@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> fixed;
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
-	@JsonUnwrapped
+	//@JsonSerialize(using = ElementDefinitionSerializer.class)
+	//@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> pattern;
 	
@@ -157,15 +156,15 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
-	@JsonUnwrapped
+	//@JsonSerialize(using = ElementDefinitionSerializer.class)
+	//@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> minValue;
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
-	@JsonUnwrapped
+	//@JsonSerialize(using = ElementDefinitionSerializer.class)
+	//@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> maxValue;
 	
@@ -202,7 +201,7 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonProperty
+	@JsonProperty("mapping")
 	private final Collection<MappingElement> mappings;
 	
 	@SuppressWarnings("rawtypes")
@@ -448,6 +447,8 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("code")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder codes(final Collection<Coding> codes) {
 			this.codes = codes;
 			return getSelf();
@@ -483,6 +484,8 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("alias")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder aliases(final Collection<String> aliases) {
 			this.aliases = aliases;
 			return getSelf();
@@ -535,7 +538,7 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
-		public Builder defaultValue(final String stringValue) {
+		public Builder defaultValueString(final String stringValue) {
 			this.defaultValue = new StringProperty(stringValue);
 			return getSelf();
 		}
@@ -649,7 +652,9 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
-		public Builder mapping(final Collection<MappingElement> mappings) {
+		@JsonProperty("mapping")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder mappings(final Collection<MappingElement> mappings) {
 			this.mappings = mappings;
 			return getSelf();
 		}

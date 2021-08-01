@@ -32,12 +32,14 @@ import com.b2international.snowowl.fhir.core.model.typedproperty.InstantProperty
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertyDeserializer;
+import com.b2international.snowowl.fhir.core.model.typedproperty.ElementDefinitionSerializer;
 import com.b2international.snowowl.fhir.tests.TypedPropertySerializationTest.DeserTestClass;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.restassured.path.json.JsonPath;
 
@@ -73,13 +75,14 @@ public class TypedPropertySerializationTest extends FhirTest {
 
 	
 	@Test
-	public void stringTypedPropertyTest() throws JsonProcessingException {
+	public void stringTypedPropertyTest() throws Exception {
 		
 		final class TestClass {
 			
 			@JsonProperty
 			private String testString = "test";
 			
+			@JsonSerialize(using = ElementDefinitionSerializer.class)
 			@JsonUnwrapped
 			@JsonProperty
 			private TypedProperty<?> valueObject = new StringProperty("stringValue");
@@ -87,9 +90,10 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		
 		TestClass testObject = new TestClass();
+		printPrettyJson(testObject);
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
 		assertThat(jsonPath.getString("testString"), equalTo("test"));
-		assertThat(jsonPath.getString("valueString"), equalTo("stringValue"));
+		assertThat(jsonPath.getString("valueObjectString"), equalTo("stringValue"));
 	}
 	
 	@Test
