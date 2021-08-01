@@ -71,7 +71,7 @@ public class ElementDefinitionTest extends FhirTest {
 					.build())
 				.addExample(Example.builder()
 						.label("example")
-						.value("value")
+						.valueString("value")
 						.build())
 				.addConstraint(Constraint.builder()
 						.id("id")

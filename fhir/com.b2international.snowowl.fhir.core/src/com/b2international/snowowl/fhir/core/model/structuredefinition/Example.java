@@ -25,13 +25,19 @@ import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * A sample value for this element demonstrating the type of information that would typically be found in the element.
  * 
  * @since 7.1
  */
+@JsonDeserialize(builder = Example.Builder.class)
+@JsonSerialize(using = ExampleSerializer.class)
 public class Example extends Element {
 	
 	@NotNull
@@ -42,10 +48,10 @@ public class Example extends Element {
 	@NotNull
 	@Valid
 	@Mandatory
-	@JsonProperty
+	@JsonIgnore
 	private TypedProperty<?> value;
 	
-	protected Example(final String id, 
+	Example(final String id, 
 			@SuppressWarnings("rawtypes") final List<Extension> extensions, 
 			final String label,
 			final TypedProperty<?> value) {
@@ -55,10 +61,19 @@ public class Example extends Element {
 		this.value = value;
 	}
 	
+	public String getLabel() {
+		return label;
+	}
+	
+	public TypedProperty<?> getValue() {
+		return value;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Example> {
 		
 		private String label;
@@ -74,8 +89,13 @@ public class Example extends Element {
 			return getSelf();
 		}
 		
-		public Builder value(String stringValue) {
-			this.value = new StringProperty(stringValue);
+		public Builder value(final TypedProperty<?> value) {
+			this.value = value;
+			return getSelf();
+		}
+		
+		public Builder valueString(String value) {
+			this.value = new StringProperty(value);
 			return getSelf();
 		}
 		
