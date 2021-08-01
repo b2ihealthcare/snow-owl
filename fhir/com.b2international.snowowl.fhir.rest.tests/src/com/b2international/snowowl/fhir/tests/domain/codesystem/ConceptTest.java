@@ -18,25 +18,17 @@ package com.b2international.snowowl.fhir.tests.domain.codesystem;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.IntegerExtension;
-import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Instant;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -76,11 +68,15 @@ public class ConceptTest extends FhirTest {
 	public void build() throws Exception {
 		
 		assertEquals(new Code("conceptCode"), concept.getCode());
+		ConceptProperty conceptProperty = concept.getProperties().iterator().next();
+		assertTrue(conceptProperty instanceof CodeConceptProperty);
+		
 	}
 	
 	@Test
 	public void serialize() throws Exception {
 		
+		printPrettyJson(concept);
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(concept));
 		assertThat(jsonPath.getString("code"), equalTo("conceptCode"));
 		assertThat(jsonPath.getString("display"), equalTo("Label"));

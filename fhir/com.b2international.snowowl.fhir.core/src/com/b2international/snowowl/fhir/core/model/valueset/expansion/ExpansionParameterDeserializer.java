@@ -58,7 +58,6 @@ public class ExpansionParameterDeserializer extends StdDeserializer<Parameter<?>
 			String fieldName = (String) fieldNames.next();
 			if (fieldName.startsWith(VALUE_PREFIX)) {
 				
-				//String type = fieldName.replace(VALUE_PREFIX, "");
 				parameterType = Sets.newHashSet(parameterTypes).stream()
 					.filter(t -> t.getSerializedName().equalsIgnoreCase(fieldName))
 					.findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown expansion parameter type '" + fieldName + "'."));

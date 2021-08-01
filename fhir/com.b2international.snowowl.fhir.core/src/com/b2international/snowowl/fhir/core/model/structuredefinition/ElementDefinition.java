@@ -30,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
+import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertyDeserializer;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertySerializer;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
@@ -46,7 +47,7 @@ import com.google.common.collect.Sets;
  * FHIR definition of an element in a resource or an extension.
  * @since 7.1
  */
-@JsonDeserialize(builder = ElementDefinition.Builder.class)
+@JsonDeserialize(builder = ElementDefinition.Builder.class, using = TypedPropertyDeserializer.class)
 public class ElementDefinition extends Element {
 
 	@NotNull

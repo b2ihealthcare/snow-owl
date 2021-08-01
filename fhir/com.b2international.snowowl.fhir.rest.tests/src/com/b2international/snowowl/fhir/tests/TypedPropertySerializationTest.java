@@ -16,7 +16,7 @@
 package com.b2international.snowowl.fhir.tests;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Date;
 
@@ -25,16 +25,19 @@ import org.junit.Test;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.core.model.structuredefinition.ElementDefinition;
 import com.b2international.snowowl.fhir.core.model.typedproperty.DateProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.DateTimeProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.InstantProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
-import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertySerializer;
+import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertyDeserializer;
+import com.b2international.snowowl.fhir.tests.TypedPropertySerializationTest.DeserTestClass;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import io.restassured.path.json.JsonPath;
 
@@ -44,6 +47,29 @@ import io.restassured.path.json.JsonPath;
  * @since 7.1
  */
 public class TypedPropertySerializationTest extends FhirTest {
+	
+	@JsonDeserialize(using = TypedPropertyDeserializer.class)
+	public static class DeserTestClass {
+		
+		@JsonProperty
+		private String testString = "test";
+		
+		@JsonUnwrapped
+		@JsonProperty
+		private TypedProperty<?> valueObject = new StringProperty("stringValue");
+		
+	}
+	
+	@Test
+	public void deserializationTest() throws Exception {
+		
+		DeserTestClass deserTestClass = new DeserTestClass();
+		printPrettyJson(deserTestClass);
+		
+		DeserTestClass readClass = objectMapper.readValue(objectMapper.writeValueAsString(deserTestClass), DeserTestClass.class);
+		printPrettyJson(readClass);
+	
+	}
 
 	
 	@Test
@@ -54,7 +80,6 @@ public class TypedPropertySerializationTest extends FhirTest {
 			@JsonProperty
 			private String testString = "test";
 			
-			@JsonSerialize(using = TypedPropertySerializer.class)
 			@JsonUnwrapped
 			@JsonProperty
 			private TypedProperty<?> valueObject = new StringProperty("stringValue");
@@ -74,7 +99,6 @@ public class TypedPropertySerializationTest extends FhirTest {
 
 		final class TestClass {
 			
-			@JsonSerialize(using = TypedPropertySerializer.class)
 			@JsonUnwrapped
 			@JsonProperty
 			private TypedProperty<?> valueObject = new DateProperty(date);
@@ -93,7 +117,6 @@ public class TypedPropertySerializationTest extends FhirTest {
 
 		final class TestClass {
 			
-			@JsonSerialize(using = TypedPropertySerializer.class)
 			@JsonUnwrapped
 			@JsonProperty
 			private TypedProperty<?> valueObject = new DateTimeProperty(date);
@@ -112,7 +135,6 @@ public class TypedPropertySerializationTest extends FhirTest {
 
 		final class TestClass {
 			
-			@JsonSerialize(using = TypedPropertySerializer.class)
 			@JsonUnwrapped
 			@JsonProperty
 			private TypedProperty<?> valueObject = new InstantProperty(instant);
