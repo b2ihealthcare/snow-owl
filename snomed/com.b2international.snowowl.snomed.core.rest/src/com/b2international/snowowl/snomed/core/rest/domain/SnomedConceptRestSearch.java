@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
-import com.google.common.collect.ListMultimap;
 
 import io.swagger.v3.oas.annotations.Parameter;
 
@@ -65,7 +64,7 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 	private Boolean doi = null;
 	
 	@Parameter(description = "The language map to get the refset Ids to match")
-	private ListMultimap<String, String> languages = null;
+	private String[] languages = null;
 
 	public Boolean getActive() {
 		return active;
@@ -151,7 +150,7 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 		return statedEcl;
 	}
 	
-	public ListMultimap<String, String> getLanguages() {
+	public String[] getLanguages() {
 		return languages;
 	}
 
@@ -191,7 +190,7 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 		this.doi = doi;
 	}
 	
-	public void setLanguages(ListMultimap<String, String> languages) {
+	public void setLanguages(String[] languages) {
 		this.languages = languages;
 	}
 

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +40,9 @@ import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestSear
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestUpdate;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableSet;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,6 +65,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 				.build());
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Operation(
 		summary="Retrieve Concepts from a path", 
 		description="Returns a list with all/filtered Concepts from a path."
@@ -95,6 +99,23 @@ public class SnomedConceptRestService extends AbstractRestService {
 			sorts = Collections.singletonList(SearchIndexResourceRequest.SCORE);
 		}
 		
+		ListMultimap<String, String> languageMap = ArrayListMultimap.create();
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		FluentIterable.from(params.getLanguages()).forEach(languageConfig -> {
+			@SuppressWarnings("rawtypes")
+			LinkedHashMap result = Maps.newLinkedHashMap();
+			try {
+				result = objectMapper.readValue(languageConfig, LinkedHashMap.class);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+
+			languageMap.putAll((String) result.get("code"), (List<String>) result.get("refSetIds"));
+
+		});
+		
 		return SnomedRequests
 					.prepareSearchConcept()
 					.setLimit(params.getLimit())
@@ -112,7 +133,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByEcl(params.getEcl())
 					.filterByStatedEcl(params.getStatedEcl())
 					.filterByTerm(params.getTerm())
-					.filterByDescriptionLanguageRefSet(acceptLanguage, params.getLanguages())
+					.filterByDescriptionLanguageRefSet(acceptLanguage, languageMap)
 					.filterByDescriptionType(params.getDescriptionType())
 					.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
 					.withDoi(params.getDoi())

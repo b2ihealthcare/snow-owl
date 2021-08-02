@@ -20,6 +20,9 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
@@ -27,12 +30,18 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
+import com.b2international.snowowl.snomed.datastore.config.SnomedLanguageConfig;
+import com.google.common.collect.Lists;
 
 /**
  * @since 8.0.0
  */
 public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
-
+	
+	private static final SnomedLanguageConfig EN_CONFIG = new SnomedLanguageConfig("en", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US));
+	private static final SnomedLanguageConfig US_CONFIG = new SnomedLanguageConfig("en-us", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_US));
+	private static final List<SnomedLanguageConfig> LANGUAGES = List.of(EN_CONFIG, US_CONFIG);
+	
 	@Test
 	public void searchBySemanticTag() throws Exception {
 		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
@@ -49,7 +58,8 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		
 		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
 			.accept(JSON_UTF8)
-			.queryParam("semanticTag", "tag")
+			.queryParams(Map.of("semanticTag", "tag",
+								"languages", LANGUAGES))
 			.get("/{path}/concepts/", branchPath.getPath())
 			.then().assertThat()
 			.statusCode(200)
@@ -86,8 +96,9 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		
 		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
 			.accept(JSON_UTF8)
-			.queryParam("term", "another")
-			.queryParam("semanticTag", "tag")
+			.queryParams(Map.of("term", "another",
+								"languages", LANGUAGES,
+								"semanticTag", "tag"))
 			.get("/{path}/concepts/", branchPath.getPath())
 			.then().assertThat()
 			.statusCode(200)
