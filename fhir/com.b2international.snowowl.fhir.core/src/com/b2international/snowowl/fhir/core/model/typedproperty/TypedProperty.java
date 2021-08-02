@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.model.typedproperty;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -31,7 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @see <a href=" https://www.hl7.org/fhir/formats.html">Choice</a> for further information about how to use [x].
  * @since 7.1
  */
-//@JsonSerialize(using = TypedPropertySerializer.class)
+@JsonSerialize(using = TypedPropertySerializer.class)
 public abstract class TypedProperty<T> {
 	
 	protected T value;

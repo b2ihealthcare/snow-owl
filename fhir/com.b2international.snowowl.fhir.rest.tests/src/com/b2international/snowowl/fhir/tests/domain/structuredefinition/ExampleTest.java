@@ -22,13 +22,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.codesystems.*;
-import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.Discriminator;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.Example;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.Slicing;
-import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;

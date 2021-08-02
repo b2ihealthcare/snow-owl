@@ -27,6 +27,7 @@ import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -37,7 +38,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 7.1
  */
 @JsonDeserialize(builder = Example.Builder.class)
-@JsonSerialize(using = ExampleSerializer.class)
+//@JsonSerialize(using = ExampleSerializer.class)
 public class Example extends Element {
 	
 	@NotNull
@@ -48,7 +49,8 @@ public class Example extends Element {
 	@NotNull
 	@Valid
 	@Mandatory
-	@JsonIgnore
+	@JsonProperty
+	@JsonUnwrapped
 	private TypedProperty<?> value;
 	
 	Example(final String id, 

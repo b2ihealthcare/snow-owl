@@ -46,7 +46,9 @@ public class ExampleSerializer extends JsonSerializer<Example> {
 		JsonSerializer<Object> serializer = BeanSerializerFactory.instance.findBeanOrAddOnSerializer(provider, javaType,
 				beanDesc, false);
 		gen.writeObjectField("value" + bean.getValue().getTypeName(), bean.getValue());
-		serializer.unwrappingSerializer(null).serialize(bean, gen, provider);
+		serializer
+			.unwrappingSerializer(null)
+			.serialize(bean, gen, provider);
 	}
 
 }
