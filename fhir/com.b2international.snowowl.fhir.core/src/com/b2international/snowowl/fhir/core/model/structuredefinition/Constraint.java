@@ -28,11 +28,14 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Formal constraints such as co-occurrence and other constraints that can be computationally evaluated within the context of the instance.
  * @since 7.1
  */
+@JsonDeserialize(builder = Constraint.Builder.class)
 public class Constraint extends Element {
 
 	@NotNull
@@ -69,7 +72,7 @@ public class Constraint extends Element {
 	@JsonProperty
 	private final Uri source;
 	
-	protected Constraint(final String id, 
+	Constraint(final String id, 
 			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Id key, 
 			final String requirements, 
@@ -90,10 +93,39 @@ public class Constraint extends Element {
 		this.source = source;
 	}
 	
+	public Id getKey() {
+		return key;
+	}
+	
+	public String getRequirements() {
+		return requirements;
+	}
+	
+	public Code getSeverity() {
+		return severity;
+	}
+	
+	public String getHuman() {
+		return human;
+	}
+	
+	public String getExpression() {
+		return expression;
+	}
+	
+	public String getXpath() {
+		return xpath;
+	}
+	
+	public Uri getSource() {
+		return source;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Constraint> {
 		
 		private Id key;

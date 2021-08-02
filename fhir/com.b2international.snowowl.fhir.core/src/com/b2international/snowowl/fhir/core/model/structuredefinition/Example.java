@@ -22,15 +22,13 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
-import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * A sample value for this element demonstrating the type of information that would typically be found in the element.
@@ -38,7 +36,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 7.1
  */
 @JsonDeserialize(builder = Example.Builder.class)
-//@JsonSerialize(using = ExampleSerializer.class)
 public class Example extends Element {
 	
 	@NotNull
@@ -91,13 +88,13 @@ public class Example extends Element {
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"valueString", 
+			"valueDate", 
+			"valueDateTime", 
+			"valueInstant"})
 		public Builder value(final TypedProperty<?> value) {
 			this.value = value;
-			return getSelf();
-		}
-		
-		public Builder valueString(String value) {
-			this.value = new StringProperty(value);
 			return getSelf();
 		}
 		

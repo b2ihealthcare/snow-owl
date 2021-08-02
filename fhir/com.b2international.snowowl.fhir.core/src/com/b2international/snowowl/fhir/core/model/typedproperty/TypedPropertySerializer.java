@@ -19,23 +19,34 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
+ * Custom serializer to serialize typed properties. The name of the reference
+ * is obtained from the {@link ContextualSerializer} 
+ * The serializer supports the @JsonUnwrapped annotation
  * 
  * @since 8.0.0
+ * 
+ * @see ContextualSerializer
  */
 @SuppressWarnings("rawtypes")
-public class TypedPropertySerializer extends JsonSerializer<TypedProperty> {
+public class TypedPropertySerializer extends JsonSerializer<TypedProperty> 
+	implements ContextualSerializer {
 
 	static class UnwrappingTypedPropertySerializer extends JsonSerializer<TypedProperty> {
 	    
 		private NameTransformer nameTransformer;
+		private final String propertyName;
 
-		public UnwrappingTypedPropertySerializer(NameTransformer nameTransformer) {
+		public UnwrappingTypedPropertySerializer(NameTransformer nameTransformer, String propertyName) {
 			this.nameTransformer = nameTransformer;
+			this.propertyName = propertyName;
 		}
 
 		@Override
@@ -44,8 +55,8 @@ public class TypedPropertySerializer extends JsonSerializer<TypedProperty> {
 	        final JsonGenerator gen,
 	        final SerializerProvider serializers
 	    ) throws IOException {
-	        gen.writeStringField(nameTransformer.transform("value") + value.getTypeName(), value.getValueString());
-	    }
+	        gen.writeStringField(nameTransformer.transform(propertyName) + value.getTypeName(), value.getValueString());
+		}
 	    
 	    @Override
 	    public boolean isUnwrappingSerializer() {
@@ -53,7 +64,18 @@ public class TypedPropertySerializer extends JsonSerializer<TypedProperty> {
 	    }
 	}
 	
-	private final JsonSerializer<TypedProperty> delegate = new UnwrappingTypedPropertySerializer(NameTransformer.NOP);
+	private JsonSerializer<TypedProperty> delegate;
+	
+	private String propertyName;
+	
+	public TypedPropertySerializer() {
+		this("value");
+	}
+	
+    public TypedPropertySerializer(String propertyName) {
+    	this.propertyName = propertyName;
+    	delegate = new UnwrappingTypedPropertySerializer(NameTransformer.NOP, propertyName);
+    }
 	
 	@Override
 	public void serialize(TypedProperty property, JsonGenerator jGen, SerializerProvider sp)
@@ -66,6 +88,11 @@ public class TypedPropertySerializer extends JsonSerializer<TypedProperty> {
 	
 	@Override
 	public JsonSerializer<TypedProperty> unwrappingSerializer(NameTransformer nameTransformer) {
-		return new UnwrappingTypedPropertySerializer(nameTransformer);
+		return new UnwrappingTypedPropertySerializer(nameTransformer, propertyName);
+	}
+
+	@Override
+	public JsonSerializer<?> createContextual(SerializerProvider sp, BeanProperty property) throws JsonMappingException {
+		return new TypedPropertySerializer(property.getName());
 	}
 }

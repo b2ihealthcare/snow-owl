@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.tests.domain.structuredefinition;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.*;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
+import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -71,7 +73,7 @@ public class ElementDefinitionTest extends FhirTest {
 					.build())
 				.addExample(Example.builder()
 						.label("example")
-						.valueString("value")
+						.value(new StringProperty("value"))
 						.build())
 				.addConstraint(Constraint.builder()
 						.id("id")
@@ -88,6 +90,9 @@ public class ElementDefinitionTest extends FhirTest {
 						.targetProfile("targetProfile")
 						.build())
 				.defaultValue(new StringProperty("defaultValue"))
+				.minValue(new StringProperty("minValue"))
+				.pattern(new StringProperty("pattern"))
+				.fixed(new StringProperty("fixed"))
 				.binding(Binding.builder()
 						.id("bindingId")
 						.description("bindingDescription")
@@ -109,6 +114,17 @@ public class ElementDefinitionTest extends FhirTest {
 	
 	private void validate(ElementDefinition elementDefinition) {
 		assertEquals("elementPath", elementDefinition.getPath());
+		TypedProperty<?> defaultValue = elementDefinition.getDefaultValue();
+		assertTrue(defaultValue instanceof StringProperty);
+		assertEquals("defaultValue", defaultValue.getValueString());
+		assertEquals("alias", elementDefinition.getAliases().iterator().next());
+		assertEquals(false, elementDefinition.getIsModifier());
+		assertEquals("elementPath", elementDefinition.getPath());
+		
+		assertEquals("minValue", elementDefinition.getMinValue().getValueString());
+		assertEquals("pattern", elementDefinition.getPattern().getValueString());
+		assertEquals("fixed", elementDefinition.getFixed().getValueString());
+		
 		
 	}
 
@@ -117,11 +133,14 @@ public class ElementDefinitionTest extends FhirTest {
 		
 		printPrettyJson(elementDefinition);
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(elementDefinition));
-		assertThat(jsonPath.getBoolean("ordered"), equalTo(true));
-		assertThat(jsonPath.getString("rules"), equalTo("open"));
-		assertThat(jsonPath.getString("discriminator[0].id"), equalTo("id"));
-		assertThat(jsonPath.getString("discriminator[0].type"), equalTo("value"));
-		assertThat(jsonPath.getString("discriminator[0].path"), equalTo("path"));
+		assertThat(jsonPath.getString("defaultValueString"), equalTo("defaultValue"));
+		assertThat(jsonPath.getString("patternString"), equalTo("pattern"));
+		assertThat(jsonPath.getString("fixedString"), equalTo("fixed"));
+		assertThat(jsonPath.getString("minValueString"), equalTo("minValue"));
+		assertThat(jsonPath.getString("path"), equalTo("elementPath"));
+		assertThat(jsonPath.getString("slicing.discriminator[0].id"), equalTo("id"));
+		assertThat(jsonPath.getString("slicing.discriminator[0].type"), equalTo("value"));
+		assertThat(jsonPath.getString("slicing.discriminator[0].path"), equalTo("path"));
 	}
 	
 	@Test

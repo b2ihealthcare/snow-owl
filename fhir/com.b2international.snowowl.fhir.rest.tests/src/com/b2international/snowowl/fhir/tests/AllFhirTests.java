@@ -120,6 +120,8 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	BindingTest.class,
 	ExampleTest.class,
 	TypeTest.class,
+	ConstraintTest.class,
+	MappingElementTest.class,
 	ElementDefinitionTest.class,
 	StructureViewTest.class,
 	StructureDefinitionTest.class

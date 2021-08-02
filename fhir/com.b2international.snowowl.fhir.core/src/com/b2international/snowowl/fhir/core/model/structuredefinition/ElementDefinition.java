@@ -27,17 +27,13 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.typedproperty.ElementDefinitionSerializer;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -45,8 +41,7 @@ import com.google.common.collect.Sets;
  * FHIR definition of an element in a resource or an extension.
  * @since 7.1
  */
-@JsonDeserialize(builder = ElementDefinition.Builder.class) //, using = TypedPropertyDeserializer.class)
-@JsonSerialize(using = ElementDefinitionSerializer.class)
+@JsonDeserialize(builder = ElementDefinition.Builder.class)
 public class ElementDefinition extends Element {
 
 	@NotNull
@@ -122,9 +117,7 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	//@JsonSerialize(using = ElementDefinitionSerializer.class)
-	//@JsonUnwrapped
-	@JsonIgnore //serialized by the custom serializer
+	@JsonUnwrapped
 	private final TypedProperty<?> defaultValue;
 	
 	@Summary
@@ -137,15 +130,13 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	//@JsonSerialize(using = ElementDefinitionSerializer.class)
-	//@JsonUnwrapped
+	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> fixed;
 	
 	@Valid
 	@Summary
-	//@JsonSerialize(using = ElementDefinitionSerializer.class)
-	//@JsonUnwrapped
+	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> pattern;
 	
@@ -156,15 +147,13 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	//@JsonSerialize(using = ElementDefinitionSerializer.class)
-	//@JsonUnwrapped
+	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> minValue;
 	
 	@Valid
 	@Summary
-	//@JsonSerialize(using = ElementDefinitionSerializer.class)
-	//@JsonUnwrapped
+	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> maxValue;
 	
@@ -558,12 +547,22 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"fixedString", 
+			"fixedDate", 
+			"fixedDateTime", 
+			"fixedInstant"})
 		public Builder fixed(final String fixed) {
 			this.fixed = new StringProperty(fixed);
 			return getSelf();
 		}
 		
-		public Builder addPattern(final TypedProperty<?> pattern) {
+		@JsonAlias({
+			"patternString", 
+			"patternDate", 
+			"patternDateTime", 
+			"patternInstant"})
+		public Builder pattern(final TypedProperty<?> pattern) {
 			this.pattern = pattern;
 			return getSelf();
 		}
@@ -585,6 +584,11 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"minValueString", 
+			"minValueDate", 
+			"minValueDateTime", 
+			"minValueInstant"})
 		public Builder minValue(final TypedProperty<?> minValue) {
 			this.minValue = minValue;
 			return getSelf();
@@ -595,6 +599,11 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"maxValueString", 
+			"maxValueDate", 
+			"maxValueDateTime", 
+			"maxValueInstant"})
 		public Builder maxValue(final TypedProperty<?> maxValue) {
 			this.maxValue = maxValue;
 			return getSelf();

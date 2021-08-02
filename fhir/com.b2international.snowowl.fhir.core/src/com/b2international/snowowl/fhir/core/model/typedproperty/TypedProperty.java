@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.typedproperty;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -22,7 +23,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * A typed property is serialized into:
  * <pre>
  * {
- *    "name": "propertyName",
  *    "value[x]": value
  *  }
  * </pre>
@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 7.1
  */
 @JsonSerialize(using = TypedPropertySerializer.class)
+@JsonDeserialize(using = TypedPropertyDeserializer.class)
 public abstract class TypedProperty<T> {
 	
 	protected T value;
