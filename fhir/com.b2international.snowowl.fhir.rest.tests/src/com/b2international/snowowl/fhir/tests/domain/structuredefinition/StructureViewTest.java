@@ -80,11 +80,7 @@ public class StructureViewTest extends FhirTest {
 		
 		printPrettyJson(structureView);
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(structureView));
-		assertThat(jsonPath.getBoolean("ordered"), equalTo(true));
-		assertThat(jsonPath.getString("rules"), equalTo("open"));
-		assertThat(jsonPath.getString("discriminator[0].id"), equalTo("id"));
-		assertThat(jsonPath.getString("discriminator[0].type"), equalTo("value"));
-		assertThat(jsonPath.getString("discriminator[0].path"), equalTo("path"));
+		assertThat(jsonPath.getString("element[0].path"), equalTo("path"));
 	}
 	
 	@Test
