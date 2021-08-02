@@ -15,11 +15,6 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,22 +26,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
-import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptProperty;
-import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition;
-import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition.PropertyValueType;
-import com.b2international.snowowl.lcs.core.domain.property.PropertyCardinality;
-import com.b2international.snowowl.lcs.core.request.LcsRequests;
-import com.google.common.collect.ImmutableList;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -80,7 +64,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	//@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {
-		
+		/*
 		List<LocalTerminologyConceptPropertyDefinition> propertyDefinitions = codeSystem.getProperties().stream().map(p -> {
 			LocalTerminologyConceptPropertyDefinition.Builder builder = LocalTerminologyConceptPropertyDefinition.builder(UUID.randomUUID().toString())
 					.name(p.getCodeValue())
@@ -173,6 +157,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.getSync();
 			
 		}
+		*/
 		
 		return ResponseEntity.ok().build();
 	}

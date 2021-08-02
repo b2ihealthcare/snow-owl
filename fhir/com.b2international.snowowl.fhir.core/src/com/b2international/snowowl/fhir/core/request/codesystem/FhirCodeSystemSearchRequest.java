@@ -229,17 +229,19 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, codeSystem::getVersion, entry::version);
-//		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
-//			if (!CompareUtils.isEmpty(codeSystem.getOid())) {
-//				return Identifier.builder()
-//						.use(IdentifierUse.OFFICIAL)
-//						.system(codeSystem.getUrl())
-//						.value(codeSystem.getOid())
-//						.build();
-//			} else {
-//				return null;
-//			}
-//		}, entry::identifier);
+		
+		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
+			if (!CompareUtils.isEmpty(codeSystem.getOid())) {
+				return Identifier.builder()
+						.use(IdentifierUse.OFFICIAL)
+						.system(codeSystem.getUrl())
+						.value(codeSystem.getOid())
+						.build();
+			} else {
+				return null;
+			}
+		}, entry::addIdentifier);
+		
 		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
 		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);

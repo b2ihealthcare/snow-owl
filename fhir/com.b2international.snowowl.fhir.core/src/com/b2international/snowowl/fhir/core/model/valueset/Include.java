@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 /**
  * FHIR Value Set Include backbone element
@@ -118,7 +118,7 @@ public class Include {
 		public Builder addConcept(final ValueSetConcept concept) {
 			
 			if (concepts == null) {
-				concepts = Sets.newHashSet();
+				concepts = Lists.newArrayList();
 			}
 			
 			concepts.add(concept);
@@ -135,7 +135,7 @@ public class Include {
 		public Builder addFilters(final ValueSetFilter filter) {
 			
 			if (filters == null) {
-				filters = Sets.newHashSet();
+				filters = Lists.newArrayList();
 			}
 			
 			filters.add(filter);
@@ -152,7 +152,7 @@ public class Include {
 		public Builder addValueSet(final String valueSetUriValue) {
 			
 			if (valueSets == null) {
-				valueSets = Sets.newHashSet();
+				valueSets = Lists.newArrayList();
 			}
 			
 			valueSets.add(new Uri(valueSetUriValue));

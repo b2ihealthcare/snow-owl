@@ -163,7 +163,6 @@ public class CodeSystem extends MetadataResource {
 
 	@Summary
 	@JsonProperty(CodeSystem.Fields.FILTER)
-	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Filter> filters;
 
 	/*
@@ -172,15 +171,13 @@ public class CodeSystem extends MetadataResource {
 	@Summary
 	@Valid
 	@JsonProperty(CodeSystem.Fields.PROPERTY)
-	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<SupportedConceptProperty> properties;
 
 	/*
 	 * Concepts in the code system, up to the server if they are returned
 	 */
 	@Valid
-	@JsonProperty("concept")
-	@JsonInclude(value = Include.NON_EMPTY)
+	@JsonProperty(CodeSystem.Fields.CONCEPT)
 	private Collection<Concept> concepts;
 	
 	private String toolingId;
@@ -385,7 +382,7 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 		
-		@JsonProperty("filter")
+		@JsonProperty(CodeSystem.Fields.FILTER)
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder filters(Collection<Filter> filters) {
 			this.filters = filters;
@@ -400,7 +397,7 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 		
-		@JsonProperty("property")
+		@JsonProperty(CodeSystem.Fields.PROPERTY)
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder properties(Collection<SupportedConceptProperty> properties) {
 			this.properties = properties;
@@ -417,7 +414,7 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 		
-		@JsonProperty("concept")
+		@JsonProperty(CodeSystem.Fields.CONCEPT)
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder concepts(Collection<Concept> concepts) {
 			this.concepts = concepts;

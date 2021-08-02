@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -99,7 +100,7 @@ public class ValueSetConcept {
 		public Builder addDesignation(final Designation designation) {
 			
 			if (designations == null) {
-				designations = Sets.newHashSet();
+				designations = Lists.newArrayList();
 			}
 			designations.add(designation);
 			return this;

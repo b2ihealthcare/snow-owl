@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 /**
  * The concept in the code system
@@ -142,7 +142,7 @@ public class Concept {
 		public Builder addDesignation(final Designation designation) {
 			
 			if (designations == null) {
-				designations = Sets.newHashSet();
+				designations = Lists.newArrayList();
 			}
 			
 			designations.add(designation);
@@ -159,7 +159,7 @@ public class Concept {
 		public Builder addProperties(final ConceptProperty<?> conceptProperty) {
 			
 			if (properties == null) {
-				properties = Sets.newHashSet();
+				properties = Lists.newArrayList();
 			}
 			
 			properties.add(conceptProperty);
@@ -176,7 +176,7 @@ public class Concept {
 		public Builder addChildConcept(final Concept childConcept) {
 
 			if (children == null) {
-				children = Sets.newHashSet();
+				children = Lists.newArrayList();
 			}
 			
 			children.add(childConcept);
