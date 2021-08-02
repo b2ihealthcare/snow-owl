@@ -12,8 +12,12 @@ import java.util.Map.Entry;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ExplicitFirstOrdering;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.datastore.config.SnomedLanguageConfig;
 import com.google.common.collect.*;
 
 /**
@@ -21,13 +25,13 @@ import com.google.common.collect.*;
  */
 public final class SnomedDescriptionUtils {
 
-	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(final Iterable<SnomedDescription> descriptions, final List<ExtendedLocale> extendedLocales, final ListMultimap<String, String> languageMap) {
+	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(final Iterable<SnomedDescription> descriptions, final List<ExtendedLocale> extendedLocales, final BranchContext context) {
 
 		if (extendedLocales.isEmpty()) {
 			return Map.of();
 		}
 		
-		final List<String> languageRefSetIds = getLanguageRefSetIds(extendedLocales, languageMap);
+		final List<String> languageRefSetIds = getLanguageRefSetIds(extendedLocales, getLanguageMap(context));
 		final ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
 		final Multimap<String, SnomedDescription> conceptIdToDescriptionsMap = Multimaps.index(descriptions, SnomedDescription::getConceptId);
 
@@ -127,6 +131,24 @@ public final class SnomedDescriptionUtils {
 		}
 
 		return languageRefSetIds;
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static ListMultimap<String, String> getLanguageMap(BranchContext context) {
+		List<Object> languageConfig =  (List<Object>) context.service(TerminologyResource.class).getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY);
+		ListMultimap<String, String> languageMap = ArrayListMultimap.create();
+		for (Object config : languageConfig) {
+			if (config instanceof LinkedHashMap) {
+				LinkedHashMap snomedLanguageConfig = (LinkedHashMap) config;
+				languageMap.putAll((String) snomedLanguageConfig.get("code"), (List<String>) snomedLanguageConfig.get("refSetIds"));
+			} else if (config instanceof SnomedLanguageConfig) {
+				SnomedLanguageConfig snomedLanguageConfig = (SnomedLanguageConfig) config;
+				languageMap.putAll(snomedLanguageConfig.getCode(), snomedLanguageConfig.getRefSetIds());
+			}
+			
+		}
+		return languageMap;
+		
 	}
 
 	private SnomedDescriptionUtils() {}
