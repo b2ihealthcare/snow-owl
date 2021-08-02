@@ -30,6 +30,7 @@ import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -255,6 +256,8 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("keyword")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder keywords(Collection<Coding> keywords) {
 			this.keywords = keywords;
 			return getSelf();
@@ -275,6 +278,8 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("mapping")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder mappings(Collection<Mapping> mappings) {
 			this.mappings = mappings;
 			return getSelf();
@@ -295,6 +300,7 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("abstract")
 		public Builder setAbstract(boolean isAbstract) {
 			this.isAbstract = isAbstract;
 			return getSelf();
@@ -305,6 +311,8 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("context")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder contexts(Collection<String> contexts) {
 			this.contexts = contexts;
 			return getSelf();
@@ -315,6 +323,8 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("contextInvariant")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder contextInvariants(Collection<String> contextInvariants) {
 			this.contextInvariants = contextInvariants;
 			return getSelf();

@@ -19,26 +19,17 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.net.URI;
-import java.nio.file.Paths;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.FhirDates;
-import com.b2international.snowowl.fhir.core.codesystems.*;
-import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.codesystems.QuantityComparator;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
-import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.*;
-import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.*;
+import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.usagecontext.QuantityUsageContext;
-import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -103,6 +94,7 @@ public class StructureDefinitionTest extends FhirTest {
 			.description("description")
 			.differential(StructureView.builder()
 						.addElementDefinition(ElementDefinition.builder()
+								.defaultValue(new StringProperty("defValue"))
 								.addAlias("alias")
 								.addCode(Coding.builder()
 									.code("coding")
@@ -145,14 +137,10 @@ public class StructureDefinitionTest extends FhirTest {
 	@Test
 	public void serialize() throws Exception {
 		
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(structureDefinition));
-		assertThat(jsonPath.getString("name"), equalTo("name"));
-		jsonPath.setRoot("telecom[0]");
-		assertThat(jsonPath.getString("system"), equalTo("system"));
-		assertThat(jsonPath.getString("period.start"), equalTo(null));
-		assertThat(jsonPath.getString("value"), equalTo("value"));
-		assertThat(jsonPath.getInt("rank"), equalTo(1));
+		printPrettyJson(structureDefinition);
 		
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(structureDefinition));
+		assertThat(jsonPath.getString("id"), equalTo("id"));
 	}
 	
 	@Test

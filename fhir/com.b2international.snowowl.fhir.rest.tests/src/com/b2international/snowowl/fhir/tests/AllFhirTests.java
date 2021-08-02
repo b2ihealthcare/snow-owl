@@ -124,6 +124,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	MappingElementTest.class,
 	ElementDefinitionTest.class,
 	StructureViewTest.class,
+	MappingTest.class,
 	StructureDefinitionTest.class
 	
 })
