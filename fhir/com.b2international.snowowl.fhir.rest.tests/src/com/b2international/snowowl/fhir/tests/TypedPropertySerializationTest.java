@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.tests;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.Test;
@@ -48,7 +49,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 			
 			@JsonUnwrapped
 			@JsonProperty
-			private TypedProperty<?> valueObject = new StringProperty("stringValue");
+			private TypedProperty<?> value = new StringProperty("stringValue");
 		}
 		
 		
@@ -56,7 +57,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 		printPrettyJson(testObject);
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
 		assertThat(jsonPath.getString("testString"), equalTo("test"));
-		assertThat(jsonPath.getString("valueObjectString"), equalTo("stringValue"));
+		assertThat(jsonPath.getString("valueString"), equalTo("stringValue"));
 	}
 	
 	@Test
@@ -68,7 +69,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 			
 			@JsonUnwrapped
 			@JsonProperty
-			private TypedProperty<?> valueObject = new DateProperty(date);
+			private TypedProperty<?> value = new DateProperty(date);
 		}
 		
 		TestClass testObject = new TestClass();
@@ -86,7 +87,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 			
 			@JsonUnwrapped
 			@JsonProperty
-			private TypedProperty<?> valueObject = new DateTimeProperty(date);
+			private TypedProperty<?> value = new DateTimeProperty(date);
 		}
 		
 		TestClass testObject = new TestClass();
@@ -104,10 +105,11 @@ public class TypedPropertySerializationTest extends FhirTest {
 			
 			@JsonUnwrapped
 			@JsonProperty
-			private TypedProperty<?> valueObject = new InstantProperty(instant);
+			private TypedProperty<?> value = new InstantProperty(instant);
 		}
 		
 		TestClass testObject = new TestClass();
+		printPrettyJson(testObject);
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
 		assertThat(jsonPath.getString("valueInstant"), equalTo("2018-03-23T07:49:40Z"));
 	}

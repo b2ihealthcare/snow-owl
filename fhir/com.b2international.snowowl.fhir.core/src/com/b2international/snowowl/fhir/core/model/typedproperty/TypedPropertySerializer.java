@@ -53,9 +53,9 @@ public class TypedPropertySerializer extends JsonSerializer<TypedProperty>
 	    public void serialize(
 	        final TypedProperty value,
 	        final JsonGenerator gen,
-	        final SerializerProvider serializers
+	        final SerializerProvider provider
 	    ) throws IOException {
-	        gen.writeStringField(nameTransformer.transform(propertyName) + value.getTypeName(), value.getValueString());
+			provider.defaultSerializeField(propertyName + value.getTypeName(), value.getValue(), gen);
 		}
 	    
 	    @Override
