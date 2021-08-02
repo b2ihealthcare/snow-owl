@@ -55,7 +55,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			.relationshipGroup(group);
 		
 		return value.map(
-			i -> builder.valueType(RelationshipValueType.INTEGER).integerValue(i),
+			i -> builder.valueType(RelationshipValueType.INTEGER).numericValue(new BigDecimal(i)),
 			d -> builder.valueType(RelationshipValueType.DECIMAL).numericValue(d),
 			s -> builder.valueType(RelationshipValueType.STRING).stringValue(s))
 		.build();
@@ -96,18 +96,6 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			return this;
 		}
 		
-		// XXX: Used above as well as for de-serialization of earlier documents
-		public Builder integerValue(final Integer integerValue) {
-			this.numericValue = new BigDecimal(integerValue);
-			return this;
-		}
-		
-		// Used for de-serialization of earlier documents only
-		public Builder decimalValue(final Double decimalValue) {
-			this.numericValue = BigDecimal.valueOf(decimalValue);
-			return this;
-		}
-		
 		public Builder stringValue(final String stringValue) {
 			this.stringValue = stringValue;
 			return this;
@@ -134,13 +122,6 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 	private final String stringValue;
 	private final RelationshipValueType valueType;
 	private final int relationshipGroup;
-	
-	// Fields kept for backwards compatibility with earlier documents
-	@JsonIgnore
-	private final Integer integerValue = null;
-	
-	@JsonIgnore
-	private final Double decimalValue = null;
 
 	private SnomedOWLRelationshipDocument(
 			final String typeId, 

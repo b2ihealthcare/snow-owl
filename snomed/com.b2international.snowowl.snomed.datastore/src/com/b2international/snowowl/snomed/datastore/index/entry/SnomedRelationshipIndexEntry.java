@@ -28,7 +28,6 @@ import java.util.Set;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -63,8 +62,6 @@ import com.google.common.collect.FluentIterable;
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED,
 		SnomedRelationshipIndexEntry.Fields.VALUE_TYPE,
-		SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE,
-		SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE,
 		SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,
 		SnomedRelationshipIndexEntry.Fields.STRING_VALUE
 	}
@@ -166,60 +163,32 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				throw new BadRequestException("All relationship values should have the same type");
 			}
 			
-			final Set<Integer> integerValues = newHashSet();
-			final Set<Double> decimalValues = newHashSet();
 			final Set<BigDecimal> numericValues = newHashSet();
 			final Set<String> stringValues = newHashSet();
 			
 			values.forEach(value -> value
-				.ifInteger(i -> { integerValues.add(i); numericValues.add(new BigDecimal(i)); })
-				.ifDecimal(d -> { decimalValues.add(d.doubleValue()); numericValues.add(d); })
+				.ifInteger(i -> { numericValues.add(new BigDecimal(i)); })
+				.ifDecimal(d -> { numericValues.add(d); })
 				.ifString(s -> { stringValues.add(s); }));
 			
 			if (!stringValues.isEmpty()) {
 				return matchAny(Fields.STRING_VALUE, stringValues);
+			} else {
+				return matchAnyDecimal(Fields.NUMERIC_VALUE, numericValues);
 			}
-			
-			final ExpressionBuilder expressionBuilder = com.b2international.index.query.Expressions.builder();
-			
-			if (!numericValues.isEmpty()) {
-				expressionBuilder.should(matchAnyDecimal(Fields.NUMERIC_VALUE, numericValues));
-			}
-			
-			if (!integerValues.isEmpty()) {
-				expressionBuilder.should(matchAnyInt(Fields.INTEGER_VALUE, integerValues));
-			}
-			
-			if (!decimalValues.isEmpty()) {
-				expressionBuilder.should(matchAnyDouble(Fields.DECIMAL_VALUE, decimalValues));
-			}
-			
-			return expressionBuilder.build(); 
 		}
 
 		public static Expression valueLessThan(final RelationshipValue upper, final boolean includeUpper) {
 			return upper.map(
-				i -> com.b2international.index.query.Expressions.builder()
-						.should(matchRange(Fields.NUMERIC_VALUE, null, new BigDecimal(i), true, includeUpper))
-						.should(matchRange(Fields.INTEGER_VALUE, null, i, true, includeUpper))
-						.build(), 
-				d -> com.b2international.index.query.Expressions.builder()
-						.should(matchRange(Fields.NUMERIC_VALUE, null, d, true, includeUpper))
-						.should(matchRange(Fields.DECIMAL_VALUE, null, d.doubleValue(), true, includeUpper))
-						.build(), 
+				i -> matchRange(Fields.NUMERIC_VALUE, null, new BigDecimal(i), true, includeUpper),
+				d -> matchRange(Fields.NUMERIC_VALUE, null, d, true, includeUpper),
 				s -> matchRange(Fields.STRING_VALUE, null, s, true, includeUpper)); 
 		}
 		
 		public static Expression valueGreaterThan(final RelationshipValue lower, final boolean includeLower) {
 			return lower.map(
-				i -> com.b2international.index.query.Expressions.builder()
-						.should(matchRange(Fields.NUMERIC_VALUE, new BigDecimal(i), null, includeLower, true))
-						.should(matchRange(Fields.INTEGER_VALUE, i, null, includeLower, true))
-						.build(),
-				d -> com.b2international.index.query.Expressions.builder()
-						.should(matchRange(Fields.NUMERIC_VALUE, d, null, includeLower, true))
-						.should(matchRange(Fields.DECIMAL_VALUE, d.doubleValue(), null, includeLower, true))
-						.build(),
+				i -> matchRange(Fields.NUMERIC_VALUE, new BigDecimal(i), null, includeLower, true),
+				d -> matchRange(Fields.NUMERIC_VALUE, d, null, includeLower, true),
 				s -> matchRange(Fields.STRING_VALUE, s, null, includeLower, true)); 
 		}
 		
@@ -277,10 +246,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		
 		public static final String DESTINATION_NEGATED = "destinationNegated";
 		public static final String VALUE_TYPE = "valueType";
-		@Deprecated 
-		public static final String INTEGER_VALUE = "integerValue";
-		@Deprecated 
-		public static final String DECIMAL_VALUE = "decimalValue";
 		public static final String NUMERIC_VALUE = "numericValue";
 		public static final String STRING_VALUE = "stringValue";
 		public static final String UNION_GROUP = "unionGroup";
@@ -377,16 +342,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			this.numericValue = numericValue;
 			return getSelf();
 		}
-		
-		Builder integerValue(final Integer integerValue) {
-			this.numericValue = new BigDecimal(integerValue);
-			return getSelf();
-		}
-		
-		Builder decimalValue(final Double decimalValue) {
-			this.numericValue = BigDecimal.valueOf(decimalValue);
-			return getSelf();
-		}
 
 		Builder stringValue(final String stringValue) {
 			this.stringValue = stringValue;
@@ -465,13 +420,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	private final String stringValue;
 
 	private final RelationshipValueType valueType;
-
-	// Fields kept for backwards compatibility with earlier documents
-	@JsonIgnore
-	private final Integer integerValue = null;
-	
-	@JsonIgnore
-	private final Double decimalValue = null;
 	
 	private SnomedRelationshipIndexEntry(
 		final String id, 
