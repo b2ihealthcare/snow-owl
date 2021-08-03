@@ -62,7 +62,6 @@ public class SnomedConceptRestService extends AbstractRestService {
 				.build());
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Operation(
 		summary="Retrieve Concepts from a path", 
 		description="Returns a list with all/filtered Concepts from a path."
