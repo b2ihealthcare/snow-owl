@@ -18,7 +18,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.*;
 
+import java.util.List;
+
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -29,6 +32,7 @@ import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedDescriptionConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -50,8 +54,11 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		SEMANTIC_TAG,
 		SEMANTIC_TAG_REGEX,
 		LANGUAGE_REFSET,
+		LANGUAGE_REFSET_LOCALES, 
 		ACCEPTABLE_IN,
-		PREFERRED_IN, 
+		ACCEPTABLE_IN_LOCALES,
+		PREFERRED_IN,
+		PREFERRED_IN_LOCALES, 
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -84,6 +91,23 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		});
 		addEclFilter(context, queryBuilder, OptionKey.ACCEPTABLE_IN, ids -> acceptableIn(ids));
 		addEclFilter(context, queryBuilder, OptionKey.PREFERRED_IN, ids -> preferredIn(ids));
+		
+		// apply locale based filters
+		addFilter(queryBuilder, OptionKey.LANGUAGE_REFSET_LOCALES, ExtendedLocale.class, locales -> {
+			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds((List<ExtendedLocale>) locales, SnomedDescriptionUtils.getLanguageMapping(context));
+			return Expressions.builder()
+					.should(preferredIn(languageRefSetIds))
+					.should(acceptableIn(languageRefSetIds))
+					.build();
+		});
+		addFilter(queryBuilder, OptionKey.ACCEPTABLE_IN_LOCALES, ExtendedLocale.class, locales -> {
+			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds((List<ExtendedLocale>) locales, SnomedDescriptionUtils.getLanguageMapping(context));
+			return acceptableIn(languageRefSetIds);
+		});
+		addFilter(queryBuilder, OptionKey.PREFERRED_IN_LOCALES, ExtendedLocale.class, locales -> {
+			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds((List<ExtendedLocale>) locales, SnomedDescriptionUtils.getLanguageMapping(context));
+			return preferredIn(languageRefSetIds);
+		});
 		
 		addEffectiveTimeClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
