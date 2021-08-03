@@ -94,18 +94,18 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		
 		// apply locale based filters
 		addFilter(queryBuilder, OptionKey.LANGUAGE_REFSET_LOCALES, ExtendedLocale.class, locales -> {
-			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds((List<ExtendedLocale>) locales, SnomedDescriptionUtils.getLanguageMapping(context));
+			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds(context, (List<ExtendedLocale>) locales);
 			return Expressions.builder()
 					.should(preferredIn(languageRefSetIds))
 					.should(acceptableIn(languageRefSetIds))
 					.build();
 		});
 		addFilter(queryBuilder, OptionKey.ACCEPTABLE_IN_LOCALES, ExtendedLocale.class, locales -> {
-			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds((List<ExtendedLocale>) locales, SnomedDescriptionUtils.getLanguageMapping(context));
+			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds(context, (List<ExtendedLocale>) locales);
 			return acceptableIn(languageRefSetIds);
 		});
 		addFilter(queryBuilder, OptionKey.PREFERRED_IN_LOCALES, ExtendedLocale.class, locales -> {
-			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds((List<ExtendedLocale>) locales, SnomedDescriptionUtils.getLanguageMapping(context));
+			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds(context, (List<ExtendedLocale>) locales);
 			return preferredIn(languageRefSetIds);
 		});
 		

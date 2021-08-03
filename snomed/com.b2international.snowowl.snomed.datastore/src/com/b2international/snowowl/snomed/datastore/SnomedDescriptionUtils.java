@@ -33,7 +33,7 @@ public final class SnomedDescriptionUtils {
 			return Map.of();
 		}
 		
-		final List<String> languageRefSetIds = getLanguageRefSetIds(extendedLocales, getLanguageMapping(context));
+		final List<String> languageRefSetIds = getLanguageRefSetIds(context, extendedLocales);
 		final ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
 		final Multimap<String, SnomedDescription> conceptIdToDescriptionsMap = Multimaps.index(descriptions, SnomedDescription::getConceptId);
 
@@ -98,13 +98,16 @@ public final class SnomedDescriptionUtils {
 	 * If no element from the input list can be converted, an {@link IllegalArgumentException} is thrown; no exception occurs
 	 * if only some of the {@code ExtendedLocale}s could not be transformed into a language reference set identifier, however.
 	 *
+	 * @param context - the context to use to retrieve language map configuration
 	 * @param locales  the extended locale list to process (may not be {@code null})
 	 * @return the converted language reference set identifiers or an empty {@link List}, never <code>null</code>
 	 */
-	public static List<String> getLanguageRefSetIds(final List<ExtendedLocale> locales, final ListMultimap<String, String> languageMap) {
+	public static List<String> getLanguageRefSetIds(final BranchContext context, final List<ExtendedLocale> locales) {
 		if (CompareUtils.isEmpty(locales)) {
 			return Collections.emptyList();
 		}
+		
+		final ListMultimap<String, String> languageMap = getLanguageMapping(context);
 		final List<String> languageRefSetIds = newArrayList();
 		final List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
 
