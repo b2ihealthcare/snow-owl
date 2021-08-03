@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -33,6 +34,25 @@ public abstract class Resource implements Serializable {
 	public static final class Fields {
 		public static final String ID = ResourceDocument.Fields.ID;
 		public static final String TITLE = ResourceDocument.Fields.TITLE;
+		public static final String URL = ResourceDocument.Fields.URL;
+		public static final String OWNER = ResourceDocument.Fields.OWNER;
+		public static final String STATUS = ResourceDocument.Fields.STATUS;
+		public static final String LANGUAGE = ResourceDocument.Fields.LANGUAGE;
+		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
+		
+		// TerminologyResource subtype specific fields, but for convenience and single API access, they are defined here
+		public static final String OID = ResourceDocument.Fields.OID;
+		
+		public static final Set<String> ALL = Set.of(
+			ID,
+			TITLE,
+			URL,
+			STATUS,
+			LANGUAGE,
+			OWNER,
+			OID,
+			CREATED_AT
+		);
 	}
 	
 	// unique identifier for each resource, can be auto-generated or manually specified

@@ -41,7 +41,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ResourceRestService extends AbstractRestService {
 	
 	public ResourceRestService() {
-		super(Commit.Fields.ALL);
+		super(Resource.Fields.ALL);
 	}
 
 	@Operation(
