@@ -36,7 +36,8 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 	private String title;
 	private String language;
 	private String description;
-	private String status;
+	// resources start their lifecycle in draft mode
+	private String status = "draft";
 	private String copyright;
 	private String owner;
 	private String contact;
