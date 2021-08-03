@@ -26,12 +26,8 @@ import java.util.stream.Collectors;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
-import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -110,15 +106,13 @@ public final class EquivalentConceptSetConverter
 					.map(SnomedConcept::getId)
 					.collect(Collectors.toSet());
 
-			final Request<BranchContext, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
+			final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 					.filterByIds(conceptIds)
 					.all()
 					.setExpand(expandOptions.get("expand", Options.class))
 					.setLocales(locales())
-					.build();
-
-			final SnomedConcepts concepts = new BranchRequest<>(branch, 
-					new RevisionIndexReadRequest<>(conceptSearchRequest))
+					.build(branch)
+					.getRequest()
 					.execute(context());
 
 			final Map<String, SnomedConcept> conceptsById = Maps.uniqueIndex(concepts, SnomedConcept::getId);

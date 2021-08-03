@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.ExternalResource;
@@ -38,11 +40,13 @@ import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
+import com.google.common.collect.Lists;
 
 /**
  * JUnit test rule to import SNOMED CT content during automated tests.
@@ -126,6 +130,22 @@ public class SnomedContentRule extends ExternalResource {
 			.setOid("oid:" + codeSystemId)
 			.setOwner("https://b2i.sg")
 			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.setSettings(Map.of(
+				SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of(
+					Map.of(
+						"languageTag", "en",
+						"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US)
+					),
+					Map.of(
+						"languageTag", "en-us",
+						"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_US)
+					),
+					Map.of(
+						"languageTag", "en-gb",
+						"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_UK)
+					)
+				)
+			))
 			.build(RestExtensions.USER, String.format("Create code system %s", codeSystemId))
 			.execute(eventBus)
 			.getSync(1, TimeUnit.MINUTES);

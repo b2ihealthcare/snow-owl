@@ -24,8 +24,6 @@ import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.request.TermFilterSupport;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
-import com.google.common.collect.ListMultimap;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts. This class should be instantiated from the corresponding
@@ -238,8 +236,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @param acceptLanguage
 	 * @return
 	 */
-	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(String acceptLanguage, ListMultimap<String, String> languageMap) {
-		return filterByDescriptionLanguageRefSet(ExtendedLocale.parseLocales(acceptLanguage), languageMap);
+	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(String acceptLanguage) {
+		return filterByDescriptionLanguageRefSet(ExtendedLocale.parseLocales(acceptLanguage));
 	}
 
 	/**
@@ -248,9 +246,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @param extendedLocales
 	 * @return
 	 */
-	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(List<ExtendedLocale> extendedLocales, ListMultimap<String, String> languageMap) {
-		return addOption(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET,
-				SnomedDescriptionUtils.getLanguageRefSetIds(extendedLocales, languageMap));
+	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(List<ExtendedLocale> extendedLocales) {
+		return addOption(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, extendedLocales);
 	}
 
 	/*

@@ -27,8 +27,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class SnomedLanguageConfig {
 
-	private String code;
-	private List<String> refSetIds;
+	private String languageTag;
+	private List<String> languageRefSetIds;
 	
 	public SnomedLanguageConfig(String code, String...refSetIds) {
 		this(code, ImmutableList.copyOf(refSetIds));
@@ -36,18 +36,18 @@ public class SnomedLanguageConfig {
 	
 	@JsonCreator
 	public SnomedLanguageConfig(
-			@JsonProperty("code") String code, 
-			@JsonProperty("refSetIds") List<String> refSetIds) {
-		this.code = code;
-		this.refSetIds = Collections3.toImmutableList(refSetIds);
+			@JsonProperty("languageTag") String languageTag, 
+			@JsonProperty("languageRefSetIds") List<String> languageRefSetIds) {
+		this.languageTag = languageTag;
+		this.languageRefSetIds = Collections3.toImmutableList(languageRefSetIds);
 	}
 	
-	public String getCode() {
-		return code;
+	public String getLanguageTag() {
+		return languageTag;
 	}
 	
-	public List<String> getRefSetIds() {
-		return refSetIds;
+	public List<String> getLanguageRefSetIds() {
+		return languageRefSetIds;
 	}
 	
 }

@@ -29,11 +29,8 @@ import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.Test;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.TerminologyResource;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -46,6 +43,7 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
+import com.b2international.snowowl.snomed.datastore.CodeSystemResource;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -55,7 +53,9 @@ import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder
 import com.b2international.snowowl.test.commons.validation.BaseValidationTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 
 /**
@@ -64,12 +64,6 @@ import com.google.inject.Injector;
 public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 
 	private static final Injector INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-	
-	private static final ExtendedLocale US_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_US);
-	private static final ExtendedLocale GB_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_UK);
-	private static final ExtendedLocale SG_LOCALE = new ExtendedLocale("en", "", Concepts.REFSET_LANGUAGE_TYPE_SG);
-	
-	private static ListMultimap<String, String> languageMap;
 	
 	private SnomedQueryValidationRuleEvaluator evaluator;
 	
@@ -86,21 +80,12 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 	protected void configureContext(Builder context) {
 		super.configureContext(context);
 		
-		languageMap = ArrayListMultimap.create();
-		
-		languageMap.put(US_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_US);
-		languageMap.put(GB_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_UK);
-		languageMap.put(SG_LOCALE.getLanguageTag(), Concepts.REFSET_LANGUAGE_TYPE_SG);
-		
-		final CodeSystem cs = new CodeSystem();
-		cs.setBranchPath(MAIN);
-		cs.setId(SnomedContentRule.SNOMEDCT_ID);
-		cs.setSettings(Map.of(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, languageMap));
-
 		context
-			.with(TerminologyResource.class, cs)
 			.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
-			.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)));
+			.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
+			.with(ObjectMapper.class, getMapper());
+		
+		CodeSystemResource.configureCodeSystem(context);
 	
 		evaluator = new SnomedQueryValidationRuleEvaluator();
 		if (!ValidationRuleEvaluator.Registry.types().contains(evaluator.type())) {

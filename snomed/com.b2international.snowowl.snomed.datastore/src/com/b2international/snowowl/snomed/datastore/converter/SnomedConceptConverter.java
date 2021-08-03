@@ -28,13 +28,11 @@ import java.util.stream.Collectors;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.core.request.DescendantsExpander;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
@@ -210,9 +208,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 				}
 			}
 		}
-		@SuppressWarnings("unchecked")
-		ListMultimap<String, String> languageMap = (ListMultimap<String, String>) context().service(TerminologyResource.class).getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY);
-		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(synonyms, locales(), languageMap);
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(context(), synonyms, locales());
 		for (SnomedConcept concept : results) {
 			concept.setPt(terms.get(concept.getId()));
 		}
@@ -236,9 +232,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			}
 		}
 		
-		@SuppressWarnings("unchecked")
-		ListMultimap<String, String> languageMap = (ListMultimap<String, String>) context().service(TerminologyResource.class).getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY);
-		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(fsns, locales(), languageMap);
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(context(), fsns, locales());
 		
 		for (SnomedConcept concept : results) {
 			SnomedDescription fsn = terms.get(concept.getId());

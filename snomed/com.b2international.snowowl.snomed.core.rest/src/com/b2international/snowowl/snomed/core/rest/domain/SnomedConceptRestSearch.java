@@ -63,9 +63,6 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 	@Parameter(description = "doi (degree-of-interest-based scoring)")
 	private Boolean doi = null;
 	
-	@Parameter(description = "The language map to get the refset Ids to match")
-	private String[] languages = null;
-
 	public Boolean getActive() {
 		return active;
 	}
@@ -150,11 +147,7 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 		return statedEcl;
 	}
 	
-	public String[] getLanguages() {
-		return languages;
-	}
-
-	public void setStatedEcl(String statedEcl) {
+		public void setStatedEcl(String statedEcl) {
 		this.statedEcl = statedEcl;
 	}
 
@@ -190,8 +183,4 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 		this.doi = doi;
 	}
 	
-	public void setLanguages(String[] languages) {
-		this.languages = languages;
-	}
-
 }

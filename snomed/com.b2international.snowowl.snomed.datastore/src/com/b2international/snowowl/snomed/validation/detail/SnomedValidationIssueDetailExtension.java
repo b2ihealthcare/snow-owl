@@ -34,7 +34,6 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
@@ -274,9 +273,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				.build()
 				.execute(context);
 			
-			@SuppressWarnings("unchecked")
-			ListMultimap<String, String> languageMap = (ListMultimap<String, String>) context.service(TerminologyResource.class).getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY);
-			Map<String, SnomedDescription> preferredDescriptions = SnomedDescriptionUtils.indexBestPreferredByConceptId(descriptions, locales, languageMap);
+			Map<String, SnomedDescription> preferredDescriptions = SnomedDescriptionUtils.indexBestPreferredByConceptId(context, descriptions, locales);
 			preferredDescriptions.forEach( (id, description) -> affectedComponentLabelsByConcept.put(id, description.getTerm()));
 			
 		}

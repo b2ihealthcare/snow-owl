@@ -202,9 +202,9 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #filterByLanguageRefSet(Iterable)
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByLanguageRefSets(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
-		return filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
-	}
+//	public SnomedDescriptionSearchRequestBuilder filterByLanguageRefSets(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
+//		return filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
+//	}
 	
 	/**
 	 * Filter to return descriptions based on their preferred {@link Acceptability acceptability} membership in the given language refset or ECL
@@ -245,9 +245,9 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #filterByPreferredIn(Iterable)
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByPreferredIn(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
-		return filterByPreferredIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
-	}
+//	public SnomedDescriptionSearchRequestBuilder filterByPreferredIn(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
+//		return filterByPreferredIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
+//	}
 	
 	/**
 	 * Filter to return descriptions based on their acceptable {@link Acceptability acceptability} membership in the given language refset or ECL
@@ -288,9 +288,9 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #filterByAcceptableIn(Iterable)
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByAcceptableIn(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
-		return filterByAcceptableIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
-	}
+//	public SnomedDescriptionSearchRequestBuilder filterByAcceptableIn(List<ExtendedLocale> locales, ListMultimap<String, String> languageMap) {
+//		return filterByAcceptableIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales, languageMap));
+//	}
 	
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
