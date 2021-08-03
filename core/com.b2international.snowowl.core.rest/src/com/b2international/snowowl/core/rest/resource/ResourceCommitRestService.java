@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
@@ -46,9 +47,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "Resources", name = "resources")
 @RestController
-@RequestMapping("/resources")
+@RequestMapping(value = "/resources/commits", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 public class ResourceCommitRestService extends AbstractRestService {
 
+	public ResourceCommitRestService() {
+		super(Commit.Fields.ALL);
+	}
+	
 	@Operation(
 		summary = "Retrive all resource commits", 
 		description = "Returns a collection, that contains all/filtered resource commits")
@@ -56,7 +61,7 @@ public class ResourceCommitRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
-	@GetMapping(value = "/commits", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping
 	public Promise<CommitInfos> search(
 			@ParameterObject
 			final CommitInfoRestSearch params) {
@@ -104,7 +109,7 @@ public class ResourceCommitRestService extends AbstractRestService {
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK")
 	})
-	@GetMapping(value = "/commits/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping("/{commitId}")
 	public Promise<CommitInfo> get(
 			@Parameter(description = "Commit ID to match")
 			@PathVariable(value="commitId")
