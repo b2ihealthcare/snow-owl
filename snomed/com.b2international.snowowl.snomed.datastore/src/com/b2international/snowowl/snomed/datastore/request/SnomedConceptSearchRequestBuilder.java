@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.request.TermFilterSupport;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts. This class should be instantiated from the corresponding
@@ -248,8 +247,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return
 	 */
 	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(List<ExtendedLocale> extendedLocales) {
-		return addOption(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET,
-				SnomedDescriptionUtils.getLanguageRefSetIds(extendedLocales));
+		return addOption(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, extendedLocales);
 	}
 
 	/*

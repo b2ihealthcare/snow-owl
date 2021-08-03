@@ -20,6 +20,8 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
+
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
@@ -32,7 +34,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
  * @since 8.0.0
  */
 public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
-
+	
 	@Test
 	public void searchBySemanticTag() throws Exception {
 		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
@@ -49,7 +51,7 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		
 		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
 			.accept(JSON_UTF8)
-			.queryParam("semanticTag", "tag")
+			.queryParams(Map.of("semanticTag", "tag"))
 			.get("/{path}/concepts/", branchPath.getPath())
 			.then().assertThat()
 			.statusCode(200)
@@ -86,8 +88,10 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		
 		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
 			.accept(JSON_UTF8)
-			.queryParam("term", "another")
-			.queryParam("semanticTag", "tag")
+			.queryParams(Map.of(
+				"term", "another",
+				"semanticTag", "tag"
+			))
 			.get("/{path}/concepts/", branchPath.getPath())
 			.then().assertThat()
 			.statusCode(200)

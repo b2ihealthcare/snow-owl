@@ -208,8 +208,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 				}
 			}
 		}
-		
-		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(synonyms, locales());
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(context(), synonyms, locales());
 		for (SnomedConcept concept : results) {
 			concept.setPt(terms.get(concept.getId()));
 		}
@@ -233,7 +232,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			}
 		}
 		
-		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(fsns, locales());
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(context(), fsns, locales());
 		
 		for (SnomedConcept concept : results) {
 			SnomedDescription fsn = terms.get(concept.getId());

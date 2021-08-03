@@ -146,8 +146,8 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 	public String getStatedEcl() {
 		return statedEcl;
 	}
-
-	public void setStatedEcl(String statedEcl) {
+	
+		public void setStatedEcl(String statedEcl) {
 		this.statedEcl = statedEcl;
 	}
 
@@ -182,5 +182,5 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 	public void setDoi(Boolean doi) {
 		this.doi = doi;
 	}
-
+	
 }
