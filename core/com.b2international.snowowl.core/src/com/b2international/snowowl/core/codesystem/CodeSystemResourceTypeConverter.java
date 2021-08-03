@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.plugin.Component;
  * @since 8.0
  */
 @Component
-public class CodeSystemResourceTypeConverter implements ResourceTypeConverter {
+public final class CodeSystemResourceTypeConverter implements ResourceTypeConverter {
 
 	@Override
 	public String getResourceType() {

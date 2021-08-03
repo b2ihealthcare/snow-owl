@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequestBuilder;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 /**
@@ -98,6 +99,11 @@ public final class ConceptSearchRequest extends SearchResourceRequest<ServicePro
 //			.limit(limit)
 			.collect(Collectors.toList());
 		
+		// for single CodeSystem searches, sorting, paging works as it should
+		if (concepts.size() == 1) {
+			return Iterables.getOnlyElement(concepts);
+		}
+		
 		// calculate grand total
 		int total = 0;
 		for (Concepts conceptsToAdd : concepts) {
@@ -106,7 +112,7 @@ public final class ConceptSearchRequest extends SearchResourceRequest<ServicePro
 		
 		return new Concepts(
 			concepts.stream().flatMap(Concepts::stream).limit(limit).collect(Collectors.toList()), // TODO add manual sorting here if multiple resources have been fetched 
-			null /* not supported across codesystems, TODO support it when a single CodeSystem is being fetched */, 
+			null, /* not supported across codesystems */
 			limit, 
 			total
 		);

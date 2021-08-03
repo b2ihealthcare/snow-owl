@@ -22,8 +22,10 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.version.Versions;
 
 /**
  * @since 8.0
@@ -32,9 +34,14 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 
 	private final ResourceTypeConverter.Registry converters;
 
-	public ResourceConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
+	public ResourceConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 		this.converters = context().service(ResourceTypeConverter.Registry.class);
+	}
+	
+	@Override
+	protected RepositoryContext context() {
+		return (RepositoryContext) super.context();
 	}
 
 	@Override
@@ -46,5 +53,35 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 	protected Resource toResource(ResourceDocument doc) {
 		return converters.toResource(doc);
 	}
+	
+	@Override
+	protected void expand(List<Resource> results) {
+		if (results.isEmpty()) {
+			return;
+		}
 
+		expandVersions(results);
+	}
+
+	private void expandVersions(List<Resource> results) {
+		if (expand().containsKey(TerminologyResource.Expand.VERSIONS)) {
+			Options expandOptions = expand().getOptions(TerminologyResource.Expand.VERSIONS);
+			// version searches must be performed on individual terminology resources to provide correct results
+			results.stream()
+				.filter(TerminologyResource.class::isInstance)
+				.map(TerminologyResource.class::cast)
+				.forEach(res -> {
+					Versions versions = ResourceRequests.prepareSearchVersion()
+						.filterByResource(res.getResourceURI())
+						.setLimit(getLimit(expandOptions))
+						.setFields(expandOptions.containsKey("fields") ? expandOptions.getList("fields", String.class) : null)
+						.sortBy(expandOptions.containsKey("sort") ? expandOptions.getString("sort") : null)
+						.setLocales(locales())
+						.build()
+						.execute(context());
+					res.setVersions(versions);
+				});
+		}
+	}
+	
 }
