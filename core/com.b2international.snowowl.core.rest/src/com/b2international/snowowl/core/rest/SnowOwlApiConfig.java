@@ -42,7 +42,6 @@ import org.springframework.util.StringValueResolver;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.multipart.MultipartResolver;
@@ -267,11 +266,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	public MappingJackson2HttpMessageConverter mapping2JacksonHttpMessageConverter(ObjectMapper mapper) {
 		return new MappingJackson2HttpMessageConverter(mapper);
-	}
-	
-	@Bean
-	public ForwardedHeaderFilter forwardedHeaderFilter() {
-		return new ForwardedHeaderFilter();
 	}
 	
 	@Override
