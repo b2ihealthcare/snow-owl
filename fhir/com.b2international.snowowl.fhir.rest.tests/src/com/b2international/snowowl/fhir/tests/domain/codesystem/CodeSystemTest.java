@@ -172,7 +172,7 @@ public class CodeSystemTest extends FhirTest {
 						)
 					.value("conceptLabel_uk")
 					.build())
-				.addProperties(CodeConceptProperty.builder()
+				.addProperty(CodeConceptProperty.builder()
 						.code("childConcept")
 						.value(new Code("childId"))
 						.build())

@@ -25,12 +25,7 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Filterable;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
@@ -60,7 +55,6 @@ public abstract class MetadataResource extends DomainResource {
 	public static abstract class Fields extends DomainResource.Fields {
 		
 		public static final String URL = "url";
-		public static final String IDENTIFIER = "identifier";
 		public static final String VERSION = "version";
 		public static final String NAME = "name";
 		public static final String TITLE = "title";
@@ -81,7 +75,7 @@ public abstract class MetadataResource extends DomainResource {
 		
 		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
 				.addAll(FhirResource.Fields.SUMMARY)
-				.add(URL, IDENTIFIER, VERSION, NAME, TITLE, DATE, PUBLISHER)
+				.add(URL, VERSION, NAME, TITLE, DATE, PUBLISHER)
 				.build();
 		
 	}
@@ -89,11 +83,6 @@ public abstract class MetadataResource extends DomainResource {
 	@Summary
 	@JsonProperty
 	private Uri url;
-	
-	@Summary
-	@JsonProperty("identifier")
-	@JsonInclude(value = Include.NON_EMPTY)
-	private Collection<Identifier> identifiers;
 	
 	@Summary
 	@JsonProperty
@@ -160,14 +149,13 @@ public abstract class MetadataResource extends DomainResource {
 	 */
 	@SuppressWarnings("rawtypes")
 	public MetadataResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			Narrative text, Uri url, Collection<Identifier> identifiers, String version, 
+			Narrative text, Uri url, String version, 
 			String name, String title, Code status, final Boolean experimental, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
 			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright) {
 		
 		super(id, meta, impliciteRules, language, text);
 		
 		this.url = url;
-		this.identifiers = identifiers;
 		this.version = version;
 		this.name = name;
 		this.title = title;
@@ -185,10 +173,6 @@ public abstract class MetadataResource extends DomainResource {
 	
 	public Uri getUrl() {
 		return url;
-	}
-	
-	public Collection<Identifier> getIdentifiers() {
-		return identifiers;
 	}
 	
 	public String getVersion() {
@@ -227,6 +211,7 @@ public abstract class MetadataResource extends DomainResource {
 		return description;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public Collection<UsageContext> getUsageContexts() {
 		return usageContexts;
 	}
@@ -246,8 +231,6 @@ public abstract class MetadataResource extends DomainResource {
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends DomainResource.Builder<B, T> {
 
 		protected Uri url; //ORG_LINK or hardcoded provider value
-		
-		protected Collection<Identifier> identifiers;
 		
 		protected String version; //not necessarily available - and what to do when we have more than 1??
 		
@@ -296,21 +279,6 @@ public abstract class MetadataResource extends DomainResource {
 			return getSelf();
 		}
 		
-		@JsonProperty("identifier")
-		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public B identifiers(final Collection<Identifier> identifers) {
-			this.identifiers = identifers;
-			return getSelf();
-		}
-		
-		public B addIdentifier(Identifier identifier) {
-			if (identifiers == null) {
-				identifiers = new ArrayList<>();
-			}
-			identifiers.add(identifier);
-			return getSelf();
-		}
-
 		public B version(final String version) {
 			this.version = version;
 			return getSelf();

@@ -87,6 +87,7 @@ public class CodeSystem extends MetadataResource {
 		// XXX do we need supplements???
 		
 		// complex properties
+		public static final String IDENTIFIER = "identifier";
 		public static final String FILTER = "filter";
 		public static final String PROPERTY = "property";
 		public static final String CONCEPT = "concept";
@@ -98,7 +99,7 @@ public class CodeSystem extends MetadataResource {
 		
 		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
 				.addAll(MetadataResource.Fields.SUMMARY)
-				.add(COUNT, FILTER, PROPERTY)
+				.add(COUNT, FILTER, PROPERTY, IDENTIFIER)
 				.build();
 		
 		public static final Set<String> SUMMARY_TEXT = ImmutableSet.<String>builder()
@@ -122,6 +123,11 @@ public class CodeSystem extends MetadataResource {
 	@Mandatory
 	@JsonProperty
 	private String resourceType;
+	
+	@Summary
+	@JsonProperty("identifier")
+	@JsonInclude(value = Include.NON_EMPTY)
+	private Collection<Identifier> identifiers;
 
 	@Summary
 	@JsonProperty
@@ -184,20 +190,22 @@ public class CodeSystem extends MetadataResource {
 
 	@SuppressWarnings("rawtypes")
 	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			final Narrative text, Uri url, Collection<Identifier> identifiers, String version, String name, String title, Code status,
+			final Narrative text, Uri url, String version, String name, String title, Code status,
 			final Boolean experimental, final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
 			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
 			
 			//CodeSystem only
 			final String resourceType,
+			final Collection<Identifier> identifiers,
 			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
 			final Code content, final Uri supplements, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts, final String toolingId) {
 
-		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, date, publisher, contacts, 
+		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
 
 		this.resourceType = resourceType;
+		this.identifiers = identifiers;
 		this.caseSensitive = caseSensitive;
 		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
@@ -214,6 +222,10 @@ public class CodeSystem extends MetadataResource {
 	
 	public String getResourceType() {
 		return resourceType;
+	}
+	
+	public Collection<Identifier> getIdentifiers() {
+		return identifiers;
 	}
 	
 	public Boolean getCaseSensitive() {
@@ -289,6 +301,8 @@ public class CodeSystem extends MetadataResource {
 
 		private String resourceType = RESOURCE_TYPE_CODE_SYSTEM;
 		
+		private Collection<Identifier> identifiers;
+		
 		private Boolean caseSensitive;
 		
 		private Uri valueSet;
@@ -330,6 +344,21 @@ public class CodeSystem extends MetadataResource {
 		
 		public Builder resourceType(String resourceType) {
 			this.resourceType = resourceType;
+			return getSelf();
+		}
+		
+		@JsonProperty("identifier")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder identifiers(final Collection<Identifier> identifers) {
+			this.identifiers = identifers;
+			return getSelf();
+		}
+		
+		public Builder addIdentifier(Identifier identifier) {
+			if (identifiers == null) {
+				identifiers = new ArrayList<>();
+			}
+			identifiers.add(identifier);
 			return getSelf();
 		}
 		
@@ -436,9 +465,10 @@ public class CodeSystem extends MetadataResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, meta, implicitRules, language, text, url, identifiers, version, name, title, status, 
+			return new CodeSystem(id, meta, implicitRules, language, text, url, version, name, title, status, 
 				experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
-				resourceType, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
+				
+				resourceType, identifiers, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
 				content, supplements, count, filters, properties, concepts, toolingId);
 		}
 	}

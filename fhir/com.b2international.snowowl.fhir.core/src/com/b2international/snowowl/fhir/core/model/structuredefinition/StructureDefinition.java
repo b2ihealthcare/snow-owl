@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -31,11 +32,13 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 /**
  * This class represents a FHIR Structure Definition.  
@@ -57,13 +60,18 @@ public class StructureDefinition extends MetadataResource {
 	@JsonProperty
 	private final String resourceType;
 	
+	@Summary
+	@JsonProperty("identifier")
+	@JsonInclude(value = Include.NON_EMPTY)
+	private Collection<Identifier> identifiers;
+	
 	@Valid
 	@Summary
 	@JsonProperty("keyword")
 	private final Collection<Coding> keywords;
 	
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final Id fhirVersion;
 	
@@ -125,11 +133,12 @@ public class StructureDefinition extends MetadataResource {
 	
 	@SuppressWarnings("rawtypes")
 	public StructureDefinition(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			Collection<Identifier> identifiers, String version, String name, String title, Code status, 
+			String version, String name, String title, Code status, 
 			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description, 
 			Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose, String copyright, 
 			
 			final String resourceType,
+			final Collection<Identifier> identifiers,
 			Collection<Coding> keywords,
 			final Id fhirVersion,
 			final Collection<Mapping> mappings,
@@ -144,10 +153,11 @@ public class StructureDefinition extends MetadataResource {
 			final StructureView snapshot,
 			final StructureView differential) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, 
+		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
 				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.resourceType = resourceType;
+		this.identifiers = identifiers;
 		this.keywords = keywords;
 		this.fhirVersion = fhirVersion;
 		this.mappings = mappings;
@@ -165,6 +175,10 @@ public class StructureDefinition extends MetadataResource {
 	
 	public String getResourceType() {
 		return resourceType;
+	}
+	
+	public Collection<Identifier> getIdentifiers() {
+		return identifiers;
 	}
 	
 	public Collection<Coding> getKeywords() {
@@ -227,14 +241,15 @@ public class StructureDefinition extends MetadataResource {
 	public static class Builder extends MetadataResource.Builder<Builder, StructureDefinition> {
 
 		private String resourceType = RESOURCE_TYPE_STRUCTURE_DEFINITION;
-		private Collection<Coding> keywords = Sets.newHashSet();
+		private Collection<Identifier> identifiers;
+		private Collection<Coding> keywords;
 		private Id fhirVersion;
-		private Collection<Mapping> mappings = Sets.newHashSet();
+		private Collection<Mapping> mappings;
 		private Code kind;
 		private boolean isAbstract;
 		private Code contextType;
-		private Collection<String> contexts = Sets.newHashSet();
-		private Collection<String> contextInvariants = Sets.newHashSet();
+		private Collection<String> contexts;
+		private Collection<String> contextInvariants;
 		private Code type;
 		private Uri baseDefinition;
 		private Code derivation;
@@ -256,6 +271,21 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("identifier")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder identifiers(final Collection<Identifier> identifers) {
+			this.identifiers = identifers;
+			return getSelf();
+		}
+		
+		public Builder addIdentifier(Identifier identifier) {
+			if (identifiers == null) {
+				identifiers = new ArrayList<>();
+			}
+			identifiers.add(identifier);
+			return getSelf();
+		}
+		
 		@JsonProperty("keyword")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder keywords(Collection<Coding> keywords) {
@@ -264,6 +294,10 @@ public class StructureDefinition extends MetadataResource {
 		}
 		
 		public Builder addKeyword(Coding keyword) {
+			
+			if (keywords == null) {
+				keywords = Lists.newArrayList();
+			}
 			keywords.add(keyword);
 			return getSelf();
 		}
@@ -286,6 +320,11 @@ public class StructureDefinition extends MetadataResource {
 		}
 		
 		public Builder addMapping(Mapping mapping) {
+			
+			if (mappings == null) {
+				mappings = Lists.newArrayList();
+			}
+			
 			mappings.add(mapping);
 			return getSelf();
 		}
@@ -319,6 +358,11 @@ public class StructureDefinition extends MetadataResource {
 		}
 		
 		public Builder addContext(String context) {
+			
+			if (contexts == null) {
+				contexts = Lists.newArrayList();
+			}
+			
 			contexts.add(context);
 			return getSelf();
 		}
@@ -331,6 +375,11 @@ public class StructureDefinition extends MetadataResource {
 		}
 		
 		public Builder addContextInvariant(String contextInvariant) {
+			
+			if (contextInvariants == null) {
+				contextInvariants = Lists.newArrayList();
+			}
+			
 			contextInvariants.add(contextInvariant);
 			return getSelf();
 		}
@@ -382,10 +431,11 @@ public class StructureDefinition extends MetadataResource {
 
 		@Override
 		protected StructureDefinition doBuild() {
-			return new StructureDefinition(id, meta, implicitRules, language, text, url, identifiers, version, name, title,
+			return new StructureDefinition(id, meta, implicitRules, language, text, url, version, name, title,
 					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
 					
 					resourceType,
+					identifiers,
 					keywords,
 					fhirVersion,
 					mappings,

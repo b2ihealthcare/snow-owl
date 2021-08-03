@@ -156,7 +156,7 @@ public class Concept {
 			return this;
 		}
 		
-		public Builder addProperties(final ConceptProperty<?> conceptProperty) {
+		public Builder addProperty(final ConceptProperty<?> conceptProperty) {
 			
 			if (properties == null) {
 				properties = Lists.newArrayList();

@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.model.conceptmap;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
@@ -25,15 +25,15 @@ import javax.validation.constraints.AssertTrue;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.Meta.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -70,6 +70,11 @@ public class ConceptMap extends MetadataResource {
 	private final String resourceType;
 
 	@Summary
+	@JsonProperty("identifier")
+	@JsonInclude(value = Include.NON_EMPTY)
+	private Collection<Identifier> identifiers;
+	
+	@Summary
 	@Valid
 	private Uri sourceUri;
 
@@ -89,37 +94,19 @@ public class ConceptMap extends MetadataResource {
 	@JsonProperty("group")
 	private final Collection<Group> groups;
 
-	@JsonProperty
-	public Uri getSourceUri() {
-		return sourceUri;
-	}
-
-	@JsonProperty
-	public Uri getSourceCanonical() {
-		return sourceCanonical;
-	}
-
-	@JsonProperty
-	public Uri getTargetUri() {
-		return targetUri;
-	}
-
-	@JsonProperty
-	public Uri getTargetCanonical() {
-		return targetCanonical;
-	}
-
 	@SuppressWarnings("rawtypes")
 	ConceptMap(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			Collection<Identifier> identifiers, String version, String name, String title, Code status, Boolean experimental, 
+			String version, String name, String title, Code status, Boolean experimental, 
 			Date date, String publisher, Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
 			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, 
-			final String resourceType, Uri sourceUri, Uri sourceCanonical, Uri targetUri, Uri targetCanonical, Collection<Group> groups) {
+			final String resourceType, Collection<Identifier> identifiers, Uri sourceUri, Uri sourceCanonical, Uri targetUri, 
+			final Uri targetCanonical, Collection<Group> groups) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, 
+		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
 				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.resourceType = resourceType;
+		this.identifiers = identifiers;
 		this.sourceUri = sourceUri;
 		this.sourceCanonical = sourceCanonical;
 		this.targetUri = targetUri;
@@ -140,6 +127,34 @@ public class ConceptMap extends MetadataResource {
 		return true;
 	}
 
+	public String getResourceType() {
+		return resourceType;
+	}
+	
+	public Collection<Identifier> getIdentifiers() {
+		return identifiers;
+	}
+	
+	@JsonProperty
+	public Uri getSourceUri() {
+		return sourceUri;
+	}
+
+	@JsonProperty
+	public Uri getSourceCanonical() {
+		return sourceCanonical;
+	}
+
+	@JsonProperty
+	public Uri getTargetUri() {
+		return targetUri;
+	}
+
+	@JsonProperty
+	public Uri getTargetCanonical() {
+		return targetCanonical;
+	}
+	
 	public static Builder builder(String conceptMapId) {
 		return new Builder(conceptMapId);
 	}
@@ -149,6 +164,7 @@ public class ConceptMap extends MetadataResource {
 
 		private String resourceType = RESOURCE_TYPE_CONCEPT_MAP;
 		
+		private Collection<Identifier> identifiers;
 		private Uri sourceUri;
 		private Uri sourceCanonical;
 		private Uri targetUri;
@@ -165,6 +181,21 @@ public class ConceptMap extends MetadataResource {
 		
 		public Builder resourceType(String resourceType) {
 			this.resourceType = resourceType;
+			return getSelf();
+		}
+		
+		@JsonProperty("identifier")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder identifiers(final Collection<Identifier> identifers) {
+			this.identifiers = identifers;
+			return getSelf();
+		}
+		
+		public Builder addIdentifier(Identifier identifier) {
+			if (identifiers == null) {
+				identifiers = new ArrayList<>();
+			}
+			identifiers.add(identifier);
 			return getSelf();
 		}
 
@@ -231,9 +262,9 @@ public class ConceptMap extends MetadataResource {
 
 		@Override
 		protected ConceptMap doBuild() {
-			return new ConceptMap(id, meta, implicitRules, language, text, url, identifiers, version, name, title,
+			return new ConceptMap(id, meta, implicitRules, language, text, url, version, name, title,
 					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
-					resourceType, sourceUri, sourceCanonical, targetUri, targetCanonical, groups);
+					resourceType, identifiers, sourceUri, sourceCanonical, targetUri, targetCanonical, groups);
 		}
 
 	}
