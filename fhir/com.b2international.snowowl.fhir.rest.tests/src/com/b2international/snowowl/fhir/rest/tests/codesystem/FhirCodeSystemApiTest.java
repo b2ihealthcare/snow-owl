@@ -448,7 +448,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("id", equalTo("SNOMEDCT/2002-01-31"))
 			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/version/20020131"))
-			.body("status", equalTo("unknown"))
+			.body("status", equalTo("draft"))
 			.body("version", equalTo("2002-01-31"))
 			.body("language", equalTo("ENG"))
 			.body("publisher", equalTo("https://b2i.sg"));
