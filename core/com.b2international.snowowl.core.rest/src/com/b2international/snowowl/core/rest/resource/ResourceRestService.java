@@ -15,28 +15,15 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
-import java.util.List;
-
 import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.commit.CommitInfo;
-import com.b2international.snowowl.core.commit.CommitInfos;
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.commit.CommitInfoRestSearch;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "Resources", name = "resources")
 @RestController
-@RequestMapping("/resources")
+@RequestMapping(value = "/resources", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 public class ResourceRestService extends AbstractRestService {
 	
 	public ResourceRestService() {
@@ -61,10 +48,40 @@ public class ResourceRestService extends AbstractRestService {
 		summary = "Retrive Resources", 
 		description = "Returns a collection resource containing all/filtered registered Resources."
 			+ "<p>Results are by default sorted by ID.")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "OK"),
-			@ApiResponse(responseCode = "400", description = "Bad Request") })
-	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@ApiResponses({ 
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request") 
+	})
+	@GetMapping
 	public Promise<Resources> searchByGet(@ParameterObject final ResourceRestSearch params) {
+		return ResourceRequests
+				.prepareSearch()
+				.filterByIds(params.getId())
+				.filterByResourceType(params.getResourceType())
+				.filterByTitleExact(params.getTitleExact())
+				.filterByTitle(params.getTitle())
+				.filterByToolingIds(params.getToolingId())
+				.filterByBundleIds(params.getBundleId())
+				.filterByStatus(params.getStatus())
+				.setLimit(params.getLimit())
+				.setExpand(params.getExpand())
+				.setFields(params.getField())
+				.setSearchAfter(params.getSearchAfter())
+				.sortBy(extractSortFields(params.getSort()))
+				.buildAsync()
+				.execute(getBus());
+	}
+	
+	@Operation(
+		summary = "Retrive Resources", 
+		description = "Returns a collection resource containing all/filtered registered Resources."
+			+ "<p>Results are by default sorted by ID.")
+	@ApiResponses({ 
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request") 
+	})
+	@PostMapping(value = "/search", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<Resources> searchByPost(@RequestBody final ResourceRestSearch params) {
 		return ResourceRequests
 				.prepareSearch()
 				.filterByIds(params.getId())
@@ -88,99 +105,24 @@ public class ResourceRestService extends AbstractRestService {
 		description = "Returns generic information about a single resource associated to the given unique identifier."
 	)
 	@ApiResponses({ 
-		@ApiResponse(responseCode = "200", description = "OK"), 
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"), 
 		@ApiResponse(responseCode = "404", description = "Not Found") 
 	})
-	@GetMapping(value = "/{resourceId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping("/{resourceId}")
 	public Promise<Resource> get(
 			@Parameter(description = "The resource identifier") 
 			@PathVariable(value = "resourceId") 
-			final String resourceId) {
+			final String resourceId,
+			
+			@ParameterObject
+			final ResourceSelectors selectors) {
 		return ResourceRequests
 				.prepareGet(resourceId)
+				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
 				.buildAsync()
 				.execute(getBus());
 	}
 
-	@Operation(
-		summary = "Retrive all resource commits", 
-		description = "Returns a collection, that contains all/filtered resource commits")
-	@ApiResponses({ 
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "400", description = "Bad Request") 
-	})
-	@GetMapping(value = "/commits", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CommitInfos> searchCommits(
-			@ParameterObject
-			final CommitInfoRestSearch params) {
-		final List<String> fields;
-		if (!CompareUtils.isEmpty(params.getField())) {
-			fields = params.getField();
-		} else if (CompareUtils.isEmpty(params.getExpand())) {
-			fields = CommitInfo.Fields.DEAFULT_FIELD_SELECTION;
-		} else {
-			fields = null;
-		}
-		
-		Request<RepositoryContext, CommitInfos> req = RepositoryRequests
-				.commitInfos()
-				.prepareSearchCommitInfo()
-				.filterByIds(params.getId())
-				.filterByAuthor(params.getAuthor())
-				.filterByAffectedComponent(params.getAffectedComponentId())
-				.filterByComment(params.getComment())
-				.filterByBranches(params.getBranch())
-				.filterByTimestamp(params.getTimestamp())
-				.filterByTimestamp(params.getTimestampFrom(), params.getTimestampTo())
-				.setFields(fields)
-				.setExpand(params.getExpand())
-				.setSearchAfter(params.getSearchAfter())
-				.setLimit(params.getLimit())
-				.sortBy(extractSortFields(params.getSort()))
-				.build();
-		 return new ResourceRepositoryRequestBuilder<CommitInfos>() {
-
-			@Override
-			public Request<RepositoryContext, CommitInfos> build() {
-				return req;
-			}
-			
-		 }
-		 .buildAsync()
-		 .execute(getBus());
-	}
-	
-	@Operation(
-			summary = "Retrieve a commit",
-			description = "Returns a single commit entry from resource commits"
-			)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK")
-	})
-	@GetMapping(value = "/commits/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CommitInfo> get(
-			@Parameter(description = "Commit ID to match")
-			@PathVariable(value="commitId")
-			final String commitId, 
-
-			@ParameterObject
-			final ResourceSelectors selectors) {
-
-		Request<RepositoryContext, CommitInfo> req = RepositoryRequests.commitInfos()
-				.prepareGetCommitInfo(commitId)
-				.setExpand(selectors.getExpand())
-				.setFields(selectors.getField())
-				.build();
-
-		return new ResourceRepositoryRequestBuilder<CommitInfo>() {
-
-			@Override
-			public Request<RepositoryContext, CommitInfo> build() {
-				return req;
-			}
-
-		}
-		.buildAsync()
-		.execute(getBus());
-	}
 }

@@ -15,18 +15,12 @@
  */
 package com.b2international.snowowl.snomed.common;
 
-import java.util.regex.Pattern;
-
-import com.b2international.commons.VerhoeffCheck;
-import com.google.common.base.Strings;
-
 public abstract class SnomedTerminologyComponentConstants {
 	
 	// suppress constructor
 	private SnomedTerminologyComponentConstants() {}
 
 	public static final String TOOLING_ID = "snomed";
-	
 
 	// configuration keys for managing Module and Namespace configuration in CodeSystem entries
 	public static final String CODESYSTEM_MODULES_CONFIG_KEY = "moduleIds";
@@ -35,7 +29,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String CODESYSTEM_MAINTAINER_TYPE_CONFIG_KEY = "maintainerType";
 	public static final String CODESYSTEM_RF2_EXPORT_LAYOUT_CONFIG_KEY = "refSetExportLayout";
 	public static final String CODESYSTEM_NRC_COUNTRY_CODE_CONFIG_KEY = "nrcCountryCode";
-	
 	public static final String CODESYSTEM_LANGUAGE_CONFIG_KEY = "languages";
 	
 	// FHIR specific constants
@@ -43,24 +36,5 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_URI_SCT = SNOMED_URI_BASE + "/sct";
 	public static final String SNOMED_URI_DEV = SNOMED_URI_BASE + "/xsct";
 	public static final String SNOMED_URI_ID = SNOMED_URI_BASE + "/id";
-	
-//	public static String getTerminologyComponentId(final String referencedComponentId) {
-//		switch (getTerminologyComponentIdValue(referencedComponentId)) {
-//			case CONCEPT_NUMBER: return CONCEPT;
-//			case DESCRIPTION_NUMBER: return DESCRIPTION;
-//			case RELATIONSHIP_NUMBER: return RELATIONSHIP;
-//			default: throw new IllegalArgumentException("'" + referencedComponentId + "' referenced component type is unknown");
-//		}
-//	}
-//
-//	public static boolean isCoreComponentId(String componentId) {
-//		return isCoreComponentType(getTerminologyComponentIdValueSafe(componentId));
-//	}
-//
-//	public static boolean isCoreComponentType(short componentType) {
-//		return SnomedConcept.TYPE == componentType || 
-//				SnomedDescription.TYPE == componentType || 
-//				SnomedRelationship.TYPE == componentType;
-//	}
 	
 }
