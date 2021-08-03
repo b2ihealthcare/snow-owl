@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Optional;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
@@ -24,6 +26,7 @@ import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
@@ -216,7 +219,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 			}
 		} 
 		
-		context.add(createResourceDocument());
+		context.add(createResourceDocument(context));
 		return id;
 	}
 	
@@ -240,7 +243,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	 */
 	protected abstract ResourceDocument.Builder completeResource(final ResourceDocument.Builder builder);
 	
-	private ResourceDocument createResourceDocument() {
+	private ResourceDocument createResourceDocument(TransactionContext context) {
 		final Builder builder = ResourceDocument.builder()
 				.id(id)
 				.url(url)
@@ -249,7 +252,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				.description(description)
 				.status(status)
 				.copyright(copyright)
-				.owner(owner)
+				.owner(Optional.ofNullable(owner).orElseGet(() -> context.service(User.class).getUsername()))
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)
