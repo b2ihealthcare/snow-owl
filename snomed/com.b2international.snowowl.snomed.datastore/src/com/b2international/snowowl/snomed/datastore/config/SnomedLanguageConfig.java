@@ -20,7 +20,6 @@ import java.util.List;
 import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.1
@@ -31,7 +30,7 @@ public class SnomedLanguageConfig {
 	private List<String> languageRefSetIds;
 	
 	public SnomedLanguageConfig(String languageTag, String...languageRefSetIds) {
-		this(languageTag, ImmutableList.copyOf(languageRefSetIds));
+		this(languageTag, List.of(languageRefSetIds));
 	}
 	
 	@JsonCreator
