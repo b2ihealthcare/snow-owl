@@ -62,7 +62,7 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 	private String[] statedAncestor;
 	@Parameter(description = "doi (degree-of-interest-based scoring)")
 	private Boolean doi = null;
-	
+
 	public Boolean getActive() {
 		return active;
 	}
