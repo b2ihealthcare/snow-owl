@@ -120,7 +120,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		USE_DOI, 
 		
 		/**
-		 * Match concept descriptions where the description has language membership in on of the provided locales
+		 * Match concept descriptions where the description has language membership in one of the provided locales
 		 */
 		LANGUAGE_REFSET,
 	}
