@@ -73,7 +73,7 @@ public class RestTest extends FhirTest {
 				.addOperation(Operation.builder()
 						.name("name")
 						.definition("definition")
-						.documenation("documentation")
+						.documentation("documentation")
 						.build())
 				.addCompartment(new Uri("compartment"))
 				.build();

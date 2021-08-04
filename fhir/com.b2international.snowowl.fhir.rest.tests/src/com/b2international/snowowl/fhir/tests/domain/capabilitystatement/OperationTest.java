@@ -41,7 +41,7 @@ public class OperationTest extends FhirTest {
 		operation = Operation.builder()
 				.name("name")
 				.definition("definition")
-				.documenation("documentation")
+				.documentation("documentation")
 				.build();
 	}
 	
@@ -53,7 +53,7 @@ public class OperationTest extends FhirTest {
 	private void validate(Operation operation) {
 		assertEquals("name", operation.getName());
 		assertEquals("definition", operation.getDefinition().getUriValue());
-		assertEquals("documentation", operation.getDocumenation());
+		assertEquals("documentation", operation.getDocumentation());
 		
 	}
 

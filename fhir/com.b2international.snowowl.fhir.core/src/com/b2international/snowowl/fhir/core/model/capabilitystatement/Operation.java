@@ -40,12 +40,12 @@ public class Operation {
 	private final Uri definition;
 	
 	@JsonProperty
-	private final String documenation;
+	private final String documentation;
 	
-	Operation(final String name, final Uri definition, final String documenation) {
+	Operation(final String name, final Uri definition, final String documentation) {
 		this.name = name;
 		this.definition = definition;
-		this.documenation = documenation;
+		this.documentation = documentation;
 	}
 	
 	public String getName() {
@@ -56,8 +56,8 @@ public class Operation {
 		return definition;
 	}
 	
-	public String getDocumenation() {
-		return documenation;
+	public String getDocumentation() {
+		return documentation;
 	}
 	
 	public static Builder builder() {
@@ -69,7 +69,7 @@ public class Operation {
 		
 		private String name;
 		private Uri definition;
-		private String documenation;
+		private String documentation;
 		
 		public Builder name(final String name) {
 			this.name = name;
@@ -86,14 +86,14 @@ public class Operation {
 			return this;
 		}
 		
-		public Builder documenation(final String documenation) {
-			this.documenation = documenation;
+		public Builder documentation(final String documentation) {
+			this.documentation = documentation;
 			return this;
 		}
 		
 		@Override
 		protected Operation doBuild() {
-			return new Operation(name, definition, documenation);
+			return new Operation(name, definition, documentation);
 		}
 	}
 }
