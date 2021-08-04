@@ -86,7 +86,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @param conceptIds
 	 * @return
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Collection<String> conceptIds) {
+	public SnomedDescriptionSearchRequestBuilder filterByConcepts(Collection<String> conceptIds) {
 		return addOption(OptionKey.CONCEPT, conceptIds);
 	}
 	

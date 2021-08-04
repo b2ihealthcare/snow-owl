@@ -306,7 +306,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			requestBuilder.filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(context, extendedLocales));
 		}
 			
-		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConceptId(ids));
+		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConcepts(ids));
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);

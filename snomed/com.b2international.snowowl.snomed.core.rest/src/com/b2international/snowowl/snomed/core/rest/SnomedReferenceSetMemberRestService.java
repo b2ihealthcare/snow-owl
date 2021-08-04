@@ -87,7 +87,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				.setSearchAfter(params.getSearchAfter())
 				.filterByIds(params.getId())
 				.filterByActive(params.getActive())
-				.filterByModule(params.getModule())
+				.filterByModules(params.getModule())
 				.filterByEffectiveTime(params.getEffectiveTime())
 				.filterByRefSet(params.getRefsetId())
 				.filterByReferencedComponent(params.getReferencedComponentId())

@@ -140,7 +140,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 				.filterByActive(true)
 				.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 				.filterBySource(concept.getId())
-				.filterByType(relationshipTypeIds)
+				.filterByTypes(relationshipTypeIds)
 				.build(codeSystem.getResourceURI())
 				.getRequest()
 				.execute(context)

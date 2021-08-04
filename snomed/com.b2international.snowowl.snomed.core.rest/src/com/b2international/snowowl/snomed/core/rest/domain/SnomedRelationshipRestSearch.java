@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,28 +25,16 @@ import io.swagger.v3.oas.annotations.Parameter;
 /**
  * @since 6.16
  */
-public final class SnomedRelationshipRestSearch extends ObjectRestSearch {
+public final class SnomedRelationshipRestSearch extends SnomedComponentRestSearch {
 
-	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
-	private String effectiveTime;
+	@Parameter(description = "The source concept(s) or ECL expression to match")
+	private List<String> source;
 
-	@Parameter(description = "The status to match")
-	private Boolean active;
+	@Parameter(description = "The type concept(s) or ECL expression to match")
+	private List<String> type;
 
-	@Parameter(description = "The module identifier to match")
-	private String module;
-
-	@Parameter(description = "The namespace to match")
-	private String namespace;
-
-	@Parameter(description = "The source concept to match")
-	private String source;
-
-	@Parameter(description = "The type concept to match")
-	private String type;
-
-	@Parameter(description = "The destination concept to match")
-	private String destination;
+	@Parameter(description = "The destination concept(s) or ECL expression to match")
+	private List<String> destination;
 	
 	@Parameter(description = "The value type to match")
 	private RelationshipValueType valueType;
@@ -65,59 +54,27 @@ public final class SnomedRelationshipRestSearch extends ObjectRestSearch {
 	@Parameter(description = "The union group to match")
 	private Integer unionGroup;
 
-	public String getEffectiveTime() {
-		return effectiveTime;
-	}
-
-	public void setEffectiveTime(String effectiveTime) {
-		this.effectiveTime = effectiveTime;
-	}
-
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-
-	public String getModule() {
-		return module;
-	}
-
-	public void setModule(String module) {
-		this.module = module;
-	}
-
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-	}
-
-	public String getSource() {
+	public List<String> getSource() {
 		return source;
 	}
 
-	public void setSource(String source) {
+	public void setSource(List<String> source) {
 		this.source = source;
 	}
 
-	public String getType() {
+	public List<String> getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(List<String> type) {
 		this.type = type;
 	}
 
-	public String getDestination() {
+	public List<String> getDestination() {
 		return destination;
 	}
 
-	public void setDestination(String destination) {
+	public void setDestination(List<String> destination) {
 		this.destination = destination;
 	}
 

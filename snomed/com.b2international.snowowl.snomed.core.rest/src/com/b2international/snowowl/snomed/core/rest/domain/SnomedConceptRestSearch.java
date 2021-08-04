@@ -15,27 +15,17 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
  */
-public final class SnomedConceptRestSearch extends ObjectRestSearch {
+public final class SnomedConceptRestSearch extends SnomedComponentRestSearch {
 
-	// concept filters
-	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
-	private String effectiveTime;
-
-	@Parameter(description = "The concept status to match")
-	private Boolean active = null;
-	@Parameter(description = "The concept module identifier to match")
-	private String module;
 	@Parameter(description = "The definition status to match")
 	private String definitionStatus;
-	@Parameter(description = "The namespace to match")
-	private String namespace;
 
 	// query expressions
 	@Parameter(description = "The ECL expression to match on the inferred form")
@@ -45,7 +35,7 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 
 	// description filters
 	@Parameter(description = "Description semantic tag(s) to match")
-	private String[] semanticTag;
+	private List<String> semanticTag;
 	@Parameter(description = "The description term to match")
 	private String term;
 	@Parameter(description = "Description type ECL expression to match")
@@ -53,47 +43,15 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 
 	// hiearchy filters
 	@Parameter(description = "The inferred parent(s) to match")
-	private String[] parent;
+	private List<String> parent;
 	@Parameter(description = "The inferred ancestor(s) to match")
-	private String[] ancestor;
+	private List<String> ancestor;
 	@Parameter(description = "The stated parent(s) to match")
-	private String[] statedParent;
+	private List<String> statedParent;
 	@Parameter(description = "The stated ancestor(s) to match")
-	private String[] statedAncestor;
+	private List<String> statedAncestor;
 	@Parameter(description = "doi (degree-of-interest-based scoring)")
 	private Boolean doi = null;
-
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-
-	public String getModule() {
-		return module;
-	}
-
-	public void setModule(String module) {
-		this.module = module;
-	}
-
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-	}
-
-	public String getEffectiveTime() {
-		return effectiveTime;
-	}
-
-	public void setEffectiveTime(String effectiveTime) {
-		this.effectiveTime = effectiveTime;
-	}
 
 	public String getDefinitionStatus() {
 		return definitionStatus;
@@ -103,35 +61,35 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 		this.definitionStatus = definitionStatus;
 	}
 
-	public String[] getParent() {
+	public List<String> getParent() {
 		return parent;
 	}
 
-	public void setParent(String[] parent) {
+	public void setParent(List<String> parent) {
 		this.parent = parent;
 	}
 
-	public String[] getAncestor() {
+	public List<String> getAncestor() {
 		return ancestor;
 	}
 
-	public void setAncestor(String[] ancestor) {
+	public void setAncestor(List<String> ancestor) {
 		this.ancestor = ancestor;
 	}
 
-	public String[] getStatedParent() {
+	public List<String> getStatedParent() {
 		return statedParent;
 	}
 
-	public void setStatedParents(String[] statedParent) {
+	public void setStatedParents(List<String> statedParent) {
 		this.statedParent = statedParent;
 	}
 
-	public String[] getStatedAncestor() {
+	public List<String> getStatedAncestor() {
 		return statedAncestor;
 	}
 
-	public void setStatedAncestor(String[] statedAncestor) {
+	public void setStatedAncestor(List<String> statedAncestor) {
 		this.statedAncestor = statedAncestor;
 	}
 
@@ -159,11 +117,11 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 		this.term = term;
 	}
 
-	public String[] getSemanticTag() {
+	public List<String> getSemanticTag() {
 		return semanticTag;
 	}
 
-	public void setSemanticTag(String[] semanticTag) {
+	public void setSemanticTag(List<String> semanticTag) {
 		this.semanticTag = semanticTag;
 	}
 

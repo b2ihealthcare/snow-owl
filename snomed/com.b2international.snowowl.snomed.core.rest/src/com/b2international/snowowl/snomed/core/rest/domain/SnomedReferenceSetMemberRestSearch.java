@@ -20,7 +20,6 @@ import java.util.List;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,17 +29,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 /**
  * @since 6.16
  */
-public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
+public final class SnomedReferenceSetMemberRestSearch extends SnomedRestSearch {
 
-	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
-	private String effectiveTime;
-	
-	@Parameter(description = "The status to match")
-	private Boolean active;
-	
-	@Parameter(description = "The module identifier to match")
-	private String module;
-	
 	@Parameter(description = "The reference set identifier(s) to match, or a single ECL expression")
 	private List<String> refsetId;
 	
@@ -96,30 +86,6 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 	@Parameter(description = "Special filters for owlExpression axiom values")
 	private SnomedOwlExpressionFilters owlExpression; 
 	
-	public String getEffectiveTime() {
-		return effectiveTime;
-	}
-
-	public void setEffectiveTime(String effectiveTime) {
-		this.effectiveTime = effectiveTime;
-	}
-
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-
-	public String getModule() {
-		return module;
-	}
-
-	public void setModule(String module) {
-		this.module = module;
-	}
-
 	public List<String> getRefsetId() {
 		return refsetId;
 	}

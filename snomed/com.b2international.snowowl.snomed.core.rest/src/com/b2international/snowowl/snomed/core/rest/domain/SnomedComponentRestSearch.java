@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,24 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.Parameter;
 
 /**
- * @since 7.3
+ * @since 8.0
  */
-public final class SnomedReferenceSetRestSearch extends SnomedRestSearch {
+public class SnomedComponentRestSearch extends SnomedRestSearch {
 
-	@Parameter(description = "The reference set type to match")
-	private String[] refSetTypes;
-	
-	public String[] getRefSetTypes() {
-		return refSetTypes;
+	@Parameter(description = "The namespace values to match")
+	private List<String> namespace;
+
+	public List<String> getNamespace() {
+		return namespace;
 	}
-	
-	public void setRefSetTypes(String[] refSetTypes) {
-		this.refSetTypes = refSetTypes;
+
+	public void setNamespace(List<String> namespace) {
+		this.namespace = namespace;
 	}
 	
 }

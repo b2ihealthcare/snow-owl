@@ -195,7 +195,7 @@ public final class EclExpression {
 				.all()
 				.filterByActive(true)
 				.filterByCharacteristicTypes(characteristicTypes)
-				.filterBySource(sourceIds)
+				.filterBySources(sourceIds)
 				.filterByGroup(1, Integer.MAX_VALUE)
 				.setEclExpressionForm(expressionForm)
 				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP)

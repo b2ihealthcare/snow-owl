@@ -38,7 +38,6 @@ import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRest
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestUpdate;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableSet;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -91,17 +90,17 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 				.filterByIds(params.getId())
 				.filterByEffectiveTime(params.getEffectiveTime())
 				.filterByActive(params.getActive())
-				.filterByModule(params.getModule())
-				.filterByConcept(params.getConcept())
-				.filterByLanguageCodes(params.getLanguageCode() == null ? null : ImmutableSet.copyOf(params.getLanguageCode()))
+				.filterByModules(params.getModule())
+				.filterByNamespaces(params.getNamespace())
+				.filterByConcepts(params.getConcept())
+				.filterByLanguageCodes(params.getLanguageCode())
 				.filterByType(params.getType())
 				.filterByTerm(params.getTerm())
-				.filterByCaseSignificance(params.getCaseSignificance())
-				.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
-				.filterByNamespace(params.getNamespace())
-				.filterByLanguageRefSets(params.getLanguageRefSet() == null ? null : ImmutableSet.copyOf(params.getLanguageRefSet()))
-				.filterByAcceptableIn(params.getAcceptableIn() == null ? null : ImmutableSet.copyOf(params.getAcceptableIn()))
-				.filterByPreferredIn(params.getPreferredIn() == null ? null : ImmutableSet.copyOf(params.getPreferredIn()))
+				.filterByCaseSignificances(params.getCaseSignificance())
+				.filterBySemanticTags(params.getSemanticTag())
+				.filterByLanguageRefSets(params.getLanguageRefSet())
+				.filterByAcceptableIn(params.getAcceptableIn())
+				.filterByPreferredIn(params.getPreferredIn())
 				.setLocales(acceptLanguage)
 				.setLimit(params.getLimit())
 				.setSearchAfter(params.getSearchAfter())

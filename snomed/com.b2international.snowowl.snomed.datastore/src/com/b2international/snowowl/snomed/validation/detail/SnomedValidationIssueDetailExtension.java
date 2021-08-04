@@ -268,7 +268,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 				.all()
 				.filterByActive(true)
-				.filterByConceptId(partition)
+				.filterByConcepts(partition)
 				.filterByType(types)
 				.build()
 				.execute(context);
