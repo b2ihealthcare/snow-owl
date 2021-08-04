@@ -23,7 +23,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.ResourceType;
+import com.b2international.snowowl.fhir.core.codesystems.SearchParamType;
+import com.b2international.snowowl.fhir.core.model.capabilitystatement.Interaction;
+import com.b2international.snowowl.fhir.core.model.capabilitystatement.Operation;
 import com.b2international.snowowl.fhir.core.model.capabilitystatement.Resource;
+import com.b2international.snowowl.fhir.core.model.capabilitystatement.SearchParam;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -42,6 +48,34 @@ public class ResourceTest extends FhirTest {
 		resource = Resource.builder()
 				.type(ResourceType.CODESYSTEM)
 				.profile("profile")
+				.addOperation(Operation.builder()
+						.name("name")
+						.definition("definition")
+						.documentation("documentation")
+						.build())
+				.addReferencePolicy(new Code("referencePolicy"))
+				.addSearchInclude("searchInclude")
+				.addSearchParam(SearchParam.builder()
+						.definition("definition")
+						.documentation("documentation")
+						.name("name")
+						.type(SearchParamType.STRING)
+						.build())
+				.addSearchRevInclude("searchRevInclude")
+				.addSearchInclude("searchInclude")
+				.addInteraction(Interaction.builder()
+						.code("code")
+						.documentation("documentation")
+						.build())
+				.addSupportedProfile(new Uri("supportedProfile"))
+				.conditionalCreate(true)
+				.conditionalDelete(new Code("conditionalDelete"))
+				.conditionalRead(new Code("conditionalRead"))
+				.conditionalUpdate(true)
+				.documentation("documentation")
+				.readHistory(false)
+				.updateCreate(true)
+				.versioning("versioning")
 				.build();
 	}
 	

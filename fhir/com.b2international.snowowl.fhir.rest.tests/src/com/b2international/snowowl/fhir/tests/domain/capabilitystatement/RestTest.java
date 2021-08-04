@@ -22,9 +22,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.codesystems.ResourceType;
 import com.b2international.snowowl.fhir.core.codesystems.RestfulCapabilityMode;
 import com.b2international.snowowl.fhir.core.codesystems.SearchParamType;
 import com.b2international.snowowl.fhir.core.model.capabilitystatement.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -51,8 +53,38 @@ public class RestTest extends FhirTest {
 						.code("code")
 						.documentation("documentation")
 						.build())
-				//.addResource(Resource.builder()
-				//		.build())
+				.addResource(Resource.builder()
+						.type(ResourceType.CODESYSTEM)
+						.profile("profile")
+						.addOperation(Operation.builder()
+								.name("name")
+								.definition("definition")
+								.documentation("documentation")
+								.build())
+						.addReferencePolicy(new Code("referencePolicy"))
+						.addSearchInclude("searchInclude")
+						.addSearchParam(SearchParam.builder()
+								.definition("definition")
+								.documentation("documentation")
+								.name("name")
+								.type(SearchParamType.STRING)
+								.build())
+						.addSearchRevInclude("searchRevInclude")
+						.addSearchInclude("searchInclude")
+						.addInteraction(Interaction.builder()
+								.code("code")
+								.documentation("documentation")
+								.build())
+						.addSupportedProfile(new Uri("supportedProfile"))
+						.conditionalCreate(true)
+						.conditionalDelete(new Code("conditionalDelete"))
+						.conditionalRead(new Code("conditionalRead"))
+						.conditionalUpdate(true)
+						.documentation("documentation")
+						.readHistory(false)
+						.updateCreate(true)
+						.versioning("versioning")
+						.build())
 				.security(Security.builder()
 						.addService(CodeableConcept.builder()
 								.addCoding(Coding.builder()

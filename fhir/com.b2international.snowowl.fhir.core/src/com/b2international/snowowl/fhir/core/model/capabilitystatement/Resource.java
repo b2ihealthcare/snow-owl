@@ -26,10 +26,12 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 
 /**
  * FHIR Capability statement Resource backbone definition.
@@ -244,6 +246,12 @@ public class Resource {
 			return this;
 		}
 
+		@JsonIgnore
+		public Builder type(final String type) {
+			this.type = new Code(type);
+			return this;
+		}
+		
 		public Builder profile(final String profile) {
 			this.profile = new Uri(profile);
 			return this;
@@ -253,9 +261,155 @@ public class Resource {
 			this.profile = profile;
 			return this;
 		}
+		
+		@JsonProperty("supportedProfile")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder supportedProfiles(Collection<Uri> supportedProfiles) {
+			this.supportedProfiles = supportedProfiles;
+			return this;
+		}
+		
+		public Builder addSupportedProfile(final Uri supportedProfile) {
+			if (supportedProfiles == null) {
+				supportedProfiles = Lists.newArrayList();
+			}
+			supportedProfiles.add(supportedProfile);
+			return this;
+		}
+		
+		public Builder documentation(final String documentation) {
+			this.documentation = documentation;
+			return this;
+		}
+		
+		@JsonProperty("interaction")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder interactions(Collection<Interaction> interactions) {
+			this.interactions = interactions;
+			return this;
+		}
+		
+		public Builder addInteraction(final Interaction interaction) {
+			if (interactions == null) {
+				interactions = Lists.newArrayList();
+			}
+			interactions.add(interaction);
+			return this;
+		}
+		
+		@JsonProperty
+		public Builder versioning(final Code versioning) {
+			this.versioning = versioning;
+			return this;
+		}
 
-		public Builder type(final String type) {
-			this.type = new Code(type);
+		@JsonIgnore
+		public Builder versioning(final String versioning) {
+			this.versioning = new Code(versioning);
+			return this;
+		}
+		
+		public Builder readHistory(final Boolean readHistory) {
+			this.readHistory = readHistory;
+			return this;
+		}
+		
+		public Builder updateCreate(final Boolean updateCreate) {
+			this.updateCreate = updateCreate;
+			return this;
+		}
+		
+		public Builder conditionalCreate(final Boolean conditionalCreate) {
+			this.conditionalCreate = conditionalCreate;
+			return this;
+		}
+		
+		public Builder conditionalRead(final Code conditionalRead) {
+			this.conditionalRead = conditionalRead;
+			return this;
+		}
+		
+		public Builder conditionalUpdate(final Boolean conditionalUpdate) {
+			this.conditionalUpdate = conditionalUpdate;
+			return this;
+		}
+		
+		public Builder conditionalDelete(final Code conditionalDelete) {
+			this.conditionalDelete = conditionalDelete;
+			return this;
+		}
+		
+		@JsonProperty("referencePolicy")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder referencePolicies(Collection<Code> referencePolicies) {
+			this.referencePolicies = referencePolicies;
+			return this;
+		}
+		
+		public Builder addReferencePolicy(final Code referencePolicy) {
+			if (referencePolicies == null) {
+				referencePolicies = Lists.newArrayList();
+			}
+			referencePolicies.add(referencePolicy);
+			return this;
+		}
+		
+		@JsonProperty("searchInclude")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder searchIncludes(Collection<String> searchIncludes) {
+			this.searchIncludes = searchIncludes;
+			return this;
+		}
+		
+		public Builder addSearchInclude(final String searchInclude) {
+			if (searchIncludes == null) {
+				searchIncludes = Lists.newArrayList();
+			}
+			searchIncludes.add(searchInclude);
+			return this;
+		}
+		
+		@JsonProperty("searchRevInclude")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder searchRevIncludes(Collection<String> searchRevIncludes) {
+			this.searchRevIncludes = searchRevIncludes;
+			return this;
+		}
+		
+		public Builder addSearchRevInclude(final String searchRevInclude) {
+			if (searchRevIncludes == null) {
+				searchRevIncludes = Lists.newArrayList();
+			}
+			searchRevIncludes.add(searchRevInclude);
+			return this;
+		}
+		
+		@JsonProperty("searchParam")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder searchParams(Collection<SearchParam> searchParams) {
+			this.searchParams = searchParams;
+			return this;
+		}
+		
+		public Builder addSearchParam(final SearchParam searchParam) {
+			if (searchParams == null) {
+				searchParams = Lists.newArrayList();
+			}
+			searchParams.add(searchParam);
+			return this;
+		}
+		@JsonProperty("operation")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder opeations(Collection<Operation> operations) {
+			this.operations = operations;
+			return this;
+		}
+		
+		public Builder addOperation(final Operation operation) {
+			if (operations == null) {
+				operations = Lists.newArrayList();
+			}
+			operations.add(operation);
 			return this;
 		}
 		
