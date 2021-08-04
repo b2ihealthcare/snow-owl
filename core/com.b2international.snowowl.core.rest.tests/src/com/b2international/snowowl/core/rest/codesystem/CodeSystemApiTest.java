@@ -264,7 +264,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-15");
-		assertVersionCreated(versionRequestBody);
+		assertVersionCreated(versionRequestBody).statusCode(201);
 
 		final String codeSystemId = "cs12";
 		
@@ -367,9 +367,9 @@ public class CodeSystemApiTest {
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
-		assertVersionCreated(v3RequestBody);
+		assertVersionCreated(v3RequestBody).statusCode(201);
 		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "2020-04-17");
-		assertVersionCreated(v4RequestBody);
+		assertVersionCreated(v4RequestBody).statusCode(201);
 		
 		final String codeSystemId = "cs14";
 		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
@@ -416,7 +416,7 @@ public class CodeSystemApiTest {
 		
 		// version codesystem
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", LocalDate.now().toString());
-		assertVersionCreated(versionRequestBody);
+		assertVersionCreated(versionRequestBody).statusCode(201);
 		
 		// TODO add REST API
 		ResourceRequests.prepareDelete(codeSystemId)
@@ -471,6 +471,17 @@ public class CodeSystemApiTest {
 		final Json updateRequestBody = Json.object("bundleId", "not-existing-bundle");
 		
 		assertCodeSystemNotUpdated(codeSystemId, updateRequestBody);
+	}
+	
+	@Test
+	public void codesystem26_CreateVersionIncorrectEffectiveTime() {
+		final String codeSystemId = "cs26";
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
+		assertCodeSystemCreated(requestBody);
+		
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", "2020-04-15")).statusCode(201);
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v2", "2020-04-14")).statusCode(400);
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v3", "2020-04-15")).statusCode(400);
 	}
 	
 	@After

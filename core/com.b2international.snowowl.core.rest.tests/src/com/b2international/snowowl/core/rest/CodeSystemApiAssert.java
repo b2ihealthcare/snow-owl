@@ -135,6 +135,6 @@ public abstract class CodeSystemApiAssert {
 			.with().contentType(ContentType.JSON)
 			.and().body(requestBody)
 			.when().post()
-			.then().assertThat().statusCode(201);
+			.then().assertThat();
 	}
 }
