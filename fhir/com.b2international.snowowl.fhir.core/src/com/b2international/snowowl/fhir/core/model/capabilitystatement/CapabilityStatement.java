@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -27,17 +28,19 @@ import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.*;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 
 /**
  * This class represents a FHIR Capability Statement.  
@@ -76,7 +79,6 @@ public class CapabilityStatement extends MetadataResource {
 	
 	@Summary
 	@Valid
-	@JsonProperty
 	private final Collection<Uri> imports;
 	
 	@Summary
@@ -107,13 +109,21 @@ public class CapabilityStatement extends MetadataResource {
 	
 	@Summary
 	@Valid
-	@JsonProperty("implmenentationGuide")
+	@JsonProperty("implementationGuide")
 	private final Collection<Uri> implementationGuides;
 	
 	@Summary
 	@Valid
 	@JsonProperty("rest")
 	private final Collection<Rest> rests;
+	
+	@Valid
+	@JsonProperty("messaging")
+	private final Collection<Messaging> messagings;
+	
+	@Valid
+	@JsonProperty("document")
+	private final Collection<Document> documents;
 	
 	public CapabilityStatement(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
 			String version, String name, String title, Code status,
@@ -132,9 +142,9 @@ public class CapabilityStatement extends MetadataResource {
 			final Collection<Code> formats,
 			final Collection<Code> patchFormats,
 			final Collection<Uri> implementationGuides,
-			final Collection<Rest> rests
-			
-			) {
+			final Collection<Rest> rests,
+			final Collection<Messaging> messagings,
+			final Collection<Document> documents) {
 		
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date,
 				publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
@@ -151,7 +161,292 @@ public class CapabilityStatement extends MetadataResource {
 		this.patchFormats = patchFormats;
 		this.implementationGuides = implementationGuides;
 		this.rests = rests;
+		this.messagings = messagings;
+		this.documents = documents;
+	}
 	
+	public String getResourceType() {
+		return resourceType;
+	}
+	
+	public Collection<Identifier> getIdentifiers() {
+		return identifiers;
+	}
+	
+	public Code getKind() {
+		return kind;
+	}
+	
+	public Collection<Uri> getInstantiates() {
+		return instantiates;
+	}
+	
+	public Collection<Uri> getImports() {
+		return imports;
+	}
+	
+	public Software getSoftware() {
+		return software;
+	}
+	
+	public Implementation getImplementation() {
+		return implementation;
+	}
+	
+	public Id getFhirVersion() {
+		return fhirVersion;
+	}
+	
+	public Collection<Code> getFormats() {
+		return formats;
+	}
+	
+	public Collection<Code> getPatchFormats() {
+		return patchFormats;
+	}
+	
+	public Collection<Uri> getImplementationGuides() {
+		return implementationGuides;
+	}
+	
+	public Collection<Rest> getRests() {
+		return rests;
+	}
+	
+	public Collection<Messaging> getMessagings() {
+		return messagings;
+	}
+	
+	public Collection<Document> getDocuments() {
+		return documents;
+	}
+	
+	public static Builder builder(String id) {
+		return new Builder(id);
+	}
+	
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class Builder extends MetadataResource.Builder<Builder, CapabilityStatement> {
+
+		private String resourceType = RESOURCE_TYPE_CAPABILITY_STATEMENT;
+		private Collection<Identifier> identifiers;
+		private Code kind;
+		private Collection<Uri> instantiates;
+		private Collection<Uri> imports;
+		private Software software;
+		private Implementation implementation;
+		private Id fhirVersion;
+		private Collection<Code> formats;
+		private Collection<Code> patchFormats;
+		private Collection<Uri> implementationGuides;
+		private Collection<Rest> rests;
+		private Collection<Messaging> messagings;
+		private Collection<Document> documents;
+		
+		/**
+		 * Use this constructor when a new resource is sent to the server to be created.
+		 */
+		public Builder() {
+		}
+		
+		public Builder(String id) {
+			super(id);
+		}
+		
+		public Builder resourceType(String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
+		}
+		
+		@JsonProperty("identifier")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder identifiers(final Collection<Identifier> identifers) {
+			this.identifiers = identifers;
+			return getSelf();
+		}
+		
+		public Builder addIdentifier(Identifier identifier) {
+			if (identifiers == null) {
+				identifiers = new ArrayList<>();
+			}
+			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder kind(final Code kind) {
+			this.kind = kind;
+			return getSelf();
+		}
+
+		public Builder kind(final String kind) {
+			this.kind = new Code(kind);
+			return getSelf();
+		}
+		
+		@JsonProperty("instantiates")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder instantiates(final Collection<Uri> instantiates) {
+			this.instantiates = instantiates;
+			return getSelf();
+		}
+		
+		public Builder addInstantiate(final Uri instantiate) {
+			if (instantiates == null) {
+				instantiates = new ArrayList<>();
+			}
+			instantiates.add(instantiate);
+			return getSelf();
+		}
+		
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder imports(final Collection<Uri> imports) {
+			this.imports = imports;
+			return getSelf();
+		}
+		
+		public Builder addImport(final Uri importUri) {
+			if (imports == null) {
+				imports = new ArrayList<>();
+			}
+			imports.add(importUri);
+			return getSelf();
+		}
+		
+		public Builder software(final Software software) {
+			this.software = software;
+			return getSelf();
+		}
+
+		public Builder implementation(final Implementation implementation) {
+			this.implementation = implementation;
+			return getSelf();
+		}
+		
+		public Builder fhirVersion(Id fhirVersion) {
+			this.fhirVersion = fhirVersion;
+			return getSelf();
+		}
+		
+		public Builder fhirVersion(String fhirVersion) {
+			this.fhirVersion = new Id(fhirVersion);
+			return getSelf();
+		}
+		
+		@JsonProperty("format")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder formats(final Collection<Code> formats) {
+			this.formats = formats;
+			return getSelf();
+		}
+		
+		public Builder addFormat(final Code format) {
+			if (formats == null) {
+				formats = new ArrayList<>();
+			}
+			formats.add(format);
+			return getSelf();
+		}
+
+		@JsonProperty("patchFormat")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder patchFormats(final Collection<Code> patchFormats) {
+			this.patchFormats = patchFormats;
+			return getSelf();
+		}
+		
+		public Builder addPatchFormat(final Code patchFormat) {
+			if (patchFormats == null) {
+				patchFormats = new ArrayList<>();
+			}
+			patchFormats.add(patchFormat);
+			return getSelf();
+		}
+		
+		@JsonProperty("implementationGuide")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder implementationGuides(final Collection<Uri> implementationGuides) {
+			this.implementationGuides = implementationGuides;
+			return getSelf();
+		}
+		
+		public Builder addImplementationGuide(final Uri implementationGuide) {
+			if (implementationGuides == null) {
+				implementationGuides = new ArrayList<>();
+			}
+			implementationGuides.add(implementationGuide);
+			return getSelf();
+		}
+
+		@JsonProperty("rest")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder rests(final Collection<Rest> rests) {
+			this.rests = rests;
+			return getSelf();
+		}
+		
+		public Builder addRest(final Rest rest) {
+			if (rests == null) {
+				rests = new ArrayList<>();
+			}
+			rests.add(rest);
+			return getSelf();
+		}
+		
+		@JsonProperty("messaging")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder messagings(Collection<Messaging> messagings) {
+			this.messagings = messagings;
+			return this;
+		}
+		
+		public Builder addMessaging(final Messaging messaging) {
+			if (messagings == null) {
+				messagings = Lists.newArrayList();
+			}
+			messagings.add(messaging);
+			return this;
+		}
+		
+		@JsonProperty("document")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder documents(Collection<Document> documents) {
+			this.documents = documents;
+			return this;
+		}
+		
+		public Builder addDocument(final Document document) {
+			if (documents == null) {
+				documents = Lists.newArrayList();
+			}
+			documents.add(document);
+			return this;
+		}
+		
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+
+		@Override
+		protected CapabilityStatement doBuild() {
+			return new CapabilityStatement(id, meta, implicitRules, language, text, url, version, name, title,
+					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+					
+			resourceType,
+			identifiers,
+			kind,
+			instantiates,
+			imports,
+			software,
+			implementation,
+			fhirVersion,
+			formats,
+			patchFormats,
+			implementationGuides,
+			rests,
+			messagings,
+			documents);
+		}
 	}
 	
 	

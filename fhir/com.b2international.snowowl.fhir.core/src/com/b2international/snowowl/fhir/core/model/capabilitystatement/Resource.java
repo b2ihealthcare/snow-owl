@@ -20,11 +20,13 @@ import java.util.Collection;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.codesystems.ResourceType;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -230,8 +232,15 @@ public class Resource {
 		private Collection<SearchParam> searchParams;
 		private Collection<Operation> operations;
 		
+		@JsonProperty
 		public Builder type(final Code type) {
 			this.type = type;
+			return this;
+		}
+
+		@JsonIgnore
+		public Builder type(final ResourceType type) {
+			this.type = type.getCode();
 			return this;
 		}
 

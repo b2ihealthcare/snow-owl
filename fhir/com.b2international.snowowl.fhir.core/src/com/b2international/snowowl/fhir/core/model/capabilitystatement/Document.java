@@ -15,11 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.b2international.snowowl.fhir.core.codesystems.SearchParamType;
+import com.b2international.snowowl.fhir.core.codesystems.DocumentMode;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -30,49 +29,41 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * FHIR Capability statement SearchParam backbone definition.
+ * FHIR Capability statement Document backbone definition.
  * @since 8.0.0
  */
-@JsonDeserialize(builder = SearchParam.Builder.class)
-public class SearchParam {
-	
-	@NotEmpty
-	@Mandatory
-	@JsonProperty
-	private final String name;
-	
-	@JsonProperty
-	private final Uri definition;
-	
+@JsonDeserialize(builder = Document.Builder.class)
+public class Document {
+
+	@Valid
 	@NotNull
 	@Mandatory
 	@JsonProperty
-	private final Code type;
+	private final Code mode;
 	
 	@JsonProperty
 	private final String documentation;
 	
-	SearchParam(final String name, final Uri definition, final Code type, final String documentation) {
-		this.name = name;
-		this.definition = definition;
-		this.type = type;
+	
+	@JsonProperty
+	private final Uri profile;
+	
+	Document(final Code mode, final String documentation, final Uri profile) {
+		this.mode = mode;
+		this.profile = profile;
 		this.documentation = documentation;
 	}
 	
-	public String getName() {
-		return name;
-	}
-	
-	public Uri getDefinition() {
-		return definition;
-	}
-	
-	public Code getType() {
-		return type;
+	public Code getMode() {
+		return mode;
 	}
 	
 	public String getDocumentation() {
 		return documentation;
+	}
+	
+	public Uri getProfile() {
+		return profile;
 	}
 	
 	public static Builder builder() {
@@ -80,43 +71,27 @@ public class SearchParam {
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends ValidatingBuilder<SearchParam> {
+	public static class Builder extends ValidatingBuilder<Document> {
 		
-		private String name;
-		private Uri definition;
-		private Code type;
+		private Code mode;
 		private String documentation;
-		
-		public Builder name(final String name) {
-			this.name = name;
-			return this;
-		}
-
-		public Builder definition(final String definition) {
-			this.definition = new Uri(definition);
-			return this;
-		}
-		
-		public Builder definition(final Uri definition) {
-			this.definition = definition;
-			return this;
-		}
+		private Uri profile;
 		
 		@JsonProperty
-		public Builder type(final Code type) {
-			this.type = type;
+		public Builder mode(final Code mode) {
+			this.mode = mode;
 			return this;
 		}
-
+		
 		@JsonIgnore
-		public Builder type(final SearchParamType type) {
-			this.type = type.getCode();
+		public Builder mode(final String mode) {
+			this.mode = new Code(mode);
 			return this;
 		}
-
+		
 		@JsonIgnore
-		public Builder type(final String type) {
-			this.type = new Code(type);
+		public Builder mode(final DocumentMode mode) {
+			this.mode = mode.getCode();
 			return this;
 		}
 		
@@ -124,11 +99,21 @@ public class SearchParam {
 			this.documentation = documentation;
 			return this;
 		}
+
+		public Builder profile(final String profile) {
+			this.profile = new Uri(profile);
+			return this;
+		}
+		
+		public Builder profile(final Uri profile) {
+			this.profile = profile;
+			return this;
+		}
+		
 		
 		@Override
-		protected SearchParam doBuild() {
-			return new SearchParam(name, definition, type, documentation);
+		protected Document doBuild() {
+			return new Document(mode, documentation, profile);
 		}
 	}
-
 }

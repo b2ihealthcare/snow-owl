@@ -55,6 +55,7 @@ public class Concept {
 	@JsonInclude(Include.NON_EMPTY)
 	private final Collection<Designation> designations;
 	
+	@SuppressWarnings("rawtypes")
 	@Valid
 	@JsonProperty("property")
 	@JsonInclude(Include.NON_EMPTY)
@@ -65,7 +66,7 @@ public class Concept {
 	@JsonInclude(Include.NON_EMPTY)
 	private final Collection<Concept> children;
 	
-	Concept(Code code, String display, String definition, Collection<Designation> designations, Collection<ConceptProperty> properties, Collection<Concept> children) {
+	Concept(Code code, String display, String definition, Collection<Designation> designations, @SuppressWarnings("rawtypes") Collection<ConceptProperty> properties, Collection<Concept> children) {
 		this.code = code;
 		this.display = display;
 		this.definition = definition;
@@ -113,6 +114,7 @@ public class Concept {
 		
 		private Collection<Designation> designations;
 		
+		@SuppressWarnings("rawtypes")
 		private Collection<ConceptProperty> properties;
 		
 		private Collection<Concept> children;
@@ -151,7 +153,7 @@ public class Concept {
 		
 		@JsonProperty("property")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public Builder properties(Collection<ConceptProperty> properties) {
+		public Builder properties(@SuppressWarnings("rawtypes") Collection<ConceptProperty> properties) {
 			this.properties = properties;
 			return this;
 		}

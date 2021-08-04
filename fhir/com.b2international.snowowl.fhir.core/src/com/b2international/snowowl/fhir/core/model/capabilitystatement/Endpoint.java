@@ -16,73 +16,74 @@
 package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.capabilitystatement.Interaction.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * FHIR Capability statement Interaction backbone definition.
+ * FHIR Capability statement Endpoint backbone definition.
  * @since 8.0.0
  */
-@JsonDeserialize(builder = Interaction.Builder.class)
-public class Interaction {
+@JsonDeserialize(builder = Endpoint.Builder.class)
+public class Endpoint {
 	
 	@Mandatory
-	@NotNull
 	@Valid
 	@JsonProperty
-	private final Code code;
+	private final Coding protocol;
 	
+	@Mandatory
 	@Valid
 	@JsonProperty
-	private final String documentation;
+	private final Uri address;
 	
-	Interaction(final Code code, final String documentation) {
-		this.code = code;
-		this.documentation = documentation;
+	Endpoint(final Coding protocol, final Uri address) {
+		this.protocol = protocol;
+		this.address = address;
 	}
 	
-	public Code getCode() {
-		return code;
+	public Coding getProtocol() {
+		return protocol;
 	}
 	
-	public String getDocumentation() {
-		return documentation;
+	public Uri getAddress() {
+		return address;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
-
+	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends ValidatingBuilder<Interaction> {
+	public static class Builder extends ValidatingBuilder<Endpoint> {
 		
-		private Code code;
-		private String documentation;
+		private Coding protocol;
+		private Uri address;
 		
-		public Builder code(final Code code) {
-			this.code = code;
+		public Builder protocol(final Coding protocol) {
+			this.protocol = protocol;
 			return this;
 		}
 
-		public Builder code(final String code) {
-			this.code = new Code(code);
+		public Builder address(final String address) {
+			this.address = new Uri(address);
 			return this;
 		}
-
-		public Builder documentation(final String documentation) {
-			this.documentation = documentation;
+		
+		public Builder address(final Uri address) {
+			this.address = address;
 			return this;
 		}
 		
 		@Override
-		protected Interaction doBuild() {
-			return new Interaction(code, documentation);
+		protected Endpoint doBuild() {
+			return new Endpoint(protocol, address);
 		}
 	}
 

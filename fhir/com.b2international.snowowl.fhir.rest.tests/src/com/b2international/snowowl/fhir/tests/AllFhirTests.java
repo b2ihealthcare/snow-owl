@@ -20,6 +20,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.tests.domain.*;
+import com.b2international.snowowl.fhir.tests.domain.capabilitystatement.*;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.CodeSystemTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptPropertyTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptTest;
@@ -125,7 +126,19 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	ElementDefinitionTest.class,
 	StructureViewTest.class,
 	MappingTest.class,
-	StructureDefinitionTest.class
+	StructureDefinitionTest.class,
+	
+	//CapabilityStatement
+	SupportedMessageTest.class,
+	EndpointTest.class,
+	MessagingTest.class,
+	DocumentTest.class,
+	InteractionTest.class,
+	ResourceTest.class,
+	SearchParamTest.class,
+	OperationTest.class,
+	RestTest.class,
+	CapabilityStatementTest.class
 	
 })
 public class AllFhirTests {
