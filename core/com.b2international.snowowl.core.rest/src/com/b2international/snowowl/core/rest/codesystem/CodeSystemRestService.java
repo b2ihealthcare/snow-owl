@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
-import com.b2international.snowowl.core.rest.resource.ResourceRestSearch;
+import com.b2international.snowowl.core.rest.resource.TerminologyResourceRestSearch;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -59,7 +59,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CodeSystems> searchByGet(@ParameterObject final ResourceRestSearch params) {
+	public Promise<CodeSystems> searchByGet(@ParameterObject final TerminologyResourceRestSearch params) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.filterByIds(params.getId())
 				.filterByOids(params.getOid())
@@ -93,7 +93,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<CodeSystems> searchByPost(
 			@RequestBody(required = false)
-			final ResourceRestSearch params) {
+			final TerminologyResourceRestSearch params) {
 		return searchByGet(params);
 	}
 

@@ -17,45 +17,15 @@ package com.b2international.snowowl.core.rest.resource;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.rest.domain.BaseResourceRestSearch;
-
 import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 8.0
  */
-public class ResourceRestSearch extends BaseResourceRestSearch {
+public class ResourceRestSearch extends TerminologyResourceRestSearch {
 
-	@Parameter
-	private List<String> branch;
-	
 	@Parameter
 	private List<String> resourceType;
-	
-	@Parameter
-	private List<String> toolingId;
-	
-	@Parameter
-	private List<String> status;
-
-	@Parameter
-	private List<String> oid;
-	
-	public List<String> getOid() {
-		return oid;
-	}
-	
-	public void setOid(List<String> oid) {
-		this.oid = oid;
-	}
-	
-	public List<String> getBranch() {
-		return branch;
-	}
-
-	public void setBranch(List<String> branchPath) {
-		this.branch = branchPath;
-	}
 
 	public List<String> getResourceType() {
 		return resourceType;
@@ -63,22 +33,6 @@ public class ResourceRestSearch extends BaseResourceRestSearch {
 
 	public void setResourceType(List<String> resourceType) {
 		this.resourceType = resourceType;
-	}
-
-	public List<String> getToolingId() {
-		return toolingId;
-	}
-
-	public void setToolingId(List<String> toolingId) {
-		this.toolingId = toolingId;
-	}
-
-	public List<String> getStatus() {
-		return status;
-	}
-	
-	public void setStatus(List<String> status) {
-		this.status = status;
 	}
 	
 }

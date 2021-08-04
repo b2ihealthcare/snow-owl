@@ -40,7 +40,7 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 	 * @param resourceTypes - the resource types to match
 	 * @return this builder
 	 */
-	public ResourceSearchRequestBuilder filterByResourceType(Iterable<String> resourceTypes) {
+	public ResourceSearchRequestBuilder filterByResourceTypes(Iterable<String> resourceTypes) {
 		return addOption(OptionKey.RESOURCE_TYPE, resourceTypes);
 	}
 	

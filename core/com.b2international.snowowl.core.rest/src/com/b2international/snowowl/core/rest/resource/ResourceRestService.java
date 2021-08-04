@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.rest.resource;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -57,7 +56,7 @@ public class ResourceRestService extends AbstractRestService {
 		return ResourceRequests
 				.prepareSearch()
 				.filterByIds(params.getId())
-				.filterByResourceType(params.getResourceType())
+				.filterByResourceTypes(params.getResourceType())
 				.filterByTitleExact(params.getTitleExact())
 				.filterByTitle(params.getTitle())
 				.filterByToolingIds(params.getToolingId())
@@ -85,7 +84,7 @@ public class ResourceRestService extends AbstractRestService {
 		return ResourceRequests
 				.prepareSearch()
 				.filterByIds(params.getId())
-				.filterByResourceType(params.getResourceType())
+				.filterByResourceTypes(params.getResourceType())
 				.filterByTitleExact(params.getTitleExact())
 				.filterByTitle(params.getTitle())
 				.filterByToolingIds(params.getToolingId())
