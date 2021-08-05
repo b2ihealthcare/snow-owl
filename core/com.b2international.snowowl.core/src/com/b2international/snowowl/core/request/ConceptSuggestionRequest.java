@@ -29,6 +29,7 @@ import org.tartarus.snowball.ext.EnglishStemmer;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.compat.TextConstants;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
@@ -94,8 +95,9 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		
 		// Get the suggestion base set of concepts
 		final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
-			.setLimit(SCROLL_LIMIT)
-			.setLocales(locales());
+				.filterByCodeSystemUri(context.service(ResourceURI.class))
+				.setLimit(SCROLL_LIMIT)
+				.setLocales(locales());
 		
 		if (containsKey(QUERY)) {
 			baseRequestBuilder.filterByInclusions(getCollection(QUERY, String.class));
