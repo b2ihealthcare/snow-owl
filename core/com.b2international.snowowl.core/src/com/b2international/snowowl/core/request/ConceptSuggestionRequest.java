@@ -27,6 +27,7 @@ import javax.validation.constraints.Min;
 
 import org.tartarus.snowball.ext.EnglishStemmer;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
@@ -83,6 +84,10 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 
 	@Override
 	protected Suggestions doExecute(BranchContext context) throws IOException {
+		if (searchAfter() != null) {
+			throw new BadRequestException("searchAfter is not supported in Concept Suggestion API.");
+		}
+		
 		// Gather tokens
 		final Multiset<String> tokenOccurrences = HashMultiset.create(); 
 		final EnglishStemmer stemmer = new EnglishStemmer();
@@ -129,7 +134,6 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 						topTokens.stream().collect(Collectors.joining(" ")),
 						minOccurrenceCount))
 				.setLimit(limit())
-				.setSearchAfter(searchAfter())
 				.setLocales(locales());
 		
 		if (!exclusions.isEmpty()) {
