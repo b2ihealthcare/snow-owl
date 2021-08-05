@@ -19,39 +19,27 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.BatchRequest;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.ParametersRequestEntry;
-import com.b2international.snowowl.fhir.core.model.RequestEntry;
-import com.b2international.snowowl.fhir.core.model.ResourceRequestEntry;
+import com.b2international.snowowl.fhir.core.model.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.rest.tests.AllFhirRestTests;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.test.commons.BundleStartRule;
-import com.b2international.snowowl.test.commons.Resources;
-import com.b2international.snowowl.test.commons.SnomedContentRule;
-import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
 /**
  * Tests for batch REST operations
  * @since 8.0.0
  */
-public class BatchApiRestTest extends FhirRestTest {
+public class FhirBatchApiRestTest extends FhirRestTest {
 	
-	//@Test
+	@Test
 	public void singleLookupGET() {
 		
 		RequestEntry entry = RequestEntry.builder()
@@ -84,7 +72,7 @@ public class BatchApiRestTest extends FhirRestTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void multiLookupGET() {
 		
 		RequestEntry entry1 = RequestEntry.builder()
@@ -129,7 +117,7 @@ public class BatchApiRestTest extends FhirRestTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void singleLookupPost() {
 		
 		LookupRequest request = LookupRequest.builder()
@@ -169,7 +157,7 @@ public class BatchApiRestTest extends FhirRestTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void singleRequestWithInvalidParameters() {
 		
 		LookupRequest request = LookupRequest.builder()
@@ -215,7 +203,7 @@ public class BatchApiRestTest extends FhirRestTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void singleRequestWithFailedLookup() {
 		
 		LookupRequest request = LookupRequest.builder()

@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.rest.tests.batch.BatchApiRestTest;
+import com.b2international.snowowl.fhir.rest.tests.batch.FhirBatchApiRestTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemApiTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemLookupOperationTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemSubsumesOperationTest;
@@ -38,10 +38,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	
-	//Batch
-	BatchApiRestTest.class,
-	
 	// CodeSystem API
 	FhirCodeSystemApiTest.class,
 	FhirCodeSystemLookupOperationTest.class,
@@ -55,6 +51,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// ConceptMap API
 //	SnomedConceptMapRestTest.class,
 //	TranslateSnomedConceptMapRestTest.class,
+	
+	//Batch
+//	FhirBatchApiRestTest.class,
 })
 public class AllFhirRestTests {
 	

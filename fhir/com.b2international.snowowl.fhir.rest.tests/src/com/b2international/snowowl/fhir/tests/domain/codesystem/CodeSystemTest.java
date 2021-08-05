@@ -19,34 +19,27 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.net.URI;
-import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.nio.file.Path;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.*;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.restassured.path.json.JsonPath;
 
@@ -226,9 +219,8 @@ public class CodeSystemTest extends FhirTest {
 	
 	@Test
 	public void deserializeCodeSystem() throws Exception {
-			
-		URI uri = CodeSystemTest.class.getResource("test_codesystem.json").toURI();
-		CodeSystem codeSystem = objectMapper.readValue(Paths.get(uri).toFile(), CodeSystem.class);
+		Path testCodeSystem = PlatformUtil.toAbsolutePath(getClass(), "test_codesystem.json");
+		objectMapper.readValue(testCodeSystem.toFile(), CodeSystem.class);
 	}
 
 }
