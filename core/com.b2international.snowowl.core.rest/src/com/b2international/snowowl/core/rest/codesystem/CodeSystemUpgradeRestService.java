@@ -74,7 +74,7 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 	
 	@ApiOperation(
 			value="Synchronize upgrade codesystem with the original codesystem (EXPERIMENTAL)",
-			notes="Synchroinze any changes on the original code system with the upgrade code system."
+			notes="Synchronize any changes on the original code system with the upgrade code system."
 			)
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Upgrade code system synchronized"),
