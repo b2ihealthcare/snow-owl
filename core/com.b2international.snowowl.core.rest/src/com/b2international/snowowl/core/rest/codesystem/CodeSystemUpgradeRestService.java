@@ -44,7 +44,7 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 			notes="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
 			)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Upgrade ", response = Void.class),
+		@ApiResponse(code = 201, message = "Upgrade ", response = Void.class),
 		@ApiResponse(code = 400, message = "Code System cannot be upgraded", response = RestApiError.class)
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
@@ -70,5 +70,59 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 					return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
 				});
 	}
-
+	
+	@ApiOperation(
+			value="Synchronize upgrade codesystem with the original codesystem (EXPERIMENTAL)",
+			notes="Synchroinze any changes on the original code system with the upgrade code system."
+			)
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "Synchronization "),
+		@ApiResponse(code = 400, message = "Code system could not be synchronized with the downstream code system", response = RestApiError.class)
+	})
+	@PostMapping("/sync/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void sync(
+			@ApiParam(value = "Code System identifier", required = true)
+			@PathVariable("id") 
+			final String codeSystemId) {
+		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
+				.filterById(codeSystemId)
+				.buildAsync()
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES)
+				.first()
+				.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+		
+		 CodeSystemRequests.prepareUpgradeSynchronization(codeSystem.getCodeSystemURI(), codeSystem.getUpgradeOf())
+				.build(codeSystem.getRepositoryId())
+				.execute(getBus());
+	}
+	
+	@ApiOperation(
+			value="Complete a codesystem upgrade (EXPERIMENTAL)",
+			notes="Completes the upgrade process of a Code System to the newer extensionOf Code System dependency."
+			)
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "Complete "),
+		@ApiResponse(code = 400, message = "Code System upgrade cannot be completed", response = RestApiError.class)
+	})
+	@PostMapping("/complete/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void complete(
+			@ApiParam(value = "Code System identifier", required = true)
+			@PathVariable("id") 
+			final String codeSystemId) {
+		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
+				.filterById(codeSystemId)
+				.buildAsync()
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES)
+				.first()
+				.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+		
+		CodeSystemRequests.prepareComplete(codeSystemId)
+				.build(codeSystem.getRepositoryId())
+				.execute(getBus());		
+	}
+	
 }
