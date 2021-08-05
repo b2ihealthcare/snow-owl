@@ -17,10 +17,13 @@ package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.fhir.core.codesystems.RestfulSecurityService;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -86,6 +89,7 @@ public class Security {
 			return this;
 		}
 		
+		@JsonProperty
 		public Builder addService(final CodeableConcept service) {
 			
 			if (services == null) {
@@ -94,6 +98,28 @@ public class Security {
 			
 			services.add(service);
 			return this;
+		}
+		
+		@JsonIgnore
+		public Builder addService(RestfulSecurityService service, String version, String text) {
+			
+			CodeableConcept serviceConcept = CodeableConcept.builder()
+					.addCoding(Coding.builder()
+							.code(service.getCode())
+							.display(service.getDisplayName())
+							.system(service.getCodeSystemUri())
+							.version(version)
+							.build())
+					.text(text)
+					.build();
+			
+			if (services == null) {
+				services = Lists.newArrayList();
+			}
+			
+			services.add(serviceConcept);
+			return this;
+			
 		}
 
 		public Builder description(final String description) {

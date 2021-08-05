@@ -96,6 +96,7 @@ public class CapabilityStatement extends MetadataResource {
 	@JsonProperty
 	private final Id fhirVersion;
 	
+	//Should be bound to http://hl7.org/fhir/ValueSet/mimetypes
 	@Mandatory
 	@Valid
 	@NotEmpty

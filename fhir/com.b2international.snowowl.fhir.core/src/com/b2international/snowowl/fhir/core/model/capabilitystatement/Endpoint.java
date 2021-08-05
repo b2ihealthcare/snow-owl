@@ -17,14 +17,17 @@ package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
 import javax.validation.Valid;
 
+import com.b2international.snowowl.fhir.core.codesystems.MessageTransport;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.capabilitystatement.Interaction.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 
 /**
  * FHIR Capability statement Endpoint backbone definition.
@@ -66,8 +69,23 @@ public class Endpoint {
 		private Coding protocol;
 		private Uri address;
 		
+		@JsonProperty
 		public Builder protocol(final Coding protocol) {
 			this.protocol = protocol;
+			return this;
+		}
+		
+		@JsonIgnore
+		public Builder protocol(MessageTransport transport, String version) {
+			
+			Coding transportCoding = Coding.builder()
+							.code(transport.getCode())
+							.display(transport.getDisplayName())
+							.system(transport.getCodeSystemUri())
+							.version(version)
+							.build();
+			
+			this.protocol = transportCoding;
 			return this;
 		}
 

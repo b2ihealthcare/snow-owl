@@ -114,6 +114,15 @@ public class RestTest extends FhirTest {
 	
 	private void validate(Rest rest) {
 		assertEquals("documentation", rest.getDocumentation());
+		assertEquals(RestfulCapabilityMode.CLIENT.getCode(), rest.getMode());
+		assertEquals("serviceDescription", rest.getSecurity().getDescription());
+		CodeableConcept serviceConcept = rest.getSecurity().getServices().iterator().next();
+		assertEquals("codingTest", serviceConcept.getText());
+		Resource restResource = rest.getResources().iterator().next();
+		assertEquals("profile", restResource.getProfile().getUriValue());
+		assertEquals("name", restResource.getOperations().iterator().next().getName());
+		assertEquals("compartment", rest.getCompartments().iterator().next().getUriValue());
+		assertEquals("name", rest.getSearchParams().iterator().next().getName());
 	}
 	
 	@Test

@@ -86,6 +86,9 @@ public class ResourceTest extends FhirTest {
 	
 	private void validate(Resource resource) {
 		assertEquals(ResourceType.CODESYSTEM.getCode(), resource.getType());
+		assertEquals("profile", resource.getProfile().getUriValue());
+		assertEquals("referencePolicy", resource.getReferencePolicies().iterator().next().getCodeValue());
+		assertEquals("name", resource.getOperations().iterator().next().getName());
 		
 	}
 

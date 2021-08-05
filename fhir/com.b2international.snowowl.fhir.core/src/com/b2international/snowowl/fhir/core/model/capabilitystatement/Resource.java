@@ -20,7 +20,7 @@ import java.util.Collection;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.codesystems.ResourceType;
+import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -308,6 +308,12 @@ public class Resource {
 			this.versioning = new Code(versioning);
 			return this;
 		}
+
+		@JsonIgnore
+		public Builder versioning(final VersioningPolicy policy) {
+			this.versioning = policy.getCode();
+			return this;
+		}
 		
 		public Builder readHistory(final Boolean readHistory) {
 			this.readHistory = readHistory;
@@ -324,8 +330,15 @@ public class Resource {
 			return this;
 		}
 		
+		@JsonProperty
 		public Builder conditionalRead(final Code conditionalRead) {
 			this.conditionalRead = conditionalRead;
+			return this;
+		}
+		
+		@JsonIgnore
+		public Builder conditionalRead(final ConditionalReadStatus status) {
+			this.conditionalRead = status.getCode();
 			return this;
 		}
 		
@@ -334,8 +347,15 @@ public class Resource {
 			return this;
 		}
 		
+		@JsonProperty
 		public Builder conditionalDelete(final Code conditionalDelete) {
 			this.conditionalDelete = conditionalDelete;
+			return this;
+		}
+		
+		@JsonIgnore
+		public Builder conditionalDelete(final ConditionalDeleteStatus status) {
+			this.conditionalDelete = status.getCode();
 			return this;
 		}
 		
@@ -346,11 +366,21 @@ public class Resource {
 			return this;
 		}
 		
+		@JsonProperty
 		public Builder addReferencePolicy(final Code referencePolicy) {
 			if (referencePolicies == null) {
 				referencePolicies = Lists.newArrayList();
 			}
 			referencePolicies.add(referencePolicy);
+			return this;
+		}
+		
+		@JsonIgnore
+		public Builder addReferencePolicy(final ReferenceHandlingPolicy referencePolicy) {
+			if (referencePolicies == null) {
+				referencePolicies = Lists.newArrayList();
+			}
+			referencePolicies.add(referencePolicy.getCode());
 			return this;
 		}
 		

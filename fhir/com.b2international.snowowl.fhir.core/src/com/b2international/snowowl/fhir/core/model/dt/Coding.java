@@ -24,6 +24,7 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -170,8 +171,15 @@ public class Coding {
 		private Boolean userSelected;
 		private String display;
 
+		@JsonIgnore
 		public Builder code(final String code) {
 			this.code = new Code(code);
+			return this;
+		}
+
+		@JsonProperty
+		public Builder code(final Code code) {
+			this.code = code;
 			return this;
 		}
 		

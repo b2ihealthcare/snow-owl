@@ -18,9 +18,11 @@ package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.codesystems.RestfulInteraction;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -65,13 +67,21 @@ public class Interaction {
 		private Code code;
 		private String documentation;
 		
+		@JsonProperty
 		public Builder code(final Code code) {
 			this.code = code;
 			return this;
 		}
 
+		@JsonIgnore
 		public Builder code(final String code) {
 			this.code = new Code(code);
+			return this;
+		}
+
+		@JsonIgnore
+		public Builder code(final RestfulInteraction interaction) {
+			this.code = interaction.getCode();
 			return this;
 		}
 

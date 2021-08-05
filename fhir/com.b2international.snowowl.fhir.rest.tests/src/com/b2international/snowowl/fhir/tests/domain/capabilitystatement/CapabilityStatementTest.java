@@ -195,6 +195,17 @@ public class CapabilityStatementTest extends FhirTest {
 	
 	private void validate(CapabilityStatement capabilityStatement) {
 		assertEquals("id", capabilityStatement.getId().getIdValue());
+		assertEquals("docDocumentation", capabilityStatement.getDocuments().iterator().next().getDocumentation());
+		assertEquals("softwareName", capabilityStatement.getSoftware().getName());
+		assertEquals("impDescription", capabilityStatement.getImplementation().getDescription());
+		Rest rest = capabilityStatement.getRests().iterator().next();
+		assertEquals(RestfulCapabilityMode.CLIENT.getCode(), rest.getMode());
+		assertEquals("serviceDescription", rest.getSecurity().getDescription());
+		CodeableConcept serviceConcept = rest.getSecurity().getServices().iterator().next();
+		assertEquals("codingTest", serviceConcept.getText());
+		Resource restResource = rest.getResources().iterator().next();
+		assertEquals("profile", restResource.getProfile().getUriValue());
+		assertEquals("format", capabilityStatement.getFormats().iterator().next().getCodeValue());
 	}
 
 	@Test
