@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,7 +31,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
@@ -75,7 +75,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.execute(context);
 				if (member.isReleased()) {
 					SnomedRequests.prepareUpdateMember(change.getMemberId())
-						.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.FALSE))
+						.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.FALSE))
 						.build()
 						.execute(context);
 				} else {
@@ -90,7 +90,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.execute(context);
 				if(!memberToChange.isActive()) {
 					SnomedRequests.prepareUpdateMember(change.getMemberId())
-					.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
+					.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
 					.build()
 					.execute(context);
 				}

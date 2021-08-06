@@ -609,7 +609,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 
 		// Otherwise, collect applicable versions using this code system's working path
-		final CodeSystem extensionOfCodeSystem = CodeSystemRequests.prepareGetCodeSystem(extensionOfUri.getResourceId()).build().execute(context);
+		final CodeSystem extensionOfCodeSystem = CodeSystemRequests.prepareGetCodeSystem(extensionOfUri.getResourceId()).buildAsync().execute(context);
 		collectExportableCodeSystemVersions(context, versionsToExport, extensionOfCodeSystem, codeSystem.getBranchPath());
 	}
 
