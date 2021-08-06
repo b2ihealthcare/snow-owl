@@ -19,7 +19,6 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.ResourceRequestEntry;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -69,8 +68,8 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 						.getRequest()
 						.execute(context)
 						.first()
-						.map(ResourceRequestEntry.class::cast)
-						.map(ResourceRequestEntry::getRequestResource)
+						.map(ResourceResponseEntry.class::cast)
+						.map(ResourceResponseEntry::getResponseResource)
 						.map(CodeSystem.class::cast);
 				})
 				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
