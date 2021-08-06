@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEv
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluationImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
@@ -81,6 +82,10 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 		}
 		
 		if (!active) {
+			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, Collections.emptyList());
+		}
+		
+		if (Strings.isNullOrEmpty(query)) {
 			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, Collections.emptyList());
 		}
 
