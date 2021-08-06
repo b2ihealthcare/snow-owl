@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 ## 7.17.3
 
 ### Bugs/Improvements
-- [api]: allow synchronization of empty extensions/branches without issues (#849)
 - [snomed]: handle integer and decimal values as numbers and make sure they classify as is without type or value changes (#868)
 - [snomed]: support nested branches when importing MRCM rules (#870)
+- [api]: allow synchronization of empty extensions/branches without issues (#849)
 - [api]: expose CodeSystem Sync and Complete API (#872, #873)
 
 ## 7.17.2
