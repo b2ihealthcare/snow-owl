@@ -23,13 +23,18 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
  * The concept in the value set resource
  * @since 6.7
  */
+@JsonDeserialize(builder = ValueSetConcept.Builder.class)
 public class ValueSetConcept {
 	
 	@Valid
@@ -50,17 +55,30 @@ public class ValueSetConcept {
 		this.designations = designations;
 	}
 	
+	public Code getCode() {
+		return code;
+	}
+	
+	public String getDisplay() {
+		return display;
+	}
+	
+	public Collection<Designation> getDesignations() {
+		return designations;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<ValueSetConcept> {
 		
 		private Code code;
 		
 		private String display;
 		
-		private Collection<Designation> designations = Sets.newHashSet();
+		private Collection<Designation> designations;
 		
 		public Builder code(final String codeValue) {
 			this.code = new Code(codeValue);
@@ -72,8 +90,19 @@ public class ValueSetConcept {
 			return this;
 		}
 		
+		@JsonProperty("designation")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder designations(Collection<Designation> designations) {
+			this.designations = designations;
+			return this;
+		}
+		
 		public Builder addDesignation(final Designation designation) {
-			this.designations.add(designation);
+			
+			if (designations == null) {
+				designations = Lists.newArrayList();
+			}
+			designations.add(designation);
 			return this;
 		}
 		

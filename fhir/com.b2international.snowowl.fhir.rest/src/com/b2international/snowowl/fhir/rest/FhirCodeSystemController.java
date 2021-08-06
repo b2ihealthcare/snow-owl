@@ -16,10 +16,18 @@
 package com.b2international.snowowl.fhir.rest;
 
 import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
@@ -51,6 +59,107 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	@Override
 	protected Class<CodeSystem> getModelClass() {
 		return CodeSystem.class;
+	}
+	
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	//@ResponseStatus(HttpStatus.CREATED)
+	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {
+		/*
+		List<LocalTerminologyConceptPropertyDefinition> propertyDefinitions = codeSystem.getProperties().stream().map(p -> {
+			LocalTerminologyConceptPropertyDefinition.Builder builder = LocalTerminologyConceptPropertyDefinition.builder(UUID.randomUUID().toString())
+					.name(p.getCodeValue())
+					.cardinality(PropertyCardinality.ZERO_TO_MANY)
+					.description(p.getDescription());
+			
+			Code type = p.getType();
+			PropertyType propertyType = PropertyType.forValue(type.getCodeValue());
+			
+			
+			switch (propertyType) {
+			case BOOLEAN:
+				builder.valueType(PropertyValueType.BOOLEAN);
+				break;
+			case INTEGER:
+				builder.valueType(PropertyValueType.INTEGER);
+				break;
+			case DECIMAL:
+				builder.valueType(PropertyValueType.DECIMAL);
+				break;
+			case STRING:
+				builder.valueType(PropertyValueType.STRING);
+				break;
+			case CODE:
+				builder.valueType(PropertyValueType.URI);
+				break;
+			case CODING:
+				builder.valueType(PropertyValueType.URI);
+				break;
+			case DATETIME:
+				builder.valueType(PropertyValueType.DATE);
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown type: " + propertyType);
+			}
+			
+			return builder.build();
+			
+		}).collect(Collectors.toList());
+		
+		for (LocalTerminologyConceptPropertyDefinition localTerminologyConceptPropertyDefinition : propertyDefinitions) {
+			System.out.println("Def: " + localTerminologyConceptPropertyDefinition);
+		}
+		
+		LcsRequests.prepareCreateTerminology()
+			.setUrl(codeSystem.getUrl().getUriValue())
+			.setId(codeSystem.getId().getIdValue())
+			.setDescription(codeSystem.getDescription())
+			.setLanguage(codeSystem.getLanguage().getCodeValue())
+			//.setCopyright(codeSystem.getCopyright())
+			//.setStatus(codeSystem.getStatus().getCodeValue())
+			//.setOwner(codeSystem.getPublisher())
+			.setPropertyDefinitions(propertyDefinitions)
+			.setTitle(codeSystem.getTitle())
+			.buildAsync()
+			.execute(getBus())
+			.getSync();
+		
+		Collection<Concept> concepts = codeSystem.getConcepts();
+		
+		for (Concept concept : concepts) {
+			
+			Collection<ConceptProperty> properties = concept.getProperties();
+			List<LocalTerminologyConceptProperty> lcsProperties = properties.stream()
+				.map(p -> {
+					LocalTerminologyConceptPropertyDefinition definition = propertyDefinitions.stream()
+							.filter(d -> d.getName().equals(p.getCodeValue()))
+							.findFirst()
+							.orElseThrow(() -> new IllegalArgumentException("Undefined property"));
+					
+					LocalTerminologyConceptProperty lcsProperty = definition.createProperty();
+					
+					if (p.getPropertyType() != PropertyType.DATETIME) {
+						lcsProperty.setValue(p.getValue());
+					}
+					return lcsProperty;
+				
+			}).collect(Collectors.toList());
+			
+			ResourceURI uri = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystem.getId().getIdValue());
+			LcsRequests.localTerminologyConcepts()
+				.prepareCreate()
+				.setActive(true)
+				.setId(concept.getCode().getCodeValue())
+				.setTerm(concept.getDisplay())
+				.setAlternativeTerms(ImmutableList.of(concept.getDefinition()))
+				.setProperties(lcsProperties)
+				.build(uri, "user", "Commit comment")
+				.execute(getBus())
+				.getSync();
+			
+		}
+		*/
+		
+		return ResponseEntity.ok().build();
 	}
 	
 	/**

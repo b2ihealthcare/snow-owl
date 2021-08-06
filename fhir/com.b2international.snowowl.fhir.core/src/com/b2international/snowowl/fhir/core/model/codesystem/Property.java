@@ -26,6 +26,8 @@ import com.b2international.snowowl.fhir.core.model.dt.FhirProperty;
 import com.b2international.snowowl.fhir.core.model.dt.FhirType;
 import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 import com.b2international.snowowl.fhir.core.model.serialization.FhirSerializedName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -108,6 +110,8 @@ public final class Property extends FhirProperty {
 			return this;
 		}
 		
+		@JsonProperty("subproperty")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder subProperty(Collection<SubProperty> properties) {
 			subProperties = ImmutableList.builder();
 			subProperties.addAll(properties);

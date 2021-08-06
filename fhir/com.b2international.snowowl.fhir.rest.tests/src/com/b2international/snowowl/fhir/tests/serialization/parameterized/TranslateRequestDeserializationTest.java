@@ -51,7 +51,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error")
 			.addLocation("TranslateRequest.codeAndSystemValid")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeAndSystemValid' content is invalid [false]."
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeAndSystemValid' content is invalid [false]."
 					+ " Violation: Both code and system needs to be provided.")
 			.build();
 		
@@ -74,7 +74,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error")
 			.addLocation("TranslateRequest.sourceValid")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'sourceValid' content is invalid [false]. "
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'sourceValid' content is invalid [false]. "
 					+ "Violation: Source needs to be set either via code/system or code or codeable concept.")
 			.build();
 		
@@ -105,7 +105,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error")
 			.addLocation("TranslateRequest.sourceValid")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'sourceValid' content is invalid [false]. "
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'sourceValid' content is invalid [false]. "
 					+ "Violation: Source needs to be set either via code/system or code or codeable concept.")
 			.build();
 		
@@ -127,7 +127,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error")
 			.addLocation("TranslateRequest.targetValid")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'targetValid' content is invalid [false]. "
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'targetValid' content is invalid [false]. "
 				+ "Violation: Target or target system needs to be provided.")
 			.build();
 		
@@ -242,7 +242,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("1 validation error")
 				.addLocation("TranslateRequest.versionValid")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'versionValid' content is invalid [false]. "
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'versionValid' content is invalid [false]. "
 					+ "Violation: SNOMED CT version is defined as part of the system URI.")
 				.build();
 			
@@ -269,7 +269,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error")
 			.addLocation("Coding.versionValid")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'versionValid' content is invalid [false]. "
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'versionValid' content is invalid [false]. "
 				+ "Violation: SNOMED CT version is defined as part of the system URI.")
 			.build();
 		

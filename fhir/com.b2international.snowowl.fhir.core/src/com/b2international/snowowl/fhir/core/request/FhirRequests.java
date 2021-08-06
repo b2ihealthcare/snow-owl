@@ -16,12 +16,17 @@
 package com.b2international.snowowl.fhir.core.request;
 
 /**
+ * Main class to access FHIR requests.
  * @since 8.0
  */
 public class FhirRequests {
 
 	public static FhirCodeSystemRequests codeSystems() {
 		return new FhirCodeSystemRequests();
+	}
+	
+	public static FhirBundleRequests bundles() {
+		return new FhirBundleRequests();
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,17 @@ import java.util.Collection;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
 
 /**
  * FHIR {@link StructureDefinition} snapshot/differential backBone definition.
  * @since 7.1
  */
+@JsonDeserialize(builder = StructureView.Builder.class)
 public class StructureView {
 	
 	@NotEmpty
@@ -37,20 +41,32 @@ public class StructureView {
 		this.elementDefinitions = elementDefinitions;
 	}
 	
+	public Collection<ElementDefinition> getElementDefinitions() {
+		return elementDefinitions;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<StructureView> {
 		
-		private Collection<ElementDefinition> elementDefinitions = Lists.newArrayList();
+		private Collection<ElementDefinition> elementDefinitions;
 		
+		@JsonProperty("element")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder elementDefinitions(Collection<ElementDefinition> elementDefinitions) {
 			this.elementDefinitions = elementDefinitions;
 			return this;
 		}
 
 		public Builder addElementDefinition(final ElementDefinition elementDefinition) {
+			
+			if (elementDefinitions == null) {
+				elementDefinitions = Lists.newArrayList();
+			}
+			
 			this.elementDefinitions.add(elementDefinition);
 			return this;
 		}

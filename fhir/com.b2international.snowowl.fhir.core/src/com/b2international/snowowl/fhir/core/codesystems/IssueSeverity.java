@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Issue Severity Code system
@@ -53,5 +54,10 @@ public enum IssueSeverity implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
+	
+	@JsonCreator
+    public static IssueSeverity forValue(String value) {
+		return IssueSeverity.valueOf(value.toUpperCase());
+    }
 
 }

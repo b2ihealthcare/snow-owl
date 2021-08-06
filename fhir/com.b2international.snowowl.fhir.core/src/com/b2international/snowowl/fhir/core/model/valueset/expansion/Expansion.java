@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
@@ -25,12 +22,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.FhirConstants;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Sets;
 
 /**
@@ -39,6 +37,8 @@ import com.google.common.collect.Sets;
  * 
  * @since 6.6
  */
+@SuppressWarnings("rawtypes")
+@JsonDeserialize(builder = Expansion.Builder.class)
 public class Expansion {
 	
 	@Valid
@@ -61,13 +61,13 @@ public class Expansion {
 	
 	@Valid
 	@JsonProperty("parameter")
-	private final Collection<Parameter<?>> parameters;
+	private final Collection<Parameter> parameters;
 	
 	@Valid
 	@JsonProperty
 	private final Collection<Contains> contains;
 	
-	Expansion(Uri identifier, Date timestamp, Integer total, Integer offset, Collection<Parameter<?>> parameters, Collection<Contains> contains) {
+	Expansion(Uri identifier, Date timestamp, Integer total, Integer offset, Collection<Parameter> parameters, Collection<Contains> contains) {
 		this.identifier = identifier;
 		this.timestamp = timestamp;
 		this.total = total;
@@ -76,18 +76,43 @@ public class Expansion {
 		this.contains = contains;
 	}
 	
+	public Uri getIdentifier() {
+		return identifier;
+	}
+	
+	public Date getTimestamp() {
+		return timestamp;
+	}
+	
+	public Integer getTotal() {
+		return total;
+	}
+	
+	public Integer getOffset() {
+		return offset;
+	}
+	
+	public Collection<Parameter> getParameters() {
+		return parameters;
+	}
+	
+	public Collection<Contains> getContains() {
+		return contains;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Expansion> {
 		
 		private Uri identifier;
 		private Date timestamp;
 		private Integer total; 
 		private Integer offset; 
-		private Collection<Parameter<?>> parameters = Sets.newHashSet();
-		private Collection<Contains> contains = Sets.newHashSet();
+		private Collection<Parameter> parameters;
+		private Collection<Contains> contains;
 		
 		public Builder identifier(final String identifier) {
 			this.identifier = new Uri(identifier);
@@ -100,12 +125,7 @@ public class Expansion {
 		}
 		
 		public Builder timestamp(String dateString) {
-			DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-			try {
-				this.timestamp = df.parse(dateString);
-			} catch (ParseException e) {
-				throw FhirException.createFhirError(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, OperationOutcomeCode.MSG_PARAM_INVALID);
-			}
+			this.timestamp = FhirDates.parseDate(dateString);
 			return this;
 		}
 
@@ -119,12 +139,34 @@ public class Expansion {
 			return this;
 		}
 		
+		@JsonProperty("parameter")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder parameters(Collection<Parameter> parameters) {
+			this.parameters = parameters;
+			return this;
+		}
+		
 		public Builder addParameter(Parameter<?> parameter) {
+			
+			if (parameters == null) {
+				parameters = Sets.newHashSet();
+			}
 			parameters.add(parameter);
 			return this;
 		}
 		
+		@JsonProperty("contains")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder contains(Collection<Contains> contains) {
+			this.contains = contains;
+			return this;
+		}
+		
 		public Builder addContains(Contains content) {
+			
+			if (contains == null) {
+				contains = Sets.newHashSet();
+			}
 			contains.add(content);
 			return this;
 		}

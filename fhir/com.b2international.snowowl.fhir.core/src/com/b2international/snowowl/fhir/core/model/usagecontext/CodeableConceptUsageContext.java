@@ -20,6 +20,9 @@ import java.util.List;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Codeable Concept Usage Context
@@ -28,9 +31,12 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
  * 
  * @since 6.6
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = CodeableConceptUsageContext.Builder.class)
 public class CodeableConceptUsageContext extends UsageContext<CodeableConcept> {
 
-	protected CodeableConceptUsageContext(final String id, final List<Extension> extensions, final Coding code, final CodeableConcept value) {
+	public static final String CONTEXT_TYPE = "CodeableConcept";
+	
+	CodeableConceptUsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions, final Coding code, final CodeableConcept value) {
 		super(id, extensions, code, value);
 	}
 	
@@ -41,17 +47,26 @@ public class CodeableConceptUsageContext extends UsageContext<CodeableConcept> {
 	
 	@Override
 	public String getType() {
-		return "CodeableConcept";
+		return CONTEXT_TYPE;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends UsageContext.Builder<Builder, CodeableConceptUsageContext, CodeableConcept> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueCodeableConcept(final CodeableConcept value) {
+			this.value = value;
 			return this;
 		}
 

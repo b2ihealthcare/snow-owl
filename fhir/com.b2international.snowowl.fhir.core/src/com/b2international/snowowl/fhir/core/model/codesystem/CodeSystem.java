@@ -30,15 +30,25 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMean
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * This class represents a FHIR code system. The CodeSystem resource is used to
@@ -57,6 +67,7 @@ import com.google.common.collect.ImmutableSet;
  * @see <a href="https://www.hl7.org/fhir/codesystem.html">FHIR:CodeSystem</a>
  * @since 6.3
  */
+@JsonDeserialize(builder = CodeSystem.Builder.class, using = JsonDeserializer.None.class)
 public class CodeSystem extends MetadataResource {
 
 	private static final long serialVersionUID = 1L;
@@ -76,6 +87,7 @@ public class CodeSystem extends MetadataResource {
 		// XXX do we need supplements???
 		
 		// complex properties
+		public static final String IDENTIFIER = "identifier";
 		public static final String FILTER = "filter";
 		public static final String PROPERTY = "property";
 		public static final String CONCEPT = "concept";
@@ -87,7 +99,7 @@ public class CodeSystem extends MetadataResource {
 		
 		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
 				.addAll(MetadataResource.Fields.SUMMARY)
-				.add(COUNT, FILTER, PROPERTY)
+				.add(COUNT, FILTER, PROPERTY, IDENTIFIER)
 				.build();
 		
 		public static final Set<String> SUMMARY_TEXT = ImmutableSet.<String>builder()
@@ -106,16 +118,23 @@ public class CodeSystem extends MetadataResource {
 		
 	}
 	
+	public static final String RESOURCE_TYPE_CODE_SYSTEM = "CodeSystem";
+	
 	@Mandatory
 	@JsonProperty
-	private String resourceType = "CodeSystem";
+	private String resourceType;
+	
+	@Summary
+	@JsonProperty("identifier")
+	@JsonInclude(value = Include.NON_EMPTY)
+	private Collection<Identifier> identifiers;
 
 	@Summary
 	@JsonProperty
 	private Boolean caseSensitive;
 	
 	@Summary
-	@Valid
+	//@Valid - bbanfai: why is this invoked on a null?
 	@JsonProperty
 	private Uri valueSet;
 	
@@ -149,7 +168,7 @@ public class CodeSystem extends MetadataResource {
 	private Integer count;
 
 	@Summary
-	@Valid
+	@JsonProperty(CodeSystem.Fields.FILTER)
 	private Collection<Filter> filters;
 
 	/*
@@ -157,55 +176,36 @@ public class CodeSystem extends MetadataResource {
 	 */
 	@Summary
 	@Valid
+	@JsonProperty(CodeSystem.Fields.PROPERTY)
 	private Collection<SupportedConceptProperty> properties;
 
 	/*
 	 * Concepts in the code system, up to the server if they are returned
 	 */
 	@Valid
+	@JsonProperty(CodeSystem.Fields.CONCEPT)
 	private Collection<Concept> concepts;
 	
 	private String toolingId;
 
 	@SuppressWarnings("rawtypes")
-	CodeSystem(
-			final Id id, 
-			final Meta meta, 
-			final Uri impliciteRules, 
-			final Code language, 
-			final Narrative text, 
-			final Uri url, 
-			final Identifier identifier, 
-			final String version, 
-			final String name, 
-			final String title, 
-			final Code status,
-			final Date date, 
-			final String publisher, 
-			final Collection<ContactDetail> contacts, 
-			final String description, 
-			final Collection<UsageContext> usageContexts, 
-			final Collection<CodeableConcept> jurisdictions, 
-			final String purpose, 
-			final String copyright,
+	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
+			final Narrative text, Uri url, String version, String name, String title, Code status,
+			final Boolean experimental, final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
 			
 			//CodeSystem only
-			final Boolean caseSensitive, 
-			final Uri valueSet, 
-			final Code hierarchyMeaning, 
-			final Boolean compositional, 
-			final Boolean versionNeeded,
-			final Code content, 
-			final Uri supplements, 
-			final Integer count, 
-			final Collection<Filter> filters, 
-			final Collection<SupportedConceptProperty> properties, 
-			final Collection<Concept> concepts,
-			final String toolingId) {
+			final String resourceType,
+			final Collection<Identifier> identifiers,
+			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
+			final Code content, final Uri supplements, final Integer count, 
+			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts, final String toolingId) {
 
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
+		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
 
+		this.resourceType = resourceType;
+		this.identifiers = identifiers;
 		this.caseSensitive = caseSensitive;
 		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
@@ -219,7 +219,47 @@ public class CodeSystem extends MetadataResource {
 		this.concepts = concepts;
 		this.toolingId = toolingId;
 	}
-
+	
+	public String getResourceType() {
+		return resourceType;
+	}
+	
+	public Collection<Identifier> getIdentifiers() {
+		return identifiers;
+	}
+	
+	public Boolean getCaseSensitive() {
+		return caseSensitive;
+	}
+	
+	public Uri getValueSet() {
+		return valueSet;
+	}
+	
+	public Code getHierarchyMeaning() {
+		return hierarchyMeaning;
+	}
+	
+	public Boolean getCompositional() {
+		return compositional;
+	}
+	
+	public Boolean getVersionNeeded() {
+		return versionNeeded;
+	}
+	
+	public Code getContent() {
+		return content;
+	}
+	
+	public Uri getSupplements() {
+		return supplements;
+	}
+	
+	public Integer getCount() {
+		return count;
+	}
+	
 	@JsonProperty(CodeSystem.Fields.CONCEPT)
 	@JsonInclude(value = Include.NON_EMPTY)
 	public Collection<Concept> getConcepts() {
@@ -256,8 +296,13 @@ public class CodeSystem extends MetadataResource {
 		return new Builder(codeSystemId);
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
 
+		private String resourceType = RESOURCE_TYPE_CODE_SYSTEM;
+		
+		private Collection<Identifier> identifiers;
+		
 		private Boolean caseSensitive;
 		
 		private Uri valueSet;
@@ -279,7 +324,7 @@ public class CodeSystem extends MetadataResource {
 		private Collection<SupportedConceptProperty> properties;
 
 		private Collection<Concept> concepts;
-
+		
 		private String toolingId;
 
 		/**
@@ -295,6 +340,26 @@ public class CodeSystem extends MetadataResource {
 		@Override
 		protected Builder getSelf() {
 			return this;
+		}
+		
+		public Builder resourceType(String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
+		}
+		
+		@JsonProperty("identifier")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder identifiers(final Collection<Identifier> identifers) {
+			this.identifiers = identifers;
+			return getSelf();
+		}
+		
+		public Builder addIdentifier(Identifier identifier) {
+			if (identifiers == null) {
+				identifiers = new ArrayList<>();
+			}
+			identifiers.add(identifier);
+			return getSelf();
 		}
 		
 		public Builder caseSensitive(Boolean caseSensitive) {
@@ -313,7 +378,11 @@ public class CodeSystem extends MetadataResource {
 		}
 		
 		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
-			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
+			if (codeSystemHierarchyMeaning == null) {
+				hierarchyMeaning = null;
+			} else {
+				this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
+			}
 			return getSelf();
 		}
 		
@@ -341,43 +410,51 @@ public class CodeSystem extends MetadataResource {
 			this.count = count;
 			return getSelf();
 		}
-
-		public Builder addFilter(Filter filter) {
-			this.filters.add(filter);
-			return getSelf();
-		}
-
-		public Builder addProperty(SupportedConceptProperty property) {
-			if (this.properties == null) {
-				this.properties = new ArrayList<>();
-			}
-			this.properties.add(property);
-			return getSelf();
-		}
-
-		public Builder addConcept(Concept concept) {
-			if (this.concepts == null) {
-				this.concepts = new ArrayList<>();
-			}
-			this.concepts.add(concept);
-			return getSelf();
-		}
 		
+		@JsonProperty(CodeSystem.Fields.FILTER)
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder filters(Collection<Filter> filters) {
-			if (this.filters == null) {
-				this.filters = new ArrayList<>();
-			}
 			this.filters = filters;
 			return getSelf();
 		}
+
+		public Builder addFilter(Filter filter) {
+			if (filters == null) {
+				filters = new ArrayList<>();
+			}
+			this.filters.add(filter);
+			return getSelf();
+		}
 		
+		@JsonProperty(CodeSystem.Fields.PROPERTY)
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder properties(Collection<SupportedConceptProperty> properties) {
 			this.properties = properties;
 			return getSelf();
 		}
+
+		public Builder addProperty(SupportedConceptProperty property) {
+			
+			if (properties == null) {
+				properties = new ArrayList<SupportedConceptProperty>();
+			}
+			
+			this.properties.add(property);
+			return getSelf();
+		}
 		
+		@JsonProperty(CodeSystem.Fields.CONCEPT)
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder concepts(Collection<Concept> concepts) {
 			this.concepts = concepts;
+			return getSelf();
+		}
+
+		public Builder addConcept(Concept concept) {
+			if (concepts == null) {
+				concepts = Sets.newHashSet();
+			}
+			concepts.add(concept);
 			return getSelf();
 		}
 		
@@ -388,9 +465,10 @@ public class CodeSystem extends MetadataResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
-				description, usageContexts, jurisdictions, purpose, copyright,
-				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
+			return new CodeSystem(id, meta, implicitRules, language, text, url, version, name, title, status, 
+				experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+				
+				resourceType, identifiers, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
 				content, supplements, count, filters, properties, concepts, toolingId);
 		}
 	}

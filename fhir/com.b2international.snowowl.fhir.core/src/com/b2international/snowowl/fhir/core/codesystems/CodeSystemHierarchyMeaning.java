@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Code system hierarchy meaning code system
@@ -50,5 +51,10 @@ public enum CodeSystemHierarchyMeaning implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
+	
+	@JsonCreator
+    public static CodeSystemHierarchyMeaning forValue(String value) {
+		return CodeSystemHierarchyMeaning.valueOf(value.toUpperCase().replaceAll("-", "_"));
+    }
 
 }

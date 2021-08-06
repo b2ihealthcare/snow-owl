@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.snowowl.fhir.core.model.Issue.Builder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -59,6 +61,13 @@ public abstract class Element {
 		
 		public B id(String id) {
 			this.id = id;
+			return getSelf();
+		}
+		
+		@JsonProperty("extension")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public B extensions(List<Extension> extensions) {
+			this.extensions = extensions;
 			return getSelf();
 		}
 		

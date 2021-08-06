@@ -85,7 +85,7 @@ public class DesignationSerializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("Designation.value")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'value' content is invalid [null]. Violation: may not be empty.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'value' content is invalid [null]. Violation: may not be empty.")
 				.build();
 		
 		exception.expect(ValidationException.class);
@@ -104,7 +104,7 @@ public class DesignationSerializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("Designation.value")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'value' content is invalid []. Violation: may not be empty.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'value' content is invalid []. Violation: may not be empty.")
 				.build();
 		
 		exception.expect(ValidationException.class);

@@ -29,11 +29,14 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * Binds to a value set if this element is coded.
  * @since 7.1
  */
+@JsonDeserialize(builder = Binding.Builder.class)
 public class Binding extends Element {
 
 	@NotNull
@@ -54,6 +57,28 @@ public class Binding extends Element {
 	@Summary
 	private Reference valueSetReference;
 	
+	Binding(final String id, 
+			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final Code strength, 
+			final String description,
+			final Uri valueSetUri,
+			final Reference valueSetReference) {
+		
+		super(id, extensions);
+		this.strength = strength;
+		this.description = description;
+		this.valueSetUri = valueSetUri;
+		this.valueSetReference = valueSetReference;
+	}
+	
+	public Code getStrength() {
+		return strength;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
 	@JsonProperty
 	public Uri getValueSetUri() {
 		return valueSetUri;
@@ -72,25 +97,13 @@ public class Binding extends Element {
 		}
 		return true;
 	}
-	
-	protected Binding(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
-			final Code strength, 
-			final String description,
-			final Uri valueSetUri,
-			final Reference valueSetReference) {
-		
-		super(id, extensions);
-		this.strength = strength;
-		this.description = description;
-		this.valueSetUri = valueSetUri;
-		this.valueSetReference = valueSetReference;
-	}
+
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Binding> {
 		
 		private Code strength;

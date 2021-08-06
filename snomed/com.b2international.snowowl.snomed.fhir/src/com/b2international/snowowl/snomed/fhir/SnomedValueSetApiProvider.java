@@ -564,7 +564,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay().toInstant(ZoneOffset.UTC)))
 			.language(getLocales().get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersion())
-			.identifier(identifier)
+			.addIdentifier(identifier)
 			.url(uri.toUri())
 			.name("SNOMED CT all simple type reference sets");
 		
@@ -612,7 +612,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay().toInstant(ZoneOffset.UTC)))
 			.language(getLocales().get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersion())
-			.identifier(identifier)
+			.addIdentifier(identifier)
 			.url(uri.toUri());
 		
 		String narrativeText = String.format("<div>This is the Value Set representation of the SNOMED CT concept [%s] and its decendants, requested by the SNOMED CT URI query part (isa) .</div>", parentConceptId);
@@ -911,7 +911,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay(ZoneOffset.UTC).toInstant()))
 			.language(getLocales().get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersion())
-			.identifier(identifier)
+			.addIdentifier(identifier)
 			.url(uri.toUri());
 		
 		return builder;

@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Slicing Rules
@@ -61,5 +62,10 @@ public enum SlicingRules implements FhirCodeSystem {
 	public String getDisplayName() {
 		return displayName;
 	}
+	
+	@JsonCreator
+    public static SlicingRules forValue(String value) {
+		return SlicingRules.valueOf(value.toUpperCase());
+    }
 
 }

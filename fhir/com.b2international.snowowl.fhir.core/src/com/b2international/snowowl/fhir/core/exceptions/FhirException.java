@@ -41,7 +41,7 @@ public class FhirException extends ApiException {
 		Issue issue = Issue.builder()
 			.severity(issueSeverity)
 			.code(issueType)
-			.codeableConceptWithDisplayArgs(operationOutcomeCode, location)
+			.detailsWithDisplayArgs(operationOutcomeCode, location)
 			.diagnostics(message)
 			.addLocation(location)
 			.build();
@@ -56,7 +56,7 @@ public class FhirException extends ApiException {
 		Issue issue = Issue.builder()
 			.severity(issueSeverity)
 			.code(issueType)
-			.codeableConcept(operationOutcomeCode)
+			.outcomeDetails(operationOutcomeCode)
 			.diagnostics(message)
 			.build();
 		

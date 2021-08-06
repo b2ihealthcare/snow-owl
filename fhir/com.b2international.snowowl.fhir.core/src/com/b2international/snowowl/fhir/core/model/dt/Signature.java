@@ -27,7 +27,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
 
 /**
@@ -38,6 +41,7 @@ import com.google.common.collect.Lists;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#signature">FHIR:Data Types:Signature</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = Signature.Builder.class)
 public class Signature extends Element {
 	
 	@Summary
@@ -94,6 +98,14 @@ public class Signature extends Element {
 		this.blob = blob;
 	}
 	
+	public Collection<Coding> getTypes() {
+		return types;
+	}
+	
+	public Instant getWhen() {
+		return when;
+	}
+	
 	@JsonProperty
 	public Uri getWhoUri() {
 		return whoUri;
@@ -114,6 +126,24 @@ public class Signature extends Element {
 		return onBehalfOfReference;
 	}
 	
+	public Code getContentType() {
+		return contentType;
+	}
+	
+	public Byte[] getBlob() {
+		return blob;
+	}
+	
+	@JsonIgnore
+	public byte[] getBlobBytes() {
+		
+		byte[] bytes = new byte[blob.length];
+		for(int i = 0; i < blob.length; i++) {
+	        bytes[i] = blob[i].byteValue();
+	    }
+		return bytes;
+	}
+	
 	@AssertTrue(message = "Either URI or Reference should be set for the 'who' and 'onBehalfOf' fields")
 	private boolean isValid() {
 
@@ -131,6 +161,7 @@ public class Signature extends Element {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Signature> {
 		
 		private Collection<Coding> types = Lists.newArrayList();
@@ -192,6 +223,7 @@ public class Signature extends Element {
 			return getSelf();
 		}
 		
+		@JsonIgnore
 		public Builder blob(byte[] blob) {
 			
 			this.blob = new Byte[blob.length];

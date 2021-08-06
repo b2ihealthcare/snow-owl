@@ -390,7 +390,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.build();
 		
 		conceptMapBuilder.url(uri.toUri())
-			.identifier(identifier);
+			.addIdentifier(identifier);
 		
 		Group group = buildGroup(uri, snomedReferenceSet);
 		conceptMapBuilder.addGroup(group);

@@ -37,8 +37,8 @@ import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
-import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.Meta;
+import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
@@ -203,8 +203,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 						.build());
 	}
 
-	private Entry toFhirCodeSystemEntry(RepositoryContext context, ResourceFragment fragment) {
-		return new Entry(null, toFhirCodeSystem(context, fragment));
+	private ResourceResponseEntry toFhirCodeSystemEntry(RepositoryContext context, ResourceFragment fragment) {
+		return ResourceResponseEntry.builder().resource(toFhirCodeSystem(context, fragment)).build();
 	}
 
 	private CodeSystem toFhirCodeSystem(RepositoryContext context, ResourceFragment codeSystem) {
@@ -229,6 +229,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, codeSystem::getVersion, entry::version);
+		
 		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
 			if (!CompareUtils.isEmpty(codeSystem.getOid())) {
 				return Identifier.builder()
@@ -239,7 +240,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 			} else {
 				return null;
 			}
-		}, entry::identifier);
+		}, entry::addIdentifier);
+		
 		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
 		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);

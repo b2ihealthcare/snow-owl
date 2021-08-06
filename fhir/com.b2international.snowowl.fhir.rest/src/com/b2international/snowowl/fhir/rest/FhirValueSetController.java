@@ -22,7 +22,12 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.Pair;
@@ -32,9 +37,9 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
@@ -102,7 +107,7 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 			for (ValueSet valueSet : valueSets) {
 				applyResponseContentFilter(valueSet, requestParameters.getA());
 				String resourceUrl = String.join("/", uri, valueSet.getId().getIdValue());
-				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
+				Entry entry = ResourceResponseEntry.builder().fullUrl(resourceUrl).resource(valueSet).build();
 				builder.addEntry(entry);
 				total++;
 			}

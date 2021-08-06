@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 
 /**
  * Model object for the lookup service request response
@@ -130,10 +131,26 @@ public final class LookupResult {
 			this.designations = designations;
 			return this;
 		}
+		
+		public Builder addDesignation(Designation designation) {
+			if (designations == null) {
+				designations = Lists.newArrayList();
+			}
+			designations.add(designation);
+			return this;
+		}
 
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder property(final List<Property> properties) {
 			this.properties = properties;
+			return this;
+		}
+		
+		public Builder addProperty(Property property) {
+			if (properties == null) {
+				properties = Lists.newArrayList();
+			}
+			properties.add(property);
 			return this;
 		}
 

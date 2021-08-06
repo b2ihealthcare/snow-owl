@@ -18,16 +18,20 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Code System supported property
  * 
  * @since 6.3
  */
+@JsonDeserialize(builder = SupportedConceptProperty.Builder.class)
 public class SupportedConceptProperty {
 	
 	//Identifies the property returned (1..1)
@@ -88,6 +92,7 @@ public class SupportedConceptProperty {
 			.type(conceptProperty.getType());
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<SupportedConceptProperty> {
 		
 		private Code code;

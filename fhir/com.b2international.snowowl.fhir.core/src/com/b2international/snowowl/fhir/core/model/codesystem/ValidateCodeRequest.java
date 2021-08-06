@@ -21,7 +21,7 @@ import javax.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -271,7 +271,7 @@ public class ValidateCodeRequest {
 
 		public Builder date(String date) {
 			try {
-				this.date = Dates.parse(date, FhirConstants.DATE_TIME_FORMAT);
+				this.date = Dates.parse(date, FhirDates.DATE_TIME_FORMAT);
 			} catch (SnowowlRuntimeException e) {
 				throw new BadRequestException("Incorrect date format '%s'.", date);
 			}

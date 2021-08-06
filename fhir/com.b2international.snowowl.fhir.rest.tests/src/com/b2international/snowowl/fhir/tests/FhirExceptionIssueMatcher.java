@@ -84,19 +84,19 @@ public class FhirExceptionIssueMatcher extends TypeSafeMatcher<FhirException> {
 			return false;
 		}
 		
-		if (foundIssue.getCodeableConcept() == null && expectedIssue.getCodeableConcept()!=null) {
+		if (foundIssue.getDetails() == null && expectedIssue.getDetails()!=null) {
 			System.out.println("Codeable concept is null.");
 			return false;
 		}
 		
-		if (foundIssue.getCodeableConcept() != null && expectedIssue.getCodeableConcept()==null) {
-			System.out.println("Codeable concept is not null: " + foundIssue.getCodeableConcept());
+		if (foundIssue.getDetails() != null && expectedIssue.getDetails()==null) {
+			System.out.println("Codeable concept is not null: " + foundIssue.getDetails());
 			return false;
 		}
 		
-		if (foundIssue.getCodeableConcept() != null && expectedIssue.getCodeableConcept() != null) {
-			CodeableConcept foundCodeableConcept = foundIssue.getCodeableConcept();
-			CodeableConcept expectedCodeableConcept = expectedIssue.getCodeableConcept();
+		if (foundIssue.getDetails() != null && expectedIssue.getDetails() != null) {
+			CodeableConcept foundCodeableConcept = foundIssue.getDetails();
+			CodeableConcept expectedCodeableConcept = expectedIssue.getDetails();
 		
 			Collection<Coding> foundCodings = foundCodeableConcept.getCodings();
 			Collection<Coding> expectedCodings = expectedCodeableConcept.getCodings();

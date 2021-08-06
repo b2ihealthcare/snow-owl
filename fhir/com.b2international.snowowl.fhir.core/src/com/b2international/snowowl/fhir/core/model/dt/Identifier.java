@@ -19,7 +19,11 @@ import java.util.Date;
 
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Identifier datatype
@@ -27,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#identifier">FHIR:Data Types:Identifier</a>
  * @since 6.3
  */
+@JsonDeserialize(builder = Identifier.Builder.class)
+@JsonInclude(Include.NON_NULL)
 public class Identifier {
 
 	@JsonProperty
@@ -57,10 +63,35 @@ public class Identifier {
 		this.assigner = assigner;
 	}
 	
+	public Code getUse() {
+		return use;
+	}
+	
+	public CodeableConcept getType() {
+		return type;
+	}
+	
+	public Uri getSystem() {
+		return system;
+	}
+	
+	public String getValue() {
+		return value;
+	}
+	
+	public Period getPeriod() {
+		return period;
+	}
+	
+	public Reference getAssigner() {
+		return assigner;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Identifier> {
 		
 		private Code use; //usual | official | temp | secondary (If known)
@@ -107,7 +138,7 @@ public class Identifier {
 		}
 		
 		public Builder period(final Date startDate, final Date endDate) {
-			this.period = new Period(startDate, endDate);
+			this.period = Period.builder().start(startDate).end(endDate).build();
 			return this;
 		}
 		

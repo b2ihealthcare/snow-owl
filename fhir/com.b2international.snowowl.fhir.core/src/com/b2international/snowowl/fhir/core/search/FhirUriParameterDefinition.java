@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
 
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
@@ -115,17 +116,6 @@ public class FhirUriParameterDefinition {
 			return valueOf(requestParam.toUpperCase());
 		}
 	}
-	
-	private static String[] DATETIME_PATTERNS = new String[] {
-			"yyyy", 
-			"yyyy-MM", 
-			"yyyy-MM-dd",
-			"yyyy-MM-dd'T'HH:mm:ss",
-			"yyyy-MM-dd'T'HH:mm:ssZ",
-			"yyyy-MM-dd'T'HH:mm:ss.SSSZ",
-			"yyyy-MM-dd'T'HH:mm:ssXXX", 
-			"yyyy-MM-dd'T'HH:mm:ss.SSSSXXX",
-			"yyyy-MM-dd'T'HH:mm:ss.SSSX"};
 	
 	protected String name;
 	
@@ -217,7 +207,7 @@ public class FhirUriParameterDefinition {
 				break;
 			case DATETIME:
 				try {
-					DateUtils.parseDate(value, DATETIME_PATTERNS);
+					DateUtils.parseDate(value, FhirDates.DATETIME_PATTERNS);
 				} catch (NullPointerException | ParseException e) {
 					throw FhirException.createFhirError(String.format("Invalid %s type parameter value '%s' are submitted for parameter '%s'.", type, value, name), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
 				}

@@ -29,12 +29,11 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
-import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertySerializer;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -42,6 +41,7 @@ import com.google.common.collect.Sets;
  * FHIR definition of an element in a resource or an extension.
  * @since 7.1
  */
+@JsonDeserialize(builder = ElementDefinition.Builder.class)
 public class ElementDefinition extends Element {
 
 	@NotNull
@@ -117,9 +117,7 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
 	@JsonUnwrapped
-	@JsonProperty
 	private final TypedProperty<?> defaultValue;
 	
 	@Summary
@@ -132,14 +130,12 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
 	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> fixed;
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
 	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> pattern;
@@ -151,14 +147,12 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
 	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> minValue;
 	
 	@Valid
 	@Summary
-	@JsonSerialize(using = TypedPropertySerializer.class)
 	@JsonUnwrapped
 	@JsonProperty
 	private final TypedProperty<?> maxValue;
@@ -196,11 +190,11 @@ public class ElementDefinition extends Element {
 	
 	@Valid
 	@Summary
-	@JsonProperty
+	@JsonProperty("mapping")
 	private final Collection<MappingElement> mappings;
 	
 	@SuppressWarnings("rawtypes")
-	protected ElementDefinition(final String id, final List<Extension> extensions,
+	ElementDefinition(final String id, final List<Extension> extensions,
 			final String path,
 			final String sliceName,
 			final String label,
@@ -269,12 +263,135 @@ public class ElementDefinition extends Element {
 		this.mappings = mappings;
 	}
 	
+	public String getPath() {
+		return path;
+	}
 	
+	public String getSliceName() {
+		return sliceName;
+	}
+	
+	public String getLabel() {
+		return label;
+	}
+	
+	public Collection<Coding> getCodes() {
+		return codes;
+	}
+	
+	public Slicing getSlicing() {
+		return slicing;
+	}
+	
+	public String getShortDefinition() {
+		return shortDefinition;
+	}
+	
+	public String getDefinition() {
+		return definition;
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
+	public String getRequirements() {
+		return requirements;
+	}
+	
+	public Collection<String> getAliases() {
+		return aliases;
+	}
+	
+	public int getMin() {
+		return min;
+	}
+	
+	public String getMax() {
+		return max;
+	}
+	
+	public Base getBase() {
+		return base;
+	}
+	
+	public Uri getContentReference() {
+		return contentReference;
+	}
+	
+	public Collection<Type> getTypes() {
+		return types;
+	}
+	
+	public TypedProperty<?> getDefaultValue() {
+		return defaultValue;
+	}
+	
+	public String getMeaningWhenMissing() {
+		return meaningWhenMissing;
+	}
+	
+	public String getOrderMeaning() {
+		return orderMeaning;
+	}
+	
+	public TypedProperty<?> getFixed() {
+		return fixed;
+	}
+	
+	public TypedProperty<?> getPattern() {
+		return pattern;
+	}
+	
+	public Collection<Example> getExamples() {
+		return examples;
+	}
+	
+	public TypedProperty<?> getMinValue() {
+		return minValue;
+	}
+	
+	public TypedProperty<?> getMaxValue() {
+		return maxValue;
+	}
+	
+	public Integer getMaxLength() {
+		return maxLength;
+	}
+	
+	public Collection<Id> getConditions() {
+		return conditions;
+	}
+	
+	public Collection<Constraint> getConstraints() {
+		return constraints;
+	}
+	
+	public Boolean getMustSupport() {
+		return mustSupport;
+	}
+	
+	public Boolean getIsModifier() {
+		return isModifier;
+	}
+	
+	public Boolean getIsSummary() {
+		return isSummary;
+	}
+	
+	public Binding getBinding() {
+		return binding;
+	}
+	
+	public Collection<MappingElement> getMappings() {
+		return mappings;
+	}
 
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, ElementDefinition> {
 
 		private String path;
@@ -319,6 +436,8 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("code")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder codes(final Collection<Coding> codes) {
 			this.codes = codes;
 			return getSelf();
@@ -354,6 +473,8 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("alias")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder aliases(final Collection<String> aliases) {
 			this.aliases = aliases;
 			return getSelf();
@@ -389,12 +510,14 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("type")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder types(final Collection<Type> types) {
 			this.types = types;
 			return getSelf();
 		}
 		
-		public Builder types(final Type type) {
+		public Builder addType(final Type type) {
 			this.types.add(type);
 			return getSelf();
 		}
@@ -404,7 +527,7 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
-		public Builder defaultValue(final String stringValue) {
+		public Builder defaultValueString(final String stringValue) {
 			this.defaultValue = new StringProperty(stringValue);
 			return getSelf();
 		}
@@ -424,11 +547,21 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"fixedString", 
+			"fixedDate", 
+			"fixedDateTime", 
+			"fixedInstant"})
 		public Builder fixed(final String fixed) {
 			this.fixed = new StringProperty(fixed);
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"patternString", 
+			"patternDate", 
+			"patternDateTime", 
+			"patternInstant"})
 		public Builder pattern(final TypedProperty<?> pattern) {
 			this.pattern = pattern;
 			return getSelf();
@@ -439,16 +572,23 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("example")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder example(final Collection<Example> examples) {
 			this.examples = examples;
 			return getSelf();
 		}
 		
-		public Builder example(final Example example) {
+		public Builder addExample(final Example example) {
 			this.examples.add(example);
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"minValueString", 
+			"minValueDate", 
+			"minValueDateTime", 
+			"minValueInstant"})
 		public Builder minValue(final TypedProperty<?> minValue) {
 			this.minValue = minValue;
 			return getSelf();
@@ -459,6 +599,11 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonAlias({
+			"maxValueString", 
+			"maxValueDate", 
+			"maxValueDateTime", 
+			"maxValueInstant"})
 		public Builder maxValue(final TypedProperty<?> maxValue) {
 			this.maxValue = maxValue;
 			return getSelf();
@@ -484,12 +629,14 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("constraint")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder constraint(final Collection<Constraint> constraints) {
 			this.constraints = constraints;
 			return getSelf();
 		}
 		
-		public Builder constraint(final Constraint constraint) {
+		public Builder addConstraint(final Constraint constraint) {
 			this.constraints.add(constraint);
 			return getSelf();
 		}
@@ -514,7 +661,9 @@ public class ElementDefinition extends Element {
 			return getSelf();
 		}
 		
-		public Builder mapping(final Collection<MappingElement> mappings) {
+		@JsonProperty("mapping")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder mappings(final Collection<MappingElement> mappings) {
 			this.mappings = mappings;
 			return getSelf();
 		}

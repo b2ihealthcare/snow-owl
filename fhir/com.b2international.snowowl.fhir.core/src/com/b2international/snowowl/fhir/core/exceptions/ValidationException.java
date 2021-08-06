@@ -91,7 +91,7 @@ public final class ValidationException extends BadRequestException {
 			Issue issue = Issue.builder()
 					.severity(IssueSeverity.ERROR)
 					.code(IssueType.INVALID)
-					.codeableConcept(codeableConcept)
+					.details(codeableConcept)
 					.diagnostics(getMessage())
 					.addLocation(location)
 					.build();

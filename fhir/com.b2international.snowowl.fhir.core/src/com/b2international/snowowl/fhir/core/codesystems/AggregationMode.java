@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Aggregation Mode code system
@@ -51,5 +52,10 @@ public enum AggregationMode implements FhirCodeSystem {
 	public String getDisplayName() {
 		return StringUtils.capitalizeFirstLetter(name().toLowerCase());
 	}
+	
+	@JsonCreator
+    public static AggregationMode forValue(String value) {
+		return AggregationMode.valueOf(value.toUpperCase());
+    }
 
 }

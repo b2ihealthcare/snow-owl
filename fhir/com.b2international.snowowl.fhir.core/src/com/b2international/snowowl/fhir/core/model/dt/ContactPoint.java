@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,13 @@ import java.util.List;
 
 import javax.validation.constraints.Min;
 
+import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR ContactPoint datatype
@@ -30,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#contactpoint">FHIR:Data Types:ContactPoint</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = ContactPoint.Builder.class)
 public class ContactPoint extends Element {
 	
 	@Summary
@@ -91,6 +95,7 @@ public class ContactPoint extends Element {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, ContactPoint> {
 		
 		private Code system;

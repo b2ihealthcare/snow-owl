@@ -20,6 +20,10 @@ import org.junit.rules.ExpectedException;
 import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.snowowl.core.rest.SnowOwlApiConfig;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
@@ -47,9 +51,11 @@ public class FhirTest {
 	@Rule
 	public TestMethodNameRule methodNameRule = new TestMethodNameRule();
 	
-	/**
-	 * @deprecated - should only be used for debugging purposes
-	 */
+	protected Builder validationErrorIssueBuilder = Issue.builder()
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
+	
 	protected void printPrettyJson(Object object) throws Exception {
 		String result = objectMapper.writeValueAsString(object);
 		Object json = objectMapper.readValue(result, Object.class);

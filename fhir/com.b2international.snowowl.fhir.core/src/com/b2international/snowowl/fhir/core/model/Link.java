@@ -22,6 +22,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -41,7 +42,8 @@ public class Link {
 	@JsonProperty
 	private Uri url;
 	
-	public Link(String relation, Uri url) {
+	@JsonCreator
+	public Link(@JsonProperty("relation") String relation, @JsonProperty("url") Uri url) {
 		this.relation = relation;
 		this.url = url;
 	}
@@ -52,6 +54,14 @@ public class Link {
 
 	public Link(String urlString) {
 		this.url = new Uri(urlString);
+	}
+	
+	public String getRelation() {
+		return relation;
+	}
+	
+	public Uri getUrl() {
+		return url;
 	}
 
 }
