@@ -504,6 +504,10 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		}
 	}
 
+	protected Promise<Expression> eval(BranchContext context, final PropertyFilter nestedFilter) {
+		return throwUnsupported(nestedFilter);
+	}
+	
 	protected Promise<Expression> eval(BranchContext context, final NestedFilter nestedFilter) {
 		return evaluate(context, nestedFilter.getNested());
 	}
