@@ -172,7 +172,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			// only text, id, meta and mandatory
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.status", equalTo("unknown"))
+			.body("entry[0].resource.status", equalTo("draft"))
 			.body("entry[0].resource.content", equalTo("complete"))
 			.body("entry[0].resource.meta", notNullValue())
 			.body("entry[0].resource.text", notNullValue())
@@ -197,7 +197,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			// only id, meta and mandatory
 			.body("entry[0].resource.id", notNullValue())
-			.body("entry[0].resource.status", equalTo("unknown"))
+			.body("entry[0].resource.status", equalTo("draft"))
 			.body("entry[0].resource.content", equalTo("complete"))
 			// other fields should be null
 			.body("entry[0].resource.text", nullValue())
@@ -252,7 +252,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			// mandatory fields
-			.body("entry[0].resource.status", equalTo("unknown"))
+			.body("entry[0].resource.status", equalTo("draft"))
 			.body("entry[0].resource.content", equalTo("complete"))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
 			// summary and optional fields
@@ -436,7 +436,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("id", equalTo(getTestCodeSystemId()))
 			.body("url", equalTo(getTestCodeSystemUrl()))
-			.body("status", equalTo("unknown"));
+			.body("status", equalTo("draft"));
 	}
 	
 	@Test
