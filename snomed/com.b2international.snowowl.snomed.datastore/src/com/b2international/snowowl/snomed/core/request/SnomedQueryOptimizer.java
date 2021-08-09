@@ -16,8 +16,10 @@
 package com.b2international.snowowl.snomed.core.request;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -28,12 +30,10 @@ import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.core.domain.*;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -60,12 +60,17 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				.filter(ex -> isSingleConceptExpression(eclCache, ex.getQuery()))
 				.index(ex -> toSingleConceptId(eclCache, ex.getQuery()));
 		
+		// if there are no single concept inclusions to optimize, exit early
+		if (singleConceptInclusions.isEmpty()) {
+			return new QueryExpressionDiffs(Collections.emptyList());
+		}
+		
 		// Record the ancestors (both direct and indirect) of each single concept inclusion
 		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
 		
 		SnomedRequests.prepareSearchConcept()
 				.filterByIds(singleConceptInclusions.keySet())
-				.setLimit(10_000)
+				.setLimit(singleConceptInclusions.keySet().size())
 				.stream(context)
 				.flatMap(SnomedConcepts::stream)
 				.forEach(child -> {
@@ -95,43 +100,38 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 					.distinct()
 					.count()));
 		
+		final ImmutableList.Builder<QueryExpressionDiff> diffs = ImmutableList.builder();
+		
 		// Retrieve descendant counts for parents; if the two numbers match, the single concept
 		// references can be replaced with a single << expression.
-		final SnomedConceptSearchRequestBuilder descendantReq = SnomedRequests.prepareSearchConcept()
-				.filterByIds(uniqueDescendantsByParent.keySet())
+		for (Entry<String, Long> uniqueDescendantsByParentEntry : uniqueDescendantsByParent.entrySet()) {
+			SnomedConcept parent = SnomedRequests.prepareGetConcept(uniqueDescendantsByParentEntry.getKey())
 				.setLocales(locales)
-				.setLimit(1_000)
-				.setExpand("pt(),descendants(direct:false,limit:0)");
-
-		final SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> parentItr = new SearchResourceRequestIterator<>(
-				descendantReq, builder -> builder.build().execute(context));
-		
-		final ImmutableList.Builder<QueryExpressionDiff> diffs = ImmutableList.builder();
-
-		parentItr.forEachRemaining(batch -> {
-			batch.forEach(parent -> {
-				final String parentId = parent.getId();
-				final int referencedDescendants = Ints.checkedCast(uniqueDescendantsByParent.get(parentId));
-				final int totalDescendants = parent.getDescendants().getTotal();
+				.setExpand("pt(),descendants(direct:false,limit:0)")
+				.build()
+				.execute(context);
+			
+			final String parentId = parent.getId();
+			final int referencedDescendants = Ints.checkedCast(uniqueDescendantsByParent.get(parentId));
+			final int totalDescendants = parent.getDescendants().getTotal();
+			
+			if (totalDescendants == referencedDescendants) {
+				final List<QueryExpression> remove = List.copyOf(membersByAncestor.get(parentId)
+						.stream()
+						.filter(ex -> !ex.isPinned())
+						.collect(Collectors.toList()));
 				
-				if (totalDescendants == referencedDescendants) {
-					final List<QueryExpression> remove = List.copyOf(membersByAncestor.get(parentId)
-							.stream()
-							.filter(ex -> !ex.isPinned())
-							.collect(Collectors.toList()));
-					
-					// The optimization is a "net win" if we can remove at least two clauses from the original
-					if (remove.size() > 1) {
-						final QueryExpression replacement = new QueryExpression(IDs.base64UUID(), String.format("<%s%s", parent.getId(), getTerm(parent)), false);
-						final List<QueryExpression> addToInclusion = List.of(replacement);
-						final List<QueryExpression> addToExclusion = List.of();
+				// The optimization is a "net win" if we can remove at least two clauses from the original
+				if (remove.size() > 1) {
+					final QueryExpression replacement = new QueryExpression(IDs.base64UUID(), String.format("<%s%s", parent.getId(), getTerm(parent)), false);
+					final List<QueryExpression> addToInclusion = List.of(replacement);
+					final List<QueryExpression> addToExclusion = List.of();
 
-						final QueryExpressionDiff diff = new QueryExpressionDiff(addToInclusion, addToExclusion, remove);
-						diffs.add(diff);
-					}
+					final QueryExpressionDiff diff = new QueryExpressionDiff(addToInclusion, addToExclusion, remove);
+					diffs.add(diff);
 				}
-			});
-		});
+			}
+		}
 		
 		return new QueryExpressionDiffs(diffs.build());
 	}
