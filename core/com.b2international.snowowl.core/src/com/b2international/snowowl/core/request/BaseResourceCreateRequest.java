@@ -20,7 +20,9 @@ import java.util.Optional;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -30,6 +32,7 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -178,6 +181,13 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	@Override
 	public final String execute(TransactionContext context) {
+		// validate ID before use, IDs sometimes being used as branch paths, so must be a valid branch path
+		try {
+			BranchNameValidator.DEFAULT.checkName(id);
+		} catch (BadRequestException e) {
+			throw new BadRequestException(e.getMessage().replace("Branch name", getClass().getSimpleName().replace("CreateRequest", ".id")));
+		}
+		
 		// validate URL format
 		getResourceURLSchemaSupport(context).validate(url);
 		
@@ -223,6 +233,9 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		return id;
 	}
 	
+	@JsonIgnore
+	protected abstract String getResourceType();
+	
 	/**
 	 * Subclasses may override to provide their own URL Schema support implementation for validation purposes.
 	 * 
@@ -239,12 +252,15 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	protected void preExecute(final TransactionContext context) { }
 
 	/**
-	 * Set the additional fields of the resource
+	 * Subclasses may configure the new resource before persisting.
 	 */
-	protected abstract ResourceDocument.Builder completeResource(final ResourceDocument.Builder builder);
+	protected ResourceDocument.Builder completeResource(final ResourceDocument.Builder builder) {
+		return builder;
+	}
 	
 	private ResourceDocument createResourceDocument(TransactionContext context) {
 		final Builder builder = ResourceDocument.builder()
+				.resourceType(getResourceType())
 				.id(id)
 				.url(url)
 				.title(title)

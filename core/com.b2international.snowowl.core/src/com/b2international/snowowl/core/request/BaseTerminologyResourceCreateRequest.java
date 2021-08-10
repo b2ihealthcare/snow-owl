@@ -115,11 +115,9 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		return settings;
 	}
 	
-	protected abstract String getResourceType();
-
 	@Override
 	protected Builder completeResource(Builder builder) {
-		return builder.resourceType(getResourceType())
+		return builder
 				.oid(oid)
 				.branchPath(branchPath)
 				.toolingId(toolingId)
