@@ -53,7 +53,7 @@ public final class VersionCreateRequestBuilder
 	 * @return
 	 */
 	public VersionCreateRequestBuilder setEffectiveTime(String effectiveTime) {
-		return setEffectiveTime(EffectiveTimes.parse(effectiveTime));
+		return setEffectiveTime(effectiveTime == null ? null : EffectiveTimes.parse(effectiveTime));
 	}
 	
 	public VersionCreateRequestBuilder setEffectiveTime(LocalDate effectiveTime) {
