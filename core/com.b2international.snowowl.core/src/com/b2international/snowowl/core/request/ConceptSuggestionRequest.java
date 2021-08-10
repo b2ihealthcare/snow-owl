@@ -131,6 +131,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
 
 		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
+				.filterByCodeSystemUri(context.service(ResourceURI.class))
 				.filterByActive(true)
 				.filterByTerm(TermFilter.minTermMatch(
 						topTokens.stream().collect(Collectors.joining(" ")),
