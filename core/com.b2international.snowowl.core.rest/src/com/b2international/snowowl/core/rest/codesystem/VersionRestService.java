@@ -116,6 +116,9 @@ public class VersionRestService extends AbstractRestService {
 			@Parameter(description="Version parameters")
 			@RequestBody final VersionRestInput input) {
 		ApiValidation.checkInput(input);
+		
+		ResourceURI versionUri = input.getResource().withPath(input.getVersion());
+		
 		String jobId = ResourceRequests.prepareNewVersion()
 				.setResource(input.getResource())
 				.setVersion(input.getVersion())
@@ -123,18 +126,18 @@ public class VersionRestService extends AbstractRestService {
 				.setEffectiveTime(input.getEffectiveTime())
 				.setForce(input.isForce())
 				.buildAsync()
-				.runAsJobWithRestart(ResourceRequests.versionJobKey(input.getResource()), String.format("Creating version '%s/%s'", input.getResource(), input.getVersion()))
+				.runAsJobWithRestart(ResourceRequests.versionJobKey(input.getResource()), "Creating version " + versionUri)
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
 		RemoteJobEntry job = JobRequests.waitForJob(getBus(), jobId, 500);
 		
 		if (job.isSuccessful()) {
-			final URI location = MvcUriComponentsBuilder.fromMethodName(VersionRestService.class, "getVersion", input.getResource().withPath(input.getVersion())).build().toUri();
+			final URI location = MvcUriComponentsBuilder.fromMethodName(VersionRestService.class, "getVersion", versionUri).build().toUri();
 			return ResponseEntity.created(location).build();
 		} else if (!Strings.isNullOrEmpty(job.getResult())) {
 			ApiError error = job.getResultAs(ApplicationContext.getServiceForClass(ObjectMapper.class), ApiError.class);
-			throw new ApiErrorException(error);
+			throw new ApiErrorException(error.withMessage(error.getMessage().replace("Branch name", "Version")));
 		} else {
 			throw new SnowowlRuntimeException("Version creation failed.");
 		}

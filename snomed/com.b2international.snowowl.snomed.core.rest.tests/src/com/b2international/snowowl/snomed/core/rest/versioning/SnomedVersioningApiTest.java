@@ -19,6 +19,7 @@ import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVers
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.containsString;
 
 import java.time.LocalDate;
 
@@ -40,6 +41,13 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void getNonExistentVersion() {
 		assertGetVersion(INT_CODESYSTEM, "nonexistent-version-id").statusCode(404);
+	}
+	
+	@Test
+	public void createVersion_IncorrectVersionId_Percent() {
+		createVersion(INT_CODESYSTEM, "%my-new-version%", getNextAvailableEffectiveDate(INT_CODESYSTEM))
+			.statusCode(400)
+			.body("message", containsString("contains invalid characters"));
 	}
 
 	@Test
