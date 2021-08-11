@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,19 +24,11 @@ import org.elasticsearch.action.bulk.BulkProcessor.Builder;
 import org.elasticsearch.action.bulk.BulkProcessor.Listener;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.ClearScrollResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
-import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
-import org.elasticsearch.index.reindex.UpdateByQueryAction;
-import org.elasticsearch.index.reindex.UpdateByQueryRequestBuilder;
+import org.elasticsearch.index.reindex.*;
 import org.elasticsearch.script.Script;
 
 import com.b2international.index.IndexException;
@@ -107,8 +99,7 @@ public final class EsTcpClient extends EsClientBase {
 	}
 
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, 
-			QueryBuilder query) throws IOException {
+	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, QueryBuilder query) throws IOException {
 		UpdateByQueryRequestBuilder ubqrb = new UpdateByQueryRequestBuilder(client, UpdateByQueryAction.INSTANCE);
 		
 		ubqrb.source()
@@ -118,13 +109,12 @@ public final class EsTcpClient extends EsClientBase {
 		
 		return ubqrb
 			.script(script)
-			.setSlices(numberOfSlices)
+			.setSlices(UpdateByQueryRequest.AUTO_SLICES)
 			.get();
 	}
 	
 	@Override
-	public BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices,
-			QueryBuilder query) throws IOException {
+	public BulkByScrollResponse deleteByQuery(String index, int batchSize, QueryBuilder query) throws IOException {
 		DeleteByQueryRequestBuilder dbqrb = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
 		
 		dbqrb.source()
@@ -133,7 +123,7 @@ public final class EsTcpClient extends EsClientBase {
 			.setQuery(query);
 	
 		return dbqrb
-			.setSlices(numberOfSlices)
+			.setSlices(DeleteByQueryRequest.AUTO_SLICES)
 			.get();
 	}
 	

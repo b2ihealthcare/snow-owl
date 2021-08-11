@@ -33,16 +33,16 @@ import java.util.stream.Collectors;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetMappingsRequest;
+import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
@@ -644,9 +644,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final BulkByScrollResponse response;
 				final int batchSize = Integer.parseInt((String) settings.get(IndexClientFactory.RESULT_WINDOW_KEY));
 				if ("update".equals(command)) {
-					response = client.updateByQuery(getTypeIndex(mapping), batchSize, script, getConcurrencyLevel(), query);
+					response = client.updateByQuery(getTypeIndex(mapping), batchSize, script, query);
 				} else if ("delete".equals(command)) {
-					response = client.deleteByQuery(getTypeIndex(mapping), batchSize, getConcurrencyLevel(), query);
+					response = client.deleteByQuery(getTypeIndex(mapping), batchSize, query);
 				} else {
 					throw new UnsupportedOperationException("Not implemented command: " + command);
 				}
@@ -718,8 +718,4 @@ public final class EsIndexAdmin implements IndexAdmin {
 		return needsRefresh;
 	}
 	
-	public int getConcurrencyLevel() {
-		return (int) settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
-	}
-
 }
