@@ -168,6 +168,20 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	}
 	
 	@Test
+	public void descendantOfAny() throws Exception {
+		// special case that converts to a negated parent query 
+		final Expression actual = eval("<*");
+		final Expression expected;
+		if (isInferred()) {
+			expected = Expressions.builder().mustNot(parents(Collections.singleton(IComponent.ROOT_ID))).build();
+		} else {
+			expected = Expressions.builder().mustNot(statedParents(Collections.singleton(IComponent.ROOT_ID))).build();
+			
+		}
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void descendantOrSelfOf() throws Exception {
 		final Expression actual = eval("<<"+ROOT_ID);
 		Expression expected;
@@ -211,6 +225,12 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	}
 	
 	@Test
+	public void descendantOrSelfAny() throws Exception {
+		final Expression actual = eval("<< *");
+		assertEquals(Expressions.matchAll(), actual);
+	}
+	
+	@Test
 	public void childOf() throws Exception {
 		final Expression actual = eval("<!"+ROOT_ID);
 		Expression expected; 
@@ -218,6 +238,19 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 			expected = parents(Collections.singleton(ROOT_ID));
 		} else {
 			expected = statedParents(Collections.singleton(ROOT_ID));
+			
+		}
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void childOfAny() throws Exception {
+		final Expression actual = eval("<!*");
+		Expression expected; 
+		if (isInferred()) {
+			expected = Expressions.builder().mustNot(parents(Collections.singleton(IComponent.ROOT_ID))).build();
+		} else {
+			expected = Expressions.builder().mustNot(statedParents(Collections.singleton(IComponent.ROOT_ID))).build();
 			
 		}
 		assertEquals(expected, actual);
@@ -240,6 +273,12 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 			.build(), 
 			actual
 		);
+	}
+	
+	@Test
+	public void childOrSelfOfAny() throws Exception {
+		final Expression actual = eval("<<! *");
+		assertEquals(Expressions.matchAll(), actual);
 	}
 	
 	@Test
@@ -292,6 +331,12 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		final Expression actual = eval(">>"+Concepts.MODULE_SCT_CORE);
 		final Expression expected = ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT, Concepts.MODULE_SCT_CORE));
 		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void ancestorOrSelfOfAny() throws Exception {
+		final Expression actual = eval(">> *");
+		assertEquals(Expressions.matchAll(), actual);
 	}
 	
 	@Test
