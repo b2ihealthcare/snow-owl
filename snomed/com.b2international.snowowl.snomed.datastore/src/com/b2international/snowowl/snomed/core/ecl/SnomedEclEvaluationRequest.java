@@ -36,7 +36,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.*;
@@ -477,7 +476,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			evaluatedFilter = evaluatedFilter.then(ex -> executeDescriptionSearch(context, ex));
 		}
 		
-		if (constraint instanceof Any) {
+		if (isAnyExpression(constraint)) {
 			// No need to combine "match all" with the filter query expression, return it directly
 			return evaluatedFilter;
 		}
@@ -492,6 +491,8 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	private static Expression executeDescriptionSearch(BranchContext context, Expression descriptionExpression) {
 		if (descriptionExpression.isMatchAll()) {
 			return Expressions.matchAll();
+		} else if (descriptionExpression.isMatchNone()) {
+			return SnomedDocument.Expressions.ids(Set.of());
 		}
 		
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
@@ -706,12 +707,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final ExpressionBuilder dialectQuery = Expressions.builder();
 		for (DialectAlias alias : dialectAliasFilter.getDialects()) {
 			final Set<String> acceptabilitiesToMatch = getAcceptabilityIds(alias.getAcceptability());
-			// empty set means that acceptability values are not valid and it should not match any descriptions/concepts
-			if (acceptabilitiesToMatch.isEmpty()) {
+			final Collection<String> languageReferenceSetIds = languageMapping.get(alias.getAlias());
+			
+			// empty acceptabilities or empty language reference set IDs mean that none of the provided values were valid so no match should be returned
+			if (acceptabilitiesToMatch.isEmpty() || languageReferenceSetIds.isEmpty()) {
 				return Promise.immediate(Expressions.matchNone());
 			}
 			
-			final Collection<String> languageReferenceSetIds = languageMapping.get(alias.getAlias());
 			for (String acceptability : acceptabilitiesToMatch) {
 				languageRefSetsByAcceptability.putAll(acceptability, languageReferenceSetIds);
 			}
@@ -719,9 +721,6 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		
 		languageRefSetsByAcceptability.asMap().forEach((key, values) -> {
 			Operator op = Operator.fromString(dialectAliasFilter.getOp());
-			if (op == null) {
-				throw new BadRequestException("Unknown dialectAliasFilter operator '%s'", dialectAliasFilter.getOp());
-			}
 			switch (op) {
 			case EQUALS: 
 				dialectQuery.should(Expressions.matchAny(key + "In", values));
@@ -753,9 +752,6 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		
 		languageRefSetsByAcceptability.asMap().forEach((key, values) -> {
 			Operator op = Operator.fromString(dialectIdFilter.getOp());
-			if (op == null) {
-				throw new BadRequestException("Unknown dialectAliasFilter operator '%s'", dialectIdFilter.getOp());
-			}
 			switch (op) {
 			case EQUALS: 
 				dialectQuery.should(Expressions.matchAny(key + "In", values));
@@ -763,7 +759,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			case NOT_EQUALS:
 				dialectQuery.mustNot(Expressions.matchAny(key + "In", values));
 				break;
-			default: throw new NotImplementedException("Unsupported dialectAliasFilter operator '%s'", dialectIdFilter.getOp());
+			default: throw new NotImplementedException("Unsupported dialectIdFilter operator '%s'", dialectIdFilter.getOp());
 			}
 		});
 		
@@ -790,19 +786,6 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		}
 	}
 
-//	protected Promise<Expression> eval(BranchContext context, final DialectIdFilter dialectAliasFilter) {
-//		return Promise.all(evaluate(context, disjunction.getLeft()), evaluate(context, disjunction.getRight()))
-//				.then(results -> {
-//					Expression left = (Expression) results.get(0);
-//					Expression right = (Expression) results.get(1);
-//					return Expressions.builder()
-//							.should(left)
-//							.should(right)
-//							.build();
-//				});
-//		return null;
-//	}
-	
 	/**
 	 * Handles cases when the expression constraint is not available at all. For instance, script is empty.
 	 */

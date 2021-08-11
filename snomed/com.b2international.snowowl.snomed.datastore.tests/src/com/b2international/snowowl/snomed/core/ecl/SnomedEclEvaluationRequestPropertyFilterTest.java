@@ -26,6 +26,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -550,6 +551,50 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		
 		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (acceptable) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void dialectIdAcceptableId() throws Exception {
+		generateAcceptableDescription(Concepts.ROOT_CONCEPT);
+		// extra preferred description on another concept to demonstrate that it won't match
+		generatePreferredDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (" + Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE + ") }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = SyntaxException.class)
+	public void dialectUnsupportedOperator() throws Exception {
+		eval("* {{ dialect > en-gb (preferred) }}");
+	}
+	
+	@Test
+	public void dialectUnknownAcceptability() throws Exception {
+		Expression actual = eval("* {{ dialect = en-gb (unknown) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of());
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void dialectUnknownAlias() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.languageCode("en")
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.acceptabilityMap(Map.of(
+					Concepts.REFSET_LANGUAGE_TYPE_SG, Acceptability.ACCEPTABLE
+				))
+				.build());
+		
+		Expression actual = eval("* {{ dialect = en-sg }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of());
 		assertEquals(expected, actual);
 	}
 	
