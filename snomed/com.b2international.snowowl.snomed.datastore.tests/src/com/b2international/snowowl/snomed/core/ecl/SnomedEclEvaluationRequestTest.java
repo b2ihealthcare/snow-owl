@@ -47,6 +47,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -55,7 +56,9 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -63,6 +66,8 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
@@ -165,15 +170,46 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.with(SnomedCoreConfiguration.class, config)
+				.with(ObjectMapper.class, getMapper())
+				.with(TerminologyResource.class, createCodeSystem(MAIN))
 				.build();
 	}
 	
+	private CodeSystem createCodeSystem(String main) {
+		CodeSystem codeSystem = new CodeSystem();
+		codeSystem.setId("SNOMEDCT");
+		codeSystem.setBranchPath(main);
+		codeSystem.setSettings(Map.of(
+			SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of(
+				Map.of(
+					"languageTag", "en",
+					"languageRefSetIds", List.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US)
+				),
+				Map.of(
+					"languageTag", "en-us",
+					"languageRefSetIds", List.of(Concepts.REFSET_LANGUAGE_TYPE_US)
+				),
+				Map.of(
+					"languageTag", "en-gb",
+					"languageRefSetIds", List.of(Concepts.REFSET_LANGUAGE_TYPE_UK)
+				)
+			)		
+		));
+		return codeSystem;
+	}
+
 	private Expression eval(String expression) {
-		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
-				.setExpressionForm(isInferred() ? Trees.INFERRED_FORM : Trees.STATED_FORM) // use the isInferred method decide on inferred vs stated form (this will provide support for axioms as well)
+		try {
+			return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
+				// use the isInferred method decide on inferred vs stated form (this will provide support for axioms as well)
+				.setExpressionForm(isInferred() ? Trees.INFERRED_FORM : Trees.STATED_FORM) 
 				.build())
 				.execute(context)
 				.getSync();		
+		} catch (SyntaxException e) {
+			System.err.println(e.getAdditionalInfo());
+			throw e;
+		}
 	}
 
 	@Test(expected = BadRequestException.class)
@@ -1619,19 +1655,138 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void filterCaseSignificanceId() throws Exception {
-		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
-				.id(generateDescriptionId())
-				.active(true)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.term("Clinical finding")
-				.conceptId(Concepts.ROOT_CONCEPT)
-				.typeId(Concepts.TEXT_DEFINITION)
-				.languageCode("en")
-				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-				.build());
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
 		
 		Expression actual = eval("* {{ caseSignificanceId = " + Concepts.ENTIRE_TERM_CASE_INSENSITIVE + " }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void filterDialectAnyAcceptability() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialect = en-gb }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectAnyAcceptabilityNotEquals() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialect != en-gb }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of());
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectPreferred() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		// extra acceptable description on another concept to demonstrate that it won't match
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialect = en-gb (preferred) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectPreferredNotEquals() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		// extra acceptable description on another concept to demonstrate that it won't match
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialect != en-gb (preferred) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectAcceptable() throws Exception {
+		generateAcceptableDescription(Concepts.ROOT_CONCEPT);
+		// extra preferred description on another concept to demonstrate that it won't match
+		generatePreferredDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialect = en-gb (acceptable) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectAcceptableNotEquals() throws Exception {
+		generateAcceptableDescription(Concepts.ROOT_CONCEPT);
+		// extra preferred description on another concept to demonstrate that it won't match
+		generatePreferredDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialect != en-gb (acceptable) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectIdAnyAcceptability() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialectId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectIdAnyAcceptabilityNotEquals() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of());
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectIdPreferred() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		// extra acceptable description on another concept to demonstrate that it won't match
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialectId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (preferred) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectIdPreferredNotEquals() throws Exception {
+		generatePreferredDescription(Concepts.ROOT_CONCEPT);
+		// extra acceptable description on another concept to demonstrate that it won't match
+		generateAcceptableDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (preferred) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectIdAcceptable() throws Exception {
+		generateAcceptableDescription(Concepts.ROOT_CONCEPT);
+		// extra preferred description on another concept to demonstrate that it won't match
+		generatePreferredDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialectId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (acceptable) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterDialectIdAcceptableNotEquals() throws Exception {
+		generateAcceptableDescription(Concepts.ROOT_CONCEPT);
+		// extra preferred description on another concept to demonstrate that it won't match
+		generatePreferredDescription(Concepts.MODULE_ROOT);
+		
+		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (acceptable) }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
 	}
 
@@ -1997,6 +2152,38 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				? decimalValue(DRUG_1D_MG, PREFERRED_STRENGTH, 1.0d, getCharacteristicType()).build()
 				: decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build()
 		);
+	}
+	
+	private void generatePreferredDescription(String conceptId) {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(conceptId)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.languageCode("en")
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.acceptabilityMap(Map.of(
+					Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED
+				))
+				.build());
+	}
+	
+	private void generateAcceptableDescription(String conceptId) {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(conceptId)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.languageCode("en")
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.acceptabilityMap(Map.of(
+					Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
+				))
+				.build());
 	}
 	
 	private static Expression and(Expression left, Expression right) {
