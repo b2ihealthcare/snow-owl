@@ -49,6 +49,10 @@ public final class VersionSearchRequestBuilder
 		return addOption(OptionKey.RESOURCE, resourceUris);
 	}
 	
+	public VersionSearchRequestBuilder filterByCreatedAt(Long createdAtFrom, Long createdAtTo) {
+		return addOption(OptionKey.CREATED_AT_FROM, createdAtFrom)
+				.addOption(OptionKey.CREATED_AT_TO, createdAtTo);
+	}
 	/**
 	 * Filter versions by their version tag.
 	 * 
