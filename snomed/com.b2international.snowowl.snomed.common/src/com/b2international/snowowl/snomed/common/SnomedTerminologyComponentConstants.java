@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.common;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +48,37 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_URI_DEV = SNOMED_URI_BASE + "/xsct";
 	public static final String SNOMED_URI_ID = SNOMED_URI_BASE + "/id";
 	
+	// known language dialect aliases, see more information at: https://confluence.ihtsdotools.org/display/DOCECL/Appendix+C+-+Dialect+Aliases
+	public static final Map<String, String> LANG_REFSET_DIALECT_ALIASES = Map.ofEntries(
+		Map.entry("554461000005103", "da-dk"),
+		Map.entry("32570271000036106", "en-au"),
+		Map.entry("19491000087109", "en-ca"),
+		Map.entry("900000000000508004", "en-gb"),
+		Map.entry("21000220103", "en-ie"),
+		Map.entry("271000210107", "en-nz"),
+		Map.entry("900000000000509007", "en-us"),
+		Map.entry("608771002", "en-int-gmdn"),
+		Map.entry("999001261000000100", "en-nhs-clinical"),
+		Map.entry("999000671000001103", "en-nhs-dmd"),
+		Map.entry("999000691000001104", "en-nhs-pharmacy"),
+		Map.entry("999000681000001101", "en-uk-drug"),
+		Map.entry("999001251000000103", "en-uk-ext"),
+		Map.entry("448879004", "es"),
+		Map.entry("450828004", "es-ar"),
+		Map.entry("5641000179103", "es-uy"),
+		Map.entry("71000181105", "et-ee"),
+		Map.entry("722130004", "dr"),
+		Map.entry("722131000", "fr"),
+		Map.entry("21000172104", "fr-be"),
+		Map.entry("20581000087109", "fr-ca"),
+		Map.entry("722129009", "ja"),
+		Map.entry("31000172101", "nl-be"),
+		Map.entry("31000146106", "nl-nl"),
+		Map.entry("61000202103", "nb-no"),
+		Map.entry("91000202106", "nn-no"),
+		Map.entry("46011000052107", "sv-se"),
+		Map.entry("722128001", "zh")	
+	);
 	
 	public static String getNamespace(String conceptId, String fsn) {
 		return getNamespace(DEFAULT_NAMESPACE_PATTERN, conceptId, fsn);

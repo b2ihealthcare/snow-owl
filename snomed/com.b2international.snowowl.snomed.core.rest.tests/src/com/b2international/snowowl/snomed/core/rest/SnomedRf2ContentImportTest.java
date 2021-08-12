@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -26,15 +27,20 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.util.PlatformUtil;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.Resources;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -107,6 +113,32 @@ public class SnomedRf2ContentImportTest extends AbstractSnomedApiTest {
 		final Date effectiveTime = DATE_FORMAT.parse("20200131");
 
 		assertRf2Equals(getDeltaLines(originalLines, effectiveTime, effectiveTime), getLines(result));
+	}
+	
+	@Test
+	public void verifyAutomaticDialectConfiguration() throws Exception {
+		final Map<String, Object> settings = CodeSystemRequests.prepareGetCodeSystem(SnomedContentRule.SNOMEDCT_ID)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.getSettings();
+		assertThat(settings)
+			.containsEntry(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of(
+				// this entry is pre-configured, should be kept after import
+				Map.of(
+					"languageTag", "en",
+					"languageRefSetIds", List.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US)
+				),
+				// these two entries come from the default dialect configuration map, should be appended
+				Map.of(
+					"languageTag", "en-gb", 
+					"languageRefSetIds", List.of(Concepts.REFSET_LANGUAGE_TYPE_UK)
+				),
+				Map.of(
+					"languageTag", "en-us", 
+					"languageRefSetIds", List.of(Concepts.REFSET_LANGUAGE_TYPE_US)
+				)
+			));
 	}
 
 	private void assertRf2Equals(final Multimap<String, String> expected, final Multimap<String, String> result) {
