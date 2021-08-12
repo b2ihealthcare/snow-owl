@@ -56,7 +56,8 @@ public final class VersionSearchRequestBuilder
 	 * @return
 	 */
 	public VersionSearchRequestBuilder filterByCreatedAt(Long createdAt) {
-		return addOption(OptionKey.CREATED_AT, createdAt);
+		return addOption(OptionKey.CREATED_AT_FROM, createdAt)
+				.addOption(OptionKey.CREATED_AT_TO, createdAt);
 	}
 	
 	
