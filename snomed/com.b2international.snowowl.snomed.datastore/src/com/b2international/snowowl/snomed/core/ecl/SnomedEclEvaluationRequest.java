@@ -25,10 +25,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -42,6 +39,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.*;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
@@ -52,8 +50,10 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -61,6 +61,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Evaluates the given ECL expression {@link String} or parsed {@link ExpressionConstraint} to an executable {@link Expression query expression}.
@@ -76,6 +79,11 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	private static final long serialVersionUID = 5891665196136989183L;
 	
 	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
+	
+	private static final Map<String, String> KNOWN_ACCEPTABILITIES = Map.of(
+		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, "preferred",
+		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, "acceptable"
+	);
 
 	@Nullable
 	@JsonProperty
@@ -468,7 +476,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			evaluatedFilter = evaluatedFilter.then(ex -> executeDescriptionSearch(context, ex));
 		}
 		
-		if (constraint instanceof Any) {
+		if (isAnyExpression(constraint)) {
 			// No need to combine "match all" with the filter query expression, return it directly
 			return evaluatedFilter;
 		}
@@ -483,6 +491,8 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	private static Expression executeDescriptionSearch(BranchContext context, Expression descriptionExpression) {
 		if (descriptionExpression.isMatchAll()) {
 			return Expressions.matchAll();
+		} else if (descriptionExpression.isMatchNone()) {
+			return SnomedDocument.Expressions.ids(Set.of());
 		}
 		
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
@@ -691,6 +701,91 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				});
 	}
 	
+	protected Promise<Expression> eval(BranchContext context, final DialectAliasFilter dialectAliasFilter) {
+		final ListMultimap<String, String> languageMapping = SnomedDescriptionUtils.getLanguageMapping(context);
+		final Multimap<String, String> languageRefSetsByAcceptability = HashMultimap.create();
+		final ExpressionBuilder dialectQuery = Expressions.builder();
+		for (DialectAlias alias : dialectAliasFilter.getDialects()) {
+			final Set<String> acceptabilitiesToMatch = getAcceptabilityIds(alias.getAcceptability());
+			final Collection<String> languageReferenceSetIds = languageMapping.get(alias.getAlias());
+			
+			// empty acceptabilities or empty language reference set IDs mean that none of the provided values were valid so no match should be returned
+			if (acceptabilitiesToMatch.isEmpty() || languageReferenceSetIds.isEmpty()) {
+				return Promise.immediate(Expressions.matchNone());
+			}
+			
+			for (String acceptability : acceptabilitiesToMatch) {
+				languageRefSetsByAcceptability.putAll(acceptability, languageReferenceSetIds);
+			}
+		}
+		
+		languageRefSetsByAcceptability.asMap().forEach((key, values) -> {
+			Operator op = Operator.fromString(dialectAliasFilter.getOp());
+			switch (op) {
+			case EQUALS: 
+				dialectQuery.should(Expressions.matchAny(key + "In", values));
+				break;
+			case NOT_EQUALS:
+				dialectQuery.mustNot(Expressions.matchAny(key + "In", values));
+				break;
+			default: throw new NotImplementedException("Unsupported dialectAliasFilter operator '%s'", dialectAliasFilter.getOp());
+			}
+		});
+		
+		return Promise.immediate(dialectQuery.build());
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final DialectIdFilter dialectIdFilter) {
+		final Multimap<String, String> languageRefSetsByAcceptability = HashMultimap.create();
+		final ExpressionBuilder dialectQuery = Expressions.builder();
+		for (Dialect dialect : dialectIdFilter.getDialects()) {
+			final Set<String> acceptabilitiesToMatch = getAcceptabilityIds(dialect.getAcceptability());
+			// empty set means that acceptability values are not valid and it should not match any descriptions/concepts
+			if (acceptabilitiesToMatch.isEmpty()) {
+				return Promise.immediate(Expressions.matchNone());
+			}
+			
+			for (String acceptability : acceptabilitiesToMatch) {
+				languageRefSetsByAcceptability.put(acceptability, dialect.getLanguageRefSetId().getId());
+			}
+		}
+		
+		languageRefSetsByAcceptability.asMap().forEach((key, values) -> {
+			Operator op = Operator.fromString(dialectIdFilter.getOp());
+			switch (op) {
+			case EQUALS: 
+				dialectQuery.should(Expressions.matchAny(key + "In", values));
+				break;
+			case NOT_EQUALS:
+				dialectQuery.mustNot(Expressions.matchAny(key + "In", values));
+				break;
+			default: throw new NotImplementedException("Unsupported dialectIdFilter operator '%s'", dialectIdFilter.getOp());
+			}
+		});
+		
+		return Promise.immediate(dialectQuery.build());
+	}
+
+	private Set<String> getAcceptabilityIds(Acceptability acceptability) {
+		// in case of acceptability not defined accept any known acceptability value
+		if (acceptability == null) {
+			return Set.of("preferred", "acceptable");
+		} else if (acceptability instanceof AcceptabilityIdSet) {
+			return ((AcceptabilityIdSet) acceptability).getAcceptabilities().getConcepts().stream().map(EclConceptReference::getId)
+					.filter(KNOWN_ACCEPTABILITIES::containsKey)
+					.map(KNOWN_ACCEPTABILITIES::get)
+					.collect(Collectors.toSet());
+		} else if (acceptability instanceof AcceptabilityTokenSet) {
+			return ((AcceptabilityTokenSet) acceptability).getAcceptabilities().stream()
+				.map(String::toLowerCase)
+				.filter(KNOWN_ACCEPTABILITIES::containsValue)
+				.collect(Collectors.toSet());
+		} else {
+			throwUnsupported(acceptability);
+			return Set.of();
+		}
+	}
+
 	/**
 	 * Handles cases when the expression constraint is not available at all. For instance, script is empty.
 	 */

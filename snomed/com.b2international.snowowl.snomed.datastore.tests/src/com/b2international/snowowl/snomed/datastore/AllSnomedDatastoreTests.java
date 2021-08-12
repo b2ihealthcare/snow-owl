@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,26 +19,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestTest;
-import com.b2international.snowowl.snomed.core.ecl.SnomedEclLabelerRequestTest;
-import com.b2international.snowowl.snomed.core.ecl.SnomedEclRewriterTest;
-import com.b2international.snowowl.snomed.core.ecl.SnomedEclShortcutTest;
-import com.b2international.snowowl.snomed.core.ecl.SnomedStatedEclEvaluationTest;
+import com.b2international.snowowl.snomed.core.ecl.*;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceRegressionTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
-import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessorAxiomTest;
-import com.b2international.snowowl.snomed.datastore.index.change.ConceptIconIdUpdaterTest;
-import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessorTest;
-import com.b2international.snowowl.snomed.datastore.index.change.PreferredDescriptionPreCommitHookTest;
-import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessorTest;
-import com.b2international.snowowl.snomed.datastore.index.change.TaxonomyPreCommitHookTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocumentSerializationTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocumentTermSortTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConstraintDocumentSerializationTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntrySerializationTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberDocumentSerializationTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntrySerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.change.*;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationImplTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImplTest;
@@ -72,6 +58,7 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	ConceptIconIdUpdaterTest.class,
 	// ECL test cases
 	SnomedEclEvaluationRequestTest.class,
+	SnomedEclEvaluationRequestPropertyFilterTest.class,
 	SnomedStatedEclEvaluationTest.class,
 	SnomedEclRewriterTest.class,
 	SnomedEclLabelerRequestTest.class,
