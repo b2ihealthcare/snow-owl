@@ -78,19 +78,12 @@ public final class VersionSearchRequest
 		 * Filter by the author's username who have created the version.
 		 */
 		AUTHOR,
-		
 		/**
-		 * Filter matches by exact createdAt value
-		 */
-		CREATED_AT,
-		
-		/**
-		 * Greater than equal to filter
+		 * "Greater than equal to filter
 		 */
 		CREATED_AT_FROM,
-		
 		/**
-		 * Less than equal to filter
+		 * "Less than equal to filter
 		 */
 		CREATED_AT_TO,
 	}
@@ -111,10 +104,6 @@ public final class VersionSearchRequest
 		addFilter(query, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		addFilter(query, OptionKey.RESOURCE_BRANCHPATH, String.class, VersionDocument.Expressions::resourceBranchPaths);
 		addFilter(query, OptionKey.AUTHOR, String.class, VersionDocument.Expressions::authors);
-
-		if (containsKey(OptionKey.CREATED_AT)) {
-			query.filter(VersionDocument.Expressions.createdAt(get(OptionKey.CREATED_AT, Long.class)));
-		}
 
 		if (containsKey(OptionKey.CREATED_AT_FROM) || containsKey(OptionKey.CREATED_AT_TO)) {
 			final Long createdAtFrom = containsKey(OptionKey.CREATED_AT_FROM) ? get(OptionKey.CREATED_AT_FROM, Long.class) : 0L;
