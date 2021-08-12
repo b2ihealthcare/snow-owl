@@ -29,8 +29,6 @@ import com.b2international.snowowl.fhir.tests.domain.conceptmap.*;
 import com.b2international.snowowl.fhir.tests.domain.structuredefinition.*;
 import com.b2international.snowowl.fhir.tests.domain.valueset.*;
 import com.b2international.snowowl.fhir.tests.dt.*;
-import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
-import com.b2international.snowowl.fhir.tests.filter.FhirRequestParameterTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 
 /**
@@ -44,9 +42,6 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	SnomedUriParsingTest.class,
 	ExceptionTest.class,
 
-	//tests related to request parameter parsing and filtering
-	FhirRequestParameterTest.class,
-	
 	//Data type tests
 	PrimitiveDataTypeTest.class,
 	CodingTest.class,
@@ -112,7 +107,6 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	ConceptMapElementTest.class,
 	GroupTest.class,
 	ConceptMapTest.class,
-	ConceptMapFilterTest.class,
 	
 	//StructureDefinition
 	DiscriminatorTest.class,

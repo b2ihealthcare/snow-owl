@@ -10,7 +10,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +29,6 @@ public class Meta extends Element {
 	private final Id versionId;
 	
 	@Summary
-	@Searchable(type = "Date")
 	private final Instant lastUpdated;
 	
 	@Summary

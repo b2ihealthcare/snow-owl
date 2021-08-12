@@ -27,10 +27,8 @@ import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
-import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -48,7 +46,6 @@ import com.google.common.collect.Lists;
  * @see <a href="https://www.hl7.org/fhir/structuredefinition.html">FHIR:StructureDefinition</a>
  * @since 7.1
  */
-@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 @JsonDeserialize(builder = StructureDefinition.Builder.class, using = JsonDeserializer.None.class)
 public class StructureDefinition extends MetadataResource {
 

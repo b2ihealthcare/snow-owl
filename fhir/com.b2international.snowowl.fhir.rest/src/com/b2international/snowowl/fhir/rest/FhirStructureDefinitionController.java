@@ -15,20 +15,15 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.util.Set;
 import java.util.UUID;
 
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.b2international.commons.Pair;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
-import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -68,8 +63,6 @@ public class FhirStructureDefinitionController extends AbstractFhirResourceContr
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getStructureDefinitions(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
-		
 		String uri = MvcUriComponentsBuilder.fromController(FhirStructureDefinitionController.class).build().toString();
 		
 		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
@@ -98,14 +91,12 @@ public class FhirStructureDefinitionController extends AbstractFhirResourceContr
 		@ApiResponse(responseCode = "404", description = "Structure definition not found")
 	})
 	@RequestMapping(value="/{structureDefinitionId:**}", method=RequestMethod.GET)
-	public MappingJacksonValue getStructureDefinition(@PathVariable("structureDefinitionId") String structureDefinitionId, 
+	public StructureDefinition getStructureDefinition(@PathVariable("structureDefinitionId") String structureDefinitionId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
-		
-		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
 		StructureDefinition structureDefinition = StructureDefinition.builder(structureDefinitionId).build();
 
-		return applyResponseContentFilter(structureDefinition, fhirParameters.getA());
+		return structureDefinition;
 	}
 	
 }

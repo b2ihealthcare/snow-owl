@@ -23,11 +23,9 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
-import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -73,7 +71,6 @@ public abstract class FhirResource implements Serializable {
 	 * Set the ID to -1 when submitting for creation.
 	 */
 	@Mandatory
-	@Searchable(type = "String", modifiers = {"exact"}, supportsMultipleValues = true)
 	private final Id id;
 	
 	/**

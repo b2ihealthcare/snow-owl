@@ -27,11 +27,13 @@ import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
-import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -48,7 +50,6 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @see <a href="https://www.hl7.org/fhir/valueset.html">FHIR:ValueSet</a>
  * @since 6.3
  */
-@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 @JsonDeserialize(builder = ValueSet.Builder.class, using = JsonDeserializer.None.class)
 public class ValueSet extends MetadataResource {
 	

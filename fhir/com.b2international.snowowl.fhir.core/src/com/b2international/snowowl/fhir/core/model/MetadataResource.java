@@ -27,9 +27,7 @@ import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
-import com.b2international.snowowl.fhir.core.search.Filterable;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
-import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -43,9 +41,6 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 6.3
  */
-@Filterable(filter = "_summary", values = {"TRUE", "TEXT", "DATA", "COUNT", "FALSE"})
-@Filterable(filter = "_elements", supportsMultipleValues = true)
-//@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public abstract class MetadataResource extends DomainResource {
 	
 	private static final long serialVersionUID = 1L;
@@ -91,7 +86,6 @@ public abstract class MetadataResource extends DomainResource {
 	
 	@Summary
 	@JsonProperty
-	@Searchable(type = "String", modifiers = {"exact"}, supportsMultipleValues = true)
 	private String name;
 	
 	@Summary
