@@ -74,6 +74,8 @@ public class VersionRestService extends AbstractRestService {
 		return ResourceRequests.prepareSearchVersion()
 				.filterByResourceTypes(params.getResourceType())
 				.filterByResources(params.getResource())
+				.filterByCreatedAt(params.getCreatedAt())
+				.filterByCreatedAt(params.getCreatedAtFrom(), params.getCreatedAtTo())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
 				.setFields(params.getField())

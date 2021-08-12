@@ -32,6 +32,15 @@ public class VersionRestSearch extends ObjectRestSearch {
 	@Parameter(description = "The types of resources to get the versions for")
 	private List<String> resourceType;
 	
+	@Parameter(description = "Exact match filter for the created at field")
+	private Long createdAt;
+	
+	@Parameter(description = "Greater than equal to filter for the created at field")
+	private Long createdAtFrom;
+	
+	@Parameter(description = "Less than equal filter to for the created at field")
+	private Long createdAtTo;
+	
 	public List<String> getResource() {
 		return resource;
 	}
@@ -47,5 +56,28 @@ public class VersionRestSearch extends ObjectRestSearch {
 	public void setResourceType(List<String> resourceType) {
 		this.resourceType = resourceType;
 	}
+
+	public Long getCreatedAt() {
+		return createdAt;
+	}
 	
+	public void setCreatedAt(Long createdAt) {
+		this.createdAt = createdAt;
+	}
+	
+	public Long getCreatedAtFrom() {
+		return createdAtFrom;
+	}
+
+	public void setCreatedAtFrom(Long createdAtFrom) {
+		this.createdAtFrom = createdAtFrom;
+	}
+
+	public Long getCreatedAtTo() {
+		return createdAtTo;
+	}
+
+	public void setCreatedAtTo(Long createdAtTo) {
+		this.createdAtTo = createdAtTo;
+	}
 }

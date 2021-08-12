@@ -34,9 +34,9 @@ import com.b2international.snowowl.core.version.Versions;
 /**
  * @since 4.7
  */
-public final class VersionSearchRequest 
-	extends SearchIndexResourceRequest<RepositoryContext, Versions, VersionDocument> 
-	implements RepositoryAccessControl {
+public final class VersionSearchRequest
+		extends SearchIndexResourceRequest<RepositoryContext, Versions, VersionDocument>
+		implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 3L;
 
@@ -48,39 +48,48 @@ public final class VersionSearchRequest
 		 * Filter versions by their tag.
 		 */
 		VERSION,
-		
+
 		/**
 		 * Filter versions by associated resource.
 		 */
 		RESOURCE,
-		
+
 		/**
 		 * Filter versions by effective date starting with this value, inclusive.
 		 */
 		EFFECTIVE_TIME_START,
-		
+
 		/**
 		 * Filter versions by effective date ending with this value, inclusive.
 		 */
-		EFFECTIVE_TIME_END, 
-		
+		EFFECTIVE_TIME_END,
+
 		/**
 		 * Filter versions by associated resource's type.
 		 */
 		RESOURCE_TYPE,
-		
+
 		/**
 		 * Filter matches by corresponding resource branch path (formerly parent branch path).
 		 */
-		RESOURCE_BRANCHPATH, 
-		
+		RESOURCE_BRANCHPATH,
+
 		/**
 		 * Filter by the author's username who have created the version.
 		 */
 		AUTHOR,
+		/**
+		 * "Greater than equal to filter
+		 */
+		CREATED_AT_FROM,
+		/**
+		 * "Less than equal to filter
+		 */
+		CREATED_AT_TO,
 	}
-	
-	VersionSearchRequest() { }
+
+	VersionSearchRequest() {
+	}
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
@@ -96,15 +105,21 @@ public final class VersionSearchRequest
 		addFilter(query, OptionKey.RESOURCE_BRANCHPATH, String.class, VersionDocument.Expressions::resourceBranchPaths);
 		addFilter(query, OptionKey.AUTHOR, String.class, VersionDocument.Expressions::authors);
 
+		if (containsKey(OptionKey.CREATED_AT_FROM) || containsKey(OptionKey.CREATED_AT_TO)) {
+			final Long createdAtFrom = containsKey(OptionKey.CREATED_AT_FROM) ? get(OptionKey.CREATED_AT_FROM, Long.class) : 0L;
+			final Long createdAtTo = containsKey(OptionKey.CREATED_AT_TO) ? get(OptionKey.CREATED_AT_TO, Long.class) : Long.MAX_VALUE;
+			query.filter(VersionDocument.Expressions.createdAt(createdAtFrom, createdAtTo));
+		}
+
 		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
 			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
 			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
 			query.filter(VersionDocument.Expressions.effectiveTime(from, to));
 		}
-		
+
 		return query.build();
 	}
-	
+
 	@Override
 	protected Class<VersionDocument> getDocumentType() {
 		return VersionDocument.class;
@@ -114,11 +129,13 @@ public final class VersionSearchRequest
 	protected Versions toCollectionResource(RepositoryContext context, Hits<VersionDocument> hits) {
 		return new Versions(toResource(hits), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
-	
+
 	private List<Version> toResource(Hits<VersionDocument> hits) {
-		return hits.stream().map(this::toResource).collect(Collectors.toList());
+		return hits.stream()
+				.map(this::toResource)
+				.collect(Collectors.toList());
 	}
-	
+
 	private Version toResource(VersionDocument doc) {
 		Version version = new Version();
 		version.setId(doc.getId());
@@ -131,7 +148,7 @@ public final class VersionSearchRequest
 		version.setAuthor(doc.getAuthor());
 		return version;
 	}
-	
+
 	@Override
 	protected Versions createEmptyResult(int limit) {
 		return new Versions(Collections.emptyList(), null, limit, 0);
