@@ -135,7 +135,7 @@ public class StructureDefinition extends MetadataResource {
 	public StructureDefinition(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
 			String version, String name, String title, Code status, 
 			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description, 
-			Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose, String copyright, 
+			Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose, String copyright, String toolingId,
 			
 			final String resourceType,
 			final Collection<Identifier> identifiers,
@@ -154,7 +154,7 @@ public class StructureDefinition extends MetadataResource {
 			final StructureView differential) {
 		
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
 		
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
@@ -432,7 +432,7 @@ public class StructureDefinition extends MetadataResource {
 		@Override
 		protected StructureDefinition doBuild() {
 			return new StructureDefinition(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId,
 					
 					resourceType,
 					identifiers,

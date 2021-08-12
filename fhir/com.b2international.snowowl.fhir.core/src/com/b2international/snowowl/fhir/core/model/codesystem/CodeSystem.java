@@ -186,8 +186,6 @@ public class CodeSystem extends MetadataResource {
 	@JsonProperty(CodeSystem.Fields.CONCEPT)
 	private Collection<Concept> concepts;
 	
-	private String toolingId;
-
 	@SuppressWarnings("rawtypes")
 	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			final Narrative text, Uri url, String version, String name, String title, Code status,
@@ -202,7 +200,7 @@ public class CodeSystem extends MetadataResource {
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts, final String toolingId) {
 
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date, publisher, contacts, 
-				description, usageContexts, jurisdictions, purpose, copyright);
+				description, usageContexts, jurisdictions, purpose, copyright, toolingId);
 
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
@@ -217,7 +215,6 @@ public class CodeSystem extends MetadataResource {
 		this.filters = filters;
 		this.properties = properties;
 		this.concepts = concepts;
-		this.toolingId = toolingId;
 	}
 	
 	public String getResourceType() {
@@ -283,11 +280,6 @@ public class CodeSystem extends MetadataResource {
 		return ResourceURI.of(com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE, getId().getIdValue());
 	}
 	
-	@JsonIgnore
-	public String getToolingId() {
-		return toolingId;
-	}
-
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -297,7 +289,7 @@ public class CodeSystem extends MetadataResource {
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
+	public static final class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
 
 		private String resourceType = RESOURCE_TYPE_CODE_SYSTEM;
 		
@@ -325,8 +317,6 @@ public class CodeSystem extends MetadataResource {
 
 		private Collection<Concept> concepts;
 		
-		private String toolingId;
-
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
 		 */
@@ -458,11 +448,6 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 		
-		public Builder toolingId(String toolingId) {
-			this.toolingId = toolingId;
-			return getSelf();
-		}
-
 		@Override
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, version, name, title, status, 

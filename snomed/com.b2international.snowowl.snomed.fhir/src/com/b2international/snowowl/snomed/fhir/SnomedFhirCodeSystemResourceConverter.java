@@ -28,7 +28,6 @@ import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemRe
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
 import com.google.common.collect.ImmutableList;
 
 /**

@@ -30,11 +30,8 @@ import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -89,11 +86,11 @@ public class ValueSet extends MetadataResource {
 			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, 
 			final String resourceType, final Collection<Identifier> identifiers, 
-			final Boolean immutable, final String purpose, final String copyright,
+			final Boolean immutable, final String purpose, final String copyright, final String toolingId,
 			final Compose compose, final Expansion expansion) {
 		
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
 		
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
@@ -122,6 +119,10 @@ public class ValueSet extends MetadataResource {
 		return expansion;
 	}
 	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
 	public static Builder builder(String valueSetId) {
 		return new Builder(valueSetId);
 	}
@@ -135,14 +136,12 @@ public class ValueSet extends MetadataResource {
 		private Boolean immutable;
 		private Compose compose;
 		private Expansion expansion;
-		
-		/**
-		 * Use this constructor when a new resource is sent to the server to be created.
-		 */
-		public Builder() {
+
+		@JsonCreator
+		private Builder() {
 		}
 		
-		public Builder(String valueSetId) {
+		private Builder(String valueSetId) {
 			super(valueSetId);
 		}
 		
@@ -197,7 +196,7 @@ public class ValueSet extends MetadataResource {
 			return new ValueSet(id, meta, implicitRules, language, text, url, version, name,  title, status, experimental, 
 					date, publisher, contacts, description, usageContexts,	jurisdictions, 
 					
-					resourceType, identifiers, immutable, purpose, copyright, compose, expansion);
+					resourceType, identifiers, immutable, purpose, copyright, toolingId, compose, expansion);
 		}
 	}
 		

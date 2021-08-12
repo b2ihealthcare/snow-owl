@@ -17,13 +17,7 @@ package com.b2international.snowowl.fhir.rest;
 
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -185,7 +179,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.filterByIds(asList(params.get_id()))
 				.filterByNames(asList(params.getName()))
 				.filterByTitle(params.getTitle())
-				.filterByContent(params.get_content())
+//				.filterByContent(params.get_content())
 				.filterByLastUpdated(params.get_lastUpdated())
 				.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
 				.filterByVersions(params.getVersion())
@@ -193,7 +187,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.setCount(params.get_count())
 				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
 				.setSummary(params.get_summary())
-				.setElements(asList(params.get_elements()))
+				.setElements(params.get_elements())
 				.sortByFields(params.get_sort())
 				.buildAsync()
 				.execute(getBus());
@@ -217,7 +211,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
-	@RequestMapping(value="/{id:**}", method=RequestMethod.GET)
+	@GetMapping(value="/{id:**}")
 	public Promise<CodeSystem> getCodeSystem(
 			@Parameter(description = "The identifier of the Code System resource")
 			@PathVariable(value = "id") 
@@ -228,7 +222,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		
 		return FhirRequests.codeSystems().prepareGet(id)
 				.setSummary(selectors.get_summary())
-				.setElements(asList(selectors.get_elements()))
+				.setElements(selectors.get_elements())
 				.buildAsync()
 				.execute(getBus());
 	}

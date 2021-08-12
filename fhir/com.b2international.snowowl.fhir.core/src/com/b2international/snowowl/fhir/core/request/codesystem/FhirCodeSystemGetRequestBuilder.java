@@ -15,45 +15,17 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import java.util.List;
-
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.core.request.ResourceRequest;
-import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.request.FhirResourceGetRequestBuilder;
 
 /**
  * @since 8.0
  */
 public final class FhirCodeSystemGetRequestBuilder 
-		extends GetResourceRequestBuilder<FhirCodeSystemGetRequestBuilder, FhirCodeSystemSearchRequestBuilder, RepositoryContext, Bundle, CodeSystem>
-		implements ResourceRepositoryRequestBuilder<CodeSystem> {
-
-	private String summary;
-	private List<String> elements;
+		extends FhirResourceGetRequestBuilder<FhirCodeSystemGetRequestBuilder, FhirCodeSystemSearchRequestBuilder, CodeSystem> {
 
 	public FhirCodeSystemGetRequestBuilder(String idOrUrl) {
 		super(new FhirCodeSystemGetRequest(idOrUrl));
 	}
 	
-	@Override
-	protected void init(ResourceRequest<RepositoryContext, CodeSystem> req) {
-		super.init(req);
-		FhirCodeSystemGetRequest request = (FhirCodeSystemGetRequest) req;
-		request.setSummary(summary);
-		request.setElements(elements);
-	}
-
-	public FhirCodeSystemGetRequestBuilder setSummary(String summary) {
-		this.summary = summary;
-		return getSelf();
-	}
-	
-	public FhirCodeSystemGetRequestBuilder setElements(List<String> elements) {
-		this.elements = elements;
-		return getSelf();
-	}
-
 }

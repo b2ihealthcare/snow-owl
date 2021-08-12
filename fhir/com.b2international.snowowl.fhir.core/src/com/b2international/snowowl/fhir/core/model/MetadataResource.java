@@ -32,6 +32,7 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -141,17 +142,14 @@ public abstract class MetadataResource extends DomainResource {
 	
 	@JsonProperty
 	private String copyright;
+	
+	private String toolingId;
 
-	/**
-	 * @param id
-	 * @param language
-	 * @param text
-	 */
 	@SuppressWarnings("rawtypes")
 	public MetadataResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			Narrative text, Uri url, String version, 
 			String name, String title, Code status, final Boolean experimental, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
-			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright) {
+			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright, final String toolingId) {
 		
 		super(id, meta, impliciteRules, language, text);
 		
@@ -169,6 +167,7 @@ public abstract class MetadataResource extends DomainResource {
 		this.jurisdictions = jurisdictions;
 		this.purpose = purpose;
 		this.copyright = copyright;
+		this.toolingId = toolingId;
 	}
 	
 	public Uri getUrl() {
@@ -228,6 +227,11 @@ public abstract class MetadataResource extends DomainResource {
 		return copyright;
 	}
 	
+	@JsonIgnore
+	public String getToolingId() {
+		return toolingId;
+	}
+	
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends DomainResource.Builder<B, T> {
 
 		protected Uri url; //ORG_LINK or hardcoded provider value
@@ -258,6 +262,8 @@ public abstract class MetadataResource extends DomainResource {
 		protected String purpose;
 		
 		protected String copyright;
+		
+		protected String toolingId;
 		
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -385,6 +391,11 @@ public abstract class MetadataResource extends DomainResource {
 		
 		public B copyright(final String copyright) {
 			this.copyright = copyright;
+			return getSelf();
+		}
+		
+		public B toolingId(String toolingId) {
+			this.toolingId = toolingId;
 			return getSelf();
 		}
 	}

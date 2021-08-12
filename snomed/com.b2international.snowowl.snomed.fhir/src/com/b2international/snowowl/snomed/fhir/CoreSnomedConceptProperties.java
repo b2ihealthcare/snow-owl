@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.fhir.codesystems;
+package com.b2international.snowowl.snomed.fhir;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;

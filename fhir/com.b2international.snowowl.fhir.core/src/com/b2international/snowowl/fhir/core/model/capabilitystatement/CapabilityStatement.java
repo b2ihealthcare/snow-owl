@@ -130,7 +130,7 @@ public class CapabilityStatement extends MetadataResource {
 			String version, String name, String title, Code status,
 			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description,
 			@SuppressWarnings("rawtypes") Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose,
-			String copyright,
+			String copyright, String toolingId,
 			
 			final String resourceType,
 			final Collection<Identifier> identifiers,
@@ -148,7 +148,7 @@ public class CapabilityStatement extends MetadataResource {
 			final Collection<Document> documents) {
 		
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date,
-				publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
+				publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
 	
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
@@ -431,7 +431,7 @@ public class CapabilityStatement extends MetadataResource {
 		@Override
 		protected CapabilityStatement doBuild() {
 			return new CapabilityStatement(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId,
 					
 			resourceType,
 			identifiers,
