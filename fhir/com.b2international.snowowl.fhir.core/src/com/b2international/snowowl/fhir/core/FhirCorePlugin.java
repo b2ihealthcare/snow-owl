@@ -15,25 +15,12 @@
  */
 package com.b2international.snowowl.fhir.core;
 
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
-import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
-import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 
 /**
  * @since 7.12
  */
 @Component
 public final class FhirCorePlugin extends Plugin {
-
-	@Override
-	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		ClassPathScanner scanner = env.service(ClassPathScanner.class);
-		env.services().registerService(IConceptMapApiProvider.Registry.class, new IConceptMapApiProvider.Registry(scanner));
-		env.services().registerService(IValueSetApiProvider.Registry.class, new IValueSetApiProvider.Registry(scanner));
-	}
-	
 }
