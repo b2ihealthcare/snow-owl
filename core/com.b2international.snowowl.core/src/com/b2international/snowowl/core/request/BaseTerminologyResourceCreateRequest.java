@@ -123,7 +123,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.toolingId(toolingId)
 				.extensionOf(extensionOf)
 				.upgradeOf(upgradeOf)
-				.settings(settings);
+				.settings(settings == null ? Map.of() : settings);
 	}
 
 	@Override
