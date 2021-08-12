@@ -8,6 +8,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ExplicitFirstOrdering;
@@ -138,16 +139,38 @@ public final class SnomedDescriptionUtils {
 		return languageRefSetIds;
 	}
 	
+	/**
+	 * Returns the currently configured dialect aliast configuration from the given context. If there is no such setting configured it returns an empty {@link ListMultimap}.
+	 * @param context
+	 * @return a {@link ListMultimap} that has all the configured dialect aliases, never <code>null</code>
+	 */
 	public static ListMultimap<String,String> getLanguageMapping(final BranchContext context) {
-		List<Map<String, Object>> languageMapping = (List<Map<String, Object>>) context.service(TerminologyResource.class).getSettings().getOrDefault(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of());
+		return getLanguageMapping(context.service(ObjectMapper.class), context.service(TerminologyResource.class));
+	}
+
+	/**
+	 * Returns the currently configured dialect aliast configuration from the given {@link TerminologyResource}'s settings. If there is no such setting configured it returns an empty {@link ListMultimap}.
+	 * @param mapper
+	 * @param resource
+	 * @return a {@link ListMultimap} that has all the configured dialect aliases, never <code>null</code>
+	 */
+	public static ListMultimap<String, String> getLanguageMapping(final ObjectMapper mapper, final TerminologyResource resource) {
 		ListMultimap<String, String> languageMap = ArrayListMultimap.create();
-		ObjectMapper mapper = context.service(ObjectMapper.class);
-		languageMapping.forEach(mapping -> {
-			SnomedLanguageConfig snomedLanguageConfig = mapper.convertValue(mapping, SnomedLanguageConfig.class);
-			languageMap.putAll(snomedLanguageConfig.getLanguageTag(), snomedLanguageConfig.getLanguageRefSetIds());
-		});
-		
+		getLanguagesConfiguration(mapper, resource).forEach(mapping -> languageMap.putAll(mapping.getLanguageTag(), mapping.getLanguageRefSetIds()));
 		return languageMap;
+	}
+
+	/**
+	 * Returns the currently configured language settings from the given {@link TerminologyResource}'s settings. If there is no such setting configured it returns an empty {@link List}.
+	 * @param mapper
+	 * @param resource
+	 * @return a {@link List} that has all the configured language settings, never <code>null</code>
+	 */
+	public static List<SnomedLanguageConfig> getLanguagesConfiguration(final ObjectMapper mapper, final TerminologyResource resource) {
+		return ((List<Map<String, Object>>) resource.getSettings().getOrDefault(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of()))
+				.stream()
+				.map(config -> mapper.convertValue(config, SnomedLanguageConfig.class))
+				.collect(Collectors.toList());
 	}
 	
 	private SnomedDescriptionUtils() {}

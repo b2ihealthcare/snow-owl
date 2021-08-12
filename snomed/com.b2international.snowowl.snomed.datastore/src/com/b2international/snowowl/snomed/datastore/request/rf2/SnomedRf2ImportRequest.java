@@ -63,8 +63,13 @@ import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDe
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
+import com.b2international.snowowl.snomed.datastore.config.SnomedLanguageConfig;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.*;
@@ -73,6 +78,7 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2Va
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
@@ -80,6 +86,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 /**
  * @since 6.0.0
@@ -220,7 +227,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 				}
 					
 			    // Update locales registered on the code system
-				updateLocales(context, codeSystemUri);
+				updateCodeSystemSettings(context, codeSystemUri);
 			}
 			
 			return ImportResponse.success(visitedComponents.build(), reporter.getDefects());
@@ -353,27 +360,52 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		}
 	}
 	
-	private void updateLocales(final BranchContext context, final ResourceURI codeSystemUri) throws Exception {
-		/*
-		 * XXX: The default language in locales is always "en", as there is no
-		 * machine-readable information about what language code each language type
-		 * reference set is associated with.
-		 */
-		final List<ExtendedLocale> locales = SnomedRequests.prepareSearchRefSet()
+	private void updateCodeSystemSettings(final BranchContext context, final ResourceURI codeSystemUri) throws Exception {
+		SnomedReferenceSets languageReferenceSets = SnomedRequests.prepareSearchRefSet()
 			.all()
 			.filterByType(SnomedRefSetType.LANGUAGE)
 			.filterByActive(true)
 			.setFields(SnomedConceptDocument.Fields.ID)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
 			.build()
-			.execute(context)
+			.execute(context);
+		
+		/*
+		 * XXX: The default language in locales is always "en", as there is no
+		 * machine-readable information about what language code each language type
+		 * reference set is associated with.
+		 */
+		final List<ExtendedLocale> locales = languageReferenceSets
 			.stream()
 			.map(refSet -> new ExtendedLocale("en", "", refSet.getId()))
 			.collect(Collectors.toList());
 		
+		// fetch codesystem again to get the latest settings 
+		CodeSystem currentSnomedCodeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemUri.getResourceId())
+			.buildAsync()
+			.get(context);
+		
+		Map<String, SnomedLanguageConfig> mergedLanguagesConfiguration = Maps.newLinkedHashMap(); 
+		SnomedDescriptionUtils.getLanguagesConfiguration(context.service(ObjectMapper.class), currentSnomedCodeSystem).forEach(config -> {
+			mergedLanguagesConfiguration.put(config.getLanguageTag(), config);
+		});
+		
+		languageReferenceSets.stream()
+				.map(SnomedReferenceSet::getId)
+				.filter(SnomedTerminologyComponentConstants.LANG_REFSET_DIALECT_ALIASES::containsKey)
+				.forEach(langRefsetId -> {
+					final String dialect = SnomedTerminologyComponentConstants.LANG_REFSET_DIALECT_ALIASES.get(langRefsetId);
+					// ignore any aliases that are already defined by using computeIfAbsent
+					mergedLanguagesConfiguration.computeIfAbsent(dialect, languageTag -> new SnomedLanguageConfig(languageTag, langRefsetId));
+					
+				});
+		
 		CodeSystemRequests.prepareUpdateCodeSystem(codeSystemUri.getResourceId())
-				.setSettings(Map.of(CodeSystem.CommonSettings.LOCALES, locales))
-				.build(context.service(User.class).getUsername(), "Update available list of locales on " + codeSystemUri.getResourceId())
+				.setSettings(Map.of(
+					CodeSystem.CommonSettings.LOCALES, locales,
+					SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, mergedLanguagesConfiguration.values()
+				))
+				.build(context.service(User.class).getUsername(), String.format("Update '%s' settings based on RF2 import", codeSystemUri.getResourceId()))
 				.execute(context.service(IEventBus.class))
 				.getSync(2, TimeUnit.MINUTES);
 	}

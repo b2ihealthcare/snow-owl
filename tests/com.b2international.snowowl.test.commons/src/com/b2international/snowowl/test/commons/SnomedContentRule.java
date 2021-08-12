@@ -135,14 +135,6 @@ public class SnomedContentRule extends ExternalResource {
 					Map.of(
 						"languageTag", "en",
 						"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US)
-					),
-					Map.of(
-						"languageTag", "en-us",
-						"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_US)
-					),
-					Map.of(
-						"languageTag", "en-gb",
-						"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_UK)
 					)
 				)
 			))
