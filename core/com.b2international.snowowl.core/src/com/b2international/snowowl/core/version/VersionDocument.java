@@ -120,6 +120,10 @@ public final class VersionDocument implements Serializable {
 			return matchAny(Fields.AUTHOR, authors);
 		}
 		
+		public static Expression createdAt(long createdAt) {
+			return exactMatch(Fields.CREATED_AT, createdAt);
+		}
+		
 		public static Expression createdAt(long from, long to) {
 			return matchRange(Fields.CREATED_AT, from, to);
 		}
