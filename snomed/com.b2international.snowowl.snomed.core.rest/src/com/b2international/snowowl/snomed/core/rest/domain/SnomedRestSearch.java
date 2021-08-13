@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.Parameter;
  */
 public class SnomedRestSearch extends ObjectRestSearch {
 
-	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time value to match (yyyyMMdd or Unpublished)")
 	private String effectiveTime;
 
 	@Parameter(description = "The concept status to match")
