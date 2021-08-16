@@ -86,6 +86,17 @@ public final class ConceptSuggestionRequestBuilder
 	}
 	
 	/**
+	 * Set the {@link SnomedDisplayTermType} of the returning term in case of SNOMED.
+	 * 
+	 * @param display
+	 *            - the display type
+	 * @return
+	 */
+	public ConceptSuggestionRequestBuilder setPreferredDisplay(final String display) {
+		return addOption(OptionKey.DISPLAY, display);
+	}
+	
+	/**
 	 * Suggested concepts are based on term queries that use the top "n" tokens most frequently occurring in 
 	 * the suggestion base set, defined by the method above. The cut-off value of "n" is set by this method.
 	 * 

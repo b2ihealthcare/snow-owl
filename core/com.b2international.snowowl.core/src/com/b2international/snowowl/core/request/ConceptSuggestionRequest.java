@@ -19,6 +19,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.TERM;
 import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
 import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.DISPLAY;
 
 import java.io.IOException;
 import java.util.List;
@@ -140,6 +141,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 				.filterByTerm(TermFilter.minTermMatch(
 						topTokens.stream().collect(Collectors.joining(" ")),
 						minOccurrenceCount))
+				.setPreferredDisplay(getString(DISPLAY))
 				.setLimit(limit())
 				.setLocales(locales())
 				.sortBy(sortBy());
