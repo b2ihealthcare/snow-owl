@@ -31,6 +31,9 @@ public class SuggestionRestParameters {
 	
 	@Parameter(description = "The maximum number of items to return", example = "50", schema = @Schema(defaultValue = "50"))
 	private int limit = 50;
+	
+	@Parameter(description = "The preferred display (FSN, PT or ID_ONLY)")
+	private String preferredDisplay = "PT";
 
 	public String getCodeSystemPath() {
 		return codeSystemPath;
@@ -54,5 +57,13 @@ public class SuggestionRestParameters {
 	
 	public void setLimit(int limit) {
 		this.limit = limit;
+	}
+	
+	public String getPreferredDisplay() {
+		return preferredDisplay;
+	}
+	
+	public void setPreferredDisplay(String preferredDisplay) {
+		this.preferredDisplay = preferredDisplay;
 	}
 }
