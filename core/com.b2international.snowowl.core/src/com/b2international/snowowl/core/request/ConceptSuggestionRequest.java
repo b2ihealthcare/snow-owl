@@ -16,6 +16,9 @@
 package com.b2international.snowowl.core.request;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.TERM;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,9 +54,6 @@ import com.google.common.collect.Multisets;
 public final class ConceptSuggestionRequest extends SearchResourceRequest<BranchContext, Suggestions> {
 
 	private static final long serialVersionUID = 1L;
-	
-	private static final Enum<?> QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
-	private static final Enum<?> MUST_NOT_QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
 	
 	// Split terms at delimiter or whitespace separators
 	private static final Splitter TOKEN_SPLITTER = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER)
@@ -106,7 +106,11 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		if (containsKey(MUST_NOT_QUERY)) {
 			baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
 		}
-
+		
+		if (containsKey(TERM)) {
+			baseRequestBuilder.filterByTerm(get(TERM, TermFilter.class));
+		}
+		
 		baseRequestBuilder.stream(context)
 			.flatMap(Concepts::stream)
 			.flatMap(concept -> getAllTerms(concept).stream())

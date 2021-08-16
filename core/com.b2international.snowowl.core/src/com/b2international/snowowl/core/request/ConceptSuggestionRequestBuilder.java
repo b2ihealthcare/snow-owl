@@ -23,9 +23,9 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.Op
 /**
  * @since 7.7
  */
-public final class ConceptSuggestionRequestBuilder 
+public final class ConceptSuggestionRequestBuilder
 		extends SearchPageableCollectionResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
-		implements TerminologyResourceContentRequestBuilder<Suggestions> {
+		implements TerminologyResourceContentRequestBuilder<Suggestions>, TermFilterSupport<ConceptSuggestionRequestBuilder> {
 
 	private int topTokenCount = 9;
 	private int minOccurrenceCount = 3;
@@ -72,6 +72,14 @@ public final class ConceptSuggestionRequestBuilder
 	 */
 	public ConceptSuggestionRequestBuilder filterByExclusions(Iterable<String> exclusions) {
 		return addOption(OptionKey.MUST_NOT_QUERY, exclusions);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ConceptSuggestionRequestBuilder filterByTerm(TermFilter termFilter) {
+		return addOption(OptionKey.TERM, termFilter);
 	}
 	
 	/**
