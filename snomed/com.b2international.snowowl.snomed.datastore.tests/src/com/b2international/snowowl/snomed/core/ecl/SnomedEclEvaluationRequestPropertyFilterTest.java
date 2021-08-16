@@ -99,6 +99,31 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	}
 	
 	@Test
+	public void termDisjunction() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Compressed natural gas")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.SYNONYM)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Endocarditis")
+				.conceptId(Concepts.MODULE_SCT_CORE)
+				.typeId(Concepts.SYNONYM)
+				.build());
+			
+		final Expression actual = eval("* {{ term = (match:\"gas\" wild:\"*itis\")}}");
+		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void disjunctionActiveAndModuleId() throws Exception {
 		final Expression actual = eval("* {{ active = true OR moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
 		final Expression expected = Expressions.builder()
