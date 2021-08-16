@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.rest.suggestion;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springdoc.api.annotations.ParameterObject;
@@ -94,7 +95,7 @@ public class SuggestionRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(value = "/bulk")
-	public List<Promise<Suggestions>> postBulkSuggestion(@RequestBody final List<SuggestionRestParameters> body) {
+	public List<Suggestions> postBulkSuggestion(@RequestBody final List<SuggestionRestParameters> body) {
 		return body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
@@ -104,7 +105,8 @@ public class SuggestionRestService extends AbstractRestService {
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
-				.execute(getBus());
+				.execute(getBus())
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 		})
 		.collect(Collectors.toList());
 	}
