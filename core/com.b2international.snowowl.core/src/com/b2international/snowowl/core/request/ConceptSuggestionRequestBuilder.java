@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.Op
  */
 public final class ConceptSuggestionRequestBuilder
 		extends SearchPageableCollectionResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
-		implements TerminologyResourceContentRequestBuilder<Suggestions>, TermFilterSupport<ConceptSuggestionRequestBuilder> {
+		implements TerminologyResourceContentRequestBuilder<Suggestions> {
 
 	private int topTokenCount = 9;
 	private int minOccurrenceCount = 3;
@@ -75,11 +75,14 @@ public final class ConceptSuggestionRequestBuilder
 	}
 	
 	/**
-	 * {@inheritDoc}
+	 * Filter matches by a specified term.
+	 * 
+	 * @param term
+	 *            - term to filter matches by
+	 * @return
 	 */
-	@Override
-	public ConceptSuggestionRequestBuilder filterByTerm(TermFilter termFilter) {
-		return addOption(OptionKey.TERM, termFilter);
+	public ConceptSuggestionRequestBuilder filterByTerm(final String term) {
+		return addOption(OptionKey.TERM, term);
 	}
 	
 	/**

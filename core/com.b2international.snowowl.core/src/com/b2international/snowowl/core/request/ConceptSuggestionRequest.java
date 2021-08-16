@@ -108,7 +108,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		}
 		
 		if (containsKey(TERM)) {
-			baseRequestBuilder.filterByTerm(get(TERM, TermFilter.class));
+			baseRequestBuilder.filterByTerm(getString(TERM));
 		}
 		
 		baseRequestBuilder.stream(context)
@@ -141,7 +141,8 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 						topTokens.stream().collect(Collectors.joining(" ")),
 						minOccurrenceCount))
 				.setLimit(limit())
-				.setLocales(locales());
+				.setLocales(locales())
+				.sortBy(sortBy());
 		
 		if (!exclusions.isEmpty()) {
 			resultRequestBuilder.filterByExclusions(exclusions);
