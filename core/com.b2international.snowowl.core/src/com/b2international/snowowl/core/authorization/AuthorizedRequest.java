@@ -20,17 +20,11 @@ import java.util.Collection;
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.context.ResourceRepositoryRequest;
-import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.core.identity.IdentityProvider;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Strings;
@@ -82,45 +76,12 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				throw new UnauthorizedException("Incorrect authorization token");
 			}
 			
-			RepositoryRequest<?> repositoryRequest = Request.getNestedRequest(next(), RepositoryRequest.class);
-			ResourceRepositoryRequest<?> resourceRepositoryRequest = Request.getNestedRequest(next(), ResourceRepositoryRequest.class);
-			BranchRequest<?> branchRequest = Request.getNestedRequest(next(), BranchRequest.class);
-			TerminologyResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(next(), TerminologyResourceRequest.class);
-			
-			// authorize user whether it is permitted to execute the operation or not
+			// authorize user whether it is permitted to execute the request(s) or not
 			requests
 				.stream()
 				.filter(AccessControl.class::isInstance)
 				.map(AccessControl.class::cast)
 				.map(ac -> ac.getPermission(context))
-				.map(permission -> {
-					String newResource = permission.getResource();
-					if (newResource.contains(RepositoryAccessControl.REPOSITORY_TEMPLATE)) {
-						if (repositoryRequest != null) {
-							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, repositoryRequest.getContextId());
-						} else if (resourceRepositoryRequest != null) {
-							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, resourceRepositoryRequest.getContextId());
-						} else if (codeSystemResourceRequest != null) {
-							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, codeSystemResourceRequest.getResource(context).getToolingId());
-						} else {
-							throw new IllegalArgumentException("Repository context is missing from request: " + next());
-						}
-					}
-					
-					if (newResource.contains(BranchAccessControl.BRANCH_TEMPLATE)) {
-						if (branchRequest != null) {
-							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, branchRequest.getBranchPath());
-						} else if (codeSystemResourceRequest != null) {
-							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, codeSystemResourceRequest.getBranchPath(context));
-						} else if (resourceRepositoryRequest != null) {
-							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, Branch.MAIN_PATH);
-						} else {
-							throw new IllegalArgumentException("Branch context is missing from request: " + next());
-						}
-					}
-							
-					return Permission.of(permission.getOperation(), newResource);
-				})
 				.forEach(permissionRequirement -> {
 					if (!user.hasPermission(permissionRequirement)) {
 						throw new ForbiddenException("Operation not permitted. '%s' permission is required.", permissionRequirement.getPermission());
