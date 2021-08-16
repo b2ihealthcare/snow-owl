@@ -29,10 +29,10 @@ public class SuggestionRestParameters {
 	@Parameter(description = "The term to match")
 	private String term;
 	
-	@Parameter(description = "The maximum number of items to return", example = "50", schema = @Schema(defaultValue = "50"))
-	private int limit = 50;
+	@Parameter(description = "The maximum number of items to return", example = "1", schema = @Schema(defaultValue = "1"))
+	private int limit = 1;
 	
-	@Parameter(description = "The preferred display (FSN, PT or ID_ONLY)")
+	@Parameter(description = "The preferred term display in case of SNOMED CT", example = "PT", schema = @Schema(allowableValues = {"FSN", "PT", "ID_ONLY"}, defaultValue = "PT"))
 	private String preferredDisplay = "PT";
 
 	public String getCodeSystemPath() {
@@ -66,4 +66,5 @@ public class SuggestionRestParameters {
 	public void setPreferredDisplay(String preferredDisplay) {
 		this.preferredDisplay = preferredDisplay;
 	}
+	
 }
