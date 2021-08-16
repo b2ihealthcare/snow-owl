@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.rest.suggestion;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 8.0
@@ -27,6 +28,9 @@ public class SuggestionRestParameters {
 	
 	@Parameter(description = "The term to match")
 	private String term;
+	
+	@Parameter(description = "The maximum number of items to return", example = "50", schema = @Schema(defaultValue = "50"))
+	private int limit = 50;
 
 	public String getCodeSystemPath() {
 		return codeSystemPath;
@@ -42,5 +46,13 @@ public class SuggestionRestParameters {
 	
 	public void setTerm(String term) {
 		this.term = term;
+	}
+	
+	public int getLimit() {
+		return limit;
+	}
+	
+	public void setLimit(int limit) {
+		this.limit = limit;
 	}
 }

@@ -36,9 +36,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "Suggestion", name = "suggestion")
 @RestController
-@RequestMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
+@RequestMapping(value = "/suggestion", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 public class SuggestionRestService extends AbstractRestService {
-
+	
+	private static final String SORT_BY = "score:desc";
+	
 	@Operation(
 		summary = "Concept suggestion", 
 		description = "Returns an actual concept of the specified code system based on the source term.")
@@ -49,7 +51,9 @@ public class SuggestionRestService extends AbstractRestService {
 	@GetMapping
 	public Promise<Suggestions> getSuggestion(@ParameterObject final SuggestionRestParameters params) {
 		return CodeSystemRequests.prepareSuggestConcepts()
+				.setLimit(params.getLimit())
 				.filterByTerm(params.getTerm())
+				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
 				.execute(getBus());
 	}
@@ -64,7 +68,9 @@ public class SuggestionRestService extends AbstractRestService {
 	@PostMapping
 	public Promise<Suggestions> postSuggestion(@RequestBody final SuggestionRestParameters body) {
 		return CodeSystemRequests.prepareSuggestConcepts()
+				.setLimit(body.getLimit())
 				.filterByTerm(body.getTerm())
+				.sortBy(SORT_BY)
 				.build(body.getCodeSystemPath())
 				.execute(getBus());
 	}
@@ -76,11 +82,13 @@ public class SuggestionRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "201", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
-	@PostMapping("/bulk")
+	@PostMapping(value = "/bulk")
 	public List<Promise<Suggestions>> postBulkSuggestion(@RequestBody final List<SuggestionRestParameters> body) {
 		return body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
+				.setLimit(params.getLimit())
 				.filterByTerm(params.getTerm())
+				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
 				.execute(getBus());
 		})
