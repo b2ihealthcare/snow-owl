@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request;
-
-import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.identity.Permission;
+package com.b2international.snowowl.core.rest.auth;
 
 /**
- * @since 6.5
+ * @since 8.0
  */
-public interface SnomedComponentCreateRequest extends SnomedComponentRequest<String>, AccessControl {
+public class AuthorizationTest {
 
-	String getModuleId();
-
-	Boolean isActive();
 	
-	@Override
-	default String getOperation() {
-		return Permission.OPERATION_EDIT;
-	}
-
+	
 }

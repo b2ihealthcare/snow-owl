@@ -30,18 +30,24 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.b2international.snowowl.core.repository.DefaultRepositoryContext;
+import com.b2international.snowowl.core.request.RepositoryAwareRequest;
 
 /**
  * @since 8.0
  * @param <R>
  */
-public final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, RepositoryContext, R> {
+public final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, RepositoryContext, R> implements RepositoryAwareRequest {
 
 	public static final String RESOURCE_REPOSITORY_ID = "resources";
 	private static final long serialVersionUID = 1L;
 	
 	public ResourceRepositoryRequest(Request<RepositoryContext, R> next) {
 		super(next);
+	}
+	
+	@Override
+	public String getRepositoryId() {
+		return RESOURCE_REPOSITORY_ID;
 	}
 	
 	@Override

@@ -28,18 +28,11 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.FunctionalSyntaxDocumentFormat;
 import org.semanticweb.owlapi.formats.ManchesterSyntaxDocumentFormat;
 import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDocumentFormat;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyID;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLOntologyStorageException;
-import org.semanticweb.owlapi.model.SetOntologyID;
+import org.semanticweb.owlapi.model.*;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -53,7 +46,7 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
 /**
  * @since 7.0
  */
-final class OntologyExportRequest implements Request<BranchContext, String>, BranchAccessControl {
+final class OntologyExportRequest implements Request<BranchContext, String>, AccessControl {
 
 	private static final int PIPE_SIZE = 8192;
 

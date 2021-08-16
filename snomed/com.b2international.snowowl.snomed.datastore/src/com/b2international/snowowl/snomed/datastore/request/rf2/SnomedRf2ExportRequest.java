@@ -50,7 +50,7 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.branch.Branches;
@@ -91,7 +91,7 @@ import com.google.common.collect.ImmutableList.Builder;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attachment> implements BranchAccessControl {
+final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attachment> implements AccessControl {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;

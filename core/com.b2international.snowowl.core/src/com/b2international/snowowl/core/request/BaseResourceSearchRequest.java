@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
  */
 public abstract class BaseResourceSearchRequest<R>
 	extends SearchIndexResourceRequest<RepositoryContext, R, ResourceDocument>
-	implements RepositoryAccessControl {
+	implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	

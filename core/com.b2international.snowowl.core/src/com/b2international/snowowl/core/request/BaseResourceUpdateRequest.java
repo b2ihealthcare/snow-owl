@@ -18,10 +18,8 @@ package com.b2international.snowowl.core.request;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 8.0
  */
-public abstract class BaseResourceUpdateRequest extends UpdateRequest<TransactionContext> implements RepositoryAccessControl {
+public abstract class BaseResourceUpdateRequest extends UpdateRequest<TransactionContext> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -112,11 +110,6 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 	
 	protected BaseResourceUpdateRequest(String componentId) {
 		super(componentId);
-	}
-
-	@Override
-	public final String getOperation() {
-		return Permission.OPERATION_EDIT;
 	}
 
 	@Override
