@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.rest.suggestion;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springdoc.api.annotations.ParameterObject;
@@ -37,20 +36,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 8.0
  */
-@Tag(description = "Suggestion", name = "suggestion")
+@Tag(description = "Suggest", name = "suggest")
 @RestController
-@RequestMapping(value = "/suggestion", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+@RequestMapping(value = "/suggest", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 public class SuggestionRestService extends AbstractRestService {
-	
-	private static final int TOP_TOKEN_COUNT = 3;
-	private static final int MIN_OCCURRENCE_COUNT = 1;
 	
 	private static final SortField SORT_BY = SearchIndexResourceRequest.SCORE;
 	
 	@Operation(
 		summary = "Concept suggestion", 
 		description = "Returns an actual concept of the specified code system based on the source term.")
-	@ApiResponses({ 
+	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
@@ -58,8 +54,6 @@ public class SuggestionRestService extends AbstractRestService {
 	public Promise<Suggestions> getSuggestion(@ParameterObject final SuggestionRestParameters params) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
-				.setTopTokenCount(TOP_TOKEN_COUNT)
-				.setMinOccurrenceCount(MIN_OCCURRENCE_COUNT)
 				.setPreferredDisplay(params.getPreferredDisplay())
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
@@ -78,8 +72,6 @@ public class SuggestionRestService extends AbstractRestService {
 	public Promise<Suggestions> postSuggestion(@RequestBody final SuggestionRestParameters body) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(body.getLimit())
-				.setTopTokenCount(TOP_TOKEN_COUNT)
-				.setMinOccurrenceCount(MIN_OCCURRENCE_COUNT)
 				.setPreferredDisplay(body.getPreferredDisplay())
 				.filterByTerm(body.getTerm())
 				.sortBy(SORT_BY)
@@ -95,19 +87,17 @@ public class SuggestionRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(value = "/bulk")
-	public List<Suggestions> postBulkSuggestion(@RequestBody final List<SuggestionRestParameters> body) {
-		return body.stream().map(params -> {
+	public Promise<List<Object>> postBulkSuggestion(@RequestBody final List<SuggestionRestParameters> body) {
+		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
-				.setTopTokenCount(TOP_TOKEN_COUNT)
-				.setMinOccurrenceCount(MIN_OCCURRENCE_COUNT)
 				.setPreferredDisplay(params.getPreferredDisplay())
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
-				.execute(getBus())
-				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
-		})
-		.collect(Collectors.toList());
+				.execute(getBus());
+		}).collect(Collectors.toList());
+		
+		return Promise.all(promises);
 	}
 }
