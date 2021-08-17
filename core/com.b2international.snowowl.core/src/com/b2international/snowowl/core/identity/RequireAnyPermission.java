@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
+
 import com.b2international.commons.CompareUtils;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -50,6 +52,11 @@ final class RequireAnyPermission extends BasePermission {
 	@Override
 	public List<String> getResources() {
 		return resources;
+	}
+	
+	@Override
+	protected boolean doImplies(Permission permissionToAuthenticate) {
+		return getResources().stream().anyMatch(resource -> FilenameUtils.wildcardMatch(permissionToAuthenticate.getResource(), resource));
 	}
 	
 	static boolean isRequireAnyResource(String resourceReference) {

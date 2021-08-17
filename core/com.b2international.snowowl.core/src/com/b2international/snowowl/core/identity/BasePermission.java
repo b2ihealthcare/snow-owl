@@ -19,8 +19,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Objects;
 
-import org.apache.commons.io.FilenameUtils;
-
 import com.google.common.base.MoreObjects;
 
 /**
@@ -59,9 +57,11 @@ public abstract class BasePermission implements Permission {
 		if (!allowedOperation) {
 			return false;
 		}
-		return FilenameUtils.wildcardMatch(permissionToAuthenticate.getResource(), getResource());
+		return doImplies(permissionToAuthenticate);
 	}
 	
+	protected abstract boolean doImplies(Permission permissionToAuthenticate);
+
 	@Override
 	public final int hashCode() {
 		return Objects.hash(getPermission());
