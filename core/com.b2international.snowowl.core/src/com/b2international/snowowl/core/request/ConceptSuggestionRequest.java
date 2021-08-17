@@ -22,6 +22,7 @@ import static com.b2international.snowowl.core.request.ConceptSearchRequestEvalu
 import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.DISPLAY;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -69,7 +70,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	@Min(1)
 	private int minOccurrenceCount;
 	
-	private transient List<String> topTokens;
+	private transient List<String> topTokens = Collections.emptyList();
 	
 	void setTopTokenCount(int topTokenCount) {
 		this.topTokenCount = topTokenCount;
@@ -90,42 +91,50 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			throw new BadRequestException("searchAfter is not supported in Concept Suggestion API.");
 		}
 		
-		// Gather tokens
-		final Multiset<String> tokenOccurrences = HashMultiset.create(); 
-		final EnglishStemmer stemmer = new EnglishStemmer();
-		
-		// Get the suggestion base set of concepts
-		final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
-				.filterByCodeSystemUri(context.service(ResourceURI.class))
-				.setLimit(SCROLL_LIMIT)
-				.setLocales(locales());
-		
-		if (containsKey(QUERY)) {
-			baseRequestBuilder.filterByInclusions(getCollection(QUERY, String.class));
-		}
-
-		if (containsKey(MUST_NOT_QUERY)) {
-			baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
-		}
+		TermFilter termFilter;
 		
 		if (containsKey(TERM)) {
-			baseRequestBuilder.filterByTerm(getString(TERM));
-		}
-		
-		baseRequestBuilder.stream(context)
+			termFilter = TermFilter.defaultTermMatch(getString(TERM)).withIgnoreStopwords();
+		} else {
+			// Gather tokens
+			final Multiset<String> tokenOccurrences = HashMultiset.create(); 
+			final EnglishStemmer stemmer = new EnglishStemmer();
+			
+			// Get the suggestion base set of concepts
+			final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
+					.filterByCodeSystemUri(context.service(ResourceURI.class))
+					.setLimit(SCROLL_LIMIT)
+					.setLocales(locales());
+			
+			if (containsKey(QUERY)) {
+				baseRequestBuilder.filterByInclusions(getCollection(QUERY, String.class));
+			}
+			
+			if (containsKey(MUST_NOT_QUERY)) {
+				baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
+			}
+			
+			if (containsKey(TERM)) {
+				baseRequestBuilder.filterByTerm(getString(TERM));
+			}
+			
+			baseRequestBuilder.stream(context)
 			.flatMap(Concepts::stream)
 			.flatMap(concept -> getAllTerms(concept).stream())
 			.map(term -> term.toLowerCase(Locale.US))
 			.flatMap(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm).stream())
 			.map(token -> stemToken(stemmer, token))
 			.forEach(tokenOccurrences::add);
-
-		topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
-				.elementSet()
-				.stream()
-				.filter(token -> token.length() > 2) // skip short tokens
-				.limit(topTokenCount)
-				.collect(Collectors.toList());
+			
+			topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
+					.elementSet()
+					.stream()
+					.filter(token -> token.length() > 2) // skip short tokens
+					.limit(topTokenCount)
+					.collect(Collectors.toList());
+			
+			termFilter = TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minOccurrenceCount);
+		}
 		
 		/* 
 		 * Run a search with the top tokens and minimum number of matches, excluding everything
@@ -138,9 +147,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
 				.filterByCodeSystemUri(context.service(ResourceURI.class))
 				.filterByActive(true)
-				.filterByTerm(TermFilter.minTermMatch(
-						topTokens.stream().collect(Collectors.joining(" ")),
-						minOccurrenceCount))
+				.filterByTerm(termFilter)
 				.setPreferredDisplay(getString(DISPLAY))
 				.setLimit(limit())
 				.setLocales(locales())
