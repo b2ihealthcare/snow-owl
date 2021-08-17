@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.authorization;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -32,23 +34,19 @@ import com.google.common.collect.Lists;
  */
 public interface AccessControl {
 
-	default Permission getPermission(ServiceProvider context) {
-		return Permission.requireAny(getOperation(), getResources(context));
+	default Permission getPermission(ServiceProvider context, Request<ServiceProvider, ?> req) {
+		return Permission.requireAny(getOperation(), getResources(context, req));
 	}
 	
 	/**
 	 * @return a {@link Permission}s required to access/execute/etc. this request.
 	 */
-	default List<String> getResources(ServiceProvider context) {
+	default List<String> getResources(ServiceProvider context, Request<ServiceProvider, ?> req) {
 		final List<String> accessedResources = Lists.newArrayList();
 		
 		if (!(this instanceof Request<?, ?>)) {
 			throw new UnsupportedOperationException("AccessControl interface needs to be declared on Request implementations");
 		}
-		
-		Request<?, ?> req = (Request<?, ?>) this;
-
-		// TODO support
 		
 		// extract repositoryId/branch resource if present (old 7.x format)
 		RepositoryAwareRequest repositoryRequest = Request.getNestedRequest(req, RepositoryAwareRequest.class);
@@ -65,6 +63,12 @@ public interface AccessControl {
 		TerminologyResourceRequest<?> terminologyResourceRequest = Request.getNestedRequest(req, TerminologyResourceRequest.class);
 		if (terminologyResourceRequest != null) {
 			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).toString()));
+		}
+
+		// log a warning if the request does not support any known request execution contexts and fall back to superuser permission requirement
+		if (accessedResources.isEmpty()) {
+			context.log().warn("Request '{}' implicitly requires superuser permission which might be incorrect.", req.getType());
+			accessedResources.add(Permission.ALL);
 		}
 		
 		return accessedResources;

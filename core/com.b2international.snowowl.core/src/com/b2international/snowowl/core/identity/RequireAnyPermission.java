@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 
 import com.b2international.commons.CompareUtils;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -32,15 +33,22 @@ final class RequireAnyPermission extends BasePermission {
 	
 	private final List<String> resources;
 
-	/*package*/ RequireAnyPermission(String operation, Iterable<String> resources) {
+	/*package*/ RequireAnyPermission(final String operation, final Iterable<String> resources) {
 		super(operation);
 		checkArgument(!CompareUtils.isEmpty(resources), "At least one resource descriptor is required.");
+		for (String resource : resources) {
+			checkArgument(!CompareUtils.isEmpty(resource), "Resource descriptor cannot be null or empty.");
+		}
 		this.resources = ImmutableList.copyOf(resources);
 	}
 	
 	@Override
 	public String getResource() {
 		return resources.size() == 1 ? Iterables.getFirst(resources, null) : String.format("anyOf(%s)", String.join(",", resources));
+	}
+
+	static boolean isRequireAnyResource(String resourceReference) {
+		return Strings.nullToEmpty(resourceReference).startsWith("anyOf(");
 	}
 
 }

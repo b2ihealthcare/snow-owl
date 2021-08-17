@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.core.identity;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 
+import com.b2international.commons.CompareUtils;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -26,17 +30,25 @@ import com.google.common.collect.Iterables;
 final class RequireAllPermission extends BasePermission {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final List<String> resources;
 	
 	/*package*/ RequireAllPermission(final String operation, final Iterable<String> resources) {
 		super(operation);
-		this.resources = Iterables.isEmpty(resources) ? List.of(ALL) : ImmutableList.copyOf(resources);
+		checkArgument(!CompareUtils.isEmpty(resources), "At least one resource descriptor is required.");
+		for (String resource : resources) {
+			checkArgument(!CompareUtils.isEmpty(resource), "Resource descriptor cannot be null or empty.");
+		}
+		this.resources = ImmutableList.copyOf(resources);
 	}
 	
 	@Override
 	public String getResource() {
 		return resources.size() == 1 ? Iterables.getFirst(resources, null) : String.format("allOf(%s)", String.join(",", resources));
+	}
+	
+	static boolean isRequireAllResource(String resourceReference) {
+		return Strings.nullToEmpty(resourceReference).startsWith("allOf(");
 	}
 	
 }

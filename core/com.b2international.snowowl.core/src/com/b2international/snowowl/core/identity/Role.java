@@ -28,7 +28,7 @@ import java.util.Set;
 public final class Role implements Serializable {
 	
 	public static final Role UNSPECIFIED = new Role("Unspecified", Collections.emptySet());
-	public static final Role ADMINISTRATOR = new Role("Administrator", Set.of(Permission.requireAll(Permission.ALL)));
+	public static final Role ADMINISTRATOR = new Role("Administrator", Set.of(Permission.ADMIN));
 	
 	private static final long serialVersionUID = 1601508745318826995L;
 

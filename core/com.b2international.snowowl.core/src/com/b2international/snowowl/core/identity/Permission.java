@@ -47,6 +47,11 @@ public interface Permission extends Serializable {
 	public static final String OPERATION_PROMOTE = "promote";  //$NON-NLS-N$
 	public static final String OPERATION_CLASSIFY = "classify";  //$NON-NLS-N$
 	
+	/**
+	 * The ultimate superuser permission which allows any operation to be performed on any resource.
+	 */
+	public static final Permission ADMIN = requireAll(Permission.ALL, Permission.ALL);
+	
 //	public static Permission toAll(String...resources) {
 //		return new RequireAllPermission(OPERATION_ALL, asResource(resources));
 //	}
@@ -125,22 +130,33 @@ public interface Permission extends Serializable {
 	 * @return <code>true</code> if this permission implies the given permission, meaning it satisfies at as a requirement and basically represent the same access rules
 	 */
 	boolean implies(Permission permissionToAuthenticate);
+
+	/**
+	 * @return <code>true</code> if the permission implies the superuser (aka administrator) permission, which is any operation allowed on any resource, <code>false</code> if not.
+	 */
+	default boolean isAdmin() {
+		return Permission.ALL.equals(getOperation()) && Permission.ALL.equals(getResource());
+	}
 	
-//	/**
-//	 * Convert the {@link String} representation of a permission into a {@link Permission} object.
-//	 * The input string must be in the form of "&lt;operation&gt;:&lt;resource&gt;"
-//	 * 
-//	 * @param permission as String
-//	 * @return a {@link Permission} with the appropriate operation and resources set
-//	*/
-//	@JsonCreator
-//	public static final Permission valueOf(@JsonProperty("permission") final String permission) {
-//		checkArgument(!CompareUtils.isEmpty(permission), "Permission argument is required");
-//		final String[] parts = permission.split(SEPARATOR);
-//		checkArgument(parts.length == 2, "A permission should consist of two String values separated by a ':' character. Got: %s", permission);
-//		final String operation = parts[0];
-//		final String resourceReference = parts[1];
-//		return new RequireAllPermission(operation, resourceReference);
-//	}
+	/**
+	 * Convert the {@link String} representation of a permission into a {@link Permission} object.
+	 * The input string must be in the form of "&lt;operation&gt;:&lt;resource&gt;"
+	 * 
+	 * @param permission as String
+	 * @return a {@link Permission} with the appropriate operation and resources set
+	*/
+	@JsonCreator
+	static Permission valueOf(@JsonProperty("permission") final String permission) {
+		checkArgument(!CompareUtils.isEmpty(permission), "Permission argument is required");
+		final String[] parts = permission.split(SEPARATOR);
+		checkArgument(parts.length == 2, "A permission should consist of two String values separated by a ':' character. Got: %s", permission);
+		final String operation = parts[0];
+		final String resourceReference = parts[1];
+		if (RequireAnyPermission.isRequireAnyResource(resourceReference)) {
+			return requireAny(operation, List.of(resourceReference));
+		} else {
+			return requireAll(operation, List.of(resourceReference));
+		}
+	}
 	
 }

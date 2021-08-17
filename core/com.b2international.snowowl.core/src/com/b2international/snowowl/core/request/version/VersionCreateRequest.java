@@ -304,7 +304,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	}
 	
 	@Override
-	public List<String> getResources(ServiceProvider context) {
+	public List<String> getResources(ServiceProvider context, Request<ServiceProvider, ?> req) {
 		if (resourcesById == null) {
 			resourcesById = fetchResources(context);
 		}
