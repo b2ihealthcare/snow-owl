@@ -68,7 +68,7 @@ public class SuggestRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
-	@PostMapping
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Suggestions> postSuggest(@RequestBody final SuggestRestParameters body) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(body.getLimit())
@@ -86,7 +86,7 @@ public class SuggestRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
-	@PostMapping(value = "/bulk")
+	@PostMapping(value = "/bulk", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<List<Object>> postBulkSuggest(@RequestBody final List<SuggestRestParameters> body) {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
