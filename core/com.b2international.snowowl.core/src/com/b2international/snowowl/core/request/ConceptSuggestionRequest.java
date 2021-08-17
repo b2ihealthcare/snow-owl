@@ -22,7 +22,6 @@ import static com.b2international.snowowl.core.request.ConceptSearchRequestEvalu
 import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.DISPLAY;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -70,7 +69,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	@Min(1)
 	private int minOccurrenceCount;
 	
-	private transient List<String> topTokens = Collections.emptyList();
+	private transient List<String> topTokens;
 	
 	void setTopTokenCount(int topTokenCount) {
 		this.topTokenCount = topTokenCount;
