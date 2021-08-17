@@ -45,4 +45,9 @@ public interface ApiTestConstants {
 	 */
 	String BUNDLE_API = "/bundles";
 	
+	/**
+	 * The context-relative base URL for the suggest controller.
+	 */
+	String SUGGEST_API = "/suggest";
+	
 }
