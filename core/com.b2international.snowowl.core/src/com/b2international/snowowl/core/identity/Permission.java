@@ -52,38 +52,6 @@ public interface Permission extends Serializable {
 	 */
 	public static final Permission ADMIN = requireAll(Permission.ALL, Permission.ALL);
 	
-//	public static Permission toAll(String...resources) {
-//		return new RequireAllPermission(OPERATION_ALL, asResource(resources));
-//	}
-//
-//	public static Permission toImport(String...resources) {
-//		return new RequireAllPermission(OPERATION_IMPORT, asResource(resources));
-//	}
-//	
-//	public static Permission toExport(String...resources) {
-//		return new RequireAllPermission(OPERATION_EXPORT, asResource(resources));
-//	}
-//	
-//	public static Permission toBrowse(String...resources) {
-//		return new RequireAllPermission(OPERATION_BROWSE, asResource(resources));
-//	}
-//	
-//	public static Permission toEdit(String...resources) {
-//		return new RequireAllPermission(OPERATION_EDIT, asResource(resources));
-//	}
-//	
-//	public static Permission toVersion(String...resources) {
-//		return new RequireAllPermission(OPERATION_VERSION, asResource(resources));
-//	}
-//	
-//	public static Permission toPromote(String...resources) {
-//		return new RequireAllPermission(OPERATION_PROMOTE, asResource(resources));
-//	}
-//	
-//	public static Permission toClassify(String...resources) {
-//		return new RequireAllPermission(OPERATION_CLASSIFY, asResource(resources));
-//	}
-	
 	public static Permission requireAll(String operation, String...resources) {
 		return requireAll(operation, List.of(resources));
 	}

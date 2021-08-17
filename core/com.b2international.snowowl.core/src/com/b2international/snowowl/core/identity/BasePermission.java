@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * @since 8.0
@@ -30,7 +32,9 @@ public abstract class BasePermission implements Permission {
 	
 	private final String operation;
 	
-	private String permission;
+	private final Supplier<String> permission = Suppliers.memoize(() -> {
+		return String.join(SEPARATOR, getOperation(), getResource());
+	});
 	
 	public BasePermission(String operation) {
 		this.operation = checkNotNull(operation, "Operation must be specified.");
@@ -43,10 +47,7 @@ public abstract class BasePermission implements Permission {
 	
 	@Override
 	public final String getPermission() {
-		if (permission == null) {
-			permission = String.join(SEPARATOR, operation, getResource());
-		}
-		return permission;
+		return permission.get();
 	}
 	
 	@Override

@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Represents a logged in user in the system. A logged in user has access to his own username and assigned roles (and permissions).
@@ -37,7 +39,9 @@ public final class User implements Serializable {
 	private final List<Role> roles;
 	
 	// derived cached value
-	private List<Permission> permissions;
+	private final Supplier<List<Permission>> permissions = Suppliers.memoize(() -> {
+		return getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
+	});
 
 	public User(String username, List<Role> roles) {
 		this.username = username;
@@ -54,10 +58,7 @@ public final class User implements Serializable {
 	
 	@JsonIgnore
 	public List<Permission> getPermissions() {
-		if (permissions == null) {
-			permissions = getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
-		}
-		return permissions;
+		return permissions.get();
 	}
 	
 	@Override
