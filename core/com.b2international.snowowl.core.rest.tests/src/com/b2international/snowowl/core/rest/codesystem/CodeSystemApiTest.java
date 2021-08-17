@@ -29,9 +29,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -46,6 +44,7 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.rest.BaseResourceApiTest;
 import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
@@ -57,7 +56,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  * @since 1.0
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CodeSystemApiTest {
+public class CodeSystemApiTest extends BaseResourceApiTest {
 
 	private static final Json SNOMED = Json.object(
 		ResourceDocument.Fields.ID, "SNOMEDCT",
@@ -453,7 +452,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(requestBody);
 		
 		final String bundleId = IDs.base64UUID();
-		BundleApiAssert.assertCreate(BundleApiAssert.prepareCreateRequestBody(bundleId))
+		BundleApiAssert.assertCreate(BundleApiAssert.prepareBundleCreateRequestBody(bundleId))
 			.statusCode(201);
 		
 		final Json updateRequestBody = Json.object("bundleId", bundleId);
@@ -482,22 +481,6 @@ public class CodeSystemApiTest {
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", "2020-04-15")).statusCode(201);
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v2", "2020-04-14")).statusCode(400);
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v3", "2020-04-15")).statusCode(400);
-	}
-	
-	@After
-	public void cleanUp() {
-		ResourceRequests
-		.prepareSearch()
-		.buildAsync()
-		.execute(Services.bus())
-		.getSync(1, TimeUnit.MINUTES)
-		.forEach(resource -> {
-			ResourceRequests
-			.prepareDelete(resource.getId())
-			.build(RestExtensions.USER, "Delete " + resource.getId())
-			.execute(Services.bus())
-			.getSync(1, TimeUnit.MINUTES); 
-		});
 	}
 	
 }

@@ -124,6 +124,13 @@ public interface Permission extends Serializable {
 	 * @return the actual permission string value that represents this {@link Permission} object.
 	 */
 	String getPermission();
+	
+	/**
+	 * @return a {@link List} representation of all permission resources this permission gives access to.
+	 */
+	default List<String> getResources() {
+		return List.of(getResource());
+	}
 
 	/**
 	 * @param permissionToAuthenticate

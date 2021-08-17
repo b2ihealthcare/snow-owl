@@ -17,14 +17,12 @@ package com.b2international.snowowl.core.authorization;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RepositoryAwareRequest;
+import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.google.common.collect.Lists;
 
 /**
@@ -49,7 +47,7 @@ public interface AccessControl {
 		}
 		
 		// extract repositoryId/branch resource if present (old 7.x format)
-		RepositoryAwareRequest repositoryRequest = Request.getNestedRequest(req, RepositoryAwareRequest.class);
+		RepositoryRequest<?> repositoryRequest = Request.getNestedRequest(req, RepositoryRequest.class);
 		if (repositoryRequest != null) {
 			BranchRequest<?> branchRequest = Request.getNestedRequest(req, BranchRequest.class);
 			if (branchRequest != null) {

@@ -47,6 +47,11 @@ final class RequireAllPermission extends BasePermission {
 		return resources.size() == 1 ? Iterables.getFirst(resources, null) : String.format("allOf(%s)", String.join(",", resources));
 	}
 	
+	@Override
+	public List<String> getResources() {
+		return resources;
+	}
+	
 	static boolean isRequireAllResource(String resourceReference) {
 		return Strings.nullToEmpty(resourceReference).startsWith("allOf(");
 	}

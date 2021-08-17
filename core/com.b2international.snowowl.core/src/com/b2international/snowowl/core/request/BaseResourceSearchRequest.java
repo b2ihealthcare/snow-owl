@@ -15,20 +15,21 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 
 /**
  * @since 8.0
  */
-public abstract class BaseResourceSearchRequest<R>
-	extends SearchIndexResourceRequest<RepositoryContext, R, ResourceDocument>
-	implements AccessControl {
+public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRequest<RepositoryContext, R, ResourceDocument> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -72,6 +73,8 @@ public abstract class BaseResourceSearchRequest<R>
 	protected final Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
+		addSecurityFilter(queryBuilder, context.service(User.class));
+		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
@@ -85,6 +88,27 @@ public abstract class BaseResourceSearchRequest<R>
 		return queryBuilder.build();
 	}
 	
+	/**
+	 * Configures security filters to allow access to certain resources only. This method is no-op if the given {@link User} is an administrator or has read access to everything. 
+	 * 
+	 * @param queryBuilder - the query builder to append the clauses to
+	 * @param user - the user who's permissions will be applied to this resource search request
+	 */
+	protected final void addSecurityFilter(ExpressionBuilder queryBuilder, User user) {
+		if (!user.isAdministrator() && !user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
+			Set<String> permittedResourceIds = user.getPermissions().stream().flatMap(p -> p.getResources().stream()).collect(Collectors.toSet());
+			queryBuilder.filter(
+				Expressions.builder()
+				// the permissions give access to either explicit IDs
+				.should(ResourceDocument.Expressions.ids(permittedResourceIds))
+				// or the permitted resources are bundles which give access to all resources within it
+				.should(ResourceDocument.Expressions.bundleIds(permittedResourceIds))
+				// TODO support bundle nesting, ancestor bundles and authorization
+				.build()
+			);
+		}
+	}
+
 	/**
 	 * Subclasses may override this method to provide additional filter clauses to the supplied bool {@link ExpressionBuilder}. This method does nothing by default.
 	 * 
@@ -125,11 +149,6 @@ public abstract class BaseResourceSearchRequest<R>
 	
 	protected final void addTitleExactFilter(ExpressionBuilder queryBuilder) {
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
-	}
-
-	@Override
-	public final String getOperation() {
-		return Permission.OPERATION_BROWSE;
 	}
 
 	@Override

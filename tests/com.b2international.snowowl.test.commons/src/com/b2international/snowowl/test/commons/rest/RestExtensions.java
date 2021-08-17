@@ -33,11 +33,7 @@ import com.b2international.snowowl.core.util.PlatformUtil;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 
 import io.restassured.RestAssured;
@@ -142,6 +138,10 @@ public class RestExtensions {
 	private static RequestSpecification givenRequestWithPassword(String api, String password) {
 		return givenUnauthenticatedRequest(api).auth().preemptive().basic(USER, password);
 	}
+	
+	public static RequestSpecification givenRequestWithToken(String api, String token) {
+		return givenUnauthenticatedRequest(api).auth().preemptive().oauth2(token);
+	}
 
 	public static String asPath(List<? extends String> values) {
 		return ("/" + values.stream().collect(Collectors.joining("/"))).replaceAll("//", "/");
@@ -222,5 +222,5 @@ public class RestExtensions {
 				.extract()
 				.header("Location"));
 	}
-	
+
 }
