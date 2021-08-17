@@ -75,13 +75,22 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 			if (user == null) {
 				throw new UnauthorizedException("Incorrect authorization token");
 			}
-			
+		}
+		
+		ServiceProvider userContext = context.inject()
+			// create a context with the User object injected
+			.bind(User.class, user)
+			// and EventBus configured with header to access token in async execution scenarios
+			.bind(IEventBus.class, new AuthorizedEventBus(context.service(IEventBus.class), requestHeaders.headers()))
+			.build();
+		
+		if (!User.SYSTEM.equals(user) && !user.isAdministrator()) {
 			// authorize user whether it is permitted to execute the request(s) or not
 			requests
 				.stream()
 				.filter(AccessControl.class::isInstance)
 				.map(AccessControl.class::cast)
-				.map(ac -> ac.getPermission(context, next()))
+				.map(ac -> ac.getPermission(userContext, next()))
 				.forEach(permissionRequirement -> {
 					if (!user.hasPermission(permissionRequirement)) {
 						throw new ForbiddenException("Operation not permitted. '%s' permission is required.", permissionRequirement.getPermission());
@@ -89,11 +98,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				});
 		}
 
-		// inject the User for later access
-		return next(context.inject()
-				.bind(User.class, user)
-				.bind(IEventBus.class, new AuthorizedEventBus(context.service(IEventBus.class), requestHeaders.headers()))
-				.build());
+		return next(userContext);
 	}
 
 }
