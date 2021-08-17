@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest.suggestion;
+package com.b2international.snowowl.core.rest.suggest;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 /**
  * @since 8.0
  */
-public class SuggestionRestParameters {
+public class SuggestRestParameters {
 	
 	@Parameter(description = "Code System path to find the concept in.")
 	private String codeSystemPath;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest.suggestion;
+package com.b2international.snowowl.core.rest.suggest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(description = "Suggest", name = "suggest")
 @RestController
 @RequestMapping(value = "/suggest", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-public class SuggestionRestService extends AbstractRestService {
+public class SuggestRestService extends AbstractRestService {
 	
 	private static final SortField SORT_BY = SearchIndexResourceRequest.SCORE;
 	
@@ -51,7 +51,7 @@ public class SuggestionRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@GetMapping
-	public Promise<Suggestions> getSuggestion(@ParameterObject final SuggestionRestParameters params) {
+	public Promise<Suggestions> getSuggest(@ParameterObject final SuggestRestParameters params) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
 				.setPreferredDisplay(params.getPreferredDisplay())
@@ -69,7 +69,7 @@ public class SuggestionRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping
-	public Promise<Suggestions> postSuggestion(@RequestBody final SuggestionRestParameters body) {
+	public Promise<Suggestions> postSuggest(@RequestBody final SuggestRestParameters body) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(body.getLimit())
 				.setPreferredDisplay(body.getPreferredDisplay())
@@ -87,7 +87,7 @@ public class SuggestionRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(value = "/bulk")
-	public Promise<List<Object>> postBulkSuggestion(@RequestBody final List<SuggestionRestParameters> body) {
+	public Promise<List<Object>> postBulkSuggest(@RequestBody final List<SuggestRestParameters> body) {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
