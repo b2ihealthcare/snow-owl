@@ -16,10 +16,16 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -27,8 +33,9 @@ import org.junit.Test;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
+import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 
 /**
  * @since 8.0.0
@@ -37,8 +44,8 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void searchBySemanticTag() throws Exception {
-		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
-		SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+		String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		createNewDescription(branchPath, Json.object(
 			"conceptId", conceptId,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"typeId", Concepts.FULLY_SPECIFIED_NAME,
@@ -64,8 +71,8 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	 */
 	@Test
 	public void searchByBothSemanticTagAndTerm() throws Exception {
-		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
-		SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+		String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		createNewDescription(branchPath, Json.object(
 			"conceptId", conceptId,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"typeId", Concepts.FULLY_SPECIFIED_NAME,
@@ -75,7 +82,7 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
 			"commitComment", "New FSN"
 		));
-		SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+		createNewDescription(branchPath, Json.object(
 			"conceptId", conceptId,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"typeId", Concepts.FULLY_SPECIFIED_NAME,
@@ -98,5 +105,33 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.extract().as(SnomedConcepts.class);
 		assertThat(hits.getTotal()).isEqualTo(1);
 	}
-	
+
+	@Test
+	public void searchByMembership() throws Exception {
+		String conceptId1 = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		String conceptId2 = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		String refSetId = createNewRefSet(branchPath, SnomedRefSetType.SIMPLE);
+		String memberId1 = createNewRefSetMember(branchPath, conceptId1, refSetId); 
+		createNewRefSetMember(branchPath, conceptId2, refSetId);
+		
+		updateComponent(
+			branchPath, 
+			SnomedComponentType.MEMBER, 
+			memberId1, 
+			Json.object(
+				"active", false,
+				"commitComment", "Inactivated reference set member"
+			)
+		).statusCode(204);
+		
+		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("isActiveMemberOf", List.of(refSetId)))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.extract().as(SnomedConcepts.class);
+
+		assertThat(hits.getTotal()).isEqualTo(1);
+	}
 }

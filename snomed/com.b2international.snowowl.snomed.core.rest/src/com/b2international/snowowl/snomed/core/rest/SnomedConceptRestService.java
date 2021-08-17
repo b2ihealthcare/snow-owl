@@ -115,6 +115,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByDescriptionLanguageRefSet(acceptLanguage)
 					.filterByDescriptionType(params.getDescriptionType())
 					.filterBySemanticTags(params.getSemanticTag())
+					.isActiveMemberOf(params.getIsActiveMemberOf())
 					.withDoi(params.getDoi())
 					.setExpand(params.getExpand())
 					.setFields(params.getField())
