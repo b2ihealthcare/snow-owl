@@ -65,7 +65,7 @@ public class SuggestRestService extends AbstractRestService {
 			summary = "Concept suggestion", 
 			description = "Returns an actual concept of the specified code system based on the source term.")
 	@ApiResponses({ 
-		@ApiResponse(responseCode = "201", description = "OK"),
+		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping
@@ -83,7 +83,7 @@ public class SuggestRestService extends AbstractRestService {
 		summary = "Bulk concept suggestion", 
 		description = "Perform a bulk suggestion request.")
 	@ApiResponses({ 
-		@ApiResponse(responseCode = "201", description = "OK"),
+		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(value = "/bulk")
