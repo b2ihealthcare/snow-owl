@@ -38,10 +38,7 @@ public class SnomedCoreConfiguration {
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	
 	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
-	
-	@Min(1)
-	@Max(3)
-	private int maxReasonerCount = DEFAULT_MAXIMUM_REASONER_COUNT;
+	public static final String MAXIMUM_REASONER_COUNT = "maxReasonerCount";
 	
 	@Min(1)
 	@Max(100)
@@ -84,22 +81,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
-	
-	/**
-	 * @return the number of reasoners that are permitted to run simultaneously.
-	 */
-	@JsonProperty
-	public int getMaxReasonerCount() {
-		return maxReasonerCount;
-	}
-	
-	/**
-	 * @param maxReasonerCount the maxReasonerCount to set
-	 */
-	@JsonProperty
-	public void setMaxReasonerCount(int maxReasonerCount) {
-		this.maxReasonerCount = maxReasonerCount;
-	}
 	
 	/**
 	 * @return the number of inferred taxonomies that should be kept in memory. The user can only choose to save

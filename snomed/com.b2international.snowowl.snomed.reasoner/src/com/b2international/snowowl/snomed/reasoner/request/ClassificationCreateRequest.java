@@ -24,6 +24,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -101,8 +103,18 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				.addAllConcepts(additionalConcepts)
 				.build(branch.path());
 		
+		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
+				.build()
+				.execute(context)
+				.getItems()
+				.get(0);
+		
+		int maxReasonerCount = codeSystem.getSettings().containsKey(SnomedCoreConfiguration.MAXIMUM_REASONER_COUNT)
+				? (int) codeSystem.getSettings().get(SnomedCoreConfiguration.MAXIMUM_REASONER_COUNT)
+				: SnomedCoreConfiguration.DEFAULT_MAXIMUM_REASONER_COUNT;
+		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
-				config.getMaxReasonerCount(), 
+				maxReasonerCount,
 				repositoryId, 
 				branch.path());
 
