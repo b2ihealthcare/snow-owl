@@ -26,6 +26,12 @@ public class SnomedComponentRestSearch extends SnomedRestSearch {
 
 	@Parameter(description = "The namespace values to match")
 	private List<String> namespace;
+	
+	@Parameter(description = "The namespace concept SCTIDs to match")
+	private List<String> namespaceConceptId;
+
+	@Parameter(description = "Matches should be active members of the following reference set(s)")
+	private List<String> isActiveMemberOf;
 
 	public List<String> getNamespace() {
 		return namespace;
@@ -35,4 +41,19 @@ public class SnomedComponentRestSearch extends SnomedRestSearch {
 		this.namespace = namespace;
 	}
 	
+	public List<String> getNamespaceConceptId() {
+		return namespaceConceptId;
+	}
+	
+	public void setNamespaceConceptId(List<String> namespaceConceptId) {
+		this.namespaceConceptId = namespaceConceptId;
+	}
+
+	public List<String> getIsActiveMemberOf() {
+		return isActiveMemberOf;
+	}
+	
+	public void setIsActiveMemberOf(List<String> isActiveMemberOf) {
+		this.isActiveMemberOf = isActiveMemberOf;
+	}
 }
