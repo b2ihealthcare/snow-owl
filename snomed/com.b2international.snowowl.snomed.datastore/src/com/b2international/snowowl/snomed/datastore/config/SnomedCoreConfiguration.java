@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
-import java.util.Collections;
-import java.util.Set;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
