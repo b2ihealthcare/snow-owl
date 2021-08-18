@@ -156,6 +156,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addEclFilter(context, queryBuilder, OptionKey.DEFINITION_STATUS, SnomedConceptDocument.Expressions::definitionStatusIds);
 		addNamespaceFilter(queryBuilder);
+		addNamespaceConceptIdFilter(context, queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
 		addMemberOfClause(context, queryBuilder);

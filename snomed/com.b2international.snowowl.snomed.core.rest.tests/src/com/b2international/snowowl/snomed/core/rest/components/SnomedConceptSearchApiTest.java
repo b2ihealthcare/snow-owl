@@ -17,10 +17,7 @@ package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -133,5 +130,41 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.extract().as(SnomedConcepts.class);
 
 		assertThat(hits.getTotal()).isEqualTo(1);
+	}
+	
+	@Test
+	public void searchByNamespace() throws Exception {
+		String conceptId = createNewConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT)
+			.with("namespaceId", "1000001")
+			.with("commitComment", "Create new concept"));
+		
+		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("namespace", List.of("1000001")))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.extract().as(SnomedConcepts.class);
+
+		assertThat(hits.getTotal()).isEqualTo(1);
+		assertThat(hits.getItems()).allMatch(c -> conceptId.equals(c.getId()));
+	}
+	
+	@Test
+	public void searchByNamespaceConceptId() throws Exception {
+		String conceptId = createNewConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT)
+			.with("namespaceId", "1000001")
+			.with("commitComment", "Create new concept"));
+		
+		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("namespaceConceptId", List.of("370138007"))) // Extension Namespace {1000001} (namespace concept) 
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.extract().as(SnomedConcepts.class);
+
+		assertThat(hits.getTotal()).isEqualTo(1);
+		assertThat(hits.getItems()).allMatch(c -> conceptId.equals(c.getId()));
 	}
 }

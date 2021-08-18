@@ -105,6 +105,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByModules(params.getModule())
 					.filterByDefinitionStatus(params.getDefinitionStatus())
 					.filterByNamespaces(params.getNamespace())
+					.filterByNamespaceConcepts(params.getNamespaceConceptId())
 					.filterByParents(params.getParent())
 					.filterByAncestors(params.getAncestor())
 					.filterByStatedParents(params.getStatedParent())

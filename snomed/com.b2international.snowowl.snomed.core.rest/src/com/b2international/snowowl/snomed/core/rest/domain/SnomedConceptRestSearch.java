@@ -27,9 +27,6 @@ public final class SnomedConceptRestSearch extends SnomedComponentRestSearch {
 	@Parameter(description = "The definition status to match")
 	private String definitionStatus;
 
-	@Parameter(description = "Matches should be active members of the following reference set(s)")
-	private List<String> isActiveMemberOf;
-	
 	// query expressions
 	@Parameter(description = "The ECL expression to match on the inferred form")
 	private String ecl;
@@ -63,14 +60,6 @@ public final class SnomedConceptRestSearch extends SnomedComponentRestSearch {
 
 	public void setDefinitionStatus(String definitionStatus) {
 		this.definitionStatus = definitionStatus;
-	}
-	
-	public List<String> getIsActiveMemberOf() {
-		return isActiveMemberOf;
-	}
-	
-	public void setIsActiveMemberOf(List<String> isActiveMemberOf) {
-		this.isActiveMemberOf = isActiveMemberOf;
 	}
 
 	public List<String> getParent() {
