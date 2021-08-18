@@ -40,6 +40,8 @@ public class SnomedCoreConfiguration {
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	
+	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
+	
 	@Min(1)
 	@Max(3)
 	private int maxReasonerCount = DEFAULT_MAXIMUM_REASONER_COUNT;
@@ -82,8 +84,6 @@ public class SnomedCoreConfiguration {
 	//enables the manual editing of inferred relationships and concrete data types
 	private boolean inferredEditingEnabled = false;
 
-	@NotNull
-	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
 	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
@@ -320,16 +320,6 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public void setNamespaceModuleAssigner(String namespaceModuleAssigner) {
 		this.namespaceModuleAssigner = namespaceModuleAssigner;
-	}
-	
-	@JsonProperty
-	public Set<String> getReasonerExcludedModuleIds() {
-		return this.reasonerExcludedModuleIds;
-	}
-	
-	@JsonProperty
-	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
-		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
-	}
+	}	
 
 }

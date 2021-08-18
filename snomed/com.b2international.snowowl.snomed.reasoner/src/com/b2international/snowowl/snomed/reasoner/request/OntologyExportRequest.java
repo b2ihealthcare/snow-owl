@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
+import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.REASONER_EXCLUDE_MODULE_IDS;
+
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ForkJoinTask;
 
@@ -40,6 +44,8 @@ import org.semanticweb.owlapi.model.SetOntologyID;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -76,11 +82,20 @@ final class OntologyExportRequest implements Request<BranchContext, String>, Bra
 	@Override
 	public String execute(final BranchContext context) {
 
-		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
-		final boolean concreteDomainSupportEnabled = config.isConcreteDomainSupported();
+		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
+				.build()
+				.execute(context)
+				.getItems()
+				.get(0);
+			
+		@SuppressWarnings("unchecked")
+		final Set<String> reasonerExcludedModuleIds = codeSystem.getSettings().containsKey(REASONER_EXCLUDE_MODULE_IDS)
+			? (Set<String>) codeSystem.getSettings().get(REASONER_EXCLUDE_MODULE_IDS)
+			: Collections.emptySet();
+		final boolean concreteDomainSupportEnabled = true;
 		
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(config.getReasonerExcludedModuleIds());
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(reasonerExcludedModuleIds);
 		
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.finishConcepts();

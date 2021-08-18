@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
+import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.REASONER_EXCLUDE_MODULE_IDS;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -36,6 +39,8 @@ import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -122,12 +127,22 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 			final ClassificationTracker tracker) {
 		
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
-		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
-		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
+		
+		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
+			.build()
+			.execute(context)
+			.getItems()
+			.get(0);
+		
+		@SuppressWarnings("unchecked")
+		final Set<String> reasonerExcludedModuleIds = codeSystem.getSettings().containsKey(REASONER_EXCLUDE_MODULE_IDS)
+			? (Set<String>) codeSystem.getSettings().get(REASONER_EXCLUDE_MODULE_IDS)
+			: Collections.emptySet();
+		final boolean concreteDomainSupported = true;
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext)) {
-			taxonomy = buildTaxonomy(revisionSearcher, context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds(), concreteDomainSupported);
+			taxonomy = buildTaxonomy(revisionSearcher, reasonerExcludedModuleIds, concreteDomainSupported);
 		} catch (final LockedException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		}
