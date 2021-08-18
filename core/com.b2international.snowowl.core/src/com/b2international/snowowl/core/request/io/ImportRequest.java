@@ -27,7 +27,7 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
@@ -38,7 +38,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.12
  */
-public abstract class ImportRequest extends LockRequest<TransactionContext, ImportResponse> implements BranchAccessControl {
+public abstract class ImportRequest extends LockRequest<TransactionContext, ImportResponse> implements AccessControl {
 	
 	private static final long serialVersionUID = 1L;
 	

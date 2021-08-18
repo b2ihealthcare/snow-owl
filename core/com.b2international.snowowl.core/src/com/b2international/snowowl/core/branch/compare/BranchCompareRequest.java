@@ -26,7 +26,7 @@ import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -38,7 +38,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 5.9
  */
-final class BranchCompareRequest implements Request<RepositoryContext, BranchCompareResult>, RepositoryAccessControl {
+final class BranchCompareRequest implements Request<RepositoryContext, BranchCompareResult>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

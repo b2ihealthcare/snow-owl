@@ -85,7 +85,7 @@ public final class SnomedCommand extends Command {
 			
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(Permission.toImport(resource))) {
+			if (user == null || !user.hasPermission(Permission.requireAll(Permission.OPERATION_IMPORT, resource))) {
 				out.println("User is unauthorized to import SNOMED CT content.");
 				return;
 			}

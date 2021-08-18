@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.authorization;
-
-import com.b2international.snowowl.core.ServiceProvider;
+package com.b2international.snowowl.core.request;
 
 /**
- * @since 7.2
+ * @since 8.0
  */
-public interface RepositoryAccessControl extends AccessControl {
-
-	String REPOSITORY_TEMPLATE = "${repository}";
-
-	@Override
-	default String getResource(ServiceProvider context) {
-		return REPOSITORY_TEMPLATE;
-	}
+public interface RepositoryAwareRequest {
+	
+	String getRepositoryId();
 	
 }

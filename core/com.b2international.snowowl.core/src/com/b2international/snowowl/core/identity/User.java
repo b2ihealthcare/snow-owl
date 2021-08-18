@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 package com.b2international.snowowl.core.identity;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Represents a logged in user in the system. A logged in user has access to his own username and assigned roles (and permissions).
@@ -30,10 +31,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public final class User implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	public static final User SYSTEM = new User("System", Collections.singletonList(Role.ADMINISTRATOR));
 	
 	private final String username;
 	private final List<Role> roles;
+	
+	// derived cached value
+	private final Supplier<List<Permission>> permissions = Suppliers.memoize(() -> {
+		return getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
+	});
 
 	public User(String username, List<Role> roles) {
 		this.username = username;
@@ -50,7 +58,7 @@ public final class User implements Serializable {
 	
 	@JsonIgnore
 	public List<Permission> getPermissions() {
-		return getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
+		return permissions.get();
 	}
 	
 	@Override
@@ -72,9 +80,7 @@ public final class User implements Serializable {
 	 */
 	public boolean isAdministrator() {
 		return getPermissions().stream()
-				.filter(p -> {
-					return Permission.OPERATION_ALL.equals(p.getOperation()) && Permission.OPERATION_ALL.equals(p.getResource());
-				})
+				.filter(Permission::isAdmin)
 				.findFirst()
 				.isPresent();
 	}
@@ -86,10 +92,7 @@ public final class User implements Serializable {
 	 * @return
 	 */
 	public boolean hasPermission(Permission permissionRequirement) {
-		return getRoles().stream()
-			.map(Role::getPermissions)
-			.flatMap(Collection::stream)
-			.anyMatch(permission -> permission.implies(permissionRequirement));
+		return getPermissions().stream().anyMatch(permission -> permission.implies(permissionRequirement));
 	}
 
 	/**

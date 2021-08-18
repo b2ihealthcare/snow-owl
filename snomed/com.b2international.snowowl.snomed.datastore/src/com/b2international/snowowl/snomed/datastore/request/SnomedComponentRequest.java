@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.identity.Permission;
 /**
  * @since 6.5
  */
-public interface SnomedComponentRequest<R> extends Request<TransactionContext, R>, BranchAccessControl {
+public interface SnomedComponentRequest<R> extends Request<TransactionContext, R>, AccessControl {
 
 	Set<String> getRequiredComponentIds(TransactionContext context);
 	

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.branch;
 
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.request.GetResourceRequest;
  */
 final class BranchGetRequest 
 		extends GetResourceRequest<BranchSearchRequestBuilder, RepositoryContext, Branches, Branch>
-		implements RepositoryAccessControl {
+		implements AccessControl {
 
 	BranchGetRequest(final String branchPath) {
 		super(branchPath);
