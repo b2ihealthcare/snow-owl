@@ -61,11 +61,6 @@ public class SnomedCoreConfiguration {
 	
 	private boolean concreteDomainSupport = false;
 	
-	
-	//enables the manual editing of inferred relationships and concrete data types
-	private boolean inferredEditingEnabled = false;
-
-	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
 
@@ -77,16 +72,6 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("concreteDomainSupport")
 	public void setConcreteDomainSupported(boolean concreteDomainSupport) {
 		this.concreteDomainSupport = concreteDomainSupport;
-	}
-	
-	@JsonProperty("inferredEditingEnabled")
-	public boolean isInferredEditingEnabled() {
-		return inferredEditingEnabled;
-	}
-
-	@JsonProperty("inferredEditingEnabled")
-	public void setInferredEditingEnabled(boolean inferredEditingEnabled) {
-		this.inferredEditingEnabled = inferredEditingEnabled;
 	}
 	
 	@JsonProperty("collectSystemChanges")
