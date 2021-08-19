@@ -41,10 +41,6 @@ public class SnomedCoreConfiguration {
 	public static final String MAXIMUM_REASONER_COUNT = "maxReasonerCount";
 	
 	@Min(1)
-	@Max(100)
-	private int maxReasonerResults = DEFAULT_MAXIMUM_REASONER_RESULTS;
-	
-	@Min(1)
 	@Max(1_000_000)
 	private int maxReasonerRuns = DEFAULT_MAXIMUM_REASONER_RUNS;
 	
@@ -81,23 +77,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
-	
-	/**
-	 * @return the number of inferred taxonomies that should be kept in memory. The user can only choose to save
-	 *         the results of the classification run if the corresponding inferred taxonomy is still present.
-	 */
-	@JsonProperty
-	public int getMaxReasonerResults() {
-		return maxReasonerResults;
-	}
-	
-	/**
-	 * @param maxReasonerResults the maxReasonerResults to set
-	 */
-	@JsonProperty
-	public void setMaxReasonerResults(int maxReasonerResults) {
-		this.maxReasonerResults = maxReasonerResults;
-	}
 	
 	/**
 	 * @return the number of classification run details to preserve. Details include inferred and redundant 
