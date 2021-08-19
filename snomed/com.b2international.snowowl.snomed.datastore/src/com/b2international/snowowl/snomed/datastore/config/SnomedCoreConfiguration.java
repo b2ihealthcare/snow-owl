@@ -57,8 +57,6 @@ public class SnomedCoreConfiguration {
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
 	
-	private boolean collectSystemChanges = false;
-	
 	private boolean concreteDomainSupport = false;
 	
 	@NotNull
@@ -73,17 +71,7 @@ public class SnomedCoreConfiguration {
 	public void setConcreteDomainSupported(boolean concreteDomainSupport) {
 		this.concreteDomainSupport = concreteDomainSupport;
 	}
-	
-	@JsonProperty("collectSystemChanges")
-	public boolean isCollectSystemChanges() {
-		return collectSystemChanges;
-	}
-	
-	@JsonProperty("collectSystemChanges")
-	public void setCollectSystemChanges(boolean collectSystemChanges) {
-		this.collectSystemChanges = collectSystemChanges;
-	}
-	
+		
 	/**
 	 * The ID of the concrete domain type reference set identifier concept
 	 * 
