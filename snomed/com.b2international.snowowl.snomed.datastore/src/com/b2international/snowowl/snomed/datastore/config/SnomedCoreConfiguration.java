@@ -61,7 +61,6 @@ public class SnomedCoreConfiguration {
 	
 	private boolean concreteDomainSupport = false;
 	
-	private boolean showReasonerUsageWarning = true;
 	
 	//enables the manual editing of inferred relationships and concrete data types
 	private boolean inferredEditingEnabled = false;
@@ -78,16 +77,6 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("concreteDomainSupport")
 	public void setConcreteDomainSupported(boolean concreteDomainSupport) {
 		this.concreteDomainSupport = concreteDomainSupport;
-	}
-
-	@JsonProperty("showReasonerUsageWarning")
-	public boolean isShowReasonerUsageWarningEnabled() {
-		return showReasonerUsageWarning ;
-	}
-	
-	@JsonProperty("showReasonerUsageWarning")
-	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
-		this.showReasonerUsageWarning = showReasonerUsageWarning;
 	}
 	
 	@JsonProperty("inferredEditingEnabled")
