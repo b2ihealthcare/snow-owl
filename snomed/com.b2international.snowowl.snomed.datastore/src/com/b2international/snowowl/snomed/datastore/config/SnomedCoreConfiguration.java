@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -39,6 +37,9 @@ public class SnomedCoreConfiguration {
 	public static final String MAXIMUM_REASONER_COUNT = "maxReasonerCount";
 	public static final String MAXIMUM_REASONER_RUNS = "maxReasonerRuns";
 	
+	public static final String NAMESPACE_AND_MODULE_ASSIGNER = "namespaceModuleAssigner";
+	public static final String DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER = "default";
+	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
 	
@@ -59,9 +60,7 @@ public class SnomedCoreConfiguration {
 	
 	private boolean concreteDomainSupport = false;
 	
-	@NotNull
-	private String namespaceModuleAssigner = "default";
-
+	
 	@JsonProperty("concreteDomainSupport")
 	public boolean isConcreteDomainSupported() {
 		return concreteDomainSupport;
@@ -192,14 +191,4 @@ public class SnomedCoreConfiguration {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
 	}
 	
-	@JsonProperty
-	public String getNamespaceModuleAssigner() {
-		return namespaceModuleAssigner;
-	}
-	
-	@JsonProperty
-	public void setNamespaceModuleAssigner(String namespaceModuleAssigner) {
-		this.namespaceModuleAssigner = namespaceModuleAssigner;
-	}	
-
 }
