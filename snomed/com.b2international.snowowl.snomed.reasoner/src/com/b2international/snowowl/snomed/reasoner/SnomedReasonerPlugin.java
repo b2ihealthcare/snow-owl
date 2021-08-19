@@ -28,10 +28,14 @@ import com.b2international.snowowl.core.repository.TerminologyRepositoryConfigur
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
-import com.b2international.snowowl.snomed.reasoner.index.*;
+import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
+import com.b2international.snowowl.snomed.reasoner.index.ConceptChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.DescriptionChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
+import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -44,10 +48,8 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 	public void run(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		if (env.isServer()) {
 			final Index repositoryIndex = env.service(RepositoryManager.class).get(getToolingId()).service(Index.class);
-			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
-			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();
 			final long cleanUpInterval = TimeUnit.MINUTES.toMillis(5L); // TODO: make this configurable
-			final ClassificationTracker classificationTracker = new ClassificationTracker(repositoryIndex, maximumReasonerRuns, cleanUpInterval);
+			final ClassificationTracker classificationTracker = new ClassificationTracker(repositoryIndex, cleanUpInterval);
 			
 			env.services().registerService(ClassificationTracker.class, classificationTracker);
 		}

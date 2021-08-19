@@ -15,8 +15,18 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification;
 
+import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_MAXIMUM_REASONER_RUNS;
+import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.MAXIMUM_REASONER_RUNS;
+
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.IStatus;
@@ -33,13 +43,24 @@ import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.*;
+import com.b2international.index.BulkDelete;
+import com.b2international.index.BulkUpdate;
+import com.b2international.index.Hits;
+import com.b2international.index.Index;
+import com.b2international.index.Searcher;
+import com.b2international.index.Writer;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.jobs.RemoteJob;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdMultimap;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdSet;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IReasonerTaxonomy;
@@ -65,12 +86,17 @@ public final class ClassificationTracker implements IDisposableService {
 
 	private final class CleanUpTask extends TimerTask {
 
-		private final int maximumReasonerRuns;
+		private final List<CodeSystem> codeSystems;
 
-		public CleanUpTask(final int maximumReasonerRuns) {
-			this.maximumReasonerRuns = maximumReasonerRuns;
+		public CleanUpTask() {
+			this.codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
+				.filterByToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.buildAsync()
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.getItems();
 		}
-
+		
 		@Override
 		public void run() {
 			try {
@@ -90,40 +116,74 @@ public final class ClassificationTracker implements IDisposableService {
 					
 					/*
 					 * Select the next set of classifications for removal, keeping the maximum number of
-					 * tasks specified in the configuration file
+					 * tasks specified by the terminology resource
 					 */
-					final Query<ClassificationTaskDocument> firstNQuery = Query.select(ClassificationTaskDocument.class)
+					final Query<ClassificationTaskDocument> allClassificationsQuery = Query.select(ClassificationTaskDocument.class)
 							.where(Expressions.builder()
 									.filter(ClassificationTaskDocument.Expressions.deleted(false))
 									.build())
-							.sortBy(SortBy.builder()
+							.sortBy(SortBy.builder()					
 									.sortByField(ClassificationTaskDocument.Fields.CREATION_DATE, Order.DESC)
 									.sortByField(ClassificationTaskDocument.Fields.ID, Order.ASC)
 									.build())
-							.limit(maximumReasonerRuns)
+							.limit(Integer.MAX_VALUE)
 							.build();
+					
+					final List<ClassificationTaskDocument> allClassificationTasks = writer.searcher().search(allClassificationsQuery).getHits();
+					final Map<String, List<Integer>> totalClassificationRuns = new HashMap<>();
 
-					final Hits<ClassificationTaskDocument> firstNTasks = writer.searcher()
-							.search(firstNQuery);
-
-					if (firstNTasks.getTotal() > maximumReasonerRuns) {
-						final ClassificationTaskDocument firstToRemove = Iterables.getLast(firstNTasks);
-						final long endDate = firstToRemove.getCreationDate().getTime();
-
-						final Query<String> markQuery = Query.select(String.class)
-								.from(ClassificationTaskDocument.class)
-								.where(ClassificationTaskDocument.Expressions.created(0L, endDate))
-								.limit(Integer.MAX_VALUE)
-								.build();
-
-						markClassifications(writer, markQuery);
+					for (int i = 0; i < allClassificationTasks.size(); i++) {
+						ClassificationTaskDocument task = allClassificationTasks.get(i);
+						for (CodeSystem cs : codeSystems) {
+							
+							final String name = cs.getTitle();
+							List<Integer> currentIndexes = totalClassificationRuns.getOrDefault(name, Collections.emptyList());
+							final String branch = cs.getBranchPath();
+														
+							if (task.getBranch().equals(branch)) {
+								currentIndexes.add(i);
+								totalClassificationRuns.put(name, currentIndexes);
+							} else if (task.getBranch().startsWith(branch)) {
+								int taskPathLength = task.getBranch().split(IBranchPath.SEPARATOR).length;
+								int branchPathLength = branch.split(IBranchPath.SEPARATOR).length;
+								
+								if (branchPathLength == (taskPathLength - 1)) {
+									currentIndexes.add(i);
+									totalClassificationRuns.put(name, currentIndexes);									
+								}
+							}
+						}
 					}
-
+					
+					codeSystems.forEach( cs -> {
+						Integer maxReasonerRun = cs.getSettings().containsKey(MAXIMUM_REASONER_RUNS) 
+								? (int) cs.getSettings().get(MAXIMUM_REASONER_RUNS) 
+								: DEFAULT_MAXIMUM_REASONER_RUNS;
+						
+						List<Integer> taskIndices = totalClassificationRuns.get(cs.getTitle());
+						if (taskIndices.size() > maxReasonerRun) {
+							final ClassificationTaskDocument firstToRemove = allClassificationTasks.get(Iterables.getLast(taskIndices));
+							final long endDate = firstToRemove.getCreationDate().getTime();
+							
+							final Query<String> markQuery = Query.select(String.class)
+									.from(ClassificationTaskDocument.class)
+									.where(ClassificationTaskDocument.Expressions.created(0L, endDate))
+									.limit(Integer.MAX_VALUE)
+									.build();
+							
+							try {
+								markClassifications(writer, markQuery);								
+							} catch (IOException e) {
+								cancel();
+							}
+						}
+					});
+					
 					writer.commit();
 					return null;
 				});
 
-			} catch (final IllegalStateException e) {
+			} catch (IllegalStateException e) {
 				cancel();
 			}
 		}
@@ -162,7 +222,7 @@ public final class ClassificationTracker implements IDisposableService {
 	private final ClassificationJobListener listener;
 	private final CleanUpTask cleanUp;
 
-	public ClassificationTracker(final Index index, final int maximumReasonerRuns, final long cleanUpInterval) {
+	public ClassificationTracker(final Index index, final long cleanUpInterval) {
 		this.index = index;
 
 		this.index.write(writer -> {
@@ -183,7 +243,7 @@ public final class ClassificationTracker implements IDisposableService {
 		
 		this.listener = new ClassificationJobListener();
 		Job.getJobManager().addJobChangeListener(listener);
-		this.cleanUp = new CleanUpTask(maximumReasonerRuns);
+		this.cleanUp = new CleanUpTask();
 		Holder.CLEANUP_TIMER.schedule(cleanUp, cleanUpInterval, cleanUpInterval);
 	}
 

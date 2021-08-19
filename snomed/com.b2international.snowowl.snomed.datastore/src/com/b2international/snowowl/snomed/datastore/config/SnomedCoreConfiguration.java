@@ -39,10 +39,7 @@ public class SnomedCoreConfiguration {
 	
 	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
 	public static final String MAXIMUM_REASONER_COUNT = "maxReasonerCount";
-	
-	@Min(1)
-	@Max(1_000_000)
-	private int maxReasonerRuns = DEFAULT_MAXIMUM_REASONER_RUNS;
+	public static final String MAXIMUM_REASONER_RUNS = "maxReasonerRuns";
 	
 	@NotEmpty
 	private String defaultReasoner = DEFAULT_REASONER;
@@ -77,21 +74,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
-	
-	/**
-	 * @return the number of classification run details to preserve. Details include inferred and redundant 
-	 *         relationships, the list of equivalent concepts found during classification, and job metadata
-	 *         (creation, start and end times, final state, requesting user). 
-	 */
-	@JsonProperty
-	public int getMaxReasonerRuns() {
-		return maxReasonerRuns;
-	}
-	
-	@JsonProperty
-	public void setMaxReasonerRuns(int maxReasonerRuns) {
-		this.maxReasonerRuns = maxReasonerRuns;
-	}
 	
 	/**
 	 * @return the currently set default reasoner ID 
