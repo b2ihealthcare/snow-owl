@@ -17,83 +17,28 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collection;
 import java.util.Set;
 
-import org.eclipse.xtext.parser.IParser;
-import org.eclipse.xtext.serializer.ISerializer;
-import org.eclipse.xtext.validation.IResourceValidator;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.revision.BaseRevisionIndexTest;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snomed.ecl.Ecl;
-import com.b2international.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Injector;
 
 /**
  * @since 7.7
  */
-public class SnomedEclShortcutTest extends BaseRevisionIndexTest {
+public class SnomedEclShortcutTest extends BaseSnomedEclEvaluationRequestTest {
 
-	private static final Injector INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-	
+	public SnomedEclShortcutTest() {
+		super(Trees.INFERRED_FORM, false);
+	}
+
 	private static final String ROOT_ID = Concepts.ROOT_CONCEPT;
-	
-	private BranchContext context;
-	
-	@Override
-	protected void configureMapper(ObjectMapper mapper) {
-		super.configureMapper(mapper);
-		mapper.setSerializationInclusion(Include.NON_NULL);
-		mapper.registerModule(new PrimitiveCollectionModule());
-	}
-	
-	@Before
-	public void setup() {
-		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
-		config.setConcreteDomainSupported(true);
-		
-		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
-				.with(Index.class, rawIndex())
-				.with(RevisionIndex.class, index())
-				.with(SnomedCoreConfiguration.class, config)
-				.build();
-	}
-	
-	@Override
-	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class);
-	}
-	
-	private Expression eval(String expression) {
-		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
-				.setExpressionForm(Trees.INFERRED_FORM)
-				.build())
-				.execute(context)
-				.getSync();
-	}
 	
 	@Test
 	public void queryMinusAll() throws Exception {

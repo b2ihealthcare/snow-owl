@@ -22,77 +22,28 @@ import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.c
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.relationship;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collection;
-
-import org.eclipse.xtext.parser.IParser;
-import org.eclipse.xtext.serializer.ISerializer;
-import org.eclipse.xtext.validation.IResourceValidator;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.revision.BaseRevisionIndexTest;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
-import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Injector;
 
 /**
  * @since 5.15.1
  */
-public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
+public class SnomedStatedEclEvaluationTest extends BaseSnomedEclEvaluationRequestTest {
 
-	private static final Injector INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+	public SnomedStatedEclEvaluationTest() {
+		super(Trees.STATED_FORM, false);
+	}
 	
 	private static final String ROOT_CONCEPT = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_ACTIVE_INGREDIENT = Concepts.HAS_ACTIVE_INGREDIENT;
 	private static final String SUBSTANCE = Concepts.SUBSTANCE;
 	private static final String STATED_CONCEPT = RandomSnomedIdentiferGenerator.generateConceptId();
-
-	private BranchContext context;
-	
-	@Before
-	public void setup() {
-		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
-		config.setConcreteDomainSupported(true);
-		
-		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
-				.with(Index.class, rawIndex())
-				.with(RevisionIndex.class, index())
-				.with(SnomedCoreConfiguration.class, config)
-				.build();
-	}
-	
-	@Override
-	protected void configureMapper(ObjectMapper mapper) {
-		super.configureMapper(mapper);
-		mapper.setSerializationInclusion(Include.NON_NULL);
-		mapper.registerModule(new PrimitiveCollectionModule());
-	}
-	
-	@Override
-	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.of(SnomedDescriptionIndexEntry.class, SnomedConceptDocument.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class);
-	}
 	
 	@Test
 	public void statedRefinementWithZeroToOneCardinalityInAttributeConjuction() throws Exception {
@@ -104,12 +55,6 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 				ids(ImmutableSet.of(STATED_CONCEPT))
 				);
 		assertEquals(expected, actual);
-	}
-	
-	private Expression eval(String expression) {
-		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression).setExpressionForm(Trees.STATED_FORM).build())
-				.execute(context)
-				.getSync();		
 	}
 	
 	private void generateTestHierarchy() {
