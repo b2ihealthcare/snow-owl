@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -32,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SnomedCoreConfiguration {
 	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
-	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
+	public static final String DEFAULT_REASONER = ELK_REASONER_ID;
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
@@ -40,9 +38,6 @@ public class SnomedCoreConfiguration {
 	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
 	public static final String MAXIMUM_REASONER_COUNT = "maxReasonerCount";
 	public static final String MAXIMUM_REASONER_RUNS = "maxReasonerRuns";
-	
-	@NotEmpty
-	private String defaultReasoner = DEFAULT_REASONER;
 	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
@@ -74,22 +69,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
-	
-	/**
-	 * @return the currently set default reasoner ID 
-	 */
-	@JsonProperty
-	public String getDefaultReasoner() {
-		return defaultReasoner;
-	}
-	
-	/**
-	 * @param defaultReasoner - the reasoner to set as default
-	 */
-	@JsonProperty
-	public void setDefaultReasoner(String defaultReasoner) {
-		this.defaultReasoner = defaultReasoner;
-	}
 
 	@JsonProperty("concreteDomainSupport")
 	public boolean isConcreteDomainSupported() {
