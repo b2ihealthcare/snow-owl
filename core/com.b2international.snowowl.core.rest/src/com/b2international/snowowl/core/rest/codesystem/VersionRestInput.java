@@ -27,6 +27,7 @@ public class VersionRestInput {
 	private String description = "";
 	private String effectiveTime;
 	private Boolean force = Boolean.FALSE;
+	private String commitComment;
 	
 	public ResourceURI getResource() {
 		return resource;
@@ -66,6 +67,14 @@ public class VersionRestInput {
 	
 	public void setForce(Boolean force) {
 		this.force = force;
+	}
+
+	public String getCommitComment() {
+		return commitComment;
+	}
+
+	public void setCommitComment(String commitComment) {
+		this.commitComment = commitComment;
 	}
 	
 }
