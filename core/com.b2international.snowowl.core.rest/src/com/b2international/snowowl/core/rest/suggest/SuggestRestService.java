@@ -54,6 +54,7 @@ public class SuggestRestService extends AbstractRestService {
 	public Promise<Suggestions> getSuggest(@ParameterObject final SuggestRestParameters params) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
+				.setLocales(params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
@@ -72,6 +73,7 @@ public class SuggestRestService extends AbstractRestService {
 	public Promise<Suggestions> postSuggest(@RequestBody final SuggestRestParameters body) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(body.getLimit())
+				.setLocales(body.getAcceptLanguage())
 				.setPreferredDisplay(body.getPreferredDisplay())
 				.filterByTerm(body.getTerm())
 				.sortBy(SORT_BY)
@@ -91,6 +93,7 @@ public class SuggestRestService extends AbstractRestService {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
+				.setLocales(params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
