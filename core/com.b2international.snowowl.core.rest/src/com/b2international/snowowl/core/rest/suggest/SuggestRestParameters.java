@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.core.rest.suggest;
 
-import org.springframework.http.HttpHeaders;
-
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -38,7 +35,7 @@ public class SuggestRestParameters {
 	@Parameter(description = "The preferred term display in case of SNOMED CT", example = "PT", schema = @Schema(allowableValues = {"FSN", "PT", "ID_ONLY"}, defaultValue = "PT"))
 	private String preferredDisplay = "PT";
 	
-	@Parameter(name = HttpHeaders.ACCEPT_LANGUAGE, in = ParameterIn.HEADER, description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+	@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 	private String acceptLanguage = "en-US;q=0.8,en-GB;q=0.6";
 
 	public String getCodeSystemPath() {
