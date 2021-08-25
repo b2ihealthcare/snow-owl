@@ -35,8 +35,8 @@ public class SuggestRestParameters {
 	@Parameter(description = "The preferred term display in case of SNOMED CT", example = "PT", schema = @Schema(allowableValues = {"FSN", "PT", "ID_ONLY"}, defaultValue = "PT"))
 	private String preferredDisplay = "PT";
 	
-	@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-	private String acceptLanguage = "en-US;q=0.8,en-GB;q=0.6";
+	@Parameter(description = "Accepted language tags, in order of preference")
+	private String acceptLanguage;
 
 	public String getCodeSystemPath() {
 		return codeSystemPath;
