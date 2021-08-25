@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.core.request;
 
-import static com.google.common.collect.Sets.newHashSet;
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.TERM;
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
 import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.DISPLAY;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.TERM;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +31,6 @@ import javax.validation.constraints.Min;
 
 import org.tartarus.snowball.ext.EnglishStemmer;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -86,10 +85,6 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 
 	@Override
 	protected Suggestions doExecute(BranchContext context) throws IOException {
-		if (searchAfter() != null) {
-			throw new BadRequestException("searchAfter is not supported in Concept Suggestion API.");
-		}
-		
 		TermFilter termFilter;
 		
 		if (containsKey(TERM)) {
@@ -150,6 +145,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 				.setPreferredDisplay(getString(DISPLAY))
 				.setLimit(limit())
 				.setLocales(locales())
+				.setSearchAfter(searchAfter())
 				.sortBy(sortBy());
 		
 		if (!exclusions.isEmpty()) {
