@@ -24,12 +24,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.assertj.core.api.Assertions;
 import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.TermFilter;
@@ -357,5 +359,21 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final Stream<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId);
 		
 		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, cs3Id);
+	}
+	
+	@Test
+	public void reparentParentBundleUnderChildBundle() {
+		final String rootBundleId = createBundle("bundle1", IComponent.ROOT_ID, "rootBundle");
+		
+		final String subBundleId = createBundle("bundle2", rootBundleId, "subBundle");
+		
+		ResourceRequests.bundles().prepareUpdate(rootBundleId)
+			.setBundleId(subBundleId)
+			.build(USER, String.format("Update bundle: %s", id))
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES);
+		
+		Assertions.assertThat(getBundle(subBundleId)).hasFieldOrPropertyWithValue("bundleId", rootBundleId);
+		Assertions.assertThat(getBundle(rootBundleId)).hasFieldOrPropertyWithValue("bundleId", IComponent.ROOT_ID);
 	}
 }
