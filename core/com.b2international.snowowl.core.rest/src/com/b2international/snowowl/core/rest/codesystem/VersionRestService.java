@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
@@ -116,20 +117,21 @@ public class VersionRestService extends AbstractRestService {
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public ResponseEntity<Void> createVersion(
 			@Parameter(description="Version parameters")
-			@RequestBody final VersionRestInput input) {
-		ApiValidation.checkInput(input);
+			@RequestBody final ResourceRequest<VersionRestInput> input) {
+		final VersionRestInput change = input.getChange();
+		ApiValidation.checkInput(change);
 		
-		ResourceURI versionUri = input.getResource().withPath(input.getVersion());
+		ResourceURI versionUri = change.getResource().withPath(change.getVersion());
 		
 		String jobId = ResourceRequests.prepareNewVersion()
-				.setResource(input.getResource())
-				.setVersion(input.getVersion())
-				.setDescription(input.getDescription())
-				.setEffectiveTime(input.getEffectiveTime())
-				.setForce(input.isForce())
+				.setResource(change.getResource())
+				.setVersion(change.getVersion())
+				.setDescription(change.getDescription())
+				.setEffectiveTime(change.getEffectiveTime())
+				.setForce(change.isForce())
 				.setCommitComment(input.getCommitComment())
 				.buildAsync()
-				.runAsJobWithRestart(ResourceRequests.versionJobKey(input.getResource()), "Creating version " + versionUri)
+				.runAsJobWithRestart(ResourceRequests.versionJobKey(change.getResource()), "Creating version " + versionUri)
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
