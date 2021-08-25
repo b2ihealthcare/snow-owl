@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 
 /**
  * @since 7.5
@@ -39,9 +40,9 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 	public R execute(TerminologyResourceContext context) {
 		final ResourceURI resourceURI = context.resourceURI();
 		final TerminologyResource resource = context.resource();
-		final String branchPath = context.service(ResourceURIPathResolver.class).resolve(context, resourceURI, resource);
+		final PathWithVersion branchPathWithVersion = context.service(ResourceURIPathResolver.class).resolveWithVersion(context, resourceURI, resource);
 		return new RepositoryRequest<R>(resource.getToolingId(),
-			new BranchRequest<R>(branchPath,
+			new BranchRequest<R>(branchPathWithVersion,
 				next()
 			)
 		).execute(context);
