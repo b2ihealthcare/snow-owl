@@ -40,6 +40,9 @@ public class VersionRestSearch extends ObjectRestSearch {
 	
 	@Parameter(description = "Less than equal filter to for the created at field")
 	private Long createdAtTo;
+
+	@Parameter(description = "The corresponding version identifier(s) to match")
+	private List<String> version;
 	
 	public List<String> getResource() {
 		return resource;
@@ -79,5 +82,13 @@ public class VersionRestSearch extends ObjectRestSearch {
 
 	public void setCreatedAtTo(Long createdAtTo) {
 		this.createdAtTo = createdAtTo;
+	}
+
+	public List<String> getVersion() {
+		return version;
+	}
+	
+	public void setVersion(List<String> version) {
+		this.version = version;
 	}
 }

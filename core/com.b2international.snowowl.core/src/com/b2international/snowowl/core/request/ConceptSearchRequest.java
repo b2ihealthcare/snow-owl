@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
@@ -102,6 +103,11 @@ public final class ConceptSearchRequest extends SearchResourceRequest<ServicePro
 		// for single CodeSystem searches, sorting, paging works as it should
 		if (concepts.size() == 1) {
 			return Iterables.getOnlyElement(concepts);
+		}
+		
+		// otherwise, check if searchAfter was used, as it would return bogus results; it can not be applied across code systems
+		if (searchAfter() != null) {
+			throw new BadRequestException("searchAfter is not supported in Concept Search API for multiple code systems.");
 		}
 		
 		// calculate grand total
