@@ -41,11 +41,19 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 		final ResourceURI resourceURI = context.resourceURI();
 		final TerminologyResource resource = context.resource();
 		final PathWithVersion branchPathWithVersion = context.service(ResourceURIPathResolver.class).resolveWithVersion(context, resourceURI, resource);
+		final String path = branchPathWithVersion.getPath();
+		final ResourceURI versionResourceURI = branchPathWithVersion.getVersionResourceURI();
+		
+		if (versionResourceURI != null) {
+			context = context.inject()
+				.bind(ResourceURI.class, versionResourceURI)
+				.build();
+		}
+		
 		return new RepositoryRequest<R>(resource.getToolingId(),
-			new BranchRequest<R>(branchPathWithVersion,
+			new BranchRequest<R>(path,
 				next()
 			)
 		).execute(context);
 	}
-
 }

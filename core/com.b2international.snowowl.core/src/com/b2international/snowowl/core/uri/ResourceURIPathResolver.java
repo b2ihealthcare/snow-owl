@@ -53,7 +53,7 @@ public interface ResourceURIPathResolver {
 			return path;
 		}
 		
-		public ResourceURI getVersionResouceURI() {
+		public ResourceURI getVersionResourceURI() {
 			return versionResourceURI;
 		}
 	}

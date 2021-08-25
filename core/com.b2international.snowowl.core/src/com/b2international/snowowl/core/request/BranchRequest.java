@@ -17,12 +17,10 @@ package com.b2international.snowowl.core.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 
 /**
  * @since 4.5
@@ -30,18 +28,10 @@ import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVers
 public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext, BranchContext, B> {
 
 	private final String branchPath;
-	private final ResourceURI versionResourceURI;
 	
 	public BranchRequest(String branchPath, Request<BranchContext, B> next) {
 		super(next);
 		this.branchPath = checkNotNull(branchPath, "branchPath");
-		this.versionResourceURI = null;
-	}
-	
-	public BranchRequest(PathWithVersion branchPathWithVersion, Request<BranchContext, B> next) {
-		super(next);
-		this.branchPath = branchPathWithVersion.getPath();
-		this.versionResourceURI = branchPathWithVersion.getVersionResouceURI();
 	}
 
 	public String getBranchPath() {
@@ -50,13 +40,6 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	
 	@Override
 	public B execute(RepositoryContext context) {
-		BranchContext branchContext = context.openBranch(context, branchPath);
-		if (versionResourceURI != null) {
-			branchContext = branchContext.inject()
-				.bind(ResourceURI.class, versionResourceURI)
-				.build();
-		}
-		
-		return next(branchContext);
+		return next(context.openBranch(context, branchPath));
 	}
 }
