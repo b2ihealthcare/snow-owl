@@ -18,7 +18,9 @@ package com.b2international.snowowl.core.rest.suggest;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.common.Strings;
 import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -29,6 +31,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,9 +54,16 @@ public class SuggestRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@GetMapping
-	public Promise<Suggestions> getSuggest(@ParameterObject final SuggestRestParameters params) {
+	public Promise<Suggestions> getSuggest(
+			@ParameterObject
+			final SuggestRestParameters params,
+			
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
+				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
@@ -69,9 +79,16 @@ public class SuggestRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Suggestions> postSuggest(@RequestBody final SuggestRestParameters body) {
+	public Promise<Suggestions> postSuggest(
+			@RequestBody
+			final SuggestRestParameters body,
+			
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(body.getLimit())
+				.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
 				.setPreferredDisplay(body.getPreferredDisplay())
 				.filterByTerm(body.getTerm())
 				.sortBy(SORT_BY)
@@ -87,10 +104,17 @@ public class SuggestRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(value = "/bulk", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<List<Object>> postBulkSuggest(@RequestBody final List<SuggestRestParameters> body) {
+	public Promise<List<Object>> postBulkSuggest(
+			@RequestBody
+			final List<SuggestRestParameters> body,
+			
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
+				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
