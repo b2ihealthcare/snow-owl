@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -83,6 +84,9 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@JsonProperty
 	boolean force;
+	
+	@JsonProperty
+	String commitComment;
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
@@ -194,7 +198,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							.build());
 					return Boolean.TRUE;
 				})
-				.setCommitComment(String.format("Version '%s' as of '%s'", resource, version))
+				.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
 				.build()
 			).execute(context).getResultAs(Boolean.class);
 		} finally {
@@ -319,5 +323,4 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	public String getOperation() {
 		return Permission.OPERATION_VERSION;
 	}
-	
 }

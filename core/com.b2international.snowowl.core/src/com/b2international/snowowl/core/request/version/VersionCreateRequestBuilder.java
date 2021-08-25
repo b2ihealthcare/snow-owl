@@ -36,6 +36,7 @@ public final class VersionCreateRequestBuilder
 	private LocalDate effectiveTime;
 	private ResourceURI resource;
 	private boolean force = false;
+	private String commitComment;
 
 	public VersionCreateRequestBuilder setResource(ResourceURI resource) {
 		this.resource = resource;
@@ -79,7 +80,17 @@ public final class VersionCreateRequestBuilder
 		req.effectiveTime = effectiveTime;
 		req.resource = resource;
 		req.force = force;
+		req.commitComment = commitComment;
 		return req;
+	}
+
+	public String getCommitComment() {
+		return commitComment;
+	}
+
+	public VersionCreateRequestBuilder setCommitComment(String commitComment) {
+		this.commitComment = commitComment;
+		return getSelf();
 	}
 
 }
