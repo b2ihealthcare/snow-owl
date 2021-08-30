@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.CONCRETE_DOMAIN_SUPPORT;
 import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER;
 import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.NAMESPACE_AND_MODULE_ASSIGNER;
 import static com.google.common.collect.Lists.newArrayList;
@@ -63,6 +62,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.IdRequest;
@@ -259,16 +259,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 		if (handleConcreteDomains) {
 			// CD member support in configuration overrides the flag on the save request
-			CodeSystem cs = CodeSystemRequests.prepareSearchCodeSystem()
-					.build()
-					.execute(context)
-					.first()
-					.get();
-			
-			boolean isConcreteDomainSupported = cs.getSettings().containsKey(CONCRETE_DOMAIN_SUPPORT)
-					? (boolean) cs.getSettings().get(CONCRETE_DOMAIN_SUPPORT) : false;
-
-			if (isConcreteDomainSupported) {
+			final SnomedCoreConfiguration snomedCoreConfiguration = context.service(SnomedCoreConfiguration.class);
+			if (snomedCoreConfiguration.isConcreteDomainSupported()) {
 				applyConcreteDomainChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
 			}
 		}

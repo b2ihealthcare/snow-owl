@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.CONCRETE_DOMAIN_SUPPORT;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -37,8 +36,6 @@ import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RevisionDocument;
@@ -51,6 +48,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -213,16 +211,7 @@ public final class EclExpression {
 				}));
 		
 		// search concrete domain members
-		CodeSystem cs = CodeSystemRequests.prepareSearchCodeSystem()
-				.build()
-				.execute(context)
-				.first()
-				.get();
-		
-		boolean isConcreteDomainSupported = cs.getSettings().containsKey(CONCRETE_DOMAIN_SUPPORT)
-				? (boolean) cs.getSettings().get(CONCRETE_DOMAIN_SUPPORT) : false;
-
-		if (isConcreteDomainSupported) {
+		if (context.service(SnomedCoreConfiguration.class).isConcreteDomainSupported()) {
 			final Options propFilter = Options.builder()
 					.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypes)
 					// any group that is not in zero group

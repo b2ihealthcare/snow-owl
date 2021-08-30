@@ -24,27 +24,12 @@ import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MEASUREMENT_TYPE;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.SYNONYM;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.BOOLEAN_DATA_TYPE_REFSET_IDENTIFIER;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.STRING_DATA_TYPE_REFSET_IDENTIFIER;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DATETIME_DATA_TYPE_REFSET_IDENTIFIER;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_DATETIME_DATA_TYPE_REFSET;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_FLOAT_DATA_TYPE_REFSET;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_INTEGER_DATA_TYPE_REFSET;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_STRING_DATA_TYPE_REFSET;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.FLOAT_DATA_TYPE_REFSET_IDENTIFIER;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.INTEGER_DATA_TYPE_REFSET_IDENTIFIER;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.CONCRETE_DOMAIN_SUPPORT;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.CONCRETE_DOMAIN_TYPE_REFSET_IDENTIFIER;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_BOOLEAN_DATA_TYPE_REFSET;
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.DEFAULT_CONCRETE_DOMAIN_TYPE_REFSET;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
 import org.slf4j.Logger;
 
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.RequestBuilder;
@@ -56,6 +41,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
@@ -95,25 +81,15 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 	@Override
 	public void postProcess(final BranchContext context, String userId, Logger logger) {
 		
-		CodeSystem cs = CodeSystemRequests.prepareSearchCodeSystem()
-				.build()
-				.execute(context)
-				.first()
-				.get();
+		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 		
-		boolean isConcreteDomainSupported = cs.getSettings().containsKey(CONCRETE_DOMAIN_SUPPORT)
-				? (boolean) cs.getSettings().get(CONCRETE_DOMAIN_SUPPORT) : false;
-		
-		if (!isConcreteDomainSupported) {
+		if (!config.isConcreteDomainSupported()) {
 			return;
 		}
 		
 		List<RequestBuilder<TransactionContext, ?>> requests = newArrayList();
 		
-		final String concreteDomainTypeRefsetIdentifier = cs.getSettings().containsKey(CONCRETE_DOMAIN_TYPE_REFSET_IDENTIFIER)
-				?  (String) cs.getSettings().get(CONCRETE_DOMAIN_TYPE_REFSET_IDENTIFIER)
-				: DEFAULT_CONCRETE_DOMAIN_TYPE_REFSET;
-		if (!conceptExists(concreteDomainTypeRefsetIdentifier, context)) {
+		if (!conceptExists(config.getConcreteDomainTypeRefsetIdentifier(), context)) {
 
 			// create module
 			createConcept(context, logger, MODULE_B2I_EXTENSION, B2I_MODULE_FSN, B2I_MODULE_PT, MODULE_ROOT, requests);
@@ -123,48 +99,33 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 					requests);
 			
 			// create concrete domain type refset concept
-			createConcept(context, logger, concreteDomainTypeRefsetIdentifier, CONCRETE_DOMAIN_TYPE_REFSET_FSN,
+			createConcept(context, logger, config.getConcreteDomainTypeRefsetIdentifier(), CONCRETE_DOMAIN_TYPE_REFSET_FSN,
 					CONCRETE_DOMAIN_TYPE_REFSET_PT, REFSET_DEFINING_TYPE, requests);
 			
 			// create measurement type concrete domain refset concept
 			createConcept(context, logger, REFSET_MEASUREMENT_TYPE, MEASUREMENT_TYPE_REFSET_FSN, MEASUREMENT_TYPE_REFSET_PT,
-					concreteDomainTypeRefsetIdentifier, requests);
-			
+					config.getConcreteDomainTypeRefsetIdentifier(), requests);
+
 		}
-		
+
 		// create boolean concrete domain refset identifier concept and refset
-		final String booleanDatatypeRefsetIdentifier = cs.getSettings().containsKey(BOOLEAN_DATA_TYPE_REFSET_IDENTIFIER)
-				?  (String) cs.getSettings().get(BOOLEAN_DATA_TYPE_REFSET_IDENTIFIER)
-				: DEFAULT_BOOLEAN_DATA_TYPE_REFSET;
-		createRefsetAndConcept(context, logger, booleanDatatypeRefsetIdentifier, BOOLEAN_DATATYPE_REFSET_FSN,
-				BOOLEAN_DATATYPE_REFSET_PT, concreteDomainTypeRefsetIdentifier, requests);
+		createRefsetAndConcept(context, logger, config.getBooleanDatatypeRefsetIdentifier(), BOOLEAN_DATATYPE_REFSET_FSN,
+				BOOLEAN_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), requests);
 		
 		// create string concrete domain refset identifier concept and refset
-		final String stringDatatypeRefsetIdentifier = cs.getSettings().containsKey(STRING_DATA_TYPE_REFSET_IDENTIFIER)
-				?  (String) cs.getSettings().get(STRING_DATA_TYPE_REFSET_IDENTIFIER)
-				: DEFAULT_STRING_DATA_TYPE_REFSET;
-		createRefsetAndConcept(context, logger, stringDatatypeRefsetIdentifier, STRING_DATATYPE_REFSET_FSN,
-				STRING_DATATYPE_REFSET_PT, concreteDomainTypeRefsetIdentifier, requests);
+		createRefsetAndConcept(context, logger, config.getStringDatatypeRefsetIdentifier(), STRING_DATATYPE_REFSET_FSN,
+				STRING_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), requests);
 		
 		// create date-time concrete domain refset identifier concept and refset
-		final String datetimeDatatypeRefsetIdentifier = cs.getSettings().containsKey(DATETIME_DATA_TYPE_REFSET_IDENTIFIER)
-				?  (String) cs.getSettings().get(DATETIME_DATA_TYPE_REFSET_IDENTIFIER)
-				: DEFAULT_DATETIME_DATA_TYPE_REFSET;
-		createRefsetAndConcept(context, logger, datetimeDatatypeRefsetIdentifier, DATETIME_DATATYPE_REFSET_FSN,
-				DATETIME_DATATYPE_REFSET_PT, concreteDomainTypeRefsetIdentifier, requests);
+		createRefsetAndConcept(context, logger, config.getDatetimeDatatypeRefsetIdentifier(), DATETIME_DATATYPE_REFSET_FSN,
+				DATETIME_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), requests);
 
 		// create integer concrete domain refset identifier concept and refset
-		final String integerDatatypeRefsetIdentifier = cs.getSettings().containsKey(INTEGER_DATA_TYPE_REFSET_IDENTIFIER)
-				?  (String) cs.getSettings().get(INTEGER_DATA_TYPE_REFSET_IDENTIFIER)
-				: DEFAULT_INTEGER_DATA_TYPE_REFSET;
-		createRefsetAndConcept(context, logger, integerDatatypeRefsetIdentifier, INTEGER_DATATYPE_REFSET_FSN,
+		createRefsetAndConcept(context, logger, config.getIntegerDatatypeRefsetIdentifier(), INTEGER_DATATYPE_REFSET_FSN,
 				INTEGER_DATATYPE_REFSET_PT, REFSET_MEASUREMENT_TYPE, requests);
 		
 		// create float concrete domain refset identifier concept and refset
-		final String floatDatatypeRefsetIdentifier = cs.getSettings().containsKey(FLOAT_DATA_TYPE_REFSET_IDENTIFIER)
-				?  (String) cs.getSettings().get(FLOAT_DATA_TYPE_REFSET_IDENTIFIER)
-				: DEFAULT_FLOAT_DATA_TYPE_REFSET;
-		createRefsetAndConcept(context, logger, floatDatatypeRefsetIdentifier, FLOAT_DATATYPE_REFSET_FSN,
+		createRefsetAndConcept(context, logger, config.getFloatDatatypeRefsetIdentifier(), FLOAT_DATATYPE_REFSET_FSN,
 				FLOAT_DATATYPE_REFSET_PT, REFSET_MEASUREMENT_TYPE, requests);
 		
 		if (!requests.isEmpty()) {

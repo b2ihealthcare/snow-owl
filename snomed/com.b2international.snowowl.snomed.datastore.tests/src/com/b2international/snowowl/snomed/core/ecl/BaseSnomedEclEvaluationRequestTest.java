@@ -102,12 +102,16 @@ public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionInd
 	}
 	
 	@Before
-	public void setup() {		
+	public void setup() {
+		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
+		config.setConcreteDomainSupported(true);
+		
 		context = TestBranchContext.on(MAIN)
 				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
+				.with(SnomedCoreConfiguration.class, config)
 				.with(ObjectMapper.class, getMapper())
 				.with(TerminologyResource.class, createCodeSystem(MAIN))
 				.build();
@@ -131,8 +135,7 @@ public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionInd
 					"languageTag", "en-gb",
 					"languageRefSetIds", List.of(Concepts.REFSET_LANGUAGE_TYPE_UK)
 				)
-			),
-			SnomedCoreConfiguration.CONCRETE_DOMAIN_SUPPORT, true
+			)		
 		));
 		return codeSystem;
 	}
