@@ -135,7 +135,10 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	SearchParamTest.class,
 	OperationTest.class,
 	RestTest.class,
-	CapabilityStatementTest.class
+	CapabilityStatementTest.class,
+	
+	//OperationDefinition
+	OverloadTest.class
 	
 })
 public class AllFhirTests {
