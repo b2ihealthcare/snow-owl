@@ -98,8 +98,11 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 				throw new NotFoundException("Terminology Resource", referenceResourceUri.getResourceId());
 			}
 			this.resource = (TerminologyResource) resource;
-			this.resourceUri = this.resource.getResourceURI().withPath(referenceResourceUri.getPath());
-			this.branchPath = context.service(ResourceURIPathResolver.class).resolve(context, referenceResourceUri, resource);
+			this.resourceUri = this.resource.getResourceURI()
+				.withPath(referenceResourceUri.getPath())
+				.withTimestampPart(referenceResourceUri.getTimestampPart());
+			this.branchPath = context.service(ResourceURIPathResolver.class)
+				.resolve(context, referenceResourceUri, resource);
 		}		
 	}
 
