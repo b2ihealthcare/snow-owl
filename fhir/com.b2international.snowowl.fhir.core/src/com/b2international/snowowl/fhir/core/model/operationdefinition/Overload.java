@@ -83,7 +83,7 @@ public class Overload extends Element {
 			return getSelf();
 		}
 		
-		public Builder addKeyword(String parameterName) {
+		public Builder addParameterName(String parameterName) {
 			
 			if (parameterNames == null) {
 				parameterNames = Lists.newArrayList();
@@ -92,7 +92,7 @@ public class Overload extends Element {
 			return getSelf();
 		}
 		
-		public Builder type(String comment) {
+		public Builder comment(String comment) {
 			this.comment = comment;
 			return getSelf();
 		}
