@@ -67,6 +67,9 @@ public class ValueSet extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
 	
+	@JsonProperty
+	private String copyright;
+	
 	@Summary
 	@JsonProperty
 	private final Boolean immutable;
@@ -86,15 +89,16 @@ public class ValueSet extends MetadataResource {
 			final Boolean experimental, final Date date, String publisher, 
 			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, 
-			final String resourceType, final Collection<Identifier> identifiers, 
-			final Boolean immutable, final String purpose, final String copyright, final String toolingId,
+			final String resourceType, final Collection<Identifier> identifiers, final String copyright,
+			final Boolean immutable, final String purpose, final String toolingId,
 			final Compose compose, final Expansion expansion) {
 		
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId);
 		
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.immutable = immutable;
 		this.compose = compose;
 		this.expansion = expansion;
@@ -110,6 +114,10 @@ public class ValueSet extends MetadataResource {
 	
 	public Collection<Identifier> getIdentifiers() {
 		return identifiers;
+	}
+	
+	public String getCopyright() {
+		return copyright;
 	}
 	
 	public Compose getCompose() {
@@ -134,6 +142,7 @@ public class ValueSet extends MetadataResource {
 		private String resourceType = RESOURCE_TYPE_VALUE_SET;
 		
 		private Collection<Identifier> identifiers;
+		private String copyright;
 		private Boolean immutable;
 		private Compose compose;
 		private Expansion expansion;
@@ -163,6 +172,11 @@ public class ValueSet extends MetadataResource {
 				identifiers = new ArrayList<>();
 			}
 			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 		
@@ -197,7 +211,7 @@ public class ValueSet extends MetadataResource {
 			return new ValueSet(id, meta, implicitRules, language, text, url, version, name,  title, status, experimental, 
 					date, publisher, contacts, description, usageContexts,	jurisdictions, 
 					
-					resourceType, identifiers, immutable, purpose, copyright, toolingId, compose, expansion);
+					resourceType, identifiers, copyright, immutable, purpose, toolingId, compose, expansion);
 		}
 	}
 		

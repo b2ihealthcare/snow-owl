@@ -63,6 +63,9 @@ public class CapabilityStatement extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
 
+	@JsonProperty
+	private String copyright;
+	
 	@Mandatory
 	@Valid
 	@NotNull
@@ -127,10 +130,11 @@ public class CapabilityStatement extends MetadataResource {
 			String version, String name, String title, Code status,
 			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description,
 			@SuppressWarnings("rawtypes") Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose,
-			String copyright, String toolingId,
+			String toolingId,
 			
 			final String resourceType,
 			final Collection<Identifier> identifiers,
+			final String copyright,
 			final Code kind,
 			final Collection<Uri> instantiates,
 			final Collection<Uri> imports,
@@ -145,10 +149,11 @@ public class CapabilityStatement extends MetadataResource {
 			final Collection<Document> documents) {
 		
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date,
-				publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
+				publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId);
 	
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.kind = kind;
 		this.instantiates = instantiates;
 		this.imports = imports;
@@ -169,6 +174,10 @@ public class CapabilityStatement extends MetadataResource {
 	
 	public Collection<Identifier> getIdentifiers() {
 		return identifiers;
+	}
+	
+	public String getCopyright() {
+		return copyright;
 	}
 	
 	public Code getKind() {
@@ -228,6 +237,7 @@ public class CapabilityStatement extends MetadataResource {
 
 		private String resourceType = RESOURCE_TYPE_CAPABILITY_STATEMENT;
 		private Collection<Identifier> identifiers;
+		private String copyright;
 		private Code kind;
 		private Collection<Uri> instantiates;
 		private Collection<Uri> imports;
@@ -268,6 +278,11 @@ public class CapabilityStatement extends MetadataResource {
 				identifiers = new ArrayList<>();
 			}
 			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 		
@@ -428,10 +443,11 @@ public class CapabilityStatement extends MetadataResource {
 		@Override
 		protected CapabilityStatement doBuild() {
 			return new CapabilityStatement(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId,
+					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId,
 					
 			resourceType,
 			identifiers,
+			copyright,
 			kind,
 			instantiates,
 			imports,

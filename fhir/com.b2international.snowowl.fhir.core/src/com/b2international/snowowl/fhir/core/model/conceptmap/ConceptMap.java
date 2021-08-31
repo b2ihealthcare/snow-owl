@@ -72,6 +72,9 @@ public class ConceptMap extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
 	
+	@JsonProperty
+	private String copyright;
+	
 	@Summary
 	@Valid
 	private Uri sourceUri;
@@ -96,15 +99,16 @@ public class ConceptMap extends MetadataResource {
 	ConceptMap(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
 			String version, String name, String title, Code status, Boolean experimental, 
 			Date date, String publisher, Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
-			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, String toolingId, 
-			final String resourceType, Collection<Identifier> identifiers, Uri sourceUri, Uri sourceCanonical, Uri targetUri, 
-			final Uri targetCanonical, Collection<Group> groups) {
+			Collection<CodeableConcept> jurisdictions, String purpose, String toolingId, 
+			final String resourceType, Collection<Identifier> identifiers, final String copyright, Uri sourceUri, Uri sourceCanonical, 
+			Uri targetUri, final Uri targetCanonical, Collection<Group> groups) {
 		
 		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId);
 		
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.sourceUri = sourceUri;
 		this.sourceCanonical = sourceCanonical;
 		this.targetUri = targetUri;
@@ -131,6 +135,10 @@ public class ConceptMap extends MetadataResource {
 	
 	public Collection<Identifier> getIdentifiers() {
 		return identifiers;
+	}
+	
+	public String getCopyright() {
+		return copyright;
 	}
 	
 	@JsonProperty
@@ -167,6 +175,7 @@ public class ConceptMap extends MetadataResource {
 		private String resourceType = RESOURCE_TYPE_CONCEPT_MAP;
 		
 		private Collection<Identifier> identifiers;
+		private String copyright;
 		private Uri sourceUri;
 		private Uri sourceCanonical;
 		private Uri targetUri;
@@ -198,6 +207,11 @@ public class ConceptMap extends MetadataResource {
 				identifiers = new ArrayList<>();
 			}
 			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 
@@ -266,7 +280,7 @@ public class ConceptMap extends MetadataResource {
 		protected ConceptMap doBuild() {
 			return new ConceptMap(id, meta, implicitRules, language, text, url, version, name, title,
 					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, 
-					copyright, toolingId, resourceType, identifiers, sourceUri, sourceCanonical, targetUri, targetCanonical, groups);
+					toolingId, resourceType, identifiers, copyright, sourceUri, sourceCanonical, targetUri, targetCanonical, groups);
 		}
 
 	}

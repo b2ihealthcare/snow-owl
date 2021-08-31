@@ -62,7 +62,6 @@ public abstract class MetadataResource extends DomainResource {
 		// XXX do we need usageContexts???
 		// XXX do we need jurisdictions???
 		public static final String PURPOSE = "purpose";
-		public static final String COPYRIGHT = "copyright";
 		
 		public static final Set<String> MANDATORY = ImmutableSet.<String>builder()
 				.addAll(FhirResource.Fields.MANDATORY)
@@ -134,16 +133,13 @@ public abstract class MetadataResource extends DomainResource {
 	@JsonProperty
 	private String purpose;
 	
-	@JsonProperty
-	private String copyright;
-	
 	private String toolingId;
 
 	@SuppressWarnings("rawtypes")
 	public MetadataResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			Narrative text, Uri url, String version, 
 			String name, String title, Code status, final Boolean experimental, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
-			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright, final String toolingId) {
+			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String toolingId) {
 		
 		super(id, meta, impliciteRules, language, text);
 		
@@ -160,7 +156,6 @@ public abstract class MetadataResource extends DomainResource {
 		this.usageContexts = usageContexts;
 		this.jurisdictions = jurisdictions;
 		this.purpose = purpose;
-		this.copyright = copyright;
 		this.toolingId = toolingId;
 	}
 	
@@ -217,10 +212,6 @@ public abstract class MetadataResource extends DomainResource {
 		return purpose;
 	}
 	
-	public String getCopyright() {
-		return copyright;
-	}
-	
 	@JsonIgnore
 	public String getToolingId() {
 		return toolingId;
@@ -254,8 +245,6 @@ public abstract class MetadataResource extends DomainResource {
 		protected Collection<CodeableConcept> jurisdictions;
 		
 		protected String purpose;
-		
-		protected String copyright;
 		
 		protected String toolingId;
 		
@@ -380,11 +369,6 @@ public abstract class MetadataResource extends DomainResource {
 		
 		public B purpose(final String purpose) {
 			this.purpose = purpose;
-			return getSelf();
-		}
-		
-		public B copyright(final String copyright) {
-			this.copyright = copyright;
 			return getSelf();
 		}
 		

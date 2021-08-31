@@ -41,10 +41,13 @@ import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.*;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
+import com.b2international.snowowl.fhir.core.model.capabilitystatement.CapabilityStatement;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -229,10 +232,27 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, resource::getVersion, entry::version);
 		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, resource::getOwner, entry::publisher);
-		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, resource::getLanguage, entry::language);
 		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, resource::getDescription, entry::description);
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, resource::getPurpose, entry::purpose);
+		
+		//includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
+		
+		if (CompareUtils.isEmpty(CodeSystem.Fields.COPYRIGHT) || fields().contains(CodeSystem.Fields.COPYRIGHT)) {
+			if (entry instanceof CodeSystem.Builder) {
+				CodeSystem.Builder builder = (CodeSystem.Builder) entry;
+				builder.copyright(resource.getCopyright());
+			} else if (entry instanceof ValueSet.Builder) {
+				ValueSet.Builder builder = (ValueSet.Builder) entry;
+				builder.copyright(resource.getCopyright());
+			} else if (entry instanceof ConceptMap.Builder) {
+				ConceptMap.Builder builder = (ConceptMap.Builder) entry;
+				builder.copyright(resource.getCopyright());
+			} else if (entry instanceof CapabilityStatement.Builder) {
+				CapabilityStatement.Builder builder = (CapabilityStatement.Builder) entry;
+				builder.copyright(resource.getCopyright());
+			}
+		}
 		
 		expandResourceSpecificFields(context, entry, resource);
 		
