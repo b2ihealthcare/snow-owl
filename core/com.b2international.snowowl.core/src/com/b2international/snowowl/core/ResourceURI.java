@@ -40,7 +40,7 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	private static final long serialVersionUID = 1L;
 
 	@JsonIgnore
-	private static final Pattern URI_PATTERN = Pattern.compile("^([^\\/]+)[\\/]{1}([^\\/]+)(([\\/]{1}[^\\/\\s@]+)*)(@[^\\s]+)?$");
+	private static final Pattern URI_PATTERN = Pattern.compile("^([^\\/]+)[\\/]{1}([^\\/@]+)(([\\/]{1}[^\\/\\s@]+)*)(@[^\\s]+)?$");
 	
 	/**
 	 * Special path key, that represents the latest released version of a code system.
