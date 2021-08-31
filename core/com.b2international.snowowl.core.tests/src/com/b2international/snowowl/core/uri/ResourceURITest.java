@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 
@@ -62,4 +63,16 @@ public class ResourceURITest {
 		assertEquals("a/b", uri.getPath());
 	}
 	
+	@Test
+	public void timestampPart() throws Exception {
+		final ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT/a/b@1234567890");
+		assertEquals("SNOMEDCT-EXT", uri.getResourceId());
+		assertEquals("a/b", uri.getPath());
+		assertEquals("@1234567890", uri.getTimestampPart());
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void timestampPartValidation() throws Exception {
+		CodeSystem.uri("SNOMEDCT-EXT/a/b@yesterday");
+	}
 }
