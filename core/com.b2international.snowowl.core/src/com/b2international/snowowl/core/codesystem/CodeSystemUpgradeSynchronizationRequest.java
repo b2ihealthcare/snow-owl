@@ -23,6 +23,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
@@ -31,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.17
  */
-public final class CodeSystemUpgradeSynchronizationRequest implements Request<RepositoryContext, Boolean> {
+public final class CodeSystemUpgradeSynchronizationRequest implements Request<RepositoryContext, Merge> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -49,7 +50,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 	}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
+	public Merge execute(RepositoryContext context) {
 		final String message = String.format("Merge %s into %s", source, codeSystemId);
 		
 		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId.getCodeSystem()).build().execute(context);
@@ -60,7 +61,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 		
 		final String sourceBranchPath = context.service(ResourceURIPathResolver.class).resolve(context, List.of(source)).stream().findFirst().get();
 		// merge all changes from the source to the current upgrade of branch
-		RepositoryRequests.merging()
+		final Merge merge = RepositoryRequests.merging()
 			.prepareCreate()
 			.setSource(sourceBranchPath) 
 			.setTarget(codeSystem.getBranchPath())
@@ -71,7 +72,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 			.execute(context);
 
 		if (!codeSystem.getUpgradeOf().equals(source)) {
-			return RepositoryRequests.prepareCommit()
+			RepositoryRequests.prepareCommit()
 					.setCommitComment(String.format("Update upgradeOf from '%s' to '%s'", codeSystem.getUpgradeOf(), source))
 					.setBody((tx) -> {
 						CodeSystemEntry entry = tx.lookup(codeSystemId.getCodeSystem(), CodeSystemEntry.class);
@@ -83,9 +84,9 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 					.getRequest()
 					.execute(context)
 					.getResultAs(Boolean.class);
-		} else {
-			return Boolean.TRUE;
 		}
+		
+		return merge;
 	}
 
 }
