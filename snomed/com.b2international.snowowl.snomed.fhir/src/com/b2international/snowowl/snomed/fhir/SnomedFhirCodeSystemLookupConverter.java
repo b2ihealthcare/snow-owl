@@ -52,7 +52,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 		boolean requestedParent = request.containsProperty(CommonConceptProperties.PARENT.getCode());
 		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
 		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
-		return String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors);
+		return String.format("descriptions(expand(type(expand(pt()))),sort:\"typeId,term\"),pt()%s%s", expandDescendants, expandAncestors);
 	}
 	
 	@Override

@@ -253,10 +253,11 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			.prepareSearchDescription()
 			.all()
 			.setExpand(expandOptions.get("expand", Options.class))
-			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-			.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getString("typeId") : null)
+			.filterByActive(expandOptions.get("active", Boolean.class))
+			.filterByType(expandOptions.get("typeId", String.class))
 			.filterByConcepts(conceptIds)
 			.setLocales(locales())
+			.sortBy(expandOptions.get("sort", String.class))
 			.build()
 			.execute(context());
 		
@@ -278,13 +279,14 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 		final SnomedRelationships relationships = SnomedRequests
 				.prepareSearchRelationship()
 				.all()
-				.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-				.filterByCharacteristicType(expandOptions.containsKey("characteristicTypeId") ? expandOptions.getString("characteristicTypeId") : null)
+				.filterByActive(expandOptions.get("active", Boolean.class))
+				.filterByCharacteristicType(expandOptions.get("characteristicTypeId", String.class))
 				.filterByTypes(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
 				.filterByDestinations(expandOptions.containsKey("destinationId") ? expandOptions.getCollection("destinationId", String.class) : null)
 				.filterBySources(conceptIds)
 				.setExpand(expandOptions.get("expand", Options.class))
 				.setLocales(locales())
+				.sortBy(expandOptions.get("sort", String.class))
 				.build()
 				.execute(context());
 		
@@ -310,11 +312,12 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			.setLimit(relationshipSearchLimit)
 			.filterByTypes(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
 			.filterBySources(expandOptions.containsKey("sourceId") ? expandOptions.getCollection("sourceId", String.class) : null)
-			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-			.filterByCharacteristicType(expandOptions.containsKey("characteristicTypeId") ? expandOptions.getString("characteristicTypeId") : null)
+			.filterByActive(expandOptions.get("active", Boolean.class))
+			.filterByCharacteristicType(expandOptions.get("characteristicTypeId", String.class))
 			.filterByDestinations(conceptIds)
 			.setExpand(expandOptions.get("expand", Options.class))
 			.setLocales(locales())
+			.sortBy(expandOptions.get("sort", String.class))
 			.build()
 			.execute(context());
 		

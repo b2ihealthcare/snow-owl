@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.Op
 /**
  * @since 7.7
  */
-public final class ConceptSuggestionRequestBuilder 
+public final class ConceptSuggestionRequestBuilder
 		extends SearchPageableCollectionResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
 		implements TerminologyResourceContentRequestBuilder<Suggestions> {
 
@@ -72,6 +72,28 @@ public final class ConceptSuggestionRequestBuilder
 	 */
 	public ConceptSuggestionRequestBuilder filterByExclusions(Iterable<String> exclusions) {
 		return addOption(OptionKey.MUST_NOT_QUERY, exclusions);
+	}
+	
+	/**
+	 * Filter matches by a specified term.
+	 * 
+	 * @param term
+	 *            - term to filter matches by
+	 * @return
+	 */
+	public ConceptSuggestionRequestBuilder filterByTerm(final String term) {
+		return addOption(OptionKey.TERM, term);
+	}
+	
+	/**
+	 * Set the {@link SnomedDisplayTermType} of the returning term in case of SNOMED.
+	 * 
+	 * @param display
+	 *            - the display type
+	 * @return
+	 */
+	public ConceptSuggestionRequestBuilder setPreferredDisplay(final String display) {
+		return addOption(OptionKey.DISPLAY, display);
 	}
 	
 	/**

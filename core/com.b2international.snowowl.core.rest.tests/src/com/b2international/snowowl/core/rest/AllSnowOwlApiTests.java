@@ -22,6 +22,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.core.bundle.BundleApiTest;
+import com.b2international.snowowl.core.rest.auth.AuthorizationTest;
 import com.b2international.snowowl.core.rest.auth.BasicAuthenticationTest;
 import com.b2international.snowowl.core.rest.bundle.BundleRestApiTest;
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiTest;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	BasicAuthenticationTest.class,
+	AuthorizationTest.class,
 	CodeSystemApiTest.class,
 	ResourceApiTest.class,
 	BundleApiTest.class,

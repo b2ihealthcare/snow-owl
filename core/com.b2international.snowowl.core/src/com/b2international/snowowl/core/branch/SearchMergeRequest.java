@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
@@ -40,7 +40,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 7.1
  */
-public final class SearchMergeRequest extends SearchResourceRequest<RepositoryContext, Merges> implements RepositoryAccessControl {
+public final class SearchMergeRequest extends SearchResourceRequest<RepositoryContext, Merges> implements AccessControl {
 
 	private static final String SOURCE_FIELD = "source";
 	private static final String TARGET_FIELD = "target";

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 4.5
  */
-final class SnomedRefSetCreateRequest implements Request<TransactionContext, String>, BranchAccessControl {
+final class SnomedRefSetCreateRequest implements Request<TransactionContext, String>, AccessControl {
 
 	public static final Set<String> STRUCTURAL_ATTRIBUTE_VALUE_SETS = ImmutableSet.of(
 			Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,

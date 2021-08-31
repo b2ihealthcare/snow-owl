@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
+public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean>, AccessControl {
 
 	@NotEmpty
 	private final String memberId;

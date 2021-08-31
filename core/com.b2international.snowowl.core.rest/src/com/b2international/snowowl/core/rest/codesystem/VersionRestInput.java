@@ -67,5 +67,4 @@ public class VersionRestInput {
 	public void setForce(Boolean force) {
 		this.force = force;
 	}
-	
 }

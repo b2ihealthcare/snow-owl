@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocum
  */
 final class ClassificationSearchRequest 
 		extends SearchIndexResourceRequest<RepositoryContext, ClassificationTasks, ClassificationTaskDocument> 
-		implements RepositoryAccessControl {
+		implements AccessControl {
 
 	public enum OptionKey {
 		BRANCH, 

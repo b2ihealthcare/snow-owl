@@ -16,7 +16,7 @@ Visit us at http://b2i.sg
 
    <requires>
       <import feature="com.b2international.snowowl.core.feature" version="8.0.0" match="compatible"/>
-      <import feature="com.b2international.snomed.ecl.feature" version="1.5.0"/>
+      <import feature="com.b2international.snomed.ecl.feature" version="1.5.2"/>
    </requires>
 
    <plugin

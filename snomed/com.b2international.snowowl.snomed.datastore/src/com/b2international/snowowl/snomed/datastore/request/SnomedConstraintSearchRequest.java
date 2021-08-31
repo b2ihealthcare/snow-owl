@@ -21,7 +21,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConst
  */
 final class SnomedConstraintSearchRequest 
 		extends SearchIndexResourceRequest<BranchContext, SnomedConstraints, SnomedConstraintDocument>
-		implements BranchAccessControl {
+		implements AccessControl {
 
 	public enum OptionKey {
 

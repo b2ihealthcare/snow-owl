@@ -30,12 +30,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.*;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -61,7 +62,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 5.7
  */
-public final class VersionCreateRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
+public final class VersionCreateRequest implements Request<RepositoryContext, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private static final int TASK_WORK_STEP = 4;
@@ -83,6 +84,9 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@JsonProperty
 	boolean force;
+	
+	@JsonProperty
+	String commitComment;
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
@@ -194,7 +198,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							.build());
 					return Boolean.TRUE;
 				})
-				.setCommitComment(String.format("Version '%s' as of '%s'", resource, version))
+				.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
 				.build()
 			).execute(context).getResultAs(Boolean.class);
 		} finally {
@@ -304,17 +308,19 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	}
 	
 	@Override
-	public String getResource(ServiceProvider context) {
+	public List<String> getResources(ServiceProvider context, Request<ServiceProvider, ?> req) {
 		if (resourcesById == null) {
 			resourcesById = fetchResources(context);
 		}
 		// TODO support multi repository version authorization
-		return resourcesById.get(resource).getToolingId();
+		return List.of(
+			resourcesById.get(resource).getToolingId(),
+			resourcesById.get(resource).getResourceURI().toString()
+		);
 	}
 	
 	@Override
 	public String getOperation() {
 		return Permission.OPERATION_VERSION;
 	}
-	
 }

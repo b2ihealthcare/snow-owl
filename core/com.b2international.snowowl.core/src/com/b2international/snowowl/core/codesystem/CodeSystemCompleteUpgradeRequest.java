@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.codesystem;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.request.BranchRequest;
 /**
  * @since 7.15.0
  */
-final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
+final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContext, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	

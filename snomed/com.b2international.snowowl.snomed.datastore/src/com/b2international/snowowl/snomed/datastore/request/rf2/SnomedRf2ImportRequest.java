@@ -46,7 +46,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -91,7 +91,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 6.0.0
  */
-final class SnomedRf2ImportRequest implements Request<BranchContext, ImportResponse>, BranchAccessControl {
+final class SnomedRf2ImportRequest implements Request<BranchContext, ImportResponse>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

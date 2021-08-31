@@ -583,9 +583,24 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 
 	protected Promise<Expression> eval(BranchContext context, final TypedTermFilter typedTermFilter) {
-		final String term = typedTermFilter.getTerm();
+		return eval(context, typedTermFilter.getClause());
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final TypedTermFilterSet termFilterSet) {
+		// Filters are combined with an OR ("should") operator
+		final Expressions.ExpressionBuilder builder = Expressions.builder();
+		
+		for (final TypedTermFilterClause clause : termFilterSet.getClauses()) {
+			builder.should(eval(context, clause).getSync());
+		}
+		
+		return Promise.immediate(builder.build());
+	}
 
-		LexicalSearchType lexicalSearchType = LexicalSearchType.fromString(typedTermFilter.getLexicalSearchType());
+	protected Promise<Expression> eval(BranchContext context, final TypedTermFilterClause clause) {
+		final String term = clause.getTerm();
+
+		LexicalSearchType lexicalSearchType = LexicalSearchType.fromString(clause.getLexicalSearchType());
 		if (lexicalSearchType == null) {
 			lexicalSearchType = LexicalSearchType.MATCH;
 		}
@@ -605,18 +620,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				throw new UnsupportedOperationException("Not implemented lexical search type: '" + lexicalSearchType + "'.");
 		}
 	}
-	
-	protected Promise<Expression> eval(BranchContext context, final TypedTermFilterSet termFilterSet) {
-		// Filters are combined with an OR ("should") operator
-		final Expressions.ExpressionBuilder builder = Expressions.builder();
-		
-		for (final TypedTermFilter typedTermFilter : termFilterSet.getTerms()) {
-			builder.should(eval(context, typedTermFilter).getSync());
-		}
-		
-		return Promise.immediate(builder.build());
-	}
-	
+
 	protected Promise<Expression> eval(BranchContext context, final TypeTokenFilter typeTokenFilter) {
 		final Set<String> typeIds = typeTokenFilter.getTokens()
 			.stream()

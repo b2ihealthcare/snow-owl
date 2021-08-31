@@ -50,6 +50,7 @@ public final class SnomedConceptRestSearch extends SnomedComponentRestSearch {
 	private List<String> statedParent;
 	@Parameter(description = "The stated ancestor(s) to match")
 	private List<String> statedAncestor;
+
 	@Parameter(description = "doi (degree-of-interest-based scoring)")
 	private Boolean doi = null;
 

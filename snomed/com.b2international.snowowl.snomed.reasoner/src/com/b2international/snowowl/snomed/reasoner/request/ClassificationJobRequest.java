@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -67,7 +67,7 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
  * 
  * @since 5.7
  */
-final class ClassificationJobRequest implements Request<BranchContext, Boolean>, BranchAccessControl {
+final class ClassificationJobRequest implements Request<BranchContext, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

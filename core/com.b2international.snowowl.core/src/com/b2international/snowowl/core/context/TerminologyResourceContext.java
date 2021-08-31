@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.context;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 
 /**
  * @since 8.0
@@ -38,4 +40,8 @@ public interface TerminologyResourceContext extends ServiceProvider {
 		return service(TerminologyResource.class);
 	}
 	
+	@Override
+	default Builder<? extends TerminologyResourceContext> inject() {
+		return new DelegatingContext.Builder<>(TerminologyResourceContext.class, this);
+	}
 }

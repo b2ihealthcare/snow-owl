@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.Commit;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -94,7 +94,7 @@ import com.google.common.collect.Multimap;
  *
  * @since 7.0
  */
-final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAccessControl {
+final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

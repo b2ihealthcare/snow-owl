@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CappedTransactionContext;
@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
  * 
  * @since 7.0
  */
-public class VersioningRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
+public class VersioningRequest implements Request<TransactionContext, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private final VersioningConfiguration config;
