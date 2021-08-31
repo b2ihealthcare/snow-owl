@@ -27,6 +27,7 @@ import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.FilterTest;
 import com.b2international.snowowl.fhir.tests.domain.conceptmap.*;
 import com.b2international.snowowl.fhir.tests.domain.structuredefinition.*;
+import com.b2international.snowowl.fhir.tests.operationdefinition.*;
 import com.b2international.snowowl.fhir.tests.domain.valueset.*;
 import com.b2international.snowowl.fhir.tests.dt.*;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
