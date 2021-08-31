@@ -77,6 +77,10 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	 */
 	protected void doVersionComponents(TransactionContext context) throws Exception {
 	}
+	
+	protected final VersioningConfiguration getConfig() {
+		return config;
+	}
 
 	@Override
 	public String getOperation() {
