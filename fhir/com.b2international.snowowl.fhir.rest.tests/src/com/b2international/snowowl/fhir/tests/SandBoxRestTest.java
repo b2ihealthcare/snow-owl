@@ -67,11 +67,28 @@ public class SandBoxRestTest extends FhirRestTest {
 	 */
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(true))
+		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class)
+				.clearResources(true))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
 	@Test
+	public void metadataTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when().get("metadata")
+			.prettyPrint();
+	}
+	
+	@Test
+	public void operationDefinitionTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when()
+			.get("OperationDefinition/CodeSystem$lookup")
+			.prettyPrint();
+	}
+	
+	
+	//@Test
 	public void createCodeSystem() throws Exception {
 		
 		File jsonFilePath = PlatformUtil.toAbsolutePathBundleEntry(this.getClass(), "/src/com/b2international/snowowl/fhir/tests/test_codesystem.json").toFile();

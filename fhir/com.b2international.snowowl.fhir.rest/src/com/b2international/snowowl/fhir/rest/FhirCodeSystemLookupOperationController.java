@@ -29,6 +29,7 @@ import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,7 +64,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	@GetMapping("/$lookup")
 	public Promise<Parameters.Fhir> lookup(
 		
-		@Parameter(description = "The code to look up") 
+		@Parameter(description = "The code to look up", required = true) 
 		@RequestParam(value="code") 
 		final String code,
 		

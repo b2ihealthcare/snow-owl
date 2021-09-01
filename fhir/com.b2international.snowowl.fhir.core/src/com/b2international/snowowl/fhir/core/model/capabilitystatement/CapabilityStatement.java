@@ -28,6 +28,7 @@ import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.operationdefinition.OperationDefinition.Builder;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
@@ -230,6 +231,10 @@ public class CapabilityStatement extends MetadataResource {
 	
 	public static Builder builder(String id) {
 		return new Builder(id);
+	}
+	
+	public static Builder builder() {
+		return new Builder();
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")

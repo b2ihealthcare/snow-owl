@@ -60,7 +60,7 @@ public class Parameter extends Element {
 	@NotNull
 	@Mandatory
 	@JsonProperty
-	private final Integer max;
+	private final String max;
 	
 	@JsonProperty
 	private final String documentation;
@@ -89,7 +89,7 @@ public class Parameter extends Element {
 			final Code name, 
 			final Code use,
 			final Integer min,
-			final Integer max,
+			final String max,
 			final String documentation,
 			final Code type,
 			final Collection<Uri> targetProfiles,
@@ -123,7 +123,7 @@ public class Parameter extends Element {
 		return min;
 	}
 	
-	public Integer getMax() {
+	public String getMax() {
 		return max;
 	}
 	
@@ -161,7 +161,7 @@ public class Parameter extends Element {
 		private Code name;
 		private Code use;
 		private Integer min;
-		private Integer max;
+		private String max;
 		private String documentation;
 		private Code type;
 		private Collection<Uri> targetProfiles;
@@ -195,6 +195,11 @@ public class Parameter extends Element {
 		}
 
 		public Builder max(final Integer max) {
+			this.max = String.valueOf(max);
+			return getSelf();
+		}
+		
+		public Builder max(final String max) {
 			this.max = max;
 			return getSelf();
 		}

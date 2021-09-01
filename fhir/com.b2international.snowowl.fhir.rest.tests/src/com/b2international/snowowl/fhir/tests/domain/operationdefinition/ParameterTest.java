@@ -76,7 +76,7 @@ public class ParameterTest extends FhirTest {
 		assertEquals("name", parameter.getName().getCodeValue());
 		assertEquals("use", parameter.getUse().getCodeValue());
 		assertEquals(1, parameter.getMin().intValue());
-		assertEquals(2, parameter.getMax().intValue());
+		assertEquals("2", parameter.getMax());
 		assertEquals("documentation", parameter.getDocumentation());
 		assertEquals("type", parameter.getType().getCodeValue());
 		assertEquals("targetProfile", parameter.getTargetProfiles().iterator().next().getUriValue());

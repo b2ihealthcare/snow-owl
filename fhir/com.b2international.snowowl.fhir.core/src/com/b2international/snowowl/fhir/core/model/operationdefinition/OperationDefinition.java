@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.operationdefinition;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -28,6 +29,7 @@ import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -165,8 +167,60 @@ public class OperationDefinition extends MetadataResource {
 		return kind;
 	}
 	
+	public Boolean getAffectState() {
+		return affectState;
+	}
+	
+	public Code getCode() {
+		return code;
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
+	public Uri getBase() {
+		return base;
+	}
+	
+	public Collection<Code> getResources() {
+		return resources;
+	}
+	
+	public Boolean getSystem() {
+		return system;
+	}
+	
+	public Boolean getType() {
+		return type;
+	}
+	
+	public Boolean getInstance() {
+		return instance;
+	}
+	
+	public Uri getInputProfile() {
+		return inputProfile;
+	}
+	
+	public Uri getOutputProfile() {
+		return outputProfile;
+	}
+	
+	public Collection<Parameter> getParameters() {
+		return parameters;
+	}
+	
+	public Collection<Overload> getOverloads() {
+		return overloads;
+	}
+	
 	public static Builder builder(String id) {
 		return new Builder(id);
+	}
+	
+	public static Builder builder() {
+		return new Builder();
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
@@ -185,7 +239,7 @@ public class OperationDefinition extends MetadataResource {
 		private Uri inputProfile;
 		private Uri outputProfile;
 		private Collection<Parameter> parameters;
-		private Collection<Overload> overload;
+		private Collection<Overload> overloads;
 		
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -212,21 +266,116 @@ public class OperationDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
-//		@JsonProperty("instantiates")
-//		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-//		public Builder instantiates(final Collection<Uri> instantiates) {
-//			this.instantiates = instantiates;
-//			return getSelf();
-//		}
-//		
-//		public Builder addInstantiate(final Uri instantiate) {
-//			if (instantiates == null) {
-//				instantiates = new ArrayList<>();
-//			}
-//			instantiates.add(instantiate);
-//			return getSelf();
-//		}
-//		
+		public Builder affectState(final Boolean affectState) {
+			this.affectState = affectState;
+			return getSelf();
+		}
+		
+		public Builder code(final Code code) {
+			this.code = code;
+			return getSelf();
+		}
+
+		public Builder code(final String code) {
+			this.code = new Code(code);
+			return getSelf();
+		}
+		
+		public Builder comment(String comment) {
+			this.comment = comment;
+			return getSelf();
+		}
+		
+		public Builder base(Uri base) {
+			this.base = base;
+			return getSelf();
+		}
+		
+		public Builder base(String base) {
+			this.base = new Uri(base);
+			return getSelf();
+		}
+		
+		@JsonProperty("resource")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder resources(final Collection<Code> resources) {
+			this.resources = resources;
+			return getSelf();
+		}
+		
+		public Builder addResource(final Code resource) {
+			if (resources == null) {
+				resources = new ArrayList<>();
+			}
+			resources.add(resource);
+			return getSelf();
+		}
+		
+		public Builder system(final Boolean system) {
+			this.system = system;
+			return getSelf();
+		}
+
+		public Builder type(final Boolean type) {
+			this.type = type;
+			return getSelf();
+		}
+		
+		public Builder instance(final Boolean instance) {
+			this.instance = instance;
+			return getSelf();
+		}
+		
+		public Builder inputProfile(Uri inputProfile) {
+			this.inputProfile = inputProfile;
+			return getSelf();
+		}
+		
+		public Builder inputProfile(String inputProfile) {
+			this.inputProfile = new Uri(inputProfile);
+			return getSelf();
+		}
+		
+		public Builder outputProfile(Uri outputProfile) {
+			this.outputProfile = outputProfile;
+			return getSelf();
+		}
+		
+		public Builder outputProfile(String outputProfile) {
+			this.outputProfile = new Uri(outputProfile);
+			return getSelf();
+		}
+		
+		@JsonProperty("parameter")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder parameters(final Collection<Parameter> parameters) {
+			this.parameters = parameters;
+			return getSelf();
+		}
+		
+		public Builder addParameter(final Parameter parameter) {
+			if (parameters == null) {
+				parameters = new ArrayList<>();
+			}
+			parameters.add(parameter);
+			return getSelf();
+		}
+		
+		@JsonProperty("overload")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder overloads(final Collection<Overload> overloads) {
+			this.overloads = overloads;
+			return getSelf();
+		}
+		
+		public Builder addOverload(final Overload overload) {
+			if (overloads == null) {
+				overloads = new ArrayList<>();
+			}
+			overloads.add(overload);
+			return getSelf();
+		}
+		
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -238,7 +387,7 @@ public class OperationDefinition extends MetadataResource {
 					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId,
 					
 			resourceType, kind, affectState, code, comment, base, resources, system, type, instance,
-			inputProfile, outputProfile, parameters, overload);
+			inputProfile, outputProfile, parameters, overloads);
 		}
 	}
 	
