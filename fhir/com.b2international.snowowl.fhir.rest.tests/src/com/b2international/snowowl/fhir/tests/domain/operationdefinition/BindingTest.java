@@ -22,55 +22,55 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.model.operationdefinition.Overload;
+import com.b2international.snowowl.fhir.core.model.operationdefinition.Binding;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
 
 /**
- * Tests for {@link Overload}
+ * Tests for {@link Binding}
  * @since 8.0.0
  */
-public class OverloadTest extends FhirTest {
+public class BindingTest extends FhirTest {
 	
-	private Overload overload;
+	private Binding binding;
 
 	@Before
 	public void setup() throws Exception {
 		
-		overload = Overload.builder()
+		binding = Binding.builder()
 				.id("id")
-				.addParameterName("parameterName")
-				.comment("comment")
+				.strength("strength")
+				.valueSetUri("valueSetUri")
 				.build();
 	}
 	
 	@Test
 	public void build() throws Exception {
-		validate(overload);
+		validate(binding);
 	}
 	
-	private void validate(Overload overload) {
-		assertEquals("id", overload.getId());
-		assertEquals("parameterName", overload.getParameterNames().iterator().next());
-		assertEquals("comment", overload.getComment());
+	private void validate(Binding binding) {
+		assertEquals("id", binding.getId());
+		assertEquals("strength", binding.getStrength().getCodeValue());
+		assertEquals("valueSetUri", binding.getValueSetUri().getUriValue());
 		
 	}
 
 	@Test
 	public void serialize() throws Exception {
 		
-		printPrettyJson(overload);
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(overload));
+		printPrettyJson(binding);
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(binding));
 		assertThat(jsonPath.getString("id"), equalTo("id"));
-		assertThat(jsonPath.getString("parameterName[0]"), equalTo("parameterName"));
-		assertThat(jsonPath.getString("comment"), equalTo("comment"));
+		assertThat(jsonPath.getString("strength"), equalTo("strength"));
+		assertThat(jsonPath.getString("valueSetUri"), equalTo("valueSetUri"));
 	}
 	
 	@Test
 	public void deserialize() throws Exception {
-		Overload readOverload = objectMapper.readValue(objectMapper.writeValueAsString(overload), Overload.class);
-		validate(readOverload);
+		Binding readBinding = objectMapper.readValue(objectMapper.writeValueAsString(binding), Binding.class);
+		validate(readBinding);
 	}
 
 }

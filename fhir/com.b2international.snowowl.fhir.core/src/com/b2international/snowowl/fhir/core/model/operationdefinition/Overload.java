@@ -35,7 +35,6 @@ import com.google.common.collect.Lists;
 @JsonDeserialize(builder = Overload.Builder.class)
 public class Overload extends Element {
 
-	
 	@JsonProperty("parameterName")
 	private final Collection<String> parameterNames;
 	

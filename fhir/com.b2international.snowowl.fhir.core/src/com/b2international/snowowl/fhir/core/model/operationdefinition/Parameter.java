@@ -25,16 +25,16 @@ import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.structuredefinition.Binding;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 
 /**
- * FHIR {@link Parameter} definition.
- * Defines an appropriate combination of parameters to use when invoking this operation, 
- * to help code generators when generating overloaded parameter sets for this operation.
+ * FHIR {@link Parameter} definition for {@link OperationDefinition}s.
+ * Parameters for the operation/query.
  * @since 8.0.0
  */
 @JsonDeserialize(builder = Parameter.Builder.class)
@@ -63,16 +63,15 @@ public class Parameter extends Element {
 	private final Integer max;
 	
 	@JsonProperty
-	private String documentation;
-	
+	private final String documentation;
 	
 	@Valid
 	@JsonProperty
 	private final Code type;
 	
 	@Valid
-	@JsonProperty
-	private final Uri targetProfile;
+	@JsonProperty("targetProfile")
+	private final Collection<Uri> targetProfiles;
 	
 	@Valid
 	@JsonProperty
@@ -93,7 +92,7 @@ public class Parameter extends Element {
 			final Integer max,
 			final String documentation,
 			final Code type,
-			final Uri targetProfile,
+			final Collection<Uri> targetProfiles,
 			final Code searchType,
 			final Binding binding,
 			final Collection<Parameter> parameters) {
@@ -106,10 +105,50 @@ public class Parameter extends Element {
 		this.max = max;
 		this.documentation = documentation;
 		this.type = type;
-		this.targetProfile = targetProfile;
+		this.targetProfiles = targetProfiles;
 		this.searchType = searchType;
 		this.binding = binding;
 		this.parameters = parameters;
+	}
+	
+	public Code getName() {
+		return name;
+	}
+	
+	public Code getUse() {
+		return use;
+	}
+	
+	public Integer getMin() {
+		return min;
+	}
+	
+	public Integer getMax() {
+		return max;
+	}
+	
+	public String getDocumentation() {
+		return documentation;
+	}
+	
+	public Code getType() {
+		return type;
+	}
+	
+	public Collection<Uri> getTargetProfiles() {
+		return targetProfiles;
+	}
+	
+	public Code getSearchType() {
+		return searchType;
+	}
+	
+	public Binding getBinding() {
+		return binding;
+	}
+	
+	public Collection<Parameter> getParameters() {
+		return parameters;
 	}
 	
 	public static Builder builder() {
@@ -119,16 +158,119 @@ public class Parameter extends Element {
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Parameter> {
 		
+		private Code name;
+		private Code use;
+		private Integer min;
+		private Integer max;
+		private String documentation;
+		private Code type;
+		private Collection<Uri> targetProfiles;
+		private Code searchType;
+		private Binding binding;
+		private Collection<Parameter> parameters;
+		
+		public Builder name(final Code name) {
+			this.name = name;
+			return getSelf();
+		}
+		
+		public Builder name(final String name) {
+			this.name = new Code(name);
+			return getSelf();
+		}
+
+		public Builder use(final Code use) {
+			this.use = use;
+			return getSelf();
+		}
+		
+		public Builder use(final String use) {
+			this.use = new Code(use);
+			return getSelf();
+		}
+		
+		public Builder min(final Integer min) {
+			this.min = min;
+			return getSelf();
+		}
+
+		public Builder max(final Integer max) {
+			this.max = max;
+			return getSelf();
+		}
+		
+		public Builder documentation(final String documentation) {
+			this.documentation = documentation;
+			return getSelf();
+		}
+
+		public Builder type(final Code type) {
+			this.type = type;
+			return getSelf();
+		}
+		
+		public Builder type(final String type) {
+			this.type = new Code(type);
+			return getSelf();
+		}
+		
+		@JsonProperty("targetProfile")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder targetProfiles(Collection<Uri> targetProfiles) {
+			this.targetProfiles = targetProfiles;
+			return getSelf();
+		}
+		
+		public Builder addTargetProfile(Uri targetProfile) {
+			
+			if (targetProfiles == null) {
+				targetProfiles = Lists.newArrayList();
+			}
+			targetProfiles.add(targetProfile);
+			return getSelf();
+		}
+		
+		public Builder searchType(final Code searchType) {
+			this.searchType = searchType;
+			return getSelf();
+		}
+		
+		public Builder searchType(final String searchType) {
+			this.searchType = new Code(searchType);
+			return getSelf();
+		}
+
+		public Builder binding(final Binding binding) {
+			this.binding = binding;
+			return getSelf();
+		}
+		
+		@JsonProperty("part")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder parameters(Collection<Parameter> parameters) {
+			this.parameters = parameters;
+			return getSelf();
+		}
+		
+		public Builder addParameter(Parameter parameter) {
+			
+			if (parameters == null) {
+				parameters = Lists.newArrayList();
+			}
+			parameters.add(parameter);
+			return getSelf();
+		}
+		
 		
 		@Override
 		protected Builder getSelf() {
 			return this;
 		}
 		
-		
 		@Override
 		protected Parameter doBuild() {
-			return null;	
+			return new Parameter(id, extensions, 
+					name, use, min, max, documentation, type, targetProfiles, searchType, binding, parameters);	
 		}
 	}
 }
