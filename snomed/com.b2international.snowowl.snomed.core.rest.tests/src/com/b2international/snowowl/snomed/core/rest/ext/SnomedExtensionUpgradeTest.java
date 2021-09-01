@@ -1262,7 +1262,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// version extension
 		String effectiveDate3 =  getNextAvailableEffectiveDateAsString(extension.getShortName());
 		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
-		CodeSystemVersion codeSystemVersion2 = CodeSystemVersionRestRequests.getVersion(extension.getShortName(), effectiveDate3).extract().as(CodeSystemVersion.class);
 		CodeSystemURI extensionVersion2 = CodeSystemURI.branch(extension.getShortName(), effectiveDate3);
 		
 		// new SE concept
@@ -1281,10 +1280,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).contains(extensionVersion2);
-		
-		IBranchPath extensionBranch = BranchPathUtils.createPath(extension.getBranchPath());
-		IBranchPath upgradeBranch = BranchPathUtils.createPath(upgradeCodeSystem.getBranchPath());
-		merge(extensionBranch, upgradeBranch, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));	
 		
 		Merge result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extensionVersion2)
 				.build(upgradeCodeSystem.getRepositoryId())
