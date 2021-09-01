@@ -44,6 +44,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
@@ -272,6 +273,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	public Attachment execute(final BranchContext context) {
 
 		final String referenceBranch = context.path();
+		if (referenceBranch.contains(RevisionIndex.AT_CHAR) && !Rf2ReleaseType.SNAPSHOT.equals(releaseType)) {
+			throw new BadRequestException("Only snapshot export is allowed for point-in-time branch path '%s'.", referenceBranch);
+		}
 		
 		// register export start time for later use
 		final long exportStartTime = Instant.now().toEpochMilli();
@@ -358,7 +362,12 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			
 			// export content from reference branch
 			if (includePreReleaseContent) {
-				final String referenceBranchToExport = String.format("%s%s%s", referenceBranch, RevisionIndex.AT_CHAR, exportStartTime);
+				
+				// If a point-in-time branch path was given, use the timestamp information from it
+				final String referenceBranchToExport = referenceBranch.contains(RevisionIndex.AT_CHAR) 
+						? referenceBranch
+						: String.format("%s%s%s", referenceBranch, RevisionIndex.AT_CHAR, exportStartTime);
+				
 				exportBranch(releaseDirectory, 
 						context, 
 						referenceBranchToExport, 
