@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.Commit;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -588,19 +589,13 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		if (assignerType != null) {
 			selectedType = assignerType;
 		} else {
-			final CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
-				.build()
-				.execute(context)
-				.first()
-				.get();
+			final TerminologyResource resource = context.service(TerminologyResource.class);
 			
-			selectedType = codeSystem.getSettings().containsKey(NAMESPACE_AND_MODULE_ASSIGNER)
-					? (String) codeSystem.getSettings().get(NAMESPACE_AND_MODULE_ASSIGNER)
-					: DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER;
+			selectedType = (String) resource.getSettings().getOrDefault(NAMESPACE_AND_MODULE_ASSIGNER, DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER);
 		}
 		
 		final SnomedNamespaceAndModuleAssigner assigner = SnomedNamespaceAndModuleAssigner.create(context, selectedType, moduleId, namespace);
-
+		
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assigner);
 		return assigner;
 	}

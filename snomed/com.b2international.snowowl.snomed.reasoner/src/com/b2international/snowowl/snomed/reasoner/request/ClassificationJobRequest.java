@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -127,16 +128,10 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		
-		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
-			.build()
-			.execute(context)
-			.getItems()
-			.get(0);
+		TerminologyResource resource = context.service(TerminologyResource.class);
 		
 		@SuppressWarnings("unchecked")
-		final Set<String> reasonerExcludedModuleIds = codeSystem.getSettings().containsKey(REASONER_EXCLUDE_MODULE_IDS)
-			? (Set<String>) codeSystem.getSettings().get(REASONER_EXCLUDE_MODULE_IDS)
-			: Collections.emptySet();
+		final Set<String> reasonerExcludedModuleIds = (Set<String>) resource.getSettings().getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet());
 		final boolean concreteDomainSupported = true;
 
 		final ReasonerTaxonomy taxonomy;

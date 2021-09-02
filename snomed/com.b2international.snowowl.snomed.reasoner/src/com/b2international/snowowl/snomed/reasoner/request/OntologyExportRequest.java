@@ -35,6 +35,7 @@ import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.model.*;
 
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -75,16 +76,11 @@ final class OntologyExportRequest implements Request<BranchContext, String>, Acc
 	public String execute(final BranchContext context) {
 
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
-		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
-				.build()
-				.execute(context)
-				.getItems()
-				.get(0);
+		TerminologyResource resource = context.service(TerminologyResource.class);
 			
 		@SuppressWarnings("unchecked")
-		final Set<String> reasonerExcludedModuleIds = codeSystem.getSettings().containsKey(REASONER_EXCLUDE_MODULE_IDS)
-			? (Set<String>) codeSystem.getSettings().get(REASONER_EXCLUDE_MODULE_IDS)
-			: Collections.emptySet();
+		final Set<String> reasonerExcludedModuleIds = (Set<String>) resource.getSettings()
+				.getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet());
 		final boolean concreteDomainSupportEnabled = true;
 		
 		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(reasonerExcludedModuleIds);

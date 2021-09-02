@@ -22,10 +22,9 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -91,8 +90,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		final String repositoryId = context.info().id();
 		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
-		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
-
+		
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 		
 		tracker.classificationScheduled(classificationId, reasonerId, user, branch.path());
@@ -102,16 +100,11 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				.setParentLockContext(parentLockContext)
 				.addAllConcepts(additionalConcepts)
 				.build(branch.path());
+				
+		TerminologyResource resource = context.service(TerminologyResource.class);
 		
-		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
-				.build()
-				.execute(context)
-				.getItems()
-				.get(0);
-		
-		int maxReasonerCount = codeSystem.getSettings().containsKey(SnomedCoreConfiguration.MAXIMUM_REASONER_COUNT)
-				? (int) codeSystem.getSettings().get(SnomedCoreConfiguration.MAXIMUM_REASONER_COUNT)
-				: SnomedCoreConfiguration.DEFAULT_MAXIMUM_REASONER_COUNT;
+		int maxReasonerCount = (int) resource.getSettings().getOrDefault(SnomedCoreConfiguration.MAXIMUM_REASONER_COUNT,
+				SnomedCoreConfiguration.DEFAULT_MAXIMUM_REASONER_COUNT);
 		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
 				maxReasonerCount,
