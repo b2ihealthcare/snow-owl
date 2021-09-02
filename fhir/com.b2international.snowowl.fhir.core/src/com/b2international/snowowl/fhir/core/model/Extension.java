@@ -15,12 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.List;
+
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.serialization.ExtensionSerializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -33,7 +37,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  */
 @JsonSerialize(using=ExtensionSerializer.class)
 @JsonDeserialize(using = ExtensionDeserializer.class)
-public abstract class Extension<T> {
+public abstract class Extension<T> extends Element {
 	
 	//Identifies the meaning of the extension
 	//TODO: validator needs to be called.
@@ -43,7 +47,10 @@ public abstract class Extension<T> {
 	
 	protected final T value;
 	
-	protected Extension(final Uri url, final T value) {
+	protected Extension(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final Uri url, final T value) {
+		
+		super(id, extensions);
 		this.url = url;
 		this.value = value;
 	}
@@ -52,23 +59,38 @@ public abstract class Extension<T> {
 	 * Return the type of this extension (valueX)
 	 * @return
 	 */
+	@JsonIgnore
 	public abstract ExtensionType getExtensionType();
 	
 	public Uri getUrl() {
 		return url;
 	}
 	
+	//Ignored as it is serialized via the custom serializer on the class
+	@JsonIgnore 
 	public T getValue() {
 		return value;
 	}
 	
-	public static abstract class Builder<B extends Builder<B, ET, T>, ET extends Extension<T>, T> extends ValidatingBuilder<ET> {
+	//An extension SHALL have either a value (i.e. a value[x] element) or sub-extensions, but not both.
+	@AssertTrue(message = "An extension SHALL have either a value (i.e. a value[x] element) or sub-extensions")
+	private boolean isValid() {
+		if (value != null && getExtensions() != null && !getExtensions().isEmpty()) {
+			return false;
+		}
+
+		if (value == null && (getExtensions() == null || getExtensions().isEmpty())) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	public static abstract class Builder<B extends Builder<B, ET, T>, ET extends Extension<T>, T> extends Element.Builder<B, ET> {
 
 		protected Uri url;
 
 		protected T value;
-		
-		protected abstract B getSelf();
 		
 		public B url(Uri url) {
 			this.url = url;

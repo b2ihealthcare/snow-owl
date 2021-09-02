@@ -16,10 +16,11 @@
 package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,7 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 8.0.0
  */
 @JsonDeserialize(builder = Software.Builder.class)
-public class Software {
+public class Software extends BackboneElement {
 	
 	@NotEmpty
 	@Mandatory
@@ -46,7 +47,12 @@ public class Software {
 	@JsonProperty
 	private final Date releaseDate;
 	
-	Software(final String name, final String version, final Date releaseDate) {
+	@SuppressWarnings("rawtypes")
+	Software(final String id, final List<Extension> extensions,
+			final List<Extension> modifierExtensions,
+			final String name, final String version, final Date releaseDate) {
+		
+		super(id, extensions, modifierExtensions);
 		this.name = name;
 		this.version = version;
 		this.releaseDate = releaseDate;
@@ -69,7 +75,7 @@ public class Software {
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends ValidatingBuilder<Software> {
+	public static class Builder extends BackboneElement.Builder<Builder, Software> {
 		
 		private String name;
 		private String version;
@@ -92,7 +98,12 @@ public class Software {
 		
 		@Override
 		protected Software doBuild() {
-			return new Software(name, version, releaseDate);
+			return new Software(id, extensions, modifierExtensions, name, version, releaseDate);
+		}
+
+		@Override
+		protected Builder getSelf() {
+			return this;
 		}
 	}
 }

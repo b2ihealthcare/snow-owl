@@ -73,6 +73,8 @@ public class ExtensionDeserializer extends StdDeserializer<Extension<?>> {
 		switch (extensionType) {
 		case INTEGER:
 			return objectCodec.treeToValue(node, IntegerExtension.class);
+		case STRING:
+			return objectCodec.treeToValue(node, StringExtension.class);
 		default:
 			throw new IllegalArgumentException("Unsupported extension type '" + extensionType + "'.");
 		}

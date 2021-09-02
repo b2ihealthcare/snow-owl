@@ -203,6 +203,11 @@ public class Parameter extends Element {
 			this.max = max;
 			return getSelf();
 		}
+
+		public Builder maxInfinite() {
+			this.max = "*";
+			return getSelf();
+		}
 		
 		public Builder documentation(final String documentation) {
 			this.documentation = documentation;

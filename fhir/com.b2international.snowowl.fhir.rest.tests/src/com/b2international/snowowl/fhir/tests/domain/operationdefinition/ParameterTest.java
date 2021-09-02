@@ -32,7 +32,7 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
 import io.restassured.path.json.JsonPath;
 
 /**
- * Tests for {@link Binding}
+ * Tests for {@link Parameter}
  * @since 8.0.0
  */
 public class ParameterTest extends FhirTest {

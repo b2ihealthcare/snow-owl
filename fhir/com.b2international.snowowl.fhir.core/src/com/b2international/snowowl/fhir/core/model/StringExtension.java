@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,22 +25,22 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * 
- * FHIR Integer Extension
+ * FHIR String Extension
  * 
  * @see <a href="https://www.hl7.org/fhir/extensibility.html#Extension">FHIR:Foundation:Extensibility</a>
- * @since 6.3
+ * @since 8.0.0
  */
-@JsonDeserialize(using = JsonDeserializer.None.class, builder = IntegerExtension.Builder.class)
-public class IntegerExtension extends Extension<Integer> {
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = StringExtension.Builder.class)
+public class StringExtension extends Extension<String> {
 	
-	public IntegerExtension(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
-			final Uri url, final Integer value) {
+	public StringExtension(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final Uri url, final String value) {
 		super(id, extensions, url, value);
 	}
 
 	@Override
 	public ExtensionType getExtensionType() {
-		return ExtensionType.INTEGER;
+		return ExtensionType.STRING;
 	}
 	
 	public static Builder builder() {
@@ -48,7 +48,7 @@ public class IntegerExtension extends Extension<Integer> {
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends Extension.Builder<Builder, IntegerExtension, Integer> {
+	public static class Builder extends Extension.Builder<Builder, StringExtension, String> {
 		
 		@Override
 		protected Builder getSelf() {
@@ -58,14 +58,14 @@ public class IntegerExtension extends Extension<Integer> {
 		/*
 		 * For deserialization support.
 		 */
-		protected Builder valueInteger(final Integer value) {
+		protected Builder valueString(final String value) {
 			this.value = value;
 			return this;
 		}
 		
 		@Override
-		protected IntegerExtension doBuild() {
-			return new IntegerExtension(id, extensions, url, value);
+		protected StringExtension doBuild() {
+			return new StringExtension(id, extensions, url, value);
 		}
 	}
 

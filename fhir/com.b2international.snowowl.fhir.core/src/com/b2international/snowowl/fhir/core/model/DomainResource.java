@@ -47,6 +47,8 @@ import com.google.common.collect.Sets;
  */
 public abstract class DomainResource extends FhirResource {
 	
+	private static final long serialVersionUID = 1L;
+
 	public static abstract class Fields extends FhirResource.Fields {
 		
 		public static final String TEXT = "text";
