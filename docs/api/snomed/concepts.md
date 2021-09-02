@@ -95,7 +95,7 @@ on 2021-09-01 13:50:00 UTC, the following request to retrieve concepts will not 
 appearing in this release:
 
 ```json
-GET /snomed-ct/v3/MAIN@1630504199999
+GET /snomed-ct/v3/MAIN@1630504199999/concepts
 ```
 
 Both absolute and relative paths are supported in the `path` part of the expression.
@@ -106,9 +106,177 @@ Concept requests using a branch base point reflect the state of the branch at it
 were made. The format of a base path is `path^` (only absolute paths are supported):
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/SNOMEDCT-UK-CL/101^
+GET /snomed-ct/v3/MAIN/2019-07-31/SNOMEDCT-UK-CL/101^/concepts
 ```
 
 Returned concepts include all additions and modifications made on SNOMEDCT-UK-CL's working branch, up to point where 
 task #101 starts; neither changes committed to the working branch after task #101, nor changes on task #101 itself are
 reflected in the result set.
+
+## Operations
+
+### Retrieve single concept by ID
+
+A GET request that includes a concept identifier as its last path parameter will return information about the concept 
+in question:
+
+```json
+GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005
+{
+  "id": "138875005",
+  "released": true,
+  "active": true,
+  "effectiveTime": "20020131",
+  "moduleId": "900000000000207008",
+  "iconId": "snomed_rt_ctv3",
+  "definitionStatus": {
+    "id": "900000000000074008"
+  },
+  "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
+  "ancestorIds": [],
+  "parentIds": [
+    "-1"
+  ],
+  "statedAncestorIds": [],
+  "statedParentIds": [
+    "-1"
+  ],
+  "definitionStatusId": "900000000000074008"
+}
+```
+
+The returned JSON object includes all properties defined in SNOMED International's
+[Release File Specification](https://confluence.ihtsdotools.org/display/DOCRELFMT/4.2.1+Concept+File+Specification):
+
+- `id`
+- `effectiveTime`
+- `active`
+- `moduleId`
+- `definitionStatusId`
+
+It also contains the following supplementary information:
+
+- `parentIds`, `ancestorIds`
+  
+  These arrays hold a set of SCTIDs representing the concept's direct and indirect ancestors in the 
+  inferred taxonomy. The (direct) parents array contains all `destinationId`s from active and inferred IS A 
+  relationships where the `sourceId` matches this concept's SCTID, while the ancestor array contains all SCTIDs 
+  taken from the parent and ancestor array of direct parents. The arrays are sorted by SCTID.
+  
+  A value of `-1` means that the concept is a **root concept** that does not have any actual SNOMED CT concepts set as
+  its parent. Typically, this only applies to `138875005|Snomed CT Concept|` in SNOMED CT content.
+
+  See the following example response for a concept placed deeper in the tree:
+
+```json
+GET /snomed-ct/v3/MAIN/concepts/425758004 // Diagnostic blood test
+{
+  [...]
+  "ancestorIds": [
+    "-1",        // Special value for taxonomy root
+    "15220000",  // Laboratory test
+    "71388002",  // Procedure
+    "108252007", // Laboratory procedure (not pictured below)
+    "128927009", // Procedure by method
+    "138875005", // SNOMED CT Concept
+    "362961001", // Procedure by intent
+    "386053000"  // Evaluation procedure
+  ],
+  "parentIds": [
+    "103693007", // Diagnostic procedure
+    "396550006"  // Blood test
+  ],
+  [...]
+}
+```
+
+  Compare the output with a rendering from a user interface, where the concept appears in two different places after 
+  exploring alternative routes in the hierarchy. Parents are marked with blue, while ancestors are highlighted with 
+  orange:
+
+![parents and ancestors](images/parents_ancestors.png)
+
+- `statedParentIds`, `statedAncestorIds`
+  
+  Same as the above, but for the stated taxonomy view.
+
+- `released`
+  
+  A boolean value indicating whether this concept was part of at least one SNOMED CT release. New concepts 
+  start with a value of `false`, which is set to `true` as part of the code system versioning process. Released 
+  concepts can only be deleted by an administrator.
+
+- `iconId`
+  
+  A descriptive key for the concept's icon. The icon identifier typically corresponds to the lowercase, 
+  underscore-separated form of the [hierarchy tag](https://confluence.ihtsdotools.org/display/DOCGLOSS/hierarchy+tag) contained in each concept's Fully Specified Name (or **FSN** for short). The following keys are currently expected 
+  to appear in responses (subject to change):
+
+  + `administration_method`
+  + `assessment_scale`
+  + `attribute`
+  + `basic_dose_form`
+  + `body_structure`
+  + `cell`
+  + `cell_structure`
+  + `clinical_drug`
+  + `disorder`
+  + `disposition`
+  + `dose_form`
+  + `environment`
+  + `environment_location`
+  + `ethnic_group`
+  + `event`
+  + `finding`
+  + `geographic_location`
+  + `inactive_concept`
+  + `intended_site`
+  + `life_style`
+  + `link_assertion`
+  + `linkage_concept`
+  + `medicinal_product`
+  + `medicinal_product_form`
+  + `metadata`
+  + `morphologic_abnormality`
+  + `namespace_concept`
+  + `navigational_concept`
+  + `observable_entity`
+  + `occupation`
+  + `organism`
+  + `owl_metadata_concept`
+  + `person`
+  + `physical_force`
+  + `physical_object`
+  + `procedure`
+  + `product`
+  + `product_name`
+  + `qualifier_value`
+  + `racial_group`
+  + `record_artifact`
+  + `regime_therapy`
+  + `release_characteristic`
+  + `religion_philosophy`
+  + `role`
+  + `situation`
+  + `snomed_rt_ctv3`
+  + `social_concept`
+  + `special_concept`
+  + `specimen`
+  + `staging_scale`
+  + `state_of_matter`
+  + `substance`
+  + `supplier`
+  + `transformation`
+  + `tumor_staging`
+  + `unit_of_presentation`
+
+- `subclassDefinitionStatus`
+  
+  {% hint style="warning" %}
+  **Currently unsupported.** Indicates whether a parent concept's direct descendants form a 
+  [disjoint union](https://www.w3.org/TR/owl2-syntax/#Disjoint_Union_of_Class_Expressions) in OWL 2 terms; when set to 
+  `DISJOINT_SUBCLASSES`, child concepts are assumed to be pairwise disjoint and together cover all possible cases of 
+  the parent concept.
+  
+  The default value is `NON_DISJOINT_SUBCLASSES` where no such assumption is made.
+  {% endhint %}
