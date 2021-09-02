@@ -19,7 +19,8 @@ which states whether the definition is sufficiently defined (and so can be compu
 a (human) reader to come up with the correct meaning based on the associated descriptions.
 
 Terminology services exposed by Snow Owl allows clients to *create*, *retrieve*, *modify* or *remove* concepts from a 
-SNOMED CT code system (concepts that are considered to be already published to consumers can only be removed with an administrative operation). Concepts can be retrieved by SCTID or description search terms; results can be further 
+SNOMED CT code system (concepts that are considered to be already published to consumers can only be removed with an 
+administrative operation). Concepts can be retrieved by SCTID or description search terms; results can be further 
 constrained via Expression Constraint Language (**ECL** for short) expressions.
 
 ## Code system paths
@@ -30,7 +31,8 @@ when non-current representations of concepts need to be accessed. Concept author
 isolation.
 
 To achieve this, the underlying terminology repository exposes a branching model (not unlike software development 
-branches in Revision Control Systems); requests in the Concept API require a `path` parameter to select the content (or **substrate**) the user wishes to work with. The following formats are accepted:
+branches in Revision Control Systems); requests in the Concept API require a `path` parameter to select the content 
+(or **substrate**) the user wishes to work with. The following formats are accepted:
 
 ### Absolute branch path
 
@@ -157,16 +159,15 @@ The returned JSON object includes all properties defined in SNOMED International
 It also contains the following supplementary information:
 
 - `parentIds`, `ancestorIds`
-  
-  These arrays hold a set of SCTIDs representing the concept's direct and indirect ancestors in the 
-  inferred taxonomy. The (direct) parents array contains all `destinationId`s from active and inferred IS A 
-  relationships where the `sourceId` matches this concept's SCTID, while the ancestor array contains all SCTIDs 
-  taken from the parent and ancestor array of direct parents. The arrays are sorted by SCTID.
-  
-  A value of `-1` means that the concept is a **root concept** that does not have any actual SNOMED CT concepts set as
-  its parent. Typically, this only applies to `138875005|Snomed CT Concept|` in SNOMED CT content.
 
-  See the following example response for a concept placed deeper in the tree:
+These arrays hold a set of SCTIDs representing the concept's direct and indirect ancestors in the 
+inferred taxonomy. The (direct) parents array contains all `destinationId`s from active and inferred IS A 
+relationships where the `sourceId` matches this concept's SCTID, while the ancestor array contains all SCTIDs 
+taken from the parent and ancestor array of direct parents. The arrays are sorted by SCTID. A value of `-1` means 
+that the concept is a **root concept** that does not have any concepts defined as its parent. Typically, this only 
+applies to `138875005|Snomed CT Concept|` in SNOMED CT content.
+
+See the following example response for a concept placed deeper in the tree:
 
 ```json
 GET /snomed-ct/v3/MAIN/concepts/425758004 // Diagnostic blood test
@@ -190,93 +191,94 @@ GET /snomed-ct/v3/MAIN/concepts/425758004 // Diagnostic blood test
 }
 ```
 
-  Compare the output with a rendering from a user interface, where the concept appears in two different places after 
-  exploring alternative routes in the hierarchy. Parents are marked with blue, while ancestors are highlighted with 
-  orange:
+Compare the output with a rendering from a user interface, where the concept appears in two different places after 
+exploring alternative routes in the hierarchy. Parents are marked with blue, while ancestors are highlighted with 
+orange:
 
-![parents and ancestors](images/parents_ancestors.png)
+![Parents and ancestors](images/parents_ancestors.png)
 
 - `statedParentIds`, `statedAncestorIds`
-  
-  Same as the above, but for the stated taxonomy view.
+
+Same as the above, but for the stated taxonomy view.
 
 - `released`
-  
-  A boolean value indicating whether this concept was part of at least one SNOMED CT release. New concepts 
-  start with a value of `false`, which is set to `true` as part of the code system versioning process. Released 
-  concepts can only be deleted by an administrator.
+
+A boolean value indicating whether this concept was part of at least one SNOMED CT release. New concepts 
+start with a value of `false`, which is set to `true` as part of the code system versioning process. Released 
+concepts can only be deleted by an administrator.
 
 - `iconId`
-  
-  A descriptive key for the concept's icon. The icon identifier typically corresponds to the lowercase, 
-  underscore-separated form of the [hierarchy tag](https://confluence.ihtsdotools.org/display/DOCGLOSS/hierarchy+tag) contained in each concept's Fully Specified Name (or **FSN** for short). The following keys are currently expected 
-  to appear in responses (subject to change):
 
-  + `administration_method`
-  + `assessment_scale`
-  + `attribute`
-  + `basic_dose_form`
-  + `body_structure`
-  + `cell`
-  + `cell_structure`
-  + `clinical_drug`
-  + `disorder`
-  + `disposition`
-  + `dose_form`
-  + `environment`
-  + `environment_location`
-  + `ethnic_group`
-  + `event`
-  + `finding`
-  + `geographic_location`
-  + `inactive_concept`
-  + `intended_site`
-  + `life_style`
-  + `link_assertion`
-  + `linkage_concept`
-  + `medicinal_product`
-  + `medicinal_product_form`
-  + `metadata`
-  + `morphologic_abnormality`
-  + `namespace_concept`
-  + `navigational_concept`
-  + `observable_entity`
-  + `occupation`
-  + `organism`
-  + `owl_metadata_concept`
-  + `person`
-  + `physical_force`
-  + `physical_object`
-  + `procedure`
-  + `product`
-  + `product_name`
-  + `qualifier_value`
-  + `racial_group`
-  + `record_artifact`
-  + `regime_therapy`
-  + `release_characteristic`
-  + `religion_philosophy`
-  + `role`
-  + `situation`
-  + `snomed_rt_ctv3`
-  + `social_concept`
-  + `special_concept`
-  + `specimen`
-  + `staging_scale`
-  + `state_of_matter`
-  + `substance`
-  + `supplier`
-  + `transformation`
-  + `tumor_staging`
-  + `unit_of_presentation`
+A descriptive key for the concept's icon. The icon identifier typically corresponds to the lowercase, 
+underscore-separated form of the [hierarchy tag](https://confluence.ihtsdotools.org/display/DOCGLOSS/hierarchy+tag) 
+contained in each concept's Fully Specified Name (or **FSN** for short). The following keys are currently expected 
+to appear in responses (subject to change):
+
+`administration_method`,
+`assessment_scale`,
+`attribute`,
+`basic_dose_form`,
+`body_structure`,
+`cell`,
+`cell_structure`,
+`clinical_drug`,
+`disorder`,
+`disposition`,
+`dose_form`,
+`environment`,
+`environment_location`,
+`ethnic_group`,
+`event`,
+`finding`,
+`geographic_location`,
+`inactive_concept`,
+`intended_site`,
+`life_style`,
+`link_assertion`,
+`linkage_concept`,
+`medicinal_product`,
+`medicinal_product_form`,
+`metadata`,
+`morphologic_abnormality`,
+`namespace_concept`,
+`navigational_concept`,
+`observable_entity`,
+`occupation`,
+`organism`,
+`owl_metadata_concept`,
+`person`,
+`physical_force`,
+`physical_object`,
+`procedure`,
+`product`,
+`product_name`,
+`qualifier_value`,
+`racial_group`,
+`record_artifact`,
+`regime_therapy`,
+`release_characteristic`,
+`religion_philosophy`,
+`role`,
+`situation`,
+`snomed_rt_ctv3`,
+`social_concept`,
+`special_concept`,
+`specimen`,
+`staging_scale`,
+`state_of_matter`,
+`substance`,
+`supplier`,
+`transformation`,
+`tumor_staging`,
+`unit_of_presentation`
 
 - `subclassDefinitionStatus`
-  
-  {% hint style="warning" %}
-  **Currently unsupported.** Indicates whether a parent concept's direct descendants form a 
-  [disjoint union](https://www.w3.org/TR/owl2-syntax/#Disjoint_Union_of_Class_Expressions) in OWL 2 terms; when set to 
-  `DISJOINT_SUBCLASSES`, child concepts are assumed to be pairwise disjoint and together cover all possible cases of 
-  the parent concept.
-  
-  The default value is `NON_DISJOINT_SUBCLASSES` where no such assumption is made.
-  {% endhint %}
+
+{% hint style="warning" %}
+**Currently unsupported.** Indicates whether a parent concept's direct descendants form a 
+[disjoint union](https://www.w3.org/TR/owl2-syntax/#Disjoint_Union_of_Class_Expressions) in OWL 2 terms; when set to 
+`DISJOINT_SUBCLASSES`, child concepts are assumed to be pairwise disjoint and together cover all possible cases of 
+the parent concept.
+
+The default value is `NON_DISJOINT_SUBCLASSES` where no such assumption is made.
+{% endhint %}
