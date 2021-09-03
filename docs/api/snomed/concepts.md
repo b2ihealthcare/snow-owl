@@ -525,7 +525,150 @@ Note that this is different from reference set member expansion on a reference s
 and historical association members can also be returned here, in their entirety (as opposed to the summarized form 
 described in `inactivationProperties()` above).
 
-Reference set members can also be fetched via the [SNOMED CT Reference Set Member API](refsets.md).
+Reference set members can also be fetched in a "standalone" fashion via the 
+[SNOMED CT Reference Set Member API](refsets.md).
+
+Compare the output with the one returned when inactivation indicators were expanded. The last two reference set members 
+correspond to the historical association and the inactivation reason, respectively:
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/99999003?expand=members()
+{
+  "id": "99999003",
+  [...]
+  "members": {
+    "items": [
+      {
+        "id": "f2b12ff9-794a-5a05-8027-88f0492f3766",
+        "released": true,
+        "active": true,
+        "effectiveTime": "20020131",
+        "moduleId": "900000000000207008",
+        "iconId": "99999003",
+        "referencedComponent": {
+          "id": "99999003"
+        },
+        "refsetId": "900000000000497000",    // CTV3 simple map
+        "referencedComponentId": "99999003", // all referencedComponentIds match the concept's SCTID
+        "mapTarget": "XUPhG"                 // additional properties are displayed depending on the
+                                             // reference set type
+      },
+      {
+        "id": "5e9787df-11af-54ed-ae92-0ea3bc83f2ac",
+        "released": true,
+        "active": true,
+        "effectiveTime": "20090731",
+        "moduleId": "900000000000207008",
+        "iconId": "99999003",
+        "referencedComponent": {
+          "id": "99999003"
+        },
+        "refsetId": "900000000000524003",    // MOVED TO association reference set
+        "referencedComponentId": "99999003",
+        "targetComponentId": "416516009"     // Extension Namespace 1000009
+      },
+      {
+        "id": "9ffd949a-27d0-5811-ad48-47ff43e1bded",
+        "released": true,
+        "active": true,
+        "effectiveTime": "20090731",
+        "moduleId": "900000000000207008",
+        "iconId": "99999003",
+        "referencedComponent": {
+          "id": "99999003"
+        },
+        "refsetId": "900000000000489007",    // Concept inactivation indicator reference set
+        "referencedComponentId": "99999003",
+        "valueId": "900000000000487009"      // Moved elsewhere
+      }
+    ],
+    "limit": 3,
+    "total": 3
+  },
+  [...]
+}
+```
+
+The following expand options are supported within `members(...)`:
+
+- `active: true | false` - controls whether only active or inactive reference set members should be returned;
+- `refSetType: "{type}" | [ "{type}"(,"{type}")* ]` - the reference set type(s) as a string, to be included in the 
+  expanded output; when multiple types are accepted, values must be enclosed in square brackets and separated by a 
+  comma;
+- `expand(...)` - allows nested expansion of reference set member properties.
+
+Allowed reference set type constants are (these are described in the 
+[Reference Set Types](https://confluence.ihtsdotools.org/display/DOCRFSPG/5.+Reference+Set+Types)🌎 section of SNOMED 
+International's "Reference Sets Practical Guide" and the
+[Reference Set Types](https://confluence.ihtsdotools.org/display/DOCRELFMT/5.2+Reference+Set+Types)🌎 section of 
+"Release File Specification" in more detail):
+
+- `SIMPLE` - simple type
+- `SIMPLE_MAP` - simple map type
+- `LANGUAGE` - language type
+- `ATTRIBUTE_VALUE` - attribute-value type
+- `QUERY` - query specification type
+- `COMPLEX_MAP` - complex map type
+- `DESCRIPTION_TYPE` - description type
+- `CONCRETE_DATA_TYPE` - concrete data type (vendor extension for representing concrete values in Snow Owl)
+- `ASSOCIATION` - association type
+- `MODULE_DEPENDENCY` - module dependency type
+- `EXTENDED_MAP` - extended map type
+- `SIMPLE_MAP_WITH_DESCRIPTION` - simple map type with map target description (vendor extension for storing a 
+  descriptive label with map targets, suitable for display)
+- `OWL_AXIOM` - OWL axiom type
+- `OWL_ONTOLOGY` - OWL ontology declaration type
+- `MRCM_DOMAIN` - MRCM domain type
+- `MRCM_ATTRIBUTE_DOMAIN` - MRCM attribute domain type
+- `MRCM_ATTRIBUTE_RANGE` - MRCM attribute range type
+- `MRCM_MODULE_SCOPE` - MRCM module scope type
+- `ANNOTATION` - annotation type
+- `COMPLEX_BLOCK_MAP` - complex map with map block type (added for national extension support)
+
+See the following example for combining reference set member status filtering and reference set type restriction:
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/99999003?expand=members(active:true, refSetType:["ASSOCIATION","ATTRIBUTE_VALUE"])
+{
+  "id": "99999003",
+  [...]
+  "members": {
+    [
+      {
+        "id": "5e9787df-11af-54ed-ae92-0ea3bc83f2ac",
+        "released": true,
+        "active": true,
+        "effectiveTime": "20090731",
+        "moduleId": "900000000000207008",
+        "iconId": "99999003",
+        "referencedComponent": {
+          "id": "99999003"
+        },
+        "refsetId": "900000000000524003",    // MOVED TO association reference set
+        "referencedComponentId": "99999003",
+        "targetComponentId": "416516009"     // Extension Namespace 1000009
+      },
+      {
+        "id": "9ffd949a-27d0-5811-ad48-47ff43e1bded",
+        "released": true,
+        "active": true,
+        "effectiveTime": "20090731",
+        "moduleId": "900000000000207008",
+        "iconId": "99999003",
+        "referencedComponent": {
+          "id": "99999003"
+        },
+        "refsetId": "900000000000489007",    // Concept inactivation indicator reference set
+        "referencedComponentId": "99999003",
+        "valueId": "900000000000487009"      // Moved elsewhere
+      }
+    ],
+    "limit": 2,
+    "total": 2
+  },
+  [...]
+}
+```
 
 ## Operations
 
