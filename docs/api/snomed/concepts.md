@@ -593,8 +593,7 @@ The following expand options are supported within `members(...)`:
 
 - `active: true | false` - controls whether only active or inactive reference set members should be returned;
 - `refSetType: "{type}" | [ "{type}"(,"{type}")* ]` - the reference set type(s) as a string, to be included in the 
-  expanded output; when multiple types are accepted, values must be enclosed in square brackets and separated by a 
-  comma;
+expanded output; when multiple types are accepted, values must be enclosed in square brackets and separated by a comma;
 - `expand(...)` - allows nested expansion of reference set member properties.
 
 Allowed reference set type constants are (these are described in the 
