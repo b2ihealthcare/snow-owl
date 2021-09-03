@@ -296,8 +296,8 @@ Expand options are expected to appear in the form of
 
 - `propertyNameN` stands for the property to expand;
 - `optionN: valueN` are key-value pairs providing additional filtering for the expanded property;
-- optionally, `expand`s can be nested, and the options will apply to the components returned under `propertyName1`;
-- when no expand options are given, an empty set of `()` parenthesises need to be added after the property name.
+- optionally, `expand`s can be nested, and the options will apply to the components returned under the parent property;
+- when no expand options are given, an empty set of `()` parentheses need to be added after the property name.
 
 Supported expandable property names are:
 
