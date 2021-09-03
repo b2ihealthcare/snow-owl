@@ -115,15 +115,11 @@ Returned concepts include all additions and modifications made on SNOMEDCT-UK-CL
 task #101 starts; neither changes committed to the working branch after task #101, nor changes on task #101 itself are
 reflected in the result set.
 
-## Operations
+## Resource format
 
-### Retrieve single concept by ID
-
-A GET request that includes a concept identifier as its last path parameter will return information about the concept 
-in question:
+A concept resource without any expanded properties looks like the following:
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005
 {
   "id": "138875005",
   "released": true,
@@ -147,8 +143,10 @@ GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005
 }
 ```
 
-The returned JSON object includes all properties defined in SNOMED International's
-[Release File Specification](https://confluence.ihtsdotools.org/display/DOCRELFMT/4.2.1+Concept+File+Specification):
+### Properties
+
+The resource includes all RF2 properties that are defined in SNOMED International's
+[Release File Specification](https://confluence.ihtsdotools.org/display/DOCRELFMT/4.2.1+Concept+File+Specification)🌎:
 
 - `id`
 - `effectiveTime`
@@ -210,7 +208,7 @@ concepts can only be deleted by an administrator.
 - `iconId`
 
 A descriptive key for the concept's icon. The icon identifier typically corresponds to the lowercase, 
-underscore-separated form of the [hierarchy tag](https://confluence.ihtsdotools.org/display/DOCGLOSS/hierarchy+tag) 
+underscore-separated form of the [hierarchy tag](https://confluence.ihtsdotools.org/display/DOCGLOSS/hierarchy+tag)🌎 
 contained in each concept's Fully Specified Name (or **FSN** for short). The following keys are currently expected 
 to appear in responses (subject to change):
 
@@ -280,12 +278,14 @@ the icon identifier.
 
 {% hint style="warning" %}
 **Currently unsupported.** Indicates whether a parent concept's direct descendants form a 
-[disjoint union](https://www.w3.org/TR/owl2-syntax/#Disjoint_Union_of_Class_Expressions) in OWL 2 terms; when set to 
+[disjoint union](https://www.w3.org/TR/owl2-syntax/#Disjoint_Union_of_Class_Expressions)🌎 in OWL 2 terms; when set to 
 `DISJOINT_SUBCLASSES`, child concepts are assumed to be pairwise disjoint and together cover all possible cases of 
 the parent concept.
 
 The default value is `NON_DISJOINT_SUBCLASSES` where no such assumption is made.
 {% endhint %}
+
+### Property expansion
 
 Core component information related to the current concept can be attached to the response by using the `expand` query 
 parameter, allowing clients to retrieve more data in a single roundtrip. Property expansion runs the necessary requests 
@@ -301,8 +301,10 @@ Expand options are expected to appear in the form of
 
 Supported expandable property names are:
 
-- `referenceSet()` - expands reference set metadata and content, available on 
-[identifier concepts](https://confluence.ihtsdotools.org/display/DOCRFSPG/4.2.1.+Reference+Set+Identification)
+#### `referenceSet()`
+
+Expands reference set metadata and content, available on 
+[identifier concepts](https://confluence.ihtsdotools.org/display/DOCRFSPG/4.2.1.+Reference+Set+Identification)🌎.
 
 If a corresponding reference set was already created for an identifier concept (a subtype of 
 `900000000000455006|Reference set`), information about the reference set will appear in the response:
@@ -374,7 +376,9 @@ GET /snomed-ct/v3/MAIN/concepts/900000000000497000?expand=referenceSet(expand(me
 
 Reference set members can also be fetched via the [SNOMED CT Reference Set Member API](refsets.md).
 
-- `preferredDescriptions()` - expands descriptions with preferred acceptability
+#### `preferredDescriptions()`
+
+Expands descriptions with preferred acceptability.
 
 Returns all active descriptions that have at least one active language reference set member with an acceptabilityId of 
 `900000000000548007|Preferred|`, in compact form, along with the concept. Preferred descriptions are frequently used 
@@ -429,7 +433,9 @@ GET /snomed-ct/v3/MAIN/2011-07-31/concepts/86299006?expand=preferredDescriptions
 }
 ```
 
-- `semanticTags()` - returns hierarchy tags extracted from FSNs
+#### `semanticTags()`
+
+Returns hierarchy tags extracted from FSNs.
 
 An array containing the hierarchy tags from all Fully Specified Name-typed descriptions of the concept is added as an 
 expanded property if this option is present:
@@ -457,8 +463,10 @@ GET /snomed-ct/v3/concepts/MAIN/103981000119101?expand=preferredDescriptions(),s
 }
 ```
 
-- `inactivationProperties()` - collects information from concept inactivation indicator and historical association 
-reference set members referencing this concept
+#### `inactivationProperties()` 
+
+Collects information from concept inactivation indicator and historical association reference set members referencing 
+this concept.
 
 Members of `900000000000489007|Concept inactivation indicator attribute value reference set|` and subtypes of
 `900000000000522004 |Historical association reference set|` hold information about a reason a concept is being retired 
@@ -507,3 +515,25 @@ While most object values where a single `id` key is present indicate that the pr
 resource representation, this is currently **not supported** for inactivation properties; an expand option of 
 `inactivationProperties(expand(inactivationIndicator()))` will not retrieve additional data for the indicator concept.
 {% endhint %}
+
+#### `members()`
+
+Expands reference set members referencing this concept.
+
+Note that this is different from reference set member expansion on a reference set, ie. 
+`referenceSet(expand(members()))`, as this option will return reference set members where the `referencedComponentId` property matches the concept SCTID, from multiple reference sets (if permitted by other expand options). Inactivation 
+and historical association members can also be returned here, in their entirety (as opposed to the summarized form 
+described in `inactivationProperties()` above).
+
+Reference set members can also be fetched via the [SNOMED CT Reference Set Member API](refsets.md).
+
+## Operations
+
+### Retrieve single concept by ID
+
+A GET request that includes a concept identifier as its last path parameter will return information about the concept 
+in question:
+
+```json
+GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005
+```
