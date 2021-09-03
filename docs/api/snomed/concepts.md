@@ -591,10 +591,17 @@ GET /snomed-ct/v3/concepts/MAIN/99999003?expand=members()
 
 The following expand options are supported within `members(...)`:
 
-- `active: true | false` - controls whether only active or inactive reference set members should be returned;
-- `refSetType: "{type}" | [ "{type}"(,"{type}")* ]` - the reference set type(s) as a string, to be included in the 
-expanded output; when multiple types are accepted, values must be enclosed in square brackets and separated by a comma;
-- `expand(...)` - allows nested expansion of reference set member properties.
+- `active: true | false`
+
+Controls whether only active or inactive reference set members should be returned.
+
+- `refSetType: "{type}" | [ "{type}"(,"{type}")* ]`
+
+The reference set type(s) as a string, to be included in the expanded output; when multiple types are accepted, values must be enclosed in square brackets and separated by a comma.
+
+- `expand(...)`
+
+Allows nested expansion of reference set member properties.
 
 Allowed reference set type constants are (these are described in the 
 [Reference Set Types](https://confluence.ihtsdotools.org/display/DOCRFSPG/5.+Reference+Set+Types)🌎 section of SNOMED 
