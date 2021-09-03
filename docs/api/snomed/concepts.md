@@ -272,6 +272,10 @@ to appear in responses (subject to change):
 `tumor_staging`,
 `unit_of_presentation`
 
+In the metadata hierarchy, the use of a hierarchy tag alone would not distinguish concepts finely enough, as lots of 
+them will have eg. "foundation metadata concept" set as their tag. In these cases, concept identifiers may be used as 
+the icon identifier.
+
 - `subclassDefinitionStatus`
 
 {% hint style="warning" %}
@@ -281,4 +285,225 @@ to appear in responses (subject to change):
 the parent concept.
 
 The default value is `NON_DISJOINT_SUBCLASSES` where no such assumption is made.
+{% endhint %}
+
+Core component information related to the current concept can be attached to the response by using the `expand` query 
+parameter, allowing clients to retrieve more data in a single roundtrip. Property expansion runs the necessary requests 
+internally, and attaches results to the original response object. 
+
+Expand options are expected to appear in the form of 
+`propertyName1(option1: value1, option2: value2, expand(...)), propertyName2()` where:
+
+- `propertyNameN` stands for the property to expand;
+- `optionN: valueN` are key-value pairs providing additional filtering for the expanded property;
+- optionally, `expand`s can be nested, and the options will apply to the components returned under `propertyName1`;
+- when no expand options are given, an empty set of `()` parenthesises need to be added after the property name.
+
+Supported expandable property names are:
+
+- `referenceSet()` - expands reference set metadata and content, available on 
+[identifier concepts](https://confluence.ihtsdotools.org/display/DOCRFSPG/4.2.1.+Reference+Set+Identification)
+
+If a corresponding reference set was already created for an identifier concept (a subtype of 
+`900000000000455006|Reference set`), information about the reference set will appear in the response:
+
+```json
+GET /snomed-ct/v3/MAIN/concepts/900000000000497000?expand=referenceSet() // CTV3 simple map
+{
+  "id": "900000000000497000",
+  "active": true,
+  [...]  
+  "referenceSet": {
+    "id": "900000000000497000",
+    "released": true,
+    "active": true,
+    "effectiveTime": "20020131",
+    "moduleId": "900000000000012004",
+    "iconId": "900000000000496009",
+    "type": "SIMPLE_MAP",                    // Reference set type
+    "referencedComponentType": "concept",    // Referenced component type
+    "mapTargetComponentType": "__UNKNOWN__"  // Map target component type 
+                                             // (applicable to map type reference sets only)
+  },
+  [...]
+}
+```
+
+Note that the response object for property `referenceSet` can also be retrieved directly using the 
+[Reference Sets API](refsets.md).
+
+To retrieve reference set members along with the reference set in a single request, use a nested `expand` property 
+named `members`:
+
+```json
+GET /snomed-ct/v3/MAIN/concepts/900000000000497000?expand=referenceSet(expand(members()))
+{
+  "id": "900000000000497000",
+  [...]
+  "referenceSet": {
+    [...]
+    "type": "SIMPLE_MAP",
+    "referencedComponentType": "concept",
+    "mapTargetComponentType": "__UNKNOWN__",
+    "members": {
+      "items": [
+        {
+          "id": "00000193-e889-4d3f-b07f-e0f45eb77940",
+          "released": true,
+          "active": true,
+          "effectiveTime": "20190131",
+          "moduleId": "900000000000207008",
+          "iconId": "776792002",
+          "referencedComponent": {
+            "id": "776792002"
+          },
+          "refsetId": "900000000000497000", // Reference set ID matches the identifier concept's ID 
+                                            // for all members of the reference set
+          "referencedComponentId": "776792002",
+          "mapTarget": "XV8E7"
+        },
+        [...]
+      ],
+      "searchAfter": "AoE_BTAwMDcyYWIzLWM5NDgtNTVhYy04MTBkLTlhOGNhMmU5YjQ5Yg==",
+      "limit": 50,
+      "total": 481508
+    }
+  },
+}
+```
+
+Reference set members can also be fetched via the [SNOMED CT Reference Set Member API](refsets.md).
+
+- `preferredDescriptions()` - expands descriptions with preferred acceptability
+
+Returns all active descriptions that have at least one active language reference set member with an acceptabilityId of 
+`900000000000548007|Preferred|`, in compact form, along with the concept. Preferred descriptions are frequently used 
+on UIs when a display label is required for a concept.
+
+This information is also returned when expand options `pt()` or `fsn()` (described later) are present.
+
+```json
+GET /snomed-ct/v3/MAIN/2011-07-31/concepts/86299006?expand=preferredDescriptions()
+{
+  "id": "86299006", // Concept SCTID
+  [...]
+  "preferredDescriptions": {
+    "items": [
+      {
+        "id": "828532012",                        // Description SCTID
+        "term": "Tetralogy of Fallot (disorder)", // Description term
+        "concept": {
+          "id": "86299006"
+        },
+        "type": {
+          "id": "900000000000003001"
+        },
+        "typeId": "900000000000003001",           // Type: Fully Specified Name
+        "conceptId": "86299006",                  // "conceptId" matches the returned concept's SCTID
+        "acceptability": {
+          "900000000000509007": "PREFERRED",      // Acceptability in reference set "US English"
+          "900000000000508004": "PREFERRED"       // Acceptability in reference set "GB English"
+        }
+      },
+      {
+        "id": "143123019",
+        "term": "Tetralogy of Fallot",
+        "concept": {
+          "id": "86299006"
+        },
+        "type": {
+          "id": "900000000000013009"
+        },
+        "typeId": "900000000000013009",           // Type: Synonym
+        "conceptId": "86299006",
+        "acceptability": {
+          "900000000000509007": "PREFERRED",
+          "900000000000508004": "PREFERRED"
+        }
+      }
+    ],
+    "limit": 2,
+    "total": 2
+  },
+  [...]
+}
+```
+
+- `semanticTags()` - returns hierarchy tags extracted from FSNs
+
+An array containing the hierarchy tags from all Fully Specified Name-typed descriptions of the concept is added as an 
+expanded property if this option is present:
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/103981000119101?expand=preferredDescriptions(),semanticTags()
+{
+  "id": "103981000119101",
+  "released": true,
+  "active": true,
+  "effectiveTime": "20200131",
+  "preferredDescriptions": {
+    "items": [
+      {
+        "id": "3781804016",
+        "term": "Proliferative retinopathy following surgery due to diabetes mellitus (disorder)",
+        [...]
+      },
+      [...]
+    ]
+  }
+  [...]
+  "semanticTags": [ "disorder" ], // Extracted from the Fully Specified Name; see term above
+  [...]
+}
+```
+
+- `inactivationProperties()` - collects information from concept inactivation indicator and historical association 
+reference set members referencing this concept
+
+Members of `900000000000489007|Concept inactivation indicator attribute value reference set|` and subtypes of
+`900000000000522004 |Historical association reference set|` hold information about a reason a concept is being retired 
+in a release, as well as suggest potential replacement(s) for future use.
+
+The concept stating the reason for inactivation is placed under `inactivationProperties.inactivationIndicator.id` 
+(a short-hand property exists without an extra nesting, named `inactivationProperties.inactivationIndicatorId`). It is 
+expected that only a single active inactivation indicator exists for an inactive concept.
+
+Historical associations are returned under the property `inactivationProperties.associationTargets` as an array of 
+objects. Each object includes the identifier of the historical association reference set and the target component 
+identifier, in the same manner as described above &ndash; as an object with a single `id` property and as a string
+value.
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/99999003?expand=inactivationProperties()
+{
+  "id": "99999003",
+  "active": false,
+  "effectiveTime": "20090731",
+  [...]
+  "inactivationProperties": {
+    "inactivationIndicator": {
+      "id": "900000000000487009"
+    },
+    "associationTargets": [
+      {
+        "referenceSet": {
+          "id": "900000000000524003"
+        },
+        "targetComponent": {
+          "id": "416516009"
+        },
+        "referenceSetId": "900000000000524003",     // MOVED TO association reference set
+        "targetComponentId": "416516009"            // Extension Namespace 1000009
+      }
+    ],
+    "inactivationIndicatorId": "900000000000487009" // Moved elsewhere
+  },
+  [...]
+}
+```
+
+{% hint style="warning" %}
+While most object values where a single `id` key is present indicate that the property can be expanded to a full
+resource representation, this is currently **not supported** for inactivation properties; an expand option of 
+`inactivationProperties(expand(inactivationIndicator()))` will not retrieve additional data for the indicator concept.
 {% endhint %}
