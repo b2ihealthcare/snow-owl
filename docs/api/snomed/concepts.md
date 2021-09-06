@@ -676,6 +676,179 @@ GET /snomed-ct/v3/concepts/MAIN/99999003?expand=members(active:true, refSetType:
 }
 ```
 
+#### `module()`
+
+Expands the concept's module identified by property `moduleId`, and places it under the property `module`. As the 
+returned resource is a concept itself, property expansion can apply to modules as well by using a nested `expand()` 
+option.
+
+{% hint style="warning" %}
+Property `module` does not appear in compact form (with a single `id` key) in the standard representation.
+{% endhint %}
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/138875005?expand=module()
+{
+  "id": "138875005",
+  "active": true,
+  [...]
+  // The moduleId of the requested concept
+  "moduleId": "900000000000207008",
+  "module": {                   // Expanded module concept resource
+    "id": "900000000000207008", // SCTID matches 138875005's moduleId
+    "released": true,
+    "active": true,
+    "effectiveTime": "20020131",
+    // The moduleId of the module concept
+    "moduleId": "900000000000012004",
+    "iconId": "900000000000445007",
+    "definitionStatus": {
+      "id": "900000000000074008"
+    },
+    "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
+    "ancestorIds": [...],
+    [...]
+    "definitionStatusId": "900000000000074008"
+  },
+  [...]
+  "definitionStatusId": "900000000000074008"
+}
+```
+
+#### `definitionStatus()`
+
+Expands the definition status concept identified by the property `definitionStatusId`, and places it under the property 
+`definitionStatus`. When this property is not expanded, a smaller placeholder object with a single `id` property is 
+returned in the response. Nested `expand()` options work the same way as in the case of `module()`.
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/138875005?expand=definitionStatus()
+{
+  "id": "138875005",
+  "active": true,
+  // The definitionStatusId of the requested concept
+  "definitionStatusId": "900000000000074008",
+  "definitionStatus": {         // Expanded definition status concept resource
+    "id": "900000000000074008", // SCTID matches 138875005's definitionStatusId
+    "active": true,
+    "effectiveTime": "20020131",
+    [...]
+    // The definitionStatusId of the definition status concept
+    "definitionStatusId": "900000000000074008"
+  },
+  [...]
+}
+```
+
+#### `pt()` and `fsn()`
+
+Expands the [Preferred Term](https://confluence.ihtsdotools.org/display/DOCEG/Preferred+Term)🌎 (**PT** for short) and 
+the [Fully Specified Name](https://confluence.ihtsdotools.org/display/DOCEG/Fully+Specified+Name)🌎 (**FSN** for short) 
+of the concept, respectively.
+
+These descriptions are language context-dependent; the use of certain descriptions can be preferred in one dialect and 
+acceptable or discouraged in others. The final output is controlled by the 
+[Accept-Language](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language)🌎 request header, which 
+clients can use to supply a list of locales in order of preference.
+
+In addition to the standard locales like `en-US`, Snow Owl uses an extension to allow referring to language reference 
+sets by identifier, in the form of `{language code}-x-{language reference set ID}`. "Traditional" language tags are 
+resolved to language reference set IDs as part of executing the request by consulting the code system settings:
+
+```json
+GET /codesystems/SNOMEDCT-UK-CL
+{
+  "id": "SNOMEDCT-UK-CL",
+  "title": "SNOMED CT UK Clinical Extension",
+  [...]
+  "settings": {
+    "languages": [
+      {
+        "languageTag": "en",   // the language tag
+        "languageRefSetIds": [ // the corresponding language reference sets, in order of preference
+          "900000000000509007",
+          "900000000000508004",
+          "999001261000000100",
+          "999000691000001104"
+        ]
+      },
+      {
+        "languageTag": "en-us",
+        "languageRefSetIds": [
+          "900000000000509007"
+        ]
+      },
+      {
+        "languageTag": "en-gb",
+        "languageRefSetIds": [
+          "900000000000508004",
+          "999001261000000100",
+          "999000691000001104"
+        ]
+      },
+      {
+        "languageTag": "en-nhs-pharmacy",
+        "languageRefSetIds": [
+          "999000691000001104"
+        ]
+      },
+      {
+        "languageTag": "en-nhs-clinical",
+        "languageRefSetIds": [
+          "999001261000000100"
+        ]
+      }
+    ],
+    [...]
+  },
+  [...]
+}
+```
+
+An example response pair demonstrating cases where the PT is different in certain dialects:
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/703247007?expand=pt()
+// Accept-Language: en-US
+{
+  "id": "703247007",
+  [...]
+  "pt": {
+    "id": "3007370016",
+    "term": "Color",
+    [...]
+    "conceptId": "703247007", // conceptId matches the concept's SCTID
+    "acceptability": {
+      // Use of "Color" is preferred in the US English language reference set, 
+      // but not acceptable in others
+      "900000000000509007": "PREFERRED" 
+    }
+  },
+  [...]
+}
+```
+
+```json
+GET /snomed-ct/v3/concepts/MAIN/703247007?expand=pt()
+// Accept-Language: en-x-900000000000508004
+{
+  "id": "703247007",
+  [...]
+  "pt": {
+    "id": "3007469016",
+    "term": "Colour",
+    [...]
+    "conceptId": "703247007",
+    "acceptability": {
+      // Use of "Colour" is preferred in the GB English language reference set, 
+      // but not acceptable in others
+      "900000000000508004": "PREFERRED"
+    }
+  },
+  [...]
+}
+```
+
 ## Operations
 
 ### Retrieve single concept by ID
