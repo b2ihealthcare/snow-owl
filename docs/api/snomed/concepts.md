@@ -441,7 +441,7 @@ An array containing the hierarchy tags from all Fully Specified Name-typed descr
 expanded property if this option is present:
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/103981000119101?expand=preferredDescriptions(),semanticTags()
+GET /snomed-ct/v3/MAIN/concepts/103981000119101?expand=preferredDescriptions(),semanticTags()
 {
   "id": "103981000119101",
   "released": true,
@@ -482,7 +482,7 @@ identifier, in the same manner as described above &ndash; as an object with a si
 value.
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/99999003?expand=inactivationProperties()
+GET /snomed-ct/v3/MAIN/concepts/99999003?expand=inactivationProperties()
 {
   "id": "99999003",
   "active": false,
@@ -532,7 +532,7 @@ Compare the output with the one returned when inactivation indicators were expan
 correspond to the historical association and the inactivation reason, respectively:
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/99999003?expand=members()
+GET /snomed-ct/v3/MAIN/concepts/99999003?expand=members()
 {
   "id": "99999003",
   [...]
@@ -634,7 +634,7 @@ International's "Reference Sets Practical Guide" and the
 See the following example for combining reference set member status filtering and reference set type restriction:
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/99999003?expand=members(active:true, refSetType:["ASSOCIATION","ATTRIBUTE_VALUE"])
+GET /snomed-ct/v3/MAIN/concepts/99999003?expand=members(active:true, refSetType:["ASSOCIATION","ATTRIBUTE_VALUE"])
 {
   "id": "99999003",
   [...]
@@ -687,7 +687,7 @@ Property `module` does not appear in compact form (with a single `id` key) in th
 {% endhint %}
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/138875005?expand=module()
+GET /snomed-ct/v3/MAIN/concepts/138875005?expand=module()
 {
   "id": "138875005",
   "active": true,
@@ -722,7 +722,7 @@ Expands the definition status concept identified by the property `definitionStat
 returned in the response. Nested `expand()` options work the same way as in the case of `module()`.
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/138875005?expand=definitionStatus()
+GET /snomed-ct/v3/MAIN/concepts/138875005?expand=definitionStatus()
 {
   "id": "138875005",
   "active": true,
@@ -808,7 +808,7 @@ GET /codesystems/SNOMEDCT-UK-CL
 An example response pair demonstrating cases where the PT is different in certain dialects:
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/703247007?expand=pt()
+GET /snomed-ct/v3/MAIN/concepts/703247007?expand=pt()
 // Accept-Language: en-US
 {
   "id": "703247007",
@@ -829,7 +829,7 @@ GET /snomed-ct/v3/concepts/MAIN/703247007?expand=pt()
 ```
 
 ```json
-GET /snomed-ct/v3/concepts/MAIN/703247007?expand=pt()
+GET /snomed-ct/v3/MAIN/concepts/703247007?expand=pt()
 // Accept-Language: en-x-900000000000508004
 {
   "id": "703247007",
@@ -844,6 +844,105 @@ GET /snomed-ct/v3/concepts/MAIN/703247007?expand=pt()
       // but not acceptable in others
       "900000000000508004": "PREFERRED"
     }
+  },
+  [...]
+}
+```
+
+#### `descriptions()`
+
+Expands all descriptions associated with the concept, and adds them to a collection resource (that includes an element limit and a total hit count) under the property `descriptions`. These can also be retrieved separately by the use of 
+the [SNOMED CT Description API](descriptions.md).
+
+{% hint style="warning" %}
+The collection resource's `limit` and `total` values are set to the same value because a description fetch limit can 
+not be set via a property expand option.
+{% endhint %}
+
+The following expand options are supported within `descriptions(...)`:
+
+- `active: true | false`
+
+Controls whether only active or inactive descriptions should be included in the response.
+
+- `typeId: "{expression}"`
+
+An ECL expression that restricts the `typeId` property of each returned description. The simplest expression is a 
+single SCTID, eg. when this option has a value of `"900000000000013009"`, only 
+[Synonyms](https://confluence.ihtsdotools.org/display/DOCEG/Synonym)🌎 will be expanded.
+
+- `sort: "{field}(:{asc | desc})?"(, "{field}(:{asc | desc})")*`
+
+Items in the collection resource are sorted based on the sort configuration given in this option. A single, 
+comma-separated string value is expected; field names and sort order must be separated by a colon (`:`) character. When 
+no sort order is given, ascending order (`asc`) is assumed.
+
+- `expand(...)`
+
+Allows nested expansion of description properties.
+
+```json
+GET /snomed-ct/v3/MAIN/concepts/86299006?expand=descriptions(active: true, sort: "term.exact:asc")
+{
+  "id": "86299006",
+  [...]
+  "descriptions": {
+    "items": [
+      {
+        "id": "1235125018",
+        "released": true,
+        "active": true,
+        "effectiveTime": "20070731",
+        "moduleId": "900000000000207008",
+        "iconId": "900000000000013009",
+        "term": "Fallot's tetralogy",   // Descriptions are sorted by term (case insensitive)
+        "semanticTag": "",
+        "languageCode": "en",
+        "caseSignificance": {
+          "id": "900000000000017005"
+        },
+        "concept": {
+          "id": "86299006"
+        },
+        "type": {
+          "id": "900000000000013009"
+        },
+        "typeId": "900000000000013009", // Synonym
+        "conceptId": "86299006",        // conceptId property matches the concept's SCTID
+        "caseSignificanceId": "900000000000017005",
+        "acceptability": {
+          "900000000000509007": "ACCEPTABLE",
+          "900000000000508004": "ACCEPTABLE"
+        }
+      },
+      {
+        "id": "143125014",
+        "active": true,
+        "term": "Subpulmonic stenosis, ventricular septal defect, overriding aorta, AND right ventricular hypertrophy",
+        [...]
+      },
+      {
+        "id": "143123019",
+        "active": true,
+        "term": "Tetralogy of Fallot",
+        [...]
+      },
+      {
+        "id": "828532012",
+        "active": true,
+        "term": "Tetralogy of Fallot (disorder)",
+        "typeId": "900000000000003001", // Fully Specified Name
+        [...]
+      },
+      {
+        "id": "1235124019",
+        "active": true,
+        "term": "TOF - Tetralogy of Fallot",
+        [...]
+      }
+    ],
+    "limit": 5,
+    "total": 5
   },
   [...]
 }
