@@ -24,11 +24,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.assertj.core.api.Assertions;
 import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -361,19 +361,38 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, cs3Id);
 	}
 	
-	@Test
-	public void reparentParentBundleUnderChildBundle() {
-		final String rootBundleId = createBundle("bundle1", IComponent.ROOT_ID, "rootBundle");
+	@Test(expected = CycleDetectedException.class)
+	public void updateBundleBundleId_DirectCycle() {
+		final String parentBundleId = createBundle("parentBundle", IComponent.ROOT_ID, "Parent bundle");
+		final String childBundleId = createBundle("childBundle", parentBundleId, "Child bundle");
 		
-		final String subBundleId = createBundle("bundle2", rootBundleId, "subBundle");
-		
-		ResourceRequests.bundles().prepareUpdate(rootBundleId)
-			.setBundleId(subBundleId)
+		/* 
+		 * Make "parent" the child of "child" -- but "child" is already a child of "parent",
+		 * so that is not possible. 
+		 */
+		ResourceRequests.bundles()
+			.prepareUpdate(parentBundleId)
+			.setBundleId(childBundleId)
 			.build(USER, String.format("Update bundle: %s", id))
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
+	}
+	
+	@Test(expected = CycleDetectedException.class)
+	public void updateBundleBundleId_IndirectCycle() {
+		final String parentBundleId = createBundle("parentBundle", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("middleBundle", parentBundleId, "Middle bundle");
+		final String childBundleId = createBundle("childBundle", middleBundleId, "Child bundle");
 		
-		Assertions.assertThat(getBundle(subBundleId)).hasFieldOrPropertyWithValue("bundleId", rootBundleId);
-		Assertions.assertThat(getBundle(rootBundleId)).hasFieldOrPropertyWithValue("bundleId", IComponent.ROOT_ID);
+		/* 
+		 * Make "parent" the child of "child" -- but "child" is already an indirect descendant of "parent",
+		 * so that is not possible. 
+		 */
+		ResourceRequests.bundles()
+			.prepareUpdate(parentBundleId)
+			.setBundleId(childBundleId)
+			.build(USER, String.format("Update bundle: %s", id))
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES);
 	}
 }
