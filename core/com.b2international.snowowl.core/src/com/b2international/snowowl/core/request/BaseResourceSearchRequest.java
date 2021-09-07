@@ -101,9 +101,9 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				Expressions.builder()
 				// the permissions give access to either explicit IDs
 				.should(ResourceDocument.Expressions.ids(permittedResourceIds))
-				// or the permitted resources are bundles which give access to all resources within it
+				// or the permitted resources are bundles which give access to all resources within it (recursively)
 				.should(ResourceDocument.Expressions.bundleIds(permittedResourceIds))
-				// TODO support bundle nesting, ancestor bundles and authorization
+				.should(ResourceDocument.Expressions.bundleAncestorIds(permittedResourceIds))
 				.build()
 			);
 		}
