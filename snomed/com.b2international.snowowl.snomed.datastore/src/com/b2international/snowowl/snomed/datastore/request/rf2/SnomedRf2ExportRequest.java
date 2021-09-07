@@ -306,7 +306,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				// If a point-in-time branch path was given, use the timestamp information from it
 				final String referenceBranchToExport = referenceBranch.contains(RevisionIndex.AT_CHAR) 
 						? referenceBranch
-						: String.format("%s%s%s", referenceBranch, RevisionIndex.AT_CHAR, exportStartTime);
+						: RevisionIndex.toBranchAtPath(referenceBranch, exportStartTime);
 				
 				exportBranch(releaseDirectory, 
 						context, 
@@ -536,7 +536,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private TreeSet<CodeSystemVersion> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
 		final String referenceBranch = context.path();
 		final TreeSet<CodeSystemVersion> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
-		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
+		// XXX: Versions do not need to be calculated for snapshot exports, it is always done from the reference branch itself
+		if (Rf2ReleaseType.SNAPSHOT != releaseType) {
+			collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
+		}
 		return visibleVersions;
 	}
 
