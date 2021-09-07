@@ -44,9 +44,7 @@ final class BundleDeleteRequest implements Request<TransactionContext, Boolean> 
 	public Boolean execute(TransactionContext context) {
 		try {
 			final ResourceDocument bundleToDelete = context.lookup(resourceId, ResourceDocument.class);
-			
-			updateResourceBundles(context, bundleToDelete.getId(), bundleToDelete.getBundleId());
-			
+			updateResourceBundles(context, bundleToDelete);
 			context.delete(bundleToDelete);
 		} catch (ComponentNotFoundException e) {
 			// ignore, probably already deleted
@@ -77,19 +75,21 @@ final class BundleDeleteRequest implements Request<TransactionContext, Boolean> 
 	 * </blockquote></pre>
 	 * @param context 
 	 */
-	private void updateResourceBundles(TransactionContext context, final String id, final String bundleId) {
+	private void updateResourceBundles(TransactionContext context, ResourceDocument bundleToDelete) {
 		ResourceRequests.prepareSearch()
-			.filterByBundleId(id)
+			.filterByBundleId(bundleToDelete.getId())
 			.setLimit(10_000)
 			.stream(context)
 			.flatMap(Resources::stream)
 			.forEach(resource -> {
-				context.add(resource.toDocumentBuilder().bundleId(bundleId).build());
+				context.add(resource.toDocumentBuilder()
+					.bundleAncestorIds(bundleToDelete.getBundleAncestorIds())
+					.bundleId(bundleToDelete.getBundleId())
+					.build());
 			});
 	}
 	
 	public String getResourceId() {
 		return resourceId;
 	}
-
 }
