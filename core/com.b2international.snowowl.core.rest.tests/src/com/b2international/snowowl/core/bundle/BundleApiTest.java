@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.bundle;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Set;
@@ -254,6 +255,42 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		// 3 word prefix of "en cli sta fin" must present
 		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.minTermMatch("en cli sta fin", 3))))
 			.containsOnlyOnce(id3, id2);
+	}
+	
+	@Test
+	public void searchByBundleId() {
+		final String parentBundleId = createBundle("b1", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("b2", parentBundleId, "Middle bundle");
+		createBundle("b3", middleBundleId, "Child bundle");
+		
+		final Bundles childrenOfParent = ResourceRequests.bundles()
+			.prepareSearch()
+			.all()
+			.filterByBundleId(parentBundleId)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(1L, TimeUnit.MINUTES);
+		
+		assertEquals(1, childrenOfParent.getTotal());
+		assertEquals(middleBundleId, childrenOfParent.first().get().getId());
+	}
+	
+	@Test
+	public void searchByBundleAncestorId() {
+		final String parentBundleId = createBundle("e1", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("e2", parentBundleId, "Middle bundle");
+		final String childBundleId = createBundle("e3", middleBundleId, "Child bundle");
+		
+		final Bundles descendantsOfParent = ResourceRequests.bundles()
+			.prepareSearch()
+			.all()
+			.filterByBundleAncestorId(parentBundleId)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(10L, TimeUnit.MINUTES);
+		
+		assertEquals(2, descendantsOfParent.getTotal());
+		assertThat(descendantsOfParent).extracting(Bundle::getId).containsOnly(middleBundleId, childBundleId);
 	}
 	
 	@Test
