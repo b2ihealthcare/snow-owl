@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -24,6 +25,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -39,7 +41,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 8.0
  */
 public abstract class BaseResourceCreateRequest implements Request<TransactionContext, String> {
-
+	
 	protected static final long serialVersionUID = 1L;
 
 	// the new ID, if not specified, it will be auto-generated
@@ -217,19 +219,27 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		
 		preExecute(context);
 		
-		if (!IComponent.ROOT_ID.equals(bundleId)) {
-			Bundles bundles = ResourceRequests.bundles().prepareSearch()
+		final List<String> bundleAncestorIds;
+		if (IComponent.ROOT_ID.equals(bundleId)) {
+			// "-1" is the only key that will show up both as the parent and as an ancestor
+			bundleAncestorIds = List.of(IComponent.ROOT_ID);
+		} else {
+			final Bundles bundles = ResourceRequests.bundles()
+				.prepareSearch()
 				.filterById(bundleId)
-				.setLimit(0)
+				.one()
 				.build()
 				.execute(context);
 			
 			if (bundles.getTotal() == 0) {
-				throw new NotFoundException("Bundle", bundleId).toBadRequestException();
+				throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
 			}
-		} 
+	
+			final Bundle bundleParent = bundles.first().get();
+			bundleAncestorIds = bundleParent.getBundleAncestorIdsForChild();
+		}
 		
-		context.add(createResourceDocument(context));
+		context.add(createResourceDocument(context, bundleAncestorIds));
 		return id;
 	}
 	
@@ -258,7 +268,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		return builder;
 	}
 	
-	private ResourceDocument createResourceDocument(TransactionContext context) {
+	private ResourceDocument createResourceDocument(TransactionContext context, List<String> bundleAncestorIds) {
 		final Builder builder = ResourceDocument.builder()
 				.resourceType(getResourceType())
 				.id(id)
@@ -273,6 +283,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)
+				.bundleAncestorIds(bundleAncestorIds)
 				.bundleId(bundleId);
 		
 		completeResource(builder);

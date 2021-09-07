@@ -15,9 +15,14 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.List;
+
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.bundle.Bundle;
+import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -141,7 +146,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			changed |= updateProperty(url, resource::getUrl, updated::url);
 		}
 
-		changed |= updateBundle(context, resource.getBundleId(), updated);
+		changed |= updateBundle(context, resource.getId(), resource.getBundleId(), updated);
 		
 		changed |= updateProperty(title, resource::getTitle, updated::title);
 		changed |= updateProperty(language, resource::getLanguage, updated::language);
@@ -160,29 +165,36 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		return changed;
 	}
 
-	private boolean updateBundle(TransactionContext context, String oldBundleId, Builder updated) {
+	private boolean updateBundle(TransactionContext context, String resourceId, String oldBundleId, Builder updated) {
 		if (bundleId == null || bundleId.equals(oldBundleId)) {
 			return false;
 		}
 		
 		if (IComponent.ROOT_ID.equals(bundleId)) {
+			updated.bundleAncestorIds(List.of(bundleId));
 			updated.bundleId(bundleId);
 			return true;
 		}
 		
-		boolean bundleExist = ResourceRequests.bundles().prepareSearch()
-				.filterById(bundleId)
-				.setLimit(0)
-				.build()
-				.execute(context)
-				.getTotal() > 0;
+		Bundles bundles = ResourceRequests.bundles()
+			.prepareSearch()
+			.filterById(bundleId)
+			.one()
+			.build()
+			.execute(context);
 				
-		if (bundleExist) {
-			updated.bundleId(bundleId);
-			return true;
-		} else {
-			throw new NotFoundException("Bundle", bundleId).toBadRequestException();
+		if (bundles.getTotal() == 0) {
+			throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
 		}
+
+		Bundle parentBundle = bundles.first().get();
+		if (parentBundle.getBundleId().equals(resourceId) || parentBundle.getBundleAncestorIds().contains(resourceId)) {
+			throw new CycleDetectedException("Setting parent bundle ID to '" + bundleId + "' would create a loop.");
+		}
+		
+		updated.bundleAncestorIds(parentBundle.getBundleAncestorIdsForChild());
+		updated.bundleId(bundleId);
+		return true;
 	}
 
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);
