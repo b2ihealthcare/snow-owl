@@ -15,14 +15,26 @@
  */
 package com.b2international.snowowl.core.request;
 
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.*;
+
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.bundle.Bundle;
+import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 8.0
@@ -141,7 +153,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			changed |= updateProperty(url, resource::getUrl, updated::url);
 		}
 
-		changed |= updateBundle(context, resource.getBundleId(), updated);
+		changed |= updateBundle(context, resource.getId(), resource.getBundleId(), updated);
 		
 		changed |= updateProperty(title, resource::getTitle, updated::title);
 		changed |= updateProperty(language, resource::getLanguage, updated::language);
@@ -160,29 +172,78 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		return changed;
 	}
 
-	private boolean updateBundle(TransactionContext context, String oldBundleId, Builder updated) {
+	private boolean updateBundle(TransactionContext context, String resourceId, String oldBundleId, Builder updated) {
 		if (bundleId == null || bundleId.equals(oldBundleId)) {
 			return false;
 		}
 		
 		if (IComponent.ROOT_ID.equals(bundleId)) {
+			updated.bundleAncestorIds(List.of(bundleId));
 			updated.bundleId(bundleId);
 			return true;
 		}
 		
-		boolean bundleExist = ResourceRequests.bundles().prepareSearch()
-				.filterById(bundleId)
-				.setLimit(0)
-				.build()
-				.execute(context)
-				.getTotal() > 0;
+		Bundles bundles = ResourceRequests.bundles()
+			.prepareSearch()
+			.filterById(bundleId)
+			.one()
+			.build()
+			.execute(context);
 				
-		if (bundleExist) {
-			updated.bundleId(bundleId);
-			return true;
-		} else {
-			throw new NotFoundException("Bundle", bundleId).toBadRequestException();
+		if (bundles.getTotal() == 0) {
+			throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
 		}
+
+		Bundle parentBundle = bundles.first().get();
+		if (parentBundle.getBundleId().equals(resourceId) || parentBundle.getBundleAncestorIds().contains(resourceId)) {
+			throw new CycleDetectedException("Setting parent bundle ID to '" + bundleId + "' would create a loop.");
+		}
+		
+		// Update the "direct parent" and ancestor identifiers on the resource
+		updated.bundleAncestorIds(parentBundle.getBundleAncestorIdsForChild());
+		updated.bundleId(parentBundle.getId());
+		
+		// Update ancestors on the resource and its descendants
+		final Iterator<Resource> descendants = ResourceRequests.prepareSearch()
+			.filterByBundleAncestorId(resourceId)
+			.setLimit(5_000)
+			.stream(context)
+			.flatMap(Resources::stream)
+			.iterator();
+		
+		final Multimap<String, Resource> resourcesByParent = Multimaps.index(descendants, Resource::getBundleId);
+		final Map<String, List<String>> ancestorsForChildByParentId = newHashMap(Map.of(resourceId, ImmutableList.<String>builder()
+			.addAll(parentBundle.getBundleAncestorIdsForChild())
+			.add(parentBundle.getId())
+			.build()));
+		
+		// Start with the immediate children of the current resource
+		final Deque<Resource> toProcess = new ArrayDeque<>(resourcesByParent.get(resourceId));
+		
+		while (!toProcess.isEmpty()) {
+			final Resource current = toProcess.removeFirst();
+			final String currentId = current.getId();
+			final ResourceDocument resource = context.lookup(currentId, ResourceDocument.class);
+			final ResourceDocument.Builder currentBuilder = ResourceDocument.builder(resource);
+
+			final String parentId = current.getBundleId();
+			final List<String> ancestorIds = ancestorsForChildByParentId.get(parentId);
+			currentBuilder.bundleAncestorIds(ancestorIds);
+			context.add(currentBuilder.build());
+			
+			final Collection<Resource> children = resourcesByParent.get(currentId);
+			if (!children.isEmpty()) {
+				final List<String> nextAncestorIds = ImmutableList.<String>builder()
+					.addAll(ancestorIds)
+					.add(parentId)
+					.build();
+
+				ancestorsForChildByParentId.put(currentId, nextAncestorIds);
+				toProcess.addAll(children);
+			}
+		}
+		
+		return true;
 	}
 
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);

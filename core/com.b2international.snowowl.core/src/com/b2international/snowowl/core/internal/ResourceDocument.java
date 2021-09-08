@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.internal;
 
 import static com.b2international.index.query.Expressions.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -81,6 +82,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String USAGE = "usage";
 		public static final String PURPOSE = "purpose";
 		public static final String CREATED_AT = "createdAt";
+		public static final String BUNDLE_ANCESTOR_IDS = "bundleAncestorIds";
 		public static final String BUNDLE_ID = "bundleId";
 		
 		// specialized resource fields
@@ -195,6 +197,10 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression branchPaths(Iterable<String> branchPaths) {
 			return matchAny(Fields.BRANCH_PATH, branchPaths);
 		}
+		
+		public static Expression bundleAncestorIds(Iterable<String> bundleAncestorIds) {
+			return matchAny(Fields.BUNDLE_ANCESTOR_IDS, bundleAncestorIds);
+		}
 
 		public static Expression bundleIds(Iterable<String> bundleIds) {
 			return matchAny(Fields.BUNDLE_ID, bundleIds);
@@ -245,6 +251,7 @@ public final class ResourceDocument extends RevisionDocument {
 				.contact(from.getContact())
 				.usage(from.getUsage())
 				.purpose(from.getPurpose())
+				.bundleAncestorIds(from.getBundleAncestorIds())
 				.bundleId(from.getBundleId())
 				.oid(from.getOid())
 				.branchPath(from.getBranchPath())
@@ -272,6 +279,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String contact;
 		private String usage;
 		private String purpose;
+		private List<String> bundleAncestorIds;
 		private String bundleId;
 		
 		// specialized resource fields
@@ -344,6 +352,11 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 
+		public Builder bundleAncestorIds(Iterable<String> bundleAncestorIds) {
+			this.bundleAncestorIds = Collections3.toImmutableList(bundleAncestorIds);
+			return getSelf();
+		}
+		
 		public Builder bundleId(String bundleId) {
 			this.bundleId = bundleId;
 			return getSelf();
@@ -406,6 +419,7 @@ public final class ResourceDocument extends RevisionDocument {
 				contact, 
 				usage, 
 				purpose,
+				bundleAncestorIds,
 				bundleId,
 				oid,
 				branchPath,
@@ -438,6 +452,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	private final List<String> bundleAncestorIds;
 	private final String bundleId;
 	
 	// specialized resource fields
@@ -452,6 +467,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final Long createdAt;
 	
 	// mapping only field, no actual purpose or use, required to support multi-index search with doc type VersionDocument
+	@SuppressWarnings("unused")
 	private String version;
 	
 	public ResourceDocument(
@@ -468,6 +484,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final String contact,
 			final String usage,
 			final String purpose,
+			final List<String> bundleAncestorIds,
 			final String bundleId,
 			final String oid,
 			final String branchPath,
@@ -488,6 +505,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.contact = contact;
 		this.usage = usage;
 		this.purpose = purpose;
+		this.bundleAncestorIds = bundleAncestorIds;
 		this.bundleId = bundleId;
 		this.oid = oid;
 		this.branchPath = branchPath;
@@ -545,6 +563,10 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public String getPurpose() {
 		return purpose;
+	}
+	
+	public List<String> getBundleAncestorIds() {
+		return bundleAncestorIds;
 	}
 	
 	public String getBundleId() {

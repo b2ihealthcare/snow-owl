@@ -53,22 +53,22 @@ public class ResourceRestService extends AbstractRestService {
 	})
 	@GetMapping
 	public Promise<Resources> searchByGet(@ParameterObject final ResourceRestSearch params) {
-		return ResourceRequests
-				.prepareSearch()
-				.filterByIds(params.getId())
-				.filterByResourceTypes(params.getResourceType())
-				.filterByTitleExact(params.getTitleExact())
-				.filterByTitle(params.getTitle())
-				.filterByToolingIds(params.getToolingId())
-				.filterByBundleIds(params.getBundleId())
-				.filterByStatus(params.getStatus())
-				.setLimit(params.getLimit())
-				.setExpand(params.getExpand())
-				.setFields(params.getField())
-				.setSearchAfter(params.getSearchAfter())
-				.sortBy(extractSortFields(params.getSort()))
-				.buildAsync()
-				.execute(getBus());
+		return ResourceRequests.prepareSearch()
+			.filterByIds(params.getId())
+			.filterByResourceTypes(params.getResourceType())
+			.filterByTitleExact(params.getTitleExact())
+			.filterByTitle(params.getTitle())
+			.filterByToolingIds(params.getToolingId())
+			.filterByBundleIds(params.getBundleId())
+			.filterByBundleAncestorIds(params.getBundleAncestorId())
+			.filterByStatus(params.getStatus())
+			.setLimit(params.getLimit())
+			.setExpand(params.getExpand())
+			.setFields(params.getField())
+			.setSearchAfter(params.getSearchAfter())
+			.sortBy(extractSortFields(params.getSort()))
+			.buildAsync()
+			.execute(getBus());
 	}
 	
 	@Operation(
@@ -81,22 +81,7 @@ public class ResourceRestService extends AbstractRestService {
 	})
 	@PostMapping(value = "/search", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Resources> searchByPost(@RequestBody final ResourceRestSearch params) {
-		return ResourceRequests
-				.prepareSearch()
-				.filterByIds(params.getId())
-				.filterByResourceTypes(params.getResourceType())
-				.filterByTitleExact(params.getTitleExact())
-				.filterByTitle(params.getTitle())
-				.filterByToolingIds(params.getToolingId())
-				.filterByBundleIds(params.getBundleId())
-				.filterByStatus(params.getStatus())
-				.setLimit(params.getLimit())
-				.setExpand(params.getExpand())
-				.setFields(params.getField())
-				.setSearchAfter(params.getSearchAfter())
-				.sortBy(extractSortFields(params.getSort()))
-				.buildAsync()
-				.execute(getBus());
+		return searchByGet(params);
 	}
 
 	@Operation(

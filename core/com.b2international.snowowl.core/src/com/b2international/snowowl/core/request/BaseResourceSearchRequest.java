@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		BUNDLE_ID, 
 
 		/**
+		 * Filter matches by their bundle ancestor ID.
+		 */
+		BUNDLE_ANCESTOR_ID, 
+		
+		/**
 		 * HL7 registry OID
 		 */
 		OID,
@@ -76,6 +82,14 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		addSecurityFilter(queryBuilder, context.service(User.class));
 		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
+		if (containsKey(OptionKey.BUNDLE_ANCESTOR_ID)) {
+			final Collection<String> ancestorIds = getCollection(OptionKey.BUNDLE_ANCESTOR_ID, String.class);
+			queryBuilder.filter(Expressions.builder()
+				.should(ResourceDocument.Expressions.bundleIds(ancestorIds))
+				.should(ResourceDocument.Expressions.bundleAncestorIds(ancestorIds))
+				.build());
+		}
+
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
@@ -101,9 +115,9 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				Expressions.builder()
 				// the permissions give access to either explicit IDs
 				.should(ResourceDocument.Expressions.ids(permittedResourceIds))
-				// or the permitted resources are bundles which give access to all resources within it
+				// or the permitted resources are bundles which give access to all resources within it (recursively)
 				.should(ResourceDocument.Expressions.bundleIds(permittedResourceIds))
-				// TODO support bundle nesting, ancestor bundles and authorization
+				.should(ResourceDocument.Expressions.bundleAncestorIds(permittedResourceIds))
 				.build()
 			);
 		}
