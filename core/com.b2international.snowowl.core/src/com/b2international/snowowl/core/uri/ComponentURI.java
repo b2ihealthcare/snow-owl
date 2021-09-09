@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.core.uri;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -105,10 +103,18 @@ public final class ComponentURI implements Serializable {
 	}
 
 	private ComponentURI(ResourceURI resourceUri, String componentType, String identifier) {
-		checkNotNull(resourceUri, "ResourceURI argument should not be null.");
-		checkArgument(!Strings.isNullOrEmpty(componentType), "Component Type should not be null or empty. Got: '%s'.", componentType);
-		checkArgument(!componentType.contains("."), "Component Type should be a single word. Got: '%s'.", componentType);
-		checkArgument(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
+		if (resourceUri == null) {
+			throw new BadRequestException("ResourceURI argument should not be null.");
+		}
+		if (Strings.isNullOrEmpty(componentType)) {
+			throw new BadRequestException("Component Type should not be null or empty. Got: '%s'.", componentType);
+		}
+		if (componentType.contains(".")) {
+			throw new BadRequestException("Component Type should be a single word. Got: '%s'.", componentType);
+		}
+		if (!CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri) && Strings.isNullOrEmpty(identifier)) {
+			throw new BadRequestException("Identifier should not be null or empty.");
+		}
 		this.resourceUri = resourceUri;
 		this.componentType = componentType;
 		this.identifier = Strings.nullToEmpty(identifier);
@@ -144,7 +150,9 @@ public final class ComponentURI implements Serializable {
 			return ComponentURI.UNSPECIFIED;
 		}
 		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
-		checkArgument(parts.size() >= 4, "A component uri consists of at least four parts (resourceType/resourceId/componentType/componentId). Arg was: %s", uri);
+		if (parts.size() < 4) {
+			throw new BadRequestException("A component uri consists of at least four parts (resourceType/resourceId/componentType/componentId). Arg was: %s", uri);
+		}
 		int terminologyComponentTypeIndex = parts.size() - 2;
 		int componentIdIndex = parts.size() - 1;
 		ResourceURI resourceURI = new ResourceURI(SLASH_JOINER.join(parts.subList(0, terminologyComponentTypeIndex)));
