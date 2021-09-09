@@ -60,7 +60,9 @@ public interface AccessControl {
 		// extract resourceUri format (new 8.x format)
 		TerminologyResourceRequest<?> terminologyResourceRequest = Request.getNestedRequest(req, TerminologyResourceRequest.class);
 		if (terminologyResourceRequest != null) {
+			// accept both full resourceURI as resource and without resource type (as ID/path is often enough)
 			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).toString()));
+			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).withoutResourceType()));
 		}
 
 		// log a warning if the request does not support any known request execution contexts and fall back to superuser permission requirement
