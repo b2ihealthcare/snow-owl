@@ -85,6 +85,9 @@ public interface AccessControl {
 			// accept both full resourceURI as resource and without resource type (as ID/path is often enough)
 			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).toString()));
 			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).withoutResourceType()));
+			// if a resource that is being accessed is part of a bundle and the user has access to that bundle then it has access to the resource as well
+			accessedResources.add(terminologyResourceRequest.getResource(context).getBundleId());
+			accessedResources.addAll(terminologyResourceRequest.getResource(context).getBundleAncestorIds());
 		}
 	}
 
