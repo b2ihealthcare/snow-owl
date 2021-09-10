@@ -25,10 +25,12 @@ import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -247,4 +249,10 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 	}
 
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);
+
+	@Override
+	public final void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, List<String> accessedResources) {
+		accessedResources.add(componentId());
+	}
+	
 }

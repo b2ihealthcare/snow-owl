@@ -48,6 +48,26 @@ public interface AccessControl {
 			throw new UnsupportedOperationException("AccessControl interface needs to be declared on Request implementations");
 		}
 		
+		collectAccessedResources(context, req, accessedResources);
+
+		// log a warning if the request does not support any known request execution contexts and fall back to superuser permission requirement
+		if (accessedResources.isEmpty()) {
+			context.log().warn("Request '{}' implicitly requires superuser permission which might be incorrect.", MonitoredRequest.toJson(context, req, Map.of()));
+			accessedResources.add(Permission.ALL);
+		}
+		
+		return accessedResources;
+	}
+
+	/**
+	 * Using the current request and its context, collect and add all resources that are being accessed by this request and thus require permission
+	 * authorization before proceeding to execution.
+	 * 
+	 * @param context
+	 * @param req
+	 * @param accessedResources
+	 */
+	default void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, final List<String> accessedResources) {
 		// extract repositoryId/branch resource if present (old 7.x format)
 		RepositoryRequest<?> repositoryRequest = Request.getNestedRequest(req, RepositoryRequest.class);
 		if (repositoryRequest != null) {
@@ -66,14 +86,6 @@ public interface AccessControl {
 			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).toString()));
 			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).withoutResourceType()));
 		}
-
-		// log a warning if the request does not support any known request execution contexts and fall back to superuser permission requirement
-		if (accessedResources.isEmpty()) {
-			context.log().warn("Request '{}' implicitly requires superuser permission which might be incorrect.", MonitoredRequest.toJson(context, req, Map.of()));
-			accessedResources.add(Permission.ALL);
-		}
-		
-		return accessedResources;
 	}
 
 	/**
