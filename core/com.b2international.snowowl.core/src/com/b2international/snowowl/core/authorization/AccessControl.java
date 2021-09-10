@@ -16,11 +16,13 @@
 package com.b2international.snowowl.core.authorization;
 
 import java.util.List;
+import java.util.Map;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.monitoring.MonitoredRequest;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.google.common.collect.Lists;
@@ -67,7 +69,7 @@ public interface AccessControl {
 
 		// log a warning if the request does not support any known request execution contexts and fall back to superuser permission requirement
 		if (accessedResources.isEmpty()) {
-			context.log().warn("Request '{}' implicitly requires superuser permission which might be incorrect.", req.getType());
+			context.log().warn("Request '{}' implicitly requires superuser permission which might be incorrect.", MonitoredRequest.toJson(context, req, Map.of()));
 			accessedResources.add(Permission.ALL);
 		}
 		
