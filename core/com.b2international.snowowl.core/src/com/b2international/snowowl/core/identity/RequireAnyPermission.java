@@ -56,7 +56,9 @@ final class RequireAnyPermission extends BasePermission {
 	
 	@Override
 	protected boolean doImplies(Permission permissionToAuthenticate) {
-		return getResources().stream().anyMatch(resource -> FilenameUtils.wildcardMatch(permissionToAuthenticate.getResource(), resource));
+		return getResources().stream().anyMatch(resource -> {
+			return permissionToAuthenticate.getResources().stream().anyMatch(res -> FilenameUtils.wildcardMatch(res, resource));
+		});
 	}
 	
 	static boolean isRequireAnyResource(String resourceReference) {
