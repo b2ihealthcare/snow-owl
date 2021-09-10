@@ -23,9 +23,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
@@ -34,9 +32,7 @@ import com.b2international.snowowl.core.version.Versions;
 /**
  * @since 4.7
  */
-public final class VersionSearchRequest
-		extends SearchIndexResourceRequest<RepositoryContext, Versions, VersionDocument>
-		implements AccessControl {
+public final class VersionSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Versions, VersionDocument> {
 
 	private static final long serialVersionUID = 3L;
 
@@ -152,11 +148,6 @@ public final class VersionSearchRequest
 	@Override
 	protected Versions createEmptyResult(int limit) {
 		return new Versions(Collections.emptyList(), null, limit, 0);
-	}
-
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
 	}
 
 }
