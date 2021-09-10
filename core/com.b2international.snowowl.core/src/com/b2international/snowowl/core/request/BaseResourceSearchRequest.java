@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -109,18 +110,36 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	 * @param user - the user who's permissions will be applied to this resource search request
 	 */
 	protected final void addSecurityFilter(ExpressionBuilder queryBuilder, User user) {
-		if (!user.isAdministrator() && !user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
-			Set<String> permittedResourceIds = user.getPermissions().stream().flatMap(p -> p.getResources().stream()).collect(Collectors.toSet());
-			queryBuilder.filter(
-				Expressions.builder()
-				// the permissions give access to either explicit IDs
-				.should(ResourceDocument.Expressions.ids(permittedResourceIds))
-				// or the permitted resources are bundles which give access to all resources within it (recursively)
-				.should(ResourceDocument.Expressions.bundleIds(permittedResourceIds))
-				.should(ResourceDocument.Expressions.bundleAncestorIds(permittedResourceIds))
-				.build()
-			);
+		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
+			return;
 		}
+		
+		// extract read permissions
+		final List<Permission> readPermissions = user.getPermissions().stream()
+				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
+				.collect(Collectors.toList());
+		
+		final Set<String> exactResourceIds = readPermissions.stream()
+				.flatMap(p -> p.getResources().stream())
+				.filter(resource -> !resource.endsWith("*"))
+				.collect(Collectors.toSet());
+		final Set<String> resourceIdPrefixes = readPermissions.stream()
+				.flatMap(p -> p.getResources().stream())
+				.filter(resource -> resource.endsWith("*"))
+				.map(resource -> resource.substring(0, resource.length() - 1))
+				.collect(Collectors.toSet());
+		queryBuilder.filter(
+			Expressions.builder()
+			// the permissions give access to either 
+			// explicit IDs
+			.should(ResourceDocument.Expressions.ids(exactResourceIds))
+			// partial IDs, prefixes
+			.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes))
+			// or the permitted resources are bundles which give access to all resources within it (recursively)
+			.should(ResourceDocument.Expressions.bundleIds(exactResourceIds))
+			.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds))
+			.build()
+		);
 	}
 
 	/**

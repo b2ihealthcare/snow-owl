@@ -92,14 +92,14 @@ public class BundleApiAssert {
 		return prepareBundleCreateRequestBody(resourceId, IComponent.ROOT_ID);
 	}
 	
-	public static Json prepareBundleCreateRequestBody(final String resourceId, final String bundleId) {
+	public static Json prepareBundleCreateRequestBody(final String resourceId, final String bundleParentId) {
 		return Json.object(
 			"id", resourceId,
 			"title", "Bundle " + resourceId,
 			"description", "description",
 			"language", "en",
 			"url", "https://b2i.sg/" + resourceId,
-			"bundleId", bundleId
+			"bundleId", bundleParentId
 		);
 	}
 }
