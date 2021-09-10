@@ -323,7 +323,17 @@ public final class EsQueryBuilder {
 	}
 	
 	private void visit(PrefixPredicate predicate) {
-		deque.push(QueryBuilders.prefixQuery(toFieldPath(predicate), predicate.getArgument()));
+		if (predicate.values().size() == 0) {
+			deque.push(MATCH_NONE);
+		} else if (predicate.values().size() == 1) {
+			deque.push(QueryBuilders.prefixQuery(toFieldPath(predicate), Iterables.getOnlyElement(predicate.values())));
+		} else {
+			final BoolQueryBuilder bool = QueryBuilders.boolQuery().minimumShouldMatch(1);
+			for (String prefixMatch : predicate.values()) {
+				bool.should(QueryBuilders.prefixQuery(toFieldPath(predicate), prefixMatch));
+			}
+			deque.push(bool);
+		}
 	}
 	
 	private void visit(RegexpPredicate regexp) {
