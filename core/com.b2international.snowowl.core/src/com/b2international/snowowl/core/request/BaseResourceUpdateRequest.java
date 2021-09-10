@@ -19,6 +19,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.*;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.CycleDetectedException;
@@ -197,7 +198,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		}
 
 		Bundle parentBundle = bundles.first().get();
-		if (parentBundle.getBundleId().equals(resourceId) || parentBundle.getBundleAncestorIds().contains(resourceId)) {
+		if (parentBundle.getBundleId().equals(resourceId) || Collections3.toImmutableSet(parentBundle.getBundleAncestorIds()).contains(resourceId)) {
 			throw new CycleDetectedException("Setting parent bundle ID to '" + bundleId + "' would create a loop.");
 		}
 		
