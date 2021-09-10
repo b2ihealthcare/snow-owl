@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.authorization;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -87,7 +88,7 @@ public interface AccessControl {
 			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).withoutResourceType()));
 			// if a resource that is being accessed is part of a bundle and the user has access to that bundle then it has access to the resource as well
 			accessedResources.add(terminologyResourceRequest.getResource(context).getBundleId());
-			accessedResources.addAll(terminologyResourceRequest.getResource(context).getBundleAncestorIds());
+			accessedResources.addAll(Collections3.toImmutableSet(terminologyResourceRequest.getResource(context).getBundleAncestorIds()));
 		}
 	}
 
