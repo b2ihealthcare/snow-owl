@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
@@ -226,12 +225,10 @@ public abstract class Resource implements Serializable {
 		this.purpose = purpose;
 	}
 	
-	@JsonIgnore
 	public List<String> getBundleAncestorIds() {
 		return bundleAncestorIds;
 	}
 	
-	@JsonIgnore
 	public void setBundleAncestorIds(List<String> bundleAncestorIds) {
 		this.bundleAncestorIds = bundleAncestorIds;
 	}
