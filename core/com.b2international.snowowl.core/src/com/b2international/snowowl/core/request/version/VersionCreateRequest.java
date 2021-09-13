@@ -53,6 +53,7 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -74,6 +75,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@NotNull
 	@JsonProperty
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	LocalDate effectiveTime;
 	
 	@NotNull
