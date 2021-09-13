@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.authorization;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.UnauthorizedException;
@@ -24,7 +26,9 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.monitoring.MonitoredRequest;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Strings;
@@ -90,7 +94,13 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				.stream()
 				.filter(AccessControl.class::isInstance)
 				.map(AccessControl.class::cast)
-				.flatMap(ac -> ac.getPermissions(userContext, next()).stream())
+				.flatMap(ac -> {
+					List<Permission> permissions = ac.getPermissions(userContext, next());
+					if (permissions.isEmpty()) {
+						context.log().warn("No permissions required to execute request '{}'.", MonitoredRequest.toJson(context, next(), Map.of()));
+					}
+					return permissions.stream();
+				})
 				.forEach(permissionRequirement -> {
 					if (!user.hasPermission(permissionRequirement)) {
 						throw new ForbiddenException("Operation not permitted. '%s' permission is required. User has '%s'.", permissionRequirement.getPermission(), user.getPermissions());
