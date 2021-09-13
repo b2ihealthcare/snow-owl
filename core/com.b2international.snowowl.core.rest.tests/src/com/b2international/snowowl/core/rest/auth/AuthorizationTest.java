@@ -21,8 +21,6 @@ import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCo
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -30,13 +28,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.identity.Role;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -131,7 +125,7 @@ public class AuthorizationTest {
 	
 	@Test
 	public void permissionAllHasAccess() throws Exception {
-		String token = generateToken(Permission.ADMIN);
+		String token = RestExtensions.generateToken(Permission.ADMIN);
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get()
 			.then()
@@ -141,7 +135,7 @@ public class AuthorizationTest {
 	
 	@Test
 	public void readOnlyAccessOnSingleResource() throws Exception {
-		String token = generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, SNOMEDCT_ID));
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, SNOMEDCT_ID));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get()
 			.then()
@@ -151,7 +145,7 @@ public class AuthorizationTest {
 	
 	@Test
 	public void noAccessToResourceDirectlyWithoutPermission() throws Exception {
-		String token = generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, SNOMEDCT_ID));
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, SNOMEDCT_ID));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get("/{id}", SNOMEDCT_UK_CL)
 			.then()
@@ -160,7 +154,7 @@ public class AuthorizationTest {
 	
 	@Test
 	public void shouldReturnResourceWithBundlePermission() throws Exception {
-		String token = generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_CLINICAL_BUNDLE_ID));
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_CLINICAL_BUNDLE_ID));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get("/{id}", SNOMEDCT_UK_CL)
 			.then()
@@ -169,7 +163,7 @@ public class AuthorizationTest {
 	
 	@Test
 	public void readOnlyAccessOnBundleGivesAccessToResourcesWithin() throws Exception {
-		String token = generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_CLINICAL_BUNDLE_ID));
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_CLINICAL_BUNDLE_ID));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get()
 			.then()
@@ -179,7 +173,7 @@ public class AuthorizationTest {
 	
 	@Test
 	public void readOnlyAccessOnBundleGivesAccessToResourcesWithinTransitively() throws Exception {
-		String token = generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_ALL_BUNDLE_ID));
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_ALL_BUNDLE_ID));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get()
 			.then()
@@ -189,7 +183,7 @@ public class AuthorizationTest {
 	
 	@Test
 	public void wildcardPermissionGivesAccessToAllMatchingResources() throws Exception {
-		String token = generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, SNOMEDCT_UK_CL+"*"));
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, SNOMEDCT_UK_CL+"*"));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get()
 			.then()
@@ -199,14 +193,14 @@ public class AuthorizationTest {
 	
 	@Test
 	public void adminPermissionOnSingleResourceAllowsVersioning() throws Exception {
-		String token = generateToken(Permission.requireAll(Permission.ALL, SNOMEDCT_UK_CL));
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.ALL, SNOMEDCT_UK_CL));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.VERSIONS_API, token)
 			.contentType(ContentType.JSON)
 			.body(Json.object(
 				"resource", CodeSystem.uri(SNOMEDCT_UK_CL).toString(),
 				"version", "v1",
 				"description", "v1",
-				"effectiveTime", LocalDate.now().toString(),
+				"effectiveTime", "2021-09-13",
 				"force", false
 			))
 			.post()
@@ -214,8 +208,21 @@ public class AuthorizationTest {
 			.statusCode(201);
 	}
 	
-	private String generateToken(Permission...permissions) {
-		return ApplicationContext.getServiceForClass(JWTGenerator.class).generate(new User(RestExtensions.USER, List.of(new Role("custom", List.of(permissions)))));
+	@Test
+	public void adminPermissionOnContainerBundleAllowsVersioning() throws Exception {
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.ALL, UK_CLINICAL_BUNDLE_ID));
+		RestExtensions.givenRequestWithToken(ApiTestConstants.VERSIONS_API, token)
+			.contentType(ContentType.JSON)
+			.body(Json.object(
+				"resource", CodeSystem.uri(SNOMEDCT_UK_CL).toString(),
+				"version", "v2",
+				"description", "v2",
+				"effectiveTime", "2021-09-14",
+				"force", false
+			))
+			.post()
+			.then().assertThat()
+			.statusCode(201);
 	}
 	
 }
