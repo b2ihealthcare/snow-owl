@@ -21,6 +21,7 @@ import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCo
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +31,7 @@ import org.junit.Test;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.Permission;
@@ -42,6 +44,8 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
+
+import io.restassured.http.ContentType;
 
 /**
  * @since 8.0
@@ -191,6 +195,23 @@ public class AuthorizationTest {
 			.then()
 			.assertThat().statusCode(200)
 			.and().body("total", equalTo(2));
+	}
+	
+	@Test
+	public void adminPermissionOnSingleResourceAllowsVersioning() throws Exception {
+		String token = generateToken(Permission.requireAll(Permission.ALL, SNOMEDCT_UK_CL));
+		RestExtensions.givenRequestWithToken(ApiTestConstants.VERSIONS_API, token)
+			.contentType(ContentType.JSON)
+			.body(Json.object(
+				"resource", CodeSystem.uri(SNOMEDCT_UK_CL).toString(),
+				"version", "v1",
+				"description", "v1",
+				"effectiveTime", LocalDate.now().toString(),
+				"force", false
+			))
+			.post()
+			.then().assertThat()
+			.statusCode(201);
 	}
 	
 	private String generateToken(Permission...permissions) {

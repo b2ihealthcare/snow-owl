@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -54,7 +53,6 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -140,8 +138,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					Branch branch = RepositoryRequests.branching()
 						.prepareGet(newVersionPath)
 						.build(repositoryId)
-						.execute(context.service(IEventBus.class))
-						.getSync(1, TimeUnit.MINUTES);
+						.execute(context);
 					
 					if (!branch.isDeleted()) {
 						throw new ConflictException("An existing version or branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
@@ -220,8 +217,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		return RepositoryRequests.branching()
 				.prepareDelete(path)
 				.build(repositoryId)
-				.execute(context.service(IEventBus.class))
-				.getSync(1, TimeUnit.MINUTES);
+				.execute(context);
 	}
 	
 	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
@@ -229,7 +225,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.one()
 			.filterById(resource.getResourceId())
 			.buildAsync()
-			.getRequest()
 			.execute(context)
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
@@ -302,8 +297,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.setParent(codeSystem.getBranchPath())
 			.setName(version)
 			.build(codeSystem.getToolingId())
-			.execute(context.service(IEventBus.class))
-			.getSync(1, TimeUnit.MINUTES);
+			.execute(context);
 		monitor.worked(1);
 	}
 	

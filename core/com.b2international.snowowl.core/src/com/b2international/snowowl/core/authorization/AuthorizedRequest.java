@@ -93,7 +93,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				.map(ac -> ac.getPermission(userContext, next()))
 				.forEach(permissionRequirement -> {
 					if (!user.hasPermission(permissionRequirement)) {
-						throw new ForbiddenException("Operation not permitted. '%s' permission is required.", permissionRequirement.getPermission());
+						throw new ForbiddenException("Operation not permitted. '%s' permission is required. User has '%s'.", permissionRequirement.getPermission(), user.getPermissions());
 					}
 				});
 		}
