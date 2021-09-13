@@ -35,8 +35,8 @@ import com.google.common.collect.Lists;
  */
 public interface AccessControl {
 
-	default Permission getPermission(ServiceProvider context, Request<ServiceProvider, ?> req) {
-		return Permission.requireAny(getOperation(), getResources(context, req));
+	default List<Permission> getPermissions(ServiceProvider context, Request<ServiceProvider, ?> req) {
+		return List.of(Permission.requireAny(getOperation(), getResources(context, req)));
 	}
 	
 	/**

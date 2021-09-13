@@ -303,15 +303,20 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	}
 	
 	@Override
-	public List<String> getResources(ServiceProvider context, Request<ServiceProvider, ?> req) {
+	public List<Permission> getPermissions(ServiceProvider context, Request<ServiceProvider, ?> req) {
 		if (resourcesById == null) {
 			resourcesById = fetchResources(context);
 		}
-		// TODO support multi repository version authorization
-		return List.of(
-			resourcesById.get(resource).getToolingId(),
-			resourcesById.get(resource).getResourceURI().toString()
-		);
+		List<Permission> permissions = new ArrayList<>(resourcesById.size());
+		for (ResourceURI accessedResourceURI : resourcesById.keySet()) {
+			permissions.add(Permission.requireAny(
+				getOperation(), 
+				resourcesById.get(accessedResourceURI).getToolingId(),
+				resourcesById.get(accessedResourceURI).getResourceURI().toString(),
+				resourcesById.get(accessedResourceURI).getId()
+			));
+		}
+		return permissions;
 	}
 	
 	@Override

@@ -90,7 +90,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				.stream()
 				.filter(AccessControl.class::isInstance)
 				.map(AccessControl.class::cast)
-				.map(ac -> ac.getPermission(userContext, next()))
+				.flatMap(ac -> ac.getPermissions(userContext, next()).stream())
 				.forEach(permissionRequirement -> {
 					if (!user.hasPermission(permissionRequirement)) {
 						throw new ForbiddenException("Operation not permitted. '%s' permission is required. User has '%s'.", permissionRequirement.getPermission(), user.getPermissions());
