@@ -23,10 +23,12 @@ import java.util.stream.Collectors;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 8.0
@@ -80,7 +82,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	protected final Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
-		addSecurityFilter(queryBuilder, context.service(User.class));
+		addSecurityFilter(context, queryBuilder);
 		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		if (containsKey(OptionKey.BUNDLE_ANCESTOR_ID)) {
@@ -104,12 +106,13 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	}
 	
 	/**
-	 * Configures security filters to allow access to certain resources only. This method is no-op if the given {@link User} is an administrator or has read access to everything. 
+	 * Configures security filters to allow access to certain resources only. This method is no-op if the given {@link ServiceProvider context}'s {@link User} is an administrator or has read access to everything. 
 	 * 
+	 * @param context - the context where user information will be extracted
 	 * @param queryBuilder - the query builder to append the clauses to
-	 * @param user - the user who's permissions will be applied to this resource search request
 	 */
-	protected final void addSecurityFilter(ExpressionBuilder queryBuilder, User user) {
+	protected final void addSecurityFilter(ServiceProvider context, ExpressionBuilder queryBuilder) {
+		final User user = context.service(User.class);
 		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
 			return;
 		}
@@ -128,18 +131,26 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				.filter(resource -> resource.endsWith("*"))
 				.map(resource -> resource.substring(0, resource.length() - 1))
 				.collect(Collectors.toSet());
-		queryBuilder.filter(
-			Expressions.builder()
-			// the permissions give access to either 
-			// explicit IDs
-			.should(ResourceDocument.Expressions.ids(exactResourceIds))
-			// partial IDs, prefixes
-			.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes))
-			// or the permitted resources are bundles which give access to all resources within it (recursively)
-			.should(ResourceDocument.Expressions.bundleIds(exactResourceIds))
-			.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds))
-			.build()
-		);
+		
+		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
+			context.log().info("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), ImmutableSortedSet.copyOf(exactResourceIds), ImmutableSortedSet.copyOf(resourceIdPrefixes));
+			ExpressionBuilder bool = Expressions.builder();
+			// the permissions give access to either
+			if (!exactResourceIds.isEmpty()) {
+				// explicit IDs
+				bool.should(ResourceDocument.Expressions.ids(exactResourceIds));
+				// or the permitted resources are bundles which give access to all resources within it (recursively)
+				bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
+				bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
+			}
+			
+			if (!resourceIdPrefixes.isEmpty()) {
+				// partial IDs, prefixes
+				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
+			}
+			
+			queryBuilder.filter(bool.build());
+		}
 	}
 
 	/**
