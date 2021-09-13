@@ -104,7 +104,8 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		}
 		
 		if (!resourcesById.containsKey(resource)) {
-			throw new ResourceNotFoundException(resource);
+			context.log().warn("Resource cannot be found during versioning: " + resourcesById + ", uri: " + resource);
+			throw new NotFoundException("Resource", resource.getResourceId());
 		}
 		
 		// validate new path
