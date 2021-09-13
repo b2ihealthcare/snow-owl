@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
+import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -44,7 +45,7 @@ import com.google.common.collect.Multimaps;
  */
 public abstract class BaseResourceUpdateRequest extends UpdateRequest<TransactionContext> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	@JsonProperty
 	private String url;
@@ -78,6 +79,8 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 	@JsonProperty
 	private String bundleId;
+
+	private transient ResourceDocument resource;
 	
 	protected final void setUrl(String url) {
 		this.url = url;
@@ -129,7 +132,9 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 	@Override
 	public final Boolean execute(TransactionContext context) {
-		final ResourceDocument resource = context.lookup(componentId(), ResourceDocument.class);
+		if (resource == null) {
+			resource = context.lookup(componentId(), ResourceDocument.class);
+		}
 		final ResourceDocument.Builder updated = ResourceDocument.builder(resource);
 
 		boolean changed = false;
@@ -253,7 +258,18 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 	@Override
 	public final void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, List<String> accessedResources) {
+		if (resource == null) {
+			resource = context.service(ResourceRepository.class).read(searcher -> {
+				return searcher.get(ResourceDocument.class, componentId());
+			});
+			if (resource == null) {
+				throw new NotFoundException("Resource", componentId());
+			}
+		}
 		accessedResources.add(componentId());
+		// permission on any bundle is enough to update the contained resource
+		accessedResources.add(resource.getBundleId());
+		accessedResources.addAll(Collections3.toImmutableSet(resource.getBundleAncestorIds()));
 	}
 	
 }

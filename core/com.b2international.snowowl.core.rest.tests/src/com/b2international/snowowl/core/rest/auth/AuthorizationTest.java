@@ -18,9 +18,12 @@ package com.b2international.snowowl.core.rest.auth;
 import static com.b2international.snowowl.core.rest.BundleApiAssert.createBundle;
 import static com.b2international.snowowl.core.rest.BundleApiAssert.prepareBundleCreateRequestBody;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreate;
+import static com.b2international.snowowl.test.commons.ApiTestConstants.CODESYSTEMS_API;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -225,4 +228,14 @@ public class AuthorizationTest {
 			.statusCode(201);
 	}
 	
+	@Test
+	public void adminPermissionOnContainerBundleAllowsEditingOfResourceMetadata() throws Exception {
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.ALL, UK_CLINICAL_BUNDLE_ID));
+		RestExtensions.givenRequestWithToken(CODESYSTEMS_API, token)
+			.with().contentType(ContentType.JSON)
+			.and().body(Map.of(ResourceDocument.Fields.CONTACT, "contactme"))
+			.when().put("/{id}", SNOMEDCT_UK_CL)
+			.then().assertThat()
+			.statusCode(204);
+	}
 }
