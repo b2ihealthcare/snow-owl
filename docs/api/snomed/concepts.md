@@ -521,7 +521,8 @@ resource representation, this is currently **not supported** for inactivation pr
 Expands reference set members referencing this concept.
 
 Note that this is different from reference set member expansion on a reference set, ie. 
-`referenceSet(expand(members()))`, as this option will return reference set members where the `referencedComponentId` property matches the concept SCTID, from multiple reference sets (if permitted by other expand options). Inactivation 
+`referenceSet(expand(members()))`, as this option will return reference set members where the `referencedComponentId` 
+property matches the concept SCTID, from multiple reference sets (if permitted by other expand options). Inactivation 
 and historical association members can also be returned here, in their entirety (as opposed to the summarized form 
 described in `inactivationProperties()` above).
 
@@ -597,7 +598,8 @@ Controls whether only active or inactive reference set members should be returne
 
 - `refSetType: "{type}" | [ "{type}"(,"{type}")* ]`
 
-The reference set type(s) as a string, to be included in the expanded output; when multiple types are accepted, values must be enclosed in square brackets and separated by a comma.
+The reference set type(s) as a string, to be included in the expanded output; when multiple types are accepted, values 
+must be enclosed in square brackets and separated by a comma.
 
 - `expand(...)`
 
@@ -851,19 +853,21 @@ GET /snomed-ct/v3/MAIN/concepts/703247007?expand=pt()
 
 #### `descriptions()`
 
-Expands all descriptions associated with the concept, and adds them to a collection resource (that includes an element limit and a total hit count) under the property `descriptions`. These can also be retrieved separately by the use of 
+Expands all descriptions associated with the concept, and adds them to a collection resource (that includes an element 
+limit and a total hit count) under the property `descriptions`. These can also be retrieved separately by the use of 
 the [SNOMED CT Description API](descriptions.md).
 
 {% hint style="warning" %}
-The collection resource's `limit` and `total` values are set to the same value because a description fetch limit can 
-not be set via a property expand option.
+The collection resource's `limit` and `total` values are set to the same value (the number of descriptions returned 
+for the concept) because a description fetch limit can not be set via a property expand option.
 {% endhint %}
 
 The following expand options are supported within `descriptions(...)`:
 
 - `active: true | false`
 
-Controls whether only active or inactive descriptions should be included in the response.
+Controls whether only active or inactive descriptions should be included in the response. (If both are required, do not 
+set any value for this expand property.)
 
 - `typeId: "{expression}"`
 
@@ -947,6 +951,217 @@ GET /snomed-ct/v3/MAIN/concepts/86299006?expand=descriptions(active: true, sort:
   [...]
 }
 ```
+
+#### `relationships`
+
+Retrieves all "outbound" relationships, where the `sourceId` property matches the SCTID of the concept(s), adding them 
+to a property named `relationships` as a collection resource object. The same set of relationships can also be 
+retrieved in standalone form via Snow Owl's [SNOMED CT Relationship API](relationships.md).
+
+{% hint style="warning" %}
+`limit` and `total` values on `relationships` are set to the same value (the number of relationships returned for the 
+concept) because a relationship fetch limit can not be set via an expand option.
+{% endhint %}
+
+The following expand options are supported within `relationships(...)`:
+
+- `active: true | false`
+
+Controls whether only active or inactive relationships should be included in the response. (If both are required, do 
+not set any value for this expand property.)
+
+- `characteristicTypeId: "{expression}"`
+
+An ECL expression that restricts the `characteristicTypeId` property of each returned relationship. As an example, when 
+this value is set to `"<<900000000000006009"`, both stated and inferred relationships will be returned, as their 
+characteristic type concepts are descendants of `900000000000006009|Defining relationship|`.
+
+- `typeId: "{expression}"`
+
+An ECL expression that restricts the `typeId` property of each returned relationship.
+
+- `destinationId: "{expression}"`
+
+An ECL expression that restricts the `destinationId` property of each returned relationship.
+
+- `sort: "{field}(:{asc | desc})?"(, "{field}(:{asc | desc})")*`
+
+Items in the collection resource are sorted based on the sort configuration given in this option. A single, 
+comma-separated string value is expected; field names and sort order must be separated by a colon (`:`) character. When 
+no sort order is given, ascending order (`asc`) is assumed.
+
+- `expand(...)`
+
+Allows nested expansion of relationship properties.
+
+```json
+GET /snomed-ct/v3/MAIN/concepts/404684003?expand=relationships(active: true)
+{
+  "id": "404684003", // Clinical finding
+  "active": true,
+  [...]
+  "relationships": {
+    "items": [
+      {
+        "id": "2472459022",
+        "released": true,
+        "active": true,
+        "effectiveTime": "20040131",
+        "moduleId": "900000000000207008",
+        "iconId": "116680003",
+        "destinationNegated": false,
+        "relationshipGroup": 0,
+        "unionGroup": 0,
+        "characteristicType": {
+          "id": "900000000000011006"
+        },
+        "modifier": {
+          "id": "900000000000451002"
+        },
+        "source": {
+          "id": "404684003"
+        },
+        "type": {
+          "id": "116680003"
+        },
+        "destination": {
+          "id": "138875005"
+        },
+        "typeId": "116680003",
+        "modifierId": "900000000000451002",
+        "sourceId": "404684003", // sourceId property matches concept's SCTID
+        "destinationId": "138875005",
+        "characteristicTypeId": "900000000000011006"
+      }
+    ],
+    "limit": 1,
+    "total": 1
+  },
+  [...]
+}
+```
+
+#### `inboundRelationships`
+
+Retrieves all "inbound" relationships, where the `destinationId` property matches the SCTID of the concept(s), adding them to property `inboundRelationships`.
+
+{% hint style="warning" %}
+`limit` and `total` values on `inboundRelationships` are set to the same value (the number of inbound relationships 
+returned for the concept), but differently from options above, **a fetch limit is applied** when it is specified.
+{% endhint %}
+
+The same set of options are supported within `inboundRelationships` as in `relationships` (see 
+[above](#relationships)), with three important differences:
+
+- ~~`destinationId: "{expression}"`~~
+
+This option is not supported on `inboundRelationships`; all destination IDs match the concept's SCTID.
+
+- `sourceId: "{expression}"`
+
+An ECL expression that restricts the `sourceId` property of each returned relationship.
+
+- `limit: {limit}`
+
+Limits the maximum number of inbound relationships to be returned. Not recommended for use when the expand option 
+applies to a collection of concepts, not just a single one, as the limit is not applied individually for each concept.
+
+#### `descendants` / `statedDescendants`
+
+Depending on which `direct` setting is used, retrieves all concepts whose `[stated]parentIds` and/or 
+`[stated]AncestorIds` array contains this concept's SCTID. Results are added to property `descendants` or 
+`statedDescendants`, based on the option name used.
+
+Only active concepts are returned, as these are expected to have active "IS A" relationships or OWL axioms that 
+describe the relative position of the concept within the terminology graph.
+
+The following options are available:
+
+- `direct: true | false` (required)
+
+Controls whether only direct descendants should be collected or a transitive closure of concept subtypes.
+
+When set to `true`, property `[stated]parentIds` will be searched only, otherwise both `[stated]parentIds` 
+and `[stated]AncestorIds` are used. The presence or absence of the "stated" prefix in the search field depends on the 
+option name.
+
+- `limit: 0`
+
+Applicable only when a single concept's properties are expanded. Collects the number of descendants in an efficient 
+manner, and sets the `total` property of the returned collection resource without including any concepts in it. **Not 
+used when a collection of concepts are expanded in a single request, or any other value is given.**
+
+- `expand(...)`
+
+Allows nested expansion of concept properties on each collected descendant.
+
+```json
+GET /snomed-ct/v3/MAIN/concepts/138875005?expand=descendants(direct: true)
+{
+  "id": "138875005", // SNOMED CT Concept
+  "active": true,
+  [...]
+  "descendants": {
+    "items": [
+      {
+        "id": "105590001", // Substance
+        "released": true,
+        "active": true,
+        "effectiveTime": "20020131",
+        "moduleId": "900000000000207008",
+        "iconId": "substance",
+        "definitionStatus": {
+          "id": "900000000000074008"
+        },
+        "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
+        "ancestorIds": [
+          "-1"
+        ],
+        "parentIds": [
+          "138875005" // parentIds contains SNOMED CT Concept's SCTID, meaning this concept
+                      // is a direct (inferred) descendant of it
+        ],
+        "statedAncestorIds": [
+          "-1"
+        ],
+        "statedParentIds": [
+          "138875005"
+        ],
+        "definitionStatusId": "900000000000074008"
+      },
+      [...]
+    ],
+    "limit": 50,
+    "total": 19 // Total number of descendants
+  },
+  [...]
+}
+```
+
+#### `ancestors` / `statedAncestors`
+
+Depending on which `direct` setting is used, retrieves all concepts that appear in this concept's `[stated]parentIds` 
+and/or `[stated]AncestorIds` array. Results are added to property `ancestors` or `statedAncestors`, based on the option 
+name used.
+
+The following options are available:
+
+- `direct: true | false` (required)
+
+Controls whether only direct ancestors should be collected or a transitive closure of concept supertypes.
+
+When set to `true`, property `[stated]parentIds` will be used only for concept retrieval, otherwise the union of 
+`[stated]parentIds` and `[stated]AncestorIds` are collected (the special placeholder value "-1" is ignored). The 
+presence or absence of the "stated" prefix in the search field depends on the option name.
+
+- `limit: 0`
+
+Collects the number of ancestors in an efficient manner, and sets the `total` property of the returned collection resource without including any concepts in it. **Not when used any other value is given** (although this property 
+expansion supports cases where multiple concepts' ancestors need to be returned).
+
+- `expand(...)`
+
+Allows nested expansion of concept properties on each collected ancestor.
 
 ## Operations
 
