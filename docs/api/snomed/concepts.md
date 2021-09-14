@@ -1043,7 +1043,8 @@ GET /snomed-ct/v3/MAIN/concepts/404684003?expand=relationships(active: true)
 
 #### `inboundRelationships`
 
-Retrieves all "inbound" relationships, where the `destinationId` property matches the SCTID of the concept(s), adding them to property `inboundRelationships`.
+Retrieves all "inbound" relationships, where the `destinationId` property matches the SCTID of the concept(s), adding 
+them to property `inboundRelationships`.
 
 {% hint style="warning" %}
 `limit` and `total` values on `inboundRelationships` are set to the same value (the number of inbound relationships 
@@ -1156,7 +1157,8 @@ presence or absence of the "stated" prefix in the search field depends on the op
 
 - `limit: 0`
 
-Collects the number of ancestors in an efficient manner, and sets the `total` property of the returned collection resource without including any concepts in it. **Not when used any other value is given** (although this property 
+Collects the number of ancestors in an efficient manner, and sets the `total` property of the returned collection 
+resource without including any concepts in it. **Not used when any other value is given** (although this property 
 expansion supports cases where multiple concepts' ancestors need to be returned).
 
 - `expand(...)`
