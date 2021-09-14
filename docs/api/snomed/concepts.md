@@ -1158,7 +1158,7 @@ presence or absence of the "stated" prefix in the search field depends on the op
 - `limit: 0`
 
 Collects the number of ancestors in an efficient manner, and sets the `total` property of the returned collection 
-resource without including any concepts in it. **Not used when any other value is given** (although this property 
+resource without including any concepts in it. **Not used when any other value is given** (however, this property 
 expansion supports cases where multiple concepts' ancestors need to be returned).
 
 - `expand(...)`
@@ -1175,3 +1175,91 @@ in question:
 ```json
 GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005
 ```
+
+#### Query parameters
+
+- `expand={options}`
+
+Concept properties that should be returned along with the original request, as part of the concept resource. See 
+available options in section [Property expansion](#property-expansion) above.
+
+- `field={field1}[,{fieldN}]*`
+
+Restricts the set of fields returned from the index. Results in a smaller response object when only specific 
+information is needed.
+
+Supported names for field selection are the following:
+
+- `active`
+- `activeMemberOf`
+- `ancestors` - controls the appearance of `ancestorIds` as well
+- `definitionStatusId`
+- `doi`
+- `effectiveTime`
+- `exhaustive`
+- `iconId`
+- `id` - always included in the response, even when not present as a `field` parameter
+- `mapTargetComponentType`
+- `memberOf`
+- `moduleId`
+- `namespace`
+- `parents` - controls the appearance of `parentIds` as well
+- `preferredDescriptions`
+- `refSetType`
+- `referencedComponentType`
+- `released`
+- `score`
+- `semanticTags`
+- `statedAncestors` - controls the appearance of `statedAncestorIds` as well
+- `statedParents` - controls the appearance of `statedParentIds` as well
+- ~~`created`~~ and ~~`revised`~~ - these fields are associated with revision control, and even though they are listed 
+as supported fields, they do not appear in the response even when explicitly requested.
+
+Specifying any other field name results in a `400 Bad Request` response:
+
+```json
+GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?field=xyz
+{
+  "status": 400,
+  "code": 0,
+  "message": "Unrecognized concept model property '[xyz]'.",
+  "developerMessage": "Supported properties are '[active, activeMemberOf, ancestors, ...]'.",
+  "errorCode": 0,
+  "statusCode": 400
+}
+```
+
+Fields with a value of `null` do not appear in the response, even if they are selected for inclusion.
+
+```json
+GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?field=id,active,score
+{
+  "id": "138875005",
+  "active": true
+  // score was not calculated, and so is not present
+}
+```
+
+#### Request headers
+
+- `Accept-Language: {language-range}[;q={weight}](, {language-range}[;q={weight}])*`
+
+Controls the logic behind Preferred Term and Fully Specified Name selection for the concept. See the documentation for 
+expand options [pt() and fsn()](#pt-and-fsn) for details.
+
+Specifying an unknown language or dialect results in a `400 Bad Request` response:
+
+```json
+GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?expand=fsn()
+// Accept-Language: hu-HU
+{
+  "status": 400,
+  "code": 0,
+  "message": "Don't know how to convert extended locale [hu-hu] to a language reference set identifier.",
+  "developerMessage": "Input representation syntax or validation errors. Check input values.",
+  "errorCode": 0,
+  "statusCode": 400
+}
+```
+
+### Find concepts
