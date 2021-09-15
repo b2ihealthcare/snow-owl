@@ -63,11 +63,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 @Script(
 		name="typeSort", 
-		script=
-		 "if (params.orderByType.containsKey(doc.resourceType.value)) {"
-		+ "	return params.orderByType.get(doc.resourceType.value)"
-		+ "}"
-		+ "return '5'")
+		script="return params.orderByType.getOrDefault(doc.resourceType.value, doc.resourceType.value)")
 public final class ResourceDocument extends RevisionDocument {
 
 	public static final String TYPE = "resource";
