@@ -343,13 +343,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		SnomedRelationshipIndexEntry goodRel2 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CORE_NAMESPACE).active(true).group(0)
 				.build();
+		
+		final SnomedRelationshipIndexEntry concreteValue1 = concreteValue(Concepts.FINDING_SITE, Concepts.IS_A, new RelationshipValue("Test value")).group(0).build();
+		final SnomedRelationshipIndexEntry concreteValue2 = concreteValue(Concepts.FINDING_SITE, Concepts.IS_A, new RelationshipValue("Test value")).group(3).build();
+		final SnomedRelationshipIndexEntry concreteValue3 = concreteValue(Concepts.FINDING_SITE, Concepts.IS_A, new RelationshipValue("Test value 2")).group(3).build();
 
-		indexRevision(MAIN, goodRel1, goodRel2, badRel1, badRel2);
+		indexRevision(MAIN, goodRel1, goodRel2, badRel1, badRel2, concreteValue1, concreteValue2, concreteValue3);
 
 		ValidationIssues issues = validate(ruleId);
 
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, badRel1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, badRel2.getId()));
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, badRel2.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, concreteValue2.getId())
+				);
 	}
 	
 	@Test

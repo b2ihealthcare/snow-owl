@@ -30,9 +30,9 @@ Query<String[]> query = Query.select(String[].class)
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4
 		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID, // 5
-		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID //6
-	)
-	
+		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, //6
+		SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE, //7
+		SnomedRelationshipIndexEntry.Fields.STRING_VALUE) //8
 	.where(effectiveTimeExpressionBuilder.build())
 	.sortBy(SortBy.builder()
 		.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
@@ -51,7 +51,7 @@ for (Hits<String[]> page : searcher.scroll(query)) {
 			buckets.clear()
 			currentSourceId = relationship[2] 
 		}
-		String key = String.format("%s_%s_%s_%s_%s", relationship[2], relationship[3], relationship[4], relationship[5], relationship[6])
+		String key = String.format("%s_%s_%s_%s_%s_%s_%s", relationship[2], relationship[3], relationship[4], relationship[5], relationship[6], relationship[7], relationship[8])
 		if ("0".equals(relationship[1])) {
 			buckets.add(key);
 		} else if (buckets.contains(key)) { // report duplication of ungrouped relationship in a group
