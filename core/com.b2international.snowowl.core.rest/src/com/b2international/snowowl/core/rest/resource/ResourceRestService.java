@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +25,11 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortScript;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
+import com.google.common.collect.Lists;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -53,6 +59,16 @@ public class ResourceRestService extends AbstractRestService {
 	})
 	@GetMapping
 	public Promise<Resources> searchByGet(@ParameterObject final ResourceRestSearch params) {
+		List<Sort> sortFields = Lists.newArrayList();
+		final Map<String, String> orderByType = Map.of(
+			"bundles", "1",
+			"codesystems", "2",
+			"valuesets", "3",
+			"conceptmaps", "4"
+		);
+		sortFields.add(SortScript.of("typeSort", Map.of("orderByType", orderByType), true));
+		sortFields.addAll(extractSortFields(params.getSort()));
+		
 		return ResourceRequests.prepareSearch()
 			.filterByIds(params.getId())
 			.filterByResourceTypes(params.getResourceType())
@@ -66,7 +82,7 @@ public class ResourceRestService extends AbstractRestService {
 			.setExpand(params.getExpand())
 			.setFields(params.getField())
 			.setSearchAfter(params.getSearchAfter())
-			.sortBy(extractSortFields(params.getSort()))
+			.sortBy(sortFields)
 			.buildAsync()
 			.execute(getBus());
 	}

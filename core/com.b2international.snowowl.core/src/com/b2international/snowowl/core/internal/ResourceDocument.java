@@ -27,6 +27,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Normalizers;
+import com.b2international.index.Script;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
@@ -60,6 +61,9 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 	}
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
+@Script(
+		name="typeSort", 
+		script="return params.orderByType.getOrDefault(doc.resourceType.value, doc.resourceType.value)")
 public final class ResourceDocument extends RevisionDocument {
 
 	public static final String TYPE = "resource";
