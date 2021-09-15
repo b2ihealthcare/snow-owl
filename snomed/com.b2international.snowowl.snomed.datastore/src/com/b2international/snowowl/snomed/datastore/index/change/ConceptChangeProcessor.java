@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
@@ -54,6 +53,10 @@ import com.google.common.collect.*;
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
+	/*
+	 * XXX: Case significance and module changes are also allowed, but they are not relevant from 
+	 * the concept change processor's point of view.
+	 */
 	private static final Set<String> ALLOWED_DESCRIPTION_CHANGE_FEATURES = Set.of(
 		SnomedDescriptionIndexEntry.Fields.ACTIVE,
 		SnomedDescriptionIndexEntry.Fields.TERM,
@@ -156,7 +159,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				final Collection<SnomedDescriptionIndexEntry> affectedDescriptions = affectedDescriptionsByConcept.get(id);
 				if (!affectedDescriptions.isEmpty()) {
 					final Map<String, SnomedDescriptionFragment> updatedPreferredDescriptions = newHashMap(Maps.uniqueIndex(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
-					final SortedSet<String> updatedSemanticTags = new TreeSet<>(currentDoc.getSemanticTags());
 					
 					// add new/dirty fragments if they are preferred and active terms
 					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
@@ -165,21 +167,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 							if (affectedDescription.isActive() && !getPreferredLanguageMembers(affectedDescription).isEmpty()) {
 								updatedPreferredDescriptions.put(affectedDescription.getId(), toDescriptionFragment(affectedDescription));
 							}
-							// update semantic tag list
-							if (affectedDescription.isFsn()) {
-								if (staging.isNew(affectedDescription) && !CompareUtils.isEmpty(affectedDescription.getSemanticTag())) {
-									// add new tag from fsn
-									updatedSemanticTags.add(affectedDescription.getSemanticTag());
-								} else if (staging.isChanged(affectedDescription)) {
-									RevisionDiff diff = staging.getChangedRevisionDiff(affectedDescription.getClass(), affectedDescription.getId());
-									SnomedDescriptionIndexEntry oldVersion = (SnomedDescriptionIndexEntry) diff.oldRevision;
-									SnomedDescriptionIndexEntry newVersion = (SnomedDescriptionIndexEntry) diff.newRevision;
-									if (!Objects.equals(oldVersion.getSemanticTag(), newVersion.getSemanticTag())) {
-										updatedSemanticTags.remove(oldVersion.getSemanticTag());
-										updatedSemanticTags.add(newVersion.getSemanticTag());
-									}
-								}
-							}
 						}
 					}
 					
@@ -187,9 +174,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
 						if (staging.isRemoved(affectedDescription)) {
 							updatedPreferredDescriptions.remove(affectedDescription.getId());
-							if (affectedDescription.isFsn()) {
-								updatedSemanticTags.remove(affectedDescription.getSemanticTag());
-							}
 						}
 					}
 					
@@ -197,8 +181,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 							.stream()
 							.sorted(DESCRIPTION_FRAGMENT_ORDER)
 							.collect(Collectors.toList());
-					
-					doc.semanticTags(updatedSemanticTags);
 					
 					update(doc, preferredDescriptions, concept, currentDoc);
 				} else {
@@ -338,19 +320,21 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					.mapTargetComponentType(cleanRevision.getMapTargetComponentType())
 					.doi(doiData.getDoiScore(idLong));
 		}
-		
+
+		/*
+		 * Extract semantic tags from active FSNs received in preferredDescriptions (these are expected to be preferred in at 
+		 * least one language reference set).
+		 */
+		final SortedSet<String> semanticTags = preferredDescriptions.stream()
+			.filter(f -> Concepts.FULLY_SPECIFIED_NAME.equals(f.getTypeId()))
+			.map(f -> SnomedDescriptionIndexEntry.extractSemanticTag(f.getTerm()))
+			.collect(Collectors.toCollection(TreeSet::new));
+
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);
 		
 		if (inStated || inInferred) {
-			final String semanticTag = preferredDescriptions.stream()
-					.filter(f -> Concepts.FULLY_SPECIFIED_NAME.equals(f.getTypeId()))
-					.findFirst()
-					.map(SnomedDescriptionFragment::getTerm)
-					.map(SnomedDescriptionIndexEntry::extractSemanticTag)
-					.orElse("");
-			
-			iconId.update(id, semanticTag, active, doc);
+			iconId.update(id, Iterables.getFirst(semanticTags, ""), active, doc);
 		}
 	
 		if (inStated) {
@@ -366,6 +350,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
 		
+		doc.semanticTags(semanticTags);
 		doc.preferredDescriptions(preferredDescriptions);
 	}
 
