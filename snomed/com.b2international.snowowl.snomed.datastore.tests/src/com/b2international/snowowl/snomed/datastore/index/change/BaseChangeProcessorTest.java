@@ -176,7 +176,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	}
 	
 	protected final SnomedDescriptionIndexEntry fsn(String conceptId, Map<String, Acceptability> acceptabilityMap) {
-		return description(conceptId, Concepts.FULLY_SPECIFIED_NAME, "Example FSN", acceptabilityMap);
+		return description(conceptId, Concepts.FULLY_SPECIFIED_NAME, "Example FSN (semantic tag)", acceptabilityMap);
 	}
 	
 	protected final SnomedDescriptionIndexEntry synonym(String conceptId, Map<String, Acceptability> acceptabilityMap) {

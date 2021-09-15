@@ -952,7 +952,7 @@ GET /snomed-ct/v3/MAIN/concepts/86299006?expand=descriptions(active: true, sort:
 }
 ```
 
-#### `relationships`
+#### `relationships()`
 
 Retrieves all "outbound" relationships, where the `sourceId` property matches the SCTID of the concept(s), adding them 
 to a property named `relationships` as a collection resource object. The same set of relationships can also be 
@@ -1041,7 +1041,7 @@ GET /snomed-ct/v3/MAIN/concepts/404684003?expand=relationships(active: true)
 }
 ```
 
-#### `inboundRelationships`
+#### `inboundRelationships()`
 
 Retrieves all "inbound" relationships, where the `destinationId` property matches the SCTID of the concept(s), adding 
 them to property `inboundRelationships`.
@@ -1067,7 +1067,7 @@ An ECL expression that restricts the `sourceId` property of each returned relati
 Limits the maximum number of inbound relationships to be returned. Not recommended for use when the expand option 
 applies to a collection of concepts, not just a single one, as the limit is not applied individually for each concept.
 
-#### `descendants` / `statedDescendants`
+#### `descendants()` / `statedDescendants()`
 
 Depending on which `direct` setting is used, retrieves all concepts whose `[stated]parentIds` and/or 
 `[stated]AncestorIds` array contains this concept's SCTID. Results are added to property `descendants` or 
@@ -1139,7 +1139,7 @@ GET /snomed-ct/v3/MAIN/concepts/138875005?expand=descendants(direct: true)
 }
 ```
 
-#### `ancestors` / `statedAncestors`
+#### `ancestors()` / `statedAncestors()`
 
 Depending on which `direct` setting is used, retrieves all concepts that appear in this concept's `[stated]parentIds` 
 and/or `[stated]AncestorIds` array. Results are added to property `ancestors` or `statedAncestors`, based on the option 
@@ -1167,7 +1167,7 @@ Allows nested expansion of concept properties on each collected ancestor.
 
 ## Operations
 
-### Retrieve single concept by ID
+### Retrieve single concept by ID (GET)
 
 A GET request that includes a concept identifier as its last path parameter will return information about the concept 
 in question:
@@ -1176,7 +1176,7 @@ in question:
 GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005
 ```
 
-#### Query parameters
+#### **Query parameters**
 
 - `expand={options}`
 
@@ -1240,7 +1240,7 @@ GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?field=id,active,score
 }
 ```
 
-#### Request headers
+#### **Request headers**
 
 - `Accept-Language: {language-range}[;q={weight}](, {language-range}[;q={weight}])*`
 
@@ -1262,4 +1262,381 @@ GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?expand=fsn()
 }
 ```
 
-### Find concepts
+### Find concepts (GET)
+
+A GET request that ends with `concepts` as its last path parameter will search for concepts matching all of the 
+constraints supplied as query parameters. By default (when no query parameter is added) it returns all concepts.
+
+The response consists of a collection of concept resources, a `searchAfter` key (described in section 
+"Query parameters" below), the limit used when computing response items and the total hit count:
+
+```json
+GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts
+{
+  "items": [
+    {
+      "id": "100000000", // Each item represents a concept resource
+      "released": true,
+      "active": false,
+      "effectiveTime": "20090731",
+      "moduleId": "900000000000207008",
+      "iconId": "138875005",
+      "definitionStatus": {
+        "id": "900000000000074008"
+      },
+      "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
+      "ancestorIds": [],
+      "parentIds": [
+        "-1"
+      ],
+      "statedAncestorIds": [],
+      "statedParentIds": [
+        "-1"
+      ],
+      "definitionStatusId": "900000000000074008"
+    },
+    [...] // at most 50 items are returned when no limit is specified
+  ],
+  "searchAfter": "AoEpMTAwMDQyMDAz", // key can be used for paged results
+  "limit": 50,                       // the limit given in the original request 
+                                     // (or the default limit if not specified)
+  "total": 481509                    // the total number of concept matches
+}
+```
+
+#### **Query parameters**
+
+- `definitionStatus={eclExpression} | {id1}[,{idN}]*`
+
+An ECL expression or enumerated list that describes the allowed set of SCTIDs that must appear in matching concepts' 
+`definitionStatusId` property. Since there are only two values used, `900000000000074008|Primitive|` and 
+`900000000000073002|Defined|` for primitive and fully defined concepts, respectively, a single SCTID is usually entered 
+here.
+
+- `ecl={eclExpression}`
+
+Restricts the returned set of concepts to those that match the specified ECL expression. The query parameter can be 
+used on its own for evaluation of expressions, or in combination with other query parameters. Expressions conforming to 
+the short form of ECL 1.5 syntax are accepted. The expression is evaluated over the 
+[inferred view](https://confluence.ihtsdotools.org/display/DOCGLOSS/Inferred+view)🌎, based on the currently persisted 
+inferred relationships.
+
+{% hint style="warning" %}
+As ECL syntax uses special symbols, query parameters should be encoded to URL-safe characters. The examples in this 
+section are using the cleartext form for better readability.
+{% endhint %}
+
+```json
+GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?ecl=<<404684003|Clinical finding|:363698007|Finding site|=40238009|Hand joint structure|
+{
+  "items": [
+    [...]
+    {
+      "id": "129157005",
+      "active": true,
+      [...]
+      "pt": {
+        "id": "2664900016",
+        "term": "Traumatic dislocation of joint of hand", // Concept match based on ECL expression
+        [...]
+      },
+      [...]
+    },
+    [...]
+  ],
+  "searchAfter": "AoEpNDQ4NDUzMDA0",
+  "limit": 50,
+  "total": 58
+}
+```
+
+- `statedEcl={eclExpression}`
+
+Same as `ecl`, but the input expression is evaluated over the 
+[stated view](https://confluence.ihtsdotools.org/display/DOCGLOSS/stated+view)🌎 by using stated relationships 
+(if present) and OWL axioms for evaluation.
+
+- `semanticTag={tag1}[,{tagN}]*`
+
+Filters concepts by a comma-separated list of allowed hierarchy tags. Matching concepts can have any of the supplied 
+tags present (at least one) on their Fully Specified Names.
+
+- `term={searchTerm}`
+
+Matching concepts must have an active description whose term matches the string specified here. The search is executed 
+in "smart match" mode; the following examples show which search expresssions match which description terms:
+
+```
+Search term       → Term of matched description
+-----------------   ---------------------------
+"Ångström"          "angstrom"                  (case insensitive, ASCII-folding)
+"sys blo pre"       "Systolic blood pressure"   (prefix of each word, matching order)
+"broken arm"        "Fracture of arm"           (synonym filter, ignored stopwords)
+"greenstick frac"   "Greenstick fracture"       (prefix match for final query keyword, 
+                                                exact match for all others)
+```
+
+- `descriptionType={eclExpression} | {id1}[,{idN}]*`
+
+Restricts the result set by description type; matches must have at least one active description whose `typeId` property 
+is included in the evaluated ECL result set or SCTID list. It is typically used in combination with `term` (see above) 
+to control which type of descriptions should be matched by term.
+
+- `parent={id1}[,{idN}]*`
+- `statedParent={id1}[,{idN}]*`
+- `ancestor={id1}[,{idN}]*`
+- `statedAncestor={id1}[,{idN}]*`
+
+Filters concepts by hierarchy. All four query parameters accept a comma-separated list of SCTIDs; the result set will 
+contain direct descendants of the specified values in the case of `parent` and `statedParent`, and a transitive closure 
+of descendants for `ancestor` and `statedAncestor` (including direct children). Parameters starting with `stated...` 
+will use the stated IS A hierarchy for computations.
+
+```json
+GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?parent=138875005&field=id
+{
+  "items": [
+    // Inferred direct descendants of 138875005|Snomed CT Concept|
+    { "id": "105590001" }, // Substance
+    { "id": "123037004" }, // Body structure
+    { "id": "123038009" }, // Specimen
+    [...]
+  ],
+  "searchAfter": "AoEyOTAwMDAwMDAwMDAwNDQxMDAz",
+  "limit": 50,
+  "total": 19 // 19 top-level concepts returned in total
+}
+```
+
+- `doi=true | false`
+
+Controls whether relevance-based sorting should take **Degree of Interest** (DOI for short) into account. When enabled, 
+concepts that are used frequently in a clinical environment are favored over concepts with a lower likelihood of use.
+
+- `namespace={namespaceIdentifier}`
+- `namespaceConceptId={id1}[,{idN}]*`
+
+The SCTID of matching concepts must have the specified 7-digit 
+[namespace identifier](https://confluence.ihtsdotools.org/display/DOCRELFMT/6.6+Namespace-Identifier)🌎, eg. `1000154`. 
+When matching by namespace concept ID, a comma-separated list of SCTIDs are expected, and the associated 7-digit 
+identifier will be extracted from the active FSNs of each concept entered here.
+
+```json
+GET /snomed-ct/v3/SNOMEDCT-UK-CL/concepts?namespaceConceptId=370138007&field=id
+{
+  "items": [
+    // Concept IDs with a namespace identifier of "1000001", corresponding to
+    // namespace concept 370138007|Extension Namespace {1000001}|
+    { 
+      "id": "999000011000001104" // 99900001>>1000001<<104
+    },
+    [...]
+  ],
+  "searchAfter": "AoEyOTk5MDAwODcxMDAwMDAxMTAy",
+  "limit": 50,
+  "total": 4
+}
+```
+
+- `isActiveMemberOf={eclExpression} | {id1}[,{idN}]*`
+
+This filter accepts either a single ECL expression, or a comma-separated list of reference set SCTIDs. For each 
+matching concept at least one active reference set member must exist where the `referenceComponentId` points to the 
+concept and the `referenceSetId` property is listed in the filter, or is a member of the evaluated ECL expression's 
+result set.
+
+- `effectiveTime={yyyyMMdd} | Unpublished`
+
+Filters concepts by effective time. The query parameter accepts a single effective time in `yyyyMMdd` (short) format, 
+or the literal `Unpublished` when searching for concepts that have been modified since they were last published as part 
+of a code system version.
+
+Note that only the concept's effective time is taken into account, not any of its related core components 
+(descriptions, relationships) or reference set members. If the concept's status, definition status or module did not 
+change since the last release, its effective time will not change either.
+
+{% hint style="warning" %}
+When searching for `Unpublished` concepts, the `effectiveTime` property will not appear on returned concept resources,
+as the value is `null` for all unpublished components.
+{% endhint %}
+
+```json
+GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime
+{
+  "items": [
+    {
+      "id": "10151000132103",
+      "effectiveTime": "20170131" // Concept effective time matches query parameter
+    },
+    {
+      "id": "10231000132102",
+      "effectiveTime": "20170131"
+    },
+    [...]
+  ],
+  "searchAfter": "AoEwMTA3NTQ3MTAwMDExOTEwNw==",
+  "limit": 50,
+  "total": 5580 // Total number of concepts with effective time 2017-01-31
+}
+```
+
+- `active=true | false`
+
+Filters concepts by status. When set to `true`, only active concepts are added to the resulting collection, while a 
+value of `false` collects inactive concepts only. (If both active and inactive concepts should be returned, do not add 
+this parameter to the query.)
+
+- `module={eclExpression} | {id1}[,{idN}]*`
+
+Filters concepts by `moduleId`. The query parameter accepts either a single ECL expression, or a comma-separated list 
+of module SCTIDs; concepts must have a `moduleId` property that is included in the ID list or the evaluated ECL result.
+
+- `id={id1}[,{idN}]*`
+
+Filters concepts by SCTID. The parameter accepts a comma-separated list of IDs; matching concepts must have an `id` 
+property that matches any of the specified identifiers.
+
+- `sort: "{field}(:{asc | desc})?"(, "{field}(:{asc | desc})")*`
+
+Sorts returned concept resources based on the sort configuration given in this parameter. Field names and sort order 
+must be separated by a colon (`:`) character. When no sort order is given, ascending order (`asc`) is assumed.
+
+Field names supported for sorting are the same that are used for field selection; please see 
+[above](#retrieve-single-concept-by-id-get) for the complete list.
+
+{% hint style="warning" %}
+The default behavior is to sort results by `id`, in ascending order. SCTIDs are sorted lexicographically, not as 
+numbers; this means that eg. `10683591000119104` will appear before `10724008`, as their first two digits are the same,
+but the third digit is smaller in the former identifier.
+{% endhint %}
+
+- `limit={limit}`
+
+Controls the maximum number of items that should be returned in the collection. When not specified, the default limit 
+is `50` items.
+
+- `searchAfter={searchAfter}`
+
+Supports **keyset pagination**, ie. retrieving the next page of items based on the response for the current page. To 
+use, set `limit` to the number of items expected on a single page, then run the first search request without setting a
+`searchAfter` key. The returned response will include the value to be inserted into the next request:
+
+```json
+GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime
+{
+  "items": [
+    {
+      "id": "10151000132103",
+      "effectiveTime": "20170131"
+    },
+    {
+      "id": "10231000132102",
+      "effectiveTime": "20170131"
+    },
+    [...]
+  ],
+  // Key to use in the request for the second page
+  "searchAfter": "AoEwMTA3NTQ3MTAwMDExOTEwNw==",
+  "limit": 50,
+  "total": 5580
+}
+
+GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime&searchAfter=AoEwMTA3NTQ3MTAwMDExOTEwNw==
+{
+  "items": [
+    // List continues from the last item of the previous request
+    // (but the item itself is not included)
+    {
+      "id": "1075481000119105",
+      "effectiveTime": "20170131"
+    },
+    {
+      "id": "10759271000119104",
+      "effectiveTime": "20170131"
+    },
+    [...]
+  ],
+  // Different key returned for the third page
+  "searchAfter": "AoEwMTA4MTgxMTAwMDExOTEwNw==",
+  "limit": 50,
+  "total": 5580
+}
+```
+
+The process can be repeated until the `items` array turns up empty, indicating that there are no more pages to return.
+
+{% hint style="warning" %}
+`searchAfter` keys should be considered opaque; they can not be constructed to jump to an arbitrary point in the 
+enumeration. Keyset pagination also doesn't handle cases gracefully where eg. concepts with "smaller" SCTIDs are 
+inserted while pages are retrieved from the server. If a consistent result set is expected, a 
+[point-in-time](#path-with-timestamp) path parameter should be used in consecutive search requests.
+{% endhint %}
+
+- `expand={options}`
+
+Concept properties that should be returned along with the original request, as part of the concept resource. See 
+available options in section [Property expansion](#property-expansion) above.
+
+- `field={field1}[,{fieldN}]*`
+
+Restricts the set of fields returned from the index. Results in a smaller response object when only specific 
+information is needed. See [above](#retrieve-single-concept-by-id-get) for the list of supported field names.
+
+#### **Request headers**
+
+- `Accept-Language: {language-range}[;q={weight}](, {language-range}[;q={weight}])*`
+
+Controls the logic behind Preferred Term and Fully Specified Name selection for returned concepts. See the 
+documentation for expand options [pt() and fsn()](#pt-and-fsn) for details.
+
+### Find concepts (POST)
+
+POST requests submitted to `concepts/search` perform the same search operation as described for the GET request above, 
+but each query parameter is replaced by a property in the JSON request body:
+
+```json
+POST /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts/search
+// Request body
+{
+  // Query parameters allowing multiple values must be passed as arrays
+  "expand": [ "pt()" ],
+  "field": [ "id", "preferredDescriptions" ],
+  "limit": 100,
+  "active": true,
+  "module": [ "900000000000012004" ]
+}
+
+// Response
+{
+  "items": [
+    {
+      "id": "1003316002",
+      "moduleId": "900000000000012004",
+      "pt": {
+        "id": "4167978019",
+        "term": "Extension Namespace 1000256",
+        [...]
+      }
+    },
+    {
+      "id": "1003317006",
+      "moduleId": "900000000000012004",
+      "pt": {
+        "id": "4167981012",
+        "term": "Extension Namespace 1000257",
+        [...]
+      }
+    }
+  ],
+  "searchAfter": "AoEqMTAwMzMxNzAwNg==",
+  "limit": 2,
+  "total": 1802
+}
+```
+
+#### **Request headers**
+
+- `Accept-Language: {language-range}[;q={weight}](, {language-range}[;q={weight}])*`
+
+Controls the logic behind Preferred Term and Fully Specified Name selection for returned concepts. See the 
+documentation for expand options [pt() and fsn()](#pt-and-fsn) for details.
