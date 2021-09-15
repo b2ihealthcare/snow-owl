@@ -328,6 +328,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final SortedSet<String> semanticTags = preferredDescriptions.stream()
 			.filter(f -> Concepts.FULLY_SPECIFIED_NAME.equals(f.getTypeId()))
 			.map(f -> SnomedDescriptionIndexEntry.extractSemanticTag(f.getTerm()))
+			.filter(semanticTag -> !semanticTag.isEmpty())
 			.collect(Collectors.toCollection(TreeSet::new));
 
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
