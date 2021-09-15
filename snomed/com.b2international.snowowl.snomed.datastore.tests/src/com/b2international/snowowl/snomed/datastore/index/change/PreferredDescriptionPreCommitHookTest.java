@@ -48,6 +48,7 @@ public class PreferredDescriptionPreCommitHookTest extends BaseConceptPreCommitH
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = docWithDefaults(concept)
+				.semanticTags(ImmutableSortedSet.of("semantic tag"))
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -71,6 +72,7 @@ public class PreferredDescriptionPreCommitHookTest extends BaseConceptPreCommitH
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = docWithDefaults(concept)
+				.semanticTags(ImmutableSortedSet.of("semantic tag"))
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK),
 					new SnomedDescriptionFragment(synonym.getId(), synonym.getTypeId(), synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
@@ -95,6 +97,7 @@ public class PreferredDescriptionPreCommitHookTest extends BaseConceptPreCommitH
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = docWithDefaults(concept)
+				.semanticTags(ImmutableSortedSet.of("semantic tag"))
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -116,6 +119,7 @@ public class PreferredDescriptionPreCommitHookTest extends BaseConceptPreCommitH
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = docWithDefaults(concept)
+				.semanticTags(ImmutableSortedSet.of("semantic tag"))
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
