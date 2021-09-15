@@ -59,15 +59,6 @@ public class ResourceRestService extends AbstractRestService {
 	})
 	@GetMapping
 	public Promise<Resources> searchByGet(@ParameterObject final ResourceRestSearch params) {
-		List<Sort> sortFields = Lists.newArrayList();
-		final Map<String, String> orderByType = Map.of(
-			"bundles", "1",
-			"codesystems", "2",
-			"valuesets", "3",
-			"conceptmaps", "4"
-		);
-		sortFields.add(SortScript.of("typeSort", Map.of("orderByType", orderByType), true));
-		sortFields.addAll(extractSortFields(params.getSort()));
 		
 		return ResourceRequests.prepareSearch()
 			.filterByIds(params.getId())
@@ -82,7 +73,7 @@ public class ResourceRestService extends AbstractRestService {
 			.setExpand(params.getExpand())
 			.setFields(params.getField())
 			.setSearchAfter(params.getSearchAfter())
-			.sortBy(sortFields)
+			.sortBy(extractSortFields(params.getSort()))
 			.buildAsync()
 			.execute(getBus());
 	}
