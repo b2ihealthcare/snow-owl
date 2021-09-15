@@ -23,6 +23,8 @@ import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
  * @since 8.0
  */
 public final class ResourceSearchRequestBuilder extends BaseResourceSearchRequestBuilder<ResourceSearchRequestBuilder, Resources> {
+	
+	public static final String TYPE_SORT = "typeSort";
 
 	/**
 	 * Filters matches by the given resource type.
