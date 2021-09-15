@@ -60,7 +60,13 @@ public class ResourceRestService extends AbstractRestService {
 	@GetMapping
 	public Promise<Resources> searchByGet(@ParameterObject final ResourceRestSearch params) {
 		List<Sort> sortFields = Lists.newArrayList();
-		sortFields.add(SortScript.of("typeSort", Map.of(), true));
+		final Map<String, String> orderByType = Map.of(
+			"bundles", "1",
+			"codesystems", "2",
+			"valuesets", "3",
+			"conceptmaps", "4"
+		);
+		sortFields.add(SortScript.of("typeSort", Map.of("orderByType", orderByType), true));
 		sortFields.addAll(extractSortFields(params.getSort()));
 		
 		return ResourceRequests.prepareSearch()
