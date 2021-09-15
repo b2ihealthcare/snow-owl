@@ -27,6 +27,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Normalizers;
+import com.b2international.index.Script;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
@@ -60,6 +61,22 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 	}
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
+@Script(
+		name="typeSort", 
+		script=
+		 "if (doc.resourceType.value.equals('bundles')) {"
+		+ "	return '1'"
+		+ "}"
+		+ "if (doc.resourceType.value.equals('codesystems')) {"
+		+ "	return '2'"
+		+ "}"
+		+ "if (doc.resourceType.value.equals('valuesets')) {"
+		+ "	return '3'"
+		+ "}"
+		+ "if (doc.resourceType.value.equals('conceptmaps')) {"
+		+ "	return '4'"
+		+ "}"
+		+ "return '5'")
 public final class ResourceDocument extends RevisionDocument {
 
 	public static final String TYPE = "resource";
