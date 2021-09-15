@@ -96,6 +96,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String EXTENSION_OF = "extensionOf";
 		public static final String UPGRADE_OF = "upgradeOf";
 		public static final String SETTINGS = "settings";
+		public static final String TYPE_SORT = "typeSort";
 		
 		// analyzed fields
 		private static final String TITLE_PREFIX   = TITLE + ".prefix";
@@ -117,7 +118,8 @@ public final class ResourceDocument extends RevisionDocument {
 			BRANCH_PATH, 
 			TOOLING_ID,
 			EXTENSION_OF, 
-			UPGRADE_OF
+			UPGRADE_OF,
+			TYPE_SORT
 		);
 	}
 	
