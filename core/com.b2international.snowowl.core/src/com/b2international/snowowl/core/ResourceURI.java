@@ -142,11 +142,17 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	}
 	
 	public ResourceURI withPath(String path) {
+		if (Objects.equals(getPath(), path)) {
+			return this;
+		}
 		return Strings.isNullOrEmpty(path) ? ResourceURI.of(resourceType, resourceId) : ResourceURI.branch(resourceType, resourceId, path);
 	}
 
 	@JsonIgnore
 	public ResourceURI withTimestampPart(String timestampPart) {
+		if (Objects.equals(getTimestampPart(), timestampPart)) {
+			return this;
+		}
 		return withPath(getPath() + timestampPart);
 	}
 
