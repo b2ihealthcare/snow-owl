@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.internal.validation.ValidationConfigurat
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -175,6 +176,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	protected final SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination, String characteristicTypeId) {
 		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedRelationshipIndexEntry.Builder concreteValue(final String source, final String type, final RelationshipValue value) {
+		return DocumentBuilders.concreteValue(source, type, value).effectiveTime(effectiveTime);
 	}
 	
 	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, String referenceSetId) {

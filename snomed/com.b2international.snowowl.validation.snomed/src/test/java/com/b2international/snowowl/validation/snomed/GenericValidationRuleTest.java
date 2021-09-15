@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
@@ -99,13 +100,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
 				.group(0).build();
 		
-		indexRevision(MAIN, relationship1, relationship2, relationship3, relationship4, relationship5);
+		final SnomedRelationshipIndexEntry concreteValue1 = concreteValue(Concepts.FINDING_SITE, Concepts.IS_A, new RelationshipValue("Test value")).group(3).build();
+		final SnomedRelationshipIndexEntry concreteValue2 = concreteValue(Concepts.FINDING_SITE, Concepts.IS_A, new RelationshipValue("Test value")).group(3).build();
+		final SnomedRelationshipIndexEntry concreteValue3 = concreteValue(Concepts.FINDING_SITE, Concepts.IS_A, new RelationshipValue("Test value 2")).group(3).build();
+		
+		indexRevision(MAIN, relationship1, relationship2, relationship3, relationship4, relationship5, concreteValue1, concreteValue2, concreteValue3);
 		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship2.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()));
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, concreteValue1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, concreteValue2.getId()));
 	}
 	
 	@Test
