@@ -64,17 +64,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Script(
 		name="typeSort", 
 		script=
-		 "if (doc.resourceType.value.equals('bundles')) {"
-		+ "	return '1'"
-		+ "}"
-		+ "if (doc.resourceType.value.equals('codesystems')) {"
-		+ "	return '2'"
-		+ "}"
-		+ "if (doc.resourceType.value.equals('valuesets')) {"
-		+ "	return '3'"
-		+ "}"
-		+ "if (doc.resourceType.value.equals('conceptmaps')) {"
-		+ "	return '4'"
+		 "if (params.orderByType.containsKey(doc.resourceType.value)) {"
+		+ "	return params.orderByType.get(doc.resourceType.value)"
 		+ "}"
 		+ "return '5'")
 public final class ResourceDocument extends RevisionDocument {
