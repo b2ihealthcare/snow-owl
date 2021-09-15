@@ -62,15 +62,13 @@ if (params.isUnpublishedOnly) {
 				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
 			} else if (!CompareUtils.isEmpty(hit.getClassAxiomRelationships())) {
 				for (SnomedOWLRelationshipDocument classAxiomRelationship : hit.getClassAxiomRelationships()) {
-					if (!classAxiomRelationship.hasValue() && 
-						(inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId()))) {
+					if (inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId())) {
 						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
 					}
 				}
 			} else if (!CompareUtils.isEmpty(hit.getGciAxiomRelationships())) {
 				for (SnomedOWLRelationshipDocument classAxiomRelationship : hit.getGciAxiomRelationships()) {
-					if (!classAxiomRelationship.hasValue() &&
-						(inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId()))) {
+					if (inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId())) {
 						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
 					}
 				}
