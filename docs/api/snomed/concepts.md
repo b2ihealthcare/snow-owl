@@ -1595,7 +1595,7 @@ POST requests submitted to `concepts/search` perform the same search operation a
 but each query parameter is replaced by a property in the JSON request body:
 
 ```json
-POST /snomed-ct/v3/SNOMEDCT/2021-01-31
+POST /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts/search
 // Request body
 {
   // Query parameters allowing multiple values must be passed as arrays
