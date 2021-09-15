@@ -27,14 +27,11 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.AcceptabilityMembership;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 
 /**
@@ -69,6 +66,15 @@ public final class SnomedDescriptionConverter extends BaseRevisionResourceConver
 		result.setTypeId(input.getTypeId());
 		result.setType(new SnomedConcept(input.getTypeId()));
 		result.setScore(input.getScore());
+		
+		if (input.getMemberOf() != null) {
+			result.setMemberOf(ImmutableSortedSet.copyOf(input.getMemberOf()));
+		}
+		
+		if (input.getActiveMemberOf() != null) {
+			result.setActiveMemberOf(ImmutableSortedSet.copyOf(input.getActiveMemberOf()));
+		}
+		
 		return result;
 	}
 	
