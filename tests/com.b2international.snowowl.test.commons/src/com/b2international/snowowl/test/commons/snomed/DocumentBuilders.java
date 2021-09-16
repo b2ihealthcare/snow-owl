@@ -107,6 +107,18 @@ public abstract class DocumentBuilders {
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
+	public static SnomedRelationshipIndexEntry.Builder concreteValue(final String source, final String type, final RelationshipValue value) {
+		return SnomedRelationshipIndexEntry.builder()
+				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.sourceId(source)
+				.typeId(type)
+				.value(value)
+				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
+				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+	}
+	
 	public static SnomedRefSetMemberIndexEntry.Builder classAxioms(final String sourceId, final Object...axioms) {
 		checkArgument(!CompareUtils.isEmpty(axioms), "At least one axiom must be provided");
 		checkArgument(axioms.length % 3 == 0, "Each axiom should have 3 arguments [typeId:String, destinationId:String, group:Integer].");

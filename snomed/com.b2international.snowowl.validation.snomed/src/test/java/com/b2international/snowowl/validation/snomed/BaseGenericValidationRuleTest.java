@@ -32,7 +32,9 @@ import com.b2international.snowowl.core.internal.validation.ValidationConfigurat
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -177,6 +179,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(effectiveTime);
 	}
 	
+	protected final SnomedRelationshipIndexEntry.Builder concreteValue(final String source, final String type, final RelationshipValue value) {
+		return DocumentBuilders.concreteValue(source, type, value).effectiveTime(effectiveTime);
+	}
+	
 	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, String referenceSetId) {
 		return member(UUID.randomUUID().toString(), referencedComponentId, referenceSetId);
 	}
@@ -191,6 +197,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	protected final RelationshipPredicateFragment relationshipPredicate(ConceptSetDefinitionFragment predicateType, ConceptSetDefinitionFragment predicateRange) {
 		return new RelationshipPredicateFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", predicateType, predicateRange, null);
+	}
+	
+	protected final ConcreteDomainPredicateFragment concreteDomainPredicate(ConceptSetDefinitionFragment predicateType, DataType range) {
+		return new ConcreteDomainPredicateFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", predicateType, range, null);
 	}
 	
 	protected final SnomedConstraintDocument attributeConstraint(ConceptSetDefinitionFragment conceptSetDefinition, PredicateFragment conceptModelPredicate) {
