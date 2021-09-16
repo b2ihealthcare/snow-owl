@@ -174,5 +174,81 @@ public class ResourceApiTest {
 			.getSync(1, TimeUnit.MINUTES); 
 		});
 	}
+	
+	@Test
+	public void sortByResourceTypeAsc() {
+		final String id1 = "A";
+		final String id2 = "B";
+		final String id3 = "C";
+		final String id4 = "D";
+		
+		
+		createCodeSystemWithStatus(id1, "active");
+		createCodeSystemWithStatus(id2, "active");
+		
+		ResourceRequests.bundles().prepareCreate()
+		.setId(id3)
+		.setTitle(id3)
+		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id3)
+		.build(RestExtensions.USER, "Create bundle 1")
+		.execute(Services.bus())
+		.getSync(1, TimeUnit.MINUTES)
+		.getResultAs(String.class);
+		
+		ResourceRequests.bundles().prepareCreate()
+		.setId(id4)
+		.setTitle(id4)
+		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id4)
+		.build(RestExtensions.USER, "Create bundle 2")
+		.execute(Services.bus())
+		.getSync(1, TimeUnit.MINUTES)
+		.getResultAs(String.class);
+		
+		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeSort:asc", "title:asc")))
+			.statusCode(200)
+			.body("total", equalTo(4))
+			.body("items[0].id", equalTo(id3))
+			.body("items[1].id", equalTo(id4))
+			.body("items[2].id", equalTo(id1))
+			.body("items[3].id", equalTo(id2));
+	}
+	
+	@Test
+	public void sortByResourceTypeDesc() {
+		final String id1 = "A";
+		final String id2 = "B";
+		final String id3 = "C";
+		final String id4 = "D";
+		
+		
+		createCodeSystemWithStatus(id1, "active");
+		createCodeSystemWithStatus(id2, "active");
+		
+		ResourceRequests.bundles().prepareCreate()
+		.setId(id3)
+		.setTitle(id3)
+		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id3)
+		.build(RestExtensions.USER, "Create bundle 1")
+		.execute(Services.bus())
+		.getSync(1, TimeUnit.MINUTES)
+		.getResultAs(String.class);
+		
+		ResourceRequests.bundles().prepareCreate()
+		.setId(id4)
+		.setTitle(id4)
+		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id4)
+		.build(RestExtensions.USER, "Create bundle 2")
+		.execute(Services.bus())
+		.getSync(1, TimeUnit.MINUTES)
+		.getResultAs(String.class);
+		
+		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeSort:desc", "title:asc")))
+		.statusCode(200)
+		.body("total", equalTo(4))
+		.body("items[0].id", equalTo(id1))
+		.body("items[1].id", equalTo(id2))
+		.body("items[2].id", equalTo(id3))
+		.body("items[3].id", equalTo(id4));
+	}
 
 }
