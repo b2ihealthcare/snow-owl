@@ -1,43 +1,52 @@
+@Library('jenkins-shared-library') _
 
-def startDate = new Date()
-
+/**
+* Job Parameters:
+*	skipTests - whether to skip unit tests during the build process or not
+*	skipDeploy - whether to deploy build artifacts in case of successful maven build or not (should be false by default)
+*	skipDownstreamBuilds - whether to skip execution of downstream builds
+*	downstreamBuild - name of downstream build
+**/
 try {
 
 	def currentVersion
+	def majorVersion
 	def revision
-	
-	notifyBuild('STARTED', startDate)
+	def mavenPhase = params.skipDeploy ? "verify" : "deploy"
+
+	slack.notifyBuild()
 
 	node('build') {
-		
+
 		stage('Checkout repository') {
-			
+
 			checkout scm
-			
+
 			pom = readMavenPom file: 'pom.xml'
 			currentVersion = pom.version
+			majorVersion = currentVersion.take(1)
 			revision = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-				
+
 		}
-		
+
 		stage('Build') {
-			
+
 			if (!custom_maven_settings.isEmpty()) {
 				withMaven(jdk: 'OpenJDK_11', maven: 'Maven_3.6.3', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
+					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			} else {
 				withMaven(jdk: 'OpenJDK_11', maven: 'Maven_3.6.3', options: [artifactsPublisher(disabled: true)], publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
+					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			}
-			
+
 		}
-		
+
 	}
 
-	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
-		
+	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS') && !params.skipDeploy) {
+
 		build job: 'snow-owl-docker-build', parameters: [
 			string(name: 'groupId', value: 'com.b2international.snowowl'),
 			string(name: 'artifactId', value: 'com.b2international.snowowl.server.update'),
@@ -50,39 +59,22 @@ try {
 
 	}
 
+	if (!params.skipDownstreamBuilds) {
+
+		build job: 'build-'+majorVersion+'.x/'+downstreamBuild+'', parameters: [
+			booleanParam(name: 'skipTests', value: params.skipTests),
+			booleanParam(name: 'skipDeploy', value: params.skipDeploy),
+			booleanParam(name: 'skipDownstreamBuilds', value: params.skipDownstreamBuilds)
+		], quietPeriod: 1, wait: false
+
+	}
+
+} catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+	currentBuild.result = "ABORTED"
+	throw e
 } catch (e) {
 	currentBuild.result = "FAILURE"
 	throw e
 } finally {
-	notifyBuild(currentBuild.result, startDate)
-}
-
-def notifyBuild(String buildStatus = 'STARTED', Date startDate) {
-
-	// build status of null means successful
-	buildStatus =  buildStatus ?: 'SUCCESS'
-
-	// Default values
-	def colorCode = '#A30200'
-	def summary
-
-	if (buildStatus == 'SUCCESS') {
-		def duration = groovy.time.TimeCategory.minus(new Date(), startDate).toString()
-		summary = "${env.JOB_NAME} - ${env.BUILD_DISPLAY_NAME} - ${buildStatus} after ${duration} (<${env.BUILD_URL}|Open>)"
-	} else {
-		summary = "${env.JOB_NAME} - ${env.BUILD_DISPLAY_NAME} - ${buildStatus} (<${env.BUILD_URL}|Open>)"
-	}
-
-	// Override default values based on build status
-	if (buildStatus == 'STARTED' || buildStatus == 'SUCCESS') {
-		colorCode = '#2EB886'
-	} else if (buildStatus == 'UNSTABLE') {
-		colorCode = '#DAA038'
-	} else {
-		colorCode = '#A30200'
-	}
-
-	// Send notifications
-	slackSend (color: colorCode, message: summary)
-
+	slack.notifyBuild(currentBuild.result)
 }
