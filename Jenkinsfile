@@ -10,8 +10,8 @@
 try {
 
 	def currentVersion
-	def majorVersion
 	def revision
+	def branch
 	def mavenPhase = params.skipDeploy ? "verify" : "deploy"
 
 	slack.notifyBuild()
@@ -20,12 +20,12 @@ try {
 
 		stage('Checkout repository') {
 
-			checkout scm
+			scmVars = checkout scm
 
 			pom = readMavenPom file: 'pom.xml'
 			currentVersion = pom.version
-			majorVersion = currentVersion.take(1)
 			revision = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
+			branch = scmVars.GIT_BRANCH.replaceAll("origin/", "")
 
 		}
 
@@ -55,13 +55,14 @@ try {
 			string(name: 'extension', value: 'tar.gz'),
 			string(name: 'imageClassifier', value: 'oss'),
 			string(name: 'gitRevision', value: revision),
+			string(name: 'gitBranch', value: branch)
 		], quietPeriod: 1, wait: false
 
 	}
 
 	if (!params.skipDownstreamBuilds) {
 
-		build job: 'build-maintenance-7.16.x/'+downstreamBuild+'', parameters: [
+		build job: 'build-'+branch+'/'+downstreamBuild+'', parameters: [
 			booleanParam(name: 'skipTests', value: params.skipTests),
 			booleanParam(name: 'skipDeploy', value: params.skipDeploy),
 			booleanParam(name: 'skipDownstreamBuilds', value: params.skipDownstreamBuilds)
