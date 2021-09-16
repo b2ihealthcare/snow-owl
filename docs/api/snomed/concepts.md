@@ -1640,3 +1640,178 @@ POST /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts/search
 
 Controls the logic behind Preferred Term and Fully Specified Name selection for returned concepts. See the 
 documentation for expand options [pt() and fsn()](#pt-and-fsn) for details.
+
+### Create concept (POST)
+
+POST requests submitted to `concepts` create a new concept with the specified parameters, then commit the result to the 
+terminology repository.
+
+The resource path typically consists of a single code system identifier for these requests, indicating that changes 
+should go directly to the working branch of the code system, or a direct child of the working branch for isolating a 
+set of changes that can be reviewed and merged in a single request.
+
+The request body needs to conform to the following requirements:
+
+- include at least one Fully Specified Name (FSN)
+- include at least one preferred synonym (Preferred Term, PT)
+
+The SCTID of created components can be specified in two ways:
+
+1. Explicitly by setting the `id` property on the component object; the request fails when an existing component in 
+the repository already has the same SCTID assigned to it;
+2. Allowing the server to generate an identifier by leaving `id` unset and populating `namespaceId` with the expected 
+namespace identifier, eg. `"1000154"`. Requests using `namespaceId` should not fail due to an SCTID collision, as 
+generated identifiers are checked for uniqueness.
+
+When a `namespaceId` is set on the concept level, descriptions and relationships will use this value by default, so in 
+this case neither `id` nor `namespaceId` needs to be set on them. The same holds true for `moduleId` &ndash; the 
+concept's module identifier is applied to all related descriptions, relationships and reference set members in the 
+request, unless it is set to a different value on the component object.
+
+Please see the example below for required properties. (Note that it is non-executable in its current form, as the 
+OWL axiom reference set member can not be created without knowing the concept's SCTID in advance.)
+
+A successful commit will result in a `201 Created` response; the response header `Location` can be used to extract the 
+generated concept identifier. Validation errors in the request body cause a `400 Bad Request` response.
+
+```json
+// Create a concept on the working branch of code system SNOMEDCT-B2I
+POST /snomed-ct/v3/SNOMEDCT-B2I/concepts
+// Request body
+{
+  "active": true,
+  "moduleId": "636635721000154103", // SNOMED CT B2i extension module
+  "namespaceId": "1000154",         // B2i Healthcare's namespace identifier
+  "definitionStatusId": "900000000000074008", // Primitive
+  "descriptions": [
+    // Create mandatory FSN and PT
+    {
+      "active": true,
+      // "moduleId", "namespaceId" will be set from the concept
+      // "id" will be generated for the description
+      // "conceptId" will be automatically populated with the new concept's SCTID
+      "typeId": "900000000000003001", // Fully specified name
+      "term": "Example concept (disorder)",
+      "languageCode": "en",
+      "caseSignificanceId": "900000000000448009", // Case insensitive
+      "acceptability": {
+        /*
+           Acceptability map entries are keyed by language reference set ID.
+           Allowed values are "PREFERRED" and "ACCEPTABLE".
+        */
+        "900000000000509007": "PREFERRED" // US English
+      }
+    },
+    {
+      "active": true,
+      "typeId": "900000000000013009", // Synonym
+      "term": "Example concept",
+      "languageCode": "en",
+      "caseSignificanceId": "900000000000448009", // Case insensitive
+      "acceptability": {
+        "900000000000509007": "PREFERRED" // US English
+      }
+    }
+  ],
+  "relationships": [
+    /* 
+       Including relationships on a new concept request is optional.
+
+       However, when no inferred IS A relationship is created, the concept will not
+       be visible in the inferred hierarchy (and not show up in eg. ECL evaluations) 
+       until a classification is run on the branch, and suggested changes are saved.
+    */
+    {
+      "active": true,
+      // "moduleId", "namespaceId" will be set from the concept
+      // "id" will be generated for the relationship
+      // "sourceId" will be automatically populated with the new concept's SCTID
+      "typeId": "116680003",       // IS A
+      "destinationId": "64572001", // Disease
+      "destinationNegated": false,
+      "relationshipGroup": 0,
+      "unionGroup": 0,
+      "characteristicTypeId": "900000000000011006", // Inferred relationship
+      "modifierId": "900000000000451002" // Some (existential restriction)
+    }
+  ],
+  "members": [
+    {
+      // "id" is an UUID, will be automatically generated when not given
+      "active": true,
+      // "moduleId" needs to be set for reference set members; it is not propagated
+      "moduleId": "636635721000154103",
+      // "referencedComponentId" will be automatically populated with the new concept's SCTID
+      "refsetId": "733073007",
+      /*
+         Additional properties of the reference set should be added here. For an OWL
+         axiom reference set member, the property to the reference set type is called 
+         "owlExpression".
+
+         At the moment we can not create an OWL axiom member for concepts that do not include
+         a concept ID in advance.
+      */
+      "owlExpression": "SubClassOf(:<conceptId> :64572001)"
+    }
+  ],
+  "commitComment": "Create new example concept"
+}
+
+// Response: 201 Created
+// Location: /snomed-ct/v3/SNOMEDCT-B2I/concepts/<SCTID of created concept>
+```
+
+#### **Request headers**
+
+- `X-Author: {author_id}`
+
+Changes the author recorded in the commit message from the authenticated user (default) to the specified user.
+
+### Update concept (PUT)
+
+### Delete concept (DELETE)
+
+DELETE requests sent to a URI where the last path parameter is an existing concept ID will remove the concept and all 
+of its associated components (descriptions, relationships, reference set members referring to the concept) from the 
+terminology repository.
+
+Deletes are acknowledged with a `204 No Content` response on success. Deletion can be verified by trying to retrieve 
+concept information from the same resource path &ndash; a `404 Not Found` should be returned in this case.
+
+Note that resource branches maintain content in isolation, and so deleting a concept on eg. a task branch will not 
+remove the concept from the code system's working branch, until work on the task branch is approved and merged into 
+mainline.
+
+#### **Query parameters**
+
+- `force=true | false`
+
+Specifies whether deletion of the concept should be allowed, if it has components that were already part of an RF2 
+release (or code system version). This is indicated by the `released` property on each component.
+
+The default value is `false`; with the option disabled, attempting to delete a released component results in a 
+`409 Conflict` response:
+
+```json
+DELETE /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts/138875005
+{
+  "status": 409,
+  "code": 0,
+  "message": "'concept' '138875005' cannot be deleted.",
+  "developerMessage": "'concept' '138875005' cannot be deleted.",
+  "errorCode": 0,
+  "statusCode": 409
+}
+```
+
+{% hint style="warning" %}
+Only administrators should set this parameter to `true`. It is advised to delete redundant or erroneous components 
+before they are put in circulation as part of a SNOMED CT RF2 release. In other cases, inactivation should be preferred 
+over removal.
+{% endhint %}
+
+#### **Request headers**
+
+- `X-Author: {author_id}`
+
+Changes the author recorded in the commit message from the authenticated user (default) to the specified user.
