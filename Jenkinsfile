@@ -61,7 +61,7 @@ try {
 
 	if (!params.skipDownstreamBuilds) {
 
-		build job: 'build-'+majorVersion+'.x/'+downstreamBuild+'', parameters: [
+		build job: 'build-maintenance-7.16.x/'+downstreamBuild+'', parameters: [
 			booleanParam(name: 'skipTests', value: params.skipTests),
 			booleanParam(name: 'skipDeploy', value: params.skipDeploy),
 			booleanParam(name: 'skipDownstreamBuilds', value: params.skipDownstreamBuilds)
