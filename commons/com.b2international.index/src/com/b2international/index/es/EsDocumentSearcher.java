@@ -49,7 +49,6 @@ import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.aggregations.metrics.TopHitsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
-import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -432,7 +431,7 @@ public class EsDocumentSearcher implements Searcher {
 				SortBy.Order order = sortByScript.getOrder();
 				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
 				
-				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), ScriptSortType.STRING)
+				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), sortByScript.getSortType())
 						.order(sortOrder));
 				
 			} else {
