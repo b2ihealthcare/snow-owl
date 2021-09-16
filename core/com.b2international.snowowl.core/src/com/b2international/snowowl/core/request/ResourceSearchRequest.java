@@ -15,15 +15,19 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
+import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.ResourceTypeConverter.Registry;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.google.common.collect.Maps;
 
 /**
  * @since 8.0
@@ -32,14 +36,6 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final Map<String, Object> ORDER_BY_TYPE = Map.of("orderByType", 
-			Map.of(
-					"bundles", "1",
-					"codesystems", "2",
-					"valuesets", "3",
-					"conceptmaps", "4"
-					));
-
 	/**
 	 * @since 8.0
 	 */
@@ -84,7 +80,12 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		if (sort instanceof SortField) {
 			SortField sortField = (SortField) sort;
 			if (ResourceSearchRequestBuilder.TYPE_SORT.equals(sortField.getField())) {
-				sortBuilder.sortByScript(ResourceSearchRequestBuilder.TYPE_SORT, ORDER_BY_TYPE, sort.isAscending() ? Order.ASC : Order.DESC);
+				HashMap<String, String> orderMap = Maps.newHashMap();
+				Registry registry = context.service(ResourceTypeConverter.Registry.class);
+				registry.getResourceTypeConverters().values().forEach(converter -> {
+					orderMap.put(converter.getResourceType(), converter.getRank());
+				});
+				sortBuilder.sortByScript(ResourceSearchRequestBuilder.TYPE_SORT, Map.of("orderByType", orderMap) , sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}
 		}
