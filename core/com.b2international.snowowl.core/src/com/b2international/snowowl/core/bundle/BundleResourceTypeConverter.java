@@ -37,8 +37,8 @@ public final class BundleResourceTypeConverter implements ResourceTypeConverter 
 	}
 	
 	@Override
-	public String getRank() {
-		return "1";
+	public Integer getRank() {
+		return 1;
 	}
 
 }

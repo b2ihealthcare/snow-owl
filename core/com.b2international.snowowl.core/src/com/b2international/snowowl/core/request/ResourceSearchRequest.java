@@ -80,7 +80,7 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 			SortField sortField = (SortField) sort;
 			if (ResourceSearchRequestBuilder.TYPE_RANK.equals(sortField.getField())) {
 				Registry registry = context.service(ResourceTypeConverter.Registry.class);
-				Map<String, String> orderMap = registry.getResourceTypeConverters().values().stream().collect(Collectors.toMap(typeDef -> typeDef.getResourceType(), typeDef -> typeDef.getRank()));
+				Map<String, Integer> orderMap = registry.getResourceTypeConverters().values().stream().collect(Collectors.toMap(typeDef -> typeDef.getResourceType(), typeDef -> typeDef.getRank()));
 				
 				sortBuilder.sortByScript(ResourceSearchRequestBuilder.TYPE_RANK, Map.of("ranks", orderMap) , sort.isAscending() ? Order.ASC : Order.DESC);
 				return;

@@ -51,7 +51,7 @@ public interface ResourceTypeConverter {
 	
 	String getResourceType();
 	
-	String getRank();
+	Integer getRank();
 	
 	Resource toResource(ResourceDocument doc);
 	
