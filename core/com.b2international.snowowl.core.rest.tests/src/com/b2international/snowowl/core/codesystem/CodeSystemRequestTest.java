@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
@@ -163,7 +164,7 @@ public class CodeSystemRequestTest {
 			.setDescription("# Description")
 			.setLanguage("en")
 			.setBranchPath(BRANCH)
-			.setToolingId("snomed")
+			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.setOid(oid)
 			.build(RestExtensions.USER, String.format("New code system %s", shortName))
 			.execute(bus)

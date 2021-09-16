@@ -33,7 +33,7 @@ public abstract class SnomedApiTestConstants implements ApiTestConstants {
 	/**
 	 * The context-relative base URL for SNOMED CT-related controllers.
 	 */
-	public static final String SCT_API = "/snomed-ct/v3";
+	public static final String SCT_API = "/snomedct";
 
 	/**
 	 * An acceptability map which specifies that the corresponding description is acceptable in the UK language reference set.
