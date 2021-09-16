@@ -62,7 +62,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 @Script(
-		name="typeSort", 
+		name="typeRank", 
 		script="return params.orderByType.getOrDefault(doc.resourceType.value, doc.resourceType.value)")
 public final class ResourceDocument extends RevisionDocument {
 
@@ -96,7 +96,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String EXTENSION_OF = "extensionOf";
 		public static final String UPGRADE_OF = "upgradeOf";
 		public static final String SETTINGS = "settings";
-		public static final String TYPE_SORT = "typeSort";
+		public static final String TYPE_RANK = "typeRank";
 		
 		// analyzed fields
 		private static final String TITLE_PREFIX   = TITLE + ".prefix";
@@ -119,7 +119,7 @@ public final class ResourceDocument extends RevisionDocument {
 			TOOLING_ID,
 			EXTENSION_OF, 
 			UPGRADE_OF,
-			TYPE_SORT
+			TYPE_RANK
 		);
 	}
 	

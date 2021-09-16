@@ -204,7 +204,7 @@ public class ResourceApiTest {
 		.getSync(1, TimeUnit.MINUTES)
 		.getResultAs(String.class);
 		
-		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeSort:asc", "title:asc")))
+		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:asc", "title:asc")))
 			.statusCode(200)
 			.body("total", equalTo(4))
 			.body("items[0].id", equalTo(id3))
@@ -242,7 +242,7 @@ public class ResourceApiTest {
 		.getSync(1, TimeUnit.MINUTES)
 		.getResultAs(String.class);
 		
-		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeSort:desc", "title:asc")))
+		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
 		.statusCode(200)
 		.body("total", equalTo(4))
 		.body("items[0].id", equalTo(id1))

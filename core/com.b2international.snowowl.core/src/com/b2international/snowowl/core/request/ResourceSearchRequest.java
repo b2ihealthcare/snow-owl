@@ -79,13 +79,13 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 	protected void toQuerySortBy(RepositoryContext context, Builder sortBuilder, Sort sort) {
 		if (sort instanceof SortField) {
 			SortField sortField = (SortField) sort;
-			if (ResourceSearchRequestBuilder.TYPE_SORT.equals(sortField.getField())) {
+			if (ResourceSearchRequestBuilder.TYPE_RANK.equals(sortField.getField())) {
 				HashMap<String, String> orderMap = Maps.newHashMap();
 				Registry registry = context.service(ResourceTypeConverter.Registry.class);
 				registry.getResourceTypeConverters().values().forEach(converter -> {
 					orderMap.put(converter.getResourceType(), converter.getRank());
 				});
-				sortBuilder.sortByScript(ResourceSearchRequestBuilder.TYPE_SORT, Map.of("orderByType", orderMap) , sort.isAscending() ? Order.ASC : Order.DESC);
+				sortBuilder.sortByScript(ResourceSearchRequestBuilder.TYPE_RANK, Map.of("orderByType", orderMap) , sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}
 		}
