@@ -53,15 +53,21 @@ def getCharType = { SnomedPredicate predicate ->
 	}
 }
 
+def isRelationshipPredicate = { SnomedConstraint constraint -> 
+	SnomedPredicate predicate = constraint.getPredicate();
+	SnomedPredicate innermostPredicate = predicate instanceof SnomedCardinalityPredicate 
+	 	? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate() 
+		: constraint.getPredicate();
+	
+	return innermostPredicate instanceof SnomedRelationshipPredicate || innermostPredicate instanceof SnomedConcreteDomainPredicate
+}
+
 def mrcmRules = SnomedRequests.prepareSearchConstraint()
 		.all()
 		.build()
 		.execute(ctx)
 		.stream()
-		.filter({SnomedConstraint constraint -> constraint.getPredicate() instanceof SnomedCardinalityPredicate
-			? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate() instanceof SnomedRelationshipPredicate || 
-			  ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate() instanceof SnomedConcreteDomainPredicate
-			: constraint.getPredicate() instanceof SnomedRelationshipPredicate || constraint.getPredicate() instanceof SnomedConcreteDomainPredicate })
+		.filter({SnomedConstraint constraint -> isRelationshipPredicate(constraint)})
 		.collect();
 
 def getApplicableConcepts = { String conceptSetExpression ->
