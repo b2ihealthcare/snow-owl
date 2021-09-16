@@ -41,6 +41,7 @@ public abstract class Resource implements Serializable {
 		public static final String LANGUAGE = ResourceDocument.Fields.LANGUAGE;
 		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
 		public static final String RESOURCE_TYPE = ResourceDocument.Fields.RESOURCE_TYPE;
+		public static final String TYPE_RANK = ResourceDocument.Fields.TYPE_RANK;
 		
 		// TerminologyResource subtype specific fields, but for convenience and single API access, they are defined here
 		public static final String OID = ResourceDocument.Fields.OID;
@@ -54,7 +55,8 @@ public abstract class Resource implements Serializable {
 			OWNER,
 			OID,
 			CREATED_AT,
-			RESOURCE_TYPE
+			RESOURCE_TYPE,
+			TYPE_RANK
 		);
 	}
 	

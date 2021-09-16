@@ -35,5 +35,10 @@ public final class CodeSystemResourceTypeConverter implements ResourceTypeConver
 	public Resource toResource(ResourceDocument doc) {
 		return CodeSystem.from(doc);
 	}
+	
+	@Override
+	public Integer getRank() {
+		return 2;
+	}
 
 }

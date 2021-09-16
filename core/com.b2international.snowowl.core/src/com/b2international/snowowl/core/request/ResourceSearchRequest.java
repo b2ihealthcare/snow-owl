@@ -15,8 +15,15 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.SortBy.Builder;
+import com.b2international.index.query.SortBy.Order;
+import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.ResourceTypeConverter.Registry;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -27,7 +34,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	/**
 	 * @since 8.0
 	 */
@@ -66,5 +73,20 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 	protected Resources createEmptyResult(int limit) {
 		return new Resources(limit, 0);
 	}
-
+	
+	@Override
+	protected void toQuerySortBy(RepositoryContext context, Builder sortBuilder, Sort sort) {
+		if (sort instanceof SortField) {
+			SortField sortField = (SortField) sort;
+			if (ResourceSearchRequestBuilder.TYPE_RANK.equals(sortField.getField())) {
+				Registry registry = context.service(ResourceTypeConverter.Registry.class);
+				Map<String, Integer> orderMap = registry.getResourceTypeConverters().values().stream().collect(Collectors.toMap(typeDef -> typeDef.getResourceType(), typeDef -> typeDef.getRank()));
+				
+				sortBuilder.sortByScriptNumeric(ResourceSearchRequestBuilder.TYPE_RANK, Map.of("ranks", orderMap) , sort.isAscending() ? Order.ASC : Order.DESC);
+				return;
+			}
+		}
+		super.toQuerySortBy(context, sortBuilder, sort);
+	}
+	
 }
