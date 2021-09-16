@@ -20,12 +20,12 @@ try {
 
 		stage('Checkout repository') {
 
-			checkout scm
+			scmVars = checkout scm
 
 			pom = readMavenPom file: 'pom.xml'
 			currentVersion = pom.version
 			revision = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-			branch = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+			branch = scmVars.GIT_BRANCH.replaceAll("origin/", "")
 
 		}
 
