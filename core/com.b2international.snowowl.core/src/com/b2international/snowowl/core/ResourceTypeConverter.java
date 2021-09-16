@@ -43,6 +43,9 @@ public interface ResourceTypeConverter {
 			return resourceTypeConverters.get(doc.getResourceType()).toResource(doc);
 		}
 		
+		public Map<String, ResourceTypeConverter> getResourceTypeConverters() {
+			return resourceTypeConverters;
+		}
 	}
 	
 	String getResourceType();
