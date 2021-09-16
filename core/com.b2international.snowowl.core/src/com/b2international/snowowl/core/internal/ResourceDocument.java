@@ -63,7 +63,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 @Script(
 		name="typeRank", 
-		script="return params.ranks.getOrDefault(doc.resourceType.value, doc.resourceType.value)")
+		script="return params.ranks.getOrDefault(doc.resourceType.value, Integer.MAX_VALUE)")
 public final class ResourceDocument extends RevisionDocument {
 
 	public static final String TYPE = "resource";
