@@ -1285,7 +1285,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				.build(upgradeCodeSystem.getRepositoryId())
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(result.getStatus().equals(Status.COMPLETED));
+		assertEquals(Status.COMPLETED, result.getStatus());
 		
 		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).containsOnly(extensionVersion3);
