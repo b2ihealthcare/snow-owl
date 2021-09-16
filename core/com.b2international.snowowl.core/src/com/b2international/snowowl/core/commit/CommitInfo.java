@@ -21,7 +21,6 @@ import java.util.List;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.repository.RepositoryCommitNotification;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -131,6 +130,10 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
+		Builder timestampString(String timestampString) {
+			return this;
+		}
+		
 		public CommitInfo build() {
 			return new CommitInfo(id, branch, author, comment, timestamp, groupId, mergeSource, details);
 		}
@@ -185,7 +188,6 @@ public final class CommitInfo implements Serializable {
 		return timestamp;
 	}
 	
-	@JsonIgnore
 	public String getTimestampString() {
 		return timestamp == null ? null : Long.toString(timestamp);
 	}
