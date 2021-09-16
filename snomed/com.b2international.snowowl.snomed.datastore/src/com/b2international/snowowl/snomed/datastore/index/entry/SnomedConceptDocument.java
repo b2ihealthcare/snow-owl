@@ -212,6 +212,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String DOI = "doi";
 		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 		public static final String SEMANTIC_TAGS = "semanticTags";
+		public static final String TERM_SORT = "termSort";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
