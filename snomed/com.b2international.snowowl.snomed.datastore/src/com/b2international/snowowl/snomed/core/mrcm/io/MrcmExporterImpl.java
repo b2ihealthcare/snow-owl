@@ -41,18 +41,18 @@ public class MrcmExporterImpl implements MrcmExporter {
 	}
 	
 	@Override
-	public void doExport(User user, OutputStream content, MrcmExportFormat exportFormat) {
+	public void doExport(User user, OutputStream content, MrcmExportFormat exportFormat, String branch) {
 		String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(user);
-		doExport(authorizationToken, content, exportFormat);
+		doExport(authorizationToken, content, exportFormat, branch);
 	}
 	
 	@Override
-	public void doExport(String authorizationToken, OutputStream content, MrcmExportFormat exportFormat) {
+	public void doExport(String authorizationToken, OutputStream content, MrcmExportFormat exportFormat, String branch) {
 		final AuthorizedEventBus bus = new AuthorizedEventBus(this.bus.get(), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken));
 		if (exportFormat == MrcmExportFormat.JSON) {
-			new JsonMrcmExporter().doExport(bus, content);
+			new JsonMrcmExporter().doExport(bus, content, branch);
 		} else if (exportFormat == MrcmExportFormat.CSV) {
-			new CsvMrcmExporter().doExport(bus, content);
+			new CsvMrcmExporter().doExport(bus, content, branch);
 		} else {
 			throw new UnsupportedOperationException("No exporter is registered for " + exportFormat);
 		}

@@ -75,7 +75,7 @@ public class MrcmImportExportTest {
 		Path exportedFile = target.resolve("mrcm_" + Dates.now() + ".csv");
 		assertFalse(exportedFile.toFile().exists());
 		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE_NEW)) {
-			Services.service(MrcmExporter.class).doExport(Services.getAuthorizationToken(), stream, MrcmExportFormat.CSV);
+			Services.service(MrcmExporter.class).doExport(Services.getAuthorizationToken(), stream, MrcmExportFormat.CSV, IBranchPath.MAIN_BRANCH);
 		}
 		assertTrue(exportedFile.toFile().exists());
 	}

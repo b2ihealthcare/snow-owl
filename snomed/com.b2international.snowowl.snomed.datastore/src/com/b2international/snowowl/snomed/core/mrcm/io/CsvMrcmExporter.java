@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
@@ -39,8 +38,7 @@ class CsvMrcmExporter {
 
 	private static final Joiner TAB_JOINER = Joiner.on('\t').useForNull("");
 
-	public void doExport(IEventBus bus, OutputStream stream) {
-		final String branch = Branch.MAIN_PATH;
+	public void doExport(IEventBus bus, OutputStream stream, String branch) {
 		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer(branch);
 
 		final SnomedConstraints constraints = SnomedRequests.prepareSearchConstraint()
