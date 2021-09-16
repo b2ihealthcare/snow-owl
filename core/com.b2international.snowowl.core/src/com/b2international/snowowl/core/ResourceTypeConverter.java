@@ -22,6 +22,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 8.0
@@ -44,7 +45,7 @@ public interface ResourceTypeConverter {
 		}
 		
 		public Map<String, ResourceTypeConverter> getResourceTypeConverters() {
-			return resourceTypeConverters;
+			return ImmutableMap.copyOf(resourceTypeConverters);
 		}
 	}
 	
