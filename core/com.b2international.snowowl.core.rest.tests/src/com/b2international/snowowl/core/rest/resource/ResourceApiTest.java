@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -192,11 +193,7 @@ public class ResourceApiTest {
 		
 		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:asc", "title:asc")))
 			.statusCode(200)
-			.body("total", equalTo(4))
-			.body("items[0].id", equalTo(id3))
-			.body("items[1].id", equalTo(id4))
-			.body("items[2].id", equalTo(id1))
-			.body("items[3].id", equalTo(id2));
+			.body("items.id", Matchers.contains(id3, id4, id1, id2));
 	}
 	
 	@Test
@@ -215,11 +212,7 @@ public class ResourceApiTest {
 		
 		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
 		.statusCode(200)
-		.body("total", equalTo(4))
-		.body("items[0].id", equalTo(id1))
-		.body("items[1].id", equalTo(id2))
-		.body("items[2].id", equalTo(id3))
-		.body("items[3].id", equalTo(id4));
+		.body("items.id", Matchers.contains(id1, id2, id3, id4));
 	}
 
 }
