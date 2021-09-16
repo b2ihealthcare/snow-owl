@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -196,6 +197,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	protected final RelationshipPredicateFragment relationshipPredicate(ConceptSetDefinitionFragment predicateType, ConceptSetDefinitionFragment predicateRange) {
 		return new RelationshipPredicateFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", predicateType, predicateRange, null);
+	}
+	
+	protected final ConcreteDomainPredicateFragment concreteDomainPredicate(ConceptSetDefinitionFragment predicateType, DataType range) {
+		return new ConcreteDomainPredicateFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", predicateType, range, null);
 	}
 	
 	protected final SnomedConstraintDocument attributeConstraint(ConceptSetDefinitionFragment conceptSetDefinition, PredicateFragment conceptModelPredicate) {

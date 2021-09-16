@@ -45,7 +45,9 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ConcreteDomainPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
@@ -1277,6 +1279,12 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final RelationshipPredicateFragment conceptModelPredicate2 = relationshipPredicate(predicateType2, predicateRange2);
 		final SnomedConstraintDocument attributeConstraint2 = attributeConstraint(conceptSetDefinition2, conceptModelPredicate2);
 		
+		//Third mrcm rule
+		final HierarchyDefinitionFragment conceptSetDefinition3 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
+		final HierarchyDefinitionFragment predicateType3 = hierarchyConceptSetDefinition(Concepts.HAS_ACTIVE_INGREDIENT, HierarchyInclusionType.SELF);
+		final ConcreteDomainPredicateFragment concreteDomainPredicate3 = concreteDomainPredicate(predicateType3, DataType.INTEGER);
+		final SnomedConstraintDocument attributeConstraint3 = attributeConstraint(conceptSetDefinition3, concreteDomainPredicate3);
+		
 		//Relationships
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.IS_A, Concepts.CONCEPT_MODEL_ATTRIBUTE)
 				.group(1).build();
@@ -1292,6 +1300,10 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.PHYSICAL_OBJECT)
 				.group(3).build();
+		
+		final SnomedRelationshipIndexEntry relationship6 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(5))).build();
+		final SnomedRelationshipIndexEntry relationship7 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, new RelationshipValue(Integer.valueOf(15))).build();
+		final SnomedRelationshipIndexEntry relationship8 = concreteValue(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(20))).build();
 		
 		// OWL axioms
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
@@ -1312,8 +1324,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		
-		indexRevision(MAIN, attributeConstraint1, attributeConstraint2,
-			relationship1, relationship2, relationship3, relationship4, relationship5,
+		indexRevision(MAIN, attributeConstraint1, attributeConstraint2, attributeConstraint3,
+			relationship1, relationship2, relationship3, relationship4, relationship5, relationship6, relationship7, relationship8,
 			axiomMember1, axiomMember2,	axiomMember3);
 		
 		ValidationIssues issues = validate(ruleId);
@@ -1322,11 +1334,14 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 					ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember2.getId()),
 					ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember3.getId()),
 					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()))
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship7.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship8.getId()))
 			.doesNotContain(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember1.getId()),
 					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
 					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship2.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()));
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship6.getId()));
 	}
 	
 	private SnomedRefSetMemberIndexEntry createLanguageRefsetMember(SnomedDescriptionIndexEntry description) {
