@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
@@ -186,23 +187,8 @@ public class ResourceApiTest {
 		createCodeSystemWithStatus(id1, "active");
 		createCodeSystemWithStatus(id2, "active");
 		
-		ResourceRequests.bundles().prepareCreate()
-		.setId(id3)
-		.setTitle(id3)
-		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id3)
-		.build(RestExtensions.USER, "Create bundle 1")
-		.execute(Services.bus())
-		.getSync(1, TimeUnit.MINUTES)
-		.getResultAs(String.class);
-		
-		ResourceRequests.bundles().prepareCreate()
-		.setId(id4)
-		.setTitle(id4)
-		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id4)
-		.build(RestExtensions.USER, "Create bundle 2")
-		.execute(Services.bus())
-		.getSync(1, TimeUnit.MINUTES)
-		.getResultAs(String.class);
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
 		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:asc", "title:asc")))
 			.statusCode(200)
@@ -224,23 +210,8 @@ public class ResourceApiTest {
 		createCodeSystemWithStatus(id1, "active");
 		createCodeSystemWithStatus(id2, "active");
 		
-		ResourceRequests.bundles().prepareCreate()
-		.setId(id3)
-		.setTitle(id3)
-		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id3)
-		.build(RestExtensions.USER, "Create bundle 1")
-		.execute(Services.bus())
-		.getSync(1, TimeUnit.MINUTES)
-		.getResultAs(String.class);
-		
-		ResourceRequests.bundles().prepareCreate()
-		.setId(id4)
-		.setTitle(id4)
-		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + id4)
-		.build(RestExtensions.USER, "Create bundle 2")
-		.execute(Services.bus())
-		.getSync(1, TimeUnit.MINUTES)
-		.getResultAs(String.class);
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
 		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
 		.statusCode(200)
