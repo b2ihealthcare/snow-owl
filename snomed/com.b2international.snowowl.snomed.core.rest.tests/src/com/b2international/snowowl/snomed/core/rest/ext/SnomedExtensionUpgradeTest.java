@@ -56,6 +56,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.Merge.Status;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -1222,11 +1223,11 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		IBranchPath upgradeBranch = BranchPathUtils.createPath(upgradeCodeSystem.getBranchPath());
 		merge(extensionBranch, upgradeBranch, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));	
 		
-		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
 			.build(upgradeCodeSystem.getRepositoryId())
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
+		assertTrue(result);
 		
 		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).isEmpty();
@@ -1261,7 +1262,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// version extension
 		String effectiveDate3 =  getNextAvailableEffectiveDateAsString(extension.getShortName());
 		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
-		CodeSystemVersion codeSystemVersion2 = CodeSystemVersionRestRequests.getVersion(extension.getShortName(), effectiveDate3).extract().as(CodeSystemVersion.class);
 		CodeSystemURI extensionVersion2 = CodeSystemURI.branch(extension.getShortName(), effectiveDate3);
 		
 		// new SE concept
@@ -1281,15 +1281,11 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).contains(extensionVersion2);
 		
-		IBranchPath extensionBranch = BranchPathUtils.createPath(extension.getBranchPath());
-		IBranchPath upgradeBranch = BranchPathUtils.createPath(upgradeCodeSystem.getBranchPath());
-		merge(extensionBranch, upgradeBranch, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));	
-		
-		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extensionVersion2)
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extensionVersion2)
 				.build(upgradeCodeSystem.getRepositoryId())
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
+		assertTrue(result);
 		
 		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).containsOnly(extensionVersion3);
@@ -1330,11 +1326,11 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
 		
-		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
 				.build(upgradeCodeSystem.getRepositoryId())
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
+		assertTrue(result);
 		
 		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
 		

@@ -15,14 +15,20 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
@@ -60,7 +66,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 		
 		final String sourceBranchPath = context.service(ResourceURIPathResolver.class).resolve(context, List.of(source)).stream().findFirst().get();
 		// merge all changes from the source to the current upgrade of branch
-		RepositoryRequests.merging()
+		final Merge merge = RepositoryRequests.merging()
 			.prepareCreate()
 			.setSource(sourceBranchPath) 
 			.setTarget(codeSystem.getBranchPath())
@@ -69,6 +75,18 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 			.setSquash(false)
 			.build()
 			.execute(context);
+		
+		if (merge.getStatus() != Merge.Status.COMPLETED) {
+			// report conflicts
+			ApiError apiError = merge.getApiError();
+			Collection<MergeConflict> conflicts = merge.getConflicts();
+			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
+			throw new ConflictException("Upgrade code system synchronization can not be performed due to conflicting content errors.")
+				.withAdditionalInfo(Map.of(
+					"conflicts", conflicts,
+					"mergeError", apiError.getMessage()
+				));
+		}
 
 		if (!codeSystem.getUpgradeOf().equals(source)) {
 			return RepositoryRequests.prepareCommit()
@@ -83,9 +101,9 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 					.getRequest()
 					.execute(context)
 					.getResultAs(Boolean.class);
-		} else {
-			return Boolean.TRUE;
 		}
+		
+		return Boolean.TRUE;
 	}
 
 }
