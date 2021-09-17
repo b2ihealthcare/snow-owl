@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="Snow Owl Target Platform Definition" sequenceNumber="32">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<target name="Snow Owl Target Platform Definition" sequenceNumber="32">
 <locations>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.equinox.sdk.feature.group" version="3.20.300.v20200828-1034"/>
@@ -65,7 +67,7 @@
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/justj/jres/16/updates/release/latest/"/>
-		<unit id="org.eclipse.justj.openjdk.hotspot.jre.full.feature.group" version="16.0.1.v20210528-1205"/>
+		<unit id="org.eclipse.justj.openjdk.hotspot.jre.full.feature.group" version="16.0.2.v20210721-1149"/>
 	</location>
 </locations>
 </target>
