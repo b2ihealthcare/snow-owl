@@ -40,8 +40,8 @@
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		
 		<!-- Build tool/compiler versions -->
-		<tycho.version>2.4.0-SNAPSHOT</tycho.version>
-		<tycho-extras.version>2.4.0-SNAPSHOT</tycho-extras.version>
+		<tycho.version>2.4.0</tycho.version>
+		<tycho-extras.version>2.4.0</tycho-extras.version>
 		<xtend.compiler.version>2.23.0</xtend.compiler.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		
@@ -963,13 +963,6 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>tycho-snapshots</id>
-			<url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<distributionManagement>
 		<repository>
