@@ -1,13 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.17.4
+
+### Bugs/Improvements
+- [core] report conflicts properly during code system synchronization (#888)
+- [snomed] make source branch of MRCM export configurable (#890)
+- [snomed] support validation of relationships with concrete values (#895)
+- [releng] store source branch as label in docker image (235af78, 374dec5)
+
 ## 7.17.3
 
 ### Bugs/Improvements
-- [snomed]: handle integer and decimal values as numbers and make sure they classify as is without type or value changes (#868)
-- [snomed]: support nested branches when importing MRCM rules (#870)
-- [api]: allow synchronization of empty extensions/branches without issues (#849)
-- [api]: expose CodeSystem Sync and Complete API (#872, #873)
+- [snomed] handle integer and decimal values as numbers and make sure they classify as is without type or value changes (#868)
+- [snomed] support nested branches when importing MRCM rules (#870)
+- [api] allow synchronization of empty extensions/branches without issues (#849)
+- [api] expose CodeSystem Sync and Complete API (#872, #873)
 
 ## 7.17.2
 
