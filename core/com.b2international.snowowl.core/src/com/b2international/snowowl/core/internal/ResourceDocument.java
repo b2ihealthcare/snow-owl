@@ -207,9 +207,17 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression bundleAncestorIds(Iterable<String> bundleAncestorIds) {
 			return matchAny(Fields.BUNDLE_ANCESTOR_IDS, bundleAncestorIds);
 		}
+		
+		public static Expression bundleAncestorIdPrefixes(Iterable<String> bundleAncestorIdPrefixes) {
+			return prefixMatch(Fields.BUNDLE_ANCESTOR_IDS, bundleAncestorIdPrefixes);
+		}
 
 		public static Expression bundleIds(Iterable<String> bundleIds) {
 			return matchAny(Fields.BUNDLE_ID, bundleIds);
+		}
+		
+		public static Expression bundleIdPrefixes(Iterable<String> bundleIdPrefixes) {
+			return prefixMatch(Fields.BUNDLE_ID, bundleIdPrefixes);
 		}
 		
 		public static Expression oid(String oid) {

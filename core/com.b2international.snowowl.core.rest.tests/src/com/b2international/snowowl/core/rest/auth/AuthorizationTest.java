@@ -19,7 +19,6 @@ import static com.b2international.snowowl.core.rest.BundleApiAssert.createBundle
 import static com.b2international.snowowl.core.rest.BundleApiAssert.prepareBundleCreateRequestBody;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreate;
 import static com.b2international.snowowl.test.commons.ApiTestConstants.CODESYSTEMS_API;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -175,8 +174,28 @@ public class AuthorizationTest {
 	}
 	
 	@Test
+	public void readOnlyWildcardAccessOnBundleGivesAccessToResourcesWithin() throws Exception {
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_CLINICAL_BUNDLE_ID + "*"));
+		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
+			.get()
+			.then()
+			.assertThat().statusCode(200)
+			.and().body("total", equalTo(2));
+	}
+	
+	@Test
 	public void readOnlyAccessOnBundleGivesAccessToResourcesWithinTransitively() throws Exception {
 		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_ALL_BUNDLE_ID));
+		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
+			.get()
+			.then()
+			.assertThat().statusCode(200)
+			.and().body("total", equalTo(3));
+	}
+	
+	@Test
+	public void readOnlyWildcardAccessOnBundleGivesAccessToResourcesWithinTransitively() throws Exception {
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UK_ALL_BUNDLE_ID + "*"));
 		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
 			.get()
 			.then()
@@ -238,4 +257,5 @@ public class AuthorizationTest {
 			.then().assertThat()
 			.statusCode(204);
 	}
+	
 }
