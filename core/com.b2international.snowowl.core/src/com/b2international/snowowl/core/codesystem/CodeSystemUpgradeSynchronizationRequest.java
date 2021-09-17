@@ -15,15 +15,20 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
@@ -32,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.17
  */
-public final class CodeSystemUpgradeSynchronizationRequest implements Request<RepositoryContext, Merge> {
+public final class CodeSystemUpgradeSynchronizationRequest implements Request<RepositoryContext, Boolean> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -50,7 +55,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 	}
 	
 	@Override
-	public Merge execute(RepositoryContext context) {
+	public Boolean execute(RepositoryContext context) {
 		final String message = String.format("Merge %s into %s", source, codeSystemId);
 		
 		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId.getCodeSystem()).build().execute(context);
@@ -70,9 +75,21 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 			.setSquash(false)
 			.build()
 			.execute(context);
+		
+		if (merge.getStatus() != Merge.Status.COMPLETED) {
+			// report conflicts
+			ApiError apiError = merge.getApiError();
+			Collection<MergeConflict> conflicts = merge.getConflicts();
+			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
+			throw new ConflictException("Upgrade code system synchronization can not be performed due to conflicting content errors.")
+				.withAdditionalInfo(Map.of(
+					"conflicts", conflicts,
+					"mergeError", apiError.getMessage()
+				));
+		}
 
 		if (!codeSystem.getUpgradeOf().equals(source)) {
-			RepositoryRequests.prepareCommit()
+			return RepositoryRequests.prepareCommit()
 					.setCommitComment(String.format("Update upgradeOf from '%s' to '%s'", codeSystem.getUpgradeOf(), source))
 					.setBody((tx) -> {
 						CodeSystemEntry entry = tx.lookup(codeSystemId.getCodeSystem(), CodeSystemEntry.class);
@@ -86,7 +103,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 					.getResultAs(Boolean.class);
 		}
 		
-		return merge;
+		return Boolean.TRUE;
 	}
 
 }

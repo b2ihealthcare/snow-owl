@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.codesystem;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
@@ -26,8 +25,8 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
  * @since 7.17
  */
 public final class CodeSystemUpgradeSynchronizationRequestBuilder
-		extends BaseRequestBuilder<CodeSystemUpgradeSynchronizationRequestBuilder, RepositoryContext, Merge>
-		implements RepositoryRequestBuilder<Merge> {
+		extends BaseRequestBuilder<CodeSystemUpgradeSynchronizationRequestBuilder, RepositoryContext, Boolean>
+		implements RepositoryRequestBuilder<Boolean> {
 
 	private final CodeSystemURI codeSystemId;
 	private final CodeSystemURI source;
@@ -38,7 +37,7 @@ public final class CodeSystemUpgradeSynchronizationRequestBuilder
 	}
 
 	@Override
-	protected Request<RepositoryContext, Merge> doBuild() {
+	protected Request<RepositoryContext, Boolean> doBuild() {
 		return new CodeSystemUpgradeSynchronizationRequest(codeSystemId, source);
 	}
 
