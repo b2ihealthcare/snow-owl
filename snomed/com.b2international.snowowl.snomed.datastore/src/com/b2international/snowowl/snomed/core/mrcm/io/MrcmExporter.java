@@ -35,8 +35,8 @@ public interface MrcmExporter {
 	 * @param exportFormat the export format to use           
 	 * @return - the exported file path
 	 */
-	void doExport(String authorizationToken, OutputStream content, final MrcmExportFormat exportFormat);
+	void doExport(String authorizationToken, OutputStream content, final MrcmExportFormat exportFormat, String branch);
 	
-	void doExport(User user, OutputStream content, MrcmExportFormat exportFormat);
+	void doExport(User user, OutputStream content, MrcmExportFormat exportFormat, String branch);
 
 }
