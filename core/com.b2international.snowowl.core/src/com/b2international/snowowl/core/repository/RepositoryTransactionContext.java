@@ -32,7 +32,6 @@ import com.b2international.index.Index;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -205,7 +204,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			if (force || optionalService(ComponentDeletionPolicy.class).map(cdp -> cdp.canDelete(doc)).orElse(Boolean.TRUE)) {
 				staging.stageRemove(doc);
 			} else {
-				throw new ConflictException("'%s' '%s' cannot be deleted.", DocumentMapping.getType(doc.getClass()), doc.getId());
+				throw new ConflictException("'%s' '%s' cannot be deleted.", service(Mappings.class).getType(doc.getClass()), doc.getId());
 			}
 		} else {
 			throw new UnsupportedOperationException("Unrecognized objects cannot be removed from this repository: " + o);

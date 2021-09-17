@@ -15,13 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Contact detail object
@@ -29,14 +32,13 @@ import com.google.common.collect.Lists;
  * @see <a href="https://www.hl7.org/fhir/metadatatypes.html#ContactDetail>FHIR:ContactDetail</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = ContactDetail.Builder.class)
 public class ContactDetail extends Element {
 	
 	@Summary
-	@JsonProperty
 	private String name;
 	
 	@Summary
-	@JsonProperty("telecom")
 	private Collection<ContactPoint> contactPoints;
 
 	/**
@@ -54,7 +56,8 @@ public class ContactDetail extends Element {
 		return name;
 	}
 
-	public Collection<ContactPoint> getTelecom() {
+	@JsonProperty("telecom")
+	public Collection<ContactPoint> getTelecoms() {
 		return contactPoints;
 	}
 
@@ -62,10 +65,11 @@ public class ContactDetail extends Element {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, ContactDetail> {
 		
 		private String name;
-		private Collection<ContactPoint> contactPoints = Lists.newArrayList();
+		private Collection<ContactPoint> telecoms;
 		
 		@Override
 		protected Builder getSelf() {
@@ -77,14 +81,24 @@ public class ContactDetail extends Element {
 			return getSelf();
 		}
 		
-		public Builder addContactPoint(ContactPoint contactPoint) {
-			contactPoints.add(contactPoint);
+		@JsonProperty("telecom")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder telecoms(List<ContactPoint> telecoms) {
+			this.telecoms = telecoms;
+			return getSelf();
+		}
+		
+		public Builder addTelecom(ContactPoint telecom) {
+			if (telecoms == null) {
+				telecoms = new ArrayList<ContactPoint>();
+			}
+			telecoms.add(telecom);
 			return getSelf();
 		}
 		
 		@Override
 		protected ContactDetail doBuild() {
-			return new ContactDetail(id, extensions, name, contactPoints);
+			return new ContactDetail(id, extensions, name, telecoms);
 		}
 	}
 

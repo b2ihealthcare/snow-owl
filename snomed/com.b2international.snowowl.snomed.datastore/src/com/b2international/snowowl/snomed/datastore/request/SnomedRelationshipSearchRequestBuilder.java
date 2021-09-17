@@ -40,7 +40,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.SOURCE, sourceId);
 	}
 
-	public SnomedRelationshipSearchRequestBuilder filterBySource(Iterable<String> sourceIds) {
+	public SnomedRelationshipSearchRequestBuilder filterBySources(Iterable<String> sourceIds) {
 		return addOption(OptionKey.SOURCE, sourceIds);
 	}
 	
@@ -48,7 +48,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.TYPE, typeId);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByType(Iterable<String> typeIds) {
+	public SnomedRelationshipSearchRequestBuilder filterByTypes(Iterable<String> typeIds) {
 		return addOption(OptionKey.TYPE, typeIds);
 	}
 	
@@ -56,7 +56,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.DESTINATION, destinationId);
 	}
 
-	public SnomedRelationshipSearchRequestBuilder filterByDestination(Iterable<String> destinationIds) {
+	public SnomedRelationshipSearchRequestBuilder filterByDestinations(Iterable<String> destinationIds) {
 		return addOption(OptionKey.DESTINATION, destinationIds);
 	}
 	

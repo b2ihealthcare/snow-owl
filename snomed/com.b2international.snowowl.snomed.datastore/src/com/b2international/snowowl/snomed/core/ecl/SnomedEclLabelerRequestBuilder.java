@@ -57,14 +57,14 @@ public final class SnomedEclLabelerRequestBuilder extends ResourceRequestBuilder
 	@Override
 	protected void init(ResourceRequest<BranchContext, LabeledEclExpressions> request) {
 		super.init(request);
-		SnomedQueryLabelerRequest req = (SnomedQueryLabelerRequest) request;
+		SnomedEclLabelerRequest req = (SnomedEclLabelerRequest) request;
 		req.setExpressions(expressions);
 		req.setDescriptionType(descriptionType);
 	}
 
 	@Override
 	protected ResourceRequest<BranchContext, LabeledEclExpressions> create() {
-		return new SnomedQueryLabelerRequest();
+		return new SnomedEclLabelerRequest();
 	}
 
 }

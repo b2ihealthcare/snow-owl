@@ -28,7 +28,7 @@ import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.tree.NoopTreeVisitor;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.emf.EObjectTreeNode;
 import com.b2international.snowowl.core.emf.EObjectWalker;
@@ -44,7 +44,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.6.0
  */
-final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, LabeledEclExpressions> implements BranchAccessControl {
+final class SnomedEclLabelerRequest extends ResourceRequest<BranchContext, LabeledEclExpressions> implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

@@ -268,12 +268,12 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 				.all()
 				.filterByActive(true)
-				.filterByConceptId(partition)
+				.filterByConcepts(partition)
 				.filterByType(types)
 				.build()
 				.execute(context);
 			
-			Map<String, SnomedDescription> preferredDescriptions = SnomedDescriptionUtils.indexBestPreferredByConceptId(descriptions, locales);
+			Map<String, SnomedDescription> preferredDescriptions = SnomedDescriptionUtils.indexBestPreferredByConceptId(context, descriptions, locales);
 			preferredDescriptions.forEach( (id, description) -> affectedComponentLabelsByConcept.put(id, description.getTerm()));
 			
 		}

@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 
 public final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<SnomedRelationshipIndexEntry, SnomedRelationship, SnomedRelationships> {
@@ -56,13 +57,22 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 		result.setModuleId(input.getModuleId());
 		result.setIconId(input.getIconId());
 		result.setReleased(input.isReleased());
-		result.setGroup(input.getGroup());
+		result.setRelationshipGroup(input.getRelationshipGroup());
 		result.setUnionGroup(input.getUnionGroup());
 		result.setDestinationId(input.getDestinationId());
 		result.setValueAsObject(input.getValueAsObject());
 		result.setSourceId(input.getSourceId());
 		result.setTypeId(input.getTypeId());
 		result.setScore(input.getScore());
+		
+		if (input.getMemberOf() != null) {
+			result.setMemberOf(ImmutableSortedSet.copyOf(input.getMemberOf()));
+		}
+		
+		if (input.getActiveMemberOf() != null) {
+			result.setActiveMemberOf(ImmutableSortedSet.copyOf(input.getActiveMemberOf()));
+		}
+		
 		return result;
 	}
 	

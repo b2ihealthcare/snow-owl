@@ -69,10 +69,10 @@ final class FhirSubsumesRequest extends FhirRequest<SubsumptionResult> {
 	private boolean isSubsumedBy(ServiceProvider context, CodeSystem codeSystem, final String subType, final String superType) {
 		return CodeSystemRequests.prepareSearchConcepts()
 			.setLimit(0)
+			.filterByCodeSystemUri(codeSystem.getResourceURI())
 			.filterById(subType)
 			.filterByAncestor(superType)
-			.build(codeSystem.getResourceURI())
-			.getRequest()
+			.buildAsync()
 			.execute(context)
 			.getTotal() > 0;
 	}

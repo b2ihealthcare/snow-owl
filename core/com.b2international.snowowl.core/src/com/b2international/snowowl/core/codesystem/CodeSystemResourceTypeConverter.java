@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.plugin.Component;
  * @since 8.0
  */
 @Component
-public class CodeSystemResourceTypeConverter implements ResourceTypeConverter {
+public final class CodeSystemResourceTypeConverter implements ResourceTypeConverter {
 
 	@Override
 	public String getResourceType() {
@@ -34,6 +34,11 @@ public class CodeSystemResourceTypeConverter implements ResourceTypeConverter {
 	@Override
 	public Resource toResource(ResourceDocument doc) {
 		return CodeSystem.from(doc);
+	}
+	
+	@Override
+	public Integer getRank() {
+		return 2;
 	}
 
 }

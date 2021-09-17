@@ -63,7 +63,7 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 	}
 	
 	/**
-	 * Filter matches by their namespace (specified in their SNOMED CT identifier).
+	 * Filter matches by namespace identifier (a section of the SCTID).
 	 * 
 	 * @param namespaceId
 	 *            - the namespace identifier as a string
@@ -75,7 +75,7 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 	}
 	
 	/**
-	 * Filter matches by their namespace (specified in their SNOMED CT identifier).
+	 * Filter matches by namespace identifiers (a section of the SCTID).
 	 * 
 	 * @param namespaceIds 
 	 *            - the namespace identifiers
@@ -86,4 +86,27 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 		return addOption(OptionKey.NAMESPACE, namespaceIds);
 	}
 
+	/**
+	 * Filter matches by their namespace, using the corresponding metadata concept's SCTID.
+	 * 
+	 * @param namespaceConceptId
+	 *            - the SCTID of the namespace concept
+	 * @return SnomedComponentSearchRequestBuilder
+	 * @see Concepts
+	 */
+	public final B filterByNamespaceConcept(String namespaceConceptId) {
+		return addOption(OptionKey.NAMESPACE_CONCEPT_ID, namespaceConceptId);
+	}
+	
+	/**
+	 * Filter matches by their namespace, using the SCTIDs of allowed metadata concepts.
+	 * 
+	 * @param namespaceConceptIds
+	 *            - the SCTIDs of allowed namespace concepts
+	 * @return SnomedComponentSearchRequestBuilder
+	 * @see Concepts
+	 */
+	public final B filterByNamespaceConcepts(Iterable<String> namespaceConceptIds) {
+		return addOption(OptionKey.NAMESPACE_CONCEPT_ID, namespaceConceptIds);
+	}
 }

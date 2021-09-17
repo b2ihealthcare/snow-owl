@@ -17,6 +17,7 @@ package com.b2international.snowowl.test.commons.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -25,10 +26,15 @@ import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.b2international.snowowl.test.commons.Services;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
@@ -82,7 +88,7 @@ public abstract class CodeSystemRestRequests {
 			"extensionOf", extensionOf,
 			"branchPath", branchPath,
 			"owner", "https://b2i.sg",
-			"settings", settings
+			"settings", configureLanguageConfig(settings)
 		);
 				
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
@@ -92,14 +98,37 @@ public abstract class CodeSystemRestRequests {
 				.then();
 	}
 
+	private static Map<String, Object> configureLanguageConfig(Map<String, Object> settings) {
+		settings = settings == null ? Maps.newHashMap() : Maps.newHashMap(settings);
+		settings.putIfAbsent(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of(
+			Map.of(
+				"languageTag", "en",
+				"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US)
+			),
+			Map.of(
+				"languageTag", "en-us",
+				"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_US)
+			),
+			Map.of(
+				"languageTag", "en-gb",
+				"languageRefSetIds", Lists.newArrayList(Concepts.REFSET_LANGUAGE_TYPE_UK)
+			)
+		));
+		return settings;
+	}
+
 	public static String getCodeSystemUrl(String codeSystemId) {
 		return SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId;
 	}
 
-	public static ValidatableResponse getCodeSystem(String id) {
+	public static ValidatableResponse assertGetCodeSystem(String codeSystemId) {
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
-				.get("/{id}", id)
-				.then();
+				.get("/{id}", codeSystemId)
+				.then().assertThat();
+	}
+	
+	public static CodeSystem getCodeSystem(String codeSystemId) {
+		return assertGetCodeSystem(codeSystemId).statusCode(200).extract().as(CodeSystem.class);
 	}
 
 	public static ValidatableResponse updateCodeSystem(String id, Map<?, ?> requestBody) {
@@ -107,17 +136,17 @@ public abstract class CodeSystemRestRequests {
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.put("/{id}", id)
-				.then();
+				.then().assertThat().statusCode(204);
 	}
 	
 	public static ValidatableResponse deleteCodeSystem(String codeSystemId) {
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.delete("/{id}", codeSystemId)
-				.then();
+				.then().assertThat().statusCode(204);
 
 	}
 	
-	public static ValidatableResponse upgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
+	public static ValidatableResponse assertCodeSystemUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
 		return givenAuthenticatedRequest("/upgrade")
 				.contentType(ContentType.JSON)
 				.body(Map.of(
@@ -125,18 +154,19 @@ public abstract class CodeSystemRestRequests {
 					"upgradeOf", upgradeOf.toString()
 				))
 				.post()
-				.then();
+				.then().assertThat();
 	}
 	
-	public static ValidatableResponse search(String id, String expand) {
+	public static CodeSystems search(String id, String...expand) {
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
-						"id", Set.of(id),
-						"expand", expand
-					))
+					"id", Set.of(id),
+					"expand", List.of(expand)
+				))
 				.post("/search")
-				.then();
+				.then().assertThat().statusCode(200)
+				.extract().as(CodeSystems.class);
 	}
 
 	private CodeSystemRestRequests() {

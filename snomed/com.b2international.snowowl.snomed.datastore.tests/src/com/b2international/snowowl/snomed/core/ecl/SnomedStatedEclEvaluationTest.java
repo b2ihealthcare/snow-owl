@@ -115,7 +115,7 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	private void generateTestHierarchy() {
 		indexRevision(MAIN, 
 			concept(STATED_CONCEPT).statedParents(Long.parseLong(ROOT_CONCEPT)).build(),
-			relationship(STATED_CONCEPT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, Concepts.STATED_RELATIONSHIP).group(1).build()
+			relationship(STATED_CONCEPT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, Concepts.STATED_RELATIONSHIP).relationshipGroup(1).build()
 		);
 	}
 	

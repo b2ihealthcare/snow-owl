@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import io.micrometer.core.instrument.Timer.Sample;
  */
 public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
 
+	private static final long serialVersionUID = 1L;
+	
 	private static final Logger LOG = LoggerFactory.getLogger("request");
 	
 	public MonitoredRequest(Request<ServiceProvider, R> next) {
@@ -55,14 +57,14 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			tags.and("context", DEFAULT_CONTEXT_ID);
 			final long responseTime = responseTimeSample.stop(registry.timer("response_time", tags));
 			final Map<String, Object> additionalInfo = Map.of("metrics", Map.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
-			LOG.info(getMessage(context, additionalInfo));
+			LOG.info(toJson(context, next(), additionalInfo));
 		}
 	}
 
-	private String getMessage(ServiceProvider context, final Map<String, Object> additionalInfo) {
+	public static String toJson(ServiceProvider context, Request<ServiceProvider, ?> request, final Map<String, Object> additionalInfo) {
 		try {
 			final ObjectMapper mapper = context.service(ObjectMapper.class);
-			final Map<String, Object> body = mapper.convertValue(next(), Map.class);
+			final Map<String, Object> body = mapper.convertValue(request, Map.class);
 			body.putAll(additionalInfo);
 			return mapper.writeValueAsString(truncateArrays(body));
 		} catch (Throwable e) {
@@ -70,7 +72,7 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 		}
 	}
 
-	private Map<String, Object> truncateArrays(Map<String, Object> json) {
+	private static Map<String, Object> truncateArrays(Map<String, Object> json) {
 		return Maps.transformValues(json, propertyValue -> {
 			if (propertyValue instanceof Map<?, ?>) {
 				return truncateArrays((Map<String, Object>) propertyValue);

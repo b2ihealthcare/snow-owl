@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,34 +20,33 @@ import java.util.List;
 import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.1
  */
 public class SnomedLanguageConfig {
 
-	private String code;
-	private List<String> refSetIds;
+	private String languageTag;
+	private List<String> languageRefSetIds;
 	
-	public SnomedLanguageConfig(String code, String...refSetIds) {
-		this(code, ImmutableList.copyOf(refSetIds));
+	public SnomedLanguageConfig(String languageTag, String...languageRefSetIds) {
+		this(languageTag, List.of(languageRefSetIds));
 	}
 	
 	@JsonCreator
 	public SnomedLanguageConfig(
-			@JsonProperty("code") String code, 
-			@JsonProperty("refSetIds") List<String> refSetIds) {
-		this.code = code;
-		this.refSetIds = Collections3.toImmutableList(refSetIds);
+			@JsonProperty("languageTag") String languageTag, 
+			@JsonProperty("languageRefSetIds") List<String> languageRefSetIds) {
+		this.languageTag = languageTag;
+		this.languageRefSetIds = Collections3.toImmutableList(languageRefSetIds);
 	}
 	
-	public String getCode() {
-		return code;
+	public String getLanguageTag() {
+		return languageTag;
 	}
 	
-	public List<String> getRefSetIds() {
-		return refSetIds;
+	public List<String> getLanguageRefSetIds() {
+		return languageRefSetIds;
 	}
 	
 }

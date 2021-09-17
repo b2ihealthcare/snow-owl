@@ -136,7 +136,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return SnomedRelationshipIndexEntry.builder()
 				.id(generateRelationshipId())
 				.active(true)
-				.group(0)
+				.relationshipGroup(0)
 				.unionGroup(0)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
 				.moduleId(module())
@@ -171,12 +171,12 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.id(UUID.randomUUID().toString())
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referenceSetId(refSetId)
+				.refsetId(refSetId)
 				.build();
 	}
 	
 	protected final SnomedDescriptionIndexEntry fsn(String conceptId, Map<String, Acceptability> acceptabilityMap) {
-		return description(conceptId, Concepts.FULLY_SPECIFIED_NAME, "Example FSN", acceptabilityMap);
+		return description(conceptId, Concepts.FULLY_SPECIFIED_NAME, "Example FSN (semantic tag)", acceptabilityMap);
 	}
 	
 	protected final SnomedDescriptionIndexEntry synonym(String conceptId, Map<String, Acceptability> acceptabilityMap) {
@@ -220,7 +220,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return SnomedConceptDocument.builder()
 				.id(id)
 				.active(true)
-				.primitive(false)
+				.definitionStatusId(Concepts.FULLY_DEFINED)
 				.moduleId(module())
 				.exhaustive(false)
 				// defaults
@@ -239,7 +239,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
 				.referencedComponentType(SnomedConcept.TYPE)
-				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.refsetId(Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM);
 	}
 

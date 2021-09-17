@@ -119,7 +119,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 					Issue.builder()
 						.severity(IssueSeverity.ERROR)
 						.code(IssueType.NOT_FOUND)
-						.codeableConceptWithDisplayArgs(OperationOutcomeCode.MSG_NO_EXIST, ex.getKey())
+						.detailsWithDisplayArgs(OperationOutcomeCode.MSG_NO_EXIST, ex.getKey())
 						.diagnostics(ex.getMessage())
 						.addLocation(ex.getKey())
 					.build()

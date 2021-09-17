@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,6 +35,7 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
@@ -173,6 +175,44 @@ public class ResourceApiTest {
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES); 
 		});
+	}
+	
+	@Test
+	public void sortByResourceTypeAsc() {
+		final String id1 = "A";
+		final String id2 = "B";
+		final String id3 = "C";
+		final String id4 = "D";
+		
+		
+		createCodeSystemWithStatus(id1, "active");
+		createCodeSystemWithStatus(id2, "active");
+		
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
+		
+		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:asc", "title:asc")))
+			.statusCode(200)
+			.body("items.id", Matchers.contains(id3, id4, id1, id2));
+	}
+	
+	@Test
+	public void sortByResourceTypeDesc() {
+		final String id1 = "A";
+		final String id2 = "B";
+		final String id3 = "C";
+		final String id4 = "D";
+		
+		
+		createCodeSystemWithStatus(id1, "active");
+		createCodeSystemWithStatus(id2, "active");
+		
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
+		
+		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
+		.statusCode(200)
+		.body("items.id", Matchers.contains(id1, id2, id3, id4));
 	}
 
 }

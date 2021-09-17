@@ -28,6 +28,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedMemberRestUpdate;
@@ -77,7 +78,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedReferenceSetMemberRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
@@ -86,11 +87,12 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				.setSearchAfter(params.getSearchAfter())
 				.filterByIds(params.getId())
 				.filterByActive(params.getActive())
-				.filterByModule(params.getModule())
+				.filterByModules(params.getModule())
 				.filterByEffectiveTime(params.getEffectiveTime())
-				.filterByRefSet(params.getReferenceSet())
+				.filterByRefSet(params.getRefsetId())
 				.filterByReferencedComponent(params.getReferencedComponentId())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setLocales(acceptLanguage)
 				.sortBy(extractSortFields(params.getSort()));
 		
@@ -122,7 +124,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedReferenceSetMemberRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return searchByGet(branch, params, acceptLanguage);
@@ -149,16 +151,16 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@PathVariable(value="id")
 			final String memberId,
 			
-			@Parameter(description = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
+			@ParameterObject
+			final ResourceSelectors selectors,
 
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return SnomedRequests
 				.prepareGetMember(memberId)
-				.setExpand(expand)
+				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
 				.setLocales(acceptLanguage)
 				.build(path)
 				.execute(getBus());
@@ -256,7 +258,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				+ "- query field of query type reference set members"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No Content"),
 		@ApiResponse(responseCode = "404", description = "Branch or member not found")
 	})
 	@PutMapping(value = "/{id}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })

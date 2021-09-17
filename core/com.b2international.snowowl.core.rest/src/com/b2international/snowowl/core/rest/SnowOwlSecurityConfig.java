@@ -25,6 +25,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import com.b2international.snowowl.core.rest.util.CORSFilter;
 import com.b2international.snowowl.core.util.PlatformUtil;
@@ -51,6 +52,9 @@ public class SnowOwlSecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
 			.csrf().disable();
+		
+		// handle X-Forwarded headers
+		http.addFilterBefore(new ForwardedHeaderFilter(), BasicAuthenticationFilter.class);
 		
 		// add dev time CORS filter
 		if (PlatformUtil.isDevVersion()) {

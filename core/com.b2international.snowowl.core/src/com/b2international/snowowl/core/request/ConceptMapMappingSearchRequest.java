@@ -16,16 +16,20 @@
 package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 
 /**
 * @since 7.8
 */
-public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<BranchContext, ConceptMapMappings> {
+public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<ServiceProvider, ConceptMapMappings> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -35,7 +39,9 @@ public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<
 	}
 	
 	@Override
-	protected ConceptMapMappings doExecute(BranchContext context) throws IOException {
+	protected ConceptMapMappings doExecute(ServiceProvider context) throws IOException {
+		final int limit = limit();
+		
 		Options options = Options.builder()
 				.putAll(options())
 				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
@@ -44,8 +50,31 @@ public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<
 				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
 		
-		return context.service(ConceptMapMappingSearchRequestEvaluator.class)
-				.evaluate(context.service(ResourceURI.class), context, options);
+		List<ConceptMapMappings> evaluatedMappings = context.service(RepositoryManager.class)
+			.repositories()
+			.stream()
+			.flatMap(repository -> {
+				ConceptMapMappingSearchRequestEvaluator evaluator = repository.service(ConceptMapMappingSearchRequestEvaluator.class);
+				Set<ResourceURI> targets = evaluator.evaluateSearchTargetResources(context, options);
+				return targets.stream()
+					.map(uri -> {
+						return evaluator.evaluate(uri, context, options);
+					});
+			})
+			.collect(Collectors.toList());
+		
+		// calculate grand total
+		int total = 0;
+		for (ConceptMapMappings evaluatedMember : evaluatedMappings) {
+			total += evaluatedMember.getTotal();
+		}
+		
+		return new ConceptMapMappings(
+			evaluatedMappings.stream().flatMap(ConceptMapMappings::stream).limit(limit).collect(Collectors.toList()), // TODO add manual sorting here if multiple resources have been fetched 
+			null /* not supported across resources, TODO support it when a single Conceptmap is being fetched */, 
+			limit, 
+			total
+		);
 	}
 	
 }

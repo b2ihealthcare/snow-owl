@@ -130,6 +130,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	public static final class Fields extends SnomedCoreComponent.Fields {
 
 		public static final String DEFINITION_STATUS_ID = SnomedRf2Headers.FIELD_DEFINITION_STATUS_ID;
+		public static final String TERM_SORT = SnomedConceptDocument.Fields.TERM_SORT;
 		
 		public static final Set<String> ALL = Set.of(
 			// RF2 properties
@@ -139,7 +140,8 @@ public final class SnomedConcept extends SnomedCoreComponent {
 			MODULE_ID,
 			DEFINITION_STATUS_ID,
 			// additional fields
-			RELEASED
+			RELEASED,
+			TERM_SORT
 		);
 		
 	}
@@ -376,7 +378,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	public void setDefinitionStatusId(String definitionStatusId) {
-		setDefinitionStatus(new SnomedConcept(definitionStatusId));
+		setDefinitionStatus(ifNotNull(definitionStatusId, SnomedConcept::new));
 	}
 
 	public void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {

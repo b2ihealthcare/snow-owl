@@ -20,6 +20,8 @@ import java.util.List;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Range complex datatype
@@ -31,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#range">FHIR:Data Types:Range</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = Range.Builder.class)
 public class Range extends Element {
 	
 	@JsonProperty
@@ -39,11 +42,7 @@ public class Range extends Element {
 	@JsonProperty
 	private SimpleQuantity high;
 	
-	public Range(final SimpleQuantity low, final SimpleQuantity high) {
-		this(low, high, null, null);
-	}
-	
-	public Range(final SimpleQuantity low, final SimpleQuantity high, final String id, final List<Extension> extensions) {
+	Range(final SimpleQuantity low, final SimpleQuantity high, final String id, final List<Extension> extensions) {
 		super(id, extensions);
 		this.low = low;
 		this.high = high;
@@ -55,6 +54,37 @@ public class Range extends Element {
 	
 	public SimpleQuantity getHigh() {
 		return high;
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class Builder extends Element.Builder<Builder, Range> {
+		
+		private SimpleQuantity low;
+		private SimpleQuantity high;
+		
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+		
+		public Builder low(SimpleQuantity low) {
+			this.low = low;
+			return getSelf();
+		}
+
+		public Builder high(SimpleQuantity high) {
+			this.high = high;
+			return getSelf();
+		}
+		
+		@Override
+		protected Range doBuild() {
+			return new Range(low, high, id, extensions);
+		}
 	}
 
 }

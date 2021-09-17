@@ -25,7 +25,7 @@ if (params.isUnpublishedOnly) {
 Query<String[]> query = Query.select(String[].class)
 	.from(SnomedRelationshipIndexEntry.class)
 	.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0 
-		SnomedRelationshipIndexEntry.Fields.GROUP, // 1
+		SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP, // 1
 		SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 2
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4
@@ -36,7 +36,7 @@ Query<String[]> query = Query.select(String[].class)
 	.where(effectiveTimeExpressionBuilder.build())
 	.sortBy(SortBy.builder()
 		.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
-		.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+		.sortByField(SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP, Order.ASC)
 		.build())
 	.limit(50_000)
 	.build()

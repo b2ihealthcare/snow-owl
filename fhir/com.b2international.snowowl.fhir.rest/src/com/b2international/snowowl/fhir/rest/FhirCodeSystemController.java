@@ -16,10 +16,12 @@
 package com.b2international.snowowl.fhir.rest;
 
 import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
@@ -53,6 +55,107 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		return CodeSystem.class;
 	}
 	
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	//@ResponseStatus(HttpStatus.CREATED)
+	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {
+		/*
+		List<LocalTerminologyConceptPropertyDefinition> propertyDefinitions = codeSystem.getProperties().stream().map(p -> {
+			LocalTerminologyConceptPropertyDefinition.Builder builder = LocalTerminologyConceptPropertyDefinition.builder(UUID.randomUUID().toString())
+					.name(p.getCodeValue())
+					.cardinality(PropertyCardinality.ZERO_TO_MANY)
+					.description(p.getDescription());
+			
+			Code type = p.getType();
+			PropertyType propertyType = PropertyType.forValue(type.getCodeValue());
+			
+			
+			switch (propertyType) {
+			case BOOLEAN:
+				builder.valueType(PropertyValueType.BOOLEAN);
+				break;
+			case INTEGER:
+				builder.valueType(PropertyValueType.INTEGER);
+				break;
+			case DECIMAL:
+				builder.valueType(PropertyValueType.DECIMAL);
+				break;
+			case STRING:
+				builder.valueType(PropertyValueType.STRING);
+				break;
+			case CODE:
+				builder.valueType(PropertyValueType.URI);
+				break;
+			case CODING:
+				builder.valueType(PropertyValueType.URI);
+				break;
+			case DATETIME:
+				builder.valueType(PropertyValueType.DATE);
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown type: " + propertyType);
+			}
+			
+			return builder.build();
+			
+		}).collect(Collectors.toList());
+		
+		for (LocalTerminologyConceptPropertyDefinition localTerminologyConceptPropertyDefinition : propertyDefinitions) {
+			System.out.println("Def: " + localTerminologyConceptPropertyDefinition);
+		}
+		
+		LcsRequests.prepareCreateTerminology()
+			.setUrl(codeSystem.getUrl().getUriValue())
+			.setId(codeSystem.getId().getIdValue())
+			.setDescription(codeSystem.getDescription())
+			.setLanguage(codeSystem.getLanguage().getCodeValue())
+			//.setCopyright(codeSystem.getCopyright())
+			//.setStatus(codeSystem.getStatus().getCodeValue())
+			//.setOwner(codeSystem.getPublisher())
+			.setPropertyDefinitions(propertyDefinitions)
+			.setTitle(codeSystem.getTitle())
+			.buildAsync()
+			.execute(getBus())
+			.getSync();
+		
+		Collection<Concept> concepts = codeSystem.getConcepts();
+		
+		for (Concept concept : concepts) {
+			
+			Collection<ConceptProperty> properties = concept.getProperties();
+			List<LocalTerminologyConceptProperty> lcsProperties = properties.stream()
+				.map(p -> {
+					LocalTerminologyConceptPropertyDefinition definition = propertyDefinitions.stream()
+							.filter(d -> d.getName().equals(p.getCodeValue()))
+							.findFirst()
+							.orElseThrow(() -> new IllegalArgumentException("Undefined property"));
+					
+					LocalTerminologyConceptProperty lcsProperty = definition.createProperty();
+					
+					if (p.getPropertyType() != PropertyType.DATETIME) {
+						lcsProperty.setValue(p.getValue());
+					}
+					return lcsProperty;
+				
+			}).collect(Collectors.toList());
+			
+			ResourceURI uri = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystem.getId().getIdValue());
+			LcsRequests.localTerminologyConcepts()
+				.prepareCreate()
+				.setActive(true)
+				.setId(concept.getCode().getCodeValue())
+				.setTerm(concept.getDisplay())
+				.setAlternativeTerms(ImmutableList.of(concept.getDefinition()))
+				.setProperties(lcsProperties)
+				.build(uri, "user", "Commit comment")
+				.execute(getBus())
+				.getSync();
+			
+		}
+		*/
+		
+		return ResponseEntity.ok().build();
+	}
+	
 	/**
 	 * CodeSystems
 	 * @param parameters - request parameters
@@ -76,7 +179,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.filterByIds(asList(params.get_id()))
 				.filterByNames(asList(params.getName()))
 				.filterByTitle(params.getTitle())
-				.filterByContent(params.get_content())
+//				.filterByContent(params.get_content())
 				.filterByLastUpdated(params.get_lastUpdated())
 				.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
 				.filterByVersions(params.getVersion())
@@ -84,7 +187,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.setCount(params.get_count())
 				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
 				.setSummary(params.get_summary())
-				.setElements(asList(params.get_elements()))
+				.setElements(params.get_elements())
 				.sortByFields(params.get_sort())
 				.buildAsync()
 				.execute(getBus());
@@ -108,7 +211,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
-	@RequestMapping(value="/{id:**}", method=RequestMethod.GET)
+	@GetMapping(value="/{id:**}")
 	public Promise<CodeSystem> getCodeSystem(
 			@Parameter(description = "The identifier of the Code System resource")
 			@PathVariable(value = "id") 
@@ -119,7 +222,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		
 		return FhirRequests.codeSystems().prepareGet(id)
 				.setSummary(selectors.get_summary())
-				.setElements(asList(selectors.get_elements()))
+				.setElements(selectors.get_elements())
 				.buildAsync()
 				.execute(getBus());
 	}

@@ -27,7 +27,7 @@ Query<String[]> query = Query.select(String[].class)
 	.from(SnomedRelationshipIndexEntry.class)
 	.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0 
 		SnomedRelationshipIndexEntry.Fields.MODULE_ID, // 1 
-		SnomedRelationshipIndexEntry.Fields.GROUP, // 2
+		SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP, // 2
 		SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 3
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 4
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 5
@@ -43,7 +43,7 @@ Query<String[]> query = Query.select(String[].class)
 		.build())
 	.sortBy(SortBy.builder()
 		.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
-		.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+		.sortByField(SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP, Order.ASC)
 		.build())
 	.limit(50000)
 	.build()

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyFloatMap;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.core.SnomedPlugin;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
@@ -69,7 +69,7 @@ enum DoiDataProvider implements DoiData {
 	private InputStream getResourceStream() throws Exception {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("platform:/plugin/");
-		sb.append(SnomedDatastoreActivator.PLUGIN_ID);
+		sb.append(SnomedPlugin.PLUGIN_ID);
 		sb.append("/");
 		sb.append(USAGE_RESOURCE_FILE);
 		return new URL(sb.toString()).openStream();

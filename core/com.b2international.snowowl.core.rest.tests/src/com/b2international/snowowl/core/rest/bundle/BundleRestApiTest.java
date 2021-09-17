@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.core.rest.bundle;
 
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleCreated;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleGet;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleSearch;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertCreate;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertUpdateBundleField;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.prepareCreateRequestBody;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.*;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,6 +29,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -45,55 +41,54 @@ public class BundleRestApiTest {
 	@Test
 	public void createBundleNoId() {
 		assertCreate(
-				Json.object(
-						ResourceDocument.Fields.ID, ""
-				)
+			Json.object(
+				ResourceDocument.Fields.ID, ""
+			)
 		).statusCode(400).body("violations", hasItem("'id' may not be empty (was '')"));
 	}
 
 	@Test
 	public void createBundleNoTitle() {
 		assertCreate(
-				Json.object(
-					ResourceDocument.Fields.ID, "b1"))
-		.statusCode(400).body("violations", hasItem("'title' may not be empty (was 'null')"));
+			Json.object(ResourceDocument.Fields.ID, "b1")
+		).statusCode(400).body("violations", hasItem("'title' may not be empty (was 'null')"));
 	}
 
 	@Test
 	public void createBundleNoUrl() {
 		assertCreate(
-				Json.object(
-						ResourceDocument.Fields.ID, "b1",
-						ResourceDocument.Fields.TITLE, "Bundle title b2"))
+			Json.object(
+				ResourceDocument.Fields.ID, "b1",
+				ResourceDocument.Fields.TITLE, "Bundle title b2"
+			)
+		)
 		.statusCode(400).body("violations", hasItem("'url' may not be empty (was 'null')"));
 	}
 	
 	@Test
-	public void createBundle() throws JsonProcessingException {
-		final Json body = prepareCreateRequestBody("b1");
-		assertBundleCreated(body);
-		assertBundleGet("b1");
+	public void createBundle_OK() throws JsonProcessingException {
+		final Json body = prepareBundleCreateRequestBody("b1");
+		createBundle(body);
+		getBundle("b1");
 	}
 	
 	@Test
 	public void searchByNotExisting() {
-		assertBundleSearch(Map.of("id", "not-existing")).and()
+		assertBundleSearch(Map.of("id", "not-existing"))
 			.body("total", equalTo(0))
-			.body("items", empty())
-			.assertThat();
+			.body("items", empty());
 	}
 	
 	@Test
-	public void serachBundleById() {
-		assertBundleCreated(prepareCreateRequestBody("b2"));
-		assertBundleSearch(Map.of("id", Set.of("b2"))).and()
-			.body("items", hasItem(hasEntry("id", "b2")))
-			.assertThat();
+	public void searchBundleById() {
+		createBundle(prepareBundleCreateRequestBody("b2"));
+		assertBundleSearch(Map.of("id", Set.of("b2")))
+			.body("items", hasItem(hasEntry("id", "b2")));
 	}
 
 	@Test
-	public void serachBundleByTitle() {
-		assertBundleCreated(prepareCreateRequestBody("b3").with("title", "Unique bundle title"));
+	public void searchBundleByTitle() {
+		createBundle(prepareBundleCreateRequestBody("b3").with("title", "Unique bundle title"));
 		
 		//Exact case insensitive match
 		assertBundleSearch(Map.of("title", "unique bundle title")).and()
@@ -125,8 +120,8 @@ public class BundleRestApiTest {
 		final String rootBundleId = "rootBundleId";
 		final String subBundleId = "subBundleId";
 		
-		assertBundleCreated(prepareCreateRequestBody(rootBundleId));
-		assertBundleCreated(prepareCreateRequestBody(subBundleId, rootBundleId));
+		createBundle(prepareBundleCreateRequestBody(rootBundleId));
+		createBundle(prepareBundleCreateRequestBody(subBundleId, rootBundleId));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", rootBundleId));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs2").with("bundleId", rootBundleId));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs3").with("bundleId", subBundleId));
@@ -143,77 +138,89 @@ public class BundleRestApiTest {
 	@Test
 	public void updateBundleTitle() {
 		final String id = "b4";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "title", "new bundle title");
 	}
 
 	@Test
 	public void updateBundleUrl() {
 		final String id = "b5";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "url", "new bundle url");
 	}
 
 	@Test
 	public void updateBundleLanguage() {
 		final String id = "b6";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "language", "hu");
 	}
 	
 	@Test
 	public void updateBundleDescription() {
 		final String id = "b7";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "description", "Bundle `Hungarian` resources");
 	}
 	
 	@Test
 	public void updateBundleStaus() {
 		final String id = "b8";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "status", "draft");
 	}
 	
 	@Test
 	public void updateBundleCopyright() {
 		final String id = "b9";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "copyright", "Licensed under the Fictive License 2.0");
 	}
 	
 	@Test
 	public void updateBundleOwner() {
 		final String id = "b10";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "owner", "B2i");
 	}
 	
 	@Test
 	public void updateBundleContact() {
 		final String id = "b11";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "contact", "info@b2international.com");
 	}
 	
 	@Test
 	public void updateBundleUsage() {
 		final String id = "b12";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "usage", "For testing");
 	}
 	
 	@Test
 	public void updateBundlePurpose() {
 		final String id = "b13";
-		assertBundleCreated(prepareCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundleField(id, "purpose", "Test bundle REST API update endpoint");
 	}
 	
 	@Test
 	public void updateBundleBundleId() {
 		final String id = "b14";
-		assertBundleCreated(prepareCreateRequestBody(id));
-		assertUpdateBundleField(id, "bundleId", "new-bundle-id");
+		final String newBundleId = IDs.base64UUID();
+		
+		createBundle(prepareBundleCreateRequestBody(id));
+		createBundle(prepareBundleCreateRequestBody(newBundleId));
+		
+		assertUpdateBundleField(id, "bundleId", newBundleId);
+	}
+	
+	@Test
+	public void updateBundleBundleIdNotExist() {
+		final String id = "b15";
+		createBundle(prepareBundleCreateRequestBody(id));
+		assertUpdateBundle(id, Json.object("bundleId", "not-existing-id"))
+			.statusCode(400);
 	}
 }

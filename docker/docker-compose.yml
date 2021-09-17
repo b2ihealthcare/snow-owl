@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.0
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.13.3
     container_name: elasticsearch
     environment:
       cluster.name: "elastic-snowowl"
@@ -12,7 +12,6 @@ services:
       bootstrap.memory_lock: "true"
       ES_JAVA_OPTS: "-Xms6g -Xmx6g"
       TAKE_FILE_OWNERSHIP: "true"
-      node.master: "true"
       http.type: "netty4"
       http.cors.enabled: "true"
       http.cors.allow-origin: "/https?:\\/\\/localhost(:[0-9]+)?/"
@@ -25,14 +24,16 @@ services:
         hard: 65536
     volumes:
       - /path/to/indexes:/usr/share/elasticsearch/data
+      - ./config/analysis/synonym.txt:/usr/share/elasticsearch/config/analysis/synonym.txt
     healthcheck:
       test: ["CMD", "curl", "-f", "http://elasticsearch:9200"]
       interval: 1s
       timeout: 1s
       retries: 60
     ports:
-     - "9200:9200"
-     - "9300:9300"
+     - "127.0.0.1:9200:9200"
+     - "127.0.0.1:9300:9300"
+    restart: unless-stopped
   snowowl:
     image: b2ihealthcare/snow-owl-oss:latest
     container_name: snowowl
@@ -47,4 +48,5 @@ services:
       - /path/to/resources:/var/lib/snowowl             # Snow Owl's resources folder
       - /path/to/logs:/var/log/snowowl                  # Snow Owl's log folder
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped

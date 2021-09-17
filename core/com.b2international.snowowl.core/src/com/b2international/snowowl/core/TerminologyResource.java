@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.codesystem.UpgradeInfo;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
+import com.b2international.snowowl.core.version.Versions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -41,6 +42,7 @@ public abstract class TerminologyResource extends Resource {
 		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
 		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
 		public static final String UPGRADE_INFO = "upgradeInfo";
+		public static final String VERSIONS = "versions";
 	}
 	
 	// standard oid
@@ -67,6 +69,8 @@ public abstract class TerminologyResource extends Resource {
 	private UpgradeInfo upgradeInfo;
 	
 	private List<ResourceURI> availableUpgrades;
+	
+	private Versions versions;
 
 	/**
 	 * @return the assigned object identifier (OID) of this code system, eg. "{@code 3.4.5.6.10000}" (can be {@code null})
@@ -156,6 +160,14 @@ public abstract class TerminologyResource extends Resource {
 		this.availableUpgrades = availableUpgrades;
 	}
 	
+	public Versions getVersions() {
+		return versions;
+	}
+	
+	public void setVersions(Versions versions) {
+		this.versions = versions;
+	}
+	
 	/**
 	 * @return a new branch path that originates from this resource's branch path
 	 */
@@ -194,6 +206,7 @@ public abstract class TerminologyResource extends Resource {
 				.contact(getContact())
 				.usage(getUsage())
 				.purpose(getPurpose())
+				.bundleAncestorIds(getBundleAncestorIds())
 				.bundleId(getBundleId())
 				.branchPath(getBranchPath())
 				.extensionOf(getExtensionOf())

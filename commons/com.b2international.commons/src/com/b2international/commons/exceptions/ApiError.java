@@ -141,5 +141,14 @@ public interface ApiError extends Serializable {
 	static ApiError of(String errorMessage) {
 		return builder(errorMessage).build();
 	}
+	
+	default ApiError withMessage(String newMessage) {
+		return builder(newMessage)
+				.code(getCode())
+				.developerMessage(getDeveloperMessage())
+				.addInfos(getAdditionalInfo())
+				.status(getStatus())
+				.build();
+	}
 
 }

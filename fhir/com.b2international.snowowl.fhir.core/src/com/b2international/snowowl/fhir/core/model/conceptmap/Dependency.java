@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonPropertyOrder({"element", "concept"})
 public class Dependency {
 	
-	//The element for this dependenchy
+	//The element for this dependency
 	private final Uri element;
 	
 	//The value for this dependency

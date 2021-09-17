@@ -93,7 +93,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 		// deleting core components should delete all referring members as well
 		ExpressionBuilder referringMembersQuery = Expressions.builder()
 				.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(deletedCoreComponentIds))
-				.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(deletedConceptIds));
+				.should(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(deletedConceptIds));
 		
 		SnomedRf2Headers.MEMBER_FIELDS_WITH_COMPONENT_ID.forEach(memberField -> {
 			referringMembersQuery.should(Expressions.matchAny(memberField, deletedCoreComponentIds));

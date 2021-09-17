@@ -54,6 +54,7 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -63,6 +64,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
@@ -73,6 +75,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -1399,7 +1402,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String codeSystemId = "SNOMEDCT-default-rf2-export-config";
 		createCodeSystem(branchPath, codeSystemId).statusCode(201);
 		
-		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
+		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId);
 		
 		final File exportArchive = doExport(codeSystemId, codeSystem.getSettings());
 		
@@ -1414,9 +1417,84 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
+	@Test
+	public void exportDeltaWithBranchPoint() throws Exception {
+		
+		String codeSystemId = "SNOMEDCT-delta-with-branch-at";
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
+		
+		final Map<String, Object> config = Map.of("type", Rf2ReleaseType.DELTA.name());
+		export(codeSystemId + "@1234567", config).then()
+			.statusCode(400);
+	}
+	
+	@Test
+	public void exportSnapshotWithBranchPoint() throws Exception {
+		
+		final String codeSystemId = "SNOMEDCT-snapshot-with-branch-at";
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
+		
+		final CommitResult commitResult = SnomedRequests.prepareCommit()
+			.setBody(SnomedRequests.prepareNewRelationship()
+				.setId(new NamespaceIdStrategy(""))
+				.setActive(true)
+				.setCharacteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
+				.setDestinationId(Concepts.ROOT_CONCEPT)
+				.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+				.setModuleId(Concepts.MODULE_SCT_CORE)
+				.setRelationshipGroup(0)
+				.setSourceId(Concepts.ACCEPTABILITY)
+				.setTypeId(Concepts.IS_A)
+				.setUnionGroup(0))
+			.setCommitComment("Created new relationship")
+			.setAuthor(RestExtensions.USER)
+			.build(ResourceURI.of(CodeSystem.RESOURCE_TYPE, codeSystemId))
+			.execute(getBus())
+			.getSync(1L, TimeUnit.MINUTES);
+		
+		final long timestamp = commitResult.getCommitTimestamp() - 1L;
+		final String relationshipId = commitResult.getResultAs(String.class);
+		
+		// id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId
+		final String relationshipLine = getComponentLine(List.of(
+			relationshipId, 
+			"", 
+			"1", 
+			Concepts.MODULE_SCT_CORE, 
+			Concepts.ACCEPTABILITY, 
+			Concepts.ROOT_CONCEPT, 
+			"0", 
+			Concepts.IS_A, 
+			Concepts.INFERRED_RELATIONSHIP, 
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
+		
+		final Map<String, Object> config = Map.of(
+			"type", Rf2ReleaseType.SNAPSHOT.name(),
+			"includeUnpublished", true
+		);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final String relationshipFileName = "sct2_Relationship_Snapshot";
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, relationshipLine));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+		
+		/* 
+		 * A snapshot export with a timestamp set before creating the relationship should result in the relationship
+		 * not appearing in the export file.
+		 */
+		final File exportArchiveWithTimestamp = doExport(codeSystemId + "@" + timestamp, config);
+		fileToLinesMap.clear();
+		fileToLinesMap.put(relationshipFileName, Pair.of(false, relationshipLine));
+		
+		assertArchiveContainsLines(exportArchiveWithTimestamp, fileToLinesMap);
+	}
+	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {
 		final Collection<Map<String, Object>> members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").extract().body().path("members.items");
-		return String.valueOf(members.stream().filter(member -> languageRefsetId.equals(member.get("referenceSetId"))).findFirst().get().get("id"));
+		return String.valueOf(members.stream().filter(member -> languageRefsetId.equals(member.get("refsetId"))).findFirst().get().get("id"));
 	}
 	
 	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term) {

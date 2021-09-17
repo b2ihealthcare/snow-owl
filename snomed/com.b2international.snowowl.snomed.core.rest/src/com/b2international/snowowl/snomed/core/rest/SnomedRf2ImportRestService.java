@@ -128,6 +128,10 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedRf2ImportConfiguration> getImport(
+			@Parameter(description = "The resource path", required = true)
+			@PathVariable(name = "path")
+			final String path,
+			
 			@Parameter(description = "The import identifier")
 			@PathVariable(value="id") 
 			final String id) {
@@ -148,6 +152,10 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 	@DeleteMapping(value="/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteImport(
+			@Parameter(description = "The resource path", required = true)
+			@PathVariable(name = "path")
+			final String path,
+			
 			@Parameter(description = "The import identifier")
 			@PathVariable(value="id") 
 			final String id) {

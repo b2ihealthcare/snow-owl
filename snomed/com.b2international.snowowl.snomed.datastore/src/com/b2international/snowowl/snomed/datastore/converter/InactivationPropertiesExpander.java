@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * @since 7.4
@@ -79,8 +75,8 @@ public final class InactivationPropertiesExpander {
 			for (SnomedReferenceSetMember referringMember : referringMembers) {
 				if (SnomedRefSetType.ASSOCIATION.equals(referringMember.type())) {
 					final AssociationTarget associationTarget = new AssociationTarget();
-					associationTarget.setReferenceSetId(referringMember.getReferenceSetId());
-					associationTarget.setTargetComponent((SnomedCoreComponent) referringMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT));
+					associationTarget.setReferenceSetId(referringMember.getRefsetId());
+					associationTarget.setTargetComponentId((String) referringMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID));
 					associationTargets.add(associationTarget);
 				} else if (SnomedRefSetType.ATTRIBUTE_VALUE.equals(referringMember.type())) {
 					inactivationIndicatorIds.add((String) referringMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID));

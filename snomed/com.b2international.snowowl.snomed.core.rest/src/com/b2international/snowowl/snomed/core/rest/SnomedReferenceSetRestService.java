@@ -36,6 +36,8 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -85,7 +87,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedReferenceSetRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -94,8 +96,12 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		return SnomedRequests.prepareSearchRefSet()
 				.filterByIds(params.getId())
 				.filterByTypes(getRefSetTypes(params.getRefSetTypes()))
+				.filterByActive(params.getActive())
+				.filterByEffectiveTime(params.getEffectiveTime())
+				.filterByModules(params.getModule())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setSearchAfter(params.getSearchAfter())
 				.setLocales(acceptLanguage)
 				.sortBy(sorts)
@@ -124,7 +130,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedReferenceSetRestSearch body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -175,19 +181,19 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 
 			@Parameter(description = "The Reference set identifier")
 			@PathVariable(value="id")
-			final String referenceSetId,
+			final String refsetId,
 			
-			@Parameter(description = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
+			@ParameterObject
+			final ResourceSelectors selectors,
 
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
 		return SnomedRequests
-				.prepareGetReferenceSet(referenceSetId)
-				.setExpand(expand)
+				.prepareGetReferenceSet(refsetId)
+				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
 				.setLocales(acceptLanguage)
 				.build(path)
 				.execute(getBus());
@@ -254,7 +260,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			
 			@Parameter(description = "The reference set identifier")
 			@PathVariable(value="id")
-			final String refSetId,
+			final String refsetId,
 			
 			@Parameter(description = "Reference set action")
 			@RequestBody 
@@ -269,7 +275,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
 		
-		change.setSource("referenceSetId", refSetId);
+		change.setSource(SnomedRf2Headers.FIELD_REFSET_ID, refsetId);
 		
 		SnomedRequests.prepareCommit()
 			.setDefaultModuleId(defaultModuleId)
@@ -299,7 +305,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			
 			@Parameter(description = "The reference set identifier")
 			@PathVariable(value="id")
-			final String refSetId,
+			final String refsetId,
 			
 			@Parameter(description = "The reference set member changes")
 			@RequestBody
@@ -314,10 +320,10 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		final String commitComment = request.getCommitComment();
 		final String defaultModuleId = request.getDefaultModuleId();
 		
-		// FIXME setting referenceSetId even if defined??? 
+		// FIXME setting refsetId even if defined??? 
 		// enforces that new members will be created in the defined refset
 		for (RestRequest req : bulkRequest.getRequests()) {
-			req.setSource("referenceSetId", refSetId);
+			req.setSource(SnomedRf2Headers.FIELD_REFSET_ID, refsetId);
 		}
 		
 		final BulkRequestBuilder<TransactionContext> updateRequestBuilder = BulkRequest.create();
@@ -350,7 +356,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 
 			@Parameter(description = "The Reference set identifier")
 			@PathVariable(value="id")
-			final String referenceSetId,
+			final String refsetId,
 			
 			@Parameter(description = "Force deletion flag")
 			@RequestParam(defaultValue="false", required=false)
@@ -359,10 +365,10 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
-		SnomedRequests.prepareDeleteReferenceSet(referenceSetId, force)
+		SnomedRequests.prepareDeleteReferenceSet(refsetId, force)
 				.commit()
 				.setAuthor(author)
-				.setCommitComment(String.format("Deleted Reference Set '%s' from store.", referenceSetId))
+				.setCommitComment(String.format("Deleted Reference Set '%s' from store.", refsetId))
 				.build(path)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);

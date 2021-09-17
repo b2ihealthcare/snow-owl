@@ -101,7 +101,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 				.setActive(true)
 				.setModuleId(Concepts.MODULE_SCT_CORE)
 				.setReferencedComponentId(referencedComponentId)
-				.setReferenceSetId(refSetId);
+				.setRefsetId(refSetId);
 			
 			bulk.add(memberCreateReqBuilder);
 		}

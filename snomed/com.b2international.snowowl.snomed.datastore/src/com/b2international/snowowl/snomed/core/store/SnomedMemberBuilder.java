@@ -86,7 +86,7 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> exte
 		checkState(refSet.getRefSetType() != null, "RefSet properties are missing from identifier concept document %s", referenceSetId);
 		component
 			.referencedComponentId(referencedComponent)
-			.referenceSetId(referenceSetId)
+			.refsetId(referenceSetId)
 			.referenceSetType(refSet.getRefSetType());
 		
 		if (refSet.getRefSetType() == SnomedRefSetType.CONCRETE_DATA_TYPE) {

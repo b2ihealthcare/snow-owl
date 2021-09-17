@@ -195,17 +195,17 @@ public final class EclExpression {
 				.all()
 				.filterByActive(true)
 				.filterByCharacteristicTypes(characteristicTypes)
-				.filterBySource(sourceIds)
+				.filterBySources(sourceIds)
 				.filterByGroup(1, Integer.MAX_VALUE)
 				.setEclExpressionForm(expressionForm)
-				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.GROUP)
+				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP)
 				.build(context.path())
 				.execute(context.service(IEventBus.class))
 				.then(new Function<SnomedRelationships, Multimap<String, Integer>>() {
 					@Override
 					public Multimap<String, Integer> apply(SnomedRelationships input) {
 						final Multimap<String, SnomedRelationship> relationshipsBySource = Multimaps.index(input, SnomedRelationship::getSourceId);
-						final Multimap<String, Integer> groupsByRelationshipId = Multimaps.transformValues(relationshipsBySource, SnomedRelationship::getGroup);
+						final Multimap<String, Integer> groupsByRelationshipId = Multimaps.transformValues(relationshipsBySource, SnomedRelationship::getRelationshipGroup);
 						return ImmutableSetMultimap.copyOf(groupsByRelationshipId);
 					}
 				}));

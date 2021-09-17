@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -26,12 +27,16 @@ import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
-import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 
 /**
  * This class represents a FHIR Structure Definition.  
@@ -41,13 +46,21 @@ import com.google.common.collect.Sets;
  * @see <a href="https://www.hl7.org/fhir/structuredefinition.html">FHIR:StructureDefinition</a>
  * @since 7.1
  */
-@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
+@JsonDeserialize(builder = StructureDefinition.Builder.class, using = JsonDeserializer.None.class)
 public class StructureDefinition extends MetadataResource {
 
-	// FHIR header "resourceType" : "StructureDefinition",
+	private static final long serialVersionUID = 1L;
+	
+	public static final String RESOURCE_TYPE_STRUCTURE_DEFINITION = "StructureDefinition";
+
 	@Mandatory
 	@JsonProperty
-	private final String resourceType = "StructureDefinition";
+	private final String resourceType;
+	
+	@Summary
+	@JsonProperty("identifier")
+	@JsonInclude(value = Include.NON_EMPTY)
+	private Collection<Identifier> identifiers;
 	
 	@Valid
 	@Summary
@@ -55,7 +68,7 @@ public class StructureDefinition extends MetadataResource {
 	private final Collection<Coding> keywords;
 	
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final Id fhirVersion;
 	
@@ -117,10 +130,12 @@ public class StructureDefinition extends MetadataResource {
 	
 	@SuppressWarnings("rawtypes")
 	public StructureDefinition(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			Identifier identifier, String version, String name, String title, Code status, Date date, String publisher,
-			Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
-			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, 
+			String version, String name, String title, Code status, 
+			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description, 
+			Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose, String copyright, String toolingId,
 			
+			final String resourceType,
+			final Collection<Identifier> identifiers,
 			Collection<Coding> keywords,
 			final Id fhirVersion,
 			final Collection<Mapping> mappings,
@@ -135,9 +150,11 @@ public class StructureDefinition extends MetadataResource {
 			final StructureView snapshot,
 			final StructureView differential) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
-				contacts, description, usageContexts, jurisdictions, purpose, copyright);
+		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
 		
+		this.resourceType = resourceType;
+		this.identifiers = identifiers;
 		this.keywords = keywords;
 		this.fhirVersion = fhirVersion;
 		this.mappings = mappings;
@@ -153,36 +170,131 @@ public class StructureDefinition extends MetadataResource {
 		this.differential = differential;
 	}
 	
+	public String getResourceType() {
+		return resourceType;
+	}
+	
+	public Collection<Identifier> getIdentifiers() {
+		return identifiers;
+	}
+	
+	public Collection<Coding> getKeywords() {
+		return keywords;
+	}
+	
+	public Id getFhirVersion() {
+		return fhirVersion;
+	}
+	
+	public Collection<Mapping> getMappings() {
+		return mappings;
+	}
+	
+	public Code getKind() {
+		return kind;
+	}
+	
+	public boolean isAbstract() {
+		return isAbstract;
+	}
+	
+	public Code getContextType() {
+		return contextType;
+	}
+	
+	public Collection<String> getContexts() {
+		return contexts;
+	}
+	
+	public Collection<String> getContextInvariants() {
+		return contextInvariants;
+	}
+	
+	public Code getType() {
+		return type;
+	}
+	
+	public Uri getBaseDefinition() {
+		return baseDefinition;
+	}
+	
+	public Code getDerivation() {
+		return derivation;
+	}
+	
+	public StructureView getSnapshot() {
+		return snapshot;
+	}
+	
+	public StructureView getDifferential() {
+		return differential;
+	}
+	
 	public static Builder builder(String id) {
 		return new Builder(id);
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends MetadataResource.Builder<Builder, StructureDefinition> {
 
-		private Collection<Coding> keywords = Sets.newHashSet();
+		private String resourceType = RESOURCE_TYPE_STRUCTURE_DEFINITION;
+		private Collection<Identifier> identifiers;
+		private Collection<Coding> keywords;
 		private Id fhirVersion;
-		private Collection<Mapping> mappings = Sets.newHashSet();
+		private Collection<Mapping> mappings;
 		private Code kind;
 		private boolean isAbstract;
 		private Code contextType;
-		private Collection<String> contexts = Sets.newHashSet();
-		private Collection<String> contextInvariants = Sets.newHashSet();
+		private Collection<String> contexts;
+		private Collection<String> contextInvariants;
 		private Code type;
 		private Uri baseDefinition;
 		private Code derivation;
 		private StructureView snapshot;
 		private StructureView differential;
 		
+		/**
+		 * Use this constructor when a new resource is sent to the server to be created.
+		 */
+		public Builder() {
+		}
+		
 		public Builder(String id) {
 			super(id);
 		}
 		
+		public Builder resourceType(String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
+		}
+		
+		@JsonProperty("identifier")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder identifiers(final Collection<Identifier> identifers) {
+			this.identifiers = identifers;
+			return getSelf();
+		}
+		
+		public Builder addIdentifier(Identifier identifier) {
+			if (identifiers == null) {
+				identifiers = new ArrayList<>();
+			}
+			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		@JsonProperty("keyword")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder keywords(Collection<Coding> keywords) {
 			this.keywords = keywords;
 			return getSelf();
 		}
 		
 		public Builder addKeyword(Coding keyword) {
+			
+			if (keywords == null) {
+				keywords = Lists.newArrayList();
+			}
 			keywords.add(keyword);
 			return getSelf();
 		}
@@ -197,12 +309,19 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("mapping")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder mappings(Collection<Mapping> mappings) {
 			this.mappings = mappings;
 			return getSelf();
 		}
 		
-		public Builder mappings(Mapping mapping) {
+		public Builder addMapping(Mapping mapping) {
+			
+			if (mappings == null) {
+				mappings = Lists.newArrayList();
+			}
+			
 			mappings.add(mapping);
 			return getSelf();
 		}
@@ -212,6 +331,12 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		public Builder kind(String kind) {
+			this.kind = new Code(kind);
+			return getSelf();
+		}
+		
+		@JsonProperty("abstract")
 		public Builder setAbstract(boolean isAbstract) {
 			this.isAbstract = isAbstract;
 			return getSelf();
@@ -222,22 +347,36 @@ public class StructureDefinition extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonProperty("context")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder contexts(Collection<String> contexts) {
 			this.contexts = contexts;
 			return getSelf();
 		}
 		
 		public Builder addContext(String context) {
+			
+			if (contexts == null) {
+				contexts = Lists.newArrayList();
+			}
+			
 			contexts.add(context);
 			return getSelf();
 		}
 		
+		@JsonProperty("contextInvariant")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder contextInvariants(Collection<String> contextInvariants) {
 			this.contextInvariants = contextInvariants;
 			return getSelf();
 		}
 		
 		public Builder addContextInvariant(String contextInvariant) {
+			
+			if (contextInvariants == null) {
+				contextInvariants = Lists.newArrayList();
+			}
+			
 			contextInvariants.add(contextInvariant);
 			return getSelf();
 		}
@@ -289,9 +428,11 @@ public class StructureDefinition extends MetadataResource {
 
 		@Override
 		protected StructureDefinition doBuild() {
-			return new StructureDefinition(id, meta, implicitRules, language, text, url, identifier, version, name, title,
-					status, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+			return new StructureDefinition(id, meta, implicitRules, language, text, url, version, name, title,
+					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId,
 					
+					resourceType,
+					identifiers,
 					keywords,
 					fhirVersion,
 					mappings,

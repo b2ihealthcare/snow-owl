@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
 package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * Integer expansion parameter
  * @since 6.7
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = IntegerParameter.Builder.class)
 public class IntegerParameter extends Parameter<Integer> {
 
 	IntegerParameter(String name, Integer value) {
@@ -36,10 +40,19 @@ public class IntegerParameter extends Parameter<Integer> {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Parameter.Builder<Builder, IntegerParameter, Integer> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueInteger(final Integer value) {
+			this.value = value;
 			return this;
 		}
 

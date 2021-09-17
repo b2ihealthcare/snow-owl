@@ -148,7 +148,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		final Set<String> conceptRelationshipIds = SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true)
-				.filterBySource(idsOfCreatedConcepts)
+				.filterBySources(idsOfCreatedConcepts)
 				.filterByDestination(Concepts.ROOT_CONCEPT)
 				.setFields(SnomedRelationshipIndexEntry.Fields.ID)
 				.build(branch.getPath())

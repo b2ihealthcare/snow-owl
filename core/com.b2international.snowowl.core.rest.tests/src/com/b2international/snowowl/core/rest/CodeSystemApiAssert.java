@@ -26,7 +26,6 @@ import java.util.Map;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 import io.restassured.http.ContentType;
@@ -136,6 +135,6 @@ public abstract class CodeSystemApiAssert {
 			.with().contentType(ContentType.JSON)
 			.and().body(requestBody)
 			.when().post()
-			.then().assertThat().statusCode(201);
+			.then().assertThat();
 	}
 }

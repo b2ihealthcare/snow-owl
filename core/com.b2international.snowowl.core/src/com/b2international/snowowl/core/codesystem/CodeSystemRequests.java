@@ -15,12 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.List;
-
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.request.*;
-import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
  * @since 4.7
@@ -75,17 +71,8 @@ public class CodeSystemRequests {
 	 * 
 	 * @return the builder to configure for generic set member search
 	 */
-	public static MemberSearchRequestBuilder prepareSearchMembers() {
-		return new MemberSearchRequestBuilder();
-	}
-	
-	/**
-	 * Creates a new generic set mapping search request builder.
-	 * 
-	 * @return the builder to configure for generic mappings search
-	 */
-	public static ConceptMapMappingSearchRequestBuilder prepareSearchConceptMapMappings() {
-		return new ConceptMapMappingSearchRequestBuilder();
+	public static ValueSetMemberSearchRequestBuilder prepareSearchMembers() {
+		return new ValueSetMemberSearchRequestBuilder();
 	}
 	
 	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {
@@ -96,12 +83,4 @@ public class CodeSystemRequests {
 		return new QueryOptimizeRequestBuilder();
 	}
 	
-	public static ConceptMapCompareRequestBuilder prepareConceptMapCompare(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI){
-		return new ConceptMapCompareRequestBuilder(baseConceptMapURI, compareConceptMapURI);
-	}
-
-	public static ConceptMapCompareDsvExportRequestBuilder prepareConceptMapCompareDsvExport(final List<ConceptMapCompareResultItem> items, final String filePath){
-		return new ConceptMapCompareDsvExportRequestBuilder(items, filePath);
-	}
-
 }

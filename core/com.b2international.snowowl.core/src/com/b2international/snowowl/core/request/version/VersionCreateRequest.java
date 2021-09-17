@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -30,12 +29,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.*;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -53,7 +53,7 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -61,7 +61,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 5.7
  */
-public final class VersionCreateRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
+public final class VersionCreateRequest implements Request<RepositoryContext, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private static final int TASK_WORK_STEP = 4;
@@ -75,6 +75,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@NotNull
 	@JsonProperty
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	LocalDate effectiveTime;
 	
 	@NotNull
@@ -83,6 +84,9 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@JsonProperty
 	boolean force;
+	
+	@JsonProperty
+	String commitComment;
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
@@ -102,7 +106,8 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		}
 		
 		if (!resourcesById.containsKey(resource)) {
-			throw new ResourceNotFoundException(resource);
+			context.log().warn("Resource cannot be found during versioning: " + resourcesById + ", uri: " + resource);
+			throw new NotFoundException("Resource", resource.getResourceId());
 		}
 		
 		// validate new path
@@ -136,8 +141,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					Branch branch = RepositoryRequests.branching()
 						.prepareGet(newVersionPath)
 						.build(repositoryId)
-						.execute(context.service(IEventBus.class))
-						.getSync(1, TimeUnit.MINUTES);
+						.execute(context);
 					
 					if (!branch.isDeleted()) {
 						throw new ConflictException("An existing version or branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
@@ -187,13 +191,14 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
 							.resource(resource)
 							.branchPath(resourceToVersion.getRelativeBranchPath(version))
+							.author(user)
 							.createdAt(Instant.now().toEpochMilli())
 							.toolingId(resourceToVersion.getToolingId())
 							.url(buildVersionUrl(context, resourceToVersion))
 							.build());
 					return Boolean.TRUE;
 				})
-				.setCommitComment(String.format("Version '%s' as of '%s'", resource, version))
+				.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
 				.build()
 			).execute(context).getResultAs(Boolean.class);
 		} finally {
@@ -215,8 +220,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		return RepositoryRequests.branching()
 				.prepareDelete(path)
 				.build(repositoryId)
-				.execute(context.service(IEventBus.class))
-				.getSync(1, TimeUnit.MINUTES);
+				.execute(context);
 	}
 	
 	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
@@ -224,7 +228,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.one()
 			.filterById(resource.getResourceId())
 			.buildAsync()
-			.getRequest()
 			.execute(context)
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
@@ -297,23 +300,29 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.setParent(codeSystem.getBranchPath())
 			.setName(version)
 			.build(codeSystem.getToolingId())
-			.execute(context.service(IEventBus.class))
-			.getSync(1, TimeUnit.MINUTES);
+			.execute(context);
 		monitor.worked(1);
 	}
 	
 	@Override
-	public String getResource(ServiceProvider context) {
+	public List<Permission> getPermissions(ServiceProvider context, Request<ServiceProvider, ?> req) {
 		if (resourcesById == null) {
 			resourcesById = fetchResources(context);
 		}
-		// TODO support multi repository version authorization
-		return resourcesById.get(resource).getToolingId();
+		List<Permission> permissions = new ArrayList<>(resourcesById.size());
+		for (ResourceURI accessedResourceURI : resourcesById.keySet()) {
+			permissions.add(Permission.requireAny(
+				getOperation(), 
+				resourcesById.get(accessedResourceURI).getToolingId(),
+				resourcesById.get(accessedResourceURI).getResourceURI().toString(),
+				resourcesById.get(accessedResourceURI).getId()
+			));
+		}
+		return permissions;
 	}
 	
 	@Override
 	public String getOperation() {
 		return Permission.OPERATION_VERSION;
 	}
-	
 }

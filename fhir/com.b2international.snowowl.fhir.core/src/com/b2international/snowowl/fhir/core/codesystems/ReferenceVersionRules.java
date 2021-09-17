@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Reference Version Rules code system
@@ -56,5 +57,10 @@ public enum ReferenceVersionRules implements FhirCodeSystem {
 	public String getDisplayName() {
 		return displayName;
 	}
+	
+	@JsonCreator
+    public static ReferenceVersionRules forValue(String value) {
+		return ReferenceVersionRules.valueOf(value.toUpperCase());
+    }
 
 }

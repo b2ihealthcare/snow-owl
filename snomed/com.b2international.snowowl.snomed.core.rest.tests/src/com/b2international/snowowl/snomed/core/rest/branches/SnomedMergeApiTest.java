@@ -643,14 +643,14 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 			.body("caseSignificanceId", equalTo(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("group", equalTo(0));
+			.body("relationshipGroup", equalTo(0));
 
 		// "b" should be STALE at this point, try to rebase it, it should pass and the components should still exist with changed content
 		merge(a, b, "Rebased changed components over new components").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		// Verify that the two components have the modified values
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
-		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(99));
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("relationshipGroup", equalTo(99));
 	}
 
 	@Test
@@ -681,7 +681,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		// Verify that the relationship has the modified values, and the description stayed deleted
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
-		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(99));
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("relationshipGroup", equalTo(99));
 	}
 
 	@Test

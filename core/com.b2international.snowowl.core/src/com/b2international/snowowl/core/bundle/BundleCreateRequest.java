@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 
 /**
@@ -26,7 +25,8 @@ final class BundleCreateRequest extends BaseResourceCreateRequest {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected Builder completeResource(Builder builder) {
-		return builder.resourceType(Bundle.RESOURCE_TYPE);
+	protected String getResourceType() {
+		return Bundle.RESOURCE_TYPE;
 	}
+	
 }

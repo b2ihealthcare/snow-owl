@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestInput;
@@ -84,7 +85,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedConceptRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -101,21 +102,24 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByIds(params.getId())
 					.filterByEffectiveTime(params.getEffectiveTime())
 					.filterByActive(params.getActive())
-					.filterByModule(params.getModule())
+					.filterByModules(params.getModule())
 					.filterByDefinitionStatus(params.getDefinitionStatus())
-					.filterByNamespace(params.getNamespace())
-					.filterByParents(params.getParent() == null ? null : ImmutableSet.copyOf(params.getParent()))
-					.filterByAncestors(params.getAncestor() == null ? null : ImmutableSet.copyOf(params.getAncestor()))
-					.filterByStatedParents(params.getStatedParent() == null ? null : ImmutableSet.copyOf(params.getStatedParent()))
-					.filterByStatedAncestors(params.getStatedAncestor() == null ? null : ImmutableSet.copyOf(params.getStatedAncestor()))
+					.filterByNamespaces(params.getNamespace())
+					.filterByNamespaceConcepts(params.getNamespaceConceptId())
+					.filterByParents(params.getParent())
+					.filterByAncestors(params.getAncestor())
+					.filterByStatedParents(params.getStatedParent())
+					.filterByStatedAncestors(params.getStatedAncestor())
 					.filterByEcl(params.getEcl())
 					.filterByStatedEcl(params.getStatedEcl())
 					.filterByTerm(params.getTerm())
 					.filterByDescriptionLanguageRefSet(acceptLanguage)
 					.filterByDescriptionType(params.getDescriptionType())
-					.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
+					.filterBySemanticTags(params.getSemanticTag())
+					.isActiveMemberOf(params.getIsActiveMemberOf())
 					.withDoi(params.getDoi())
 					.setExpand(params.getExpand())
+					.setFields(params.getField())
 					.setLocales(acceptLanguage)
 					.sortBy(sorts)
 					.build(path)
@@ -145,7 +149,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedConceptRestSearch body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -177,16 +181,16 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@PathVariable(value="conceptId")
 			final String conceptId,
 			
-			@Parameter(description = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
+			@ParameterObject
+			final ResourceSelectors selectors,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return SnomedRequests
 					.prepareGetConcept(conceptId)
-					.setExpand(expand)
+					.setExpand(selectors.getExpand())
+					.setFields(selectors.getField())
 					.setLocales(acceptLanguage)
 					.build(path)
 					.execute(getBus());
@@ -248,10 +252,10 @@ public class SnomedConceptRestService extends AbstractRestService {
 				+ "&bull; inactivation indicator<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No Content"),
 		@ApiResponse(responseCode = "404", description = "Branch or Concept not found")
 	})
-	@PostMapping(value = "/{conceptId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{conceptId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
 			@Parameter(description = "The resource path", required = true)

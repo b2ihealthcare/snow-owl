@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -54,7 +54,7 @@ import com.google.common.collect.*;
 /**
  * @since 6.0
  */
-final class ValidateRequest implements Request<BranchContext, ValidationResult>, BranchAccessControl {
+final class ValidateRequest implements Request<BranchContext, ValidationResult>, AccessControl {
 	
 	private static final long serialVersionUID = -2254266211853070728L;
 	private static final Logger LOG = LoggerFactory.getLogger("validation");

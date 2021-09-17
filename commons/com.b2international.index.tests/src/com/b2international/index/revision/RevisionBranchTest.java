@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.ObjectAssert;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionBranch.Builder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -104,6 +105,12 @@ public class RevisionBranchTest {
 		assertBranchCreate(branchName)
 			.extracting(RevisionBranch::getName)
 			.isEqualTo(branchName);
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void percent() throws Exception {
+		String branchName = "%xy";
+		assertBranchCreate(branchName);
 	}
 	
 	@Test

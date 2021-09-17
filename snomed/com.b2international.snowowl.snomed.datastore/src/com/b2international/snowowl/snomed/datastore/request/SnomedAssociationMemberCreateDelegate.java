@@ -23,7 +23,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.0
@@ -41,7 +40,7 @@ final class SnomedAssociationMemberCreateDelegate extends SnomedRefSetMemberCrea
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
-		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID);
 
 		SnomedRefSetMemberIndexEntry member = SnomedComponents.newAssociationMember()
 				.withId(getId())
@@ -49,7 +48,7 @@ final class SnomedAssociationMemberCreateDelegate extends SnomedRefSetMemberCrea
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
 				.withRefSet(getReferenceSetId())
-				.withTargetComponentId(getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT))
+				.withTargetComponentId(getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID))
 				.addTo(context);
 
 		return member.getId();
@@ -57,7 +56,7 @@ final class SnomedAssociationMemberCreateDelegate extends SnomedRefSetMemberCrea
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
-		checkNonEmptyProperty(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
-		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT));
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID);
+		return Set.of(getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID));
 	}
 }

@@ -22,19 +22,23 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.CoreMatchers;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.Role;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.util.PlatformUtil;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 
 import io.restassured.RestAssured;
@@ -109,6 +113,13 @@ public class RestExtensions {
 							public com.fasterxml.jackson.databind.ObjectMapper create(Type arg0, String arg1) {
 								com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 								mapper.registerModule(new JavaTimeModule());
+								
+								//bbanfai: added date format
+								final StdDateFormat dateFormat = new StdDateFormat();
+								dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+								mapper.setDateFormat(dateFormat);
+								mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+								
 								return mapper;
 							}
 						})
@@ -131,6 +142,10 @@ public class RestExtensions {
 
 	private static RequestSpecification givenRequestWithPassword(String api, String password) {
 		return givenUnauthenticatedRequest(api).auth().preemptive().basic(USER, password);
+	}
+	
+	public static RequestSpecification givenRequestWithToken(String api, String token) {
+		return givenUnauthenticatedRequest(api).auth().preemptive().oauth2(token);
 	}
 
 	public static String asPath(List<? extends String> values) {
@@ -213,4 +228,8 @@ public class RestExtensions {
 				.header("Location"));
 	}
 	
+	public static String generateToken(Permission...permissions) {
+		return ApplicationContext.getServiceForClass(JWTGenerator.class).generate(new User(RestExtensions.USER, List.of(new Role("custom", List.of(permissions)))));
+	}
+
 }

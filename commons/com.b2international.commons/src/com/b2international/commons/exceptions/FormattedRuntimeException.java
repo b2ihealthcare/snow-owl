@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.commons.exceptions;
+
+import com.b2international.commons.CompareUtils;
 
 /**
  * Exception using {@link String#format(String, Object...)} to create a final exception message.
@@ -35,7 +37,7 @@ public class FormattedRuntimeException extends RuntimeException {
 	 * @see RuntimeException#RuntimeException(String, Throwable)
 	 */
 	public FormattedRuntimeException(String template, Object... args) {
-		super(String.format(template, args), extractCause(args)); // lgtm[java/tainted-format-string]
+		super(CompareUtils.isEmpty(args) ? template : String.format(template, args), extractCause(args)); // lgtm[java/tainted-format-string]
 	}
 
 	private static Throwable extractCause(Object[] args) {

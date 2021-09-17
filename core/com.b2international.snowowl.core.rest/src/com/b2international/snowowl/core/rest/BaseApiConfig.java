@@ -26,6 +26,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
 
@@ -108,6 +109,9 @@ public abstract class BaseApiConfig {
 					// disable servers prop
 					api.setServers(List.of()); 
 				})
+				.addOperationCustomizer((operation, method) -> {
+					return operation.addSecurityItem(new SecurityRequirement().addList("basic").addList("bearer"));
+				})
 				.build();
 //				.useDefaultResponseMessages(false)
 //				.alternateTypeRules(getAlternateTypeRules(resolver));
@@ -127,14 +131,6 @@ public abstract class BaseApiConfig {
 //				resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
 //				resolver.resolve(List.class, resolver.resolve(String.class))
 //	        ),
-//			newRule(
-//				resolver.resolve(Promise.class, WildcardType.class),
-//	            resolver.resolve(WildcardType.class)
-//	        ),
-//			newRule(
-//				resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
-//	            resolver.resolve(WildcardType.class)
-//	        )
 //		};
 //	}
 	

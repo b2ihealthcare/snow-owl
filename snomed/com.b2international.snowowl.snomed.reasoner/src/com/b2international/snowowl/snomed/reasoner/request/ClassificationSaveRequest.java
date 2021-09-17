@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 5.7
  */
-final class ClassificationSaveRequest implements Request<RepositoryContext, String>, RepositoryAccessControl {
+final class ClassificationSaveRequest implements Request<RepositoryContext, String>, AccessControl {
 
 	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 	

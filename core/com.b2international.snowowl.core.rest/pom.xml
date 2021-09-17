@@ -17,6 +17,7 @@
 		<springdoc.version>1.5.9</springdoc.version>
 		<!-- Node.js version to use for building the API docs site -->
 		<node.version>v14.17.1</node.version>
+		<npm.version>7.20.2</npm.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
@@ -184,6 +185,7 @@
     				<installDirectory>${project.build.directory}/node</installDirectory>
     				<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
         			<nodeVersion>${node.version}</nodeVersion>
+        			<npmVersion>${npm.version}</npmVersion>
     			</configuration>
 		    </plugin>
 			<plugin>

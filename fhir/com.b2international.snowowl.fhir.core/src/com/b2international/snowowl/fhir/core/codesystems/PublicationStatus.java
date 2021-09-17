@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Publication status code system
@@ -60,6 +61,7 @@ public enum PublicationStatus implements FhirCodeSystem {
 	 * @param statusCodeValue - the string representation of the status' code value
 	 * @return a {@link PublicationStatus} from the string code value representation or {@link #UNKNOWN} if the given value does not match any currently known publication status values. 
 	 */
+	@JsonCreator
 	public static PublicationStatus getByCodeValue(String statusCodeValue) {
 		for (PublicationStatus status : values()) {
 			if (status.getCodeValue().equals(statusCodeValue)) {

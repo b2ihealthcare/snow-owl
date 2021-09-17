@@ -23,6 +23,8 @@ import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
  * @since 8.0
  */
 public final class ResourceSearchRequestBuilder extends BaseResourceSearchRequestBuilder<ResourceSearchRequestBuilder, Resources> {
+	
+	public static final String TYPE_RANK = "typeRank";
 
 	/**
 	 * Filters matches by the given resource type.
@@ -40,7 +42,7 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 	 * @param resourceTypes - the resource types to match
 	 * @return this builder
 	 */
-	public ResourceSearchRequestBuilder filterByResourceType(Iterable<String> resourceTypes) {
+	public ResourceSearchRequestBuilder filterByResourceTypes(Iterable<String> resourceTypes) {
 		return addOption(OptionKey.RESOURCE_TYPE, resourceTypes);
 	}
 	

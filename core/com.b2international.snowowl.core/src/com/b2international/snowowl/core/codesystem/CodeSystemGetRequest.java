@@ -15,17 +15,14 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 
 /**
  * @since 5.7
  */
 final class CodeSystemGetRequest 
-		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems, CodeSystem>
-		implements RepositoryAccessControl {
+		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems, CodeSystem> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -36,11 +33,6 @@ final class CodeSystemGetRequest
 	@Override
 	protected CodeSystemSearchRequestBuilder createSearchRequestBuilder() {
 		return new CodeSystemSearchRequestBuilder();
-	}
-
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
 	}
 
 }

@@ -16,12 +16,16 @@
 package com.b2international.snowowl.core.version;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 /**
  * @since 8.0
@@ -36,6 +40,8 @@ public final class Version implements Serializable {
 	private LocalDate effectiveTime;
 	private ResourceURI resource;
 	private String branchPath;
+	private Long createdAt;
+	private String author;
 	
 	/**
 	 * @return the globally unique identifier of this version, resource + version.
@@ -69,6 +75,20 @@ public final class Version implements Serializable {
 	public String getBranchPath() {
 		return branchPath;
 	}
+	
+	public Long getCreatedAt() {
+		return createdAt;
+	}
+	
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	@JsonFormat(shape=Shape.STRING, pattern=DateFormats.SHORT, timezone="UTC")
+	public LocalDateTime getCreatedAtDateTime() {
+		return createdAt == null ? null : LocalDateTime.ofInstant(Instant.ofEpochMilli(createdAt), ZoneOffset.UTC);
+	}
+	
+	public String getAuthor() {
+		return author;
+	}
 
 	// hidden setter to allow deserialization of Version JSON strings without errors
 	@JsonSetter
@@ -100,6 +120,14 @@ public final class Version implements Serializable {
 	
 	public void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
+	}
+	
+	public void setCreatedAt(Long createdAt) {
+		this.createdAt = createdAt;
+	}
+	
+	public void setAuthor(String author) {
+		this.author = author;
 	}
 	
 	// additional helper methods

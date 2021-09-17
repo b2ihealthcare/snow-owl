@@ -15,30 +15,36 @@
  */
 package com.b2international.snowowl.core.request;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
-import com.b2international.snowowl.core.domain.BranchContext;
+import java.util.Set;
+
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
-import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
+import com.b2international.snowowl.core.request.MemberSearchRequestEvaluator.OptionKey;
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.FluentIterable;
 
 /**
 * @since 7.8
 */
 public final class ConceptMapMappingSearchRequestBuilder 
-		extends SearchPageableCollectionResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
-		implements TerminologyResourceContentRequestBuilder<ConceptMapMappings> {
+		extends SearchPageableCollectionResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, ServiceProvider, ConceptMapMappings> 
+		implements SystemRequestBuilder<ConceptMapMappings> {
 	
-	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMapId) {
-		return addOption(OptionKey.SET, conceptMapId);
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMap) {
+		return addOption(OptionKey.URI, conceptMap);
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterByConceptMaps(Iterable<String> conceptMapIds) {
-		return addOption(OptionKey.SET, conceptMapIds);
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMaps(Iterable<String> conceptMaps) {
+		return addOption(OptionKey.URI, conceptMaps);
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterBySourceToolingId(String toolingId) {
-		return addOption(OptionKey.SOURCE_TOOLING_ID, toolingId);
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUri(ResourceURI conceptMapUri) {
+		return addOption(OptionKey.URI, conceptMapUri == null ? null : conceptMapUri.toString());
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUris(Iterable<ResourceURI> conceptMapUris) {
+		return addOption(OptionKey.URI, conceptMapUris == null ? null : FluentIterable.from(conceptMapUris).transform(ResourceURI::toString).toSet());
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentId(String componentId) {
@@ -58,11 +64,11 @@ public final class ConceptMapMappingSearchRequestBuilder
 	}
 
 	public ConceptMapMappingSearchRequestBuilder filterByComponentId(String componentId) {
-		return filterByComponentIds(ImmutableSet.of(componentId));
+		return filterByComponentIds(Set.of(componentId));
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByComponentId(ComponentURI uri) {
-		return filterByComponentIds(ImmutableSet.of(uri.toString()));
+		return filterByComponentIds(Set.of(uri.toString()));
 	}
 
 	public ConceptMapMappingSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
@@ -73,12 +79,16 @@ public final class ConceptMapMappingSearchRequestBuilder
 		return addOption(OptionKey.ACTIVE, active);
 	}
 	
+	public ConceptMapMappingSearchRequestBuilder filterBySourceToolingId(String toolingId) {
+		return addOption(OptionKey.SOURCE_TOOLING_ID, toolingId);
+	}
+	
 	public ConceptMapMappingSearchRequestBuilder setPreferredDisplay(String displayType) {
 		return addOption(OptionKey.DISPLAY, displayType);
 	}
 	
 	@Override
-	protected SearchResourceRequest<BranchContext, ConceptMapMappings> createSearch() {
+	protected SearchResourceRequest<ServiceProvider, ConceptMapMappings> createSearch() {
 		return new ConceptMapMappingSearchRequest();
 	}
 

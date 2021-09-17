@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.commit;
 
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.request.GetResourceRequest;
  */
 final class CommitInfoGetRequest 
 		extends GetResourceRequest<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfos, CommitInfo>
-		implements RepositoryAccessControl {
+		implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

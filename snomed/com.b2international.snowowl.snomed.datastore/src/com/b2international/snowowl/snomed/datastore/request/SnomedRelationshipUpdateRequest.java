@@ -44,7 +44,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	private RelationshipValue value;
 
 	@Min(0)
-	private Integer group;
+	private Integer relationshipGroup;
 
 	@Min(0)
 	private Integer unionGroup;
@@ -71,8 +71,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		this.value = value;
 	}
 
-	void setGroup(final Integer group) {
-		this.group = group;
+	void setRelationshipGroup(final Integer relationshipGroup) {
+		this.relationshipGroup = relationshipGroup;
 	}
 
 	void setUnionGroup(final Integer unionGroup) {
@@ -149,21 +149,15 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	}
 
 	private boolean updateGroup(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
-		return updateProperty(group, () -> relationship.getGroup(), newGroup -> {
-			updatedRelationship.group(newGroup);
-		});
+		return updateProperty(relationshipGroup, () -> relationship.getRelationshipGroup(), updatedRelationship::relationshipGroup);
 	}
 
 	private boolean updateUnionGroup(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
-		return updateProperty(unionGroup, () -> relationship.getUnionGroup(), newUnionGroup -> {
-			updatedRelationship.unionGroup(newUnionGroup);
-		});
+		return updateProperty(unionGroup, () -> relationship.getUnionGroup(), updatedRelationship::unionGroup);
 	}
 
 	private boolean updateCharacteristicTypeId(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
-		return updateProperty(characteristicTypeId, () -> relationship.getCharacteristicTypeId(), newCharacteristicTypeId -> {
-			updatedRelationship.characteristicTypeId(ensureConceptExists(newCharacteristicTypeId, context));
-		});
+		return updateProperty(characteristicTypeId, () -> relationship.getCharacteristicTypeId(), newCharacteristicTypeId -> updatedRelationship.characteristicTypeId(ensureConceptExists(newCharacteristicTypeId, context)));
 	}
 
 	private boolean updateModifierId(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {

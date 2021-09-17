@@ -20,6 +20,9 @@ import java.util.List;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Range;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * 
@@ -28,9 +31,12 @@ import com.b2international.snowowl.fhir.core.model.dt.Range;
  * https://www.hl7.org/fhir/metadatatypes.html#UsageContext
  * @since 6.6
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = RangeUsageContext.Builder.class)
 public class RangeUsageContext extends UsageContext<Range> {
 
-	protected RangeUsageContext(final String id, final List<Extension> extensions, final Coding code, final Range value) {
+	public static final String CONTEXT_TYPE = "Range";
+	
+	RangeUsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions, final Coding code, final Range value) {
 		super(id, extensions, code, value);
 	}
 	
@@ -41,17 +47,26 @@ public class RangeUsageContext extends UsageContext<Range> {
 	
 	@Override
 	public String getType() {
-		return "Range";
+		return CONTEXT_TYPE;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends UsageContext.Builder<Builder, RangeUsageContext, Range> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueRange(final Range value) {
+			this.value = value;
 			return this;
 		}
 

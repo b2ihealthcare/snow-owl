@@ -37,22 +37,22 @@ import com.google.common.base.MoreObjects;
 @Doc(type = "owlRelationship", nested = true)
 public final class SnomedOWLRelationshipDocument implements Serializable {
 
-	public static SnomedOWLRelationshipDocument create(final String typeId, final String destinationId, final int group) {
-		return new SnomedOWLRelationshipDocument(typeId, destinationId, null, null, null, null, group);
+	public static SnomedOWLRelationshipDocument create(final String typeId, final String destinationId, final int relationshipGroup) {
+		return new SnomedOWLRelationshipDocument(typeId, destinationId, null, null, null, null, relationshipGroup);
 	}
 	
-	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int group) {
+	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int relationshipGroup) {
 		return value.map(
-			i -> new SnomedOWLRelationshipDocument(typeId, null, i, null, null, RelationshipValueType.INTEGER, group),
-			d -> new SnomedOWLRelationshipDocument(typeId, null, null, d, null, RelationshipValueType.DECIMAL, group),
-			s -> new SnomedOWLRelationshipDocument(typeId, null, null, null, s, RelationshipValueType.STRING, group));
+			i -> new SnomedOWLRelationshipDocument(typeId, null, i, null, null, RelationshipValueType.INTEGER, relationshipGroup),
+			d -> new SnomedOWLRelationshipDocument(typeId, null, null, d, null, RelationshipValueType.DECIMAL, relationshipGroup),
+			s -> new SnomedOWLRelationshipDocument(typeId, null, null, null, s, RelationshipValueType.STRING, relationshipGroup));
 	}
 	
 	public static SnomedOWLRelationshipDocument createFrom(final SnomedRelationship r) {
 		if (r.hasValue()) {
-			return createValue(r.getTypeId(), r.getValueAsObject(), r.getGroup());
+			return createValue(r.getTypeId(), r.getValueAsObject(), r.getRelationshipGroup());
 		} else {
-			return create(r.getTypeId(), r.getDestinationId(), r.getGroup());
+			return create(r.getTypeId(), r.getDestinationId(), r.getRelationshipGroup());
 		}
 	}
 
@@ -62,7 +62,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 	private final Double decimalValue;
 	private final String stringValue;
 	private final RelationshipValueType valueType;
-	private final int group;
+	private final int relationshipGroup;
 
 	@JsonCreator
 	private SnomedOWLRelationshipDocument(
@@ -72,14 +72,14 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			@JsonProperty("decimalValue") final Double decimalValue,
 			@JsonProperty("stringValue") final String stringValue,
 			@JsonProperty("valueType") final RelationshipValueType valueType,
-			@JsonProperty("group") final int group) {
+			@JsonProperty("relationshipGroup") final int relationshipGroup) {
 		this.typeId = typeId;
 		this.destinationId = destinationId;
 		this.integerValue = integerValue;
 		this.decimalValue = decimalValue;
 		this.stringValue = stringValue;
 		this.valueType = valueType;
-		this.group = group;
+		this.relationshipGroup = relationshipGroup;
 	}
 
 	public String getTypeId() {
@@ -109,8 +109,8 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		return valueType;
 	}
 
-	public int getGroup() {
-		return group;
+	public int getRelationshipGroup() {
+		return relationshipGroup;
 	}
 
 	@JsonIgnore
@@ -131,10 +131,10 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 	@JsonIgnore
 	public StatementFragment toStatementFragment(final int groupOffset) {
 		final int adjustedGroup;
-		if (group == 0) {
-			adjustedGroup = group;
+		if (relationshipGroup == 0) {
+			adjustedGroup = relationshipGroup;
 		} else {
-			adjustedGroup = group + groupOffset;
+			adjustedGroup = relationshipGroup + groupOffset;
 		}
 
 		if (destinationId != null) {
@@ -170,7 +170,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			decimalValue, 
 			stringValue, 
 			valueType, 
-			group);
+			relationshipGroup);
 	}
 
 	@Override
@@ -187,7 +187,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			&& Objects.equals(decimalValue, other.decimalValue)
 			&& Objects.equals(stringValue, other.stringValue)
 			&& Objects.equals(valueType, other.valueType)
-			&& Objects.equals(group, other.group);
+			&& Objects.equals(relationshipGroup, other.relationshipGroup);
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			.add("typeId", typeId)
 			.add("destinationId", destinationId)
 			.add("value", getValueAsObject())
-			.add("group", group)
+			.add("relationshipGroup", relationshipGroup)
 			.toString();
 	}
 }

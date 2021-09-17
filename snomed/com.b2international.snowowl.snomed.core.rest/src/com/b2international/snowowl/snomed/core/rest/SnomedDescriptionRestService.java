@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestInput;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRest
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestUpdate;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableSet;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -75,7 +75,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedDescriptionRestSearch params,
 
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -90,21 +90,24 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 				.filterByIds(params.getId())
 				.filterByEffectiveTime(params.getEffectiveTime())
 				.filterByActive(params.getActive())
-				.filterByModule(params.getModule())
-				.filterByConcept(params.getConcept())
-				.filterByLanguageCodes(params.getLanguageCode() == null ? null : ImmutableSet.copyOf(params.getLanguageCode()))
+				.filterByModules(params.getModule())
+				.filterByNamespaces(params.getNamespace())
+				.filterByNamespaceConcepts(params.getNamespaceConceptId())
+				.filterByConcepts(params.getConcept())
+				.filterByLanguageCodes(params.getLanguageCode())
 				.filterByType(params.getType())
 				.filterByTerm(params.getTerm())
-				.filterByCaseSignificance(params.getCaseSignificance())
-				.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
-				.filterByNamespace(params.getNamespace())
-				.filterByLanguageRefSets(params.getLanguageRefSet() == null ? null : ImmutableSet.copyOf(params.getLanguageRefSet()))
-				.filterByAcceptableIn(params.getAcceptableIn() == null ? null : ImmutableSet.copyOf(params.getAcceptableIn()))
-				.filterByPreferredIn(params.getPreferredIn() == null ? null : ImmutableSet.copyOf(params.getPreferredIn()))
+				.filterByCaseSignificances(params.getCaseSignificance())
+				.filterBySemanticTags(params.getSemanticTag())
+				.filterByLanguageRefSets(params.getLanguageRefSet())
+				.filterByAcceptableIn(params.getAcceptableIn())
+				.filterByPreferredIn(params.getPreferredIn())
+				.isActiveMemberOf(params.getIsActiveMemberOf())
 				.setLocales(acceptLanguage)
 				.setLimit(params.getLimit())
 				.setSearchAfter(params.getSearchAfter())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.sortBy(sorts)
 				.build(path)
 				.execute(getBus());
@@ -128,7 +131,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedDescriptionRestSearch body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -192,12 +195,12 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
-			@Parameter(description = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand) {
+			@ParameterObject
+			final ResourceSelectors selectors) {
 		
 		return SnomedRequests.prepareGetDescription(descriptionId)
-					.setExpand(expand)
+					.setExpand(selectors.getExpand())
+					.setFields(selectors.getField())
 					.build(path)
 					.execute(getBus());
 	}
@@ -207,10 +210,10 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		description="Updates properties of the specified Description, also managing language reference set membership."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No content"),
 		@ApiResponse(responseCode = "404", description = "Branch or Description not found")
 	})
-	@PostMapping(value = "/{descriptionId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{descriptionId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
 			@Parameter(description = "The resource path", required = true)

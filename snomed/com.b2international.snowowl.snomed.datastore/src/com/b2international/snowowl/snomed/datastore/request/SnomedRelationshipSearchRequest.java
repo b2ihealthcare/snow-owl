@@ -72,6 +72,7 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addNamespaceFilter(queryBuilder);
+		addNamespaceConceptIdFilter(context, queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
 		addMemberOfClause(context, queryBuilder);
@@ -84,7 +85,7 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		if (containsKey(OptionKey.GROUP_MIN) || containsKey(OptionKey.GROUP_MAX)) {
 			final int from = containsKey(OptionKey.GROUP_MIN) ? get(OptionKey.GROUP_MIN, Integer.class) : 0;
 			final int to = containsKey(OptionKey.GROUP_MAX) ? get(OptionKey.GROUP_MAX, Integer.class) : Integer.MAX_VALUE;
-			queryBuilder.filter(group(from, to));
+			queryBuilder.filter(relationshipGroup(from, to));
 		}
 		
 		if (containsKey(OptionKey.UNION_GROUP)) {

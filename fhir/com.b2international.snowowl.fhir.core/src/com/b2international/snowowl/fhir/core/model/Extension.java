@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.serialization.ExtensionSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 6.3
  */
 @JsonSerialize(using=ExtensionSerializer.class)
+@JsonDeserialize(using = ExtensionDeserializer.class)
 public abstract class Extension<T> {
 	
 	//Identifies the meaning of the extension
@@ -41,22 +43,11 @@ public abstract class Extension<T> {
 	
 	protected final T value;
 	
-	public Extension(final Uri url, final T value) {
+	protected Extension(final Uri url, final T value) {
 		this.url = url;
 		this.value = value;
 	}
 	
-	public Extension(String urlValue, T value) {
-		this.url = new Uri(urlValue);
-		this.value = value;
-	}
-	
-	public Extension(final Uri url) {
-		this.url = url;
-		this.value = null;
-	}
-	
-
 	/**
 	 * Return the type of this extension (valueX)
 	 * @return
@@ -70,5 +61,29 @@ public abstract class Extension<T> {
 	public T getValue() {
 		return value;
 	}
+	
+	public static abstract class Builder<B extends Builder<B, ET, T>, ET extends Extension<T>, T> extends ValidatingBuilder<ET> {
 
+		protected Uri url;
+
+		protected T value;
+		
+		protected abstract B getSelf();
+		
+		public B url(Uri url) {
+			this.url = url;
+			return getSelf();
+		}
+		
+		public B url(String url) {
+			this.url = new Uri(url);
+			return getSelf();
+		}
+		
+		public B value(final T value) {
+			this.value = value;
+			return getSelf();
+		}
+		
+	}
 }

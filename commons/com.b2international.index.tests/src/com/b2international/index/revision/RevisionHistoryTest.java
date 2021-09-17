@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.google.common.collect.Iterables;
  */
 public class RevisionHistoryTest extends BaseRevisionIndexTest {
 
-	private static final String DOC_TYPE = DocumentMapping.getType(RevisionData.class);
+	private static final String DOC_TYPE = DocumentMapping.getDocType(RevisionData.class);
 	private final RevisionData newData = new RevisionData(STORAGE_KEY1, "field1", "field2");
 	private final RevisionData changedData = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 	

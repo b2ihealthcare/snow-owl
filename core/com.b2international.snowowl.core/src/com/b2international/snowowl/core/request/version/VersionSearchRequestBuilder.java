@@ -49,6 +49,28 @@ public final class VersionSearchRequestBuilder
 		return addOption(OptionKey.RESOURCE, resourceUris);
 	}
 	
+
+	/**
+	 * Filter versions by their createdAt.
+	 * @param createdAt - the createdAt to look for.
+	 * @return
+	 */
+	public VersionSearchRequestBuilder filterByCreatedAt(Long createdAt) {
+		return addOption(OptionKey.CREATED_AT_FROM, createdAt)
+				.addOption(OptionKey.CREATED_AT_TO, createdAt);
+	}
+	
+	
+	/**
+	 * Filter versions that were createdAt in an interval.
+	 * @param createdAtFrom - the start of the createdAt interval (inclusive).
+	 * @param createdAtTo - the end of the createdAt interval (inclusive).
+	 * @return
+	 */
+	public VersionSearchRequestBuilder filterByCreatedAt(Long createdAtFrom, Long createdAtTo) {
+		return addOption(OptionKey.CREATED_AT_FROM, createdAtFrom)
+				.addOption(OptionKey.CREATED_AT_TO, createdAtTo);
+	}
 	/**
 	 * Filter versions by their version tag.
 	 * 

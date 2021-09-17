@@ -18,12 +18,14 @@ package com.b2international.snowowl.core.rest.codesystem;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.rest.BaseResourceCreateRestInput;
+import com.b2international.snowowl.core.codesystem.CodeSystemCreateRequestBuilder;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.rest.BaseResourceRestInput;
 
 /**
  * @since 8.0
  */
-public final class CodeSystemCreateRestInput extends BaseResourceCreateRestInput {
+public final class CodeSystemCreateRestInput extends BaseResourceRestInput {
 	
 	private String oid;
 	private String branchPath;
@@ -69,5 +71,26 @@ public final class CodeSystemCreateRestInput extends BaseResourceCreateRestInput
 	
 	public ResourceURI getExtensionOf() {
 		return extensionOf;
+	}
+
+	public CodeSystemCreateRequestBuilder toCodeSystemCreateRequest() {
+		return CodeSystemRequests.prepareNewCodeSystem()
+				.setId(getId())
+				.setBundleId(getBundleId())
+				.setUrl(getUrl())
+				.setTitle(getTitle())
+				.setLanguage(getLanguage())
+				.setDescription(getDescription())
+				.setStatus(getStatus())
+				.setCopyright(getCopyright())
+				.setOwner(getOwner())
+				.setContact(getContact())
+				.setUsage(getUsage())
+				.setPurpose(getPurpose())
+				.setOid(getOid())
+				.setBranchPath(getBranchPath())
+				.setToolingId(getToolingId())
+				.setExtensionOf(getExtensionOf())
+				.setSettings(getSettings());
 	}
 }

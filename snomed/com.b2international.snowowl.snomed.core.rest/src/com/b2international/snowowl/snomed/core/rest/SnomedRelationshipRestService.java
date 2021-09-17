@@ -74,27 +74,30 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedRelationshipRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return SnomedRequests
 					.prepareSearchRelationship()
 					.filterByIds(params.getId())
 					.filterByActive(params.getActive())
-					.filterByModule(params.getModule())
-					.filterByNamespace(params.getNamespace())
+					.filterByModules(params.getModule())
+					.filterByNamespaces(params.getNamespace())
+					.filterByNamespaceConcepts(params.getNamespaceConceptId())
 					.filterByEffectiveTime(params.getEffectiveTime())
 					.filterByCharacteristicType(params.getCharacteristicType())
-					.filterBySource(params.getSource())
-					.filterByType(params.getType())
-					.filterByDestination(params.getDestination())
+					.filterBySources(params.getSource())
+					.filterByTypes(params.getType())
+					.filterByDestinations(params.getDestination())
 					.filterByGroup(params.getGroup())
 					.filterByUnionGroup(params.getUnionGroup())
 					.filterByValueType(params.getValueType())
 					.filterByValue(params.getOperator(), RelationshipValue.fromLiteral(params.getValue()))
+					.isActiveMemberOf(params.getIsActiveMemberOf())
 					.setLimit(params.getLimit())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
+					.setFields(params.getField())
 					.setLocales(acceptLanguage)
 					.sortBy(extractSortFields(params.getSort()))
 					.build(path)
@@ -124,7 +127,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedRelationshipRestSearch params,
 		
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return searchByGet(path, params, acceptLanguage);
@@ -197,10 +200,10 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 		description="Updates properties of the specified Relationship."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "204", description = "No content"),
 		@ApiResponse(responseCode = "404", description = "Branch or Relationship not found")
 	})
-	@PostMapping(value = "/{relationshipId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{relationshipId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
 			@Parameter(description = "The resource path", required = true)

@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.5
  */
-public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvider, RepositoryContext, B> {
+public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvider, RepositoryContext, B> implements RepositoryAwareRequest {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -46,6 +46,11 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	public RepositoryRequest(String repositoryId, Request<RepositoryContext, B> next) {
 		super(next);
 		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
+	}
+	
+	@Override
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 	
 	@Override

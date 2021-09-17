@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -40,17 +39,18 @@ public class EclSerializerTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void verify() throws Exception {
-		for (int rounds = 0; rounds < 100; rounds++) {
+		for (int rounds = 0; rounds < 1; rounds++) {
 		
-			AsyncRequest<SnomedConcepts> eclRequest = SnomedRequests.prepareSearchConcept()
-					.all()
-					.filterByEcl("<<" + Concepts.ROOT_CONCEPT + ":" + Concepts.MORPHOLOGY + " = " + Concepts.ROOT_CONCEPT)
-					.build(SnomedContentRule.SNOMEDCT);
-			
 			List<Promise<SnomedConcepts>> promises = newArrayList();
 			
 			for (int i = 0; i < 4; i++) {
-				promises.add(eclRequest.execute(getBus()));
+				promises.add(
+					SnomedRequests.prepareSearchConcept()
+						.all()
+						.filterByEcl("<<" + Concepts.ROOT_CONCEPT + ":" + Concepts.MORPHOLOGY + " = " + Concepts.ROOT_CONCEPT)
+						.build(SnomedContentRule.SNOMEDCT)
+						.execute(getBus())
+				);
 			}
 			
 			final String error = Promise.all(promises)

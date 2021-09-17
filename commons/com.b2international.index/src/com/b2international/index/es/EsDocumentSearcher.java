@@ -49,10 +49,10 @@ import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.aggregations.metrics.TopHitsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
-import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.*;
@@ -73,10 +73,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.google.common.primitives.Ints;
 
 /**
@@ -263,6 +260,13 @@ public class EsDocumentSearcher implements Searcher {
 			reqSource.fetchSource(true);
 			return true;
 		}
+
+		// check if any fields requested are not supported by the mapping and fail-fast
+		SortedSet<String> unrecognizedFields = getUnrecognizedFields(mapping, fields);
+		if (!unrecognizedFields.isEmpty()) {
+			throw new BadRequestException("Unrecognized %s model propert%s '%s'.", mapping.typeAsString(), unrecognizedFields.size() == 1 ? "y" : "ies", unrecognizedFields)
+				.withDeveloperMessage("Supported properties are '%s'.", mapping.getSelectableFields());
+		}
 		
 		// Any field requested that can only retrieved from _source? Use source filtering
 		if (requiresDocumentSourceField(mapping, fields)) {
@@ -274,6 +278,13 @@ public class EsDocumentSearcher implements Searcher {
 		fields.stream().forEach(field -> reqSource.docValueField(field));
 		reqSource.fetchSource(false);
 		return false;
+	}
+
+	private SortedSet<String> getUnrecognizedFields(DocumentMapping mapping, List<String> fields) {
+		if (CompareUtils.isEmpty(fields)) {
+			return Collections.emptySortedSet();
+		}
+		return ImmutableSortedSet.copyOf(Sets.difference(Set.copyOf(fields), mapping.getSelectableFields()));
 	}
 
 	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
@@ -420,7 +431,7 @@ public class EsDocumentSearcher implements Searcher {
 				SortBy.Order order = sortByScript.getOrder();
 				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
 				
-				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), ScriptSortType.STRING)
+				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), sortByScript.getSortType())
 						.order(sortOrder));
 				
 			} else {

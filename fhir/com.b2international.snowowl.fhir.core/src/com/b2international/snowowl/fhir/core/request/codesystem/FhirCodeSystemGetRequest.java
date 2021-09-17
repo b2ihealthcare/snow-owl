@@ -15,53 +15,23 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.search.Summary;
+import com.b2international.snowowl.fhir.core.request.FhirResourceGetRequest;
 
 /**
  * @since 8.0
  */
-final class FhirCodeSystemGetRequest extends GetResourceRequest<FhirCodeSystemSearchRequestBuilder, RepositoryContext, Bundle, CodeSystem> {
+final class FhirCodeSystemGetRequest extends FhirResourceGetRequest<FhirCodeSystemSearchRequestBuilder, CodeSystem> {
 
 	private static final long serialVersionUID = 1L;
-	
-	private String summary;
-	private List<String> elements;
 	
 	public FhirCodeSystemGetRequest(String idOrUrl) {
 		super(idOrUrl);
 	}
-	
-	void setSummary(String summary) {
-		this.summary = summary;
-	}
-	
-	void setElements(List<String> elements) {
-		this.elements = elements;
-	}
 
 	@Override
-	protected FhirCodeSystemSearchRequestBuilder createSearchRequestBuilder() {
-		if (Summary.COUNT.equals(summary)) {
-			throw new BadRequestException(String.format("_summary=count is not supported on single resource operations"));
-		}
-		
-		return new FhirCodeSystemSearchRequestBuilder()
-				.setSummary(summary)
-				.setElements(elements);
-	}
-	
-	@Override
-	protected Optional<CodeSystem> extractFirst(Bundle items) {
-		return items.first().map(Entry::getResource).map(CodeSystem.class::cast);
+	protected FhirCodeSystemSearchRequestBuilder prepareSearch() {
+		return new FhirCodeSystemSearchRequestBuilder();
 	}
 
 }

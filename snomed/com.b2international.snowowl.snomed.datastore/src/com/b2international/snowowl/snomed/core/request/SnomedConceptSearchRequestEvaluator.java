@@ -22,7 +22,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
@@ -33,6 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -52,7 +53,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	}
 	
 	@Override
-	public Concepts evaluate(ResourceURI uri, BranchContext context, Options search) {
+	public Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search) {
 		
 		final String preferredDisplay = search.getString(OptionKey.DISPLAY);
 		SnomedDisplayTermType displayTermType;
@@ -110,16 +111,21 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		
 		boolean requestedExpand = search.containsKey(OptionKey.EXPAND);
 		// make sure preferredDescriptions() and displayTermType expansion data are always loaded
-		Options expand = ExpandParser.parse(String.join(",", "preferredDescriptions()", displayTermType.getExpand()))
+		Options expand = ExpandParser.parse("preferredDescriptions()")
 				.merge(requestedExpand ? search.getOptions(OptionKey.EXPAND) : Options.empty());
+		
+		if (!Strings.isNullOrEmpty(displayTermType.getExpand())) {
+			expand = ExpandParser.parse(displayTermType.getExpand()).merge(expand);
+		}
 		
 		SnomedConcepts matches = req
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
 				.setSearchAfter(search.getString(OptionKey.AFTER))
 				.setLimit(search.get(OptionKey.LIMIT, Integer.class))
+				.setFields(search.getList(OptionKey.FIELDS, String.class))
 				.setExpand(expand)
 				.sortBy(search.containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? search.getList(SearchResourceRequest.OptionKey.SORT_BY, SearchResourceRequest.Sort.class) : null)
-				.build()
+				.build(uri)
 				.execute(context);
 
 		return new Concepts(

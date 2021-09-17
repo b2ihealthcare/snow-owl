@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR property type code system
@@ -55,5 +56,19 @@ public enum QuantityComparator implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
+	
+	@JsonCreator
+    public static QuantityComparator forValue(String value) {
+		
+		switch (value) {
+		case "<": return LESS_THAN;
+		case "<=": return LESS_OR_EQUAL_TO;
+		case ">=": return GREATER_OR_EQUAL_TO;
+		case ">": return GREATER_THAN;
+		
+		default:
+			throw new IllegalArgumentException("Uknown comparator code : '" + value + "'");
+		}
+    }
 
 }

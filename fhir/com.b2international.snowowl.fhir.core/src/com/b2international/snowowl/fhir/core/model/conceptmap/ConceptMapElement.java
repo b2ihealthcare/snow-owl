@@ -22,16 +22,20 @@ import javax.validation.Valid;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.collect.Sets;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * FHIR Concept map element backbone element
  * <br> Mappings for a concept from the source set
  * @since 6.10
  */
+@JsonDeserialize(builder = ConceptMapElement.Builder.class)
 public class ConceptMapElement {
 
 	@Valid
@@ -53,15 +57,28 @@ public class ConceptMapElement {
 		this.targets = targets;
 	}
 	
+	public Code getCode() {
+		return code;
+	}
+	
+	public String getDisplay() {
+		return display;
+	}
+	
+	public Collection<Target> getTargets() {
+		return targets;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<ConceptMapElement> {
 		
 		private Code code;
 		private String display;
-		private final Collection<Target> targets = Sets.newHashSet();
+		private ImmutableList.Builder<Target> targets = ImmutableList.builder();
 		
 		
 		public Builder code(final Code code) {
@@ -79,6 +96,13 @@ public class ConceptMapElement {
 			return this;
 		}
 		
+		@JsonProperty("target")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder targets(Collection<Target> targets) {
+			this.targets.addAll(targets);
+			return this;
+		}
+		
 		public Builder addTarget(final Target target) {
 			this.targets.add(target);
 			return this;
@@ -86,7 +110,7 @@ public class ConceptMapElement {
 		
 		@Override
 		protected ConceptMapElement doBuild() {
-			return new ConceptMapElement(code, display, targets);
+			return new ConceptMapElement(code, display, targets.build());
 		}
 	}
 	

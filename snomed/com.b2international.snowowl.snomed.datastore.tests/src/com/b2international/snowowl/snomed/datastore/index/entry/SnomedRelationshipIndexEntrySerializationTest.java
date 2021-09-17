@@ -60,7 +60,7 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 			.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
 			.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
 			.destinationNegated(true)
-			.group(1)
+			.relationshipGroup(1)
 			.unionGroup(1);
 	}
 

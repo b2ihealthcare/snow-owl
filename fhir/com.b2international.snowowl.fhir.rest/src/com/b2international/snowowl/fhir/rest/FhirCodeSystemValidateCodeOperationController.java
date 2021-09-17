@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
@@ -27,6 +26,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeReques
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -200,11 +200,8 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 			@Parameter(description = "The validate-code request parameters")
 			@RequestBody Parameters.Fhir body) {
 		
-		// TODO set codesystem in validate request
-		ResourceURI codeSystemUri = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystemId);
-		
 		final ValidateCodeRequest request = toRequest(body, ValidateCodeRequest.class);
-
+		
 		//Validate for parameters that are not allowed on the instance level
 		if (request.getUrl() != null) {
 			throw new BadRequestException("Parameter 'url' cannot be specified when the code system ID is set.", "ValidateCodeRequest.url");
@@ -221,6 +218,9 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		if (request.getCodeSystem() != null) {
 			throw new BadRequestException("Validation against external code systems is not supported", "ValidateCodeRequest.codeSystem");
 		}
+		
+		// before execution set the codesystem to the path variable
+		request.setUrl(new Uri(codeSystemId));
 
 		return FhirRequests.codeSystems().prepareValidateCode()
 				.setRequest(request)

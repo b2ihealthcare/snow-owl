@@ -26,6 +26,8 @@ import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR {@link ElementDefinition} slicing discriminator definition.
@@ -34,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * which slice the element in the resource matches based on the allowed values for those elements in each of the slices.
  * @since 7.1
  */
+@JsonDeserialize(builder = Discriminator.Builder.class)
 public class Discriminator extends Element {
 
 	//How the element value is interpreted when discrimination is evaluated.
@@ -50,7 +53,7 @@ public class Discriminator extends Element {
 	@JsonProperty
 	private final String path;
 	
-	protected Discriminator(final String id, 
+	Discriminator(final String id, 
 			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Code type, 
 			final String path) {
@@ -61,10 +64,19 @@ public class Discriminator extends Element {
 		this.path = path;
 	}
 	
+	public Code getType() {
+		return type;
+	}
+	
+	public String getPath() {
+		return path;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Discriminator> {
 		
 		private Code type;

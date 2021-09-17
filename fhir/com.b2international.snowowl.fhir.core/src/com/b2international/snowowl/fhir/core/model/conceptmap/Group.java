@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.conceptmap;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -24,7 +25,10 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -32,6 +36,7 @@ import com.google.common.collect.ImmutableList;
  * 
  * @since 6.10
  */
+@JsonDeserialize(builder = Group.Builder.class)
 public class Group {
 	
 	@Valid
@@ -68,10 +73,35 @@ public class Group {
 		this.unmapped = unmapped;
 	}
 	
+	public Uri getSource() {
+		return source;
+	}
+	
+	public String getSourceVersion() {
+		return sourceVersion;
+	}
+	
+	public Uri getTarget() {
+		return target;
+	}
+	
+	public String getTargetVersion() {
+		return targetVersion;
+	}
+	
+	public List<ConceptMapElement> getElements() {
+		return elements;
+	}
+	
+	public UnMapped getUnmapped() {
+		return unmapped;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Group> {
 		
 		private Uri source;
@@ -108,6 +138,13 @@ public class Group {
 		
 		public Builder targetVersion(final String targetVersion) {
 			this.targetVersion = targetVersion;
+			return this;
+		}
+		
+		@JsonProperty("element")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder elements(Collection<ConceptMapElement> elements) {
+			this.elements.addAll(elements);
 			return this;
 		}
 		

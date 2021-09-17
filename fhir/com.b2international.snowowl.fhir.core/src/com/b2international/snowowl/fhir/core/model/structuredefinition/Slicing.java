@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,11 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * FHIR {@link ElementDefinition} slicing definition.
@@ -39,6 +42,7 @@ import com.google.common.collect.Lists;
  * 
  * @since 7.1
  */
+@JsonDeserialize(builder = Slicing.Builder.class)
 public class Slicing {
 	
 	@Summary
@@ -65,14 +69,31 @@ public class Slicing {
 		this.ordered = ordered;
 		this.rules = rules;
 	}
+	
+	public Collection<Discriminator> getDiscriminators() {
+		return discriminators;
+	}
 
+	public String getDescription() {
+		return description;
+	}
+	
+	public Boolean getOrdered() {
+		return ordered;
+	}
+	
+	public Code getRules() {
+		return rules;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Slicing> {
 	
-		private Collection<Discriminator> discriminators = Lists.newArrayList();
+		private ImmutableList.Builder<Discriminator> discriminators = ImmutableList.builder();
 		private String description;
 		private Boolean ordered;
 		private Code rules;
@@ -81,11 +102,13 @@ public class Slicing {
 		 * @param discriminators element values that are used to distinguish the slices
 		 * @return
 		 */
+		@JsonProperty("discriminator")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder discriminators(Collection<Discriminator> discriminators) {
-			this.discriminators = discriminators;
+			this.discriminators.addAll(discriminators);
 			return this;
 		}
-
+		
 		/**
 		 * @param discriminator element value that is used to distinguish the slices
 		 * @return
@@ -127,7 +150,7 @@ public class Slicing {
 
 		@Override
 		protected Slicing doBuild() {
-			return new Slicing(discriminators, description, ordered, rules);
+			return new Slicing(discriminators.build(), description, ordered, rules);
 		}
 		
 	}

@@ -63,7 +63,7 @@ public final class ValidationWhiteList implements Serializable {
 	private final String componentType;
 	
 	@Field(aliases = {
-		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
+		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED, searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS),
 		@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
 	})
 	private final List<String> affectedComponentLabels;

@@ -26,11 +26,14 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * Identifies a concept from an external specification that roughly corresponds to this element.
  * @since 7.1
  */
+@JsonDeserialize(builder = MappingElement.Builder.class)
 public class MappingElement extends Element {
 
 	@NotNull
@@ -53,7 +56,7 @@ public class MappingElement extends Element {
 	@JsonProperty
 	private String comment;
 
-	protected MappingElement(final String id, 
+	MappingElement(final String id, 
 			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Id identity, 
 			final Code language,
@@ -67,10 +70,27 @@ public class MappingElement extends Element {
 		this.comment = comment;
 	}
 	
+	public Id getIdentity() {
+		return identity;
+	}
+	
+	public Code getLanguage() {
+		return language;
+	}
+	
+	public String getMap() {
+		return map;
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, MappingElement> {
 		
 		private Id identity;

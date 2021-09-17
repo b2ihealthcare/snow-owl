@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.taxonomy;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.defining;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.definitionStatusId;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.exhaustive;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.modules;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.group;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.relationshipGroup;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -332,7 +332,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addConceptFlags(final RevisionSearcher searcher) {
 		entering("Registering active concept flags (fully defined, exhaustive) using revision searcher");
 
-		addConceptFlags(searcher, defining(), definingConcepts);
+		addConceptFlags(searcher, definitionStatusId(Concepts.FULLY_DEFINED), definingConcepts);
 		addConceptFlags(searcher, exhaustive(), exhaustiveConcepts);
 
 		leaving("Registering active concept flags (fully defined, exhaustive) using revision searcher");
@@ -441,7 +441,7 @@ public final class ReasonerTaxonomyBuilder {
 	
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(active())
-				.filter(group(1, Integer.MAX_VALUE))
+				.filter(relationshipGroup(1, Integer.MAX_VALUE))
 				.filter(characteristicTypeId(Concepts.ADDITIONAL_RELATIONSHIP));
 		
 		if (!excludedModuleIds.isEmpty()) {
@@ -459,7 +459,7 @@ public final class ReasonerTaxonomyBuilder {
 	
 		Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
 				&& Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
-				&& relationship.getGroup() > 0
+				&& relationship.getRelationshipGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
 		addRelationships(sortedRelationships.filter(predicate), additionalGroupedRelationships);
@@ -519,7 +519,7 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE,       // 6
 						SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE,       // 7
 						SnomedRelationshipIndexEntry.Fields.STRING_VALUE,        // 8
-						SnomedRelationshipIndexEntry.Fields.GROUP,               // 9
+						SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP,  // 9
 						SnomedRelationshipIndexEntry.Fields.UNION_GROUP,         // 10
 						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,         // 11
 						SnomedRelationshipIndexEntry.Fields.RELEASED)            // 12
@@ -625,7 +625,7 @@ public final class ReasonerTaxonomyBuilder {
 				final Long destinationId = ifNotNull(relationship.getDestinationId(), Long::valueOf);
 				final boolean destinationNegated = relationship.isDestinationNegated();
 				final RelationshipValue value = relationship.getValueAsObject();
-				final int group = relationship.getGroup();
+				final int group = relationship.getRelationshipGroup();
 				final int unionGroup = relationship.getUnionGroup();
 				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship.getModifierId());
 
@@ -758,7 +758,7 @@ public final class ReasonerTaxonomyBuilder {
 				
 				if (!CompareUtils.isEmpty(member.getClassAxiomRelationships())) {
 					for (SnomedOWLRelationshipDocument relationship : member.getClassAxiomRelationships()) {
-						if (relationship.getGroup() >= AXIOM_GROUP_BASE) {
+						if (relationship.getRelationshipGroup() >= AXIOM_GROUP_BASE) {
 							throw new IllegalStateException("OWL member has too many groups");
 						}
 						
@@ -827,7 +827,7 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.mrcmGrouped(false));
 		
 		if (!excludedModuleIds.isEmpty()) {
@@ -906,7 +906,7 @@ public final class ReasonerTaxonomyBuilder {
 				}
 
 				final String memberId = member.getId();
-				final long refsetId = Long.parseLong(member.getReferenceSetId());
+				final long refsetId = Long.parseLong(member.getRefsetId());
 				final String serializedValue = SnomedRefSetUtil.serializeValue(member.getDataType(), member.getValue());
 				final Integer group = member.getRelationshipGroup();
 				final long typeId = Long.parseLong(member.getTypeId());
@@ -962,7 +962,7 @@ public final class ReasonerTaxonomyBuilder {
 				final String characteristicTypeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
 				if (member.isActive() 
-						&& SnomedRefSetUtil.getConcreteDomainRefSetMap().containsValue(member.getReferenceSetId())
+						&& SnomedRefSetUtil.getConcreteDomainRefSetMap().containsValue(member.getRefsetId())
 						&& CD_CHARACTERISTIC_TYPE_IDS.contains(characteristicTypeId)
 						&& !excludedModuleIds.contains(member.getModuleId())) {
 
@@ -985,7 +985,7 @@ public final class ReasonerTaxonomyBuilder {
 					}
 
 					final String memberId = member.getId();
-					final long refsetId = Long.parseLong(member.getReferenceSetId());
+					final long refsetId = Long.parseLong(member.getRefsetId());
 					final String serializedValue = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
 					final Integer group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
 					final long typeId = Long.parseLong((String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID));

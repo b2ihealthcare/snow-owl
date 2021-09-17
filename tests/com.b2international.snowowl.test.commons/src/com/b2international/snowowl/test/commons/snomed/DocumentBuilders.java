@@ -55,7 +55,7 @@ public abstract class DocumentBuilders {
 				.exhaustive(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.primitive(true)
+				.definitionStatusId(Concepts.PRIMITIVE)
 				.parents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.ancestors(PrimitiveSets.newLongSortedSet())
 				.statedParents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
@@ -88,7 +88,7 @@ public abstract class DocumentBuilders {
 				.active(true)
 				.referencedComponentId(referencedComponentId)
 				.referencedComponentType(referencedComponentType)
-				.referenceSetId(referenceSetId)
+				.refsetId(referenceSetId)
 				.released(true);
 	}
 	
@@ -154,7 +154,7 @@ public abstract class DocumentBuilders {
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(sourceId)
 				.referencedComponentType(SnomedConcept.TYPE)
-				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.refsetId(Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(classAxioms);
 	}
 
@@ -180,7 +180,7 @@ public abstract class DocumentBuilders {
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
+				.refsetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId)
 				.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
@@ -209,7 +209,7 @@ public abstract class DocumentBuilders {
 				.sourceId(sourceId)
 				.typeId(typeId)
 				.value(value)
-				.group(0)
+				.relationshipGroup(0)
 				.unionGroup(0)
 				.characteristicTypeId(characteristicTypeId)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);

@@ -56,7 +56,7 @@ public class SnomedExpressionLabelService extends AbstractRestService {
 			@RequestBody
 			final SnomedExpressionLabelRestInput body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 				return SnomedRequests.prepareEclLabeler(body.getExpressions())

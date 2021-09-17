@@ -19,10 +19,11 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
+import com.b2international.snowowl.fhir.core.search.Summary;
 
 /**
  * @since 8.0
@@ -48,17 +49,38 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 				.one()
 				.filterByUrl(system)
 				.filterByVersion(version)
+				.setSummary(configureSummary())
 				.buildAsync()
 				.getRequest()
 				.execute(context)
 				.first()
-				.map(Entry::getResource)
+				.map(ResourceResponseEntry.class::cast)
+				.map(ResourceResponseEntry::getResponseResource)
 				.map(CodeSystem.class::cast)
+				.or(() -> {
+					return FhirRequests
+						.codeSystems().prepareSearch()
+						.one()
+						.filterById(system)
+						.filterByVersion(version)
+						.setSummary(configureSummary())
+						.buildAsync()
+						.getRequest()
+						.execute(context)
+						.first()
+						.map(ResourceResponseEntry.class::cast)
+						.map(ResourceResponseEntry::getResponseResource)
+						.map(CodeSystem.class::cast);
+				})
 				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
 		
 		return doExecute(context, codeSystem);
 	}
 	
+	protected String configureSummary() {
+		return Summary.TRUE;
+	}
+
 	protected String extractLocales(Code displayLanguage) {
 		String locales = displayLanguage != null ? displayLanguage.getCodeValue() : null;
 		if (CompareUtils.isEmpty(locales)) {

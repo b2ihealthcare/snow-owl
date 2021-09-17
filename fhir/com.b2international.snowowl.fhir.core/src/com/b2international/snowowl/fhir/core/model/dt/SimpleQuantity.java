@@ -21,6 +21,8 @@ import javax.validation.constraints.Null;
 
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Simple Quantity complex datatype
@@ -30,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#quantity">FHIR:Data Types:Quantity</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = SimpleQuantity.Builder.class)
 public class SimpleQuantity extends BaseQuantity {
 	
 	SimpleQuantity(String id, List<Extension> extensions,
@@ -51,6 +54,7 @@ public class SimpleQuantity extends BaseQuantity {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends BaseQuantity.Builder<Builder, SimpleQuantity> {
 		
 		@Override

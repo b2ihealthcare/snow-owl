@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -28,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.5
  */
-public final class DeleteRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
+public final class DeleteRequest implements Request<TransactionContext, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -65,6 +68,11 @@ public final class DeleteRequest implements Request<TransactionContext, Boolean>
 	@Override
 	public String getOperation() {
 		return Permission.OPERATION_EDIT;
+	}
+	
+	@Override
+	public void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, List<String> accessedResources) {
+		accessedResources.add(componentId);
 	}
 	
 }

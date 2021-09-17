@@ -16,8 +16,12 @@
 package com.b2international.snowowl.snomed.core.rest.domain;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -61,6 +65,9 @@ public final class SnomedRf2ExportConfiguration {
 	
 	@Schema(description = "The maintainerType to use un the release archive name")
 	private String maintainerType = "";
+	
+	@Schema(description = "The component types to export. By default it exports every core and refset component type.", allowableValues = {SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE, SnomedConcept.REFSET_TYPE})
+	private List<String> componentTypes;
 	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -212,5 +219,13 @@ public final class SnomedRf2ExportConfiguration {
 	
 	public void setNrcCountryCode(String nrcCountryCode) {
 		this.nrcCountryCode = nrcCountryCode;
+	}
+	
+	public List<String> getComponentTypes() {
+		return componentTypes;
+	}
+	
+	public void setComponentTypes(List<String> componentTypes) {
+		this.componentTypes = componentTypes;
 	}
 }

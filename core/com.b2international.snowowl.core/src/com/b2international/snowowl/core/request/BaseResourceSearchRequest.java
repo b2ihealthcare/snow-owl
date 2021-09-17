@@ -15,20 +15,25 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 8.0
  */
-public abstract class BaseResourceSearchRequest<R>
-	extends SearchIndexResourceRequest<RepositoryContext, R, ResourceDocument>
-	implements RepositoryAccessControl {
+public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRequest<RepositoryContext, R, ResourceDocument> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -58,6 +63,11 @@ public abstract class BaseResourceSearchRequest<R>
 		BUNDLE_ID, 
 
 		/**
+		 * Filter matches by their bundle ancestor ID.
+		 */
+		BUNDLE_ANCESTOR_ID, 
+		
+		/**
 		 * HL7 registry OID
 		 */
 		OID,
@@ -72,7 +82,17 @@ public abstract class BaseResourceSearchRequest<R>
 	protected final Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
+		addSecurityFilter(context, queryBuilder);
+		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
+		if (containsKey(OptionKey.BUNDLE_ANCESTOR_ID)) {
+			final Collection<String> ancestorIds = getCollection(OptionKey.BUNDLE_ANCESTOR_ID, String.class);
+			queryBuilder.filter(Expressions.builder()
+				.should(ResourceDocument.Expressions.bundleIds(ancestorIds))
+				.should(ResourceDocument.Expressions.bundleAncestorIds(ancestorIds))
+				.build());
+		}
+
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
@@ -85,6 +105,54 @@ public abstract class BaseResourceSearchRequest<R>
 		return queryBuilder.build();
 	}
 	
+	/**
+	 * Configures security filters to allow access to certain resources only. This method is no-op if the given {@link ServiceProvider context}'s {@link User} is an administrator or has read access to everything. 
+	 * 
+	 * @param context - the context where user information will be extracted
+	 * @param queryBuilder - the query builder to append the clauses to
+	 */
+	protected final void addSecurityFilter(ServiceProvider context, ExpressionBuilder queryBuilder) {
+		final User user = context.service(User.class);
+		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
+			return;
+		}
+		
+		// extract read permissions
+		final List<Permission> readPermissions = user.getPermissions().stream()
+				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
+				.collect(Collectors.toList());
+		
+		final Set<String> exactResourceIds = readPermissions.stream()
+				.flatMap(p -> p.getResources().stream())
+				.filter(resource -> !resource.endsWith("*"))
+				.collect(Collectors.toSet());
+		final Set<String> resourceIdPrefixes = readPermissions.stream()
+				.flatMap(p -> p.getResources().stream())
+				.filter(resource -> resource.endsWith("*"))
+				.map(resource -> resource.substring(0, resource.length() - 1))
+				.collect(Collectors.toSet());
+		
+		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
+			context.log().info("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), ImmutableSortedSet.copyOf(exactResourceIds), ImmutableSortedSet.copyOf(resourceIdPrefixes));
+			ExpressionBuilder bool = Expressions.builder();
+			// the permissions give access to either
+			if (!exactResourceIds.isEmpty()) {
+				// explicit IDs
+				bool.should(ResourceDocument.Expressions.ids(exactResourceIds));
+				// or the permitted resources are bundles which give access to all resources within it (recursively)
+				bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
+				bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
+			}
+			
+			if (!resourceIdPrefixes.isEmpty()) {
+				// partial IDs, prefixes
+				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
+			}
+			
+			queryBuilder.filter(bool.build());
+		}
+	}
+
 	/**
 	 * Subclasses may override this method to provide additional filter clauses to the supplied bool {@link ExpressionBuilder}. This method does nothing by default.
 	 * 
@@ -125,11 +193,6 @@ public abstract class BaseResourceSearchRequest<R>
 	
 	protected final void addTitleExactFilter(ExpressionBuilder queryBuilder) {
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
-	}
-
-	@Override
-	public final String getOperation() {
-		return Permission.OPERATION_BROWSE;
 	}
 
 	@Override

@@ -21,6 +21,8 @@ import java.util.List;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR period complex datatype
@@ -32,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#period">FHIR:Data Types:Period</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = Period.Builder.class)
 public class Period extends Element {
 	
 	@JsonProperty
@@ -40,11 +43,7 @@ public class Period extends Element {
 	@JsonProperty
 	private Date end;
 	
-	public Period(final Date start, final Date end) {
-		this(start, end, null, null);
-	}
-	
-	public Period(final Date start, final Date end, final String id, final List<Extension> extensions) {
+	Period(final Date start, final Date end, final String id, final List<Extension> extensions) {
 		super(id, extensions);
 		this.start = start;
 		this.end = end;
@@ -64,6 +63,37 @@ public class Period extends Element {
 	 */
 	public Date getEnd() {
 		return end;
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class Builder extends Element.Builder<Builder, Period> {
+		
+		private Date start;
+		private Date end;
+		
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+		
+		public Builder start(final Date start) {
+			this.start = start;
+			return getSelf();
+		}
+
+		public Builder end(final Date end) {
+			this.end = end;
+			return getSelf();
+		}
+		
+		@Override
+		protected Period doBuild() {
+			return new Period(start, end, id, extensions);
+		}
 	}
 
 }

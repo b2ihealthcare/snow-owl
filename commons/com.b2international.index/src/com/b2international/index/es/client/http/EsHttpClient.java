@@ -162,27 +162,25 @@ public final class EsHttpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, 
-			QueryBuilder query) throws IOException {
+	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index)
 			.setBatchSize(batchSize)
 			.setQuery(query)
 			.setScript(script)
-			.setSlices(numberOfSlices)
+			.setSlices(UpdateByQueryRequest.AUTO_SLICES)
 			.setAbortOnVersionConflict(false);
 		
 		return client.updateByQuery(updateByQueryRequest, EXTENDED_DEFAULT);
 	}
 	
 	@Override
-	public BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices,
-			QueryBuilder query) throws IOException {
+	public BulkByScrollResponse deleteByQuery(String index, int batchSize, QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index)
 				.setBatchSize(batchSize)
 				.setQuery(query)
-				.setSlices(numberOfSlices)
+				.setSlices(DeleteByQueryRequest.AUTO_SLICES)
 				.setAbortOnVersionConflict(false);
 			
 		return client.deleteByQuery(deleteByQueryRequest, EXTENDED_DEFAULT);

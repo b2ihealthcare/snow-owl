@@ -21,7 +21,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -68,13 +67,7 @@ public class Coding {
 	 * @param userSelected
 	 * @param display
 	 */
-	@JsonCreator
-	Coding(
-		@JsonProperty("code") Code code, 
-		@JsonProperty("system") Uri system, 
-		@JsonProperty("version") String version, 
-		@JsonProperty("userSelected") Boolean userSelected, 
-		@JsonProperty("display") String display) {
+	Coding(Code code, Uri system, String version, Boolean userSelected, String display) {
 		this.code = code;
 		this.system = system;
 		this.version = version;
@@ -178,8 +171,15 @@ public class Coding {
 		private Boolean userSelected;
 		private String display;
 
+		@JsonIgnore
 		public Builder code(final String code) {
 			this.code = new Code(code);
+			return this;
+		}
+
+		@JsonProperty
+		public Builder code(final Code code) {
+			this.code = code;
 			return this;
 		}
 		

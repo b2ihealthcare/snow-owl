@@ -23,11 +23,14 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filters.FilterPropertyCode;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Value set filter domain object
  * @since 6.7
  */
+@JsonDeserialize(builder = ValueSetFilter.Builder.class)
 public class ValueSetFilter {
 	
 	@Valid
@@ -67,6 +70,7 @@ public class ValueSetFilter {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<ValueSetFilter> {
 		
 		private Code property;
@@ -78,6 +82,7 @@ public class ValueSetFilter {
 			return this;
 		}
 		
+		@JsonProperty("op")
 		public Builder operator(final FilterOperator operator) {
 			this.operator = operator.getCode();
 			return this;

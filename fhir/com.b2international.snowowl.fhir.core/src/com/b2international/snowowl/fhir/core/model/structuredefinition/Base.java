@@ -23,11 +23,14 @@ import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR {@link ElementDefinition} base definition information for tools.
  * @since 7.1
  */
+@JsonDeserialize(builder = Base.Builder.class)
 public class Base extends Element {
 
 	@NotNull
@@ -44,7 +47,7 @@ public class Base extends Element {
 	@JsonProperty
 	private final String max;
 	
-	protected Base(final String id, 
+	Base(final String id, 
 			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final String path, 
 			final int min,
@@ -57,10 +60,23 @@ public class Base extends Element {
 		this.max = max;
 	}
 	
+	public String getPath() {
+		return path;
+	}
+	
+	public int getMin() {
+		return min;
+	}
+	
+	public String getMax() {
+		return max;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Base> {
 		
 		private String path;

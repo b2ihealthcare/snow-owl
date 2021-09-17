@@ -50,7 +50,7 @@ final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
 	private final ValidateCodeRequest request;
 	
 	FhirValidateCodeRequest(ValidateCodeRequest request) {
-		super(request.getUrl().getUriValue(), request.getVersion());
+		super(request.getUrl() != null ? request.getUrl().getUriValue() : request.getCoding().getSystemValue(), request.getVersion());
 		this.request = request;
 	}
 
@@ -62,10 +62,10 @@ final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
 		// extract locales from the request
 		Map<String, Concept> conceptsById = CodeSystemRequests.prepareSearchConcepts()
 				.setLimit(codingsById.keySet().size())
+				.filterByCodeSystemUri(codeSystem.getResourceURI())
 				.filterByIds(codingsById.keySet())
 				.setLocales(extractLocales(request.getDisplayLanguage()))
-				.build(codeSystem.getResourceURI())
-				.getRequest()
+				.buildAsync()
 				.execute(context)
 				.stream()
 				.collect(Collectors.toMap(Concept::getId, c -> c));

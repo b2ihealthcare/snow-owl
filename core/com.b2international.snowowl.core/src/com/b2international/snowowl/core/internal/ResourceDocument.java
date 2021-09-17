@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.internal;
 
 import static com.b2international.index.query.Expressions.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -26,6 +27,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Normalizers;
+import com.b2international.index.Script;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
@@ -44,7 +46,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 8.0
  */
 @Doc(
-	type = "resource",
+	type = ResourceDocument.TYPE,
 	revisionHash = {
 		ResourceDocument.Fields.URL,
 		ResourceDocument.Fields.TITLE,
@@ -59,8 +61,13 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 	}
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
+@Script(
+		name="typeRank", 
+		script="return params.ranks.getOrDefault(doc.resourceType.value, Integer.MAX_VALUE)")
 public final class ResourceDocument extends RevisionDocument {
 
+	public static final String TYPE = "resource";
+	
 	/**
 	 * @since 8.0
 	 */
@@ -79,6 +86,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String USAGE = "usage";
 		public static final String PURPOSE = "purpose";
 		public static final String CREATED_AT = "createdAt";
+		public static final String BUNDLE_ANCESTOR_IDS = "bundleAncestorIds";
 		public static final String BUNDLE_ID = "bundleId";
 		
 		// specialized resource fields
@@ -88,6 +96,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String EXTENSION_OF = "extensionOf";
 		public static final String UPGRADE_OF = "upgradeOf";
 		public static final String SETTINGS = "settings";
+		public static final String TYPE_RANK = "typeRank";
 		
 		// analyzed fields
 		private static final String TITLE_PREFIX   = TITLE + ".prefix";
@@ -109,7 +118,8 @@ public final class ResourceDocument extends RevisionDocument {
 			BRANCH_PATH, 
 			TOOLING_ID,
 			EXTENSION_OF, 
-			UPGRADE_OF
+			UPGRADE_OF,
+			TYPE_RANK
 		);
 	}
 	
@@ -193,6 +203,10 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression branchPaths(Iterable<String> branchPaths) {
 			return matchAny(Fields.BRANCH_PATH, branchPaths);
 		}
+		
+		public static Expression bundleAncestorIds(Iterable<String> bundleAncestorIds) {
+			return matchAny(Fields.BUNDLE_ANCESTOR_IDS, bundleAncestorIds);
+		}
 
 		public static Expression bundleIds(Iterable<String> bundleIds) {
 			return matchAny(Fields.BUNDLE_ID, bundleIds);
@@ -223,7 +237,7 @@ public final class ResourceDocument extends RevisionDocument {
 		}
 		
 	}
-	
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -243,6 +257,7 @@ public final class ResourceDocument extends RevisionDocument {
 				.contact(from.getContact())
 				.usage(from.getUsage())
 				.purpose(from.getPurpose())
+				.bundleAncestorIds(from.getBundleAncestorIds())
 				.bundleId(from.getBundleId())
 				.oid(from.getOid())
 				.branchPath(from.getBranchPath())
@@ -270,6 +285,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String contact;
 		private String usage;
 		private String purpose;
+		private List<String> bundleAncestorIds;
 		private String bundleId;
 		
 		// specialized resource fields
@@ -342,6 +358,11 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 
+		public Builder bundleAncestorIds(Iterable<String> bundleAncestorIds) {
+			this.bundleAncestorIds = Collections3.toImmutableList(bundleAncestorIds);
+			return getSelf();
+		}
+		
 		public Builder bundleId(String bundleId) {
 			this.bundleId = bundleId;
 			return getSelf();
@@ -404,6 +425,7 @@ public final class ResourceDocument extends RevisionDocument {
 				contact, 
 				usage, 
 				purpose,
+				bundleAncestorIds,
 				bundleId,
 				oid,
 				branchPath,
@@ -423,7 +445,7 @@ public final class ResourceDocument extends RevisionDocument {
 	@Field(
 		aliases = {
 			@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED),
-			@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer=Analyzers.TOKENIZED),
+			@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer=Analyzers.TOKENIZED, searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS),
 			@FieldAlias(name = "exact", type = FieldAliasType.KEYWORD, normalizer = Normalizers.LOWER_ASCII)
 		}
 	)
@@ -436,6 +458,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	private final List<String> bundleAncestorIds;
 	private final String bundleId;
 	
 	// specialized resource fields
@@ -448,6 +471,10 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	// derived fields, getters only, mapping generation requires a field to be specified
 	private final Long createdAt;
+	
+	// mapping only field, no actual purpose or use, required to support multi-index search with doc type VersionDocument
+	@SuppressWarnings("unused")
+	private String version;
 	
 	public ResourceDocument(
 			final String id, 
@@ -463,6 +490,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final String contact,
 			final String usage,
 			final String purpose,
+			final List<String> bundleAncestorIds,
 			final String bundleId,
 			final String oid,
 			final String branchPath,
@@ -483,6 +511,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.contact = contact;
 		this.usage = usage;
 		this.purpose = purpose;
+		this.bundleAncestorIds = bundleAncestorIds;
 		this.bundleId = bundleId;
 		this.oid = oid;
 		this.branchPath = branchPath;
@@ -540,6 +569,10 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public String getPurpose() {
 		return purpose;
+	}
+	
+	public List<String> getBundleAncestorIds() {
+		return bundleAncestorIds;
 	}
 	
 	public String getBundleId() {

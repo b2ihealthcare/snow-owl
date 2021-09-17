@@ -78,7 +78,7 @@ public final class ValidationIssue implements Serializable {
 	private final boolean whitelisted;
 
 	@Field(aliases = {
-		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
+		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED, searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS),
 		@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
 	})
 	private List<String> affectedComponentLabels = Collections.emptyList();

@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.*;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -35,7 +40,7 @@ import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
@@ -45,13 +50,15 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConve
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
  */
 public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
 
+	private static final long serialVersionUID = 1L;
+	
 	private static final float MIN_DOI_VALUE = 1.05f;
 	private static final float MAX_DOI_VALUE = 10288.383f;
 	
@@ -110,7 +117,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		/**
 		 * Enable score boosting using DOI field
 		 */
-		USE_DOI,
+		USE_DOI, 
+		
+		/**
+		 * Match concept descriptions where the description has language membership in one of the provided locales
+		 */
+		LANGUAGE_REFSET,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -118,6 +130,15 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	@Override
 	protected Enum<?> getSpecialOptionKey() {
 		return OptionKey.TERM;
+	}
+	
+	@Override
+	protected void collectAdditionalFieldsToFetch(ImmutableSet.Builder<String> additionalFieldsToLoad) {
+		// load preferred descriptions field if not requested, but either pt or fsn is expanded
+		if (!fields().contains(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS) 
+				&& (expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM))) {
+			additionalFieldsToLoad.add(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS);
+		}
 	}
 	
 	@Override
@@ -133,26 +154,15 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		addReleasedClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
+		addEclFilter(context, queryBuilder, OptionKey.DEFINITION_STATUS, SnomedConceptDocument.Expressions::definitionStatusIds);
 		addNamespaceFilter(queryBuilder);
+		addNamespaceConceptIdFilter(context, queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
 		addMemberOfClause(context, queryBuilder);
 		
-		if (containsKey(OptionKey.DEFINITION_STATUS)) {
-			if (Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS))) {
-				queryBuilder.filter(primitive());
-			} else if (Concepts.FULLY_DEFINED.equals(getString(OptionKey.DEFINITION_STATUS))) {
-				queryBuilder.filter(defining());
-			}
-		}
-		
-		if (containsKey(OptionKey.PARENT)) {
-			queryBuilder.filter(parents(getCollection(OptionKey.PARENT, String.class)));
-		}
-		
-		if (containsKey(OptionKey.STATED_PARENT)) {
-			queryBuilder.filter(statedParents(getCollection(OptionKey.STATED_PARENT, String.class)));
-		}
+		addFilter(queryBuilder, OptionKey.PARENT, String.class, SnomedConceptDocument.Expressions::parents);
+		addFilter(queryBuilder, OptionKey.STATED_PARENT, String.class, SnomedConceptDocument.Expressions::statedParents);
 		
 		if (containsKey(OptionKey.ANCESTOR)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.ANCESTOR, String.class);
@@ -225,7 +235,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			queryBuilder.filter(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
 			
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
-			queryExpression = Expressions.scriptScore(q, "doiFactor", ImmutableMap.of("termScores", conceptScoreMap, "useDoi", containsKey(OptionKey.USE_DOI), "minDoi", MIN_DOI_VALUE, "maxDoi", MAX_DOI_VALUE));
+			queryExpression = Expressions.scriptScore(q, "doiFactor", Map.of("termScores", conceptScoreMap, "useDoi", containsKey(OptionKey.USE_DOI), "minDoi", MIN_DOI_VALUE, "maxDoi", MAX_DOI_VALUE));
 		} else if (containsKey(OptionKey.USE_DOI)) {
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
 			queryExpression = Expressions.scriptScore(q, "doi");
@@ -242,7 +252,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			SortField sortField = (SortField) sort;
 			if (SnomedConceptSearchRequestBuilder.TERM_SORT.equals(sortField.getField())) {
 				final Set<String> synonymIds = context.service(Synonyms.class).get();
-				final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionUtils.getLanguageRefSetIds(locales()), "synonymIds", synonymIds);
+				final Map<String, Object> args = Map.of("locales", SnomedDescriptionUtils.getLanguageRefSetIds(context, locales()), "synonymIds", synonymIds);
 				sortBuilder.sortByScript("termSort", args, sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}
@@ -292,11 +302,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
 		
-		if (containsKey(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET)) {
-			requestBuilder.filterByLanguageRefSets(getCollection(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, String.class));
+		if (containsKey(SnomedConceptSearchRequest.OptionKey.LANGUAGE_REFSET)) {
+			List<ExtendedLocale> extendedLocales = getList(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, ExtendedLocale.class);
+			requestBuilder.filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(context, extendedLocales));
 		}
 			
-		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConceptId(ids));
+		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConcepts(ids));
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);

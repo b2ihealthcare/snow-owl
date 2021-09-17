@@ -1,44 +1,40 @@
 /*******************************************************************************
- * Copyright (c) 2020 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2020-2021 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.snomed.datastore;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ExplicitFirstOrdering;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.b2international.snowowl.snomed.datastore.config.SnomedLanguageConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.*;
 
 /**
  * @since 7.10.0
  */
 public final class SnomedDescriptionUtils {
 
-	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(final Iterable<SnomedDescription> descriptions, final List<ExtendedLocale> extendedLocales) {
+	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(final BranchContext context, final Iterable<SnomedDescription> descriptions, final List<ExtendedLocale> extendedLocales) {
 
 		if (extendedLocales.isEmpty()) {
 			return Map.of();
 		}
 		
-		final List<String> languageRefSetIds = getLanguageRefSetIds(extendedLocales);
+		final List<String> languageRefSetIds = getLanguageRefSetIds(context, extendedLocales);
 		final ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
 		final Multimap<String, SnomedDescription> conceptIdToDescriptionsMap = Multimaps.index(descriptions, SnomedDescription::getConceptId);
 
@@ -103,13 +99,16 @@ public final class SnomedDescriptionUtils {
 	 * If no element from the input list can be converted, an {@link IllegalArgumentException} is thrown; no exception occurs
 	 * if only some of the {@code ExtendedLocale}s could not be transformed into a language reference set identifier, however.
 	 *
+	 * @param context - the context to use to retrieve language map configuration
 	 * @param locales  the extended locale list to process (may not be {@code null})
 	 * @return the converted language reference set identifiers or an empty {@link List}, never <code>null</code>
 	 */
-	public static List<String> getLanguageRefSetIds(final List<ExtendedLocale> locales) {
+	public static List<String> getLanguageRefSetIds(final BranchContext context, final List<ExtendedLocale> locales) {
 		if (CompareUtils.isEmpty(locales)) {
 			return Collections.emptyList();
 		}
+		
+		final ListMultimap<String, String> languageMap = getLanguageMapping(context);
 		final List<String> languageRefSetIds = newArrayList();
 		final List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
 
@@ -119,7 +118,7 @@ public final class SnomedDescriptionUtils {
 			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
 				mappedRefSetIds = Collections.singleton(extendedLocale.getLanguageRefSetId());
 			} else {
-				mappedRefSetIds = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getMappedLanguageRefSetIds(extendedLocale.getLanguageTag());
+				mappedRefSetIds = languageMap.get(extendedLocale.getLanguageTag());
 			}
 
 			if (mappedRefSetIds.isEmpty()) {
@@ -134,12 +133,46 @@ public final class SnomedDescriptionUtils {
 		}
 
 		if (languageRefSetIds.isEmpty() && !unconvertableLocales.isEmpty()) {
-			throw new IllegalArgumentException("Don't know how to convert extended locale " + Iterables.toString(unconvertableLocales) + " to a language reference set identifier.");
+			throw new BadRequestException("Don't know how to convert extended locale %s to a language reference set identifier.", Iterables.toString(unconvertableLocales));
 		}
 
 		return languageRefSetIds;
 	}
+	
+	/**
+	 * Returns the currently configured dialect aliast configuration from the given context. If there is no such setting configured it returns an empty {@link ListMultimap}.
+	 * @param context
+	 * @return a {@link ListMultimap} that has all the configured dialect aliases, never <code>null</code>
+	 */
+	public static ListMultimap<String,String> getLanguageMapping(final BranchContext context) {
+		return getLanguageMapping(context.service(ObjectMapper.class), context.service(TerminologyResource.class));
+	}
 
+	/**
+	 * Returns the currently configured dialect aliast configuration from the given {@link TerminologyResource}'s settings. If there is no such setting configured it returns an empty {@link ListMultimap}.
+	 * @param mapper
+	 * @param resource
+	 * @return a {@link ListMultimap} that has all the configured dialect aliases, never <code>null</code>
+	 */
+	public static ListMultimap<String, String> getLanguageMapping(final ObjectMapper mapper, final TerminologyResource resource) {
+		ListMultimap<String, String> languageMap = ArrayListMultimap.create();
+		getLanguagesConfiguration(mapper, resource).forEach(mapping -> languageMap.putAll(mapping.getLanguageTag(), mapping.getLanguageRefSetIds()));
+		return languageMap;
+	}
+
+	/**
+	 * Returns the currently configured language settings from the given {@link TerminologyResource}'s settings. If there is no such setting configured it returns an empty {@link List}.
+	 * @param mapper
+	 * @param resource
+	 * @return a {@link List} that has all the configured language settings, never <code>null</code>
+	 */
+	public static List<SnomedLanguageConfig> getLanguagesConfiguration(final ObjectMapper mapper, final TerminologyResource resource) {
+		return ((List<Map<String, Object>>) resource.getSettings().getOrDefault(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of()))
+				.stream()
+				.map(config -> mapper.convertValue(config, SnomedLanguageConfig.class))
+				.collect(Collectors.toList());
+	}
+	
 	private SnomedDescriptionUtils() {}
 
 }

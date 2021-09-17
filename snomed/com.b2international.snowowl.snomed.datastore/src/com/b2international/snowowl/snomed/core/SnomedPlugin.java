@@ -70,7 +70,7 @@ import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositor
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptMapSearchRequestEvaluator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedMemberSearchRequestEvaluator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedValueSetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.Synonyms;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
@@ -83,6 +83,11 @@ import com.google.inject.Injector;
 @Component
 public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 
+	/**
+	 * Unique identifier of the bundle. ID: {@value}
+	 */
+	public static final String PLUGIN_ID = "com.b2international.snowowl.snomed.datastore"; //$NON-NLS-1$
+	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
 		registry.add("snomed", SnomedCoreConfiguration.class);
@@ -215,8 +220,8 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	protected SetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
-		return new SnomedMemberSearchRequestEvaluator();
+	protected ValueSetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
+		return new SnomedValueSetMemberSearchRequestEvaluator();
 	}
 	
 	@Override

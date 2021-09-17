@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -30,12 +31,11 @@ import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
+public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean>, AccessControl {
 
 	@NotEmpty
 	private final String memberId;
@@ -65,7 +65,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.prepareNewMember()
 					.setModuleId(moduleId)
 					.setReferencedComponentId(change.getReferencedComponent().getId())
-					.setReferenceSetId(evaluation.getReferenceSetId())
+					.setRefsetId(evaluation.getReferenceSetId())
 					.buildNoContent()
 					.execute(context);
 				break;
@@ -75,7 +75,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.execute(context);
 				if (member.isReleased()) {
 					SnomedRequests.prepareUpdateMember(change.getMemberId())
-						.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.FALSE))
+						.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.FALSE))
 						.build()
 						.execute(context);
 				} else {
@@ -90,7 +90,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.execute(context);
 				if(!memberToChange.isActive()) {
 					SnomedRequests.prepareUpdateMember(change.getMemberId())
-					.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
+					.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
 					.build()
 					.execute(context);
 				}

@@ -42,7 +42,8 @@ public class ConceptSearchRequestSnomedTest {
 	public void hitCount() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
 			.setLimit(0)
-			.build(CODESYSTEM)
+			.filterByCodeSystemUri(CODESYSTEM)
+			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
 		assertThat(matches.getTotal()).isEqualTo(1873);
@@ -52,8 +53,9 @@ public class ConceptSearchRequestSnomedTest {
 	public void filterById() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
 			.one()
+			.filterByCodeSystemUri(CODESYSTEM)
 			.filterById(SnomedConstants.Concepts.ROOT_CONCEPT)
-			.build(CODESYSTEM)
+			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
 		assertThat(matches).hasSize(1);
@@ -63,9 +65,10 @@ public class ConceptSearchRequestSnomedTest {
 	public void filterByQuery() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
 			.setLimit(0)
+			.filterByCodeSystemUri(CODESYSTEM)
 			.filterByQuery("*")
 			.filterByExclusion(SnomedConstants.Concepts.ROOT_CONCEPT)
-			.build(CODESYSTEM)
+			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
 		assertThat(matches.getTotal()).isEqualTo(1872);
@@ -74,12 +77,13 @@ public class ConceptSearchRequestSnomedTest {
 	@Test
 	public void setPreferreDisplayToFsn() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
-			.filterById(ID)
-			.setPreferredDisplay("FSN")
-			.setLocales("en")
-			.build(CODESYSTEM)
-			.execute(Services.bus())
-			.getSync();
+				.filterByCodeSystemUri(CODESYSTEM)
+				.filterById(ID)
+				.setPreferredDisplay("FSN")
+				.setLocales("en")
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync();
 		assertThat(matches.getTotal()).isEqualTo(1);
 		final Concept concept = matches.first().get();
 		assertThat(concept.getTerm()).isEqualTo(FSN);
@@ -88,11 +92,12 @@ public class ConceptSearchRequestSnomedTest {
 	@Test
 	public void useDefaultDisplay() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
-			.filterById(ID)
-			.setLocales("en")
-			.build(CODESYSTEM)
-			.execute(Services.bus())
-			.getSync();
+				.filterByCodeSystemUri(CODESYSTEM)
+				.filterById(ID)
+				.setLocales("en")
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync();
 		assertThat(matches.getTotal()).isEqualTo(1);
 		final Concept concept = matches.first().get();
 		assertThat(concept.getTerm()).isEqualTo(PT);

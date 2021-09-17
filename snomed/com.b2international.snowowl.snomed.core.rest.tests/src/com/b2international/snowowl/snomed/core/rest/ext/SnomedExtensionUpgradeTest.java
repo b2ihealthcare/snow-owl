@@ -25,7 +25,6 @@ import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVers
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -269,7 +268,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"typeId", Concepts.PART_OF,
 			"destinationId", Concepts.NAMESPACE_ROOT,
 			"characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP,
-			"group", 0,
+			"relationshipGroup", 0,
 			"commitComment", "Created new extension relationship"
 		);
 		
@@ -285,7 +284,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				"id", extensionRelationshipId,
 				"moduleId", Concepts.MODULE_SCT_CORE,
 				"characteristicTypeId", Concepts.INFERRED_RELATIONSHIP,
-				"group", 1,
+				"relationshipGroup", 1,
 				"commitComment", "Created new donated INT relationship"
 			)
 		);
@@ -304,7 +303,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedRelationshipOnUpgrade.getModuleId());
 		assertEquals(Concepts.INFERRED_RELATIONSHIP, donatedRelationshipOnUpgrade.getCharacteristicTypeId());
-		assertEquals(1, donatedRelationshipOnUpgrade.getGroup().intValue());
+		assertEquals(1, donatedRelationshipOnUpgrade.getRelationshipGroup().intValue());
 	}
 
 	@Test
@@ -872,12 +871,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// create new extension version with one new concept and one member on INT concept
 		String moduleId = createModule(extension);
 		
-		SnomedConcept concept = searchConcept(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "expand", "descriptions()"), 1).stream().findFirst().get();
+		SnomedConcept concept = searchConcepts(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "expand", "descriptions()"), 1).stream().findFirst().get();
 		String descriptionId = concept.getDescriptions().stream().findFirst().get().getId();
 		// create new inactivation indicator for one of the description, pending move
 		createMember(extension.getResourceURI(), Map.of(
 			"moduleId", moduleId,
-			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+			"refsetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
 			"valueId", Concepts.PENDING_MOVE
 		));
@@ -888,7 +887,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// add another member on INT representing a change in INT and allow extension to upgrade
 		createMember(SnomedContentRule.SNOMEDCT, Map.of(
 			"moduleId", Concepts.MODULE_SCT_CORE,
-			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+			"refsetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
 			"valueId", Concepts.PENDING_MOVE
 		));
@@ -903,7 +902,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// add another extension member to the same int concept with same meaning to the original extension branch
 		createMember(extension.getResourceURI(), Map.of(
 			"moduleId", moduleId,
-			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+			"refsetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
 			"valueId", Concepts.AMBIGUOUS
 		));
@@ -948,12 +947,13 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertTrue(success);
 		
 		// after upgrade completion, the upgrade Code System is no longer available
-		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getId()).assertThat().statusCode(404);
+		CodeSystemRestRequests.assertGetCodeSystem(upgradeCodeSystem.getId())
+			.statusCode(404);
+		
 		// the extension should use the upgrade's branch
-		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getUpgradeOf().getResourceId())
-			.assertThat().statusCode(200)
-			.and().body("branchPath", is(upgradeCodeSystem.getBranchPath()))
-			.and().body("extensionOf", is(upgradeCodeSystem.getExtensionOf().toString()));
+		CodeSystem afterUpgrade = CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getUpgradeOf().getResourceId());
+		assertThat(afterUpgrade.getBranchPath()).isEqualTo(upgradeCodeSystem.getBranchPath());
+		assertThat(afterUpgrade.getExtensionOf()).isEqualByComparingTo(upgradeCodeSystem.getExtensionOf());
 	}
 	
 	@Test
@@ -1123,7 +1123,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1164,7 +1164,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		createVersion(extension.getId(), effectiveDate3).statusCode(201);
 		ResourceURI extensionVersion2 = CodeSystem.uri(extension.getId(), effectiveDate3.toString());
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1205,7 +1205,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1221,7 +1221,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			.getSync(1, TimeUnit.MINUTES);
 		assertTrue(success);
 		
-		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).isEmpty();
 	}
 	
@@ -1268,7 +1268,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1284,7 +1284,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				.getSync(1, TimeUnit.MINUTES);
 		assertTrue(success);
 		
-		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).containsOnly(extensionVersion3);
 	}
 	

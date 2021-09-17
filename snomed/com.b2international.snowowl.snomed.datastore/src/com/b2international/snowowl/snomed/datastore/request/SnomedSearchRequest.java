@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snomed.ecl.Ecl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
@@ -30,7 +32,6 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snomed.ecl.Ecl;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
@@ -43,7 +44,7 @@ import com.google.common.collect.Iterables;
  */
 public abstract class SnomedSearchRequest<R, D extends SnomedDocument> 
 		extends SearchIndexResourceRequest<BranchContext, R, D>
-		implements BranchAccessControl {
+		implements AccessControl {
 
 	protected enum OptionKey {
 		
@@ -132,7 +133,14 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 				}
 				
 				// TODO replace sync call to concept search with async promise
-				idFilter = EclExpression.of(expression, eclExpressionForm()).resolve(context).getSync(3, TimeUnit.MINUTES);
+				try {
+					idFilter = EclExpression.of(expression, eclExpressionForm()).resolve(context).getSync(3, TimeUnit.MINUTES);
+				} catch (SyntaxException e) {
+					// incase of syntax errors, report them as incorrect values instead of syntax errors
+//					throw new BadRequestException("'%s' is not a valid SNOMED CT ID or ECL Expression.", expression);
+					throw new SearchResourceRequest.NoResultException();
+				}
+				
 				if (idFilter.isEmpty()) {
 					throw new SearchResourceRequest.NoResultException();
 				}
