@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
-		<version>7.17.4</version>
+		<version>7.17.5-SNAPSHOT</version>
 		<artifactId>tests-parent</artifactId>
 	</parent>
 	<artifactId>com.b2international.snowowl.test.dependencies</artifactId>
