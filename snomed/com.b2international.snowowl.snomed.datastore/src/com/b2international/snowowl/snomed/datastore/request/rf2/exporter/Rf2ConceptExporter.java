@@ -41,14 +41,16 @@ public final class Rf2ConceptExporter extends Rf2CoreComponentExporter<SnomedCon
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
-			final Collection<String> modules) {
+			final Collection<String> modules,
+			final Collection<String> ids) {
 
 		super(releaseType, 
 				countryNamespaceElement, 
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				modules);
+				modules,
+				ids);
 	}
 
 	@Override

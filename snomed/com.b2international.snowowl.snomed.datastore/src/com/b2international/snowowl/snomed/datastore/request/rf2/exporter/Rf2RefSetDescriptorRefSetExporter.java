@@ -53,8 +53,9 @@ public final class Rf2RefSetDescriptorRefSetExporter extends Rf2Exporter<SnomedR
 			String namespaceFilter,
 			String transientEffectiveTime, 
 			String archiveEffectiveTime, 
-			Collection<String> modules) {
-		super(releaseType, countryNamespaceElement, namespaceFilter, transientEffectiveTime, archiveEffectiveTime, modules);
+			Collection<String> modules,
+			Collection<String> ids) {
+		super(releaseType, countryNamespaceElement, namespaceFilter, transientEffectiveTime, archiveEffectiveTime, modules, ids);
 	}
 
 	@Override

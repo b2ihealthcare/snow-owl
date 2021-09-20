@@ -44,6 +44,7 @@ public final class SnomedRf2ExportRequestBuilder
 	private boolean includePreReleaseContent;
 	private Collection<String> componentTypes = null;
 	private Collection<String> modules = null;
+	private Collection<String> ids = null;
 	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
@@ -103,6 +104,11 @@ public final class SnomedRf2ExportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ExportRequestBuilder setIds(final Collection<String> ids) {
+		this.ids = ids;
+		return getSelf();
+	}
+	
 	public SnomedRf2ExportRequestBuilder setRefSets(final Collection<String> refSets) {
 		this.refSets = refSets;
 		return getSelf();
@@ -130,6 +136,7 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setIncludePreReleaseContent(includePreReleaseContent);
 		req.setComponentTypes(componentTypes);
 		req.setModules(modules);
+		req.setModules(ids);
 		req.setRefSets(refSets);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setExtensionOnly(extensionOnly);

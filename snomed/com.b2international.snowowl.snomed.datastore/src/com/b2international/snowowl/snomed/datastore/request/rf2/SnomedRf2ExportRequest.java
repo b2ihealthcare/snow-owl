@@ -155,6 +155,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	@JsonProperty 
 	private Collection<String> modules;
+	
+	@JsonProperty 
+	private Collection<String> ids;
 
 	@JsonProperty
 	private Collection<String> refSets;
@@ -214,6 +217,14 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		 * should be exported if the input value is an empty collection.
 		 */
 		this.modules = (modules != null) ? ImmutableSet.copyOf(modules) : null;
+	}
+	
+	void setIds(final Collection<String> ids) {
+		/*
+		 * All relevant components regardless of id should be exported if the input value is null; no component
+		 * should be exported if the input value is an empty collection.
+		 */
+		this.ids = (ids != null) ? ImmutableSet.copyOf(ids) : null;
 	}
 
 	void setRefSets(final Collection<String> refSets) {
@@ -700,7 +711,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				namespaceFilter,
 				transientEffectiveTime,
 				archiveEffectiveTime,
-				modules);
+				modules,
+				ids);
 		
 		exporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
@@ -719,7 +731,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				transientEffectiveTime,
 				archiveEffectiveTime,
 				includePreReleaseContent,
-				modules);
+				modules,
+				ids);
 
 		conceptExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
@@ -748,6 +761,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				transientEffectiveTime,
 				archiveEffectiveTime, 
 				modules, 
+				ids,
 				descriptionTypes,
 				languageCode);
 
@@ -757,6 +771,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				transientEffectiveTime,
 				archiveEffectiveTime, 
 				modules, 
+				ids,
 				ImmutableSet.of(Concepts.TEXT_DEFINITION),
 				languageCode);
 
@@ -795,6 +810,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				transientEffectiveTime,
 				archiveEffectiveTime, 
 				modules, 
+				ids,
 				ImmutableSet.of(Concepts.STATED_RELATIONSHIP));
 
 		final Rf2RelationshipExporter relationshipExporter = new Rf2RelationshipExporter(releaseType, 
@@ -803,6 +819,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				transientEffectiveTime,
 				archiveEffectiveTime, 
 				modules, 
+				ids,
 				characteristicTypes);
 
 		statedRelationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
@@ -822,7 +839,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				modules);
+				modules,
+				ids);
 		
 		concreteValueExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
@@ -853,6 +871,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 					transientEffectiveTime,
 					archiveEffectiveTime,
 					modules,
+					ids,
 					refSetExportLayout,
 					refSetType,
 					referenceSetsByType.get(refSetType));
@@ -900,6 +919,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 					transientEffectiveTime,
 					archiveEffectiveTime,
 					modules,
+					ids,
 					refSetExportLayout,
 					entry.getKey(),
 					ImmutableSet.of(entry.getValue()));
@@ -940,6 +960,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 					transientEffectiveTime,
 					archiveEffectiveTime,
 					modules,
+					ids,
 					SnomedRefSetType.LANGUAGE,
 					languageRefSets,
 					languageCode);

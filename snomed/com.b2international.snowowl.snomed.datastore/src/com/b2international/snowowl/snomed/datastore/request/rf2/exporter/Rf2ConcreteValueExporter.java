@@ -46,14 +46,16 @@ public final class Rf2ConcreteValueExporter
 		final String namespaceFilter, 
 		final String transientEffectiveTime, 
 		final String archiveEffectiveTime, 
-		final Collection<String> modules) {
+		final Collection<String> modules,
+		final Collection<String> ids) {
 
 		super(releaseType, 
 			countryNamespaceElement, 
 			namespaceFilter, 
 			transientEffectiveTime, 
 			archiveEffectiveTime, 
-			modules);
+			modules,
+			ids);
 	}
 
 	@Override

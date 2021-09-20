@@ -65,22 +65,25 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 
 	private final String transientEffectiveTime;
 	private final Collection<String> modules;
-
+	private final Collection<String> ids;
+	
 	public Rf2Exporter(final Rf2ReleaseType releaseType, 
 			final String countryNamespaceElement,
 			final String namespaceFilter, 
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
-			final Collection<String> modules) {
-
+			final Collection<String> modules,
+			final Collection<String> ids) {
+		
 		this.releaseType = releaseType;
 		this.countryNamespaceElement = countryNamespaceElement;
 		this.namespaceFilter = namespaceFilter;
 		this.transientEffectiveTime = transientEffectiveTime;
 		this.archiveEffectiveTime = archiveEffectiveTime;
 		this.modules = modules;
+		this.ids = ids;
 	}
-
+	
 	protected abstract Path getRelativeDirectory();
 
 	protected abstract Path getFileName();
@@ -145,6 +148,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				 */
 				final B requestBuilder = createSearchRequestBuilder()
 						.filterByModules(modules) // null value will be ignored
+						.filterByIds(ids)
 						.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
 						.setLimit(BATCH_SIZE);
 				

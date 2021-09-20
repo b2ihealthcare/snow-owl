@@ -50,6 +50,7 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
 			final Collection<String> modules,
+			final Collection<String> ids,
 			final SnomedRefSetType refSetType,
 			final Collection<SnomedConcept> referenceSets,
 			final String languageCode) {
@@ -60,6 +61,7 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 				transientEffectiveTime, 
 				archiveEffectiveTime, 
 				modules,
+				ids,
 				Rf2RefSetExportLayout.COMBINED, // XXX: language reference sets are always aggregated by language code 
 				refSetType, 
 				referenceSets);
