@@ -22,7 +22,6 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -102,8 +101,6 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				.addAllConcepts(additionalConcepts)
 				.build(branch.path());
 				
-		TerminologyResource resource = context.service(TerminologyResource.class);
-		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
 				config.getMaxReasonerCount(), 
 				repositoryId, 
