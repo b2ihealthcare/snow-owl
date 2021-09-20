@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,8 +32,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
@@ -76,38 +75,29 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	}
 
 	private final List<String> configureFieldsToLoad(List<String> fields) {
-		ImmutableSet.Builder<String> additionalFieldsToLoad = ImmutableSet.builder();
+		final Set<String> fieldsToLoad = new LinkedHashSet<>(fields);
 		
-		collectAdditionalFieldsToFetch(additionalFieldsToLoad);
-		
-		// in case of Revisions always include the ID field (if not requested) to avoid low-level error
-		// after configuring the additional field inclusions
-		if (Revision.class.isAssignableFrom(getFrom()) && !fields().contains(Revision.Fields.ID)) {
-			additionalFieldsToLoad.add(Revision.Fields.ID);
-		}
-		
-		final Set<String> additionalFields = additionalFieldsToLoad.build();
-		
-		if (!additionalFields.isEmpty()) {
-			fields = Lists.newArrayList(fields);
-			fields.addAll(additionalFields);
-		}
+		collectAdditionalFieldsToFetch(fieldsToLoad);
 		
 		// perform field replacements between known model and index fields, if specified by the subclass
 		final Multimap<String, String> fieldReplacements = collectFieldsToLoadReplacements();
 		if (!fieldReplacements.isEmpty()) {
-			fields = Lists.newArrayList();
-			for (String fieldToLoad : fields) {
+			for (String fieldToLoad : fieldsToLoad) {
 				Collection<String> replacements = fieldReplacements.get(fieldToLoad);
-				if (replacements.isEmpty()) {
-					fields.add(fieldToLoad);
-				} else {
+				if (!replacements.isEmpty()) {
+					fieldsToLoad.remove(fieldToLoad);
 					fields.addAll(replacements);
 				}
 			}
 		}
 		
-		return fields;
+		// in case of Revisions always include the ID field (if not requested) to avoid low-level error
+		// after configuring the additional field inclusions
+		if (Revision.class.isAssignableFrom(getFrom())) {
+			fieldsToLoad.add(Revision.Fields.ID);
+		}
+		
+		return List.copyOf(fieldsToLoad);
 	}
 	
 	/**
@@ -120,12 +110,12 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 
 	/**
 	 * Subclasses may override this method to provide additional fields to fetch from the underlying index, if those fields are necessary to complete
-	 * the request. This method is only being called if there is at least client requested field. If there is none it will load the entire object and
+	 * the request. This method is only being called if there is at least one client requested field. If there is none it will load the entire object and
 	 * no need to configure additional fields.
 	 * 
-	 * @param additionalFieldsToLoad
+	 * @param fieldsToLoad
 	 */
-	protected void collectAdditionalFieldsToFetch(ImmutableSet.Builder<String> additionalFieldsToLoad) {
+	protected void collectAdditionalFieldsToFetch(Set<String> fieldsToLoad) {
 	}
 
 	/**
