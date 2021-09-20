@@ -16,11 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.classification;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.IStatus;
@@ -37,12 +33,7 @@ import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.Hits;
-import com.b2international.index.Index;
-import com.b2international.index.Searcher;
-import com.b2international.index.Writer;
+import com.b2international.index.*;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
