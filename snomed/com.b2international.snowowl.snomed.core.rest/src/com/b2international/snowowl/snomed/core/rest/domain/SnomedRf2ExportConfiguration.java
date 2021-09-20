@@ -35,6 +35,9 @@ public final class SnomedRf2ExportConfiguration {
 	@ApiParam(value = "Optional moduleIds to restrict the exported content")
 	private Collection<String> moduleIds;
 	
+	@ApiParam(value = "Optional component ids to restrict the exported content")
+	private Collection<String> ids;
+	
 	@ApiParam(value = "Optional refSetIds to restrict the export content")
 	private Collection<String> refSetIds;
 	
@@ -117,6 +120,21 @@ public final class SnomedRf2ExportConfiguration {
 	
 	public void setModuleIds(Collection<String> moduleIds) {
 		this.moduleIds = moduleIds;
+	}
+	
+	/**
+	 * Returns with a collection of SNOMED&nbsp;CT component IDs.
+	 * <p>This collection of ids will define which components will be included in the export.
+	 * If this field is set, components having an id that is not included in the returning set will be excluded from 
+	 * the export result.
+	 * @return a collection of component IDs.
+	 */
+	public Collection<String> getIds() {
+		return ids;
+	}
+	
+	public void setIds(Collection<String> ids) {
+		this.ids = ids;
 	}
 	
 	/**

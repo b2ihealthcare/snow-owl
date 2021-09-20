@@ -85,6 +85,7 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 			.setLocales(acceptLanguage)
 			.setIncludePreReleaseContent(params.isIncludeUnpublished())
 			.setModules(params.getModuleIds())
+			.setIds(params.getIds())
 			.setRefSets(params.getRefSetIds())
 			.setCountryNamespaceElement(params.getNamespaceId())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet

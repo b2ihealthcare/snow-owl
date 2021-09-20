@@ -136,7 +136,7 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setIncludePreReleaseContent(includePreReleaseContent);
 		req.setComponentTypes(componentTypes);
 		req.setModules(modules);
-		req.setModules(ids);
+		req.setIds(ids);
 		req.setRefSets(refSets);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setExtensionOnly(extensionOnly);

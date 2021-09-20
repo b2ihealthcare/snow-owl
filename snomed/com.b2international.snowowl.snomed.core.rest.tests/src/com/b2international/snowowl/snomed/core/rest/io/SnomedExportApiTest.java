@@ -394,6 +394,70 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
+	
+	@Test
+	public void exportDeltaInIdRange() throws Exception {
+		createCodeSystem(branchPath, "SNOMEDCT-ALPHA").statusCode(201);
+
+		String statedRelationship1 = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP);
+		String statedRelationship2 = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.MODULE_SCT_CORE, Concepts.STATED_RELATIONSHIP);
+		String statedRelationship3 = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, Concepts.STATED_RELATIONSHIP);
+
+		String versionEffectiveTime = "20170306";
+		createVersion("SNOMEDCT-ALPHA", "v7", versionEffectiveTime).statusCode(201);
+		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, "v7");
+
+		Map<String, ?> config = ImmutableMap.<String, Object>builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("ids", List.of(statedRelationship1))
+				.put("startEffectiveTime", versionEffectiveTime)
+				.put("endEffectiveTime", versionEffectiveTime)
+				.build();
+
+		File exportArchive = doExport(versionPath, config);
+
+		String statedLine1 = TAB_JOINER.join(statedRelationship1, 
+				versionEffectiveTime, 
+				"1", 
+				Concepts.MODULE_SCT_CORE, 
+				Concepts.ROOT_CONCEPT, 
+				Concepts.NAMESPACE_ROOT,
+				"0",
+				Concepts.PART_OF,
+				Concepts.STATED_RELATIONSHIP,
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
+
+		String statedLine2 = TAB_JOINER.join(statedRelationship2, 
+				versionEffectiveTime, 
+				"1", 
+				Concepts.MODULE_SCT_CORE, 
+				Concepts.ROOT_CONCEPT, 
+				Concepts.MODULE_SCT_CORE,
+				"0",
+				Concepts.PART_OF,
+				Concepts.STATED_RELATIONSHIP,
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+
+		String statedLine3 = TAB_JOINER.join(statedRelationship3, 
+				versionEffectiveTime, 
+				"1", 
+				Concepts.MODULE_SCT_CORE, 
+				Concepts.ROOT_CONCEPT, 
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER,
+				"0",
+				Concepts.PART_OF,
+				Concepts.STATED_RELATIONSHIP,
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
+
+		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+
+		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(true, statedLine1));
+		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, statedLine2));
+		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, statedLine3));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+
 
 	@Test
 	public void exportDeltaInDateRangeAndUnpublishedComponents() throws Exception {
