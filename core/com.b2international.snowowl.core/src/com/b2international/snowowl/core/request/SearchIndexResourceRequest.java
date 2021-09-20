@@ -90,11 +90,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		
 		if (!additionalFields.isEmpty()) {
 			fields = Lists.newArrayList(fields);
-			for (String additionalField : additionalFields) {
-				if (!fields.contains(additionalField)) {
-					fields.add(additionalField);
-				}
-			}
+			fields.addAll(additionalFields);
 		}
 		
 		// perform field replacements between known model and index fields, if specified by the subclass
