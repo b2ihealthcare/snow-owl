@@ -86,7 +86,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 				Collection<String> replacements = fieldReplacements.get(fieldToLoad);
 				if (!replacements.isEmpty()) {
 					fieldsToLoad.remove(fieldToLoad);
-					fields.addAll(replacements);
+					fieldsToLoad.addAll(replacements);
 				}
 			}
 		}
