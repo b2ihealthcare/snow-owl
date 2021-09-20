@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -34,8 +37,15 @@ public class SnomedCoreConfiguration {
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	
 	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
-	public static final String MAXIMUM_REASONER_COUNT = "maxReasonerCount";
 	public static final String MAXIMUM_REASONER_RUNS = "maxReasonerRuns";
+	
+	@Min(1)
+	@Max(3)
+	private int maxReasonerCount = DEFAULT_MAXIMUM_REASONER_COUNT;
+	
+	@Min(1)
+	@Max(1_000_000)
+	private int maxReasonerRuns = DEFAULT_MAXIMUM_REASONER_RUNS;
 	
 	public static final String NAMESPACE_AND_MODULE_ASSIGNER = "namespaceModuleAssigner";
 	public static final String DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER = "default";
@@ -60,6 +70,37 @@ public class SnomedCoreConfiguration {
 	
 	private boolean concreteDomainSupport = false;
 	
+	
+	/**
+	 * @return the number of reasoners that are permitted to run simultaneously.
+	 */
+	@JsonProperty
+	public int getMaxReasonerCount() {
+		return maxReasonerCount;
+	}
+	
+	/**
+	 * @param maxReasonerCount the maxReasonerCount to set
+	 */
+	@JsonProperty
+	public void setMaxReasonerCount(int maxReasonerCount) {
+		this.maxReasonerCount = maxReasonerCount;
+	}
+	
+	/**
+	 * @return the number of classification run details to preserve. Details include inferred and redundant 
+	 *         relationships, the list of equivalent concepts found during classification, and job metadata
+	 *         (creation, start and end times, final state, requesting user). 
+	 */
+	@JsonProperty
+	public int getMaxReasonerRuns() {
+		return maxReasonerRuns;
+	}
+	
+	@JsonProperty
+	public void setMaxReasonerRuns(int maxReasonerRuns) {
+		this.maxReasonerRuns = maxReasonerRuns;
+	}
 	
 	@JsonProperty("concreteDomainSupport")
 	public boolean isConcreteDomainSupported() {

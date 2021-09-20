@@ -90,6 +90,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		final String repositoryId = context.info().id();
 		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
+		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 		
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 		
@@ -103,11 +104,8 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				
 		TerminologyResource resource = context.service(TerminologyResource.class);
 		
-		int maxReasonerCount = (int) resource.getSettings().getOrDefault(SnomedCoreConfiguration.MAXIMUM_REASONER_COUNT,
-				SnomedCoreConfiguration.DEFAULT_MAXIMUM_REASONER_COUNT);
-		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
-				maxReasonerCount,
+				config.getMaxReasonerCount(), 
 				repositoryId, 
 				branch.path());
 
