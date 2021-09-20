@@ -35,6 +35,12 @@ public class OpenAPIExtensions {
 	 */
 	public static final String B2I_OPENAPI_X_INTERACTION = "x-interaction";
 	public static final String B2I_OPENAPI_INTERACTION_READ = "read";
+	public static final String B2I_OPENAPI_INTERACTION_VREAD = "vread";
 	public static final String B2I_OPENAPI_INTERACTION_CREATE = "create";
+	public static final String B2I_OPENAPI_INTERACTION_UPDATE = "update";
+	public static final String B2I_OPENAPI_INTERACTION_DELETE = "delete";
+	public static final String B2I_OPENAPI_INTERACTION_HISTORY_INSTANCE = "history-instance";
+	public static final String B2I_OPENAPI_INTERACTION_HISTORY_TYPE = "history-type";
+	public static final String B2I_OPENAPI_INTERACTION_SEARCH_TYPE = "search-type";
 
 }

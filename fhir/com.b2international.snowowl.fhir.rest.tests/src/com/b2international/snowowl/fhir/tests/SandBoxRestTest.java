@@ -19,6 +19,7 @@ import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODE
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -70,6 +72,21 @@ public class SandBoxRestTest extends FhirRestTest {
 				.clearResources(true))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
+	
+	
+	@Test
+	public void capabilityStatementTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when().get("metadata")
+			.prettyPeek()
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("CapabilityStatement"))
+			.body("rest[0]", notNullValue())
+			.body("rest[0].resource[0]", notNullValue());
+			
+	}
 	
 	//@Test
 	public void createCodeSystem() throws Exception {

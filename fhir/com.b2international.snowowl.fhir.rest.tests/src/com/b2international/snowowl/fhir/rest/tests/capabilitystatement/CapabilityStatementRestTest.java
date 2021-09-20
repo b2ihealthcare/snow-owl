@@ -32,7 +32,7 @@ import static org.hamcrest.CoreMatchers.*;
 public class CapabilityStatementRestTest extends FhirRestTest {
 	
 	@Test
-	public void capabilityStatememntTest() {
+	public void capabilityStatementTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get("metadata")
 			.then()

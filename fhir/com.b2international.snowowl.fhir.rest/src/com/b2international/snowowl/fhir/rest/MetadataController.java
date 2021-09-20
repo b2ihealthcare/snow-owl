@@ -273,7 +273,7 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 				
 				Map<String, String> interactionMap = (Map<String, String>) operationExtensionMap.get(B2I_OPENAPI_X_INTERACTION);
 				
-				List<Interaction> interactions = interactionMap.keySet().stream().map(k -> {
+				interactionMap.keySet().forEach(k -> {
 				
 					Interaction.Builder interactionBuilder = Interaction.builder()
 						.code((String) k);
@@ -283,12 +283,9 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 					if (value != null && !((String) value).isEmpty()) {
 						interactionBuilder.documentation((String) value);
 					}
-					return interactionBuilder.build();
-				}).collect(Collectors.toList());
-			
-				resourceBuilder.interactions(interactions);
+					resourceBuilder.addInteraction(interactionBuilder.build());
+				});
 			}
-				
 			return resourceBuilder.build();
 		}).collect(Collectors.toList());
 		
