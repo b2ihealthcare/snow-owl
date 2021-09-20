@@ -41,12 +41,10 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	// CodeSystem API
 	
-	/*
 	FhirCodeSystemApiTest.class,
 	FhirCodeSystemLookupOperationTest.class,
 	FhirCodeSystemSubsumesOperationTest.class,
 	FhirCodeSystemValidateCodeOperationTest.class,
-	*/
 	
 	// ValueSet API
 //	SnomedValueSetRestTest.class,
