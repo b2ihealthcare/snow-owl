@@ -19,13 +19,12 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import com.b2international.index.query.Query;
-import com.google.common.base.Strings;
 
 /**
- * @since 6.0
- * @param <T> - the type of scrolled documents
+ * @since 6.0 (as ScrollingIterator)
+ * @param <T> - the type of paged documents
  */
-public final class ScrollingIterator<T> implements Iterator<Hits<T>> {
+public final class SearchAfterIterator<T> implements Iterator<Hits<T>> {
 
 	private final Searcher searcher;
 	private final Query<T> query;
@@ -33,14 +32,9 @@ public final class ScrollingIterator<T> implements Iterator<Hits<T>> {
 	private Hits<T> hits;
 	private boolean done;
 
-	public ScrollingIterator(Searcher searcher, Query<T> query) {
+	public SearchAfterIterator(Searcher searcher, Query<T> query) {
 		this.searcher = searcher;
 		this.query = query;
-		
-		// ensure we have defined scroll keep alive value
-		if (Strings.isNullOrEmpty(query.getScrollKeepAlive())) {
-			query.setScrollKeepAlive(Query.DEFAULT_SCROLL_KEEP_ALIVE);
-		}
 	}
 	
 	@Override
@@ -51,17 +45,18 @@ public final class ScrollingIterator<T> implements Iterator<Hits<T>> {
 		}
 		
 		try {
-			if (hits == null) {
-				hits = searcher.search(query);
-			} else {
-				hits = searcher.scroll(new Scroll<>(query.getSelection(), query.getFields(), hits.getScrollId(), query.getScrollKeepAlive()));
-			}
+			
+			final Query<T> queryForPage = (hits == null) 
+				? query 
+				: query.withSearchAfter(hits.getSearchAfter()).build();
+			
+			hits = searcher.search(queryForPage);
+			
 		} catch (IOException e) {
-			throw new IndexException("Failed to load next page of scrolled documents", e);
+			throw new IndexException("Failed to load next page of documents", e);
 		}
 		
 		if (!hits.iterator().hasNext()) {
-			searcher.cancelScroll(hits.getScrollId());
 			hits = null;
 			done = true;
 			return false;
