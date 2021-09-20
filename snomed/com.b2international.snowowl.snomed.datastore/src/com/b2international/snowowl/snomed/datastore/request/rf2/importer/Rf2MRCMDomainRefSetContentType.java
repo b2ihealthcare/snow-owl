@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.MRCM_DOMAIN_HEADER;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.*;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
@@ -52,7 +45,7 @@ final class Rf2MRCMDomainRefSetContentType implements Rf2RefSetContentType {
 				.put(FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, values[9]) 
 				.put(FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, values[10])
 				.put(FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, values[11])
-				.put(FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, values[12])
+				.put(FIELD_MRCM_GUIDEURL, values[12])
 				.build()
 		);
 	}

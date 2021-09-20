@@ -30,16 +30,23 @@ import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedRelationshipConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 4.5
  */
 final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest<SnomedRelationships, SnomedRelationshipIndexEntry> {
+
+	private static final Multimap<String, String> REPLACE_VALUE_FIELD = ImmutableMultimap.<String, String>builder()
+			.putAll(SnomedRelationship.Fields.VALUE, SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE, SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE, SnomedRelationshipIndexEntry.Fields.STRING_VALUE, SnomedRelationshipIndexEntry.Fields.VALUE_TYPE)
+			.build();
 
 	enum OptionKey {
 		SOURCE,
@@ -61,6 +68,11 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 	@Override
 	protected Class<SnomedRelationshipIndexEntry> getDocumentType() {
 		return SnomedRelationshipIndexEntry.class;
+	}
+	
+	@Override
+	protected Multimap<String, String> collectFieldsToLoadReplacements() {
+		return REPLACE_VALUE_FIELD;
 	}
 	
 	@Override

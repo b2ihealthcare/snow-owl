@@ -91,11 +91,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
 		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
 		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+		public static final String VALUE = SnomedRf2Headers.FIELD_VALUE;
 		
-		public static final String VALUE_TYPE = SnomedRelationshipIndexEntry.Fields.VALUE_TYPE;
-		public static final String INTEGER_VALUE = SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE;
-		public static final String DECIMAL_VALUE = SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE;
-		public static final String STRING_VALUE = SnomedRelationshipIndexEntry.Fields.STRING_VALUE;
 		public static final String UNION_GROUP = SnomedRelationshipIndexEntry.Fields.UNION_GROUP;
 
 		public static final Set<String> ALL = ImmutableSet.of(
@@ -106,16 +103,13 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			MODULE_ID,
 			SOURCE_ID,
 			DESTINATION_ID,
-			INTEGER_VALUE,
-			DECIMAL_VALUE,
-			STRING_VALUE,
+			VALUE,
 			RELATIONSHIP_GROUP,
 			UNION_GROUP,
 			TYPE_ID,
 			CHARACTERISTIC_TYPE_ID,
 			MODIFIER_ID,
 			// additional fields
-			VALUE_TYPE,
 			RELEASED);
 	}
 	

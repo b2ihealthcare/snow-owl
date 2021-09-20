@@ -440,7 +440,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 						.withProximalPrimitiveRefinement((String) properties.get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT))
 						.withDomainTemplateForPrecoordination((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION))
 						.withDomainTemplateForPostcoordination((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION))
-						.withEditorialGuideReference((String) properties.get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE));
+						.withGuideURL((String) properties.get(SnomedRf2Headers.FIELD_MRCM_GUIDEURL));
 				break;
 			case MRCM_ATTRIBUTE_DOMAIN:
 				builder = SnomedComponents.newMRCMAttributeDomainReferenceSetMember()
