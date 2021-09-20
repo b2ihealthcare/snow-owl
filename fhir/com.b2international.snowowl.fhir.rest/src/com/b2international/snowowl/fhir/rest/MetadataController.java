@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMappi
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind;
 import com.b2international.snowowl.fhir.core.codesystems.OperationKind;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
@@ -68,8 +69,8 @@ import io.swagger.v3.oas.models.media.Schema;
  * @since 8.0.0
  */
 @Tag(description="CapabilityStatement", name = "CapabilityStatement", extensions = 
-	@Extension(name = MetadataController.B2I_OPENAPI_X_NAME, properties = { 
-		  @ExtensionProperty(name = MetadataController.B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CapabilityStatement")
+	@Extension(name = B2I_OPENAPI_X_NAME, properties = { 
+		  @ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CapabilityStatement")
 	}))
 @RestController
 @RequestMapping(value="/", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
@@ -102,13 +103,6 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 		}
 	}
 	
-	//TODO: Move these to some root-level class
-	public static final String B2I_OPENAPI_X_NAME = "x-b2i-fhir";
-	public static final String B2I_OPENAPI_PROFILE = "profile";
-	
-	public static final String B2I_OPENAPI_X_INTERACTION = "x-interaction";
-	public static final String B2I_OPENAPI_INTERACTION_READ = "read";
-		
 	
 	@Autowired
 	private ObjectMapper objectMapper;

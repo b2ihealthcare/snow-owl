@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -71,22 +70,6 @@ public class SandBoxRestTest extends FhirRestTest {
 				.clearResources(true))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
-	
-	@Test
-	public void metadataTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.when().get("metadata")
-			.prettyPrint();
-	}
-	
-	@Test
-	public void operationDefinitionTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.when()
-			.get("OperationDefinition/CodeSystem$lookup")
-			.prettyPrint();
-	}
-	
 	
 	//@Test
 	public void createCodeSystem() throws Exception {

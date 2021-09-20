@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
+
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,8 @@ import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +49,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  * @since 8.0
  */
-@Tag(description = "CodeSystem", name = "CodeSystem")
+@Tag(description = "CodeSystem", name = "CodeSystem", extensions = 
+@Extension(name = B2I_OPENAPI_X_NAME, properties = { 
+		  @ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CodeSystem")
+	}))
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemController extends AbstractFhirResourceController<CodeSystem> {
@@ -55,6 +62,16 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		return CodeSystem.class;
 	}
 	
+	@Operation(
+			summary="Create a code system",
+			description="Create a FHIR code system.", 
+		
+			extensions = {
+					@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+						@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create a code system"),
+					}),
+				}
+		)
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	//@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {
@@ -163,7 +180,13 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	 */
 	@Operation(
 		summary="Retrieve all code systems",
-		description="Returns a collection of the supported code systems."
+		description="Returns a collection of the supported code systems.", 
+	
+		extensions = {
+				@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+					@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_READ, value = "Read code systems"),
+				}),
+			}
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),

@@ -22,6 +22,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.rest.tests.batch.FhirBatchApiRestTest;
+import com.b2international.snowowl.fhir.rest.tests.capabilitystatement.CapabilityStatementRestTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemApiTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemLookupOperationTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemSubsumesOperationTest;
@@ -39,10 +40,13 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	// CodeSystem API
+	
+	/*
 	FhirCodeSystemApiTest.class,
 	FhirCodeSystemLookupOperationTest.class,
 	FhirCodeSystemSubsumesOperationTest.class,
 	FhirCodeSystemValidateCodeOperationTest.class,
+	*/
 	
 	// ValueSet API
 //	SnomedValueSetRestTest.class,
@@ -54,6 +58,10 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	
 	//Batch
 //	FhirBatchApiRestTest.class,
+	
+	//CapabilityStatement
+	CapabilityStatementRestTest.class
+	
 })
 public class AllFhirRestTests {
 	
