@@ -24,7 +24,8 @@ import org.elasticsearch.action.bulk.BulkProcessor.Builder;
 import org.elasticsearch.action.bulk.BulkProcessor.Listener;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.*;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -81,16 +82,6 @@ public final class EsTcpClient extends EsClientBase {
 	@Override
 	public SearchResponse search(SearchRequest req) throws IOException {
 		return execute(client.search(req));
-	}
-
-	@Override
-	public SearchResponse scroll(SearchScrollRequest req) throws IOException {
-		return execute(client.searchScroll(req));
-	}
-
-	@Override
-	public ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
-		return execute(client.clearScroll(req));
 	}
 
 	@Override
