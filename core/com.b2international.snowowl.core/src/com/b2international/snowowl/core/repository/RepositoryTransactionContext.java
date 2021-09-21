@@ -27,7 +27,6 @@ import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
-import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
@@ -293,6 +292,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	@Override
 	public void clearContents() {
 		final Index index = service(Index.class);
+		final RevisionSearcher revisionSearcher = service(RevisionSearcher.class);
 		final IndexAdmin indexAdmin = index.admin();
 		final Mappings mappings = indexAdmin.mappings();
 		
@@ -301,24 +301,19 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			.filter(t -> Revision.class.isAssignableFrom(t));
 		
 		revisionTypes.forEach(type -> {
-
-			final Query<String> idQuery = Query.select(String.class)
+			Query.select(String.class)
 				.from(type)
 				.fields(Revision.Fields.ID)
 				.where(Expressions.matchAll())
-				.scroll()
-				.build();
-			
-			final RevisionSearcher revisionSearcher = service(RevisionSearcher.class);
-			final Iterable<Hits<String>> batches = revisionSearcher.scroll(idQuery);
-			
-			for (final Hits<String> ids : batches) {
-				final Iterable<?> revisions = fetchComponents(ids.getHits(), type);
-				revisions.forEach(rev -> {
-					final String revisionId = ((Revision) rev).getId();
-					staging.stageRemove(revisionId, rev);	
+				.build()
+				.stream(revisionSearcher)
+				.forEachOrdered(ids -> {
+					final Iterable<?> revisions = fetchComponents(ids.getHits(), type);
+					revisions.forEach(rev -> {
+						final String revisionId = ((Revision) rev).getId();
+						staging.stageRemove(revisionId, rev);	
+					});
 				});
-			}
 		});
 	}
 	

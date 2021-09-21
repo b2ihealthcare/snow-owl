@@ -546,7 +546,7 @@ final class SnomedEclRefinementEvaluator {
 		final Set<Property> axiomProperties = newHashSet();
 		
 		context.service(RevisionSearcher.class)
-			.scroll(activeAxiomStatementsQuery)
+			.stream(activeAxiomStatementsQuery)
 			.forEach(chunk -> {
 				chunk.stream()
 					.filter(owlMember -> !CompareUtils.isEmpty(owlMember.getClassAxiomRelationships()))

@@ -143,7 +143,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		for (ComponentCategory category : issueComponentIdsByComponentCategory.keySet()) {
 			final Query<String[]> query = buildQuery(category, issueComponentIdsByComponentCategory.get(category));
 			
-			for (Hits<String[]> hits : searcher.scroll(query)) {
+			query.stream(searcher).forEachOrdered(hits -> {
 				for (String[] hit : hits) {
 					String id = hit[0];
 					String status = hit[1];
@@ -168,7 +168,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 						}
 					});
 				}
-			}
+			});
 		}
 		
 		if (!issueIdsByConceptIds.isEmpty()) {
@@ -179,14 +179,14 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					.limit(SCROLL_SIZE)
 					.build();
 			
-			for (Hits<String[]> hits : searcher.scroll(conceptStatusQuery)) {
-				for (String[] hit : hits) {
+			conceptStatusQuery.stream(searcher)
+				.flatMap(Hits::stream)
+				.forEachOrdered(hit -> {
 					Collection<String> issueIds = issueIdsByConceptIds.get(hit[0]);
 					issueIds.stream().forEach(id -> {
 						issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.setDetails(CONCEPT_STATUS, hit[1]));
 					});
-				}
-			}
+				});
 		}
 	}
 	
@@ -208,7 +208,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final Builder<String, ValidationIssue> issuesByConceptId = ImmutableMultimap.builder();
 		conceptIssues.forEach(issue -> issuesByConceptId.put(issue.getAffectedComponent().getComponentId(), issue));
 		
-		searcher.scroll(Query.select(String[].class)
+		searcher.stream(Query.select(String[].class)
 				.from(SnomedRefSetMemberIndexEntry.class)
 				.fields(SnomedRefSetMemberIndexEntry.Fields.ID,
 						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
@@ -298,7 +298,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 
 		final Map<String, String> relationshipFragmentsByRelationshipId= Maps.newHashMap(); 
 		
-		searcher.scroll(Query.select(String[].class)
+		searcher.stream(Query.select(String[].class)
 			.from(SnomedRelationshipIndexEntry.class)
 			.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.TYPE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 			.where(SnomedRelationshipIndexEntry.Expressions.ids(issuesByRelationshipId.keySet()))
