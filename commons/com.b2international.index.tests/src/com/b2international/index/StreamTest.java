@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
@@ -36,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 6.0.0
  */
-public class ScrollTest extends BaseIndexTest {
+public class StreamTest extends BaseIndexTest {
 
 	private static final int NUM_DOCS = 10_000;
 	
@@ -48,7 +47,7 @@ public class ScrollTest extends BaseIndexTest {
 	}
 
 	@Test
-	public void localScroll() throws Exception {
+	public void localStream() throws Exception {
 		indexDocs(20_000);
 
 		Stopwatch w = Stopwatch.createStarted();
@@ -56,7 +55,7 @@ public class ScrollTest extends BaseIndexTest {
 				.where(Expressions.matchAll())
 				.limit(Integer.MAX_VALUE)
 				.build());
-		System.err.println("ReturnAllHitsWithLocalScroll took " + w);
+		System.err.println("localStream took " + w);
 		assertThat(hits).hasSize(20_000);
 	}
 	
@@ -80,7 +79,7 @@ public class ScrollTest extends BaseIndexTest {
 				.where(Expressions.matchAll())
 				.limit(NUM_DOCS)
 				.build());
-		System.err.println("ReturnAllHitsWithLimit took " + w);
+		System.err.println("searchAndReturnAllHitsWithLimit took " + w);
 		assertThat(hits).hasSize(NUM_DOCS);
 	}
 	
@@ -95,46 +94,24 @@ public class ScrollTest extends BaseIndexTest {
 				.where(Expressions.matchAll())
 				.limit(NUM_DOCS)
 				.build());
-		System.err.println("ReturnAllPartialHitsWithLimit took " + w);
+		System.err.println("searchAndReturnAllPartialHits took " + w);
 		assertThat(hits).hasSize(NUM_DOCS);
 	}
 	
 	@Test
-	public void searchAndReturnAllHitsWithScroll() throws Exception {
+	public void searchAndReturnAllHitsWithStream() throws Exception {
 		indexDocs(NUM_DOCS);
-		// return all hits within the first page
 		List<Data> hits = newArrayListWithExpectedSize(NUM_DOCS);
 		
 		Stopwatch w = Stopwatch.createStarted();
-		Iterable<Hits<Data>> scroll = scroll(Query.select(Data.class)
-				.where(Expressions.matchAll())
-				.limit(1000)
-				.build());
- 		
- 		for (Hits<Data> scrollHits : scroll) {
-			hits.addAll(scrollHits.getHits());
-		}
- 		
- 		System.err.println("ReturnAllHitsWithScroll took " + w);
+		final Query<Data> query = Query.select(Data.class)
+			.where(Expressions.matchAll())
+			.limit(1000)
+			.build();
+		
+		stream(query).forEachOrdered(page -> hits.addAll(page.getHits()));
+ 		System.err.println("searchAndReturnAllHitsWithStream took " + w);
 		assertThat(hits).hasSize(NUM_DOCS);
-	}
-	
-	@Test(expected = SearchContextMissingException.class)
-	@Ignore("slows down test suite; scroll context invalidation is non-deterministic")
-	public void scrollTimeout() throws Exception {
-		indexDocs(NUM_DOCS);
-		
-		Iterable<Hits<Data>> scroll = scroll(Query.select(Data.class)
-				.where(Expressions.matchAll())
-				.scroll("500ms")
-				.limit(100)
-				.build());
-		
- 		for (Hits<Data> scrollHits : scroll) {
-			scrollHits.getHits();
-			Thread.sleep(1000L);
-			System.out.print(".");
-		}
 	}
 	
 	private void indexDocs(int numberOfDocs) {

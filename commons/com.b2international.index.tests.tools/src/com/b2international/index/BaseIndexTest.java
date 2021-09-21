@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.Rule;
 
@@ -116,8 +117,8 @@ public abstract class BaseIndexTest {
 		});
 	}
 	
-	protected final <T> Iterable<Hits<T>> scroll(final Query<T> query) {
-		return index().read(index -> index.scroll(query));
+	protected final <T> Stream<Hits<T>> stream(final Query<T> query) {
+		return index().read(index -> index.stream(query));
 	}
 	
 	protected void assertDocEquals(Object expected, Object actual) {
