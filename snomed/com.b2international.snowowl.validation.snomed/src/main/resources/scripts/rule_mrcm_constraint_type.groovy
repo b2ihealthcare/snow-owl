@@ -182,19 +182,17 @@ if (params.isUnpublishedOnly) {
 				.filter(SnomedRelationshipIndexEntry.Expressions.typeId(typeExpression)) //Assuming single id attribute expressions
 				.mustNot(SnomedRelationshipIndexEntry.Expressions.sourceIds(getCachedApplicableConcepts(domainExpression)))
 		
-		final Query<String> query = Query.select(String.class)
+		Query.select(String.class)
 				.from(SnomedRelationshipIndexEntry.class)
 				.fields(SnomedRelationshipIndexEntry.Fields.ID)
 				.where(expressionBuilder.build())
 				.limit(10_000)
-				.scroll("2m")
 				.build()
-		
-		searcher.scroll(query).forEach({ hits ->
-			hits.forEach({ id ->
-				issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
-			})
-		})
+				.stream(searcher)
+				.flatMap({ it.stream() })
+				.forEachOrdered({ id ->
+					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
+				})
 	}
 	
 	def allowedTypeIds = new HashSet(mrcmRulesByAttributeType.keySet())
@@ -209,14 +207,12 @@ if (params.isUnpublishedOnly) {
 		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(expressionBuilder.build())
 		.limit(10_000)
-		.scroll("2m")
 		.build()
-	
-	searcher.scroll(query).forEach({ hits ->
-		hits.forEach({ id ->
+		.stream(searcher)
+		.flatMap({ it.stream() })
+		.forEachOrdered({ id ->
 			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
 		})
-	})
 	
 	//OWL axiom member search based checks
 	for (String typeExpression : mrcmRulesByAttributeType.keySet()) {
@@ -240,19 +236,17 @@ if (params.isUnpublishedOnly) {
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(Collections.singleton(typeExpression)))
 				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(getCachedApplicableConcepts(domainExpression)))
 		
-		final Query<String> owlMemberQuery = Query.select(String.class)
+		Query.select(String.class)
 				.from(SnomedRefSetMemberIndexEntry.class)
 				.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 				.where(owlMemberExpressionBuilder.build())
 				.limit(10_000)
-				.scroll("2m")
 				.build()
-		
-		searcher.scroll(owlMemberQuery).forEach({ hits ->
-			hits.forEach({ id ->
-				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
-			})
-		})
+				.stream(searcher)
+				.flatMap({ it.stream() })
+				.forEachOrdered({ id ->
+					issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
+				})
 	}
 	
 	def allowedTypeIdsForOwlRelationships = mrcmRulesByAttributeType.keySet()
@@ -273,19 +267,17 @@ if (params.isUnpublishedOnly) {
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
 		.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(allowedTypeIdsForOwlRelationships))
 	
-	final Query<String> owlMemberQuery = Query.select(String.class)
+	Query.select(String.class)
 		.from(SnomedRefSetMemberIndexEntry.class)
 		.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 		.where(owlMemberExpressionBuilder.build())
 		.limit(10_000)
-		.scroll("2m")
 		.build()
-	
-	searcher.scroll(owlMemberQuery).forEach({ hits ->
-		hits.forEach({ id ->
+		.stream(searcher)
+		.flatMap({ it.stream() })
+		.forEachOrdered({ id ->
 			issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
 		})
-	})
 }
 
 return issues as List
