@@ -15,38 +15,30 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * @since 8.0
  */
-final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueSet> {
+final class FhirValueSetValidateCodeRequest implements Request<ServiceProvider, ValidateCodeResult> {
 
 	private static final long serialVersionUID = 1L;
 	
-	@NotNull
-	@Valid
-	@JsonProperty
-	@JsonUnwrapped
-	private ExpandValueSetRequest request;
+	private final ValidateCodeRequest request;
 
-	public FhirValueSetExpandRequest(ExpandValueSetRequest request) {
+	public FhirValueSetValidateCodeRequest(ValidateCodeRequest request) {
 		this.request = request;
 	}
 	
 	@Override
-	public ValueSet execute(ServiceProvider context) {
+	public ValidateCodeResult execute(ServiceProvider context) {
 		final ValueSet valueSet = FhirRequests.valueSets().prepareGet(request.getUrl().getUriValue()).buildAsync().execute(context);
-		return context.optionalService(FhirValueSetExpander.class).orElse(FhirValueSetExpander.NOOP).expand(context, valueSet);
+		return context.optionalService(FhirValueSetCodeValidator.class).orElse(FhirValueSetCodeValidator.NOOP).validateCode(context, valueSet, request);
 	}
 
 }

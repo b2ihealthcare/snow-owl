@@ -16,22 +16,25 @@
 package com.b2international.snowowl.fhir.core.request.valueset;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 
 /**
  * @since 8.0
  */
 @FunctionalInterface
-public interface FhirValueSetExpander {
+public interface FhirValueSetCodeValidator {
 
-	FhirValueSetExpander NOOP = (context, valueSet) -> valueSet;
+	FhirValueSetCodeValidator NOOP = (context, valueSet, request) -> ValidateCodeResult.builder().message("N/A").build();
 	
 	/**
-	 * Expands a FHIR {@link ValueSet}'s compose definition into a list of member codes and terms (aka concepts) and returns the expanded {@link ValueSet}.
+	 * Validates whether the given Value Set conforms to the given {@link ValidateCodeRequest} or not.
 	 * @param context
 	 * @param valueSet
-	 * @return the expanded {@link ValueSet}, never <code>null</code>.
+	 * @param request
+	 * @return the code validation result, never <code>null</code>.
 	 */
-	ValueSet expand(ServiceProvider context, ValueSet valueSet);
+	ValidateCodeResult validateCode(ServiceProvider context, ValueSet valueSet, ValidateCodeRequest request);
 	
 }

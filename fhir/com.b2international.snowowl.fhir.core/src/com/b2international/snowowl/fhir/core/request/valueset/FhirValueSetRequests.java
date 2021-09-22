@@ -31,5 +31,9 @@ public class FhirValueSetRequests {
 	public FhirValueSetExpandRequestBuilder prepareExpand() {
 		return new FhirValueSetExpandRequestBuilder();
 	}
+
+	public FhirValueSetValidateCodeRequestBuilder prepareValidateCode() {
+		return new FhirValueSetValidateCodeRequestBuilder();
+	}
 	
 }
