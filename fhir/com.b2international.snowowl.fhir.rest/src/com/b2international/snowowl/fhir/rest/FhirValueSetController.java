@@ -41,7 +41,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @since 6.4
  */
 @Tag(description = "ValueSet", name = "ValueSet")
-@RestController //no need for method level @ResponseBody annotations
+@RestController
 @RequestMapping(value="/ValueSet", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirValueSetController extends AbstractFhirResourceController<ValueSet> {
 	
@@ -106,102 +106,6 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 				.execute(getBus());
 	}
 	
-//	/**
-//	 * HTTP Get request to expand the value set to return its members.
-//	 * @param valueSetId
-//	 * @return expanded {@link ValueSet}
-//	 */
-//	@Operation(
-//		summary="Expand a value set",
-//		description="Expand a value set specified by its logical id."
-//	)
-//	@ApiResponses({
-//		@ApiResponse(responseCode = "200", description = "OK"),
-//		@ApiResponse(responseCode = "400", description = "Bad request"),
-//		@ApiResponse(responseCode = "404", description = "Value set not found")
-//	})
-//	@RequestMapping(value="/{valueSetId:**}/$expand", method=RequestMethod.GET)
-//	public ValueSet expand(@Parameter(description = "The id of the value set to expand") @PathVariable("valueSetId") String valueSetId) {
-//		
-//		ComponentURI componentURI = ComponentURI.of(valueSetId);
-//		
-//		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, componentURI);
-//		ValueSet valueSet = valueSetProvider.expandValueSet(componentURI);
-//		
-//		applyEmptyContentFilter(valueSet);
-//		return valueSet;
-//	}
-//	
-//	/**
-//	 * HTTP Get request to expand a value set specified by its URL
-//	 * @param url
-//	 * @return expanded {@link ValueSet}
-//	 */
-//	@Operation(
-//		summary="Expand a value set",
-//		description="Expand a value set specified by its url."
-//	)
-//	@ApiResponses({
-//		@ApiResponse(responseCode = "200", description = "OK"),
-//		@ApiResponse(responseCode = "400", description = "Bad request"),
-//		@ApiResponse(responseCode = "404", description = "Value set not found")
-//	})
-//	@RequestMapping(value="/$expand", method=RequestMethod.GET)
-//	public ValueSet expandByURL(
-//			@Parameter(description = "Canonical URL of the value set") @RequestParam(value="url") final String url) {
-//		
-//		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, url);
-//		ValueSet valueSet = valueSetProvider.expandValueSet(url);
-//		
-//		applyEmptyContentFilter(valueSet);
-//		return valueSet;
-//	}
-//	
-//	/**
-//	 * HTTP Post request to expand a value set
-//	 * @param body - FHIR parameters
-//	 * @return expanded {@link ValueSet}
-//	 */
-//	@Operation(
-//		summary="Expand a value set",
-//		description="Expand a value set specified by a request body."
-//	)
-//	@ApiResponses({
-//		@ApiResponse(responseCode = "200", description = "OK"),
-//		@ApiResponse(responseCode = "400", description = "Bad request"),
-//		@ApiResponse(responseCode = "404", description = "Value set not found")
-//	})
-//	@RequestMapping(value="/$expand", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-//	public ValueSet expandBodyRequest(
-//			@Parameter(description = "The lookup request parameters")
-//			@RequestBody 
-//			Parameters.Fhir body) {
-//		
-//		final ExpandValueSetRequest request = toRequest(body, ExpandValueSetRequest.class);
-//		
-//		if (request.getUrl() == null && request.getValueSet() == null) {
-//			throw new BadRequestException("Both URL and ValueSet parameters are null.", "ExpandValueSetRequest");
-//		}
-//
-//		if (request.getUrl() == null || request.getUrl().getUriValue() == null) {
-//			throw new BadRequestException("Expand request URL is not defined.", "ExpandValueSetRequest");
-//		}
-//		
-//		if (request.getUrl() != null && 
-//				request.getValueSet() != null && 
-//				request.getUrl().getUriValue() != null &&
-//				request.getValueSet().getUrl().getUriValue() != null &&
-//				!request.getUrl().getUriValue().equals(request.getValueSet().getUrl().getUriValue())) {
-//			throw new BadRequestException("URL and ValueSet.URL parameters are different.", "ExpandValueSetRequest");
-//		}
-//		
-//		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, request.getUrl().getUriValue());
-//		ValueSet valueSet = valueSetProvider.expandValueSet(request);
-//		
-//		applyEmptyContentFilter(valueSet);
-//		
-//		return valueSet;
-//	}
 //	
 //	/**
 //	 * HTTP Get request to validate that a coded value is in the set of codes allowed by a value set.

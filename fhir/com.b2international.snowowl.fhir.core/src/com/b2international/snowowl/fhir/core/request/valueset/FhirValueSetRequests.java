@@ -27,5 +27,9 @@ public class FhirValueSetRequests {
 	public FhirValueSetGetRequestBuilder prepareGet(String idOrUrl) {
 		return new FhirValueSetGetRequestBuilder(idOrUrl);
 	}
+
+	public FhirValueSetExpandRequestBuilder prepareExpand() {
+		return new FhirValueSetExpandRequestBuilder();
+	}
 	
 }

@@ -13,27 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.request.conceptmap;
+package com.b2international.snowowl.fhir.core.request.valueset;
 
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap.Builder;
-import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 
 /**
  * @since 8.0
  */
-public final class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<ConceptMap.Builder, ConceptMap> {
+@FunctionalInterface
+public interface FhirValueSetExpander {
 
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	protected String getResourceType() {
-		return "conceptmaps";
-	}
+	FhirValueSetExpander NOOP = valueSet -> valueSet;
 	
-	@Override
-	protected Builder createResourceBuilder() {
-		return ConceptMap.builder();
-	}
+	/**
+	 * Expands a FHIR {@link ValueSet}'s compose definition into a list of member codes and terms (aka concepts) and returns the expanded {@link ValueSet}.
+	 * @param valueSet
+	 * @return the expanded {@link ValueSet}, never <code>null</code>.
+	 */
+	ValueSet expand(ValueSet valueSet);
 	
 }
