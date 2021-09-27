@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequestBuilder;
 
 /**
@@ -28,6 +31,31 @@ public final class FhirCodeSystemSearchRequestBuilder extends FhirResourceSearch
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Bundle> createSearch() {
 		return new FhirCodeSystemSearchRequest();
+	}
+	
+	@Override
+	protected Set<String> getKnownResourceFields() {
+		return CodeSystem.Fields.ALL;
+	}
+	
+	@Override
+	protected Set<String> getMandatoryFields() {
+		return CodeSystem.Fields.MANDATORY;
+	}
+	
+	@Override
+	protected Set<String> getSummaryFields() {
+		return CodeSystem.Fields.SUMMARY;
+	}
+	
+	@Override
+	protected Set<String> getSummaryTextFields() {
+		return CodeSystem.Fields.SUMMARY_TEXT;
+	}
+	
+	@Override
+	protected Set<String> getSummaryDataFields() {
+		return CodeSystem.Fields.SUMMARY_DATA;
 	}
 
 }

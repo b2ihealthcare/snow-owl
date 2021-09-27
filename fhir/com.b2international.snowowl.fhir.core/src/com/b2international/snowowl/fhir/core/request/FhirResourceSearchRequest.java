@@ -160,6 +160,9 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 						.build());
 	}
 
+	/**
+	 * @return the Snow Owl resource type representation to search for the appropriate documents in the underlying index
+	 */
 	protected abstract String getResourceType();
 	
 	protected Set<String> getExternalFhirResourceFields() {
