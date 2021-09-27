@@ -25,6 +25,7 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 8.0
@@ -45,8 +46,14 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 	
 	@Override
 	public ValueSet execute(ServiceProvider context) {
-		final ValueSet valueSet = FhirRequests.valueSets().prepareGet(request.getUrl().getUriValue()).buildAsync().execute(context);
-		return context.optionalService(FhirValueSetExpander.class).orElse(FhirValueSetExpander.NOOP).expand(context, valueSet);
+		final ValueSet valueSet = FhirRequests.valueSets().prepareGet(request.getUrl().getUriValue())
+				.setElements(ImmutableList.<String>builder()
+						.addAll(ValueSet.Fields.MANDATORY)
+						.add(ValueSet.Fields.COMPOSE)
+						.build())
+				.buildAsync()
+				.execute(context);
+		return context.optionalService(FhirValueSetExpander.class).orElse(FhirValueSetExpander.NOOP).expand(context, valueSet, request);
 	}
 
 }
