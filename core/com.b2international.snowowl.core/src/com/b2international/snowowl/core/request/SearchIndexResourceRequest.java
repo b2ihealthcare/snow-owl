@@ -82,7 +82,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		// perform field replacements between known model and index fields, if specified by the subclass
 		final Multimap<String, String> fieldReplacements = collectFieldsToLoadReplacements();
 		if (!fieldReplacements.isEmpty()) {
-			for (String fieldToLoad : fieldsToLoad) {
+			for (String fieldToLoad : List.copyOf(fieldsToLoad)) {
 				Collection<String> replacements = fieldReplacements.get(fieldToLoad);
 				if (!replacements.isEmpty()) {
 					fieldsToLoad.remove(fieldToLoad);
