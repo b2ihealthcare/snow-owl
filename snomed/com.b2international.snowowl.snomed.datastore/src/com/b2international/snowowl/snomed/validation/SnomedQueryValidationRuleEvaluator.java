@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -93,30 +92,30 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		Expression where = expressionBuilder.build();
 		
 		// TODO check if the expression contains only the ID list, then skip scrolling and just report them
+		List issues[] = { null }; 
 		
-		Iterable<Hits<String>> pages = context.service(RevisionSearcher.class).scroll(Query.select(String.class)
-				.from(validationQuery.getDocType())
-				.fields(SnomedDocument.Fields.ID)
-				.where(where)
-				.limit(RULE_LIMIT)
-				.withScores(false)
-				.build());
-		
-		List issues = null; 
-		for (Hits<String> page : pages) {
-			if (issues == null) {
-				issues = newArrayListWithExpectedSize(page.getTotal());
-			}
-			for (String affectedComponentId : page) {
-				String affectedComponentType = SnomedComponent.getTypeSafe(affectedComponentId);
-				if (TerminologyRegistry.UNKNOWN_COMPONENT_TYPE.equals(affectedComponentType)) {
-					affectedComponentType = SnomedReferenceSetMember.TYPE;
+		Query.select(String.class)
+			.from(validationQuery.getDocType())
+			.fields(SnomedDocument.Fields.ID)
+			.where(where)
+			.limit(RULE_LIMIT)
+			.withScores(false)
+			.build()
+			.stream(context.service(RevisionSearcher.class))
+			.forEachOrdered(page -> {
+				if (issues[0] == null) {
+					issues[0] = newArrayListWithExpectedSize(page.getTotal());
 				}
-				issues.add(ComponentIdentifier.of(affectedComponentType, affectedComponentId));
-			}
-		}
+				for (String affectedComponentId : page) {
+					String affectedComponentType = SnomedComponent.getTypeSafe(affectedComponentId);
+					if (TerminologyRegistry.UNKNOWN_COMPONENT_TYPE.equals(affectedComponentType)) {
+						affectedComponentType = SnomedReferenceSetMember.TYPE;
+					}
+					issues[0].add(ComponentIdentifier.of(affectedComponentType, affectedComponentId));
+				}
+			});
 		
-		return issues == null ? Collections.emptyList() : issues;
+		return issues[0] == null ? Collections.emptyList() : issues[0];
 	}
 
 	@Override

@@ -192,18 +192,17 @@ if (params.isUnpublishedOnly) {
 				expressionBuilder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(charType))
 			}
 
-			final Query<String> query = Query.select(String.class)
+			Query.select(String.class)
 					.from(SnomedRelationshipIndexEntry.class)
 					.fields(SnomedRelationshipIndexEntry.Fields.ID)
 					.where(expressionBuilder.build())
 					.limit(10000)
 					.build()
-
-			searcher.scroll(query).forEach({ hits ->
-				hits.forEach({ id ->
-					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
-				})
-			})
+					.stream(searcher)
+					.flatMap({ it.stream() })
+					.forEachOrdered({ id ->
+						issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
+					})
 		}
 	}
 	
@@ -241,18 +240,17 @@ if (params.isUnpublishedOnly) {
 					.should(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.GCI_AXIOM_RELATIONSHIP, nestedBuilder.build()))
 					.setMinimumNumberShouldMatch(1)
 		
-			final Query<String> query = Query.select(String.class)
+			Query.select(String.class)
 					.from(SnomedRefSetMemberIndexEntry.class)
 					.fields(SnomedRelationshipIndexEntry.Fields.ID)
 					.where(expressionBuilder.build())
 					.limit(10_000)
 					.build()
-
-			searcher.scroll(query).forEach({ hits ->
-				hits.forEach({ id ->
-					issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
-				})
-			})
+					.stream(searcher)
+					.flatMap({ it.stream() })
+					.forEachOrdered({ id ->
+						issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
+					})
 		}
 	}
 }

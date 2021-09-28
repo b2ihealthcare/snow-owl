@@ -24,15 +24,15 @@ def Set<ComponentIdentifier> issues = []
 def Supplier<Set<String>> activeConceptIds = Suppliers.memoize({
 	def Set<String> conceptIds = []
 	
-	searcher.scroll(Query.select(String.class)
+	searcher.stream(Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
 		.where(SnomedConceptDocument.Expressions.active())
 		.limit(100_000)
 		.build())
-		.each { Hits<String> conceptBatch ->
+		.forEachOrdered({ Hits<String> conceptBatch ->
 			conceptIds.addAll(conceptBatch.getHits())
-		}
+		})
 	
 	return conceptIds
 })
@@ -42,7 +42,7 @@ if (params.isUnpublishedOnly) {
 	def Multimap<String, String> descriptionsByTerm = HashMultimap.create()
 
 	// load all unpublished FSNs with their terms first	
-	searcher.scroll(Query.select(String[].class)
+	searcher.stream(Query.select(String[].class)
 		.from(SnomedDescriptionIndexEntry.class)
 		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.TERM, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 		.where(
@@ -54,7 +54,7 @@ if (params.isUnpublishedOnly) {
 		)
 		.limit(10_000)
 		.build())
-		.each { Hits<String[]> descriptionsToCheck -> 
+		.forEachOrdered({ Hits<String[]> descriptionsToCheck -> 
 			
 			descriptionsToCheck.each { descriptionToCheck ->
 				if (activeConceptIds.get().contains(descriptionToCheck[2])) {
@@ -62,7 +62,7 @@ if (params.isUnpublishedOnly) {
 				}
 			}
 			
-		}
+		})
 		
 	// then check the duplication between all unpublished terms by checking larger than 1 buckets
 	descriptionsByTerm.keySet().each { term ->
@@ -76,6 +76,7 @@ if (params.isUnpublishedOnly) {
 	}
 	
 	// then scroll through all possible duplicates among published terms
+	// FIXME: is "search" below meant to be "stream"? 
 	searcher.search(Query.select(String[].class)
 		.from(SnomedDescriptionIndexEntry.class)
 		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)

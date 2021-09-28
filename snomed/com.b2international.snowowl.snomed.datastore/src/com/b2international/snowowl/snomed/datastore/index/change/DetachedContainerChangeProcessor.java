@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,30 +65,30 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 		}
 		
 		// deleting concepts should delete all of its descriptions, relationships, and inbound relationships
-		for (Hits<SnomedDescriptionIndexEntry> hits : searcher.scroll(Query
-				.select(SnomedDescriptionIndexEntry.class)
-				.where(SnomedDescriptionIndexEntry.Expressions.concepts(deletedConceptIds))
-				.limit(PAGE_SIZE)
-				.build()))  {
-			for (SnomedDescriptionIndexEntry description : hits) {
+		Query.select(SnomedDescriptionIndexEntry.class)
+			.where(SnomedDescriptionIndexEntry.Expressions.concepts(deletedConceptIds))
+			.limit(PAGE_SIZE)
+			.build()
+			.stream(searcher)
+			.flatMap(Hits::stream)
+			.forEachOrdered(description -> {
 				deletedCoreComponentIds.add(description.getId());
 				stageRemove(description);
-			}
-		}
+			});
 		
-		for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query
-				.select(SnomedRelationshipIndexEntry.class)
-				.where(Expressions.builder()
-						.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(deletedConceptIds))
-						.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(deletedConceptIds))
-						.build())
-				.limit(PAGE_SIZE)
-				.build()))  {
-			for (SnomedRelationshipIndexEntry relationship : hits) {
+		Query.select(SnomedRelationshipIndexEntry.class)
+			.where(Expressions.builder()
+				.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(deletedConceptIds))
+				.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(deletedConceptIds))
+				.build())
+			.limit(PAGE_SIZE)
+			.build()
+			.stream(searcher)
+			.flatMap(Hits::stream)
+			.forEachOrdered(relationship -> {
 				deletedCoreComponentIds.add(relationship.getId());
 				stageRemove(relationship);
-			}
-		}
+			});
 		
 		// deleting core components should delete all referring members as well
 		ExpressionBuilder referringMembersQuery = Expressions.builder()
@@ -99,15 +99,12 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 			referringMembersQuery.should(Expressions.matchAny(memberField, deletedCoreComponentIds));
 		});
 		
-		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query
-				.select(SnomedRefSetMemberIndexEntry.class)
-				.where(referringMembersQuery.build())
-				.limit(PAGE_SIZE)
-				.build()))  {
-			for (SnomedRefSetMemberIndexEntry member : hits) {
-				stageRemove(member);
-			}
-		}
+		Query.select(SnomedRefSetMemberIndexEntry.class)
+			.where(referringMembersQuery.build())
+			.limit(PAGE_SIZE)
+			.build()
+			.stream(searcher)
+			.flatMap(Hits::stream)
+			.forEachOrdered(member -> stageRemove(member));
 	}
-
 }

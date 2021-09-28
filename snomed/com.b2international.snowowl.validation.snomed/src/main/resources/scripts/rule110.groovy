@@ -2,6 +2,8 @@ package scripts
 
 import static com.b2international.index.query.Expressions.*
 
+import java.util.stream.Stream
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
@@ -49,15 +51,15 @@ if (params.isUnpublishedOnly) {
 	owlAxiomMemberQuery.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }
 
-Iterable<Hits<String>> owlAxiomMemberQueryResult = searcher
-	.scroll(Query.select(String.class)
+Stream<Hits<String>> owlAxiomMemberQueryResult = searcher
+	.stream(Query.select(String.class)
 	.from(SnomedRefSetMemberIndexEntry.class)
 	.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 	.where(owlAxiomMemberQuery.build())
 	.limit(10_000)
 	.build())
 	
-owlAxiomMemberQueryResult.each({relHits ->
+owlAxiomMemberQueryResult.forEachOrdered({relHits ->
 	for (String id: relHits) {
 		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id);
 		issues.add(affectedComponent)
@@ -73,15 +75,15 @@ if (params.isUnpublishedOnly) {
 	relationshipQuery.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }
 
-Iterable<Hits<String>> relationshipQueryResult = searcher
-	.scroll(Query.select(String.class)
+Stream<Hits<String>> relationshipQueryResult = searcher
+	.stream(Query.select(String.class)
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(relationshipQuery.build())
 		.limit(10_000)
 		.build())
 
-relationshipQueryResult.each({relHits ->
+relationshipQueryResult.forEachOrdered({relHits ->
 	for (String id: relHits) {
 		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedRelationship.TYPE, id);
 		issues.add(affectedComponent)

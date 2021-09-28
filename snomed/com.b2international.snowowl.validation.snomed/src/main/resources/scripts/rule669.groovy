@@ -32,7 +32,7 @@ if (params.isUnpublishedOnly) {
 	def Set<String> unpublishedRefSetIds = []
 	def Set<String> unpublishedReferencedComponentIds = []
 	
-	searcher.scroll(Query.select(String[].class)
+	searcher.stream(Query.select(String[].class)
 		.from(SnomedRefSetMemberIndexEntry.class)
 		.fields(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 		.where(
@@ -43,12 +43,12 @@ if (params.isUnpublishedOnly) {
 		)
 		.limit(10_000)
 		.build()
-	).each { unpublishedMembers ->
+	).forEachOrdered({ unpublishedMembers ->
 		unpublishedMembers.each { unpublishedMember ->
 			unpublishedRefSetIds.add(unpublishedMember[0])
 			unpublishedReferencedComponentIds.add(unpublishedMember[1])
 		}
-	}
+	})
 	
 	// if there are no candidate members to test, then return early
 	if (unpublishedRefSetIds.isEmpty() && unpublishedReferencedComponentIds.isEmpty()) {
@@ -65,7 +65,7 @@ if (params.isUnpublishedOnly) {
 def String previousMemberKey
 
 // search ALL relevant members by the current query and sort them by refset and refComp and moduleId
-searcher.scroll(Query.select(String[].class)
+searcher.stream(Query.select(String[].class)
 	.from(SnomedRefSetMemberIndexEntry.class)
 	.fields(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedDocument.Fields.MODULE_ID)
 	.where(queryBuilder.build())
@@ -78,7 +78,7 @@ searcher.scroll(Query.select(String[].class)
 	)
 	.limit(10_000)
 	.build()
-).each { members ->
+).forEachOrdered({ members ->
 	members.each { member ->
 		def refSetId = member[0]
 		def referencedComponentId = member[1]
@@ -102,7 +102,7 @@ searcher.scroll(Query.select(String[].class)
 			}
 		}
 	}
-}
+})
 
 return issues.toList()
 		

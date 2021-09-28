@@ -5,6 +5,8 @@ import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.INFERRED_RELATIONSHIP
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.STATED_RELATIONSHIP
 
+import java.util.stream.Stream
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
@@ -37,7 +39,7 @@ if (params.isUnpublishedOnly) {
 	fitlerExpressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }
 		
-Iterable<Hits<String>> queryResult =  searcher.scroll(Query.select(String.class)
+Stream<Hits<String>> queryResult =  searcher.stream(Query.select(String.class)
 	.from(SnomedRelationshipIndexEntry.class)
 	.fields(SnomedRelationshipIndexEntry.Fields.ID)
 	.where(fitlerExpressionBuilder.build())
@@ -46,7 +48,7 @@ Iterable<Hits<String>> queryResult =  searcher.scroll(Query.select(String.class)
 
 List<ComponentIdentifier> issues =  new ArrayList<>();
 
-queryResult.each({hits -> 
+queryResult.forEachOrdered({hits -> 
 	for (String relationshipId : hits) {
 		issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId))
 	}
