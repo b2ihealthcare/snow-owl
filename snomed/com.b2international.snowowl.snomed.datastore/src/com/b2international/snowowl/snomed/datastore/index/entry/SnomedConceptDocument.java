@@ -234,7 +234,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.mapTargetComponentType(input.getMapTargetComponentType())
 				.preferredDescriptions(input.getPreferredDescriptions())
 				.refSetType(input.getRefSetType())
-				.doi(input.getDoi());
+				.doi(input.getDoi())
+				.memberOf(input.getMemberOf())
+				.activeMemberOf(input.getActiveMemberOf())
+				.semanticTags(input.getSemanticTags());
 	}
 	
 	public static Builder builder(SnomedConcept input) {
