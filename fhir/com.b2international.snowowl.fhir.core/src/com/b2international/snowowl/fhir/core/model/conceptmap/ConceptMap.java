@@ -69,6 +69,8 @@ public class ConceptMap extends MetadataResource {
 	 */
 	public static final class Fields extends MetadataResource.Fields {
 		
+		public static final String GROUP = "group";
+		
 		public static final Set<String> MANDATORY = ImmutableSet.<String>builder()
 				.addAll(MetadataResource.Fields.MANDATORY)
 				.build();
@@ -86,7 +88,9 @@ public class ConceptMap extends MetadataResource {
 		public static final Set<String> ALL = ImmutableSet.<String>builder()
 				.addAll(MANDATORY)
 				.addAll(SUMMARY)
+				.add(GROUP)
 				.build();
+
 		
 	}
 	
