@@ -1038,7 +1038,7 @@ Allows nested expansion of concept properties on each collected ancestor.
 
 ## Operations
 
-### Retrieve single concept by ID (GET)
+### Read concept (GET)
 
 A GET request that includes a concept identifier as its last path parameter will return information about the concept in question:
 
@@ -1573,6 +1573,95 @@ POST /snomed-ct/v3/SNOMEDCT-B2I/concepts
 Changes the author recorded in the commit message from the authenticated user (default) to the specified user.
 
 ### Update concept (PUT)
+
+PUT requests to locations that identify a concept resource (same as when [retrieving](#read-concept-get) concept content) will update the concept. Following a successful commit, the state of the concept on the branch should match the state received in the request body.
+
+The following properties can be updated on any component. If they are not included in the request, the corresponding component property remains unchanged.
+
+- `moduleId`: string
+- `active`: boolean
+- `effectiveTime`: string (in `YYYYmmdd`, "short" format)
+
+When [inactivating](https://confluence.ihtsdotools.org/display/DOCEG/Concept+Inactivation)🌎 a concept, an object named `inactivationProperties` can be added that can point to possible replacement concepts and/or specify the reason for inactivation:
+
+```json
+PUT /snomed-ct/v3/SNOMEDCT/concepts/69949008
+// Request body
+{
+  "active": false,
+  "inactivationProperties": {
+    "inactivationIndicatorId": "900000000000482003", // Duplicate
+    "associationTargets": [
+      { 
+        "referenceSetId": "900000000000527005", // SAME AS association reference set
+        "targetComponentId": "273999003"        // Neuroplasty
+      }
+    ]
+  },
+  "commitComment": "Inactivate duplicate concept"
+}
+
+// Response: 204 No Content
+```
+
+Specifying an empty string for `inactivationIndicatorId` will remove an existing indicator, while an empty array will delete historical association reference set members for the concept. This is handled automatically when the concept is re-activated, so `inactivationProperties` can be omitted from such requests entirely:
+
+```json
+PUT /snomed-ct/v3/SNOMEDCT/concepts/69949008
+// Request body
+{
+  "active": true,
+  "commitComment": "Reactivate concept"
+}
+```
+
+```json
+GET /snomed-ct/v3/SNOMEDCT/concepts/69949008
+{
+  "id": "69949008",
+  "active": true,
+  [...]
+  "inactivationProperties": {
+    "associationTargets": []
+  },
+  [...]
+}
+
+// Response: 204 No Content
+```
+
+Properties that can be updated on the concept itself are:
+
+- `definitionStatusId`: string
+- `subclassDefinitionStatus`: "DISJOINT_SUBCLASSES" | "NON_DISJOINT_SUBCLASSES"
+
+In addition to the above, core components and reference set members related to the concept in question can be updated in a single request by including any of the following properties:
+
+- `descriptions`
+- `relationships`
+- `members`
+
+Each of the above can hold a collection resource of the respective component resource type. These resources are described in detail in sections [Descriptions](descriptions.md), [Relationships](relationships.md) and [Reference set members](members.md), respectively.
+
+If a collection resource property is not included in the update request, the corresponding component type is unchanged. An empty array attempts to delete all existing related components. Otherwise, the components included in the collection are compared by SCTID/UUID to existing components, and it is decided whether:
+
+- a new component should be created (if the identifier did not appear previously in the terminology store)
+- an existing component should be updated (if the identifier existed previously in the terminology store)
+- an existing component should be deleted (if the identifier does not exist in the request, but existed previously in the terminology store)
+
+Successful updates return `204 No Content` from the server. Updates that attempt to modify the state of a missing or deleted concept result in a `404 Not Found` response.
+
+#### **Query parameters**
+
+- `force=true | false`
+
+Specifies whether updating the effective time of the concept should be allowed. The default value is `false`; in such cases, supplying an effective time property for the update is disallowed. The component's effective time after an update is computed automatically at all times, when the `force` property is set to `true`, this can be overridden externally.
+
+#### **Request headers**
+
+- `X-Author: {author_id}`
+
+Changes the author recorded in the commit message from the authenticated user (default) to the specified user.
 
 ### Delete concept (DELETE)
 
