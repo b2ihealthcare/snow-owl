@@ -43,7 +43,7 @@ if (params.isUnpublishedOnly) {
 	}
 	
 	// report descriptions with incorrect unpublished inactivation indicator members 
-	searcher.scroll(Query.select(String[].class)
+	searcher.stream(Query.select(String[].class)
 			.from(SnomedRefSetMemberIndexEntry.class)
 			.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedRefSetMemberIndexEntry.Fields.VALUE_ID)
 			.where(
@@ -56,7 +56,7 @@ if (params.isUnpublishedOnly) {
 			)
 			.limit(10_000)
 			.build())
-			.each { Hits<String[]> members ->
+			.forEachOrdered({ Hits<String[]> members ->
 				def Set<String> descriptionsWithActiveDescriptionIndicator = Sets.newHashSet()
 				def Set<String> descriptionsWithInactiveDescriptionIndicator = Sets.newHashSet()
 				members.each { String[] member ->
@@ -72,7 +72,7 @@ if (params.isUnpublishedOnly) {
 				reportDescriptions(descriptionsWithActiveDescriptionIndicator, false /* description should be active, searching for inactive ones to find errors */)
 				// inactive descriptions referencing indicator values that should be added to active descriptions
 				reportDescriptions(descriptionsWithInactiveDescriptionIndicator, true /* description should be inactive, searching for active ones to find errors */)
-			}
+			})
 	
 } else {
 	// report descriptions with incorrect unpublished or published inactivation indicator members
@@ -81,7 +81,7 @@ if (params.isUnpublishedOnly) {
 		
 		//	println "Searching ${active ? 'active' : 'inactive'} descriptions on inactive concepts..."
 			
-		searcher.scroll(Query.select(String.class)
+		searcher.stream(Query.select(String.class)
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.ID)
 				.where(
@@ -92,7 +92,7 @@ if (params.isUnpublishedOnly) {
 				)
 				.limit(100_000)
 				.build())
-				.each({Hits<String> hits ->
+				.forEachOrdered({Hits<String> hits ->
 					descriptionIds.addAll(hits.getHits())
 				})
 					
@@ -117,13 +117,13 @@ if (params.isUnpublishedOnly) {
 	
 		//	println "Searching matching reference set members..."
 			
-		searcher.scroll(Query.select(String.class)
+		searcher.stream(Query.select(String.class)
 			.from(SnomedRefSetMemberIndexEntry.class)
 			.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 			.where(memberQuery.build())
 			.limit(10_000)
 			.build())
-			.each({hits ->
+			.forEachOrdered({hits ->
 				hits.each({ hit ->
 					issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, hit))
 				})
@@ -138,13 +138,13 @@ if (params.isUnpublishedOnly) {
 	List<String> inactiveConceptIds = []
 	
 	//println "Loading inactive concepts"
-	searcher.scroll(Query.select(String.class)
+	searcher.stream(Query.select(String.class)
 			.from(SnomedConceptDocument.class)
 			.fields(SnomedConceptDocument.Fields.ID)
 			.where(filterInactiveConceptsExpressionBuilder.build())
 			.limit(100_000)
 			.build())
-			.each({Hits<String> hits ->
+			.forEachOrdered({Hits<String> hits ->
 				inactiveConceptIds.addAll(hits.getHits())
 			})
 	//println "Loaded ${inactiveConceptIds.size()} inactive concepts"

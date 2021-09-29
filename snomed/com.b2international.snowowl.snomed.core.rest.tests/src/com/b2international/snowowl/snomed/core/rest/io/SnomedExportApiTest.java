@@ -1082,7 +1082,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination",
-					SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference",
+					SnomedRf2Headers.FIELD_MRCM_GUIDEURL, "guideURL",
 					"commitComment", "Created new MRCM domain reference set member"
 				));
 
@@ -1134,7 +1134,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				"proximalPrimitiveRefinement",
 				"domainTemplateForPrecoordination",
 				"domainTemplateForPostcoordination",
-				"editorialGuideReference");
+				"guideURL");
 
 		String mrcmAttributeDomainLine = TAB_JOINER.join(mrcmAttributeDomainRefsetMemberId, 
 				"", 

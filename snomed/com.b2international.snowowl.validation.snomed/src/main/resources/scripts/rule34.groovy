@@ -57,9 +57,9 @@ Map<String, String[]> buckets = newHashMap()
 String currentSourceId = null
 String currentGroupId = null
 
-
-for (Hits<String[]> page : searcher.scroll(query)) {
-	for (String[] relationship : page) {
+query.stream(searcher)
+	.flatMap({ it.stream() })
+	.forEachOrdered({ relationship -> 
 		def sourceId = relationship[3]
 		if (!sourceId.equals(currentSourceId)) {
 			buckets.clear()
@@ -88,7 +88,6 @@ for (Hits<String[]> page : searcher.scroll(query)) {
 		} else {
 			buckets.put(key, relationship[0..1])
 		}
-	}
-}
+	})
 
 return issues;

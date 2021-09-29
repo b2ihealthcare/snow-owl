@@ -101,6 +101,14 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			result.setStatedAncestorIds(input.getStatedAncestors().toArray());
 		}
 		
+		if (input.getMemberOf() != null) {
+			result.setMemberOf(ImmutableSortedSet.copyOf(input.getMemberOf()));
+		}
+		
+		if (input.getActiveMemberOf() != null) {
+			result.setActiveMemberOf(ImmutableSortedSet.copyOf(input.getActiveMemberOf()));
+		}
+		
 		if (expand().containsKey(SnomedConcept.Expand.PREFERRED_DESCRIPTIONS) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM) || expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME)) {
 			List<SnomedDescription> preferredDescriptions = input.getPreferredDescriptions().stream().map(description -> {
 				SnomedDescription preferredDescription = new SnomedDescription(description.getId());

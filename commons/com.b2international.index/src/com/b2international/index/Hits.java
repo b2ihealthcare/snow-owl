@@ -29,14 +29,12 @@ import com.google.common.base.MoreObjects;
 public final class Hits<T> implements Iterable<T> {
 
 	private final List<T> hits;
-	private final String scrollId;
 	private final String searchAfter;
 	private final int limit;
 	private final int total;
 
-	public Hits(List<T> hits, String scrollId, String searchAfter, int limit, int total) {
+	public Hits(List<T> hits, String searchAfter, int limit, int total) {
 		this.hits = hits;
-		this.scrollId = scrollId;
 		this.searchAfter = searchAfter;
 		this.limit = limit;
 		this.total = total;
@@ -63,10 +61,6 @@ public final class Hits<T> implements Iterable<T> {
 		return hits;
 	}
 	
-	public String getScrollId() {
-		return scrollId;
-	}
-	
 	public String getSearchAfter() {
 		return searchAfter;
 	}
@@ -85,13 +79,12 @@ public final class Hits<T> implements Iterable<T> {
 				.add("hits", StringUtils.limitedToString(hits, 10))
 				.add("limit", limit)
 				.add("total", total)
-				.add("scrollId", scrollId)
 				.add("searchAfter", searchAfter)
 				.toString();
 	}
 
 	public static <T> Hits<T> empty(int limit) {
-		return new Hits<>(Collections.<T>emptyList(), null, null, limit, 0);
+		return new Hits<>(Collections.<T>emptyList(), null, limit, 0);
 	}
 
 }

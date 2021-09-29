@@ -28,17 +28,13 @@ import java.util.*;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
 import org.apache.solr.common.util.JavaBinCodec;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
@@ -49,7 +45,6 @@ import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.aggregations.metrics.TopHitsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
-import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -73,7 +68,6 @@ import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.*;
 import com.google.common.primitives.Ints;
 
@@ -94,7 +88,7 @@ public class EsDocumentSearcher implements Searcher {
 		this.admin = admin;
 		this.mapper = mapper;
 		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
-		this.maxTermsCount = Integer.parseInt((String) admin.settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));;
+		this.maxTermsCount = Integer.parseInt((String) admin.settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
 	}
 
 	@Override
@@ -165,26 +159,17 @@ public class EsDocumentSearcher implements Searcher {
 			reqSource.storedFields(STORED_FIELDS_NONE);
 		}
 		
-		// scroll config
-		final boolean isLocalScroll = limit > resultWindow;
-		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
-		final boolean isLiveScrolled = !Strings.isNullOrEmpty(query.getSearchAfter());
-		if (isLocalScroll) {
-			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
-			checkArgument(!isLiveScrolled, "Cannot use search after when requesting more number of items (%s) than the max result window (%s).", limit, resultWindow);
-			// do NOT start a scroll on the first request, just validate the search request state here
-			// XXX commented row kept for historical reasons
-//			req.scroll(scrollTime);
-		} else if (isScrolled) {
-			checkArgument(!isLiveScrolled, "Cannot scroll and live scroll at the same time");
-			req.scroll(query.getScrollKeepAlive());
-		} else if (isLiveScrolled) {
-			checkArgument(!isScrolled, "Cannot scroll and live scroll at the same time");
+		// paging config
+		final boolean isLocalStreaming = limit > resultWindow;
+		final boolean isLiveStreaming = !Strings.isNullOrEmpty(query.getSearchAfter());
+		if (isLocalStreaming) {
+			checkArgument(!isLiveStreaming, "Cannot use searchAfter when requesting more items (%s) than the configured result window (%s).", limit, resultWindow);
+		} else if (isLiveStreaming) {
 			reqSource.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
 		// sorting config with a default sort field based on scroll config
-		addSort(primaryMapping, reqSource, query.getSortBy(), !isScrolled && !isLocalScroll);
+		addSort(primaryMapping, reqSource, query.getSortBy());
 		// disable explain explicitly, just in case
 		reqSource.explain(false);
 		// disable version field explicitly, just in case
@@ -199,58 +184,45 @@ public class EsDocumentSearcher implements Searcher {
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 		}
 
-		TotalHits totalHits = response.getHits().getTotalHits();
-		checkState(totalHits.relation == Relation.EQUAL_TO, "Searches should always track total hits accurately");
-		final int totalHitCount = (int) totalHits.value;
+		SearchHits responseHits = response.getHits();
+
+		final TotalHits total = responseHits.getTotalHits();
+		checkState(total.relation == Relation.EQUAL_TO, "Searches should always track total hits accurately");
+		final int totalHitCount = (int) total.value;
+		
+		final SearchHit[] firstHits = responseHits.getHits();
+		final int firstCount = firstHits.length;
+		final int remainingCount = Math.min(limit, totalHitCount) - firstCount;
+		
+		// Add the first set of results
 		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
-		int numDocsToFetch = Math.min(limit, totalHitCount) - response.getHits().getHits().length;
-
-		// if the client requested all data at once and there are more data in the index
-		// throw away the first batch and perform a local scroll
-		if (isLocalScroll && numDocsToFetch > 0) {
-			// WARN the caller that this might not be the most efficient way of fetching the data, consider using SearchAfter API or explicit Scroll API
-			admin.log().warn("Returning all matches (totalHits: '{}') larger than the currently configured result_window ('{}') might not be the most efficient way of getting the data. Consider using the index pagination APIs (searchAfter or explicit scroll) instead.", totalHitCount, resultWindow);
-
-			// perform search again with a default 60s scroll enabled
-			final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
-			try {
-				response = client.search(req.scroll(scrollTime));
-			} catch (Exception e) {
-				admin.log().error("Couldn't execute query", e);
-				throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
-			}
-
-			// recalc if there were index changes in the middle
-			numDocsToFetch = Math.min(limit, totalHitCount) - response.getHits().getHits().length;
-			// register all hits
-			allHits.add(response.getHits().getHits());
-
-			// then continue scroll
-			while (numDocsToFetch > 0) {
-				final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(response.getScrollId())
-						.scroll(scrollTime);
-
-				response = client.scroll(searchScrollRequest);
-				int fetchedDocs = response.getHits().getHits().length;
-				if (fetchedDocs == 0) {
+		allHits.addAll(responseHits);
+		
+		// If the client requested all data at once and there are more hits to retrieve, collect them all as part of the request 
+		if (isLocalStreaming && remainingCount > 0) {
+			admin.log().warn("Returning all matches (totalHits: '{}') larger than the currently configured result_window ('{}') might not be the most "
+					+ "efficient way of getting the data. Consider using the index pagination API (searchAfter) instead.", totalHitCount, resultWindow);
+			
+			while (true) {
+				// Extract searchAfter values for the next set of results
+				final SearchHit lastHit = Iterables.getLast(responseHits, null);
+				if (lastHit == null) {
 					break;
 				}
-				numDocsToFetch -= fetchedDocs;
-				allHits.add(response.getHits().getHits());
+				
+				reqSource.searchAfter(lastHit.getSortValues());
+
+				// Request more search results, adding them to the list builder
+				response = client.search(req);
+				responseHits = response.getHits();
+				allHits.addAll(responseHits);
 			}
-			
-			// clear the custom local scroll
-			final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
-			clearScrollRequest.addScrollId(response.getScrollId());
-			client.clearScroll(clearScrollRequest);
-		} else {
-			allHits.add(response.getHits().getHits());
 		}
 
 		final Class<T> select = query.getSelection().getSelect();
 		final List<Class<?>> from = query.getSelection().getFrom();
 		
-		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
+		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, query.getSortBy(), allHits.build());
 		admin.log().trace("Executed query '{}' in '{}'", query, w);
 		return hits;
 	}
@@ -295,47 +267,6 @@ public class EsDocumentSearcher implements Searcher {
 			.findFirst()
 			.isPresent();
 	}
-
-	@Override
-	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-		final String scrollId = scroll.getScrollId();
-		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
-		searchScrollRequest.scroll(scroll.getKeepAlive());
-		
-		try {
-			
-			final SearchResponse response = admin.client()
-					.scroll(searchScrollRequest);
-			
-			Class<?> from = Iterables.getOnlyElement(scroll.getSelection().getFrom());
-			final DocumentMapping mapping = admin.mappings().getMapping(from);
-			final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
-			return toHits(scroll.getSelection().getSelect(), List.of(from), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits().value, response.getScrollId(), null, response.getHits());	
-			
-		} catch (IOException | ElasticsearchStatusException e) {
-			final Throwable rootCause = Throwables.getRootCause(e);
-			
-			if (rootCause instanceof ElasticsearchException && rootCause.getMessage().contains("No search context found for id [")) {
-				throw new SearchContextMissingException(String.format("Search context missing for scrollId '%s'.", scrollId), null);
-			} else if (e instanceof IOException) {
-				throw e;
-			} else {
-				throw new IOException(e);
-			}
-		}
-	}
-	
-	@Override
-	public void cancelScroll(String scrollId) {
-		final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
-		clearScrollRequest.addScrollId(scrollId);
-		
-		try {
-			admin.client().clearScroll(clearScrollRequest);
-		} catch (IOException e) {
-			throw new IndexException(String.format("Couldn't clear scroll state for scrollId '%s'.", scrollId), e);
-		}
-	}
 	
 	private <T> Hits<T> toHits(
 			Class<T> select, 
@@ -344,7 +275,6 @@ public class EsDocumentSearcher implements Searcher {
 			final boolean fetchSource,
 			final int limit, 
 			final int totalHits, 
-			final String scrollId,
 			final SortBy sortBy,
 			final Iterable<SearchHit> hits) throws IOException {
 		final HitConverter<T> hitConverter = HitConverter.getConverter(mapper, select, from, fetchSource, fields);
@@ -362,7 +292,7 @@ public class EsDocumentSearcher implements Searcher {
 				searchAfterSortValues = hit.getSortValues();
 			}
 		}
-		return new Hits<T>(result.build(), scrollId, toSearchAfterToken(searchAfterSortValues), limit, totalHits);
+		return new Hits<T>(result.build(), toSearchAfterToken(searchAfterSortValues), limit, totalHits);
 	}
 	
 	private String toSearchAfterToken(final Object[] searchAfter) {
@@ -403,7 +333,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 	}
 
-	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy, boolean liveScroll) {
+	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy) {
 		for (final SortBy item : getSortFields(sortBy)) {
 			if (item instanceof SortByField) {
 				SortByField sortByField = (SortByField) item;
@@ -412,27 +342,25 @@ public class EsDocumentSearcher implements Searcher {
 				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
 				
 				switch (field) {
-				case SortBy.FIELD_SCORE:
-					// XXX: default order for scores is *descending*
-					reqSource.sort(SortBuilders.scoreSort().order(sortOrder)); 
-					break;
-				case "_default": //$FALL-THROUGH$
-					if (liveScroll) {
-						// for live scrolls use the document ID field as tiebreaker
-						field = mapping.getDefaultSortField();
-					} else {
-						// for snapshot scrolls use the "_doc" field as tiebreaker
-						field = "_doc";
-					}
-				default:
-					reqSource.sort(SortBuilders.fieldSort(field).order(sortOrder));
+					case SortBy.FIELD_SCORE:
+						// XXX: default order for scores is *descending*
+						reqSource.sort(SortBuilders.scoreSort().order(sortOrder)); 
+						break;
+					case SortBy.FIELD_DEFAULT:
+						// Replace special field with default sort field from mapping
+						reqSource.sort(SortBuilders.fieldSort(mapping.getDefaultSortField()).order(sortOrder));
+						break;
+					default:
+						// Use field name directly otherwise
+						reqSource.sort(SortBuilders.fieldSort(field).order(sortOrder));
+						break;
 				}
 			} else if (item instanceof SortByScript) {
 				SortByScript sortByScript = (SortByScript) item;
 				SortBy.Order order = sortByScript.getOrder();
 				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
 				
-				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), ScriptSortType.STRING)
+				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), sortByScript.getSortType())
 						.order(sortOrder));
 				
 			} else {
@@ -516,9 +444,9 @@ public class EsDocumentSearcher implements Searcher {
 			}
 			Hits<T> hits;
 			if (topHits != null) {
-				hits = toHits(aggregation.getSelect(), List.of(aggregation.getFrom()), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), null, null, topHits.getHits()); 
+				hits = toHits(aggregation.getSelect(), List.of(aggregation.getFrom()), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), null, topHits.getHits()); 
 			} else {
-				hits = new Hits<>(Collections.emptyList(), null, null, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount());
+				hits = new Hits<>(Collections.emptyList(), null, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount());
 			}
 			buckets.put(bucket.getKey(), new Bucket<>(bucket.getKey(), hits));
 		}

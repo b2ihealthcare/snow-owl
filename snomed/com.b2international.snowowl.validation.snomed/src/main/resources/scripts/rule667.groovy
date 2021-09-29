@@ -1,5 +1,7 @@
 package scripts;
 
+import java.util.stream.Stream
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
@@ -50,14 +52,14 @@ for (Integer length : descriptionTypesByMaxLength.keySet()) {
         activeDescriptionFilter.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
     }
 
-    final Iterable<Hits<String>> invalidDescriptions = searcher.scroll(Query.select(String.class)
+    final Stream<Hits<String>> invalidDescriptions = searcher.stream(Query.select(String.class)
             .from(SnomedDescriptionIndexEntry.class)
             .fields(SnomedDescriptionIndexEntry.Fields.ID)
             .where(activeDescriptionFilter.build())
             .limit(20_000)
             .build())
 
-    invalidDescriptions.each({ descriptionBatch ->
+    invalidDescriptions.forEachOrdered({ descriptionBatch ->
         descriptionBatch.each({ id ->
             issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, id))
         })

@@ -67,6 +67,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.filterByTitleExact(params.getTitleExact())
 				.filterByToolingIds(params.getToolingId())
 				.filterByBundleIds(params.getBundleId())
+				.filterByBundleAncestorIds(params.getBundleAncestorId())
 				.filterByStatus(params.getStatus())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())

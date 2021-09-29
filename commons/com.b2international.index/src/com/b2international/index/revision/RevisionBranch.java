@@ -147,7 +147,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			@Override
 			public void checkName(String name) {
 				if (Strings.isNullOrEmpty(name)) {
-					throw new BadRequestException("Name cannot be empty");
+					throw new BadRequestException("Branch name cannot be empty");
 				}
 				if (name.length() > maximumLength) {
 					throw new BadRequestException("Branch name is too long (max %s characters are allowed).", maximumLength);

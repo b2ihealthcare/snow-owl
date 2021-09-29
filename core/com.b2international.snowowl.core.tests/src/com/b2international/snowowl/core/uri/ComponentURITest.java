@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -31,17 +32,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ComponentURITest {
 	
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = BadRequestException.class)
 	public void missingParts() {
 		ComponentURI.of("codesystem/LCS1/1542");
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = BadRequestException.class)
 	public void malformedCodeSystemURIPart() {
 		ComponentURI.of("/concept/1542");
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = BadRequestException.class)
 	public void malformedIdentifierPart() {
 		ComponentURI.of("codesystem/LCS1/concept/");
 	}
@@ -96,13 +97,13 @@ public class ComponentURITest {
 		assertFalse(ComponentURI.isValid("codesystem/SNOMEDCT/concept/"));
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = BadRequestException.class)
 	public void numberOfPartsTest() {
 		final String incompleteURI = "codesystem/LCS1/1542";
 		ComponentURI.of(incompleteURI); //Attempt to parse incomplete component URI
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = BadRequestException.class)
 	public void missingCodeSystemTest() {
 		final String malformedURI = "/concept/1542";
 		ComponentURI.of(malformedURI);

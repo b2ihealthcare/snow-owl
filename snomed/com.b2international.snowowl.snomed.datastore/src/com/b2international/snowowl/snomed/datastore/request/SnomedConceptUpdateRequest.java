@@ -178,15 +178,13 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	private boolean updateRefSet(TransactionContext context, SnomedConceptDocument concept, SnomedConceptDocument.Builder updatedConcept) {
 		final boolean force = refSet == SnomedReferenceSet.FORCE_DELETE;
 		if (refSet == SnomedReferenceSet.DELETE || force) {
-			for (Hits<SnomedRefSetMemberIndexEntry> hits : context.service(RevisionSearcher.class).scroll(Query
-					.select(SnomedRefSetMemberIndexEntry.class)
-					.where(SnomedRefSetMemberIndexEntry.Expressions.refsetId(componentId()))
-					.limit(10_000)
-					.build()))  {
-				for (SnomedRefSetMemberIndexEntry member : hits) {
-					context.delete(member, force);
-				}
-			}
+			Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedRefSetMemberIndexEntry.Expressions.refsetId(componentId()))
+				.limit(10_000)
+				.build()
+				.stream(context.service(RevisionSearcher.class))
+				.flatMap(Hits::stream)
+				.forEachOrdered(member -> context.delete(member, force));
 			
 			updatedConcept.clearRefSet();
 			return true;

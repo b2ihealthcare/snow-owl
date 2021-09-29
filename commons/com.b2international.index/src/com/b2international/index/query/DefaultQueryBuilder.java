@@ -33,7 +33,6 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 
 	private IndexSelection.Builder<T> selection;
 	
-	private String scrollKeepAlive;
 	private String searchAfter;
 	private int limit = DEFAULT_LIMIT;
 	private Expression where;
@@ -67,12 +66,6 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	@Override
 	public QueryBuilder<T> fields(List<String> fields) {
 		this.fields = fields;
-		return this;
-	}
-	
-	@Override
-	public AfterWhereBuilder<T> scroll(String scrollKeepAlive) {
-		this.scrollKeepAlive = scrollKeepAlive;
 		return this;
 	}
 	
@@ -115,7 +108,6 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		Query<T> query = new Query<T>();
 		query.setSelection(selection);
 		query.setWhere(where);
-		query.setScrollKeepAlive(scrollKeepAlive);
 		query.setSearchAfter(searchAfter);
 		query.setLimit(limit);
 		query.setSortBy(sortBy);

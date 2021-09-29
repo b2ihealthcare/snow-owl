@@ -59,7 +59,7 @@ NOTE: You need to have a recent version of Java installed (Java 11+, https://ado
 Once you have downloaded the appropriate package:
 
 * Run `bin/snowowl.sh` on unix, or `bin/snowowl.bat` on windows
-* Run `curl http://localhost:8080/snowowl/admin/info`
+* Run `curl http://localhost:8080/snowowl/info`
 * Navigate to `http://localhost:8080/snowowl`
 * See [SNOMED CT API docs](https://docs.b2i.sg/snow-owl/api/snomed), [FHIR API docs](https://docs.b2i.sg/snow-owl/api/fhir)
 

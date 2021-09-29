@@ -170,7 +170,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement")
 				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
 				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
-				.field(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference")
+				.field(Fields.MRCM_GUIDEURL, "guideURL")
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
@@ -181,7 +181,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertEquals("proximalPrimitiveRefinement", actual.getProximalPrimitiveRefinement());
 		assertEquals("domainTemplateForPrecoordination", actual.getDomainTemplateForPrecoordination());
 		assertEquals("domainTemplateForPostcoordination", actual.getDomainTemplateForPostcoordination());
-		assertEquals("editorialGuideReference", actual.getEditorialGuideReference());
+		assertEquals("guideURL", actual.getGuideURL());
 		assertDocEquals(member, actual);
 	}
 	
@@ -208,7 +208,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		final JsonNode json = getMapper().convertValue(member, JsonNode.class);
 		assertNull(json.get(Fields.MRCM_PARENT_DOMAIN));
 		assertNull(json.get(Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT));
-		assertNull(json.get(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE));
+		assertNull(json.get(Fields.MRCM_GUIDEURL));
 		
 		// assert that isGrouped is not serialized with any valid value for this reference set member type
 		assertNull(json.get(Fields.MRCM_GROUPED));

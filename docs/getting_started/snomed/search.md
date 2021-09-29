@@ -3,7 +3,7 @@
 ## GET the ROOT concept:
 
 ```bash
-curl 'http://localhost:8080/snowowl/snomed-ct/v3/MAIN/concepts/138875005'
+curl 'http://localhost:8080/snowowl/snomedct/MAIN/concepts/138875005'
 ```
 
 And the response:
@@ -24,7 +24,7 @@ And the response:
 ## Search by ECL:
 
 ```bash
-curl 'http://localhost:8080/snowowl/snomed-ct/v3/MAIN/concepts?active=true&ecl=%3C&#33;138875005&limit=1'
+curl 'http://localhost:8080/snowowl/snomedct/MAIN/concepts?active=true&ecl=%3C&#33;138875005&limit=1'
 ```
 
 And the response:

@@ -19,6 +19,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
@@ -37,10 +38,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 
 /**
@@ -78,32 +76,34 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		
 		// sourceModuleId to targetModuleId map
 		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
-		
-		RevisionSearcher searcher = context.service(RevisionSearcher.class);
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+		final Stream<Hits<? extends SnomedDocument>> documentsToVersion = Streams.concat(
+			Query.select(SnomedConceptDocument.class)
+				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.limit(getCommitLimit(context))
+				.build()
+				.stream(searcher),
 			
-		searcher.scroll(Query.select(SnomedConceptDocument.class)
+			Query.select(SnomedDescriptionIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
-				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+				.build()
+				.stream(searcher),
 		
-		searcher.scroll(Query.select(SnomedDescriptionIndexEntry.class)
+			Query.select(SnomedRelationshipIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
-				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+				.build()
+				.stream(searcher),
+				
+			Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.limit(getCommitLimit(context))
+				.build()
+				.stream(searcher));
 		
-		searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
-				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(getCommitLimit(context))
-				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
-		
-		searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
-				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(getCommitLimit(context))
-				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+		documentsToVersion.forEachOrdered(componentsToVersion -> 
+			versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
 		// iterate over each module and get modules of all components registered to componentsByReferringModule
 		log.info("Collecting module dependencies of changed components...");
@@ -112,14 +112,15 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		for (String module : ImmutableSet.copyOf(componentIdsByReferringModule.keySet())) {
 			final Collection<String> dependencies = componentIdsByReferringModule.removeAll(module);
 			for (Class<? extends SnomedComponentDocument> type : CORE_COMPONENT_TYPES) {
-				Query<String[]> dependencyQuery = Query.select(String[].class)
-						.from(type)
-						.fields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.EFFECTIVE_TIME)
-						.where(SnomedComponentDocument.Expressions.ids(dependencies))
-						.limit(10000)
-						.build();
-				for (Hits<String[]> dependencyHits : context.service(RevisionSearcher.class).scroll(dependencyQuery)) {
-					for (String[] dependency : dependencyHits) {
+				Query.select(String[].class)
+					.from(type)
+					.fields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.EFFECTIVE_TIME)
+					.where(SnomedComponentDocument.Expressions.ids(dependencies))
+					.limit(10000)
+					.build()
+					.stream(searcher)
+					.flatMap(Hits::stream)
+					.forEachOrdered(dependency -> {
 						String targetModule = dependency[1];
 						if (!module.equals(targetModule)) {
 							moduleDependencies.put(module, targetModule);
@@ -131,8 +132,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 								return Math.max(oldEffectiveTime, newEffectiveTime);
 							}
 						});
-					}
-				}
+					});
 			}
 		}
 		log.info("Collecting module dependencies of changed components successfully finished.");

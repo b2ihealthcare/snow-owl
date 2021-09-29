@@ -463,7 +463,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 				SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "", // unset on purpose
 				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, DOMAIN_TEMPLATE_FOR_PRECOORDINATION_2,
 				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2,
-				SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "" // unset on purpose
+				SnomedRf2Headers.FIELD_MRCM_GUIDEURL, "" // unset on purpose
 			);
 		case MRCM_ATTRIBUTE_DOMAIN:
 			return Json.object(

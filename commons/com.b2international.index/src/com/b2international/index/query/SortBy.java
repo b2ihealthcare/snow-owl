@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
+
 import com.b2international.index.ScriptExpression;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -43,9 +45,14 @@ public abstract class SortBy {
 	public static final String FIELD_SCORE = "_score";
 	
 	/**
+	 * Special field name for sorting by the default sort field.
+	 */
+	public static final String FIELD_DEFAULT = "_default";
+	
+	/**
 	 * Singleton representing document sort based on their default sort field (usually the ID, but in case of scroll we can use _doc to speed things up) in ascending order.
 	 */
-	public static final SortByField DEFAULT = SortBy.field("_default", Order.ASC);
+	public static final SortByField DEFAULT = SortBy.field(FIELD_DEFAULT, Order.ASC);
 	
 	/**
 	 * Singleton representing document sort based on their score in decreasing order (higher score first).
@@ -103,11 +110,13 @@ public abstract class SortBy {
 		private final Order order;
 		private final String name;
 		private final Map<String, Object> params;
+		private final ScriptSortType sortType;
 
-		private SortByScript(String name, Map<String, Object> params, Order order) {
+		private SortByScript(String name, Map<String, Object> params, Order order, ScriptSortType sortType) {
 			this.name = name;
 			this.params = params;
 			this.order = order;
+			this.sortType = sortType;
 		}
 		
 		public Order getOrder() {
@@ -122,6 +131,10 @@ public abstract class SortBy {
 		@Override
 		public Map<String, Object> getParams() {
 			return params;
+		}
+		
+		public ScriptSortType getSortType() {
+			return sortType;
 		}
 		
 		@Override
@@ -196,6 +209,11 @@ public abstract class SortBy {
 			return this;
 		}
 		
+		public Builder sortByScriptNumeric(String script, Map<String, Object> arguments, Order order) {
+			sorts.add(scriptNumeric(script, arguments, order));
+			return this;
+		}
+		
 		public SortBy build() {
 			if (sorts.isEmpty()) {
 				return DEFAULT;
@@ -224,7 +242,11 @@ public abstract class SortBy {
 	 * @return
 	 */
 	public static SortBy script(String script, Map<String, Object> arguments, Order order) {
-		return new SortByScript(script, arguments, order);
+		return new SortByScript(script, arguments, order, ScriptSortType.STRING);
+	}
+	
+	public static SortBy scriptNumeric(String script, Map<String, Object> arguments, Order order) {
+		return new SortByScript(script, arguments, order, ScriptSortType.NUMBER);
 	}
 
 	public static Builder builder() {

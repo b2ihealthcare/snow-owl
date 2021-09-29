@@ -130,6 +130,10 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
+		Builder timestampString(String timestampString) {
+			return this;
+		}
+		
 		public CommitInfo build() {
 			return new CommitInfo(id, branch, author, comment, timestamp, groupId, mergeSource, details);
 		}
