@@ -73,7 +73,7 @@ Input
 Response
 
     Status: 201 Created
-    Location: http://localhost:8080/snowowl/snomed-ct/v3/branches/MAIN/branchName
+    Location: http://localhost:8080/snowowl/snomedct/branches/MAIN/branchName
 
 ### Delete a branch
 
@@ -99,7 +99,7 @@ Input
 Response
 
     Status: 202 Accepted
-    Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/2f4d3b5b-3020-4e8e-b046-b8266967d7dc
+    Location: http://localhost:8080/snowowl/snomedct/merges/2f4d3b5b-3020-4e8e-b046-b8266967d7dc
 
 ### Perform a rebase
 
@@ -115,7 +115,7 @@ Input
 Response
 
     Status: 202 Accepted
-    Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/c82c443d-f3f4-4409-9cdb-a744da336936
+    Location: http://localhost:8080/snowowl/snomedct/merges/c82c443d-f3f4-4409-9cdb-a744da336936
 
 ### Monitor progress of a merge or rebase
 

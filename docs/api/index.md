@@ -34,7 +34,7 @@ All POST requests return `Location` headers pointing to the created resource ins
 
 Example Location Header:
 
-    http://example.com/snowowl/snomed-ct/v3/MAIN/concepts/123456789
+    http://example.com/snowowl/snomedct/MAIN/concepts/123456789
 
 ## Pagination
 
@@ -46,7 +46,7 @@ Where applicable, the `expand` query parameter will include nested objects in th
 
 Expanded properties should be followed by parentheses and separated by commas; any options for the expanded property should be given within the parentheses, including properties to expand. Typical values for parameters are given in the "Implementation Notes" section of each endpoint.
 
-    GET /snowowl/snomed-ct/v3/MAIN/concepts?offset=0&limit=50&expand=fsn(),descriptions()
+    GET /snowowl/snomedct/MAIN/concepts?offset=0&limit=50&expand=fsn(),descriptions()
 
 Response:
 

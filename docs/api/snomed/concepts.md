@@ -21,7 +21,7 @@ To achieve this, the underlying terminology repository exposes a branching model
 Absolute branch path parameters start with `MAIN` and point to a branch in the backing terminology repository. In the following example, all concepts are considered to be part of the substrate that are on branch `MAIN/2021-01-31/SNOMEDCT-UK-CL` or any ancestor (ie. `MAIN` or `MAIN/2021-01-31`), unless they have been modified:
 
 ```json
-GET /snomed-ct/v3/MAIN/2021-01-31/SNOMEDCT-UK-CL/concepts
+GET /snomedct/MAIN/2021-01-31/SNOMEDCT-UK-CL/concepts
 {
   "items": [
     {
@@ -37,13 +37,13 @@ GET /snomed-ct/v3/MAIN/2021-01-31/SNOMEDCT-UK-CL/concepts
 Relative branch paths start with a short name identifying a SNOMED CT code system, and are relative to the code system's working branch. For example, if the working branch of code system `SNOMEDCT-UK-CL` is configured to `MAIN/2021-01-31/SNOMEDCT-UK-CL`, concepts visible on authoring task #100 can be retrieved using the following request:
 
 ```json
-GET /snomed-ct/v3/SNOMEDCT-UK-CL/100/concepts
+GET /snomedct/SNOMEDCT-UK-CL/100/concepts
 ```
 
 An alternative request that uses an absolute path would be the following:
 
 ```json
-GET /snomed-ct/v3/MAIN/2021-01-31/SNOMEDCT-UK-CL/100/concepts
+GET /snomedct/MAIN/2021-01-31/SNOMEDCT-UK-CL/100/concepts
 ```
 
 An important difference is that the relative `path` parameter tracks the working branch specified in the code system's settings, so requests using relative paths do not need to be adjusted when a code system is upgraded to a more recent International Edition.
@@ -55,7 +55,7 @@ The substrate represented by a path range consists of concepts that were created
 To retrieve concepts authored or edited following version 2020-08-05 of code system SNOMEDCT-UK-CL, the following path expression should be used:
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/SNOMEDCT-UK-CL/2020-08-05...MAIN/2021-01-31/SNOMEDCT-UK-CL/concepts
+GET /snomedct/MAIN/2019-07-31/SNOMEDCT-UK-CL/2020-08-05...MAIN/2021-01-31/SNOMEDCT-UK-CL/concepts
 ```
 
 The result set includes the ones appearing or changing between versions 2019-07-31 and 2021-01-31 of the International Edition; if this is not desired, additional constraints can be added to exclude them.
@@ -65,7 +65,7 @@ The result set includes the ones appearing or changing between versions 2019-07-
 To refer to a branch state at a specific point in time, use the `path@timestamp` format. The timestamp is an integer value expressing the number of milliseconds since the UNIX epoch, 1970-01-01 00:00:00 UTC, and corresponds to "wall clock" time, not component effective time. As an example, if the SNOMED CT International version 2021-07-31 is imported on 2021-09-01 13:50:00 UTC, the following request to retrieve concepts will not include any new or changed concepts appearing in this release:
 
 ```json
-GET /snomed-ct/v3/MAIN@1630504199999/concepts
+GET /snomedct/MAIN@1630504199999/concepts
 ```
 
 Both absolute and relative paths are supported in the `path` part of the expression.
@@ -75,7 +75,7 @@ Both absolute and relative paths are supported in the `path` part of the express
 Concept requests using a branch base point reflect the state of the branch at its beginning, before any changes on it were made. The format of a base path is `path^` (only absolute paths are supported):
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/SNOMEDCT-UK-CL/101^/concepts
+GET /snomedct/MAIN/2019-07-31/SNOMEDCT-UK-CL/101^/concepts
 ```
 
 Returned concepts include all additions and modifications made on SNOMEDCT-UK-CL's working branch, up to point where task #101 starts; neither changes committed to the working branch after task #101, nor changes on task #101 itself are reflected in the result set.
@@ -127,7 +127,7 @@ These arrays hold a set of SCTIDs representing the concept's direct and indirect
 See the following example response for a concept placed deeper in the tree:
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/425758004 // Diagnostic blood test
+GET /snomedct/MAIN/concepts/425758004 // Diagnostic blood test
 {
   [...]
   "ancestorIds": [
@@ -252,7 +252,7 @@ Expands reference set metadata and content, available on [identifier concepts](h
 If a corresponding reference set was already created for an identifier concept (a subtype of `900000000000455006|Reference set`), information about the reference set will appear in the response:
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/900000000000497000?expand=referenceSet() // CTV3 simple map
+GET /snomedct/MAIN/concepts/900000000000497000?expand=referenceSet() // CTV3 simple map
 {
   "id": "900000000000497000",
   "active": true,
@@ -278,7 +278,7 @@ Note that the response object for property `referenceSet` can also be retrieved 
 To retrieve reference set members along with the reference set in a single request, use a nested `expand` property named `members`:
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/900000000000497000?expand=referenceSet(expand(members()))
+GET /snomedct/MAIN/concepts/900000000000497000?expand=referenceSet(expand(members()))
 {
   "id": "900000000000497000",
   [...]
@@ -325,7 +325,7 @@ Returns all active descriptions that have at least one active language reference
 This information is also returned when expand options `pt()` or `fsn()` (described later) are present.
 
 ```json
-GET /snomed-ct/v3/MAIN/2011-07-31/concepts/86299006?expand=preferredDescriptions()
+GET /snomedct/MAIN/2011-07-31/concepts/86299006?expand=preferredDescriptions()
 {
   "id": "86299006", // Concept SCTID
   [...]
@@ -378,7 +378,7 @@ Returns hierarchy tags extracted from FSNs.
 An array containing the hierarchy tags from all Fully Specified Name-typed descriptions of the concept is added as an expanded property if this option is present:
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/103981000119101?expand=preferredDescriptions(),semanticTags()
+GET /snomedct/MAIN/concepts/103981000119101?expand=preferredDescriptions(),semanticTags()
 {
   "id": "103981000119101",
   "released": true,
@@ -411,7 +411,7 @@ The concept stating the reason for inactivation is placed under `inactivationPro
 Historical associations are returned under the property `inactivationProperties.associationTargets` as an array of objects. Each object includes the identifier of the historical association reference set and the target component identifier, in the same manner as described above &ndash; as an object with a single `id` property and as a string value.
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/99999003?expand=inactivationProperties()
+GET /snomedct/MAIN/concepts/99999003?expand=inactivationProperties()
 {
   "id": "99999003",
   "active": false,
@@ -454,7 +454,7 @@ Reference set members can also be fetched in a "standalone" fashion via the [SNO
 Compare the output with the one returned when inactivation indicators were expanded. The last two reference set members correspond to the historical association and the inactivation reason, respectively:
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/99999003?expand=members()
+GET /snomedct/MAIN/concepts/99999003?expand=members()
 {
   "id": "99999003",
   [...]
@@ -551,7 +551,7 @@ Allowed reference set type constants are (these are described in the [Reference 
 See the following example for combining reference set member status filtering and reference set type restriction:
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/99999003?expand=members(active:true, refSetType:["ASSOCIATION","ATTRIBUTE_VALUE"])
+GET /snomedct/MAIN/concepts/99999003?expand=members(active:true, refSetType:["ASSOCIATION","ATTRIBUTE_VALUE"])
 {
   "id": "99999003",
   [...]
@@ -602,7 +602,7 @@ Property `module` does not appear in compact form (with a single `id` key) in th
 {% endhint %}
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/138875005?expand=module()
+GET /snomedct/MAIN/concepts/138875005?expand=module()
 {
   "id": "138875005",
   "active": true,
@@ -635,7 +635,7 @@ GET /snomed-ct/v3/MAIN/concepts/138875005?expand=module()
 Expands the definition status concept identified by the property `definitionStatusId`, and places it under the property `definitionStatus`. When this property is not expanded, a smaller placeholder object with a single `id` property is returned in the response. Nested `expand()` options work the same way as in the case of `module()`.
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/138875005?expand=definitionStatus()
+GET /snomedct/MAIN/concepts/138875005?expand=definitionStatus()
 {
   "id": "138875005",
   "active": true,
@@ -714,7 +714,7 @@ GET /codesystems/SNOMEDCT-UK-CL
 An example response pair demonstrating cases where the PT is different in certain dialects:
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/703247007?expand=pt()
+GET /snomedct/MAIN/concepts/703247007?expand=pt()
 // Accept-Language: en-US
 {
   "id": "703247007",
@@ -735,7 +735,7 @@ GET /snomed-ct/v3/MAIN/concepts/703247007?expand=pt()
 ```
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/703247007?expand=pt()
+GET /snomedct/MAIN/concepts/703247007?expand=pt()
 // Accept-Language: en-x-900000000000508004
 {
   "id": "703247007",
@@ -782,7 +782,7 @@ Items in the collection resource are sorted based on the sort configuration give
 Allows nested expansion of description properties.
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/86299006?expand=descriptions(active: true, sort: "term.exact:asc")
+GET /snomedct/MAIN/concepts/86299006?expand=descriptions(active: true, sort: "term.exact:asc")
 {
   "id": "86299006",
   [...]
@@ -883,7 +883,7 @@ Items in the collection resource are sorted based on the sort configuration give
 Allows nested expansion of relationship properties.
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/404684003?expand=relationships(active: true)
+GET /snomedct/MAIN/concepts/404684003?expand=relationships(active: true)
 {
   "id": "404684003", // Clinical finding
   "active": true,
@@ -974,7 +974,7 @@ Applicable only when a single concept's properties are expanded. Collects the nu
 Allows nested expansion of concept properties on each collected descendant.
 
 ```json
-GET /snomed-ct/v3/MAIN/concepts/138875005?expand=descendants(direct: true)
+GET /snomedct/MAIN/concepts/138875005?expand=descendants(direct: true)
 {
   "id": "138875005", // SNOMED CT Concept
   "active": true,
@@ -1043,7 +1043,7 @@ Allows nested expansion of concept properties on each collected ancestor.
 A GET request that includes a concept identifier as its last path parameter will return information about the concept in question:
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005
+GET /snomedct/MAIN/2019-07-31/concepts/138875005
 ```
 
 #### **Query parameters**
@@ -1085,7 +1085,7 @@ Supported names for field selection are the following:
 Specifying any other field name results in a `400 Bad Request` response:
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?field=xyz
+GET /snomedct/MAIN/2019-07-31/concepts/138875005?field=xyz
 {
   "status": 400,
   "code": 0,
@@ -1099,7 +1099,7 @@ GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?field=xyz
 Fields with a value of `null` do not appear in the response, even if they are selected for inclusion.
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?field=id,active,score
+GET /snomedct/MAIN/2019-07-31/concepts/138875005?field=id,active,score
 {
   "id": "138875005",
   "active": true
@@ -1116,7 +1116,7 @@ Controls the logic behind Preferred Term and Fully Specified Name selection for 
 Specifying an unknown language or dialect results in a `400 Bad Request` response:
 
 ```json
-GET /snomed-ct/v3/MAIN/2019-07-31/concepts/138875005?expand=fsn()
+GET /snomedct/MAIN/2019-07-31/concepts/138875005?expand=fsn()
 // Accept-Language: hu-HU
 {
   "status": 400,
@@ -1135,7 +1135,7 @@ A GET request that ends with `concepts` as its last path parameter will search f
 The response consists of a collection of concept resources, a `searchAfter` key (described in section "Query parameters" below), the limit used when computing response items and the total hit count:
 
 ```json
-GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts
+GET /snomedct/SNOMEDCT/2021-01-31/concepts
 {
   "items": [
     {
@@ -1183,7 +1183,7 @@ As ECL syntax uses special symbols, query parameters should be encoded to URL-sa
 {% endhint %}
 
 ```json
-GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?ecl=<<404684003|Clinical finding|:363698007|Finding site|=40238009|Hand joint structure|
+GET /snomedct/SNOMEDCT/2021-01-31/concepts?ecl=<<404684003|Clinical finding|:363698007|Finding site|=40238009|Hand joint structure|
 {
   "items": [
     [...]
@@ -1240,7 +1240,7 @@ Restricts the result set by description type; matches must have at least one act
 Filters concepts by hierarchy. All four query parameters accept a comma-separated list of SCTIDs; the result set will contain direct descendants of the specified values in the case of `parent` and `statedParent`, and a transitive closure of descendants for `ancestor` and `statedAncestor` (including direct children). Parameters starting with `stated...` will use the stated IS A hierarchy for computations.
 
 ```json
-GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?parent=138875005&field=id
+GET /snomedct/SNOMEDCT/2021-01-31/concepts?parent=138875005&field=id
 {
   "items": [
     // Inferred direct descendants of 138875005|Snomed CT Concept|
@@ -1265,7 +1265,7 @@ Controls whether relevance-based sorting should take **Degree of Interest** (DOI
 The SCTID of matching concepts must have the specified 7-digit [namespace identifier](https://confluence.ihtsdotools.org/display/DOCRELFMT/6.6+Namespace-Identifier)🌎, eg. `1000154`. When matching by namespace concept ID, a comma-separated list of SCTIDs are expected, and the associated 7-digit identifier will be extracted from the active FSNs of each concept entered here.
 
 ```json
-GET /snomed-ct/v3/SNOMEDCT-UK-CL/concepts?namespaceConceptId=370138007&field=id
+GET /snomedct/SNOMEDCT-UK-CL/concepts?namespaceConceptId=370138007&field=id
 {
   "items": [
     // Concept IDs with a namespace identifier of "1000001", corresponding to
@@ -1296,7 +1296,7 @@ When searching for `Unpublished` concepts, the `effectiveTime` property will not
 {% endhint %}
 
 ```json
-GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime
+GET /snomedct/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime
 {
   "items": [
     {
@@ -1346,7 +1346,7 @@ Controls the maximum number of items that should be returned in the collection. 
 Supports **keyset pagination**, ie. retrieving the next page of items based on the response for the current page. To use, set `limit` to the number of items expected on a single page, then run the first search request without setting a `searchAfter` key. The returned response will include the value to be inserted into the next request:
 
 ```json
-GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime
+GET /snomedct/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime
 {
   "items": [
     {
@@ -1365,7 +1365,7 @@ GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,e
   "total": 5580
 }
 
-GET /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime&searchAfter=AoEwMTA3NTQ3MTAwMDExOTEwNw==
+GET /snomedct/SNOMEDCT/2021-01-31/concepts?effectiveTime=20170131&field=id,effectiveTime&searchAfter=AoEwMTA3NTQ3MTAwMDExOTEwNw==
 {
   "items": [
     // List continues from the last item of the previous request
@@ -1412,7 +1412,7 @@ Controls the logic behind Preferred Term and Fully Specified Name selection for 
 POST requests submitted to `concepts/search` perform the same search operation as described for the GET request above, but each query parameter is replaced by a property in the JSON request body:
 
 ```json
-POST /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts/search
+POST /snomedct/SNOMEDCT/2021-01-31/concepts/search
 // Request body
 {
   // Query parameters allowing multiple values must be passed as arrays
@@ -1481,7 +1481,7 @@ A successful commit will result in a `201 Created` response; the response header
 
 ```json
 // Create a concept on the working branch of code system SNOMEDCT-B2I
-POST /snomed-ct/v3/SNOMEDCT-B2I/concepts
+POST /snomedct/SNOMEDCT-B2I/concepts
 // Request body
 {
   "active": true,
@@ -1563,7 +1563,7 @@ POST /snomed-ct/v3/SNOMEDCT-B2I/concepts
 }
 
 // Response: 201 Created
-// Location: /snomed-ct/v3/SNOMEDCT-B2I/concepts/<SCTID of created concept>
+// Location: /snomedct/SNOMEDCT-B2I/concepts/<SCTID of created concept>
 ```
 
 #### **Request headers**
@@ -1591,7 +1591,7 @@ Specifies whether deletion of the concept should be allowed, if it has component
 The default value is `false`; with the option disabled, attempting to delete a released component results in a `409 Conflict` response:
 
 ```json
-DELETE /snomed-ct/v3/SNOMEDCT/2021-01-31/concepts/138875005
+DELETE /snomedct/SNOMEDCT/2021-01-31/concepts/138875005
 {
   "status": 409,
   "code": 0,

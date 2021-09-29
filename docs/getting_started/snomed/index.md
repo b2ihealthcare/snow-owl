@@ -5,7 +5,7 @@ Now that we have a SNOMED CT Code System, let's take a look at its content. We c
 For sake of simplicity, let's search for the available concepts using the [SNOMED CT API](../api/snomed/index.md). For that we will need the branch we would like to query, but fortunately we already know the value from our previous call to the Code Systems API, it was `MAIN`. To list all available concepts in a SNOMED CT Code System, use the following command:
 
 ```bash
-curl http://localhost:8080/snowowl/snomed-ct/v3/MAIN/concepts
+curl http://localhost:8080/snowowl/snomedct/MAIN/concepts
 ```
 
 And the response is:
