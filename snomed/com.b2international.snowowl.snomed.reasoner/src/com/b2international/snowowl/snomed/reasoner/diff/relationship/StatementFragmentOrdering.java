@@ -83,9 +83,9 @@ public final class StatementFragmentOrdering extends Ordering<StatementFragment>
 			final StatementFragmentWithValue v1 = (StatementFragmentWithValue) o1;
 			final StatementFragmentWithValue v2 = (StatementFragmentWithValue) o2;
 			
-			final int typeDelta = v1.getValueType().compareTo(v2.getValueType());
-			if (typeDelta != 0) {
-				return typeDelta;
+			final int valueTypeDelta = v1.getValueType().compareTo(v2.getValueType());
+			if (valueTypeDelta != 0) {
+				return valueTypeDelta;
 			}
 			
 			final int rawValueDelta = v1.getRawValue().compareTo(v2.getRawValue());
