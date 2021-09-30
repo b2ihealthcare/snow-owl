@@ -50,6 +50,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.Attachment;
@@ -245,6 +246,16 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	@Override
 	public Attachment execute(final BranchContext context) {
 		final String referenceBranch = context.path();
+
+		if (referenceBranch.contains(RevisionIndex.AT_CHAR) && !Rf2ReleaseType.SNAPSHOT.equals(releaseType)) {
+			throw new BadRequestException("Only snapshot export is allowed for point-in-time branch path '%s'.", referenceBranch);
+		}
+		
+		if (referenceBranch.contains(RevisionIndex.REV_RANGE)) {
+			if (!Rf2ReleaseType.DELTA.equals(releaseType) || needsVersionBranchesForDeltaExport()) {
+				throw new BadRequestException("Only unpublished delta export is allowed for branch path range '%s'.", referenceBranch);
+			}
+		}
 		
 		// register export start time for later use
 		final long exportStartTime = Instant.now().toEpochMilli();
@@ -298,7 +309,12 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			
 			// export content from reference branch
 			if (includePreReleaseContent) {
-				final String referenceBranchToExport = String.format("%s%s%s", referenceBranch, RevisionIndex.AT_CHAR, exportStartTime);
+				
+				// If a special branch path was given, use it directly
+				final String referenceBranchToExport = containsSpecialCharacter(referenceBranch) 
+						? referenceBranch
+						: RevisionIndex.toBranchAtPath(referenceBranch, exportStartTime);
+				
 				exportBranch(releaseDirectory, 
 						context, 
 						referenceBranchToExport, 
@@ -322,6 +338,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				FileUtils.deleteDirectory(exportDirectory.toFile());
 			}
 		}
+	}
+
+	private boolean containsSpecialCharacter(final String referenceBranch) {
+		return referenceBranch.contains(RevisionIndex.AT_CHAR) || referenceBranch.contains(RevisionIndex.REV_RANGE);
 	}
 
 	private Multimap<String, String> getLanguageCodes(BranchContext context, List<String> branchesToExport) {
@@ -391,7 +411,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				}
 				break;
 			case DELTA:
-				if (startEffectiveTime != null || endEffectiveTime != null || !includePreReleaseContent) {
+				if (needsVersionBranchesForDeltaExport()) {
 					versionsToExport.stream()
 						.map(v -> v.getPath())
 						.filter(v -> !branchesToExport.contains(v))
@@ -418,6 +438,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 		
 		return branchRangesToExport.build();
+	}
+
+	private boolean needsVersionBranchesForDeltaExport() {
+		return startEffectiveTime != null || endEffectiveTime != null || !includePreReleaseContent;
 	}
 
 	private LocalDateTime getArchiveEffectiveTime(final RepositoryContext context, final TreeSet<CodeSystemVersion> versionsToExport) {
@@ -527,7 +551,12 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private TreeSet<CodeSystemVersion> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
 		final String referenceBranch = context.path();
 		final TreeSet<CodeSystemVersion> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
-		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
+		
+		// XXX: Versions do not need to be calculated for special path exports
+		if (!containsSpecialCharacter(referenceBranch)) {
+			collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
+		}
+		
 		return visibleVersions;
 	}
 

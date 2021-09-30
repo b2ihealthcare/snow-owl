@@ -53,6 +53,7 @@ import org.junit.Test;
 import com.b2international.commons.Pair;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.json.Json;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.attachments.Attachment;
@@ -62,6 +63,7 @@ import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
@@ -72,6 +74,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -1229,6 +1232,141 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlAxiomMemberLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	@Test
+	public void exportDeltaWithBranchPoint() throws Exception {
+		final IBranchPath branchPoint = BranchPathUtils.createPath(branchPath.getPath() + RevisionIndex.AT_CHAR + "1234567");
+		final Json exportConfig = Json.object("type", Rf2ReleaseType.DELTA.name());
+		
+		export(branchPoint, exportConfig)
+			.then()
+			.statusCode(400);
+	}
+
+	@Test
+	public void exportSnapshotWithBranchPoint() throws Exception {
+
+		final CommitResult commitResult = SnomedRequests.prepareCommit()
+			.setBody(SnomedRequests.prepareNewRelationship()
+				.setId(new NamespaceIdStrategy(""))
+				.setActive(true)
+				.setCharacteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
+				.setDestinationId(Concepts.ROOT_CONCEPT)
+				.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+				.setModuleId(Concepts.MODULE_SCT_CORE)
+				.setGroup(0)
+				.setSourceId(Concepts.ACCEPTABILITY)
+				.setTypeId(Concepts.IS_A)
+				.setUnionGroup(0))
+			.setCommitComment("Created new relationship")
+			.setAuthor(RestExtensions.USER)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync(1L, TimeUnit.MINUTES);
+
+		final long timestamp = commitResult.getCommitTimestamp() - 1L;
+		final String relationshipId = commitResult.getResultAs(String.class);
+
+		// id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId
+		final String relationshipLine = getComponentLine(List.of(
+			relationshipId, 
+			"", 
+			"1", 
+			Concepts.MODULE_SCT_CORE, 
+			Concepts.ACCEPTABILITY, 
+			Concepts.ROOT_CONCEPT, 
+			"0", 
+			Concepts.IS_A, 
+			Concepts.INFERRED_RELATIONSHIP, 
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
+
+		final Map<String, Object> config = Map.of(
+			"type", Rf2ReleaseType.SNAPSHOT.name(),
+			"includeUnpublished", true
+		);
+
+		final File exportArchive = doExport(branchPath, config);
+
+		final String relationshipFileName = "sct2_Relationship_Snapshot";
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, relationshipLine));
+
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+
+		/* 
+		 * A snapshot export with a timestamp set before creating the relationship should result in the relationship
+		 * not appearing in the export file.
+		 */
+		final IBranchPath branchPoint = BranchPathUtils.createPath(branchPath.getPath() + RevisionIndex.AT_CHAR + timestamp);
+		final File exportArchiveWithTimestamp = doExport(branchPoint, config);
+		fileToLinesMap.clear();
+		fileToLinesMap.put(relationshipFileName, Pair.of(false, relationshipLine));
+
+		assertArchiveContainsLines(exportArchiveWithTimestamp, fileToLinesMap);
+	}
+	
+	@Test
+	public void exportSnapshotWithBranchRange() throws Exception {
+		final IBranchPath taskBranchPath = BranchPathUtils.createPath(branchPath, "task");
+		branching.createBranch(taskBranchPath).statusCode(201);
+		
+		final IBranchPath branchRange = BranchPathUtils.createPath(branchPath.getPath() + RevisionIndex.REV_RANGE + taskBranchPath.getPath());
+		final Json exportConfig = Json.object("type", Rf2ReleaseType.SNAPSHOT.name());
+		
+		export(branchRange, exportConfig)
+			.then()
+			.statusCode(400);
+	}
+	
+	@Test
+	public void exportDeltaWithBranchRange() throws Exception {
+		final String relationshipOnParent = createNewRelationship(branchPath);
+		
+		final IBranchPath taskBranchPath = BranchPathUtils.createPath(branchPath, "task");
+		branching.createBranch(taskBranchPath).statusCode(201);
+
+		final String relationshipOnTask = createNewRelationship(taskBranchPath);
+		
+		final Map<String, Object> config = Map.of(
+			"type", Rf2ReleaseType.DELTA.name(),
+			"includeUnpublished", true
+		);
+		
+		// A "standard" delta export should include both unpublished lines
+		final File exportArchive = doExport(taskBranchPath, config);
+		
+		final String relationshipFileName = "sct2_StatedRelationship_Delta";
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, createRelationshipLine(relationshipOnParent)));
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, createRelationshipLine(relationshipOnTask)));
+
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+		
+		// Delta export with a path range can restrict the set of visible components
+		final IBranchPath branchRange = BranchPathUtils.createPath(branchPath.getPath() + RevisionIndex.REV_RANGE + taskBranchPath.getPath());
+		final File exportArchiveWithBranchRange = doExport(branchRange, config);
+		
+		fileToLinesMap.clear();
+		fileToLinesMap.put(relationshipFileName, Pair.of(false, createRelationshipLine(relationshipOnParent)));
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, createRelationshipLine(relationshipOnTask)));
+		
+		assertArchiveContainsLines(exportArchiveWithBranchRange, fileToLinesMap);
+	}
+
+	private String createRelationshipLine(final String relationshipId) {
+		// id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId
+		return getComponentLine(List.of(
+			relationshipId, 
+			"", 
+			"1", 
+			Concepts.MODULE_SCT_CORE, 
+			Concepts.ROOT_CONCEPT, 
+			Concepts.NAMESPACE_ROOT, 
+			"0", 
+			Concepts.PART_OF, 
+			Concepts.STATED_RELATIONSHIP, 
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
 	}
 	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {
