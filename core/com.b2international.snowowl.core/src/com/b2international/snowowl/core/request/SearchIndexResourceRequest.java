@@ -47,7 +47,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
-	public static final SortField SCORE = SortField.descending(SortBy.FIELD_SCORE);
+	public static final SortField SCORE = Sort.fieldDesc(SortBy.FIELD_SCORE);
 	
 	@Override
 	protected final B doExecute(C context) throws IOException {

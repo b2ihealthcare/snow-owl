@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
@@ -109,7 +109,7 @@ public class SnomedContentRule extends ExternalResource {
 		
 		final Versions snomedVersions = ResourceRequests.prepareSearchVersion()
 			.filterByResource(SNOMEDCT)
-			.sortBy(SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
+			.sortBy(Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
 			.setLimit(1)
 			.buildAsync()
 			.execute(eventBus)

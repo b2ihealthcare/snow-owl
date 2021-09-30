@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.internal.validation.ValidationConfigurat
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobs;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -165,7 +165,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 						.isWhitelisted(false)
 						.all()
 						.filterByResourceUri(codeSystemURI)
-						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
+						.sortBy(Sort.fieldAsc(ValidationIssue.Fields.RULE_ID))
 						.buildAsync()
 						.execute(bus)
 						.then(issues -> {

@@ -66,7 +66,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.*;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
@@ -566,7 +566,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 				.filterByActive(true)
-				.sortBy(SortField.descending(field))
+				.sortBy(Sort.fieldDesc(field))
 				.setLimit(1);
 			
 			// See the comment in setModules; a value of "null" means that all modules should be exported 
@@ -1085,7 +1085,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return ResourceRequests.prepareSearchVersion()
 				.all()
 				.filterByResource(resource)
-				.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
+				.sortBy(SearchResourceRequest.Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
 				.buildAsync()
 				.get(context);
 	}

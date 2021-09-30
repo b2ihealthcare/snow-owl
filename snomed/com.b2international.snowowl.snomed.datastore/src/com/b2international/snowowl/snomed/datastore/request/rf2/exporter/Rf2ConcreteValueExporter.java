@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -71,7 +71,7 @@ public final class Rf2ConcreteValueExporter
 		return SnomedRequests
 			.prepareSearchRelationship()
 			.filterByValueTypes(VALUE_TYPES)
-			.sortBy(SortField.ascending(SnomedRelationshipIndexEntry.Fields.ID));
+			.sortBy(Sort.fieldAsc(SnomedRelationshipIndexEntry.Fields.ID));
 	}
 
 	@Override

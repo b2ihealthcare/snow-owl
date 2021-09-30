@@ -57,7 +57,7 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.request.io.ImportResponse;
@@ -366,7 +366,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			.filterByType(SnomedRefSetType.LANGUAGE)
 			.filterByActive(true)
 			.setFields(SnomedConceptDocument.Fields.ID)
-			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
+			.sortBy(Sort.fieldAsc(SnomedConceptDocument.Fields.ID))
 			.build()
 			.execute(context);
 		

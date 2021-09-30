@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -81,7 +81,7 @@ public final class Rf2RefSetDescriptorRefSetExporter extends Rf2Exporter<SnomedR
 	protected SnomedRefSetSearchRequestBuilder createSearchRequestBuilder() {
 		return SnomedRequests
 				.prepareSearchRefSet()
-				.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID));
+				.sortBy(Sort.fieldAsc(SnomedConceptDocument.Fields.ID));
 	}
 
 	@Override
