@@ -28,10 +28,10 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -75,13 +75,13 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 			});
 	}
 	
-	@ApiOperation(
-			value="Synchronize upgrade codesystem with the original codesystem (EXPERIMENTAL)",
-			notes="Synchronize any changes on the original code system with the upgrade code system."
-			)
+	@Operation(
+		summary="Synchronize upgrade codesystem with the original codesystem (EXPERIMENTAL)",
+		description="Synchronize any changes on the original code system with the upgrade code system."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Upgrade code system synchronized"),
-		@ApiResponse(code = 400, message = "Code system could not be synchronized with the downstream code system", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "Upgrade code system synchronized"),
+		@ApiResponse(responseCode = "400", description = "Code system could not be synchronized with the downstream code system")
 	})
 	@PostMapping(value = "/sync/", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -89,46 +89,46 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 			@RequestBody
 			final CodeSystemUpgradeSyncRestInput body) {
 		final String codeSystemId = body.getCodeSystemId();
-		final CodeSystemURI source = body.getSource();
+		final ResourceURI source = body.getSource();
 		
-		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
-				.filterById(codeSystemId)
-				.buildAsync()
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES)
-				.first()
-				.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
+			.filterById(codeSystemId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.first()
+			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
 		
-		 CodeSystemRequests.prepareUpgradeSynchronization(codeSystem.getCodeSystemURI(), source)
-				.build(codeSystem.getRepositoryId())
-				.execute(getBus());
+		 CodeSystemRequests.prepareUpgradeSynchronization(codeSystem.getResourceURI(), source)
+			.buildAsync()
+			.execute(getBus());
 	}
 	
-	@ApiOperation(
-			value="Complete a codesystem upgrade (EXPERIMENTAL)",
-			notes="Completes the upgrade process of a Code System to the newer extensionOf Code System dependency."
-			)
+	@Operation(
+		summary="Complete a codesystem upgrade (EXPERIMENTAL)",
+		description="Completes the upgrade process of a Code System to the newer extensionOf Code System dependency."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Code system upgrade completed"),
-		@ApiResponse(code = 400, message = "Code System upgrade cannot be completed", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "Code system upgrade completed"),
+		@ApiResponse(responseCode = "400", description = "Code System upgrade cannot be completed")
 	})
 	@PostMapping("/{id}/complete")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void complete(
-			@ApiParam(value = "Code System identifier", required = true)
+			@Parameter(description = "Code System identifier", required = true)
 			@PathVariable("id") 
 			final String codeSystemId) {
-		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
-				.filterById(codeSystemId)
-				.buildAsync()
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES)
-				.first()
-				.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+		
+		CodeSystemRequests.prepareSearchCodeSystem()
+			.filterById(codeSystemId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.first()
+			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
 		
 		CodeSystemRequests.prepareComplete(codeSystemId)
-				.build(codeSystem.getRepositoryId())
-				.execute(getBus());		
+			.buildAsync()
+			.execute(getBus());		
 	}
-	
 }

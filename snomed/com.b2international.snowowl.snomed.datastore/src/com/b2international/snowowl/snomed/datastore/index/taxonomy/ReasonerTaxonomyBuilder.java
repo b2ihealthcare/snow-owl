@@ -557,33 +557,34 @@ public final class ReasonerTaxonomyBuilder {
 						lastSourceId[0] = sourceId;
 					}
 				
-				final long statementId = Long.parseLong(relationship[0]);
-				// final String sourceId = relationship[1];
-				final long typeId = Long.parseLong(relationship[2]);
-				final Long destinationId = ifNotNull(relationship[3], Long::valueOf);
-				final boolean destinationNegated = Boolean.parseBoolean(relationship[4]);
-				final RelationshipValueType valueType = ifNotNull(relationship[5], RelationshipValueType::valueOf);
-				final BigDecimal decimalValue = ifNotNull(relationship[6], DecimalUtils::decode);
-				final String stringValue = relationship[7];
-				final int group = Integer.parseInt(relationship[8]);
-				final int unionGroup = Integer.parseInt(relationship[9]);
-				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[10]);
-				final boolean released = Boolean.parseBoolean(relationship[11]);
-				
-				final StatementFragment statement;
-				if (destinationId != null) {
-					statement = new StatementFragmentWithDestination(
-						typeId, group, unionGroup, universal, statementId, -1L, released, destinationId, destinationNegated);
-				} else {
-					final String rawValue = RelationshipValueType.STRING.equals(valueType)
-						? stringValue
-						: decimalValue.toPlainString();	
+					final long statementId = Long.parseLong(relationship[0]);
+					// final String sourceId = relationship[1];
+					final long typeId = Long.parseLong(relationship[2]);
+					final Long destinationId = ifNotNull(relationship[3], Long::valueOf);
+					final boolean destinationNegated = Boolean.parseBoolean(relationship[4]);
+					final RelationshipValueType valueType = ifNotNull(relationship[5], RelationshipValueType::valueOf);
+					final BigDecimal decimalValue = ifNotNull(relationship[6], DecimalUtils::decode);
+					final String stringValue = relationship[7];
+					final int group = Integer.parseInt(relationship[8]);
+					final int unionGroup = Integer.parseInt(relationship[9]);
+					final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[10]);
+					final boolean released = Boolean.parseBoolean(relationship[11]);
 					
-					statement = new StatementFragmentWithValue(
-						typeId, group, unionGroup, universal, statementId, -1L, released, valueType, rawValue);
-        }
-					
-				fragments.add(statement);
+					final StatementFragment statement;
+					if (destinationId != null) {
+						statement = new StatementFragmentWithDestination(
+							typeId, group, unionGroup, universal, statementId, -1L, released, destinationId, destinationNegated);
+					} else {
+						final String rawValue = RelationshipValueType.STRING.equals(valueType)
+							? stringValue
+							: decimalValue.toPlainString();	
+						
+						statement = new StatementFragmentWithValue(
+							typeId, group, unionGroup, universal, statementId, -1L, released, valueType, rawValue);
+					}
+						
+					fragments.add(statement);
+				}
 			});
 		
 		if (!lastSourceId[0].isEmpty()) {

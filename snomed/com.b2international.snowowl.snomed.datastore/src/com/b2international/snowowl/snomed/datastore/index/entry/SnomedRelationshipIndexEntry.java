@@ -28,7 +28,6 @@ import java.util.Set;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;

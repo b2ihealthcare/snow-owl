@@ -91,7 +91,7 @@ public final class RelationshipValue implements Serializable {
 		final String stringValue) {
 	
 		if (valueType == null) {
-			if (integerValue != null || decimalValue != null || stringValue != null) {
+			if (numericValue != null || stringValue != null) {
 				throw new IllegalArgumentException("Value field has been loaded without a valueType field, unable to determine actual relationship value.");
 			}
 			

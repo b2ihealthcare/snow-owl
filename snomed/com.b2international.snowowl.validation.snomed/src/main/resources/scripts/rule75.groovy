@@ -34,14 +34,9 @@ Query.select(String[].class)
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4
 		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID, // 5
-<<<<<<< HEAD
-		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID //6
-	)
-=======
 		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, //6
 		SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE, //7
 		SnomedRelationshipIndexEntry.Fields.STRING_VALUE) //8
->>>>>>> refs/remotes/origin/7.x
 	.where(effectiveTimeExpressionBuilder.build())
 	.sortBy(SortBy.builder()
 		.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)

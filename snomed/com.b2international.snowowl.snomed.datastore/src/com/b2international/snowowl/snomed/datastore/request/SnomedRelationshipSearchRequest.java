@@ -45,8 +45,8 @@ import com.google.common.collect.Multimap;
 final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest<SnomedRelationships, SnomedRelationshipIndexEntry> {
 
 	private static final Multimap<String, String> REPLACE_VALUE_FIELD = ImmutableMultimap.<String, String>builder()
-			.putAll(SnomedRelationship.Fields.VALUE, SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE, SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE, SnomedRelationshipIndexEntry.Fields.STRING_VALUE, SnomedRelationshipIndexEntry.Fields.VALUE_TYPE)
-			.build();
+		.putAll(SnomedRelationship.Fields.VALUE, SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE, SnomedRelationshipIndexEntry.Fields.STRING_VALUE, SnomedRelationshipIndexEntry.Fields.VALUE_TYPE)
+		.build();
 
 	enum OptionKey {
 		SOURCE,

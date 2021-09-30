@@ -41,11 +41,11 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -53,9 +53,9 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.version.Version;
-import com.b2international.snowowl.core.merge.Merge.Status;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -1297,56 +1297,62 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 	public void upgrade24UpgradeWithEmptyExtension() throws Exception {
 		
 		// new SI concept
-		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		ResourceURI base = new ResourceURI(SNOMEDCT);
+		createConcept(base, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
-		String effectiveDate1 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate1, effectiveDate1).statusCode(201);
-		CodeSystemURI upgradeVersion1 = CodeSystemURI.branch(SNOMEDCT, effectiveDate1);
+		LocalDate effectiveDate1 = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate1).statusCode(201);
+		ResourceURI upgradeVersion1 = base.withPath(effectiveDate1.toString());
 		
 		// new SI concept
-		String conceptId = createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		String conceptId = createConcept(base, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
-		String effectiveDate2 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate2, effectiveDate2).statusCode(201);
-		CodeSystemURI upgradeVersion2 = CodeSystemURI.branch(SNOMEDCT, effectiveDate2);
+		LocalDate effectiveDate2 = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate2).statusCode(201);
+		ResourceURI upgradeVersion2 = base.withPath(effectiveDate2.toString());
 		
 		// new SI concept
-		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		createConcept(base, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
-		String effectiveDate3 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate3, effectiveDate3).statusCode(201);
-		CodeSystemURI upgradeVersion3 = CodeSystemURI.branch(SNOMEDCT, effectiveDate3);
+		LocalDate effectiveDate3 = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate3).statusCode(201);
+		ResourceURI upgradeVersion3 = base.withPath(effectiveDate3.toString());
 		
 		// create extension on the latest SI VERSION
 		CodeSystem extension = createExtension(upgradeVersion1, branchPath.lastSegment());
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion2);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion2);
 		
 		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
 		
-		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
-				.build(upgradeCodeSystem.getRepositoryId())
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extension.getResourceURI())
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES);
+		
 		assertTrue(result);
 		
 		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
 		
-		Boolean successComplete = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
-			.build(upgradeCodeSystem.getRepositoryId())
+		Boolean successComplete = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getId())
+			.buildAsync()
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
+		
 		assertTrue(successComplete);
 		
-		getComponent(extension.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+		getComponent(extension.getResourceURI().toString(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
-		BaseRevisionBranching branching = ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(BaseRevisionBranching.class);
+		BaseRevisionBranching branching = ApplicationContext.getServiceForClass(RepositoryManager.class)
+			.get(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.service(BaseRevisionBranching.class);
+		
 		assertEquals(expectedState, branching.getBranchState(branchPath, compareWith));
 	}
 	

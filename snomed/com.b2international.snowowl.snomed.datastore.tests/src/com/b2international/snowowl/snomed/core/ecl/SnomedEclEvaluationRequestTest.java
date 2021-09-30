@@ -1549,7 +1549,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 				.statedParents(DRUG_ROOTL)	
 				.build(),
 				
-			statementsWithValue
+			isStatementsWithValue()
 				? decimalValue(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build()
 				: decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build()
 		);

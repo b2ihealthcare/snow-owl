@@ -15,21 +15,21 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.ResourceURI;
 
 /**
  * @since 7.17.3
  */
 public class CodeSystemUpgradeSyncRestInput {
 
-	private CodeSystemURI source;
+	private ResourceURI source;
 	private String codeSystemId;
 	
-	public CodeSystemURI getSource() {
+	public ResourceURI getSource() {
 		return source;
 	}
 	
-	public void setSource(CodeSystemURI source) {
+	public void setSource(ResourceURI source) {
 		this.source = source;
 	}
 	
