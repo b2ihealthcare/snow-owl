@@ -152,9 +152,7 @@ public class FhirConceptMapTranslateOperationController extends AbstractFhirCont
 			.code(code)
 			.system(system);
 		
-		if (version.isPresent()) {
-			builder.version(version.get());
-		}
+		version.ifPresent(builder::version);
 			
 		if(source.isPresent()) {
 			builder.source(source.get());
