@@ -28,6 +28,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -52,6 +53,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.index.util.DecimalUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
@@ -511,6 +513,32 @@ public final class ReasonerTaxonomyBuilder {
 
 	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Builder<StatementFragment> fragmentBuilder) {
 		
+<<<<<<< HEAD
+=======
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedRelationshipIndexEntry.class)
+				.fields(SnomedRelationshipIndexEntry.Fields.ID,                  // 0
+						SnomedRelationshipIndexEntry.Fields.SOURCE_ID,           // 1
+						SnomedRelationshipIndexEntry.Fields.TYPE_ID,             // 2
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,      // 3 
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED, // 4
+						SnomedRelationshipIndexEntry.Fields.VALUE_TYPE,          // 5
+						SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,       // 6
+						SnomedRelationshipIndexEntry.Fields.STRING_VALUE,        // 7
+						SnomedRelationshipIndexEntry.Fields.GROUP,               // 8
+						SnomedRelationshipIndexEntry.Fields.UNION_GROUP,         // 9 
+						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,         // 10
+						SnomedRelationshipIndexEntry.Fields.RELEASED)            // 11
+				.where(whereExpressionBuilder.build())
+				.sortBy(SortBy.builder()
+						// XXX: Need to group relationships by source ID
+						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC) 
+						.sortByField(SnomedRelationshipIndexEntry.Fields.ID, Order.ASC)
+						.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+>>>>>>> refs/remotes/origin/7.x
 		final List<StatementFragment> fragments = new ArrayList<>(SCROLL_LIMIT);
 		final String[] lastSourceId = { "" };
 		
@@ -555,7 +583,36 @@ public final class ReasonerTaxonomyBuilder {
 						fragments.clear();
 						lastSourceId[0] = sourceId;
 					}
+<<<<<<< HEAD
+=======
+					fragments.clear();
+					lastSourceId = sourceId;
+				}
+				
+				final long statementId = Long.parseLong(relationship[0]);
+				// final String sourceId = relationship[1];
+				final long typeId = Long.parseLong(relationship[2]);
+				final Long destinationId = ifNotNull(relationship[3], Long::valueOf);
+				final boolean destinationNegated = Boolean.parseBoolean(relationship[4]);
+				final RelationshipValueType valueType = ifNotNull(relationship[5], RelationshipValueType::valueOf);
+				final BigDecimal decimalValue = ifNotNull(relationship[6], DecimalUtils::decode);
+				final String stringValue = relationship[7];
+				final int group = Integer.parseInt(relationship[8]);
+				final int unionGroup = Integer.parseInt(relationship[9]);
+				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[10]);
+				final boolean released = Boolean.parseBoolean(relationship[11]);
+				
+				final StatementFragment statement;
+				if (destinationId != null) {
+					statement = new StatementFragmentWithDestination(
+						typeId, group, unionGroup, universal, statementId, -1L, released, destinationId, destinationNegated);
+				} else {
+					final String rawValue = RelationshipValueType.STRING.equals(valueType)
+						? stringValue
+						: decimalValue.toPlainString();	
+>>>>>>> refs/remotes/origin/7.x
 					
+<<<<<<< HEAD
 					final long statementId = Long.parseLong(relationship[0]);
 					// final String sourceId = relationship[1];
 					final long typeId = Long.parseLong(relationship[2]);
@@ -583,6 +640,10 @@ public final class ReasonerTaxonomyBuilder {
 					}
 					
 					fragments.add(statement);
+=======
+					statement = new StatementFragmentWithValue(
+						typeId, group, unionGroup, universal, statementId, -1L, released, valueType, rawValue);
+>>>>>>> refs/remotes/origin/7.x
 				}
 			});
 		
@@ -639,7 +700,7 @@ public final class ReasonerTaxonomyBuilder {
 						typeId, group, unionGroup, universal, statementId, -1L, false, destinationId, destinationNegated);
 				} else {
 					statement = new StatementFragmentWithValue(
-						typeId, group, unionGroup, universal, statementId, -1L, false, value.toLiteral());
+						typeId, group, unionGroup, universal, statementId, -1L, false, value.type(), value.toRawValue());
 				}
 
 				fragments.add(statement);

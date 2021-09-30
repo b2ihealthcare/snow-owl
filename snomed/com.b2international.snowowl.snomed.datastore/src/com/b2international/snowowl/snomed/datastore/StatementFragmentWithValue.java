@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.util.function.Function;
 
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
@@ -26,7 +27,9 @@ import com.google.common.base.MoreObjects.ToStringHelper;
  */
 public final class StatementFragmentWithValue extends StatementFragment {
 
-	private final String value;
+	private final RelationshipValueType valueType;
+	// Unquoted string or number as string (no prefix or quoting applied)
+	private final String rawValue;
 
 	public StatementFragmentWithValue(
 		final long typeId, 
@@ -35,15 +38,21 @@ public final class StatementFragmentWithValue extends StatementFragment {
 		final boolean universal, 
 		final long statementId,
 		final long moduleId, 
-		final boolean released, 
-		final String value) {
+		final boolean released,
+		final RelationshipValueType valueType,
+		final String rawValue) {
 
 		super(typeId, group, unionGroup, universal, statementId, moduleId, released);
-		this.value = value;
+		this.valueType = valueType;
+		this.rawValue = rawValue;
 	}
 
-	public String getValue() {
-		return value;
+	public RelationshipValueType getValueType() {
+		return valueType;
+	}
+	
+	public String getRawValue() {
+		return rawValue;
 	}
 	
 	@Override
@@ -56,6 +65,7 @@ public final class StatementFragmentWithValue extends StatementFragment {
 	@Override
 	protected ToStringHelper toStringHelper() {
 		return super.toStringHelper()
-			.add("value", value);
+			.add("valueType", valueType)
+			.add("rawValue", rawValue);
 	}
 }

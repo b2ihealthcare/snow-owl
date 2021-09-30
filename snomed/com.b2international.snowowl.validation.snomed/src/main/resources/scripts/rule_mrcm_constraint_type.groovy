@@ -13,7 +13,9 @@ import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
@@ -34,21 +36,50 @@ import com.google.common.collect.Sets
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 Set<ComponentIdentifier> issues = Sets.newHashSet()
 
-def getPredicate = { SnomedConstraint constraint ->
-	return constraint.getPredicate() instanceof SnomedCardinalityPredicate
-			? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate()
-			: constraint.getPredicate()
+def getInnerPredicate = { SnomedPredicate predicate ->
+	if (predicate instanceof SnomedCardinalityPredicate) {
+		return predicate.getPredicate()
+	} else {
+		return predicate
+	}
+}
+
+def getInnerPredicateFromConstraint = { SnomedConstraint constraint ->
+	return getInnerPredicate(constraint.getPredicate())
+}
+
+def getCharacteristicTypeId = { SnomedPredicate predicate ->
+	if (predicate instanceof SnomedRelationshipPredicate) {
+		return predicate.getCharacteristicTypeId()
+	} else if (predicate instanceof SnomedConcreteDomainPredicate) {
+		return predicate.getCharacteristicTypeId()
+	} else {
+		return ""
+	}
+}
+
+def getAttributeExpression = { SnomedPredicate predicate ->
+	if (predicate instanceof SnomedRelationshipPredicate) {
+		return predicate.getAttributeExpression()
+	} else if (predicate instanceof SnomedConcreteDomainPredicate) {
+		return predicate.getAttributeExpression()
+	} else {
+		return ""
+	}
+}
+
+def isRelationshipConstraint = { SnomedConstraint constraint -> 
+	SnomedPredicate predicate = getInnerPredicateFromConstraint(constraint)
+	return predicate instanceof SnomedRelationshipPredicate || predicate instanceof SnomedConcreteDomainPredicate
 }
 
 def mrcmRules = SnomedRequests.prepareSearchConstraint()
-		.all()
-		.build()
-		.execute(ctx)
-		.stream()
-		.filter({SnomedConstraint constraint -> constraint.getPredicate() instanceof SnomedCardinalityPredicate
-			? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate() instanceof SnomedRelationshipPredicate
-			: constraint.getPredicate() instanceof SnomedRelationshipPredicate})
-		.collect();
+	.all()
+	.build()
+	.execute(ctx)
+	.stream()
+	.filter({SnomedConstraint constraint -> isRelationshipConstraint(constraint)})
+	.collect();
 
 def getApplicableConcepts = { String conceptSetExpression ->
 	def expression = Expressions.builder()
@@ -70,12 +101,10 @@ def getApplicableConcepts = { String conceptSetExpression ->
 
 def typeMultimapBuilder = ImmutableMultimap.builder()
 for (SnomedConstraint constraint : mrcmRules) {
-	final SnomedRelationshipPredicate predicate = constraint.getPredicate() instanceof SnomedCardinalityPredicate
-			? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate()
-			: constraint.getPredicate()
-	
-	final String attributeExpression = predicate.getAttributeExpression()	
-	if (!Concepts.IS_A.equals(attributeExpression)) {		
+	final SnomedPredicate predicate = getInnerPredicateFromConstraint(constraint)
+	final String attributeExpression = getAttributeExpression(predicate) 
+
+	if (!Concepts.IS_A.equals(attributeExpression) && !Strings.isNullOrEmpty(attributeExpression)) {		
 		getApplicableConcepts(attributeExpression).forEach({		
 			typeMultimapBuilder.put(it, constraint)		
 		})
@@ -94,8 +123,7 @@ def getApplicableRules = { String conceptId, String typeId, boolean checkCharact
 		for (SnomedConstraint constraint : mrcmRulesByAttributeType.get(typeId)) {
 			if (getCachedApplicableConcepts(constraint.getDomain().toEcl()).contains(conceptId)) {
 				if (checkCharacteristicType) {
-					SnomedRelationshipPredicate predicate = getPredicate(constraint)
-					String charType = predicate.getCharacteristicTypeId()
+					String charType = getCharacteristicTypeId(getInnerPredicateFromConstraint(constraint));
 					if (Concepts.STATED_RELATIONSHIP.equals(charType) || Strings.isNullOrEmpty(charType)) {
 						applicableConstraints.add(constraint)
 					}
@@ -219,8 +247,7 @@ if (params.isUnpublishedOnly) {
 		def allowedDomainExpressions = mrcmRulesByAttributeType.get(typeExpression)
 			.stream()
 			.filter({ SnomedConstraint constraint -> 
-				SnomedRelationshipPredicate predicate = getPredicate(constraint)
-				String charType = predicate.getCharacteristicTypeId()
+				String charType = getCharacteristicTypeId(getInnerPredicateFromConstraint(constraint));				
 				return Strings.isNullOrEmpty(charType) || Concepts.STATED_RELATIONSHIP.equals(charType)})
 			.map({SnomedConstraint constraint -> constraint.getDomain().toEcl()})
 			.collect(Collectors.toSet())
@@ -253,9 +280,9 @@ if (params.isUnpublishedOnly) {
 		.stream()
 		.filter({ String typeId ->
 			mrcmRulesByAttributeType.get(typeId).stream()
-				.map({getPredicate(it)})
-				.filter({SnomedRelationshipPredicate predicate ->
-					String charType = predicate.getCharacteristicTypeId()
+				.map({getInnerPredicateFromConstraint(it)})
+				.filter({SnomedPredicate predicate ->
+					String charType = getCharacteristicTypeId(predicate);
 					return Concepts.STATED_RELATIONSHIP.equals(charType) || Strings.isNullOrEmpty(charType)
 				}).findAny().isPresent()
 		}).collect(Collectors.toSet())

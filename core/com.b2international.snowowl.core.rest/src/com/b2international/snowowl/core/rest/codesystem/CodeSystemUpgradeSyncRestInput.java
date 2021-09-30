@@ -13,24 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.core.rest.codesystem;
 
-import java.util.Locale;
-
-import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
- * Enumerates supported relationship value types.
- * 
- * @see RelationshipValue
- * @since 7.17
+ * @since 7.17.3
  */
-public enum RelationshipValueType {
-	INTEGER,
-	DECIMAL,
-	STRING;
+public class CodeSystemUpgradeSyncRestInput {
+
+	private CodeSystemURI source;
+	private String codeSystemId;
 	
-	public String getDisplayName() {
-		return StringUtils.capitalizeFirstLetter(name().toLowerCase(Locale.ENGLISH));
+	public CodeSystemURI getSource() {
+		return source;
 	}
+	
+	public void setSource(CodeSystemURI source) {
+		this.source = source;
+	}
+	
+	public String getCodeSystemId() {
+		return codeSystemId;
+	}
+	
+	public void setCodeSystemId(String codeSystemId) {
+		this.codeSystemId = codeSystemId;
+	}
+	
 }

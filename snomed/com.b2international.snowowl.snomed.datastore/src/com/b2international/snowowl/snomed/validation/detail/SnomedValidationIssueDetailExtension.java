@@ -34,6 +34,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.index.util.DecimalUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
@@ -43,6 +44,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -300,16 +302,42 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		searcher.stream(Query.select(String[].class)
 			.from(SnomedRelationshipIndexEntry.class)
-			.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.TYPE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+			.fields(SnomedRelationshipIndexEntry.Fields.ID,
+					SnomedRelationshipIndexEntry.Fields.SOURCE_ID,
+					SnomedRelationshipIndexEntry.Fields.TYPE_ID,
+					SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
+					SnomedRelationshipIndexEntry.Fields.VALUE_TYPE,
+					SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,
+					SnomedRelationshipIndexEntry.Fields.STRING_VALUE)
 			.where(SnomedRelationshipIndexEntry.Expressions.ids(issuesByRelationshipId.keySet()))
 			.limit(SCROLL_SIZE)
 			.build())
 			.forEach(hits -> {
 				for (String[] hit : hits) {
-					conceptsToFetch.add(hit[1]);
-					conceptsToFetch.add(hit[2]);
-					conceptsToFetch.add(hit[3]);
-					relationshipFragmentsByRelationshipId.put(hit[0], String.format("%s|%s|%s", hit[1], hit[2], hit[3]));
+					final String id = hit[0];
+					final String sourceId = hit[1];
+					final String typeId = hit[2];
+					final String destinationId = hit[3];
+					final String valueType = hit[4];
+					final String numericValue = hit[5];
+					final String stringValue = hit[6];
+					
+					String destination = "";
+					conceptsToFetch.add(sourceId);
+					conceptsToFetch.add(typeId);
+					
+					if (!Strings.isNullOrEmpty(destinationId)) {
+						conceptsToFetch.add(destinationId);
+						destination = destinationId;
+					} else {
+						if (RelationshipValueType.DECIMAL.name().equals(valueType) || RelationshipValueType.INTEGER.name().equals(valueType)) {
+							destination = DecimalUtils.decode(numericValue).toString();
+						} else if (RelationshipValueType.STRING.name().equals(valueType)) {
+							destination = stringValue;
+						}
+					}
+					
+					relationshipFragmentsByRelationshipId.put(id, String.format("%s|%s|%s", sourceId, typeId, destination));
 				}
 			});
 		
@@ -321,11 +349,11 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				
 				final String sourceId = relationshipFragments[0];
 				final String typeId = relationshipFragments[1];
-				final String destinationId = relationshipFragments[2];
+				final String destinationIdOrValue = relationshipFragments[2];
 				
 				final String sourceTerm = affectedComponentLabelsByConcept.getOrDefault(sourceId, sourceId);
 				final String typeTerm = affectedComponentLabelsByConcept.getOrDefault(typeId, typeId);
-				final String destinationTerm = affectedComponentLabelsByConcept.getOrDefault(destinationId, destinationId);
+				final String destinationTerm = affectedComponentLabelsByConcept.getOrDefault(destinationIdOrValue, destinationIdOrValue);
 				issue.setAffectedComponentLabels(ImmutableList.of(String.format("%s - %s - %s", sourceTerm, typeTerm, destinationTerm)));
 			});
 			
