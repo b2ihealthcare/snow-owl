@@ -30,13 +30,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	private String typeId;
 	private String destinationId;
 	private boolean destinationNegated = false;
-<<<<<<< HEAD
-	private String value;
-	private int relationshipGroup = 0;
-=======
 	private RelationshipValue value;
-	private int group = 0;
->>>>>>> refs/remotes/origin/7.x
+	private int relationshipGroup = 0;
 	private int unionGroup = 0;
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
@@ -125,13 +120,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 			.setTypeId(typeId)
 			.setDestinationId(destinationId)
 			.setDestinationNegated(destinationNegated)
-<<<<<<< HEAD
-			.setValue(RelationshipValue.fromLiteral(value))
-			.setRelationshipGroup(relationshipGroup)
-=======
 			.setValue(value)
-			.setGroup(group)
->>>>>>> refs/remotes/origin/7.x
+			.setRelationshipGroup(relationshipGroup)
 			.setUnionGroup(unionGroup)
 			.setCharacteristicTypeId(characteristicTypeId)
 			.setModifierId(modifierId);

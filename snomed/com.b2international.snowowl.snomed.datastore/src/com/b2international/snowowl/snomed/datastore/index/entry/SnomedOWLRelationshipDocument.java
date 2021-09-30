@@ -41,39 +41,24 @@ import com.google.common.base.MoreObjects;
 @JsonDeserialize(builder = SnomedOWLRelationshipDocument.Builder.class)
 public final class SnomedOWLRelationshipDocument implements Serializable {
 
-<<<<<<< HEAD
 	public static SnomedOWLRelationshipDocument create(final String typeId, final String destinationId, final int relationshipGroup) {
-		return new SnomedOWLRelationshipDocument(typeId, destinationId, null, null, null, null, relationshipGroup);
-=======
-	public static SnomedOWLRelationshipDocument create(final String typeId, final String destinationId, final int group) {
 		return new Builder()
 			.typeId(typeId)
 			.destinationId(destinationId)
-			.group(group)
+			.relationshipGroup(relationshipGroup)
 			.build();
->>>>>>> refs/remotes/origin/7.x
 	}
 	
-<<<<<<< HEAD
 	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int relationshipGroup) {
-=======
-	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int group) {
 		final Builder builder = new Builder()
 			.typeId(typeId)
-			.group(group);
+			.relationshipGroup(relationshipGroup);
 		
->>>>>>> refs/remotes/origin/7.x
 		return value.map(
-<<<<<<< HEAD
-			i -> new SnomedOWLRelationshipDocument(typeId, null, i, null, null, RelationshipValueType.INTEGER, relationshipGroup),
-			d -> new SnomedOWLRelationshipDocument(typeId, null, null, d, null, RelationshipValueType.DECIMAL, relationshipGroup),
-			s -> new SnomedOWLRelationshipDocument(typeId, null, null, null, s, RelationshipValueType.STRING, relationshipGroup));
-=======
-			i -> builder.valueType(RelationshipValueType.INTEGER).integerValue(i),
+			i -> builder.valueType(RelationshipValueType.INTEGER).numericValue(new BigDecimal(i)),
 			d -> builder.valueType(RelationshipValueType.DECIMAL).numericValue(d),
 			s -> builder.valueType(RelationshipValueType.STRING).stringValue(s))
 		.build();
->>>>>>> refs/remotes/origin/7.x
 	}
 	
 	public static SnomedOWLRelationshipDocument createFrom(final SnomedRelationship r) {
@@ -91,7 +76,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		private BigDecimal numericValue;
 		private String stringValue;
 		private RelationshipValueType valueType;
-		private int group;
+		private int relationshipGroup;
 		
 		@JsonCreator
 		private Builder() { }
@@ -111,18 +96,6 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			return this;
 		}
 		
-		// XXX: Used above as well as for de-serialization of earlier documents
-		public Builder integerValue(final Integer integerValue) {
-			this.numericValue = new BigDecimal(integerValue);
-			return this;
-		}
-		
-		// Used for de-serialization of earlier documents only
-		public Builder decimalValue(final Double decimalValue) {
-			this.numericValue = BigDecimal.valueOf(decimalValue);
-			return this;
-		}
-		
 		public Builder stringValue(final String stringValue) {
 			this.stringValue = stringValue;
 			return this;
@@ -133,13 +106,13 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			return this;
 		}
 		
-		public Builder group(final int group) {
-			this.group = group;
+		public Builder relationshipGroup(final int relationshipGroup) {
+			this.relationshipGroup = relationshipGroup;
 			return this;
 		}
 		
 		public SnomedOWLRelationshipDocument build() {
-			return new SnomedOWLRelationshipDocument(typeId, destinationId, numericValue, stringValue, valueType, group);
+			return new SnomedOWLRelationshipDocument(typeId, destinationId, numericValue, stringValue, valueType, relationshipGroup);
 		}
 	}
 	
@@ -148,36 +121,15 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 	private final BigDecimal numericValue;
 	private final String stringValue;
 	private final RelationshipValueType valueType;
-<<<<<<< HEAD
 	private final int relationshipGroup;
-=======
-	private final int group;
-	
-	// Fields kept for backwards compatibility with earlier documents
-	@JsonIgnore
-	private final Integer integerValue = null;
-	
-	@JsonIgnore
-	private final Double decimalValue = null;
->>>>>>> refs/remotes/origin/7.x
 
 	private SnomedOWLRelationshipDocument(
-<<<<<<< HEAD
 			@JsonProperty("typeId") final String typeId, 
 			@JsonProperty("destinationId") final String destinationId,
-			@JsonProperty("integerValue") final Integer integerValue,
-			@JsonProperty("decimalValue") final Double decimalValue,
+			@JsonProperty("numericValue") final BigDecimal numericValue,
 			@JsonProperty("stringValue") final String stringValue,
 			@JsonProperty("valueType") final RelationshipValueType valueType,
 			@JsonProperty("relationshipGroup") final int relationshipGroup) {
-=======
-			final String typeId, 
-			final String destinationId,
-			final BigDecimal numericValue,
-			final String stringValue,
-			final RelationshipValueType valueType,
-			final int group) {
->>>>>>> refs/remotes/origin/7.x
 		this.typeId = typeId;
 		this.destinationId = destinationId;
 		this.numericValue = numericValue;

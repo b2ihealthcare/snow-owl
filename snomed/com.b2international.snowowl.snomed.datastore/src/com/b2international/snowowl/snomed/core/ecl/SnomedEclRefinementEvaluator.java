@@ -440,59 +440,12 @@ final class SnomedEclRefinementEvaluator {
 		// XXX: no boolean comparison for relationships with value!
 		if (comparison instanceof BooleanValueComparison) {
 			return Promise.immediate(List.of());
-<<<<<<< HEAD
 		} else if (comparison instanceof StringValueComparison) {
 			value = new RelationshipValue(((StringValueComparison) comparison).getValue());
 		} else if (comparison instanceof IntegerValueComparison) {
 			value = new RelationshipValue(((IntegerValueComparison) comparison).getValue());
 		} else if (comparison instanceof DecimalValueComparison) {
-			value = new RelationshipValue(((DecimalValueComparison) comparison).getValue().doubleValue());
-=======
-		} else if (comparison instanceof BooleanValueNotEquals) {
-			return Promise.immediate(List.of());
-		} else if (comparison instanceof StringValueEquals) {
-			value = new RelationshipValue(((StringValueEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof StringValueNotEquals) {
-			value = new RelationshipValue(((StringValueNotEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof IntegerValueEquals) {
-			value = new RelationshipValue(((IntegerValueEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof IntegerValueNotEquals) {
-			value = new RelationshipValue(((IntegerValueNotEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof DecimalValueEquals) {
-			value = new RelationshipValue(((DecimalValueEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof DecimalValueNotEquals) {
-			value = new RelationshipValue(((DecimalValueNotEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof IntegerValueLessThan) {
-			value = new RelationshipValue(((IntegerValueLessThan) comparison).getValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN;
-		} else if (comparison instanceof DecimalValueLessThan) {
-			value = new RelationshipValue(((DecimalValueLessThan) comparison).getValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN;
-		} else if (comparison instanceof IntegerValueLessThanEquals) {
-			value = new RelationshipValue(((IntegerValueLessThanEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
-		} else if (comparison instanceof DecimalValueLessThanEquals) {
-			value = new RelationshipValue(((DecimalValueLessThanEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
-		} else if (comparison instanceof IntegerValueGreaterThan) {
-			value = new RelationshipValue(((IntegerValueGreaterThan) comparison).getValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN;
-		} else if (comparison instanceof DecimalValueGreaterThan) {
-			value = new RelationshipValue(((DecimalValueGreaterThan) comparison).getValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN;
-		} else if (comparison instanceof IntegerValueGreaterThanEquals) {
-			value = new RelationshipValue(((IntegerValueGreaterThanEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
-		} else if (comparison instanceof DecimalValueGreaterThanEquals) {
-			value = new RelationshipValue(((DecimalValueGreaterThanEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
->>>>>>> refs/remotes/origin/7.x
+			value = new RelationshipValue(((DecimalValueComparison) comparison).getValue());
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
@@ -516,8 +469,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValueType(value.type()) 
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
-<<<<<<< HEAD
-				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
+				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
 				.setLimit(10_000)
 				.transformAsync(context, req -> req.build(context.path()), relationships -> relationships.stream().map(relationship -> {
 					return new Property(
@@ -527,18 +479,6 @@ final class SnomedEclRefinementEvaluator {
 							relationship.getRelationshipGroup());
 					})
 				); 
-=======
-				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
-				.build(context.id(), context.path())
-				.execute(context.service(IEventBus.class))
-				.then(matchingMembers -> FluentIterable.from(matchingMembers)
-						.transform(input -> new Property(
-								input.getSourceId(), 
-								input.getTypeId(),
-								input.getValueAsObject().toObject(),
-								input.getGroup()))
-						.toSet());
->>>>>>> refs/remotes/origin/7.x
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
 			final Promise<Collection<Property>> axioms = evalAxiomsWithValue(context, focusConceptIds, typeIds, value, operator);

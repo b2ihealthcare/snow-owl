@@ -733,7 +733,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final boolean destinationNegated,
 			final RelationshipValue valueAsObject,
 			final String characteristicTypeId, 
-			final int group, 
+			final int relationshipGroup, 
 			final int unionGroup,
 			final String modifier) {
 		
@@ -748,13 +748,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 				.setSourceId(sourceId)
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
-<<<<<<< HEAD
-				.setValue(value)
-				.setRelationshipGroup(group)
-=======
 				.setValue(valueAsObject)
-				.setGroup(group)
->>>>>>> refs/remotes/origin/7.x
+				.setRelationshipGroup(relationshipGroup)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)
 				.setModuleId(moduleId);
