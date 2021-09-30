@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.fhir.core.model.typedproperty;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * FHIR typed property, designated as propertyName[x] in the specification.
  * A typed property is serialized into:
  * <pre>
  * {
- *    "name": "propertyName",
  *    "value[x]": value
  *  }
  * </pre>
@@ -28,6 +30,8 @@ package com.b2international.snowowl.fhir.core.model.typedproperty;
  * @see <a href=" https://www.hl7.org/fhir/formats.html">Choice</a> for further information about how to use [x].
  * @since 7.1
  */
+@JsonSerialize(using = TypedPropertySerializer.class)
+@JsonDeserialize(using = TypedPropertyDeserializer.class)
 public abstract class TypedProperty<T> {
 	
 	protected T value;

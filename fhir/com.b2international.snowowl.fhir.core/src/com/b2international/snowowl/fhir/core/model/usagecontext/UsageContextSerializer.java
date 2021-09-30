@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,14 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
 
 /**
- * Custom serializer for usage context.
+ * Custom serializer for usage context implementations.
  * @since 6.6
  */
 public class UsageContextSerializer extends JsonSerializer<UsageContext<?>> {
@@ -32,9 +35,18 @@ public class UsageContextSerializer extends JsonSerializer<UsageContext<?>> {
 	public void serialize(UsageContext<?> usageContext, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
 		jGen.writeStartObject();
-		jGen.writeObjectField("code",usageContext.getCode());
 		jGen.writeObjectField("value" + usageContext.getType(), usageContext.getValue());
+		serializeFields(usageContext, jGen, sp);
 		jGen.writeEndObject();
 	}
+	
+	private void serializeFields(@SuppressWarnings("rawtypes") UsageContext bean, JsonGenerator gen, SerializerProvider provider)
+            throws IOException {
+        
+		JavaType javaType = provider.constructType(UsageContext.class);
+        BeanDescription beanDesc = provider.getConfig().introspect(javaType);
+        JsonSerializer<Object> serializer =  BeanSerializerFactory.instance.findBeanOrAddOnSerializer(provider, javaType, beanDesc, false);
+        serializer.unwrappingSerializer(null).serialize(bean, gen, provider);
+    }
 
 }

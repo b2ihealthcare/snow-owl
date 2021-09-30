@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,34 +18,81 @@ package com.b2international.snowowl.fhir.core.model.typedproperty;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
- * A FHIR typed property is serialized into:
- * <pre>
- * {
- *    "name": "propertyName",
- *    "value[x]": value
- *  }
- * </pre>
+ * Custom serializer to serialize typed properties. The name of the reference
+ * is obtained from the {@link ContextualSerializer} 
+ * The serializer supports the @JsonUnwrapped annotation
  * 
- * @see <a href=" https://www.hl7.org/fhir/formats.html">Choice</a> for further information about how to use [x].
- * @since 7.1
+ * @since 8.0.0
+ * 
+ * @see ContextualSerializer
  */
-public class TypedPropertySerializer extends JsonSerializer<TypedProperty<?>> {
+@SuppressWarnings("rawtypes")
+public class TypedPropertySerializer extends JsonSerializer<TypedProperty> 
+	implements ContextualSerializer {
 
-	@Override
-	public void serialize(final TypedProperty<?> typedProperty, final JsonGenerator gen, final SerializerProvider provider) throws IOException {
-		gen.writeObjectField("value" + typedProperty.getTypeName(), typedProperty.getValue());
+	static class UnwrappingTypedPropertySerializer extends JsonSerializer<TypedProperty> {
+	    
+		private NameTransformer nameTransformer;
+		private final String propertyName;
+
+		public UnwrappingTypedPropertySerializer(NameTransformer nameTransformer, String propertyName) {
+			this.nameTransformer = nameTransformer;
+			this.propertyName = propertyName;
+		}
+
+		@Override
+	    public void serialize(
+	        final TypedProperty value,
+	        final JsonGenerator gen,
+	        final SerializerProvider provider
+	    ) throws IOException {
+			provider.defaultSerializeField(propertyName + value.getTypeName(), value.getValue(), gen);
+		}
+	    
+	    @Override
+	    public boolean isUnwrappingSerializer() {
+	    	return true;
+	    }
 	}
-
-	/*
-	 * Enables this custom serializer to be used with the @JsonUnwrapped annotation
-	 */
-	@Override
-    public boolean isUnwrappingSerializer() {
-        return true;
+	
+	private JsonSerializer<TypedProperty> delegate;
+	
+	private String propertyName;
+	
+	public TypedPropertySerializer() {
+		this("value");
+	}
+	
+    public TypedPropertySerializer(String propertyName) {
+    	this.propertyName = propertyName;
+    	delegate = new UnwrappingTypedPropertySerializer(NameTransformer.NOP, propertyName);
     }
 	
+	@Override
+	public void serialize(TypedProperty property, JsonGenerator jGen, SerializerProvider sp)
+			throws IOException, JsonProcessingException {
+
+		jGen.writeStartObject();
+		delegate.serialize(property, jGen, sp);
+		jGen.writeEndObject();
+	}
+	
+	@Override
+	public JsonSerializer<TypedProperty> unwrappingSerializer(NameTransformer nameTransformer) {
+		return new UnwrappingTypedPropertySerializer(nameTransformer, propertyName);
+	}
+
+	@Override
+	public JsonSerializer<?> createContextual(SerializerProvider sp, BeanProperty property) throws JsonMappingException {
+		return new TypedPropertySerializer(property.getName());
+	}
 }

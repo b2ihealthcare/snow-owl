@@ -22,6 +22,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -150,6 +151,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 							.filterByModules(modules) // null value will be ignored
 							.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
 							.setLimit(BATCH_SIZE)
+							.setFields(Arrays.asList(getHeader()))
 							.stream(inner)
 							.flatMap(hits -> getMappedStream(hits, context, branch))
 							.forEachOrdered(row -> {

@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequest;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -61,7 +62,9 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 					}
 				)
 			)
-		).execute(ApplicationContext.getServiceForClass(Environment.class));
+		).execute(ApplicationContext.getServiceForClass(Environment.class).inject()
+				.bind(User.class, User.SYSTEM)
+				.build());
 		hits.forEach(hit -> {
 			// simple assertions to parse the ID as SCT ID and effective time as short date
 			assertTrue(SnomedIdentifiers.isValid(hit[0]));

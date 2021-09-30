@@ -19,6 +19,8 @@ import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Quantity complex datatype
@@ -30,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#quantity">FHIR:Data Types:Quantity</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = Quantity.Builder.class)
 public class Quantity extends BaseQuantity {
 	
 	Quantity(String id, List<Extension> extensions, Double value, Code comparator, String unit, Uri system, Code code) {
@@ -50,6 +53,7 @@ public class Quantity extends BaseQuantity {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends BaseQuantity.Builder<Builder, Quantity> {
 		
 		@Override

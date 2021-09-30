@@ -26,7 +26,7 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.*;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -47,7 +47,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 4.6
  */
-public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge>, RepositoryAccessControl {
+public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

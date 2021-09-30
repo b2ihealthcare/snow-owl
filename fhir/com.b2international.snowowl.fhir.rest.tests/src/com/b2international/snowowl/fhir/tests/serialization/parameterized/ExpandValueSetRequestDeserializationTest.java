@@ -119,7 +119,7 @@ public class ExpandValueSetRequestDeserializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 			
 			Issue expectedIssue = builder.addLocation("LookupRequest.codeMissing")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeMissing' content is invalid [false]."
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeMissing' content is invalid [false]."
 						+ " Violation: Code is not provided for the system.")
 				.build();
 			

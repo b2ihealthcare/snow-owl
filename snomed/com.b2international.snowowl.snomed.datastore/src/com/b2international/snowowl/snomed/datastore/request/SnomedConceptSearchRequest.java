@@ -22,10 +22,12 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -48,8 +50,6 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConve
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -116,7 +116,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		/**
 		 * Enable score boosting using DOI field
 		 */
-		USE_DOI,
+		USE_DOI, 
+		
+		/**
+		 * Match concept descriptions where the description has language membership in one of the provided locales
+		 */
+		LANGUAGE_REFSET,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -127,11 +132,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	}
 	
 	@Override
-	protected void collectAdditionalFieldsToFetch(ImmutableSet.Builder<String> additionalFieldsToLoad) {
+	protected void collectAdditionalFieldsToFetch(Set<String> fieldsToLoad) {
 		// load preferred descriptions field if not requested, but either pt or fsn is expanded
-		if (!fields().contains(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS) 
+		if (!fieldsToLoad.contains(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS) 
 				&& (expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM))) {
-			additionalFieldsToLoad.add(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS);
+			fieldsToLoad.add(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS);
 		}
 	}
 	
@@ -150,6 +155,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addEclFilter(context, queryBuilder, OptionKey.DEFINITION_STATUS, SnomedConceptDocument.Expressions::definitionStatusIds);
 		addNamespaceFilter(queryBuilder);
+		addNamespaceConceptIdFilter(context, queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
 		addMemberOfClause(context, queryBuilder);
@@ -228,7 +234,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			queryBuilder.filter(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
 			
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
-			queryExpression = Expressions.scriptScore(q, "doiFactor", ImmutableMap.of("termScores", conceptScoreMap, "useDoi", containsKey(OptionKey.USE_DOI), "minDoi", MIN_DOI_VALUE, "maxDoi", MAX_DOI_VALUE));
+			queryExpression = Expressions.scriptScore(q, "doiFactor", Map.of("termScores", conceptScoreMap, "useDoi", containsKey(OptionKey.USE_DOI), "minDoi", MIN_DOI_VALUE, "maxDoi", MAX_DOI_VALUE));
 		} else if (containsKey(OptionKey.USE_DOI)) {
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
 			queryExpression = Expressions.scriptScore(q, "doi");
@@ -245,7 +251,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			SortField sortField = (SortField) sort;
 			if (SnomedConceptSearchRequestBuilder.TERM_SORT.equals(sortField.getField())) {
 				final Set<String> synonymIds = context.service(Synonyms.class).get();
-				final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionUtils.getLanguageRefSetIds(locales()), "synonymIds", synonymIds);
+				final Map<String, Object> args = Map.of("locales", SnomedDescriptionUtils.getLanguageRefSetIds(context, locales()), "synonymIds", synonymIds);
 				sortBuilder.sortByScript("termSort", args, sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}
@@ -295,11 +301,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
 		
-		if (containsKey(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET)) {
-			requestBuilder.filterByLanguageRefSets(getCollection(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, String.class));
+		if (containsKey(SnomedConceptSearchRequest.OptionKey.LANGUAGE_REFSET)) {
+			List<ExtendedLocale> extendedLocales = getList(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, ExtendedLocale.class);
+			requestBuilder.filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(context, extendedLocales));
 		}
 			
-		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConceptId(ids));
+		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConcepts(ids));
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);

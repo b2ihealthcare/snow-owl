@@ -15,25 +15,33 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 8.0
  */
 public abstract class BaseResourceCreateRequest implements Request<TransactionContext, String> {
-
+	
 	protected static final long serialVersionUID = 1L;
 
 	// the new ID, if not specified, it will be auto-generated
@@ -175,6 +183,13 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	@Override
 	public final String execute(TransactionContext context) {
+		// validate ID before use, IDs sometimes being used as branch paths, so must be a valid branch path
+		try {
+			BranchNameValidator.DEFAULT.checkName(id);
+		} catch (BadRequestException e) {
+			throw new BadRequestException(e.getMessage().replace("Branch name", getClass().getSimpleName().replace("CreateRequest", ".id")));
+		}
+		
 		// validate URL format
 		getResourceURLSchemaSupport(context).validate(url);
 		
@@ -204,21 +219,32 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		
 		preExecute(context);
 		
-		if (!IComponent.ROOT_ID.equals(bundleId)) {
-			Bundles bundles = ResourceRequests.bundles().prepareSearch()
+		final List<String> bundleAncestorIds;
+		if (IComponent.ROOT_ID.equals(bundleId)) {
+			// "-1" is the only key that will show up both as the parent and as an ancestor
+			bundleAncestorIds = List.of(IComponent.ROOT_ID);
+		} else {
+			final Bundles bundles = ResourceRequests.bundles()
+				.prepareSearch()
 				.filterById(bundleId)
-				.setLimit(0)
+				.one()
 				.build()
 				.execute(context);
 			
 			if (bundles.getTotal() == 0) {
-				throw new NotFoundException("Bundle", bundleId).toBadRequestException();
+				throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
 			}
-		} 
+	
+			final Bundle bundleParent = bundles.first().get();
+			bundleAncestorIds = bundleParent.getBundleAncestorIdsForChild();
+		}
 		
-		context.add(createResourceDocument());
+		context.add(createResourceDocument(context, bundleAncestorIds));
 		return id;
 	}
+	
+	@JsonIgnore
+	protected abstract String getResourceType();
 	
 	/**
 	 * Subclasses may override to provide their own URL Schema support implementation for validation purposes.
@@ -236,23 +262,28 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	protected void preExecute(final TransactionContext context) { }
 
 	/**
-	 * Set the additional fields of the resource
+	 * Subclasses may configure the new resource before persisting.
 	 */
-	protected abstract ResourceDocument.Builder completeResource(final ResourceDocument.Builder builder);
+	protected ResourceDocument.Builder completeResource(final ResourceDocument.Builder builder) {
+		return builder;
+	}
 	
-	private ResourceDocument createResourceDocument() {
+	private ResourceDocument createResourceDocument(TransactionContext context, List<String> bundleAncestorIds) {
 		final Builder builder = ResourceDocument.builder()
+				.resourceType(getResourceType())
 				.id(id)
 				.url(url)
 				.title(title)
 				.language(language)
 				.description(description)
-				.status(status)
+				// resources start their lifecycle in draft mode
+				.status(status == null ? "draft" : status)
 				.copyright(copyright)
-				.owner(owner)
+				.owner(Optional.ofNullable(owner).orElseGet(() -> context.service(User.class).getUsername()))
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)
+				.bundleAncestorIds(bundleAncestorIds)
 				.bundleId(bundleId);
 		
 		completeResource(builder);

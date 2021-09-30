@@ -40,15 +40,18 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.branch.Branches;
@@ -89,7 +92,7 @@ import com.google.common.collect.ImmutableList.Builder;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attachment> implements BranchAccessControl {
+final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attachment> implements AccessControl {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
@@ -125,6 +128,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	@JsonProperty
 	private boolean includePreReleaseContent;
 
+	@NotEmpty
 	@JsonProperty
 	private Collection<String> componentTypes;
 
@@ -228,12 +232,13 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		this.nrcCountryCode = nrcCountryCode;
 	}
 	
-	private String getCountryNamespaceElement(Rf2MaintainerType maintainerType, String nrcCountryCode) {
+	private String getCountryNamespaceElement(BranchContext context, CodeSystem codeSystem, Rf2MaintainerType maintainerType, String nrcCountryCode) {
 		final StringBuilder builder = new StringBuilder();
 		
 		switch (maintainerType) {
 			case NRC:
 				builder.append(nrcCountryCode);
+				builder.append(getNamespace(context, codeSystem));
 				break;
 			case OTHER_EXTENSION_PROVIDER:
 				// Nothing to append
@@ -248,16 +253,41 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return builder.toString();
 	}
 	
+	private String getNamespace(BranchContext context, CodeSystem resource) {
+		String namespaceConceptId = (String) resource.getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY);
+		if (CompareUtils.isEmpty(namespaceConceptId)) {
+			return "";
+		} else {
+			String locales = resource.getLocales().stream().collect(Collectors.joining(","));
+			return SnomedTerminologyComponentConstants.getNamespace(namespaceConceptId, SnomedRequests.prepareGetConcept(namespaceConceptId)
+					.setExpand("fsn()")
+					.setLocales(locales)
+					.build()
+					.execute(context)
+					.getFsn()
+					.getTerm());
+		}
+	}
+
 	@Override
 	public Attachment execute(final BranchContext context) {
 
 		final String referenceBranch = context.path();
+		if (referenceBranch.contains(RevisionIndex.AT_CHAR) && !Rf2ReleaseType.SNAPSHOT.equals(releaseType)) {
+			throw new BadRequestException("Only snapshot export is allowed for point-in-time branch path '%s'.", referenceBranch);
+		}
+		
+		if (referenceBranch.contains(RevisionIndex.REV_RANGE)) {
+			if (!Rf2ReleaseType.DELTA.equals(releaseType) || needsVersionBranchesForDeltaExport()) {
+				throw new BadRequestException("Only unpublished delta export is allowed for branch path range '%s'.", referenceBranch);
+			}
+		}
 		
 		// register export start time for later use
 		final long exportStartTime = Instant.now().toEpochMilli();
 
 		// Step 1: check if the export reference branch is a working branch path descendant
-		final TerminologyResource referenceCodeSystem = context.service(TerminologyResource.class);
+		final CodeSystem referenceCodeSystem = (CodeSystem) context.service(TerminologyResource.class);
 
 		if (!CompareUtils.isEmpty(referenceCodeSystem.getSettings())) {
 			if (Strings.isNullOrEmpty(countryNamespaceElement)) {
@@ -268,11 +298,11 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 					String nrcCountryCode = (String) referenceCodeSystem.getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_NRC_COUNTRY_CODE_CONFIG_KEY);
 
 					if(!Strings.isNullOrEmpty(maintainerType)) {
-						String customCountryNamespaceElement = getCountryNamespaceElement(Rf2MaintainerType.getByNameIgnoreCase(maintainerType), Strings.nullToEmpty(nrcCountryCode));
+						String customCountryNamespaceElement = getCountryNamespaceElement(context, referenceCodeSystem, Rf2MaintainerType.getByNameIgnoreCase(maintainerType), Strings.nullToEmpty(nrcCountryCode));
 						countryNamespaceElement = customCountryNamespaceElement;
 					}
 				} else {
-					countryNamespaceElement = getCountryNamespaceElement(maintainerType, Strings.nullToEmpty(nrcCountryCode));
+					countryNamespaceElement = getCountryNamespaceElement(context, referenceCodeSystem, maintainerType, Strings.nullToEmpty(nrcCountryCode));
 				}
 			}
 
@@ -285,7 +315,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 
 		if (Strings.isNullOrEmpty(countryNamespaceElement)) {
-			countryNamespaceElement = getCountryNamespaceElement(DEFAULT_MAINTAINER_TYPE, "");
+			countryNamespaceElement = getCountryNamespaceElement(context, referenceCodeSystem, DEFAULT_MAINTAINER_TYPE, "");
 		}
 		
 		if (refSetExportLayout == null) {
@@ -338,7 +368,12 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			
 			// export content from reference branch
 			if (includePreReleaseContent) {
-				final String referenceBranchToExport = String.format("%s%s%s", referenceBranch, RevisionIndex.AT_CHAR, exportStartTime);
+				
+				// If a special branch path was given, use it directly
+				final String referenceBranchToExport = containsSpecialCharacter(referenceBranch) 
+						? referenceBranch
+						: RevisionIndex.toBranchAtPath(referenceBranch, exportStartTime);
+				
 				exportBranch(releaseDirectory, 
 						context, 
 						referenceBranchToExport, 
@@ -362,6 +397,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				FileUtils.deleteDirectory(exportDirectory.toFile());
 			}
 		}
+	}
+
+	private boolean containsSpecialCharacter(final String referenceBranch) {
+		return referenceBranch.contains(RevisionIndex.AT_CHAR) || referenceBranch.contains(RevisionIndex.REV_RANGE);
 	}
 
 	private Multimap<String, String> getLanguageCodes(BranchContext context, List<String> branchesToExport) {
@@ -431,7 +470,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				}
 				break;
 			case DELTA:
-				if (startEffectiveTime != null || endEffectiveTime != null || !includePreReleaseContent) {
+				if (needsVersionBranchesForDeltaExport()) {
 					versionsToExport.stream()
 						.map(v -> v.getBranchPath())
 						.filter(v -> !branchesToExport.contains(v))
@@ -460,6 +499,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return branchRangesToExport.build();
 	}
 
+	private boolean needsVersionBranchesForDeltaExport() {
+		return startEffectiveTime != null || endEffectiveTime != null || !includePreReleaseContent;
+	}
+	
 	private LocalDateTime getArchiveEffectiveTime(final RepositoryContext context, final TreeSet<Version> versionsToExport) {
 
 		Optional<Version> lastVersionToExport;
@@ -566,9 +609,14 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	private TreeSet<Version> getAllExportableCodeSystemVersions(final BranchContext context, final TerminologyResource codeSystem) {
 		final String referenceBranch = context.path();
-		final TreeSet<Version> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
-		collectExportableCodeSystemVersions(context, visibleVersions, codeSystem, referenceBranch);
-		return visibleVersions;
+		final TreeSet<Version> versionsToExport = newTreeSet(EFFECTIVE_DATE_ORDERING);
+		
+		// XXX: Versions do not need to be calculated for special path exports
+		if (Rf2ReleaseType.SNAPSHOT != releaseType && !containsSpecialCharacter(referenceBranch)) {
+			collectExportableCodeSystemVersions(context, versionsToExport, codeSystem, referenceBranch);
+		}
+		
+		return versionsToExport;
 	}
 
 	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<Version> versionsToExport, final TerminologyResource codeSystem,
@@ -609,7 +657,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 
 		// Otherwise, collect applicable versions using this code system's working path
-		final CodeSystem extensionOfCodeSystem = CodeSystemRequests.prepareGetCodeSystem(extensionOfUri.getResourceId()).build().execute(context);
+		final CodeSystem extensionOfCodeSystem = CodeSystemRequests.prepareGetCodeSystem(extensionOfUri.getResourceId()).buildAsync().execute(context);
 		collectExportableCodeSystemVersions(context, versionsToExport, extensionOfCodeSystem, codeSystem.getBranchPath());
 	}
 

@@ -22,6 +22,7 @@ import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdenti
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -176,7 +177,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	}
 	
 	protected final SnomedDescriptionIndexEntry fsn(String conceptId, Map<String, Acceptability> acceptabilityMap) {
-		return description(conceptId, Concepts.FULLY_SPECIFIED_NAME, "Example FSN", acceptabilityMap);
+		return description(conceptId, Concepts.FULLY_SPECIFIED_NAME, "Example FSN (semantic tag)", acceptabilityMap);
 	}
 	
 	protected final SnomedDescriptionIndexEntry synonym(String conceptId, Map<String, Acceptability> acceptabilityMap) {
@@ -204,12 +205,14 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	
 	protected final SnomedConceptDocument.Builder docWithDefaults(final SnomedConceptDocument concept) {
 		return SnomedConceptDocument.builder(concept)
-				// new concepts without any ISA or Description should get the following derived values as defaults via the change processor
+				// new concepts without any ISA, OWL axiom or Description should get the following derived values as defaults via the change processor
 				.iconId(Concepts.ROOT_CONCEPT)
 				.parents(IComponent.ROOT_IDL)
 				.ancestors(PrimitiveSets.emptyLongSortedSet())
 				.statedParents(IComponent.ROOT_IDL)
-				.statedAncestors(PrimitiveSets.emptyLongSortedSet());
+				.statedAncestors(PrimitiveSets.emptyLongSortedSet())
+				.memberOf(Collections.emptyList())
+				.activeMemberOf(Collections.emptyList());
 	}
 
 	protected final SnomedConceptDocument.Builder concept() {

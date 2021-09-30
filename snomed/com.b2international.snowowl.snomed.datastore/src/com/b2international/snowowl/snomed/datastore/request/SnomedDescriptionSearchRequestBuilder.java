@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.request.TermFilterSupport;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
 
 /**
@@ -87,7 +86,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @param conceptIds
 	 * @return
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Collection<String> conceptIds) {
+	public SnomedDescriptionSearchRequestBuilder filterByConcepts(Collection<String> conceptIds) {
 		return addOption(OptionKey.CONCEPT, conceptIds);
 	}
 	
@@ -202,7 +201,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByLanguageRefSets(List<ExtendedLocale> locales) {
-		return filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
+		return addOption(OptionKey.LANGUAGE_REFSET_LOCALES, locales);
 	}
 	
 	/**
@@ -245,7 +244,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByPreferredIn(List<ExtendedLocale> locales) {
-		return filterByPreferredIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
+		return addOption(OptionKey.PREFERRED_IN_LOCALES, locales);
 	}
 	
 	/**
@@ -288,7 +287,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByAcceptableIn(List<ExtendedLocale> locales) {
-		return filterByAcceptableIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
+		return addOption(OptionKey.ACCEPTABLE_IN_LOCALES, locales);
 	}
 	
 	@Override

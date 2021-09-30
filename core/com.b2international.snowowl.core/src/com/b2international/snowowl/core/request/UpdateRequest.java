@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import java.util.function.Supplier;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.Permission;
 
 /**
  * @since 6.1
  */
-public abstract class UpdateRequest<C extends ServiceProvider> implements Request<C, Boolean> {
+public abstract class UpdateRequest<C extends ServiceProvider> implements Request<C, Boolean>, AccessControl {
 	
 	@NotEmpty
 	private final String componentId;
@@ -47,6 +49,11 @@ public abstract class UpdateRequest<C extends ServiceProvider> implements Reques
 		} else {
 			return false;
 		}
+	}
+	
+	@Override
+	public final String getOperation() {
+		return Permission.OPERATION_EDIT;
 	}
 
 }

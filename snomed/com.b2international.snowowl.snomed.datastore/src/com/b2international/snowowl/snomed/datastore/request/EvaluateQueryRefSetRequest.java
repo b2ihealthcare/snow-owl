@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,12 @@ import java.util.Collection;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.IndexResourceRequest;
-import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
-import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluations;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -37,7 +33,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetRequest extends IndexResourceRequest<BranchContext, QueryRefSetMemberEvaluations> implements BranchAccessControl {
+public final class EvaluateQueryRefSetRequest extends IndexResourceRequest<BranchContext, QueryRefSetMemberEvaluations> implements AccessControl {
 
 	@NotNull
 	@JsonProperty

@@ -101,6 +101,14 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			result.setStatedAncestorIds(input.getStatedAncestors().toArray());
 		}
 		
+		if (input.getMemberOf() != null) {
+			result.setMemberOf(ImmutableSortedSet.copyOf(input.getMemberOf()));
+		}
+		
+		if (input.getActiveMemberOf() != null) {
+			result.setActiveMemberOf(ImmutableSortedSet.copyOf(input.getActiveMemberOf()));
+		}
+		
 		if (expand().containsKey(SnomedConcept.Expand.PREFERRED_DESCRIPTIONS) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM) || expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME)) {
 			List<SnomedDescription> preferredDescriptions = input.getPreferredDescriptions().stream().map(description -> {
 				SnomedDescription preferredDescription = new SnomedDescription(description.getId());
@@ -208,8 +216,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 				}
 			}
 		}
-		
-		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(synonyms, locales());
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(context(), synonyms, locales());
 		for (SnomedConcept concept : results) {
 			concept.setPt(terms.get(concept.getId()));
 		}
@@ -233,7 +240,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			}
 		}
 		
-		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(fsns, locales());
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(context(), fsns, locales());
 		
 		for (SnomedConcept concept : results) {
 			SnomedDescription fsn = terms.get(concept.getId());
@@ -254,10 +261,11 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			.prepareSearchDescription()
 			.all()
 			.setExpand(expandOptions.get("expand", Options.class))
-			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-			.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getString("typeId") : null)
-			.filterByConceptId(conceptIds)
+			.filterByActive(expandOptions.get("active", Boolean.class))
+			.filterByType(expandOptions.get("typeId", String.class))
+			.filterByConcepts(conceptIds)
 			.setLocales(locales())
+			.sortBy(expandOptions.get("sort", String.class))
 			.build()
 			.execute(context());
 		
@@ -279,13 +287,14 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 		final SnomedRelationships relationships = SnomedRequests
 				.prepareSearchRelationship()
 				.all()
-				.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-				.filterByCharacteristicType(expandOptions.containsKey("characteristicTypeId") ? expandOptions.getString("characteristicTypeId") : null)
-				.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
-				.filterByDestination(expandOptions.containsKey("destinationId") ? expandOptions.getCollection("destinationId", String.class) : null)
-				.filterBySource(conceptIds)
+				.filterByActive(expandOptions.get("active", Boolean.class))
+				.filterByCharacteristicType(expandOptions.get("characteristicTypeId", String.class))
+				.filterByTypes(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
+				.filterByDestinations(expandOptions.containsKey("destinationId") ? expandOptions.getCollection("destinationId", String.class) : null)
+				.filterBySources(conceptIds)
 				.setExpand(expandOptions.get("expand", Options.class))
 				.setLocales(locales())
+				.sortBy(expandOptions.get("sort", String.class))
 				.build()
 				.execute(context());
 		
@@ -309,13 +318,14 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 		
 		final SnomedRelationships inboundRelationships = SnomedRequests.prepareSearchRelationship()
 			.setLimit(relationshipSearchLimit)
-			.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
-			.filterBySource(expandOptions.containsKey("sourceId") ? expandOptions.getCollection("sourceId", String.class) : null)
-			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-			.filterByCharacteristicType(expandOptions.containsKey("characteristicTypeId") ? expandOptions.getString("characteristicTypeId") : null)
-			.filterByDestination(conceptIds)
+			.filterByTypes(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
+			.filterBySources(expandOptions.containsKey("sourceId") ? expandOptions.getCollection("sourceId", String.class) : null)
+			.filterByActive(expandOptions.get("active", Boolean.class))
+			.filterByCharacteristicType(expandOptions.get("characteristicTypeId", String.class))
+			.filterByDestinations(conceptIds)
 			.setExpand(expandOptions.get("expand", Options.class))
 			.setLocales(locales())
+			.sortBy(expandOptions.get("sort", String.class))
 			.build()
 			.execute(context());
 		

@@ -30,10 +30,12 @@ class App extends React.Component {
       <>
         <BackTop />
         <rapi-doc
+          key = "api-docs"
           theme = "light"
           spec-url = {`${serverUrl}/api-docs/${this.state.selectedKey}`}
           server-url = {`${serverUrl}`}
           render-style = "focused"
+          use-path-in-nav-bar = "true"
           default-schema-tab = "example"
           layout = "row"
           schema-expand-level = "3"
@@ -45,7 +47,7 @@ class App extends React.Component {
         >
           <div slot="nav-logo">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}> 
-              <img src = "./assets/favicon.svg" style={{ width: "40px", marginRight: "8px" }} alt="logo" />
+              <img src = {`${process.env.PUBLIC_URL}/assets/favicon.svg`} style={{ width: "40px", marginRight: "8px" }} alt="logo" />
               <span style={{ color: "#fff" }}> Snow Owl API Docs </span>
             </div>
             <div style={{

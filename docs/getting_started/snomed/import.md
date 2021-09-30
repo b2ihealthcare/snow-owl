@@ -5,7 +5,7 @@ Now let's import an official SNOMED CT RF2 `SNAPSHOT` distribution archive so th
 To import an RF2 archive you must first create an import configuration using the [SNOMED CT Import API](../api/snomed.md) as follows:
 
 ```bash
-curl -X POST http://localhost:8080/snowowl/snomed-ct/v3/imports -d
+curl -X POST http://localhost:8080/snowowl/snomedct/imports -d
 {
   "type": "SNAPSHOT",
   "branchPath": "MAIN"
@@ -15,7 +15,7 @@ curl -X POST http://localhost:8080/snowowl/snomed-ct/v3/imports -d
 And the response:
 ```
 HTTP 204 No Content
-Location: "http://localhost:8080/snowowl/snomed-ct/v3/imports/96406e91-84a0-49d3-9e6a-c5c652a36eba"
+Location: "http://localhost:8080/snowowl/snomedct/imports/96406e91-84a0-49d3-9e6a-c5c652a36eba"
 ```
 
 The import configuration specifies the `type` of the RF2 release (in this case `SNAPSHOT`) and the target `branchPath` where the content should imported.
@@ -29,7 +29,7 @@ Official SNAPSHOT distributions can be imported in less than 30 minutes by alloc
 The import will start automatically when you upload the archive to the `/imports/:id/archive` endpoint:
 
 ```
-curl -X POST -F file=@SnomedCT_RF2Release_INT_20170731.zip 'http://localhost:8080/snowowl/snomed-ct/v3/imports/96406e91-84a0-49d3-9e6a-c5c652a36eba/archive'
+curl -X POST -F file=@SnomedCT_RF2Release_INT_20170731.zip 'http://localhost:8080/snowowl/snomedct/imports/96406e91-84a0-49d3-9e6a-c5c652a36eba/archive'
 ```
 
 The import process is asynchronous and its status can be checked by sending a GET request to the `/imports/:id` endpoint with the extracted import identifier as follows:

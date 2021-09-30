@@ -76,11 +76,11 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		}
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
-			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)));
+			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, String.class)));
 		}
 		
 		if (containsKey(OptionKey.MAP_TARGET_COMPONENT_TYPE)) {
-			queryBuilder.filter(mapTargetComponentTypes(getCollection(OptionKey.MAP_TARGET_COMPONENT_TYPE, Integer.class)));
+			queryBuilder.filter(mapTargetComponentTypes(getCollection(OptionKey.MAP_TARGET_COMPONENT_TYPE, String.class)));
 		}
 		
 		return queryBuilder.build();

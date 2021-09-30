@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
-
 import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 7.3
  */
-public final class SnomedReferenceSetRestSearch extends ObjectRestSearch {
+public final class SnomedReferenceSetRestSearch extends SnomedRestSearch {
 
 	@Parameter(description = "The reference set type to match")
 	private String[] refSetTypes;

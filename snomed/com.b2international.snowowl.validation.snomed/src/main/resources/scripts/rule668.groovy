@@ -26,15 +26,15 @@ def List<ComponentIdentifier> issues = []
 
 def Supplier<Set<String>> inactiveConceptIds = Suppliers.memoize({
 	def Set<String> ids = []
-	searcher.scroll(Query.select(String.class)
+	searcher.stream(Query.select(String.class)
 			.from(SnomedConceptDocument.class)
 			.fields(SnomedConceptDocument.Fields.ID)
 			.where(SnomedConceptDocument.Expressions.inactive())
 			.limit(100_000)
 			.build())
-	.each { Hits<String> conceptIds ->
+	.forEachOrdered({ Hits<String> conceptIds ->
 		ids.addAll(conceptIds.getHits())
-	}
+	})
 	return ids
 })
 
@@ -62,16 +62,26 @@ if (params.isUnpublishedOnly) {
 				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, hit.getId()))
 			} else if (!CompareUtils.isEmpty(hit.getClassAxiomRelationships())) {
 				for (SnomedOWLRelationshipDocument classAxiomRelationship : hit.getClassAxiomRelationships()) {
+<<<<<<< HEAD
 					if (!classAxiomRelationship.hasValue() && 
 						(inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId()))) {
 						issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, hit.getId()))
+=======
+					if (inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId())) {
+						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
+>>>>>>> refs/remotes/origin/7.x
 					}
 				}
 			} else if (!CompareUtils.isEmpty(hit.getGciAxiomRelationships())) {
 				for (SnomedOWLRelationshipDocument classAxiomRelationship : hit.getGciAxiomRelationships()) {
+<<<<<<< HEAD
 					if (!classAxiomRelationship.hasValue() &&
 						(inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId()))) {
 						issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, hit.getId()))
+=======
+					if (inactiveConcepts.contains(classAxiomRelationship.getTypeId()) || inactiveConcepts.contains(classAxiomRelationship.getDestinationId())) {
+						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, hit.getId()))
+>>>>>>> refs/remotes/origin/7.x
 					}
 				}
 			}
@@ -91,16 +101,16 @@ if (params.isUnpublishedOnly) {
 }
 
 searcher
-	.scroll(Query.select(String.class)
+	.stream(Query.select(String.class)
 	.from(SnomedRefSetMemberIndexEntry.class)
 	.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 	.where(invalidOWLAxiomExpression.build())
 	.limit(10_000)
 	.build())
-	.each { memberIds ->
+	.forEachOrdered({ memberIds ->
 		memberIds.each { memberId ->
 			issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, memberId))
 		}
-	}
+	})
 
 return issues

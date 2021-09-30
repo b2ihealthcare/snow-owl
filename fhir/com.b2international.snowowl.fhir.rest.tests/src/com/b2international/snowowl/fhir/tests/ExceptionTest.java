@@ -46,7 +46,7 @@ public class ExceptionTest extends FhirTest {
 
 		Issue expectedIssue = builder
 				.addLocation("LookupRequest.system")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'LookupRequest.system' content is invalid")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'LookupRequest.system' content is invalid")
 				.build();
 		
 		BadRequestException bre = new BadRequestException("No system specified", "LookupRequest.system");
@@ -66,7 +66,7 @@ public class ExceptionTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("No system specified [null]")
 				.addLocation("LookupRequest.system")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'LookupRequest.system' content is invalid")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'LookupRequest.system' content is invalid")
 				.build();
 		
 		BadRequestException bre = new BadRequestException("No system specified [null]", "LookupRequest.system");

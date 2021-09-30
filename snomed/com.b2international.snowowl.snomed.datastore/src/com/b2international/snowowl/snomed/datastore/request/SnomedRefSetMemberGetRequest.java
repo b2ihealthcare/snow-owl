@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
  */
 final class SnomedRefSetMemberGetRequest
 		extends GetResourceRequest<SnomedRefSetMemberSearchRequestBuilder, BranchContext, SnomedReferenceSetMembers, SnomedReferenceSetMember>
-		implements BranchAccessControl {
+		implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

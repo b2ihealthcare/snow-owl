@@ -31,8 +31,6 @@ import org.junit.Test;
 
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.TerminologyResource;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -45,6 +43,7 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
+import com.b2international.snowowl.snomed.datastore.CodeSystemResource;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -81,14 +80,12 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 	protected void configureContext(Builder context) {
 		super.configureContext(context);
 		
-		final CodeSystem cs = new CodeSystem();
-		cs.setBranchPath(MAIN);
-		cs.setId(SnomedContentRule.SNOMEDCT_ID);
-
 		context
-			.with(TerminologyResource.class, cs)
 			.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
-			.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)));
+			.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
+			.with(ObjectMapper.class, getMapper());
+		
+		CodeSystemResource.configureCodeSystem(context);
 	
 		evaluator = new SnomedQueryValidationRuleEvaluator();
 		if (!ValidationRuleEvaluator.Registry.types().contains(evaluator.type())) {

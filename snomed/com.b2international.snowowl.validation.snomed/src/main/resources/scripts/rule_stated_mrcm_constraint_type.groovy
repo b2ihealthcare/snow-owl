@@ -134,20 +134,18 @@ if (params.isUnpublishedOnly) {
 				.filter(SnomedRelationshipIndexEntry.Expressions.typeId(typeExpression)) //Assuming single id attribute expressions
 				.mustNot(SnomedRelationshipIndexEntry.Expressions.sourceIds(getCachedApplicableConcepts(domainExpression)))
 		
-		final Query<String> query = Query.select(String.class)
+		Query.select(String.class)
 				.from(SnomedRelationshipIndexEntry.class)
 				.fields(SnomedRelationshipIndexEntry.Fields.ID)
 				.where(expressionBuilder.build())
 				.limit(10_000)
-				.scroll("2m")
 				.build()
-		
-		searcher.scroll(query).forEach({ hits ->
-			hits.forEach({ id ->
-				println(id + " type yes source no")
-				issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
-			})
-		})
+				.stream(searcher)
+				.flatMap({ it.stream() })
+				.forEachOrdered({ id ->
+					println(id + " type yes source no")
+					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
+				})
 	}
 	
 	def allowedTypeIds = new HashSet(mrcmRulesByAttributeType.keySet())
@@ -157,20 +155,18 @@ if (params.isUnpublishedOnly) {
 		.filter(SnomedRelationshipIndexEntry.Expressions.active())
 		.mustNot(SnomedRelationshipIndexEntry.Expressions.typeIds(allowedTypeIds))
 	
-	final Query<String> query = Query.select(String.class)
+	Query.select(String.class)
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(expressionBuilder.build())
 		.limit(10_000)
-		.scroll("2m")
 		.build()
-	
-	searcher.scroll(query).forEach({ hits ->
-		hits.forEach({ id ->
+		.stream(searcher)
+		.flatMap({ it.stream() })
+		.forEachOrdered({ id ->
 			println(id + " type not found")
 			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
 		})
-	})
 }
 
 return issues

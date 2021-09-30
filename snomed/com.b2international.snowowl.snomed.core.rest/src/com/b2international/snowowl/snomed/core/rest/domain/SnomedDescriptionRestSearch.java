@@ -15,85 +15,41 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
  */
-public final class SnomedDescriptionRestSearch extends ObjectRestSearch {
-
-	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
-	private String effectiveTime;
-
-	@Parameter(description = "The status to match")
-	private Boolean active;
-
-	@Parameter(description = "The module identifier to match")
-	private String module;
-
-	@Parameter(description = "The namespace to match")
-	private String namespace;
+public final class SnomedDescriptionRestSearch extends SnomedComponentRestSearch {
 
 	@Parameter(description = "The term to match")
 	private String term;
 
-	@Parameter(description = "The concept ECL expression to match")
-	private String concept;
+	@Parameter(description = "The concept(s) or ECL expression to match")
+	private List<String> concept;
 
 	@Parameter(description = "The language code to match")
-	private String[] languageCode;
+	private List<String> languageCode;
 
-	@Parameter(description = "The type ECL expression to match")
-	private String type;
+	@Parameter(description = "The type(s) or ECL expression to match")
+	private List<String> type;
 
-	@Parameter(description = "The case significance ECL expression to match")
-	private String caseSignificance;
+	@Parameter(description = "The case significance(s) or ECL expression to match")
+	private List<String> caseSignificance;
 
 	@Parameter(description = "Semantic tag(s) to match")
-	private String[] semanticTag;
+	private List<String> semanticTag;
 
 	@Parameter(description = "Acceptable membership to match in these language refsets")
-	private String[] acceptableIn;
+	private List<String> acceptableIn;
 
 	@Parameter(description = "Preferred membership to match in these language refsets")
-	private String[] preferredIn;
+	private List<String> preferredIn;
 
 	@Parameter(description = "Any membership to match in these language refsets")
-	private String[] languageRefSet;
-
-	public String getEffectiveTime() {
-		return effectiveTime;
-	}
-
-	public void setEffectiveTime(String effectiveTime) {
-		this.effectiveTime = effectiveTime;
-	}
-
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-
-	public String getModule() {
-		return module;
-	}
-
-	public void setModule(String module) {
-		this.module = module;
-	}
-
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-	}
+	private List<String> languageRefSet;
 
 	public String getTerm() {
 		return term;
@@ -103,67 +59,67 @@ public final class SnomedDescriptionRestSearch extends ObjectRestSearch {
 		this.term = term;
 	}
 
-	public String getConcept() {
+	public List<String> getConcept() {
 		return concept;
 	}
 
-	public void setConcept(String concept) {
+	public void setConcept(List<String> concept) {
 		this.concept = concept;
 	}
 	
-	public String[] getLanguageCode() {
+	public List<String> getLanguageCode() {
 		return languageCode;
 	}
 	
-	public void setLanguageCode(String[] languageCode) {
+	public void setLanguageCode(List<String> languageCode) {
 		this.languageCode = languageCode;
 	}
 
-	public String getType() {
+	public List<String> getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(List<String> type) {
 		this.type = type;
 	}
 
-	public String getCaseSignificance() {
+	public List<String> getCaseSignificance() {
 		return caseSignificance;
 	}
 
-	public void setCaseSignificance(String caseSignificance) {
+	public void setCaseSignificance(List<String> caseSignificance) {
 		this.caseSignificance = caseSignificance;
 	}
 
-	public String[] getSemanticTag() {
+	public List<String> getSemanticTag() {
 		return semanticTag;
 	}
 
-	public void setSemanticTag(String[] semanticTag) {
+	public void setSemanticTag(List<String> semanticTag) {
 		this.semanticTag = semanticTag;
 	}
 
-	public String[] getAcceptableIn() {
+	public List<String> getAcceptableIn() {
 		return acceptableIn;
 	}
 
-	public void setAcceptableIn(String[] acceptableIn) {
+	public void setAcceptableIn(List<String> acceptableIn) {
 		this.acceptableIn = acceptableIn;
 	}
 
-	public String[] getPreferredIn() {
+	public List<String> getPreferredIn() {
 		return preferredIn;
 	}
 
-	public void setPreferredIn(String[] preferredIn) {
+	public void setPreferredIn(List<String> preferredIn) {
 		this.preferredIn = preferredIn;
 	}
 
-	public String[] getLanguageRefSet() {
+	public List<String> getLanguageRefSet() {
 		return languageRefSet;
 	}
 
-	public void setLanguageRefSet(String[] languageRefSet) {
+	public void setLanguageRefSet(List<String> languageRefSet) {
 		this.languageRefSet = languageRefSet;
 	}
 

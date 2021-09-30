@@ -49,10 +49,10 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			.build();
 	}
 	
-	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int group) {
+	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int relationshipGroup) {
 		final Builder builder = new Builder()
 			.typeId(typeId)
-			.relationshipGroup(group);
+			.relationshipGroup(relationshipGroup);
 		
 		return value.map(
 			i -> builder.valueType(RelationshipValueType.INTEGER).numericValue(new BigDecimal(i)),
@@ -124,12 +124,12 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 	private final int relationshipGroup;
 
 	private SnomedOWLRelationshipDocument(
-			final String typeId, 
-			final String destinationId,
-			final BigDecimal numericValue,
-			final String stringValue,
-			final RelationshipValueType valueType,
-			final int relationshipGroup) {
+			@JsonProperty("typeId") final String typeId, 
+			@JsonProperty("destinationId") final String destinationId,
+			@JsonProperty("numericValue") final BigDecimal numericValue,
+			@JsonProperty("stringValue") final String stringValue,
+			@JsonProperty("valueType") final RelationshipValueType valueType,
+			@JsonProperty("relationshipGroup") final int relationshipGroup) {
 		this.typeId = typeId;
 		this.destinationId = destinationId;
 		this.numericValue = numericValue;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 	@Override
 	protected void expand(List<SnomedConcept> results, final Set<String> conceptIds, Options descendantExpandOptions, boolean direct) {
 		try {
+			final int limit = getLimit(descendantExpandOptions);
 			
 			final ExpressionBuilder expression = Expressions.builder();
 			expression.filter(active());
@@ -84,7 +85,7 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 			
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(expression.build())
-					.limit(Integer.MAX_VALUE)
+					.limit((conceptIds.size() == 1 && limit == 0) ? limit : Integer.MAX_VALUE)
 					.build();
 			
 			final RevisionSearcher searcher = context().service(RevisionSearcher.class);
@@ -104,7 +105,6 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 			
 			// in case of only one match and limit zero, use shortcut instead of loading all IDs and components
 			// XXX won't work if number of results is greater than one, either use custom ConceptSearch or figure out how to expand descendants effectively
-			final int limit = getLimit(descendantExpandOptions);
 			if (conceptIds.size() == 1 && limit == 0) {
 				for (SnomedConcept concept : results) {
 					final SnomedConcepts descendants = new SnomedConcepts(0, hits.getTotal());

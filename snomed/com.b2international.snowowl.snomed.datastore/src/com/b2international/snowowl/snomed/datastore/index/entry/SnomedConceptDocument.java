@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
@@ -28,7 +31,6 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
-import com.b2international.index.mapping.Field;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.Revision;
@@ -173,16 +175,16 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return match(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentType);
 		}
 		
-		public static Expression referencedComponentTypes(Collection<Integer> referencedComponentTypes) {
-			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
+		public static Expression referencedComponentTypes(Collection<String> referencedComponentTypes) {
+			return matchAny(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 		}
 		
 		public static Expression mapTargetComponentType(int mapTargetComponentType) {
 			return match(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
 		}
 		
-		public static Expression mapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
-			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
+		public static Expression mapTargetComponentTypes(Collection<String> mapTargetComponentTypes) {
+			return matchAny(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
 
 		public static Expression semanticTag(String semanticTag) {
@@ -210,6 +212,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String DOI = "doi";
 		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 		public static final String SEMANTIC_TAGS = "semanticTags";
+		public static final String TERM_SORT = "termSort";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
@@ -231,7 +234,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.mapTargetComponentType(input.getMapTargetComponentType())
 				.preferredDescriptions(input.getPreferredDescriptions())
 				.refSetType(input.getRefSetType())
-				.doi(input.getDoi());
+				.doi(input.getDoi())
+				.memberOf(input.getMemberOf())
+				.activeMemberOf(input.getActiveMemberOf())
+				.semanticTags(input.getSemanticTags());
 	}
 	
 	public static Builder builder(SnomedConcept input) {

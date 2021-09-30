@@ -63,6 +63,22 @@ public abstract class BaseQuantity extends Element {
 		this.code = code;
 	}
 	
+	public Double getValue() {
+		return value;
+	}
+	
+	public String getUnit() {
+		return unit;
+	}
+	
+	public Uri getSystem() {
+		return system;
+	}
+	
+	public Code getCode() {
+		return code;
+	}
+	
 	public static abstract class Builder<B extends Builder<B, T>, T extends BaseQuantity> extends Element.Builder<B, T> {
 		
 		protected Double value;

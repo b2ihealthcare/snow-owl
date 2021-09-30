@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -90,12 +92,21 @@ public final class JWTGenerator {
 	 */
 	public static User toUser(DecodedJWT jwt) {
 		final String subject = jwt.getSubject();
+		if (Strings.isNullOrEmpty(subject)) {
+			throw new BadRequestException("'subject' JWT token field is required, but it was missing");
+		}
 		final List<Role> roles = jwt.getClaims().entrySet().stream()
 				.filter(entry -> entry.getKey().startsWith(ROLE_PREFIX))
 				.map(entry -> {
 					final String roleName = entry.getKey();
 					final Claim claim = entry.getValue();
-					final List<Permission> permissions = claim.asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
+					
+					final List<Permission> permissions;
+					if (claim != null) {
+						permissions = claim.asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
+					} else {
+						permissions = List.of();
+					}
 					
 					return new Role(roleName.replace(ROLE_PREFIX, ""), permissions);
 				}).collect(Collectors.toList());

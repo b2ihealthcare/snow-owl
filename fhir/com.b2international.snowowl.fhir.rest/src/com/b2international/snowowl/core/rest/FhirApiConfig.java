@@ -20,10 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
-import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
-
 /**
  * The Spring configuration class for Snow Owl's FHIR REST API.
  * 
@@ -54,41 +50,4 @@ public class FhirApiConfig extends BaseApiConfig {
 		);
 	}
 	
-//	@Override
-//	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
-//		AlternateTypeRule[] localRules = { 
-//			newRule(resolver.resolve(Uri.class), resolver.resolve(String.class)) 
-//		};
-//		return Stream.of(super.getAlternateTypeRules(resolver), localRules)
-//				.flatMap(Stream::of)
-//				.toArray(length -> new AlternateTypeRule[length]);
-//	}
-	
-	@Bean
-	public IConceptMapApiProvider.Registry conceptMapProviderRegistry() {
-		return ApplicationContext.getServiceForClass(IConceptMapApiProvider.Registry.class);
-	}
-	
-	@Bean
-	public IValueSetApiProvider.Registry valueSetProviderRegistry() {
-		return ApplicationContext.getServiceForClass(IValueSetApiProvider.Registry.class);
-	}
-	
-//	/*
-//	 * Add properties filter.
-//	 * TODO: https://github.com/krishna81m/jackson-nested-prop-filter
-//	 * @return
-//	 */
-//	@Bean
-//	public ObjectMapper objectMapper() {
-//		final ObjectMapper objectMapper = new ObjectMapper();
-//		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
-//		final SimpleDateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-//		df.setTimeZone(TimeZone.getTimeZone("UTC"));
-//		objectMapper.setDateFormat(df);
-//		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-//		//objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-//		return objectMapper;
-//	}
-
 }

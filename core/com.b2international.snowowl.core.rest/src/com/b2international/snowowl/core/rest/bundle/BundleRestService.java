@@ -185,7 +185,7 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "204", description = "Deletion successful"),
 		@ApiResponse(responseCode = "409", description = "Bundle cannot be deleted")
 	})
-	@DeleteMapping(value = "/{bundleId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@DeleteMapping(value = "/{bundleId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
 			@Parameter(description = "The bundle identifier")

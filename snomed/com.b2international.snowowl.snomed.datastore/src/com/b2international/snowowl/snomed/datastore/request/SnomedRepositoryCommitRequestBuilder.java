@@ -30,7 +30,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResou
 
 	private String defaultModuleId = null;
 	
-	SnomedRepositoryCommitRequestBuilder() {
+	public SnomedRepositoryCommitRequestBuilder() {
 		super();
 	}
 	

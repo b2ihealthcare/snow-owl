@@ -31,13 +31,17 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
 
 /**
  * FHIR {@link ElementDefinition} type and Profile
  * @since 7.1
  */
+@JsonDeserialize(builder = Type.Builder.class)
 public class Type extends Element {
 	
 	@NotNull
@@ -65,7 +69,7 @@ public class Type extends Element {
 	@JsonProperty
 	private final Code versioning;
 	
-	protected Type(final String id, 
+	Type(final String id, 
 			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Uri code, 
 			final Uri profile, 
@@ -82,10 +86,31 @@ public class Type extends Element {
 		this.versioning = versioning;
 	}
 	
+	public Uri getCode() {
+		return code;
+	}
+	
+	public Uri getProfile() {
+		return profile;
+	}
+	
+	public Uri getTargetProfile() {
+		return targetProfile;
+	}
+	
+	public Collection<Code> getAggregation() {
+		return aggregation;
+	}
+	
+	public Code getVersioning() {
+		return versioning;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Type> {
 		
 		private Uri code;
@@ -115,6 +140,8 @@ public class Type extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("aggregation")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder aggregations(Collection<AggregationMode> aggregationModes) {
 			this.aggregationModes = aggregationModes;
 			return getSelf();
@@ -132,8 +159,13 @@ public class Type extends Element {
 		
 		@Override
 		protected Type doBuild() {
-			Set<Code> aggregationCodes = aggregationModes.stream().map(a -> a.getCode()).collect(Collectors.toSet());
-			return new Type(id, extensions, code, profile, targetProfile, aggregationCodes, referenceVersionRule.getCode());
+			Code refCode = referenceVersionRule == null ? null : referenceVersionRule.getCode();
+			if (aggregationModes == null) {
+				return new Type(id, extensions, code, profile, targetProfile, null, refCode);
+			} else {
+				Set<Code> aggregationCodes = aggregationModes.stream().map(a -> a.getCode()).collect(Collectors.toSet());
+				return new Type(id, extensions, code, profile, targetProfile, aggregationCodes, refCode);
+			}
 		}
 	}
 

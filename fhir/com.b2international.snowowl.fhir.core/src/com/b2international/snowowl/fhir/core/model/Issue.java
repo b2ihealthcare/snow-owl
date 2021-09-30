@@ -27,7 +27,10 @@ import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
 
 /**
@@ -41,6 +44,7 @@ import com.google.common.collect.Lists;
  * @since 6.3
  *
  */
+@JsonDeserialize(builder = Issue.Builder.class)
 public class Issue {
 
 	@NotNull
@@ -52,7 +56,7 @@ public class Issue {
 	private final Code code;
 
 	@JsonProperty("details")
-	private final CodeableConcept codeableConcept;
+	private final CodeableConcept details;
 
 	/*
 	 * Additional diagnostic information about the issue. Typically, this may be a
@@ -78,12 +82,12 @@ public class Issue {
 	@JsonProperty("expression")
 	private final Collection<String> expressions;
 
-	Issue(Code severity, Code code, CodeableConcept codeableConcept, String diagnostics, Collection<String> locations,
+	Issue(Code severity, Code code, CodeableConcept details, String diagnostics, Collection<String> locations,
 			Collection<String> expressions) {
 
 		this.severity = severity;
 		this.code = code;
-		this.codeableConcept = codeableConcept;
+		this.details = details;
 		this.diagnostics = diagnostics;
 		this.locations = locations;
 		this.expressions = expressions;
@@ -97,8 +101,8 @@ public class Issue {
 		return code;
 	}
 
-	public CodeableConcept getCodeableConcept() {
-		return codeableConcept;
+	public CodeableConcept getDetails() {
+		return details;
 	}
 
 	public String getDiagnostics() {
@@ -117,11 +121,12 @@ public class Issue {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Issue> {
 
 		private Code severity;
 		private Code code;
-		private CodeableConcept codeableConcept;
+		private CodeableConcept details;
 		private String diagnostics;
 		private Collection<String> locations = Lists.newArrayList();
 		private Collection<String> expressions = Lists.newArrayList();
@@ -136,7 +141,7 @@ public class Issue {
 			return this;
 		}
 
-		public Builder codeableConcept(OperationOutcomeCode operationOutcomeCode) {
+		public Builder outcomeDetails(OperationOutcomeCode operationOutcomeCode) {
 			
 			String outcomeCodeString = operationOutcomeCode.getDisplayName();
 			if (outcomeCodeString.contains("%s")) {
@@ -153,11 +158,11 @@ public class Issue {
 				.text(outcomeCodeString)
 				.build();
 			
-			this.codeableConcept = codeableConcept;
+			this.details = codeableConcept;
 			return this;
 		}
 		
-		public Builder codeableConceptWithDisplayArgs(OperationOutcomeCode operationOutcomeCode, Object... args) {
+		public Builder detailsWithDisplayArgs(OperationOutcomeCode operationOutcomeCode, Object... args) {
 			
 			String substitutedDisplayName = String.format(operationOutcomeCode.getDisplayName(), args);
 			
@@ -172,11 +177,11 @@ public class Issue {
 					.text(substitutedDisplayName)
 					.build();
 			
-			this.codeableConcept = codeableConcept;
+			this.details = codeableConcept;
 			return this;
 		}
 		
-		public Builder codeableConceptWithDisplay(OperationOutcomeCode operationOutcomeCode, String display) {
+		public Builder detailsWithDisplay(OperationOutcomeCode operationOutcomeCode, String display) {
 			
 			Coding coding = Coding.builder()
 					.code(operationOutcomeCode.getCodeValue())
@@ -189,12 +194,12 @@ public class Issue {
 					.text(display)
 					.build();
 			
-			this.codeableConcept = codeableConcept;
+			this.details = codeableConcept;
 			return this;
 		}
 
-		public Builder codeableConcept(CodeableConcept codeableConcept) {
-			this.codeableConcept = codeableConcept;
+		public Builder details(CodeableConcept codeableConcept) {
+			this.details = codeableConcept;
 			return this;
 		}
 
@@ -202,9 +207,23 @@ public class Issue {
 			this.diagnostics = diagnostics;
 			return this;
 		}
+		
+		@JsonProperty("location")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder locations(Collection<String> locations) {
+			this.locations = locations;
+			return this;
+		}
 
 		public Builder addLocation(String location) {
 			locations.add(location);
+			return this;
+		}
+		
+		@JsonProperty("expression")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder expressions(Collection<String> expressions) {
+			this.expressions = expressions;
 			return this;
 		}
 		
@@ -215,14 +234,14 @@ public class Issue {
 
 		@Override
 		protected Issue doBuild() {
-			return new Issue(severity, code, codeableConcept, diagnostics, locations, expressions);
+			return new Issue(severity, code, details, diagnostics, locations, expressions);
 		}
 
 	}
 
 	@Override
 	public String toString() {
-		return "Issue [severity=" + severity + ", code=" + code + ", codeableConcept=" + codeableConcept + ", diagnostics=" + diagnostics
+		return "Issue [severity=" + severity + ", code=" + code + ", codeableConcept=" + details + ", diagnostics=" + diagnostics
 				+ ", locations=" + locations + ", expressions=" + expressions + "]";
 	}
 

@@ -26,7 +26,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -41,7 +41,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.14.0 
  */
-final class CodeSystemUpgradeRequest implements Request<RepositoryContext, String>, RepositoryAccessControl {
+final class CodeSystemUpgradeRequest implements Request<RepositoryContext, String>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

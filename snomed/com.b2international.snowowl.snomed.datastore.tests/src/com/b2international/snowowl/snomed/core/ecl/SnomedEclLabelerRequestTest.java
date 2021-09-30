@@ -19,7 +19,10 @@ import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdenti
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.xtext.parser.IParser;
@@ -39,11 +42,13 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.datastore.CodeSystemResource;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.snomed.DocumentBuilders;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
@@ -54,7 +59,7 @@ import com.google.inject.Injector;
 public class SnomedEclLabelerRequestTest extends BaseRevisionIndexTest {
 
 	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-
+	
 	private BranchContext context;
 
 	@Override
@@ -75,10 +80,14 @@ public class SnomedEclLabelerRequestTest extends BaseRevisionIndexTest {
 		final IResourceValidator resourceValidator = ECL_INJECTOR.getInstance(IResourceValidator.class);
 		final ISerializer serializer = ECL_INJECTOR.getInstance(ISerializer.class);
 		
-		context = TestBranchContext.on(MAIN)
+		Builder contextBuilder = TestBranchContext.on(MAIN)
 			.with(EclParser.class, new DefaultEclParser(parser, resourceValidator))
 			.with(EclSerializer.class, new DefaultEclSerializer(serializer))
-			.with(Index.class, rawIndex()).with(RevisionIndex.class, index()).build();
+			.with(Index.class, rawIndex()).with(RevisionIndex.class, index())
+			.with(ObjectMapper.class, getMapper());
+		
+		CodeSystemResource.configureCodeSystem(contextBuilder);
+		context = contextBuilder.build();
 	}
 
 	private String label(String expression) {

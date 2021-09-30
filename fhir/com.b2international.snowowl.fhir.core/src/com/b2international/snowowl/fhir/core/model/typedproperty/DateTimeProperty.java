@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.model.typedproperty;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 
 /**
  * FHIR Date-time typed property, designated as propertyName[x] in the specification.
@@ -35,7 +35,7 @@ public class DateTimeProperty extends TypedProperty<Date> {
 	@Override
 	public String getValueString() {
 		Date date = getValue();
-		final SimpleDateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		final SimpleDateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
 		return df.format(date);
 	}
 	

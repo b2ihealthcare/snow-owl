@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -42,7 +42,7 @@ import com.google.common.base.Strings;
  * 
  * @since 7.0
  */
-final class ClassificationCreateRequest implements Request<BranchContext, String>, BranchAccessControl {
+final class ClassificationCreateRequest implements Request<BranchContext, String>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 

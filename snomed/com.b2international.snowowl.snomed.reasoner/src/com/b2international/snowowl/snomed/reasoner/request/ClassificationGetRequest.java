@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
  */
 final class ClassificationGetRequest 
 		extends GetResourceRequest<ClassificationSearchRequestBuilder, RepositoryContext, ClassificationTasks, ClassificationTask>
-		implements RepositoryAccessControl {
+		implements AccessControl {
 
 	ClassificationGetRequest(final String classificationId) {
 		super(classificationId);

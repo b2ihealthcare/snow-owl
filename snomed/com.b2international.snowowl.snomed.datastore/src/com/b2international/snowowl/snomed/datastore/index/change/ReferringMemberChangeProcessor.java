@@ -71,7 +71,7 @@ final class ReferringMemberChangeProcessor {
 	}
 	
 	private boolean byReferencedComponentType(SnomedRefSetMemberIndexEntry member) {
-		return referencedComponentType == member.getReferencedComponentType();
+		return referencedComponentType.equals(member.getReferencedComponentType());
 	}
 
 	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMemberIndexEntry member, MemberChangeKind changeKind) {

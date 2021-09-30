@@ -22,7 +22,11 @@ if (params.isUnpublishedOnly) {
 	effectiveTimeExpressionBuilder.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }
 
-Query<String[]> query = Query.select(String[].class)
+List<ComponentIdentifier> issues = Lists.newArrayList();
+Set<String> buckets = newHashSet()
+String currentSourceId = null
+
+Query.select(String[].class)
 	.from(SnomedRelationshipIndexEntry.class)
 	.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0 
 		SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP, // 1
@@ -30,9 +34,14 @@ Query<String[]> query = Query.select(String[].class)
 		SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4
 		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID, // 5
+<<<<<<< HEAD
 		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID //6
 	)
-	
+=======
+		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, //6
+		SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE, //7
+		SnomedRelationshipIndexEntry.Fields.STRING_VALUE) //8
+>>>>>>> refs/remotes/origin/7.x
 	.where(effectiveTimeExpressionBuilder.build())
 	.sortBy(SortBy.builder()
 		.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
@@ -40,24 +49,19 @@ Query<String[]> query = Query.select(String[].class)
 		.build())
 	.limit(50_000)
 	.build()
-
-List<ComponentIdentifier> issues = Lists.newArrayList();
-Set<String> buckets = newHashSet()
-String currentSourceId = null
-	
-for (Hits<String[]> page : searcher.scroll(query)) {
-	for (String[] relationship : page) {
+	.stream(searcher)
+	.flatMap({ it.stream() })
+	.forEachOrdered({ relationship -> 
 		if (!relationship[2].equals(currentSourceId)) {
 			buckets.clear()
 			currentSourceId = relationship[2] 
 		}
-		String key = String.format("%s_%s_%s_%s_%s", relationship[2], relationship[3], relationship[4], relationship[5], relationship[6])
+		String key = String.format("%s_%s_%s_%s_%s_%s_%s", relationship[2], relationship[3], relationship[4], relationship[5], relationship[6], relationship[7], relationship[8])
 		if ("0".equals(relationship[1])) {
 			buckets.add(key);
 		} else if (buckets.contains(key)) { // report duplication of ungrouped relationship in a group
 			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationship[0]));					
 		}
-	}
-}
+	})
 
 return issues;

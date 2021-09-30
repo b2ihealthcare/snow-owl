@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -64,7 +65,7 @@ public abstract class CodeSystemVersionRestRequests {
 	
 	public static ValidatableResponse assertGetVersion(String codeSystemId, String version) {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
-				.get("/{id}", CodeSystem.uri(codeSystemId, version).toString())
+				.get("/{id}", String.join(Branch.SEPARATOR, codeSystemId, version))
 				.then();
 	}
 

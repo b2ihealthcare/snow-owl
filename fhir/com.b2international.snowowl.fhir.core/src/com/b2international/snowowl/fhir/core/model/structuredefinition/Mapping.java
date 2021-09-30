@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,14 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Mapping BackBone definition in the {@link StructureDefinition} domain object.
  * @since 7.1
  */
+@JsonDeserialize(builder = Mapping.Builder.class)
 public class Mapping {
 
 	@Valid
@@ -67,10 +70,27 @@ public class Mapping {
 		return true;
 	}
 	
+	public Id getIdentity() {
+		return identity;
+	}
+	
+	public Uri getUri() {
+		return uri;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Mapping> {
 		
 		private Id identity;

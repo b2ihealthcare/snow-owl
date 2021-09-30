@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,15 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Concept map dependsOn backbone element
  * <br> Other elements required for the mapping (from context)
  * @since 6.10
  */
+@JsonDeserialize(builder = DependsOn.Builder.class)
 public class DependsOn {
 
 	@Valid
@@ -50,7 +53,7 @@ public class DependsOn {
 	@JsonProperty
 	private final String display;
 
-	public DependsOn(Uri property, Uri system, String value, String display) {
+	DependsOn(Uri property, Uri system, String value, String display) {
 		
 		this.property = property;
 		this.system = system;
@@ -58,10 +61,27 @@ public class DependsOn {
 		this.display = display;
 	}
 	
+	public Uri getProperty() {
+		return property;
+	}
+	
+	public Uri getSystem() {
+		return system;
+	}
+	
+	public String getValue() {
+		return value;
+	}
+	
+	public String getDisplay() {
+		return display;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<DependsOn> {
 
 		private Uri property;

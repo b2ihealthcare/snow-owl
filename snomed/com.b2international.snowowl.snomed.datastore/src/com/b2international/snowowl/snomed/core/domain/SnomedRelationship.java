@@ -87,17 +87,16 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 
 		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
 		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
-		public static final String RELATIONSHIP_GROUP = SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP;
-		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
-		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
-		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
-		
 		public static final String VALUE_TYPE = SnomedRelationshipIndexEntry.Fields.VALUE_TYPE;
 		public static final String NUMERIC_VALUE = SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE;
 		public static final String STRING_VALUE = SnomedRelationshipIndexEntry.Fields.STRING_VALUE;
+    public static final String RELATIONSHIP_GROUP = SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP;
 		public static final String UNION_GROUP = SnomedRelationshipIndexEntry.Fields.UNION_GROUP;
+    public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+    public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
 
-		public static final Set<String> ALL = ImmutableSet.of(
+    public static final Set<String> ALL = ImmutableSet.of(
 			// RF2 fields
 			ID,
 			ACTIVE,
@@ -113,7 +112,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			CHARACTERISTIC_TYPE_ID,
 			MODIFIER_ID,
 			// additional fields
-			VALUE_TYPE,
+      VALUE_TYPE,
 			RELEASED);
 	}
 	

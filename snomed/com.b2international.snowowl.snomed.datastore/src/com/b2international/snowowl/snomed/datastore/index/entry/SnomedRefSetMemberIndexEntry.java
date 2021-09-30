@@ -94,7 +94,7 @@ import com.google.common.collect.Iterables;
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
-		SnomedRefSetMemberIndexEntry.Fields.MRCM_EDITORIAL_GUIDE_REFERENCE,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_GUIDEURL,
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED,
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_CARDINALITY,
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
@@ -167,7 +167,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String MRCM_PROXIMAL_PRIMITIVE_REFINEMENT = SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT;
 		public static final String MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION = SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
 		public static final String MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION = SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
-		public static final String MRCM_EDITORIAL_GUIDE_REFERENCE = SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE;
+		public static final String MRCM_GUIDEURL = SnomedRf2Headers.FIELD_MRCM_GUIDEURL;
 		
 		// MRCM attribute domain type
 		public static final String MRCM_DOMAIN_ID = SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID;
@@ -533,7 +533,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String proximalPrimitiveRefinement;
 		private String domainTemplateForPrecoordination;
 		private String domainTemplateForPostcoordination;
-		private String editorialGuideReference;
+		private String guideURL;
 		// MRCM Attribute Domain		
 		private String domainId;
 		private Boolean grouped;
@@ -592,7 +592,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			case Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT: this.proximalPrimitiveRefinement = (String) value; break;
 			case Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION: this.domainTemplateForPrecoordination = (String) value; break;
 			case Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION: this.domainTemplateForPostcoordination = (String) value; break;
-			case Fields.MRCM_EDITORIAL_GUIDE_REFERENCE: this.editorialGuideReference = (String) value; break;
+			case Fields.MRCM_GUIDEURL: this.guideURL = (String) value; break;
 			
 			case Fields.MRCM_DOMAIN_ID: this.domainId = (String) value; break;
 			case Fields.MRCM_GROUPED: this.grouped = (Boolean) value; break;
@@ -803,8 +803,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		public Builder editorialGuideReference(String editorialGuideReference) {
-			this.editorialGuideReference = editorialGuideReference;
+		public Builder guideURL(String guideURL) {
+			this.guideURL = guideURL;
 			return getSelf();
 		}
 		
@@ -938,7 +938,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			doc.proximalPrimitiveRefinement = proximalPrimitiveRefinement;
 			doc.domainTemplateForPrecoordination = domainTemplateForPrecoordination;
 			doc.domainTemplateForPostcoordination = domainTemplateForPostcoordination;
-			doc.editorialGuideReference = editorialGuideReference;
+			doc.guideURL = guideURL;
 			
 			// MRCM Attribute Domain
 			doc.domainId = domainId;
@@ -1019,7 +1019,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String proximalPrimitiveRefinement;
 	private String domainTemplateForPrecoordination;
 	private String domainTemplateForPostcoordination;
-	private String editorialGuideReference;
+	private String guideURL;
 	// MRCM Attribute Domain		
 	private String domainId;
 	private Boolean grouped;
@@ -1264,8 +1264,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return domainTemplateForPostcoordination;
 	}
 	
-	public String getEditorialGuideReference() {
-		return editorialGuideReference;
+	public String getGuideURL() {
+		return guideURL;
 	}
 	
 	public String getDomainId() {
@@ -1371,7 +1371,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		putIfPresent(builder, Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, getProximalPrimitiveRefinement());
 		putIfPresent(builder, Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, getDomainTemplateForPrecoordination());
 		putIfPresent(builder, Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, getDomainTemplateForPostcoordination());
-		putIfPresent(builder, Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, getEditorialGuideReference());
+		putIfPresent(builder, Fields.MRCM_GUIDEURL, getGuideURL());
 		// MRCM Attribute Domain
 		putIfPresent(builder, Fields.MRCM_DOMAIN_ID, getDomainId());
 		putIfPresent(builder, Fields.MRCM_GROUPED, isGrouped());
@@ -1432,7 +1432,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("proximalPrimitiveRefinement", proximalPrimitiveRefinement)
 				.add("domainTemplateForPrecoordination", domainTemplateForPrecoordination)
 				.add("domainTemplateForPostcoordination", domainTemplateForPostcoordination)
-				.add("editorialGuideReference", editorialGuideReference)
+				.add("guideURL", guideURL)
 				
 				.add("domainId", domainId)
 				.add("grouped", grouped)

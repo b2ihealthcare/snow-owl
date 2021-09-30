@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.core.domain;
+
+import java.util.Set;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -35,6 +37,8 @@ import com.google.common.collect.Multimap;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(SnomedCoreComponent.SnomedComponentCategoryResolver.class)
 public abstract class SnomedCoreComponent extends SnomedComponent {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @since 6.16
@@ -73,6 +77,8 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	
 	private InactivationProperties inactivationProperties;
 	private SnomedReferenceSetMembers members;
+	private Set<String> memberOf;
+	private Set<String> activeMemberOf;
 
 	/**
 	 * Returns the available inactivation properties of this concept. Requires expansion parameter 'inactivationProperties()' in read requests.
@@ -90,6 +96,20 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	public SnomedReferenceSetMembers getMembers() {
 		return members;
 	}
+	
+	/**
+	 * @return a sorted {@link Set} of reference set IDs where this SNOMED CT component has at least one member (regardless of status)
+	 */
+	public Set<String> getMemberOf() {
+		return memberOf;
+	}
+	
+	/**
+	 * @return a sorted {@link Set} of reference set IDs where this SNOMED CT component has at least one _active_ member
+	 */
+	public Set<String> getActiveMemberOf() {
+		return activeMemberOf;
+	}
 
 	public void setInactivationProperties(InactivationProperties inactivationProperties) {
 		this.inactivationProperties = inactivationProperties;
@@ -97,6 +117,14 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	
 	public void setMembers(SnomedReferenceSetMembers members) {
 		this.members = members;
+	}
+	
+	public void setMemberOf(Set<String> memberOf) {
+		this.memberOf = memberOf;
+	}
+	
+	public void setActiveMemberOf(Set<String> activeMemberOf) {
+		this.activeMemberOf = activeMemberOf;
 	}
 	
 	/**

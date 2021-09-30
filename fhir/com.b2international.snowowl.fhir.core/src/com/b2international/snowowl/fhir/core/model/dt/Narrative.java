@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Narrative datatype
@@ -28,6 +30,7 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
  * Narrative represents the content of the resource to a human.
  * @since 6.3
  */
+@JsonDeserialize(builder = Narrative.Builder.class)
 public class Narrative {
 	
 	//"status" : "<cod >", // R!  generated | extensions | additional | empty
@@ -66,6 +69,7 @@ public class Narrative {
 	/**
 	 * @since 6.4
 	 */
+	@JsonPOJOBuilder(withPrefix = "")
 	public static final class Builder extends ValidatingBuilder<Narrative> {
 		
 		private Code status;

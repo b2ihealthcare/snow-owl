@@ -18,12 +18,16 @@ package com.b2international.snowowl.fhir.core.model.dt;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.model.codesystem.Property;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * @since 6.4
  */
 @JsonPropertyOrder({"code", "value", "description"})
+@JsonDeserialize(builder = SubProperty.Builder.class)
 public final class SubProperty extends FhirProperty {
 	
 	//Identifies the property returned (1..1)
@@ -52,6 +56,7 @@ public final class SubProperty extends FhirProperty {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends FhirProperty.Builder<SubProperty, Builder> {
 		
 		private Code code;

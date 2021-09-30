@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,15 @@ package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * URI expansion parameter
  * @since 6.7
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = UriParameter.Builder.class)
 public class UriParameter extends Parameter<Uri> {
 
 	UriParameter(String name, Uri value) {
@@ -37,10 +41,19 @@ public class UriParameter extends Parameter<Uri> {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Parameter.Builder<Builder, UriParameter, Uri> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueUri(final Uri value) {
+			this.value = value;
 			return this;
 		}
 

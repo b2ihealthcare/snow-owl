@@ -28,6 +28,7 @@ import java.util.Set;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -381,7 +382,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		}
 
 		public SnomedRelationshipIndexEntry build() {
-			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(id,
+			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(
+				id,
 				moduleId, 
 				released, 
 				active, 
@@ -418,7 +420,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	private final String destinationId;
 	private final BigDecimal numericValue;
 	private final String stringValue;
-
 	private final RelationshipValueType valueType;
 	
 	private SnomedRelationshipIndexEntry(

@@ -33,6 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -110,8 +111,12 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		
 		boolean requestedExpand = search.containsKey(OptionKey.EXPAND);
 		// make sure preferredDescriptions() and displayTermType expansion data are always loaded
-		Options expand = ExpandParser.parse(String.join(",", "preferredDescriptions()", displayTermType.getExpand()))
+		Options expand = ExpandParser.parse("preferredDescriptions()")
 				.merge(requestedExpand ? search.getOptions(OptionKey.EXPAND) : Options.empty());
+		
+		if (!Strings.isNullOrEmpty(displayTermType.getExpand())) {
+			expand = ExpandParser.parse(displayTermType.getExpand()).merge(expand);
+		}
 		
 		SnomedConcepts matches = req
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))

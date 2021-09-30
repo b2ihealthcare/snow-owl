@@ -89,6 +89,7 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
 			.setRefSetExportLayout(params.getRefSetLayout() == null ? null : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
+			.setComponentTypes(params.getComponentTypes())
 			.build(branch)
 			.execute(getBus())
 			.getSync();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,15 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Concept map unmapped backbone element
  * <br> When no match in mappings
  * @since 6.10
  */
+@JsonDeserialize(builder = UnMapped.Builder.class)
 public class UnMapped {
 
 	@Valid
@@ -47,21 +50,35 @@ public class UnMapped {
 	@JsonProperty
 	private final Code mode;
 
-
 	UnMapped(Uri url, String display, Code code, Code mode) {
 		this.url = url;
 		this.display = display;
 		this.code = code;
 		this.mode = mode;
 	}
-
+	
+	public Uri getUrl() {
+		return url;
+	}
+	
+	public String getDisplay() {
+		return display;
+	}
+	
+	public Code getCode() {
+		return code;
+	}
+	
+	public Code getMode() {
+		return mode;
+	}
 
 	public static Builder builder() {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<UnMapped> {
-
 
 		private Uri url;
 
@@ -108,7 +125,6 @@ public class UnMapped {
 
 		@Override
 		protected UnMapped doBuild() {
-
 			return new UnMapped(url, display, code, mode);
 		}
 	}

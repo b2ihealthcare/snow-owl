@@ -29,9 +29,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -46,6 +44,7 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.rest.BaseResourceApiTest;
 import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
@@ -57,7 +56,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  * @since 1.0
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CodeSystemApiTest {
+public class CodeSystemApiTest extends BaseResourceApiTest {
 
 	private static final Json SNOMED = Json.object(
 		ResourceDocument.Fields.ID, "SNOMEDCT",
@@ -264,7 +263,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-15");
-		assertVersionCreated(versionRequestBody);
+		assertVersionCreated(versionRequestBody).statusCode(201);
 
 		final String codeSystemId = "cs12";
 		
@@ -367,9 +366,9 @@ public class CodeSystemApiTest {
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
-		assertVersionCreated(v3RequestBody);
+		assertVersionCreated(v3RequestBody).statusCode(201);
 		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "2020-04-17");
-		assertVersionCreated(v4RequestBody);
+		assertVersionCreated(v4RequestBody).statusCode(201);
 		
 		final String codeSystemId = "cs14";
 		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
@@ -416,7 +415,7 @@ public class CodeSystemApiTest {
 		
 		// version codesystem
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", LocalDate.now().toString());
-		assertVersionCreated(versionRequestBody);
+		assertVersionCreated(versionRequestBody).statusCode(201);
 		
 		// TODO add REST API
 		ResourceRequests.prepareDelete(codeSystemId)
@@ -453,7 +452,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(requestBody);
 		
 		final String bundleId = IDs.base64UUID();
-		BundleApiAssert.assertCreate(BundleApiAssert.prepareCreateRequestBody(bundleId))
+		BundleApiAssert.assertCreate(BundleApiAssert.prepareBundleCreateRequestBody(bundleId))
 			.statusCode(201);
 		
 		final Json updateRequestBody = Json.object("bundleId", bundleId);
@@ -473,20 +472,15 @@ public class CodeSystemApiTest {
 		assertCodeSystemNotUpdated(codeSystemId, updateRequestBody);
 	}
 	
-	@After
-	public void cleanUp() {
-		ResourceRequests
-		.prepareSearch()
-		.buildAsync()
-		.execute(Services.bus())
-		.getSync(1, TimeUnit.MINUTES)
-		.forEach(resource -> {
-			ResourceRequests
-			.prepareDelete(resource.getId())
-			.build(RestExtensions.USER, "Delete " + resource.getId())
-			.execute(Services.bus())
-			.getSync(1, TimeUnit.MINUTES); 
-		});
+	@Test
+	public void codesystem26_CreateVersionIncorrectEffectiveTime() {
+		final String codeSystemId = "cs26";
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
+		assertCodeSystemCreated(requestBody);
+		
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", "2020-04-15")).statusCode(201);
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v2", "2020-04-14")).statusCode(400);
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v3", "2020-04-15")).statusCode(400);
 	}
 	
 }

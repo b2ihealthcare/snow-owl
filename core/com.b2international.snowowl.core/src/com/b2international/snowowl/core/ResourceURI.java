@@ -40,7 +40,7 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	private static final long serialVersionUID = 1L;
 
 	@JsonIgnore
-	private static final Pattern URI_PATTERN = Pattern.compile("^([^\\/]+)[\\/]{1}([^\\/]+)(([\\/]{1}[^\\/\\s]+)*)$");
+	private static final Pattern URI_PATTERN = Pattern.compile("^([^\\/]+)[\\/]{1}([^\\/@]+)(([\\/]{1}[^\\/\\s@]+)*)(@[^\\s]+)?$");
 	
 	/**
 	 * Special path key, that represents the latest released version of a code system.
@@ -70,6 +70,9 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	// relative location or version of the resource
 	private final String path;
 	
+	// timestamp part as String, for point-in-time resource URIs
+	private final String timestampPart;
+	
 	@JsonCreator
 	public ResourceURI(String uri) throws BadRequestException {
 		if (Strings.isNullOrEmpty(uri)) {
@@ -85,10 +88,25 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 			throw new BadRequestException("Malformed Resource URI value: '%s' must be in format '<resourceType>/<resourceId>/<path>'.", uri);
 		}
 		// ignore HEAD in path part by automatically removing it from the uri
-		this.uri = uri.replaceAll("/HEAD", ""); 
+		this.uri = uri.replaceFirst("/HEAD", ""); 
 		this.resourceType = matcher.group(1);
 		this.resourceId = matcher.group(2);
-		this.path = CompareUtils.isEmpty(matcher.group(3)) ? HEAD : matcher.group(3).substring(1); // removes the leading slash character
+		// remove leading slash from match
+		this.path = CompareUtils.isEmpty(matcher.group(3)) ? HEAD : matcher.group(3).substring(1);
+		
+		try {
+
+			if (CompareUtils.isEmpty(matcher.group(5))) {
+				this.timestampPart = "";
+			} else {
+				// test that a valid numeric value was given after the 'at' symbol
+				Long.parseLong(matcher.group(5).substring(1));
+				this.timestampPart = matcher.group(5);
+			}
+			
+		} catch (NumberFormatException e) {
+			throw new BadRequestException("Malformed Resource URI value: timestamp part of '%s' must be in format '@<numeric value>", uri);
+		}
 	}
 	
 	public String getUri() {
@@ -107,6 +125,10 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		return path;
 	}
 	
+	public String getTimestampPart() {
+		return timestampPart;
+	}
+	
 	public boolean isLatest() {
 		return LATEST.equals(getPath());
 	}
@@ -120,9 +142,20 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	}
 	
 	public ResourceURI withPath(String path) {
+		if (Objects.equals(getPath(), path)) {
+			return this;
+		}
 		return Strings.isNullOrEmpty(path) ? ResourceURI.of(resourceType, resourceId) : ResourceURI.branch(resourceType, resourceId, path);
 	}
-	
+
+	@JsonIgnore
+	public ResourceURI withTimestampPart(String timestampPart) {
+		if (Objects.equals(getTimestampPart(), timestampPart)) {
+			return this;
+		}
+		return withPath(getPath() + timestampPart);
+	}
+
 	@JsonIgnore
 	public ResourceURI withoutPath() {
 		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
@@ -132,7 +165,7 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	public String withoutResourceType() {
 		return isHead() ? resourceId : String.join(Branch.SEPARATOR, resourceId, path);
 	}
-	
+
 	public ResourceURI asLatest() {
 		return ResourceURI.latest(resourceType, resourceId);
 	}

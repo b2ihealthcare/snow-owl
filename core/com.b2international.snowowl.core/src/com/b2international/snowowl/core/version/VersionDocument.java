@@ -120,6 +120,9 @@ public final class VersionDocument implements Serializable {
 			return matchAny(Fields.AUTHOR, authors);
 		}
 		
+		public static Expression createdAt(long from, long to) {
+			return matchRange(Fields.CREATED_AT, from, to);
+		}
 	}
 	
 	public static Builder builder() {

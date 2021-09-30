@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.Parameter;
 
 /**
@@ -27,9 +29,9 @@ public class FhirResourceSelectors {
 	private String _summary;
 	
 	@Parameter
-	private String[] _elements;
+	private List<String> _elements;
 	
-	public String[] get_elements() {
+	public List<String> get_elements() {
 		return _elements;
 	}
 	
@@ -37,7 +39,7 @@ public class FhirResourceSelectors {
 		return _summary;
 	}
 	
-	public void set_elements(String[] _elements) {
+	public void set_elements(List<String> _elements) {
 		this._elements = _elements;
 	}
 	

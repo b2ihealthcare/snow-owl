@@ -31,7 +31,8 @@ import org.elasticsearch.action.bulk.BulkProcessor.Builder;
 import org.elasticsearch.action.bulk.BulkProcessor.Listener;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.*;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
@@ -149,40 +150,25 @@ public final class EsHttpClient extends EsClientBase {
 	}
 	
 	@Override
-	public SearchResponse scroll(SearchScrollRequest req) throws IOException {
-		checkAvailable();
-		return client.scroll(req, EXTENDED_DEFAULT);
-	}
-	
-	@Override
-	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
-		checkAvailable();
-		// XXX use special client to handle 404 Bad Request on missing search context errors
-		return clientExt.clearScroll(req, EXTENDED_DEFAULT);
-	}
-	
-	@Override
-	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, 
-			QueryBuilder query) throws IOException {
+	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index)
 			.setBatchSize(batchSize)
 			.setQuery(query)
 			.setScript(script)
-			.setSlices(numberOfSlices)
+			.setSlices(UpdateByQueryRequest.AUTO_SLICES)
 			.setAbortOnVersionConflict(false);
 		
 		return client.updateByQuery(updateByQueryRequest, EXTENDED_DEFAULT);
 	}
 	
 	@Override
-	public BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices,
-			QueryBuilder query) throws IOException {
+	public BulkByScrollResponse deleteByQuery(String index, int batchSize, QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index)
 				.setBatchSize(batchSize)
 				.setQuery(query)
-				.setSlices(numberOfSlices)
+				.setSlices(DeleteByQueryRequest.AUTO_SLICES)
 				.setAbortOnVersionConflict(false);
 			
 		return client.deleteByQuery(deleteByQueryRequest, EXTENDED_DEFAULT);

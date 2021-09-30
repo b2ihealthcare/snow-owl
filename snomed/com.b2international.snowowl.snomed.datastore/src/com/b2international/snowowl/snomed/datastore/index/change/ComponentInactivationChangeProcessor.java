@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -97,115 +98,49 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		
 		if (!inactivatedConceptIds.isEmpty()) {
 			
-			Multimap<String, RevisionDiff> changedMembersByReferencedComponentId = HashMultimap.create();
+			final Multimap<String, RevisionDiff> changedMembersByReferencedComponentId = HashMultimap.create();
 			staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).forEach(diff -> {
 				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
 			});
 			
-			for (Hits<SnomedDescriptionIndexEntry> hits : searcher.scroll(Query.select(SnomedDescriptionIndexEntry.class)
+			// Inactivate active descriptions on inactive concepts
+			try {
+				Query.select(SnomedDescriptionIndexEntry.class)
 					.from(SnomedDescriptionIndexEntry.class)
 					.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
 					.where(Expressions.builder()
-							.filter(SnomedDescriptionIndexEntry.Expressions.active())
-							.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
-							.build())
-					.limit(PAGE_SIZE)
-					.build())) {
-				
-				final Set<String> descriptionIds = hits.stream().map(description -> description.getId()).collect(Collectors.toSet());
-				
-				// load existing indicator reference set members from index
-				final Multimap<String, SnomedRefSetMemberIndexEntry> existingIndicatorReferenceSetMembers = HashMultimap.create();
-				searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
-						.where(Expressions.builder()
-								.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
-								.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
-								.build())
-						.limit(Integer.MAX_VALUE)
+						.filter(SnomedDescriptionIndexEntry.Expressions.active())
+						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
 						.build())
-						.forEach(existingIndicatorMember -> {
-							existingIndicatorReferenceSetMembers.put(existingIndicatorMember.getReferencedComponentId(), existingIndicatorMember);
-						});
-				
-				// override members with the ones that present in the staging area
-				for (SnomedDescriptionIndexEntry descriptionToCheck : hits) {
-					final String descriptionId = descriptionToCheck.getId();
-					// get the persisted, existing members
-					// get the current members from the tx
-					final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionId).stream()
-							.map(diff -> diff.newRevision)
-							.map(SnomedRefSetMemberIndexEntry.class::cast)
-							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getRefsetId()))
-							.collect(Collectors.toList());
-					// if there were no registered member changes to this description
-					if (transactionMembers.isEmpty()) {
-						// apply CONCEPT_NON_CURRENT to all existing members or generate a new one 
-						final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionId)
-								.stream()
-								.filter(member -> {
-									// reusable member, if it was inactivated earlier
-									// was active and used one of the active description attribute values
-									return !member.isActive() 
-											|| SnomedRefSetUtil.ATTRIBUTE_VALUES_FOR_ACTIVE_DESCRIPTIONS.contains(member.getValueId());
-								})
-								.findFirst()
-								.orElse(null);
-						if (existingMember == null) {
-							SnomedRefSetMemberIndexEntry inactivationMember = SnomedRefSetMemberIndexEntry.builder()
-								.id(UUID.randomUUID().toString())
-								.active(true)
-								.released(false)
-								.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
-								.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
-								.referencedComponentId(descriptionId)
-								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-								.moduleId(moduleIdProvider.apply(descriptionToCheck))
-								.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
-								.build();
-							stageNew(inactivationMember);
-						} else {
-							// update the existing member only, if it was active, registered as PENDING_MOVE
-							final SnomedRefSetMemberIndexEntry updated = SnomedRefSetMemberIndexEntry.builder(existingMember)
-									.active(true) // ensure active
-									.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) // ensure unpublished
-									.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT) // ensure non-current
-									.moduleId(moduleIdProvider.apply(descriptionToCheck))
-									.build();
-							stageChange(existingMember, updated);
+					.limit(PAGE_SIZE)
+					.build()
+					.stream(searcher)
+					.forEachOrdered(hits -> {
+						try {
+							inactivateDescriptions(searcher, moduleIdProvider, changedMembersByReferencedComponentId, hits);
+						} catch (IOException e) {
+							throw new UndeclaredThrowableException(e);
 						}
-						
-					}
-				}
+					});
+			} catch (UndeclaredThrowableException ute) {
+				// Unwrap and throw checked exception from lambda above
+				throw (IOException) ute.getCause();
 			}
-			
-			// inactivate relationships of inactivated concepts
 			
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
-			for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
-					.where(Expressions.builder()
-							.filter(SnomedRelationshipIndexEntry.Expressions.active())
-							.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
-							.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactivatedConceptIds))
-							.build())
-					.limit(PAGE_SIZE)
-					.build())) {
-				hits.forEach(relationship -> {
-					inactivatedComponentIds.add(relationship.getId());
-					if (changedRevisions.containsKey(relationship.getObjectId())) {
-						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) changedRevisions.get(relationship.getObjectId()).newRevision)
-								.active(false)
-								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-								.moduleId(moduleIdProvider.apply(relationship))
-								.build());
-					} else {
-						stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship)
-								.active(false)
-								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-								.moduleId(moduleIdProvider.apply(relationship))
-								.build());
-					}
-				});
-			}
+			
+			// Inactivate active relationships on inactive concepts
+			Query.select(SnomedRelationshipIndexEntry.class)
+				.where(Expressions.builder()
+					.filter(SnomedRelationshipIndexEntry.Expressions.active())
+					.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
+					.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactivatedConceptIds))
+					.build())
+				.limit(PAGE_SIZE)
+				.build()
+				.stream(searcher)
+				.flatMap(Hits::stream)
+				.forEachOrdered(relationship -> inactivateRelationship(inactivatedComponentIds, moduleIdProvider, changedRevisions, relationship));
 		}
 		
 		if (inactivatedComponentIds.isEmpty()) {
@@ -214,82 +149,200 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		
 		// inactivate referring members of all inactivated core component, and all members of inactivated refsets
 		final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
-		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
+		Query.select(SnomedRefSetMemberIndexEntry.class)
+			.where(Expressions.builder()
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+				.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
+				.should(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(inactivatedComponentIds))
+				.setMinimumNumberShouldMatch(1)
+				.build())
+			.limit(PAGE_SIZE)
+			.build()
+			.stream(searcher)
+			.flatMap(Hits::stream)
+			.forEachOrdered(member -> inactivateReferenceSetMember(moduleIdProvider, changedRevisions, member));
+		}
+
+	private void inactivateDescriptions(
+		RevisionSearcher searcher, 
+		ModuleIdProvider moduleIdProvider,
+		Multimap<String, RevisionDiff> changedMembersByReferencedComponentId,
+		Hits<SnomedDescriptionIndexEntry> hits) throws IOException {
+		
+		final Set<String> descriptionIds = hits.stream().map(description -> description.getId()).collect(Collectors.toSet());
+		
+		// load existing indicator reference set members from index
+		final Multimap<String, SnomedRefSetMemberIndexEntry> existingIndicatorReferenceSetMembers = HashMultimap.create();
+		searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(Expressions.builder()
-						.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
-						.should(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(inactivatedComponentIds))
-						.setMinimumNumberShouldMatch(1)
+						.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+						.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
 						.build())
-				.limit(PAGE_SIZE)
-				.build())) {
-			hits.forEach(member -> {
-				// XXX: setting effectiveTime to -1L here should be undone by SnomedRepositoryPreCommitHook's effective time restorer, if needed 
-				if (changedRevisions.containsKey(member.getObjectId())) {
-//					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) changedRevisions.get(member.getObjectId()).newRevision)
-//							.active(false)
-//							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-//							.build());
+				.limit(Integer.MAX_VALUE)
+				.build())
+				.forEach(existingIndicatorMember -> {
+					existingIndicatorReferenceSetMembers.put(existingIndicatorMember.getReferencedComponentId(), existingIndicatorMember);
+				});
+		
+		// override members with the ones that present in the staging area
+		for (SnomedDescriptionIndexEntry descriptionToCheck : hits) {
+			final String descriptionId = descriptionToCheck.getId();
+			// get the persisted, existing members
+			// get the current members from the tx
+			final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionId).stream()
+					.map(diff -> diff.newRevision)
+					.map(SnomedRefSetMemberIndexEntry.class::cast)
+					.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getRefsetId()))
+					.collect(Collectors.toList());
+			// if there were no registered member changes to this description
+			if (transactionMembers.isEmpty()) {
+				// apply CONCEPT_NON_CURRENT to all existing members or generate a new one 
+				final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionId)
+						.stream()
+						.filter(member -> {
+							// reusable member, if it was inactivated earlier
+							// was active and used one of the active description attribute values
+							return !member.isActive() 
+									|| SnomedRefSetUtil.ATTRIBUTE_VALUES_FOR_ACTIVE_DESCRIPTIONS.contains(member.getValueId());
+						})
+						.findFirst()
+						.orElse(null);
+				if (existingMember == null) {
+					SnomedRefSetMemberIndexEntry inactivationMember = SnomedRefSetMemberIndexEntry.builder()
+						.id(UUID.randomUUID().toString())
+						.active(true)
+						.released(false)
+						.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
+						.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
+						.referencedComponentId(descriptionId)
+						.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.moduleId(moduleIdProvider.apply(descriptionToCheck))
+						.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
+						.build();
+					stageNew(inactivationMember);
 				} else {
-					stageChange(member, SnomedRefSetMemberIndexEntry.builder(member)
-							.active(false)
-							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-							.moduleId(moduleIdProvider.apply(member))
-							.build());
+					// update the existing member only, if it was active, registered as PENDING_MOVE
+					final SnomedRefSetMemberIndexEntry updated = SnomedRefSetMemberIndexEntry.builder(existingMember)
+							.active(true) // ensure active
+							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) // ensure unpublished
+							.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT) // ensure non-current
+							.moduleId(moduleIdProvider.apply(descriptionToCheck))
+							.build();
+					stageChange(existingMember, updated);
 				}
-			});
-		}		
+			}
+		}
 	}
 	
+	private void inactivateRelationship(
+		final Set<String> inactivatedComponentIds, 
+		final ModuleIdProvider moduleIdProvider,
+		final Map<ObjectId, RevisionDiff> changedRevisions, 
+		final SnomedRelationshipIndexEntry relationship) {
+		
+		inactivatedComponentIds.add(relationship.getId());
+		
+		if (changedRevisions.containsKey(relationship.getObjectId())) {
+			stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) changedRevisions.get(relationship.getObjectId()).newRevision)
+				.active(false)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.moduleId(moduleIdProvider.apply(relationship))
+				.build());
+		} else {
+			stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship)
+				.active(false)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.moduleId(moduleIdProvider.apply(relationship))
+				.build());
+		}
+	}
+
+	private void inactivateReferenceSetMember(
+		final ModuleIdProvider moduleIdProvider, 
+		final Map<ObjectId, RevisionDiff> changedRevisions,
+		final SnomedRefSetMemberIndexEntry member) {
+			
+		// XXX: setting effectiveTime to -1L here should be undone by SnomedRepositoryPreCommitHook's effective time restorer, if needed 
+		if (changedRevisions.containsKey(member.getObjectId())) {
+//			stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) changedRevisions.get(member.getObjectId()).newRevision)
+//				.active(false)
+//				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+//				.build());
+		} else {
+			stageChange(member, SnomedRefSetMemberIndexEntry.builder(member)
+				.active(false)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.moduleId(moduleIdProvider.apply(member))
+				.build());
+		}
+	}
+
 	private void processReactivations(StagingArea staging, RevisionSearcher searcher, Set<String> reactivatedConceptIds, Set<String> reactivatedComponentIds) throws IOException {
 		ServiceProvider context = (ServiceProvider) staging.getContext();
 		ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
-		
-		for (Hits<String> hits : searcher.scroll(Query.select(String.class)
+
+		try {
+			Query.select(String.class)
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.ID)
 				// active descriptions, with active membership in the indicator refset on reactivated concepts
 				.where(Expressions.builder()
-						.filter(SnomedDescriptionIndexEntry.Expressions.active())
-						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(reactivatedConceptIds))
-						.filter(SnomedDescriptionIndexEntry.Expressions.activeMemberOf(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
-						.build())
+					.filter(SnomedDescriptionIndexEntry.Expressions.active())
+					.filter(SnomedDescriptionIndexEntry.Expressions.concepts(reactivatedConceptIds))
+					.filter(SnomedDescriptionIndexEntry.Expressions.activeMemberOf(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+					.build())
 				.limit(PAGE_SIZE)
-				.build())) {
-			
-			final Set<String> descriptionIds = ImmutableSet.copyOf(hits.getHits());
-			
-			final Set<String> stagedDescriptionIndicators = staging.getChangedObjects(SnomedRefSetMemberIndexEntry.class)
-				.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getRefsetId()))
-				.filter(member -> descriptionIds.contains(member.getReferencedComponentId()))
-				.map(SnomedRefSetMemberIndexEntry::getId)
-				.collect(Collectors.toSet());
-			
-			// search for all active indicator refset members with concept non-current
-			Hits<SnomedRefSetMemberIndexEntry> members = searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
-					.where(Expressions.builder()
-							.mustNot(SnomedRefSetMemberIndexEntry.Expressions.ids(stagedDescriptionIndicators))
-							.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-							.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
-							.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(ImmutableSet.of(Concepts.CONCEPT_NON_CURRENT)))
-							.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
-							.build())
-					.limit(Integer.MAX_VALUE) // we limit the number of possible members with the above query, even with duplicates we should not get more than 20k
-					.build());
-			
-			for (SnomedRefSetMemberIndexEntry indicatorMember : members) {
-				// check if this member is present in the transaction, if yes, do not auto-update/delete it
-				if (indicatorMember.isReleased() != null && indicatorMember.isReleased()) {
-					stageChange(indicatorMember, SnomedRefSetMemberIndexEntry.builder(indicatorMember).active(false)
-							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-							.moduleId(moduleIdProvider.apply(indicatorMember))
-							.build());
-				} else {
-					stageRemove(indicatorMember);
-				}
-			}
-			
+				.build()
+				.stream(searcher)
+				.forEachOrdered(hits -> {
+					try {
+						reactivateDescriptions(staging, searcher, moduleIdProvider, hits);
+					} catch (IOException e) {
+						throw new UndeclaredThrowableException(e);
+					}
+				});
+		} catch (UndeclaredThrowableException ute) {
+			// Unwrap and throw checked exception from lambda above
+			throw (IOException) ute.getCause();
 		}
 	}
 
+	private void reactivateDescriptions(
+		final StagingArea staging, 
+		final RevisionSearcher searcher, 
+		final ModuleIdProvider moduleIdProvider,
+		final Hits<String> hits) throws IOException {
+		
+		final Set<String> descriptionIds = ImmutableSet.copyOf(hits.getHits());
+		
+		final Set<String> stagedDescriptionIndicators = staging.getChangedObjects(SnomedRefSetMemberIndexEntry.class)
+			.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getRefsetId()))
+			.filter(member -> descriptionIds.contains(member.getReferencedComponentId()))
+			.map(SnomedRefSetMemberIndexEntry::getId)
+			.collect(Collectors.toSet());
+		
+		// search for all active indicator refset members with concept non-current
+		Hits<SnomedRefSetMemberIndexEntry> members = searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
+			.where(Expressions.builder()
+				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.ids(stagedDescriptionIndicators))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(ImmutableSet.of(Concepts.CONCEPT_NON_CURRENT)))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
+				.build())
+			.limit(Integer.MAX_VALUE) // we limit the number of possible members with the above query, even with duplicates we should not get more than 20k
+			.build());
+		
+		for (SnomedRefSetMemberIndexEntry indicatorMember : members) {
+			// check if this member is present in the transaction, if yes, do not auto-update/delete it
+			if (indicatorMember.isReleased() != null && indicatorMember.isReleased()) {
+				stageChange(indicatorMember, SnomedRefSetMemberIndexEntry.builder(indicatorMember).active(false)
+					.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+					.moduleId(moduleIdProvider.apply(indicatorMember))
+					.build());
+			} else {
+				stageRemove(indicatorMember);
+			}
+		}
+	}
 }

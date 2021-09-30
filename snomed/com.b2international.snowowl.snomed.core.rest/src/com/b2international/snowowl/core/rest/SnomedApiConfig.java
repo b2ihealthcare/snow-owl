@@ -35,14 +35,14 @@ public class SnomedApiConfig extends BaseApiConfig {
 
 	@Override
 	public String getApiBaseUrl() {
-		return "/snomed-ct/v3";
+		return "/snomedct";
 	}
 	
 	@Bean
 	public GroupedOpenApi snomedDocs() {
 		return docs(
 			getApiBaseUrl(),
-			"snomed",
+			"snomedct",
 			"3.0",
 			"SNOMED CT API",
 			"https://b2i.sg",

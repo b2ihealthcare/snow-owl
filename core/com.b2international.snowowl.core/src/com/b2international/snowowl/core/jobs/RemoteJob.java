@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,11 +79,19 @@ public final class RemoteJob extends Job {
 		final ObjectMapper mapper = this.context.service(ObjectMapper.class);
 		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(id, monitor);
 		try {
+			// override user when necessary
+			User user = context.service(User.class);
+			if (User.isSystem(this.user)) {
+				user = User.SYSTEM;
+			} else if (!user.getUsername().equals(this.user)) {
+				user = UserRequests.prepareGet(this.user).build().execute(this.context);
+			}
+			
 			// seed the monitor instance into the current context, so the request can use it for progress reporting
 			final ServiceProvider context = this.context.inject()
 					.bind(IProgressMonitor.class, trackerMonitor)
 					.bind(RemoteJob.class, this)
-					.bind(User.class, User.isSystem(user) ? User.SYSTEM : UserRequests.prepareGet(user).build().execute(this.context))
+					.bind(User.class, user)
 					.build();
 			final Object response = request.execute(context);
 			if (response != null) {

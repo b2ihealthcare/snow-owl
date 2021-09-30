@@ -17,11 +17,16 @@ package com.b2international.snowowl.fhir.core.model.property;
 
 import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty.Builder;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * String concept property
  * @since 6.3
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = StringConceptProperty.Builder.class)
 public class StringConceptProperty extends ConceptProperty<String> {
 
 	StringConceptProperty(Code code, String value) {
@@ -37,10 +42,19 @@ public class StringConceptProperty extends ConceptProperty<String> {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ConceptProperty.Builder<Builder, StringConceptProperty, String> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 */
+		protected Builder valueString(final String value) {
+			this.value = value;
 			return this;
 		}
 

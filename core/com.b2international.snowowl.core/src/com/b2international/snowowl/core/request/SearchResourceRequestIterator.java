@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import java.util.function.Function;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.google.common.base.Strings;
 import com.google.common.collect.AbstractIterator;
 
 /**
@@ -73,6 +74,9 @@ public final class SearchResourceRequestIterator<
 
 		// Update searchAfter and visited counter
 		searchAfter = hits.getSearchAfter();
+		if (Strings.isNullOrEmpty(searchAfter)) {
+			throw new IllegalStateException("Cannot proceed to the next page if searchAfter returned from the current page is null or empty.");
+		}
 		visited += hits.getItems().size();
 		
 		return hits;

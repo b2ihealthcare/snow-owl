@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.domain.IComponent;
 
 import io.restassured.http.ContentType;
@@ -45,7 +46,7 @@ public class BundleApiAssert {
 				.then().statusCode(200).assertThat();
 	}
 	
-	public static ValidatableResponse assertBundleGet(final String resourceId) {
+	public static ValidatableResponse getBundle(final String resourceId) {
 		return givenAuthenticatedRequest(BUNDLE_API)
 				.when().get("/{id}", resourceId)
 				.then().assertThat().statusCode(200)
@@ -53,10 +54,10 @@ public class BundleApiAssert {
 				.assertThat().and();
 	}
 	
-	public static String assertBundleCreated(final Map<String, Object> requestBody) {
+	public static String createBundle(final Map<String, Object> requestBody) {
 		final String path = assertCreate(requestBody)
 				.statusCode(201)
-				.and().header("Location", containsString(String.format("%s/%s", "bundles", requestBody.get("id"))))
+				.and().header("Location", containsString(String.format("%s/%s", Bundle.RESOURCE_TYPE, requestBody.get("id"))))
 				.and().body(equalTo(""))
 				.and().extract().response().getHeader("Location");
 		
@@ -82,23 +83,23 @@ public class BundleApiAssert {
 	public static ValidatableResponse assertUpdateBundleField(final String uniqueId, final String field, final String value) {
 		assertUpdateBundle(uniqueId, Map.of(field, value)).statusCode(204);
 		
-		return assertBundleGet(uniqueId)
+		return getBundle(uniqueId)
 			.body(field, equalTo(value))
 			.assertThat().and();
 	}
 	
-	public static Json prepareCreateRequestBody(final String resourceId) {
-		return prepareCreateRequestBody(resourceId, IComponent.ROOT_ID);
+	public static Json prepareBundleCreateRequestBody(final String resourceId) {
+		return prepareBundleCreateRequestBody(resourceId, IComponent.ROOT_ID);
 	}
 	
-	public static Json prepareCreateRequestBody(final String resourceId, final String bundleId) {
+	public static Json prepareBundleCreateRequestBody(final String resourceId, final String bundleParentId) {
 		return Json.object(
 			"id", resourceId,
 			"title", "Bundle " + resourceId,
 			"description", "description",
 			"language", "en",
 			"url", "https://b2i.sg/" + resourceId,
-			"bundleId", bundleId
+			"bundleId", bundleParentId
 		);
 	}
 }

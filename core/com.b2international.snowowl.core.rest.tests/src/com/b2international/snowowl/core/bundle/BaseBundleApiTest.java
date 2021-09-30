@@ -116,7 +116,7 @@ abstract class BaseBundleApiTest {
 				.setTitle(title)
 				.setBundleId(bundleId)
 				.setUrl(URL_PREFIX + title)
-				.setToolingId("snomed")
+				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 				.build(USER, String.format("Create code system: %s", id))
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)

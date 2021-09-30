@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	@NotEmpty
 	private final String description;
 	
+	@JsonProperty
 	@NotNull
 	private final Request<ServiceProvider, ?> request;
 	

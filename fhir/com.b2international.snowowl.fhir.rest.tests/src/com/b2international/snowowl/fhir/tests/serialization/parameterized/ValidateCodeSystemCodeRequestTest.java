@@ -51,7 +51,7 @@ public class ValidateCodeSystemCodeRequestTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("ValidateCodeRequest.codeMissing")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeMissing' content is invalid [false]."
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeMissing' content is invalid [false]."
 					+ " Violation: No code is provided to validate.")
 			.build();
 		
@@ -82,7 +82,7 @@ public class ValidateCodeSystemCodeRequestTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("ValidateCodeRequest.codeProvidedWithDisplay")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeProvidedWithDisplay' content is invalid [false]."
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeProvidedWithDisplay' content is invalid [false]."
 					+ " Violation: Code is missing while display is provided.")
 			.build();
 		
@@ -106,7 +106,7 @@ public class ValidateCodeSystemCodeRequestTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("ValidateCodeRequest.tooManyCodesDefined")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'tooManyCodesDefined' content is invalid [false]."
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'tooManyCodesDefined' content is invalid [false]."
 					+ " Violation: Either code, coding or codeable can be defined at a time.")
 			.build();
 		
@@ -130,7 +130,7 @@ public class ValidateCodeSystemCodeRequestTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("ValidateCodeRequest.systemsDifferent")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'systemsDifferent' content is invalid [false]."
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'systemsDifferent' content is invalid [false]."
 					+ " Violation: System URL and Coding.system are different.")
 			.build();
 		
@@ -153,7 +153,7 @@ public class ValidateCodeSystemCodeRequestTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("ValidateCodeRequest.invalidCodeableSystem")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'invalidCodeableSystem' content is invalid [false]."
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'invalidCodeableSystem' content is invalid [false]."
 					+ " Violation: System URL and a Coding.system in Codeable are different.")
 			.build();
 		

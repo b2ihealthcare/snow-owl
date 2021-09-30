@@ -15,8 +15,13 @@
  */
 package com.b2international.index.revision;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.regexp;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,6 +29,7 @@ import com.b2international.index.Script;
 import com.b2international.index.mapping.AutoGenerateID;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Field;
+import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -54,6 +60,37 @@ public abstract class Revision {
 		public static final String CREATED = "created";
 		public static final String REVISED = "revised";
 	}
+	
+	/**
+	 * @since 8.0
+	 */
+	public static abstract class Expressions {
+
+		protected Expressions() {
+		}
+		
+		public static final Expression id(String id) {
+			return exactMatch(Fields.ID, id);
+		}
+		
+		public static final Expression ids(Collection<String> ids) {
+			return matchAny(Fields.ID, ids);
+		}
+		
+		public static Expression idPrefix(String idPrefix) {
+			return prefixMatch(Fields.ID, idPrefix);
+		}
+		
+		public static Expression idPrefixes(Iterable<String> idPrefixes) {
+			return prefixMatch(Fields.ID, idPrefixes);
+		}
+		
+		public static Expression idRegex(String idRegex) {
+			return regexp(Fields.ID, idRegex);
+		}
+
+	}
+
 
 	// scripts
 	public static final String UPDATE_REVISED = "updateRevised";
