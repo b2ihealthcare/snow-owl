@@ -1297,7 +1297,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 	public void upgrade24UpgradeWithEmptyExtension() throws Exception {
 		
 		// new SI concept
-		ResourceURI base = new ResourceURI(SNOMEDCT);
+		ResourceURI base = CodeSystem.uri(SNOMEDCT);
 		createConcept(base, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
@@ -1345,7 +1345,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		assertTrue(successComplete);
 		
-		getComponent(extension.getResourceURI().toString(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+		getComponent(extension.getResourceURI(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
