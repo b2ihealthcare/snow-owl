@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -82,7 +83,7 @@ public class ValidateCodeRequest {
 	private final Boolean isAbstract;
 	
 	//The requested language for display (see ExpansionProfile.displayLanguage)
-	private final String displayLanguage;
+	private final Code displayLanguage;
 	
 	ValidateCodeRequest(
 			Uri url,
@@ -97,7 +98,7 @@ public class ValidateCodeRequest {
 			CodeableConcept codeableConcept,
 			Date date, 
 			Boolean isAbstract,
-			String displayLanguage) {
+			Code displayLanguage) {
 		
 		this.url = url;
 		this.context = context;
@@ -172,7 +173,7 @@ public class ValidateCodeRequest {
 		return isAbstract;
 	}
 
-	public String getDisplayLanguage() {
+	public Code getDisplayLanguage() {
 		return displayLanguage;
 	}
 	
@@ -195,7 +196,7 @@ public class ValidateCodeRequest {
 		private CodeableConcept codeableConcept;
 		private Date date;
 		private Boolean isAbstract;
-		private String displayLanguage;
+		private Code displayLanguage;
 		
 		Builder() {}
 		
@@ -268,7 +269,7 @@ public class ValidateCodeRequest {
 			return this;
 		}
 		
-		public Builder displayLanguage(final String displayLanguage) {
+		public Builder displayLanguage(final Code displayLanguage) {
 			this.displayLanguage = displayLanguage;
 			return this;
 		}

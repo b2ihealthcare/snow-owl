@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.valueset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A value set contains a set of codes from those defined by one or more code systems to specify which codes can be used in a particular context.
@@ -56,6 +58,39 @@ public class ValueSet extends MetadataResource {
 	private static final long serialVersionUID = 1L;
 	
 	public static final String RESOURCE_TYPE_VALUE_SET = "ValueSet";
+	
+	/**
+	 * @since 8.0
+	 */
+	public static final class Fields extends MetadataResource.Fields {
+		
+		public static final String IMMUTABLE = "immutable";
+		public static final String COMPOSE = "compose";
+		public static final String EXPANSION = "expansion";
+		
+		public static final Set<String> MANDATORY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.build();
+		
+		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.SUMMARY)
+				.build();
+		
+		public static final Set<String> SUMMARY_TEXT = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.build();
+		
+		public static final Set<String> SUMMARY_DATA = MANDATORY;
+		
+		public static final Set<String> ALL = ImmutableSet.<String>builder()
+				.addAll(MANDATORY)
+				.addAll(SUMMARY)
+				.add(IMMUTABLE)
+				.add(COMPOSE)
+				.add(EXPANSION)
+				.build();
+			
+	}
 
 	//FHIR header "resourceType" : "ValueSet",
 	@Mandatory
@@ -118,6 +153,14 @@ public class ValueSet extends MetadataResource {
 	
 	public Expansion getExpansion() {
 		return expansion;
+	}
+	
+	public ValueSet withExpansion(Expansion newExpansion) {
+		return new ValueSet(
+			getId(), getMeta(), getImplicitRules(), getLanguage(), getText(), getUrl(), getVersion(), getName(), getTitle(), getStatus(), getExperimental(), 
+			getDate(), getPublisher(), getContacts(), getDescription(), getUsageContexts(),	getJurisdictions(), 
+			getResourceType(), getIdentifiers(), getImmutable(), getPurpose(), getCopyright(), getToolingId(), getCompose(), newExpansion
+		);
 	}
 	
 	public static Builder builder() {
@@ -188,16 +231,11 @@ public class ValueSet extends MetadataResource {
 		
 		@Override
 		protected ValueSet doBuild() {
-			
-			//cross field validation
-			//if (composeParts.isEmpty() && expansion == null) {
-			//	throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
-			//}
-			
-			return new ValueSet(id, meta, implicitRules, language, text, url, version, name,  title, status, experimental, 
-					date, publisher, contacts, description, usageContexts,	jurisdictions, 
-					
-					resourceType, identifiers, immutable, purpose, copyright, toolingId, compose, expansion);
+			return new ValueSet(
+				id, meta, implicitRules, language, text, url, version, name,  title, status, experimental, 
+				date, publisher, contacts, description, usageContexts,	jurisdictions, 
+				resourceType, identifiers, immutable, purpose, copyright, toolingId, compose, expansion
+			);
 		}
 	}
 		

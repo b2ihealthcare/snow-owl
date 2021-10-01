@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,19 @@ import java.util.List;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.b2international.snowowl.core.request.SortParser;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * @since 7.0
+ */
 public class SortParserTest {
 
 	@Test
 	public void parseRegularSortString() throws Exception {
 		final List<Sort> expected = ImmutableList.of(
-				SortField.ascending("field1"),
-				SortField.ascending("field2"),
-				SortField.descending("field3"));
+				Sort.fieldAsc("field1"),
+				Sort.fieldAsc("field2"),
+				Sort.fieldDesc("field3"));
 		final List<Sort> actual = SortParser.parse("field1,field2:asc,field3:desc");
 		assertEquals(expected, actual);
 	}
@@ -41,9 +42,9 @@ public class SortParserTest {
 	@Test
 	public void parseEmptySeparator() throws Exception {
 		final List<Sort> expected = ImmutableList.of(
-				SortField.ascending("field1"),
-				SortField.ascending("field2"),
-				SortField.descending("field3"));
+				Sort.fieldAsc("field1"),
+				Sort.fieldAsc("field2"),
+				Sort.fieldDesc("field3"));
 		final List<Sort> actual = SortParser.parse("field1,,,field2:asc,field3:desc");
 		assertEquals(expected, actual);
 	}
@@ -51,8 +52,8 @@ public class SortParserTest {
 	@Test
 	public void parseWhitespaceAroundSeparator() throws Exception {
 		final List<Sort> expected = ImmutableList.of(
-				SortField.ascending("field1"),
-				SortField.ascending("field2"));
+				Sort.fieldAsc("field1"),
+				Sort.fieldAsc("field2"));
 		final List<Sort> actual = SortParser.parse("   field1, field2");
 		assertEquals(expected, actual);
 	}

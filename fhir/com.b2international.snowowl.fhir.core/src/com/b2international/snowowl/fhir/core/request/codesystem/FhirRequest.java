@@ -29,7 +29,7 @@ import com.b2international.snowowl.fhir.core.search.Summary;
  * @since 8.0
  * @param <R>
  */
-public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
+abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 
 	private static final long serialVersionUID = 1L;
 	

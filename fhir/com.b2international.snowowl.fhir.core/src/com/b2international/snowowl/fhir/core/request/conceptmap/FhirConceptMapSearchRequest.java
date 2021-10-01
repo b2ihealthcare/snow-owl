@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap.Builder;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
@@ -22,7 +24,7 @@ import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 /**
  * @since 8.0
  */
-public class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<ConceptMap.Builder, ConceptMap> {
+final class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<ConceptMap.Builder, ConceptMap> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -34,6 +36,16 @@ public class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<Conce
 	@Override
 	protected Builder createResourceBuilder() {
 		return ConceptMap.builder();
+	}
+	
+	@Override
+	protected void expandResourceSpecificFields(RepositoryContext context, Builder entry, ResourceFragment resource) {
+		FhirConceptMapResourceConverter converter = context.service(RepositoryManager.class)
+				.get(resource.getToolingId())
+				.optionalService(FhirConceptMapResourceConverter.class)
+				.orElse(FhirConceptMapResourceConverter.DEFAULT);
+		
+		includeIfFieldSelected(ConceptMap.Fields.GROUP, () -> converter.expandMembers(context, resource.getResourceURI()), entry::groups);
 	}
 	
 }

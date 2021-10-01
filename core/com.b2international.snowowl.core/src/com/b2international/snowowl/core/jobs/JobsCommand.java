@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.google.common.base.Strings;
 
 import picocli.CommandLine.HelpCommand;
@@ -47,7 +47,7 @@ public final class JobsCommand extends Command {
 	@Override
 	public void run(CommandLineStream out) {
 		List<RemoteJobEntry> entries = JobRequests.prepareSearch().all()
-				.sortBy(SortField.ascending(RemoteJobEntry.Fields.SCHEDULE_DATE))
+				.sortBy(Sort.fieldAsc(RemoteJobEntry.Fields.SCHEDULE_DATE))
 				.buildAsync()
 				.execute(getBus())
 				.getSync()

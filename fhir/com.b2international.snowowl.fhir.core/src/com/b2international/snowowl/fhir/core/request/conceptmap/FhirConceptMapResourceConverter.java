@@ -15,21 +15,28 @@
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
+import java.util.List;
+
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.fhir.core.model.conceptmap.Group;
+
 /**
  * @since 8.0
  */
-public class FhirConceptMapRequests {
+public interface FhirConceptMapResourceConverter {
 
-	public FhirConceptMapSearchRequestBuilder prepareSearch() {
-		return new FhirConceptMapSearchRequestBuilder();
-	}
+	FhirConceptMapResourceConverter DEFAULT = new FhirConceptMapResourceConverter(){}; 
 	
-	public FhirConceptMapGetRequestBuilder prepareGet(String idOrUrl) {
-		return new FhirConceptMapGetRequestBuilder(idOrUrl);
+	/**
+	 * Expand the mapping groups defined by the ConceptMap identified by the given resourceUri.
+	 * 
+	 * @param context
+	 * @param resourceUri
+	 * @return
+	 */
+	default List<Group> expandMembers(ServiceProvider context, ResourceURI resourceUri) {
+		return List.of();
 	}
 
-	public FhirConceptMapTranslateRequestBuilder prepareTranslate() {
-		return new FhirConceptMapTranslateRequestBuilder();
-	}
-	
 }

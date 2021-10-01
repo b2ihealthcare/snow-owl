@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequestBuilder;
 
 /**
@@ -28,6 +31,31 @@ public final class FhirValueSetSearchRequestBuilder extends FhirResourceSearchRe
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Bundle> createSearch() {
 		return new FhirValueSetSearchRequest();
+	}
+	
+	@Override
+	protected Set<String> getKnownResourceFields() {
+		return ValueSet.Fields.ALL;
+	}
+	
+	@Override
+	protected Set<String> getMandatoryFields() {
+		return ValueSet.Fields.MANDATORY;
+	}
+	
+	@Override
+	protected Set<String> getSummaryFields() {
+		return ValueSet.Fields.SUMMARY;
+	}
+	
+	@Override
+	protected Set<String> getSummaryTextFields() {
+		return ValueSet.Fields.SUMMARY_TEXT;
+	}
+	
+	@Override
+	protected Set<String> getSummaryDataFields() {
+		return ValueSet.Fields.SUMMARY_DATA;
 	}
 
 }

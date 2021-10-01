@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
@@ -141,7 +141,7 @@ public final class CodeSystemsCommand extends Command {
 		final Versions versions = ResourceRequests.prepareSearchVersion()
 				.all()
 				.filterByResource(cs.getResourceURI())
-				.sortBy(SortField.ascending(VersionDocument.Fields.EFFECTIVE_TIME))
+				.sortBy(Sort.fieldAsc(VersionDocument.Fields.EFFECTIVE_TIME))
 				.buildAsync()
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);

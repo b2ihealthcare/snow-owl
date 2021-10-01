@@ -15,21 +15,25 @@
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
+
 /**
  * @since 8.0
  */
-public class FhirConceptMapRequests {
+@FunctionalInterface
+public interface FhirConceptMapTranslator {
 
-	public FhirConceptMapSearchRequestBuilder prepareSearch() {
-		return new FhirConceptMapSearchRequestBuilder();
-	}
+	FhirConceptMapTranslator NOOP = (context, conceptMap, request) -> TranslateResult.builder().message("N/A").build(); 
 	
-	public FhirConceptMapGetRequestBuilder prepareGet(String idOrUrl) {
-		return new FhirConceptMapGetRequestBuilder(idOrUrl);
-	}
-
-	public FhirConceptMapTranslateRequestBuilder prepareTranslate() {
-		return new FhirConceptMapTranslateRequestBuilder();
-	}
+	/**
+	 * @param context
+	 * @param conceptMap
+	 * @param request
+	 * @return
+	 */
+	TranslateResult translate(ServiceProvider context, ConceptMap conceptMap, TranslateRequest request);
 	
 }

@@ -48,7 +48,7 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.*;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.version.Version;
@@ -267,7 +267,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		return ResourceRequests.prepareSearchVersion()
 			.one()
 			.filterByResource(codeSystem.getResourceURI())
-			.sortBy(SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
+			.sortBy(Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
 			.build()
 			.execute(context)
 			.stream()

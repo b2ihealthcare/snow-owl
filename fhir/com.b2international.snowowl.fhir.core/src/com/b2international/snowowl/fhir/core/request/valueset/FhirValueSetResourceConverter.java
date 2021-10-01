@@ -15,25 +15,19 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.fhir.core.model.valueset.Compose;
+
 /**
  * @since 8.0
  */
-public class FhirValueSetRequests {
+public interface FhirValueSetResourceConverter {
 
-	public FhirValueSetSearchRequestBuilder prepareSearch() {
-		return new FhirValueSetSearchRequestBuilder();
-	}
+	FhirValueSetResourceConverter DEFAULT = new FhirValueSetResourceConverter() {};
 	
-	public FhirValueSetGetRequestBuilder prepareGet(String idOrUrl) {
-		return new FhirValueSetGetRequestBuilder(idOrUrl);
-	}
-
-	public FhirValueSetExpandRequestBuilder prepareExpand() {
-		return new FhirValueSetExpandRequestBuilder();
-	}
-
-	public FhirValueSetValidateCodeRequestBuilder prepareValidateCode() {
-		return new FhirValueSetValidateCodeRequestBuilder();
+	default Compose expandCompose(ServiceProvider context, ResourceURI resourceUri) {
+		return null;
 	}
 	
 }
