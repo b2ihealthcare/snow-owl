@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.mrcm.io;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
@@ -48,19 +51,41 @@ class CsvMrcmExporter {
 			.getSync();
 
 		try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, Charsets.UTF_8)))) {
-			writer.println(
-					TAB_JOINER.join("uuid", "effectiveTime", "author", "strength", "description", "validationMessage", "form", "domain", "predicate"));
 			
-			for (SnomedConstraint constraint : constraints) {
-				writer.print(TAB_JOINER.join(constraint.getId(), constraint.getEffectiveTime(), constraint.getAuthor(), constraint.getStrength(),
-						constraint.getDescription(), constraint.getValidationMessage()));
+			writer.println(
+				TAB_JOINER.join(
+					"uuid",
+					"effectiveTime",
+					"author",
+					"strength",
+					"description",
+					"validationMessage",
+					"form",
+					"domain",
+					"predicate"
+				)
+			);
+			
+			for (SnomedConstraint constraint : constraints.stream().sorted((c1,c2) -> c1.getId().compareTo(c2.getId())).collect(toList())) {
 				
-				writer.print(TAB_JOINER.join(constraint.getForm(),
+				writer.print(
+					TAB_JOINER.join(
+						constraint.getId(),
+						EffectiveTimes.format(constraint.getEffectiveTime()),
+						constraint.getAuthor(),
+						constraint.getStrength(),
+						constraint.getDescription(),
+						constraint.getValidationMessage(),
+						constraint.getForm(),
 						renderer.getHumanReadableRendering(constraint.getDomain(), Integer.MAX_VALUE),
-						renderer.getHumanReadableRendering(constraint.getPredicate(), Integer.MAX_VALUE)));
+						renderer.getHumanReadableRendering(constraint.getPredicate(), Integer.MAX_VALUE)
+					)
+				);
 				
 				writer.println();
+				
 			}
+			
 		}
 	}
 
