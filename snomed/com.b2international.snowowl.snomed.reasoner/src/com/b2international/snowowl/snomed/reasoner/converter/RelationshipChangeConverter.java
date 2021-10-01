@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.converter;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +35,7 @@ import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
@@ -112,7 +110,16 @@ public final class RelationshipChangeConverter
 				if (entry.getRelationshipId() == null) {
 					relationship.setTypeId(entry.getTypeId());
 					relationship.setDestinationId(entry.getDestinationId());
-					relationship.setValue(entry.getValue());
+					
+					final RelationshipValueType valueType = entry.getValueType();
+					if (valueType != null) {
+						final String rawValue = entry.getRawValue();
+						final RelationshipValue valueAsObject = RelationshipValueType.STRING.equals(valueType)
+							? RelationshipValue.fromTypeAndObjects(valueType, null, rawValue)
+							: RelationshipValue.fromTypeAndObjects(valueType, new BigDecimal(rawValue), null);
+							
+						relationship.setValueAsObject(valueAsObject);
+					}
 				}
 				break;
 				

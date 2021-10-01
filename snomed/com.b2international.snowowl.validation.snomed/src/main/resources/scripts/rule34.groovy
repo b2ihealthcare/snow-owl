@@ -33,7 +33,9 @@ Query<String[]> query = Query.select(String[].class)
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 5
 		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID, // 6
 		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 7
-		SnomedRelationshipIndexEntry.Fields.UNION_GROUP // 8
+		SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 8
+		SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE, // 9
+		SnomedRelationshipIndexEntry.Fields.STRING_VALUE // 10
 		
 	)
 	.where(Expressions
@@ -73,7 +75,8 @@ query.stream(searcher)
 			buckets.clear()
 			currentGroupId = relationship[2]
 		}
-		String key = String.format("%s_%s_%s_%s_%s_%s", relationship[3], relationship[4], relationship[5], relationship[6], relationship[7], relationship[8])
+		String key = String.format("%s_%s_%s_%s_%s_%s_%s_%s", relationship[3], relationship[4], relationship[5],
+			 relationship[6], relationship[7], relationship[8], relationship[9], relationship[10]);
 		
 		String[] duplicate = buckets.get(key)
 		if (duplicate != null) {

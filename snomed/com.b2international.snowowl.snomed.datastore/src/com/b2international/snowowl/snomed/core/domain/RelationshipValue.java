@@ -15,15 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represents a "union class" holder for all supported relationship value types.
@@ -32,10 +36,19 @@ import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
  */
 public final class RelationshipValue implements Serializable {
 
-	// Only one of these fields should be set to non-null
-	private final Integer integerValue;
-	private final Double decimalValue;
+	private final RelationshipValueType type;
+	
+	// Only one of the fields below should be non-null
+	private final BigDecimal numericValue;
 	private final String stringValue;
+
+	private static <T, U> U ifNotNull(final T value, final Function<T, U> mapper) {
+		if (value != null) {
+			return mapper.apply(value);
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 * @param literal
@@ -50,7 +63,7 @@ public final class RelationshipValue implements Serializable {
 			// Remove prefix, parse number
 			final String numericLiteral = literal.substring(1);
 			if (numericLiteral.contains(".")) {
-				return new RelationshipValue(Double.valueOf(numericLiteral));
+				return new RelationshipValue(new BigDecimal(numericLiteral));
 			} else {
 				return new RelationshipValue(Integer.valueOf(numericLiteral));
 			}
@@ -68,19 +81,17 @@ public final class RelationshipValue implements Serializable {
 
 	/**
 	 * @param valueType
-	 * @param integerValue
-	 * @param decimalValue
+	 * @param numericValue
 	 * @param stringValue
 	 * @return
 	 */
 	public static RelationshipValue fromTypeAndObjects(
 		final RelationshipValueType valueType, 
-		final Integer integerValue, 
-		final Double decimalValue, 
+		final BigDecimal numericValue, 
 		final String stringValue) {
 	
 		if (valueType == null) {
-			if (integerValue != null || decimalValue != null || stringValue != null) {
+			if (numericValue != null || stringValue != null) {
 				throw new IllegalArgumentException("Value field has been loaded without a valueType field, unable to determine actual relationship value.");
 			}
 			
@@ -88,10 +99,13 @@ public final class RelationshipValue implements Serializable {
 		}
 	
 		switch (valueType) {
-			case INTEGER: return new RelationshipValue(integerValue);
-			case DECIMAL: return new RelationshipValue(decimalValue);
-			case STRING: return new RelationshipValue(stringValue);
-			default: throw new IllegalArgumentException("Unexpected relationship value type: " + valueType);
+			case INTEGER: //$FALL-THROUGH$
+			case DECIMAL:
+				return new RelationshipValue(valueType, numericValue, null);
+			case STRING: 
+				return new RelationshipValue(stringValue);
+			default: 
+				throw new IllegalArgumentException("Unexpected relationship value type: " + valueType);
 		}
 	}
 
@@ -99,37 +113,83 @@ public final class RelationshipValue implements Serializable {
 	 * @param integerValue
 	 */
 	public RelationshipValue(final Integer integerValue) {
-		this(checkNotNull(integerValue, "Value may not be null."), null, null);
+		this(RelationshipValueType.INTEGER, new BigDecimal(checkNotNull(integerValue, "Value may not be null.")), null);
 	}
 
 	/**
-	 * @param doubleValue
+	 * @param decimalValue
 	 */
-	public RelationshipValue(final Double doubleValue) {
-		this(null, checkNotNull(doubleValue, "Value may not be null."), null);
+	public RelationshipValue(final BigDecimal decimalValue) {
+		this(RelationshipValueType.DECIMAL, checkNotNull(decimalValue, "Value may not be null."), null);
 	}
 
 	/**
 	 * @param stringValue
 	 */
 	public RelationshipValue(final String stringValue) {
-		this(null, null, checkNotNull(stringValue, "Value may not be null."));
+		this(RelationshipValueType.STRING, (BigDecimal) null, checkNotNull(stringValue, "Value may not be null."));
 	}
 
-	private RelationshipValue(final Integer integerValue, final Double decimalValue, final String stringValue) {
-		this.integerValue = integerValue;
-		this.decimalValue = decimalValue;
+	private RelationshipValue(final RelationshipValueType type, final BigDecimal numericValue, final String stringValue) {
+		switch (type) {
+			case DECIMAL: //$FALL-THROUGH$
+			case INTEGER:
+				checkArgument(numericValue != null, "Numeric value is required for %s type.", type);
+				checkArgument(stringValue == null, "No string value should be set for %s type.", type);
+				break;
+			case STRING:
+				checkArgument(numericValue == null, "No numeric value should be set for %s type.", type);
+				checkArgument(stringValue != null, "String value is required for %s type.", type);
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected relationship value type: " + type);
+		}
+		
+		// XXX: the null check is here to satisfy LGTM, a non-null value is ensured by the checkArgument calls above
+		if (RelationshipValueType.INTEGER.equals(type) && numericValue != null) {
+			try {
+				numericValue.intValueExact();
+			} catch (final ArithmeticException e) {
+				throw new IllegalArgumentException("Value " + numericValue.toPlainString() + " is not an integer or is outside the allowed range.");
+			}
+		}
+		
+		this.type = type;
+		this.numericValue = numericValue;
 		this.stringValue = stringValue;
+	}
+	
+	@JsonCreator
+	private RelationshipValue(
+		final @JsonProperty("type") RelationshipValueType type, 
+		final @JsonProperty("numericValue") String numericValueAsString, 
+		final @JsonProperty("stringValue") String stringValue
+	) {
+		this(type, ifNotNull(numericValueAsString, BigDecimal::new), stringValue);
 	}
 
 	/**
 	 * @return
 	 */
+	@JsonProperty("type")
 	public RelationshipValueType type() {
-		return map(
-			i -> RelationshipValueType.INTEGER,
-			d -> RelationshipValueType.DECIMAL,
-			s -> RelationshipValueType.STRING);
+		return type;
+	}
+
+	/**
+	 * @return
+	 */
+	@JsonProperty("numericValue")
+	String numericValueAsString() {
+		return ifNotNull(numericValue, BigDecimal::toPlainString);
+	}
+	
+	/**
+	 * @return
+	 */
+	@JsonProperty("stringValue")
+	String stringValue() {
+		return stringValue;
 	}
 
 	/**
@@ -138,7 +198,7 @@ public final class RelationshipValue implements Serializable {
 	public String toLiteral() {
 		return map(
 			i -> "#" + i,                                // add "#" prefix
-			d -> "#" + d,                                // add "#" prefix
+			d -> "#" + d.toPlainString(),                // add "#" prefix, use format without an exponent field
 			s -> "\"" + s.replace("\"", "\\\"") + "\""); // add leading and trailing quote, escape inner quotes
 	}
 
@@ -146,12 +206,19 @@ public final class RelationshipValue implements Serializable {
 		return map(i -> i, d -> d, s -> s);
 	}
 
+	public String toRawValue() {
+		return map(
+			i -> i.toString(),
+			d -> d.toPlainString(),
+			s -> s);
+	}
+
 	/**
 	 * @param integerConsumer
 	 * @return this instance, for method chaining
 	 */
 	public RelationshipValue ifInteger(final Consumer<Integer> integerConsumer) {
-		if (integerValue != null) { integerConsumer.accept(integerValue); }
+		if (RelationshipValueType.INTEGER.equals(type)) { integerConsumer.accept(numericIntValue()); }
 		return this;
 	}
 
@@ -159,8 +226,8 @@ public final class RelationshipValue implements Serializable {
 	 * @param decimalConsumer
 	 * @return this instance, for method chaining
 	 */
-	public RelationshipValue ifDecimal(final Consumer<Double> decimalConsumer) {
-		if (decimalValue != null) { decimalConsumer.accept(decimalValue); }
+	public RelationshipValue ifDecimal(final Consumer<BigDecimal> decimalConsumer) {
+		if (RelationshipValueType.DECIMAL.equals(type)) { decimalConsumer.accept(numericValue); }
 		return this;
 	}
 
@@ -169,7 +236,7 @@ public final class RelationshipValue implements Serializable {
 	 * @return this instance, for method chaining
 	 */
 	public RelationshipValue ifString(final Consumer<String> stringConsumer) {
-		if (stringValue != null) { stringConsumer.accept(stringValue); }
+		if (RelationshipValueType.STRING.equals(type)) { stringConsumer.accept(stringValue); }
 		return this;
 	}
 
@@ -182,14 +249,19 @@ public final class RelationshipValue implements Serializable {
 	 */
 	public <T> T map(
 		final Function<Integer, T> integerFn, 
-		final Function<Double, T> decimalFn, 
+		final Function<BigDecimal, T> decimalFn, 
 		final Function<String, T> stringFn) {
 
-		if (integerValue != null) { return integerFn.apply(integerValue); }
-		if (decimalValue != null) { return decimalFn.apply(decimalValue); }
-		if (stringValue != null) { return stringFn.apply(stringValue); }
+		switch (type) {
+			case INTEGER: return integerFn.apply(numericIntValue());
+			case DECIMAL: return decimalFn.apply(numericValue);
+			case STRING: return stringFn.apply(stringValue);
+			default: throw new IllegalArgumentException("Unexpected relationship value type: " + type + ", can not map to value");
+		}
+	}
 
-		throw new IllegalStateException("All stored values were null, can not map to value");
+	private Integer numericIntValue() {
+		return numericValue.intValueExact();
 	}
 	
 	public boolean matches(final Operator operator, final RelationshipValue other) {
@@ -200,8 +272,8 @@ public final class RelationshipValue implements Serializable {
 		}
 		
 		final int comparison = map(
-			i -> i.compareTo(other.integerValue), 
-			d -> d.compareTo(other.decimalValue), 
+			i -> i.compareTo(other.numericIntValue()), 
+			d -> d.compareTo(other.numericValue), 
 			s -> s.compareTo(other.stringValue));
 		
 		switch (operator) {
@@ -222,15 +294,20 @@ public final class RelationshipValue implements Serializable {
 		if (!(obj instanceof RelationshipValue)) { return false; }
 		
 		final RelationshipValue other = (RelationshipValue) obj;
+		if (!type().equals(other.type())) {
+			// Automatic type conversion is not supported; #5 is not equal to #5.0
+			return false;
+		}
+		
 		return map(
-			i -> i.equals(other.integerValue),
-			d -> d.equals(other.decimalValue),
+			i -> i.equals(other.numericIntValue()),
+			d -> d.equals(other.numericValue),
 			s -> s.equals(other.stringValue));
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(integerValue, decimalValue, stringValue);
+		return Objects.hash(type, numericValue, stringValue);
 	}
 	
 	@Override

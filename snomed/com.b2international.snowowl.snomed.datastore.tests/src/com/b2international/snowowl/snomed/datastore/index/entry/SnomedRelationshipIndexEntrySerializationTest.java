@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static org.junit.Assert.assertEquals;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -93,7 +94,7 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 	@Test
 	public void indexDecimal() throws Exception {
 		final SnomedRelationshipIndexEntry decimalValue = createBuilder()
-			.value(new RelationshipValue(3.333d))
+			.value(new RelationshipValue(new BigDecimal("3.333")))
 			.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, decimalValue);

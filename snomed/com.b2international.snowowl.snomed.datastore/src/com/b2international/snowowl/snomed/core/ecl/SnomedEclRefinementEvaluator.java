@@ -445,7 +445,7 @@ final class SnomedEclRefinementEvaluator {
 		} else if (comparison instanceof IntegerValueComparison) {
 			value = new RelationshipValue(((IntegerValueComparison) comparison).getValue());
 		} else if (comparison instanceof DecimalValueComparison) {
-			value = new RelationshipValue(((DecimalValueComparison) comparison).getValue().doubleValue());
+			value = new RelationshipValue(((DecimalValueComparison) comparison).getValue());
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
@@ -469,7 +469,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValueType(value.type()) 
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
-				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
+				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
 				.setLimit(10_000)
 				.transformAsync(context, req -> req.build(context.path()), relationships -> relationships.stream().map(relationship -> {
 					return new Property(

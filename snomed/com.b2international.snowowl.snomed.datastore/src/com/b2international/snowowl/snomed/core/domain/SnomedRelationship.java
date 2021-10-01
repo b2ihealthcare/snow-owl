@@ -174,7 +174,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * 
 	 * @return
 	 */
-	@JsonIgnore
+	@JsonProperty("value")
 	public RelationshipValue getValueAsObject() {
 		return value;
 	}
@@ -187,7 +187,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	/**
 	 * @return
 	 */
-	// XXX: Literal form is used when transferring data over JSON
+	@JsonIgnore
 	public String getValue() {
 		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
@@ -304,7 +304,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	/**
 	 * @param value
 	 */
-	@JsonIgnore
+	@JsonProperty("value")
 	public void setValueAsObject(final RelationshipValue value) {
 		this.value = value;
 	}
@@ -312,6 +312,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	/**
 	 * @param literal
 	 */
+	@JsonIgnore
 	public void setValue(final String literal) {
 		setValueAsObject(RelationshipValue.fromLiteral(literal));
 	}

@@ -193,6 +193,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_GROUPED)) {
 				queryBuilder.filter(grouped(propsFilter.getBoolean(SnomedRf2Headers.FIELD_MRCM_GROUPED)));
 			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)) {
+				queryBuilder.filter(rangeConstraint(propsFilter.getString(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)));
+			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
 				queryBuilder.filter(Expressions.exactMatch(SnomedRf2Headers.FIELD_OWL_EXPRESSION, propsFilter.getString(SnomedRf2Headers.FIELD_OWL_EXPRESSION)));
 			}
