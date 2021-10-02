@@ -38,6 +38,7 @@ import io.restassured.response.ValidatableResponse;
 public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTest {
 	
 	protected static final String SNOMEDCT = SnomedContentRule.SNOMEDCT_ID;
+	protected static final ResourceURI SNOMEDCT_URI = SnomedContentRule.SNOMEDCT;
 	protected static final String EXT_BASE_SI_VERSION = "2019-07-31";
 	
 	protected final ResourceURI baseInternationalCodeSystem = SnomedContentRule.SNOMEDCT.withPath(EXT_BASE_SI_VERSION);

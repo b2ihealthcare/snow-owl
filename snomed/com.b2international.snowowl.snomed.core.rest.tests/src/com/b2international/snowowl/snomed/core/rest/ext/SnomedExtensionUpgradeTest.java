@@ -51,6 +51,7 @@ import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -1338,6 +1339,70 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertTrue(successComplete);
 		
 		getComponent(extension.getResourceURI(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+	}
+	
+	@Test
+	public void upgrade25UpgradeAndSyncOverInactivatedInferredRelationship() throws Exception {
+		// create a new SI parent concept which points to the ROOT and version it
+		String intParentConceptId = createConcept(SNOMEDCT_URI, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		// also create the inferred relationship, which will be inactivated
+		String intRelationshipIdToInactivate = createRelationship(SNOMEDCT_URI, createRelationshipRequestBody(intParentConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP));
+		
+		LocalDate firstSIVersion = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, firstSIVersion).statusCode(201);
+
+		// create extension, a concept pointing to the INT parent concept and a version
+		CodeSystem extension = createExtension(SNOMEDCT_URI.withPath(firstSIVersion.toString()), branchPath.lastSegment());
+		String extensionModuleId = createModule(extension);
+		
+		String extensionConceptId = createConcept(extension.getResourceURI(), createConceptRequestBody(intParentConceptId, extensionModuleId));
+		String extensionInferredRelationshipId = createRelationship(extension.getResourceURI(), createRelationshipRequestBody(extensionConceptId, Concepts.IS_A, intParentConceptId, extensionModuleId, Concepts.INFERRED_RELATIONSHIP));
+		
+		// verify that extension concept has correct parent/ancestor arrays
+		SnomedConcept extensionConceptAfterFirstVersion = getConcept(extension.getResourceURI(), extensionConceptId);
+		assertThat(extensionConceptAfterFirstVersion.getParentIdsAsString())
+			.containsOnly(intParentConceptId);
+		assertThat(extensionConceptAfterFirstVersion.getAncestorIdsAsString())
+			.containsOnly(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT);
+		
+		// inactivate INT inferred relationship
+		updateRelationship(SNOMEDCT_URI, intRelationshipIdToInactivate, Json.object(
+			SnomedRf2Headers.FIELD_ACTIVE, false,
+			"commitComment", "Inactivate INT inferred relationship"
+		));
+		
+		LocalDate secondSIVersion = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, secondSIVersion).statusCode(201);
+		
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), SNOMEDCT_URI.withPath(secondSIVersion.toString()));
+		
+		// verify that extension concept on upgrade branch, does not have parent info of inactivated things
+		SnomedConcept extensionConceptOnUpgrade = getConcept(upgradeCodeSystem.getResourceURI(), extensionConceptId);
+		assertThat(extensionConceptOnUpgrade.getParentIdsAsString())
+			.containsOnly(intParentConceptId);
+		assertThat(extensionConceptOnUpgrade.getAncestorIdsAsString())
+			.containsOnly(IComponent.ROOT_ID);
+
+		// version the extension and sync the upgrade branch
+		LocalDate firstExtensionVersion = getNextAvailableEffectiveDate(extension.getId());
+		createVersion(extension.getId(), firstExtensionVersion).statusCode(201);
+
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extension.getResourceURI())
+				.buildAsync()
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		assertTrue(result);
+		
+		// verify that after sync everything looks normal
+		SnomedConcept extensionConceptOnUpgradeAfterSync = getConcept(upgradeCodeSystem.getResourceURI(), extensionConceptId);
+		assertThat(extensionConceptOnUpgradeAfterSync.getParentIdsAsString())
+			.containsOnly(intParentConceptId);
+		assertThat(extensionConceptOnUpgradeAfterSync.getAncestorIdsAsString())
+			.containsOnly(IComponent.ROOT_ID);
+		assertThat(extensionConceptOnUpgradeAfterSync.getEffectiveTime())
+			.isEqualTo(firstExtensionVersion);
+		assertThat(extensionConceptOnUpgradeAfterSync.isReleased())
+			.isTrue();
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
