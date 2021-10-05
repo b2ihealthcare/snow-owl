@@ -15,20 +15,30 @@
  */
 package com.b2international.snowowl.snomed.core.cli;
 
-import java.io.PrintStream;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranchPoint;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.primitives.Longs;
 
-import picocli.CommandLine;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -43,14 +53,15 @@ import picocli.CommandLine.Parameters;
 	description = "Provides subcommands to manage SNOMED CT content",
 	subcommands = {
 		HelpCommand.class,
-		SnomedCommand.ImportCommand.class
+		SnomedCommand.ImportCommand.class,
+		SnomedCommand.RevisionCheckCommand.class
 	}
 )
 public final class SnomedCommand extends Command {
 
 	@Override
 	public void run(CommandLineStream out) {
-		CommandLine.usage(this, (PrintStream) out);
+//		CommandLine.usage(this, (PrintStream) out);
 	}
 
 	@picocli.CommandLine.Command(
@@ -105,5 +116,64 @@ public final class SnomedCommand extends Command {
 				out.println("Failed to import SNOMED CT content from file '%s'. %s", path, response.getError());
 			}
 		}
+	}
+	
+	@picocli.CommandLine.Command(
+		name = "revision",
+		header = "Prints revision information about a SNOMED CT concept",
+		description = "Prints revision information about a SNOMED CT concept"
+	)
+	private static final class RevisionCheckCommand extends Command {
+		
+		@Parameters(index = "0", paramLabel = "BRANCH", description = "The branch to filter the revisions")
+		String branch;
+		
+		@Parameters(index = "1", paramLabel = "CONCEPT_ID", description = "The concept id to show revisions for")
+		String conceptId;
+		
+		@Override
+		public void run(CommandLineStream out) {
+			RevisionIndex index = getContext().service(RepositoryManager.class).get("snomedStore").service(RevisionIndex.class);
+			index.read(branch, searcher -> {
+				System.err.println("Fetching revisions...");
+				searcher.search(Query.select(JsonNode.class)
+						.from(SnomedConceptDocument.class)
+						.where(RevisionDocument.Expressions.id(conceptId))
+						.limit(Integer.MAX_VALUE)
+						.build())
+						.forEach(System.err::println);
+				
+//				searcher.search(Query.select(JsonNode.class)
+//						.from(Commit.class)
+//						.where(Commit.Expressions.id("d7bb66bf-4d5f-463e-a5e2-007bb2af36d3"))
+//						.build())
+//						.forEach(System.err::println);
+				
+				searcher.searcher().search(Query.select(JsonNode.class)
+						.from(SnomedConceptDocument.class)
+						.where(RevisionDocument.Expressions.id(conceptId))
+						.limit(Integer.MAX_VALUE)
+						.build())
+						.stream()
+						.sorted((j1, j2) -> {
+							var j1Created = RevisionBranchPoint.valueOf(j1.get("created").asText());
+							var j2Created = RevisionBranchPoint.valueOf(j2.get("created").asText());
+							return Longs.compare(j1Created.getTimestamp(), j2Created.getTimestamp());
+						})
+						.forEach(c -> {
+							var branchPoint = RevisionBranchPoint.valueOf(c.get("created").asText());
+							try {
+								RevisionBranch branch = index.branching().getBranch(branchPoint.getBranchId());
+								System.err.println(Instant.ofEpochMilli(branchPoint.getTimestamp()).atOffset(ZoneOffset.UTC).toLocalDateTime() + " - " + branch.getPath() + " - " + c);
+							} catch (NotFoundException e) {
+								// unknown branch, probably something that was a test or had to be removed, ignore revision
+							}
+						});
+				
+				System.err.println("Done");
+				return null;
+			});			
+		}
+		
 	}
 }
