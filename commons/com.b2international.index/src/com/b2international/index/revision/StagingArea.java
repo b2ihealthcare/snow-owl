@@ -883,13 +883,13 @@ public final class StagingArea {
 		applyPropertyUpdates(toRef, propertyUpdatesToApply);
 		
 		// apply new objects
-		applyNewObjects(added, fromRef, toRef, squash);
+		applyNewObjects(added, mergeFromBranchRef, toRef, squash);
 		
 		// apply changed objects
-		applyChangedObjects(changed, fromRef, toRef, squash);
+		applyChangedObjects(changed, mergeFromBranchRef, toRef, squash);
 		
 		// always apply deleted objects, they set the revised timestamp properly without introducing any new document
-		applyRemovedObjects(removed, fromRef, toRef, squash);
+		applyRemovedObjects(removed, mergeFromBranchRef, toRef, squash);
 		
 		// any externally marked revised revisions should be applied here
 		revisionsToReviseOnMergeSource.putAll(externalRevisionsToReviseOnMergeSource);
