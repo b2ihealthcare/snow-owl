@@ -1342,7 +1342,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 	}
 	
 	@Test
-	public void upgrade25UpgradeAndSyncOverInactivatedInferredRelationship() throws Exception {
+	public void aupgrade25UpgradeAndSyncOverInactivatedInferredRelationship() throws Exception {
 		// create a new SI parent concept which points to the ROOT and version it
 		String intParentConceptId = createConcept(SNOMEDCT_URI, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		// also create the inferred relationship, which will be inactivated
@@ -1398,7 +1398,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertThat(extensionConceptOnUpgradeAfterSync.getParentIdsAsString())
 			.containsOnly(intParentConceptId);
 		assertThat(extensionConceptOnUpgradeAfterSync.getAncestorIdsAsString())
-			.containsOnly(IComponent.ROOT_ID);
+			.containsOnly(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID);
 		assertThat(extensionConceptOnUpgradeAfterSync.getEffectiveTime())
 			.isEqualTo(firstExtensionVersion);
 		assertThat(extensionConceptOnUpgradeAfterSync.isReleased())

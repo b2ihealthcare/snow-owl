@@ -394,7 +394,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     	
     	// add all remaining merge sources to the visible segment list
     	latestMergeSources.values().forEach(latestMergeSource -> {
-    		// TODO start timestamp???
+    		// start timestamp is intentionally zero here, because the branchId itself is enough to select content that happened on the branch until the mergeSource timestamp
     		visibleSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
     	});
     	
