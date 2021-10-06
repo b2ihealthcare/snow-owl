@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.17.5
+
+### Bugs/Improvements
+- [core] backport fix for duplicate revision after synchronization (#913)
+- [snomed] allow only snapshot RF2 export for point-in-time branches (#907)
+- [snomed] add support for delta RF2 exports with branch path ranges (#907)
+- [mrcm] make MRCM csv/json export format ordered, fix missing columns in CSV export (#910)
+
 ## 7.17.4
 
 ### Bugs/Improvements
