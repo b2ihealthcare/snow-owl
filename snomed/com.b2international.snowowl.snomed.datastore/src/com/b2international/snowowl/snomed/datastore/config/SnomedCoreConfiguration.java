@@ -47,9 +47,6 @@ public class SnomedCoreConfiguration {
 	@Max(1_000_000)
 	private int maxReasonerRuns = DEFAULT_MAXIMUM_REASONER_RUNS;
 	
-	public static final String NAMESPACE_AND_MODULE_ASSIGNER = "namespaceModuleAssigner";
-	public static final String DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER = "default";
-	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
 	
