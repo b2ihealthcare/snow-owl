@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>cis-parent</artifactId>
-		<version>7.17.6</version>
+		<version>7.17.7-SNAPSHOT</version>
 	</parent>
 	
 	<artifactId>com.b2international.snowowl.snomed.cis.rest</artifactId>
