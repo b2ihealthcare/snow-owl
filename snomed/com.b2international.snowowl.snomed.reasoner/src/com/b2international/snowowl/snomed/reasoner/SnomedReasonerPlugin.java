@@ -31,12 +31,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
-import com.b2international.snowowl.snomed.reasoner.index.ConceptChangeDocument;
-import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
-import com.b2international.snowowl.snomed.reasoner.index.DescriptionChangeDocument;
-import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
-import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.*;
 import com.google.common.collect.ImmutableList;
 
 /**
