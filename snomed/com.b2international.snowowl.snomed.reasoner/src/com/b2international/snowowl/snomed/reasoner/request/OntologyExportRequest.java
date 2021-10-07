@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import static com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.REASONER_EXCLUDE_MODULE_IDS;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REASONER_EXCLUDE_MODULE_IDS;
 
 import java.io.IOException;
 import java.io.PipedInputStream;

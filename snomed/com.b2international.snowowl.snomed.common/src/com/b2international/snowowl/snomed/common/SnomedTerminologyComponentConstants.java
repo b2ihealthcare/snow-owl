@@ -44,6 +44,9 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String NAMESPACE_AND_MODULE_ASSIGNER = "namespaceModuleAssigner";
 	public static final String DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER = "default";
 	
+	// codeSystem settings related to reasoner settings
+	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
+
 	// codeSystem settings related to reference set management
 	public static final String DEFAULT_REFSET_MODULE_ID = "defaultRefsetModuleId";
 	public static final String DEFAULT_QUERY_TYPE_REFSET_ID = "defaultQueryTypeRefsetId";

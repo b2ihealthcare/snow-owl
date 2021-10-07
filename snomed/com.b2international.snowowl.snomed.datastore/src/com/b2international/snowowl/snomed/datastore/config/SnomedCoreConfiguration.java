@@ -36,7 +36,6 @@ public class SnomedCoreConfiguration {
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	
-	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
 	public static final String MAXIMUM_REASONER_RUNS = "maxReasonerRuns";
 	
 	@Min(1)
