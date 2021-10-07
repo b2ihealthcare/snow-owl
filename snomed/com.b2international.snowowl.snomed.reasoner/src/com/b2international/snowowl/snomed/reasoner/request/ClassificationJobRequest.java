@@ -50,6 +50,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
@@ -130,7 +131,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		
 		@SuppressWarnings("unchecked")
 		final Set<String> reasonerExcludedModuleIds = (Set<String>) resource.getSettings().getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet());
-		final boolean concreteDomainSupported = true;
+		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
+		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext)) {
