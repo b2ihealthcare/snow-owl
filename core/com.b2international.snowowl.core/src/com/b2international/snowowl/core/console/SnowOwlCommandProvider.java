@@ -196,8 +196,9 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 		public void println(Object o) {
 			if (o instanceof Throwable) {
 				interpreter.printStackTrace((Throwable) o);
+			} else {
+				interpreter.println(o);
 			}
-			interpreter.println(o);
 		}
 		
 	}
