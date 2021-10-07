@@ -70,7 +70,7 @@ public final class ClassificationTracker implements IDisposableService {
 		public CleanUpTask(final int maximumReasonerRuns) {
 			this.maximumReasonerRuns = maximumReasonerRuns;
 		}
-		
+
 		@Override
 		public void run() {
 			try {
