@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>net4j-parent</artifactId>
-		<version>7.17.6-SNAPSHOT</version>
+		<version>7.17.6</version>
 	</parent>
 	<artifactId>com.b2international.snowowl.rpc.test</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
