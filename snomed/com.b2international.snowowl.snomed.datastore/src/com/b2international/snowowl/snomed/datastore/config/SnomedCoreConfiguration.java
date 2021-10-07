@@ -99,11 +99,13 @@ public class SnomedCoreConfiguration {
 		this.maxReasonerRuns = maxReasonerRuns;
 	}
 	
+	@Deprecated
 	@JsonProperty("concreteDomainSupport")
 	public boolean isConcreteDomainSupported() {
 		return concreteDomainSupport;
 	}
 	
+	@Deprecated
 	@JsonProperty("concreteDomainSupport")
 	public void setConcreteDomainSupported(boolean concreteDomainSupport) {
 		this.concreteDomainSupport = concreteDomainSupport;
@@ -114,6 +116,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the concreteDomainTypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("concreteDomainTypeRefsetIdentifier")
 	public String getConcreteDomainTypeRefsetIdentifier() {
 		return concreteDomainTypeRefsetIdentifier;
@@ -124,6 +127,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param concreteDomainTypeRefsetIdentifier the concreteDomainTypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("concreteDomainTypeRefsetIdentifier")
 	public void setConcreteDomainTypeRefsetIdentifier(String concreteDomainTypeRefsetIdentifier) {
 		this.concreteDomainTypeRefsetIdentifier = concreteDomainTypeRefsetIdentifier;
@@ -134,6 +138,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the stringDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("stringDataTypeRefsetIdentifier")
 	public String getStringDatatypeRefsetIdentifier() {
 		return stringDatatypeRefsetIdentifier;
@@ -144,6 +149,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param stringDatatypeRefsetIdentifier the stringDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("stringDataTypeRefsetIdentifier")
 	public void setStringDatatypeRefsetIdentifier(String stringDatatypeRefsetIdentifier) {
 		this.stringDatatypeRefsetIdentifier = stringDatatypeRefsetIdentifier;
@@ -154,6 +160,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the booleanDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("booleanDataTypeRefsetIdentifier")
 	public String getBooleanDatatypeRefsetIdentifier() {
 		return booleanDatatypeRefsetIdentifier;
@@ -164,6 +171,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param booleanDatatypeRefsetIdentifier the booleanDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("booleanDataTypeRefsetIdentifier")
 	public void setBooleanDatatypeRefsetIdentifier(String booleanDatatypeRefsetIdentifier) {
 		this.booleanDatatypeRefsetIdentifier = booleanDatatypeRefsetIdentifier;
@@ -174,6 +182,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the floatDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("floatDataTypeRefsetIdentifier")
 	public String getFloatDatatypeRefsetIdentifier() {
 		return floatDatatypeRefsetIdentifier;
@@ -184,6 +193,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param floatDatatypeRefsetIdentifier the floatDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("floatDataTypeRefsetIdentifier")
 	public void setFloatDatatypeRefsetIdentifier(String floatDatatypeRefsetIdentifier) {
 		this.floatDatatypeRefsetIdentifier = floatDatatypeRefsetIdentifier;
@@ -194,6 +204,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the integerDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("integerDataTypeRefsetIdentifier")
 	public String getIntegerDatatypeRefsetIdentifier() {
 		return integerDatatypeRefsetIdentifier;
@@ -204,6 +215,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param integerDatatypeRefsetIdentifier the integerDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("integerDataTypeRefsetIdentifier")
 	public void setIntegerDatatypeRefsetIdentifier(String integerDatatypeRefsetIdentifier) {
 		this.integerDatatypeRefsetIdentifier = integerDatatypeRefsetIdentifier;
@@ -214,6 +226,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the datetimeDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("datetimeDataTypeRefsetIdentifier")
 	public String getDatetimeDatatypeRefsetIdentifier() {
 		return datetimeDatatypeRefsetIdentifier;
@@ -224,6 +237,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param datetimeDatatypeRefsetIdentifier the datetimeDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("datetimeDataTypeRefsetIdentifier")
 	public void setDatetimeDatatypeRefsetIdentifier(String datetimeDatatypeRefsetIdentifier) {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
