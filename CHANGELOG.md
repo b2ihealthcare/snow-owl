@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.17.6
+
+### Bugs/Improvements
+- [core] fix incorrectly backported duplicate revision fix (#913, f6e3c31)
+- [cli] add duplicate revision checker cli tool, see `snowowl snomed revision` command for details (8d9d1e5)
+
 ## 7.17.5
 
 ### Bugs/Improvements
