@@ -15,22 +15,20 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
-import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Strings;
 import com.google.common.collect.*;
 
 /**
@@ -56,16 +54,49 @@ public final class InactivationPropertiesExpander {
 			return;
 		}
 		
-		final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
-			.all()
+		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = ArrayListMultimap.create();
+
+		SnomedRequests.prepareSearchMember()
+			.setLimit(10_000)
 			.filterByActive(true)
 			// all association type refsets and the indicator
 			.filterByRefSet(String.format("<%s OR %s", Concepts.REFSET_ASSOCIATION_TYPE, inactivationIndicatorRefSetId))
 			.filterByReferencedComponent(referencedComponentIds)
-			.build()
-			.execute(context);
+			.stream(context)
+			.flatMap(SnomedReferenceSetMembers::stream)
+			.forEachOrdered(member -> {
+				membersByReferencedComponentId.put(member.getReferencedComponentId(), member);
+			});
+
+		final Options inactivationPropertiesExpand = expand.getOptions(SnomedCoreComponent.Expand.INACTIVATION_PROPERTIES);
 		
-		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = Multimaps.index(members, SnomedReferenceSetMember::getReferencedComponentId);
+		Map<String, SnomedConcept> associationTargetComponentsById = Collections.emptyMap();
+		Map<String, SnomedConcept>inactivationIndicatorsById = Collections.emptyMap();
+		
+		final Options nestedExpands = inactivationPropertiesExpand.getOptions("expand");
+		if (nestedExpands != null && nestedExpands.containsKey(InactivationProperties.Expand.ASSOCIATION_TARGETS)) {
+			final Options associationTargetsExpand = nestedExpands.getOptions(InactivationProperties.Expand.ASSOCIATION_TARGETS);
+			
+			final Set<String> componentsToExpand = membersByReferencedComponentId.values().stream()
+					.filter(member -> SnomedRefSetType.ASSOCIATION.equals(member.type()))
+					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID))
+					.filter(id -> !Strings.isNullOrEmpty(id))
+					.collect(Collectors.toSet());
+			
+			associationTargetComponentsById = expandAssociationTargetComponent(associationTargetsExpand, componentsToExpand, context);
+		}
+		
+		if (nestedExpands != null && nestedExpands.containsKey(InactivationProperties.Expand.INACTIVATION_INDICATOR)) {
+			final Options inactivationIndicatorExpand = nestedExpands.getOptions(InactivationProperties.Expand.INACTIVATION_INDICATOR);
+			
+			final Set<String> componentsToExpand = membersByReferencedComponentId.values().stream()
+					.filter(member -> SnomedRefSetType.ATTRIBUTE_VALUE.equals(member.type()))
+					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID))
+					.filter(id -> !Strings.isNullOrEmpty(id))
+					.collect(Collectors.toSet());
+			
+			inactivationIndicatorsById = expandInactivationIndicator(inactivationIndicatorExpand, componentsToExpand, context);
+		}
 		
 		for (SnomedCoreComponent result : results) {
 			final Collection<SnomedReferenceSetMember> referringMembers = membersByReferencedComponentId.get(result.getId());
@@ -75,21 +106,73 @@ public final class InactivationPropertiesExpander {
 			for (SnomedReferenceSetMember referringMember : referringMembers) {
 				if (SnomedRefSetType.ASSOCIATION.equals(referringMember.type())) {
 					final AssociationTarget associationTarget = new AssociationTarget();
+					final String targetComponentId = (String) referringMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID);
+					
 					associationTarget.setReferenceSetId(referringMember.getRefsetId());
-					associationTarget.setTargetComponentId((String) referringMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID));
+					associationTarget.setTargetComponentId(targetComponentId);
+
+					if (associationTargetComponentsById.containsKey(targetComponentId)) {
+						associationTarget.setTargetComponent(associationTargetComponentsById.get(targetComponentId));
+					}
+					
 					associationTargets.add(associationTarget);
 				} else if (SnomedRefSetType.ATTRIBUTE_VALUE.equals(referringMember.type())) {
 					inactivationIndicatorIds.add((String) referringMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID));
 				}
 			}
 
+			final String inactivationIndicatorId = Iterables.getFirst(inactivationIndicatorIds, null);
+			
 			InactivationProperties inactivationProperties = new InactivationProperties();
-			inactivationProperties.setInactivationIndicatorId(Iterables.getFirst(inactivationIndicatorIds, null));
+			inactivationProperties.setInactivationIndicatorId(inactivationIndicatorId);
 			inactivationProperties.setAssociationTargets(associationTargets.build());
+			
+			if (!Strings.isNullOrEmpty(inactivationIndicatorId) && inactivationIndicatorsById.containsKey(inactivationIndicatorId)) {
+				inactivationProperties.setInactivationIndicator(inactivationIndicatorsById.get(inactivationIndicatorId));
+			}
+			
 			result.setInactivationProperties(inactivationProperties);
 		}
 		
-		// TODO further expand the inactivationProperties nested properties if requested 
 	}
 
+	private Map<String, SnomedConcept> expandAssociationTargetComponent(final Options expands, final Set<String> componentsToExpand, final BranchContext context) {
+		final Options nestedExpands = expands.getOptions("expand");
+		
+		if (!nestedExpands.containsKey(AssociationTarget.Expand.TARGET_COMPONENT)) {
+			return Collections.emptyMap();
+		}
+		
+		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
+		
+		SnomedRequests.prepareSearchConcept()
+			.setLimit(10_000)
+			.filterByIds(componentsToExpand)
+			.setLocales(locales)
+			.setExpand(nestedExpands.getOptions(AssociationTarget.Expand.TARGET_COMPONENT).getOptions("expand"))
+			.stream(context)
+			.flatMap(SnomedConcepts::stream)
+			.forEachOrdered(concept -> {
+				conceptsById.put(concept.getId(), concept);
+			});
+		
+		return conceptsById;
+	}
+	
+	private Map<String, SnomedConcept> expandInactivationIndicator(final Options expands, final Set<String> componentsToExpand, final BranchContext context) {
+		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
+		
+		SnomedRequests.prepareSearchConcept()
+			.setLimit(10_000)
+			.filterByIds(componentsToExpand)
+			.setLocales(locales)
+			.setExpand(expands.getOptions("expand"))
+			.stream(context)
+			.flatMap(SnomedConcepts::stream)
+			.forEachOrdered(concept -> {
+				conceptsById.put(concept.getId(), concept);
+			});
+		
+		return conceptsById;
+	}
 }

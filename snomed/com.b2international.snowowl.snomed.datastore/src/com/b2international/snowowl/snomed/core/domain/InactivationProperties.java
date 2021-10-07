@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,12 @@ public final class InactivationProperties implements Serializable {
 	
 	private SnomedConcept inactivationIndicator;
 	private List<AssociationTarget> associationTargets;
+	
+	public static final class Expand {
+		public static final String INACTIVATION_INDICATOR = "inactivationIndicator";
+		public static final String ASSOCIATION_TARGETS = "associationTargets";
+	}
+	
 	
 	public InactivationProperties() {
 	}
