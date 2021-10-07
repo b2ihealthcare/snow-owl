@@ -35,10 +35,6 @@ public final class CodeSystem extends TerminologyResource {
 	
 	public static final String RESOURCE_TYPE = "codesystems";
 	
-	//CodeSystem settings
-	public static final String DEFAULT_REFSET_MODULE_ID = "defaultRefsetModuleId";
-	public static final String DEFAULT_QUERY_TYPE_REFSET_ID = "defaultQueryTypeRefsetId";
-	
 	/**
 	 * @since 8.0
 	 */
