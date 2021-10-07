@@ -869,7 +869,7 @@ public final class StagingArea {
 		applyChangedObjects(changed, mergeFromBranchRef, toRef, squash);
 		
 		// always apply deleted objects, they set the revised timestamp properly without introducing any new document
-		applyRemovedObjects(removed, fromRef, mergeFromBranchRef, squash);
+		applyRemovedObjects(removed, mergeFromBranchRef, toRef, squash);
 		
 		// any externally marked revised revisions should be applied here
 		revisionsToReviseOnMergeSource.putAll(externalRevisionsToReviseOnMergeSource);
