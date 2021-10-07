@@ -90,7 +90,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
-		
+
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 		
 		tracker.classificationScheduled(classificationId, reasonerId, user, branch.path());
@@ -100,7 +100,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				.setParentLockContext(parentLockContext)
 				.addAllConcepts(additionalConcepts)
 				.build(branch.path());
-				
+		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
 				config.getMaxReasonerCount(), 
 				repositoryId, 

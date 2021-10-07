@@ -96,13 +96,13 @@ public final class ClassificationTracker implements IDisposableService {
 							.where(Expressions.builder()
 									.filter(ClassificationTaskDocument.Expressions.deleted(false))
 									.build())
-							.sortBy(SortBy.builder()					
+							.sortBy(SortBy.builder()
 									.sortByField(ClassificationTaskDocument.Fields.CREATION_DATE, Order.DESC)
 									.sortByField(ClassificationTaskDocument.Fields.ID, Order.ASC)
 									.build())
 							.limit(maximumReasonerRuns)
 							.build();
-					
+
 					final Hits<ClassificationTaskDocument> firstNTasks = writer.searcher()
 							.search(firstNQuery);
 
@@ -118,7 +118,7 @@ public final class ClassificationTracker implements IDisposableService {
 
 						markClassifications(writer, markQuery);
 					}
-					
+
 					writer.commit();
 					return null;
 				});
