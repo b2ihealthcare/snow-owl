@@ -35,6 +35,7 @@ import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.TerminologyResource;
@@ -130,7 +131,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		TerminologyResource resource = context.service(TerminologyResource.class);
 		
 		@SuppressWarnings("unchecked")
-		final Set<String> reasonerExcludedModuleIds = (Set<String>) resource.getSettings().getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet());
+		final Set<String> reasonerExcludedModuleIds = Collections3.toImmutableSet((Iterable) resource.getSettings().getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet()));
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
 

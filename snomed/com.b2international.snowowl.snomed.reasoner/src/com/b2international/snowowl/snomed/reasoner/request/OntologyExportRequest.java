@@ -34,6 +34,7 @@ import org.semanticweb.owlapi.formats.ManchesterSyntaxDocumentFormat;
 import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.model.*;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -78,8 +79,8 @@ final class OntologyExportRequest implements Request<BranchContext, String>, Acc
 		TerminologyResource resource = context.service(TerminologyResource.class);
 			
 		@SuppressWarnings("unchecked")
-		final Set<String> reasonerExcludedModuleIds = (Set<String>) resource.getSettings()
-				.getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet());
+		final Set<String> reasonerExcludedModuleIds = Collections3.toImmutableSet((Iterable) resource.getSettings()
+				.getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet()));
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupportEnabled = configuration.isConcreteDomainSupported();
 		
