@@ -171,14 +171,13 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void expandIancitvationIndicator() {
+	public void expandInactivationIndicator() {
 		final String inactiveConceptId = createInactiveConcept(branchPath);
 		createNewRefSetMember(branchPath, inactiveConceptId, Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR, Json.object(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.AMBIGUOUS));
 		
 		givenAuthenticatedRequest(getApiBaseUrl())
 				.accept(JSON_UTF8)
 				.queryParams(Map.of(
-						"status", "false",
 						"id", List.of(inactiveConceptId),
 						"expand", "inactivationProperties(expand(inactivationIndicator()))"))
 				.get("/{path}/concepts/", branchPath.getPath())
@@ -198,7 +197,6 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(getApiBaseUrl())
 				.accept(JSON_UTF8)
 				.queryParams(Map.of(
-						"status", "false",
 						"id", List.of(inactiveConceptId),
 						"expand", "inactivationProperties(expand(associationTargets(expand(targetComponent(expand(fsn()))))))"))
 				.get("/{path}/concepts/", branchPath.getPath())
