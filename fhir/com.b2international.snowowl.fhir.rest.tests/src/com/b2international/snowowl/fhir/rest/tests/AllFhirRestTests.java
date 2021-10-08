@@ -62,6 +62,6 @@ public class AllFhirRestTests {
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-		.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL));
+		.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT_20200131, Rf2ReleaseType.FULL));
 	
 }

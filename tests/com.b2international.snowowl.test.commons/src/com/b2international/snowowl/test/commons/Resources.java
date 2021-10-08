@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,9 @@ public class Resources {
 	public static class Snomed {
 
 		public static final String SNOMED_RESOURCES = createResourcePath(RESOURCES, "snomed");
-		public static final String MINI_RF2_INT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_InternationalRF2_PRODUCTION_20200131T120000Z_minified.zip");
+		public static final String MINI_RF2_INT_20200131 = createResourcePath(SNOMED_RESOURCES, "SnomedCT_InternationalRF2_PRODUCTION_20200131T120000Z_minified.zip");
+		public static final String MINI_RF2_INT_20210131 = createResourcePath(SNOMED_RESOURCES, "SnomedCT_InternationalRF2_PRODUCTION_20210131T120000Z_minified.zip");
+		public static final String MINI_RF2_INT_20210731 = createResourcePath(SNOMED_RESOURCES, "SnomedCT_InternationalRF2_PRODUCTION_20210731T120000Z-minified.zip");
 		public static final String MINI_RF2_EXT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_RF2Release_INT_20160501_B2i_cd_refsets.zip");
 		public static final String MINI_RF2_COMPLEX_BLOCK_MAP = createResourcePath(SNOMED_RESOURCES, "SnomedCT_RF2Release_GB1000000_20200204_complex_block_map.zip");
 		
@@ -47,7 +49,7 @@ public class Resources {
 	}
 	
 	private static String createResourcePath(String parent, String child) {
-		return String.format("%s%s%s", parent, SEPARATOR, child);
+		return String.join(SEPARATOR, parent, child);
 	}
 
 }

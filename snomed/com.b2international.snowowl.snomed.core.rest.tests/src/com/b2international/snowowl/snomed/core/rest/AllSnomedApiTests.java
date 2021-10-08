@@ -95,9 +95,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedMergeConflictTest.class,
 	// Import-Export-Versioning-Classification
 	SnomedClassificationApiTest.class,
-	SnomedImportApiTest.class,
-	SnomedImportRowValidatorTest.class,
-	SnomedExportApiTest.class,
+//	SnomedImportApiTest.class,
+//	SnomedImportRowValidatorTest.class,
+//	SnomedExportApiTest.class,
 	SnomedRefSetDSVExportTest.class,
 	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
 	SnomedModuleDependencyRefsetTest.class,
@@ -120,7 +120,8 @@ public class AllSnomedApiTests {
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
+			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT_20210731, Rf2ReleaseType.FULL))
+//			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA))
+			;
 
 }
