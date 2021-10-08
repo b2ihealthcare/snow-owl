@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.merge.ConflictingAttribute;
-import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
-import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,7 +32,7 @@ public class MergeConflictSerializationTest {
 
 	private MergeConflict conflict;
 	private ObjectMapper mapper;
-	private ConflictingAttributeImpl attribute;
+	private ConflictingAttribute attribute;
 	
 	@Before
 	public void before() {
@@ -47,78 +44,78 @@ public class MergeConflictSerializationTest {
 				.type(ConflictType.CONFLICTING_CHANGE)
 				.build();
 		
-		this.attribute = ConflictingAttributeImpl.builder()
+		this.attribute = ConflictingAttribute.builder()
 							.property("property")
 							.oldValue("oldValue")
-							.value("value")
+							.sourceValue("value")
 							.build();
 	}
 	
 	@Test
 	public void serializeConflictWithOutAttributes() throws Exception {
 		String json = mapper.writeValueAsString(conflict);
-		String result = 
+		String expected = 
 				"{\"componentId\":\"id\","
 				+ "\"componentType\":\"type\","
 				+ "\"conflictingAttributes\":[],"
 				+ "\"type\":\"CONFLICTING_CHANGE\","
 				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch.\"}";
-		assertEquals(json, result);
+		assertEquals(expected, json);
 	}
 
 	@Test
 	public void serializeConflictWithOnlyPropertyAttribute() throws Exception {
 		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict)
-				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property").build()).build();
+				.conflictingAttribute(ConflictingAttribute.builder().property("property").build()).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
-		String result = 
+		String expected = 
 				"{\"componentId\":\"id\","
 				+ "\"componentType\":\"type\","
 				+ "\"conflictingAttributes\":[{\"property\":\"property\"}],"
 				+ "\"type\":\"CONFLICTING_CHANGE\","
 				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property].\"}";
-		assertEquals(json, result);
+		assertEquals(expected, json);
 	}
 	
 	@Test
-	public void serializeConflictWithPropertyAndOldValueAttribute() throws Exception {
+	public void serializeConflictingAttributeWithOldValue() throws Exception {
 		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict)
-				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property").oldValue("oldValue").build()).build();
+				.conflictingAttribute(ConflictingAttribute.builder().property("property").sourceValue("value").oldValue("oldValue").build()).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
-		String result = 
+		String expected = 
 				"{\"componentId\":\"id\","
 				+ "\"componentType\":\"type\","
-				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"oldValue\":\"oldValue\"}],"
+				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"sourceValue\":\"value\",\"oldValue\":\"oldValue\"}],"
 				+ "\"type\":\"CONFLICTING_CHANGE\","
-				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> oldValue].\"}";
-		assertEquals(json, result);
+				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> value (old value: oldValue)].\"}";
+		assertEquals(expected, json);
 	}
 	
 	@Test
-	public void serializeConflictWithPropertyAndValueAttribute() throws Exception {
+	public void serializeConflictingAttributeWithoutOldValue() throws Exception {
 		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict)
-				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property").value("value").build()).build();
+				.conflictingAttribute(ConflictingAttribute.builder().property("property").sourceValue("value").build()).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
-		String result = 
+		String expected = 
 				"{\"componentId\":\"id\","
 				+ "\"componentType\":\"type\","
-				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"value\":\"value\"}],"
+				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"sourceValue\":\"value\"}],"
 				+ "\"type\":\"CONFLICTING_CHANGE\","
-				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> value].\"}";
-		assertEquals(json, result);
+				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> value (old value: n/a)].\"}";
+		assertEquals(expected, json);
 	}
 	
 	@Test
 	public void serializeConflictWithFullAttribute() throws Exception {
 		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict).conflictingAttribute(attribute).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
-		String result = 
+		String expected = 
 				"{\"componentId\":\"id\","
 				+ "\"componentType\":\"type\","
-				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"value\":\"value\",\"oldValue\":\"oldValue\"}],"
+				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"sourceValue\":\"value\",\"oldValue\":\"oldValue\"}],"
 				+ "\"type\":\"CONFLICTING_CHANGE\","
-				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> old value: oldValue, value: value].\"}";
-		assertEquals(json, result);
+				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> value (old value: oldValue)].\"}";
+		assertEquals(expected, json);
 	}
 
 	@Test
@@ -126,16 +123,16 @@ public class MergeConflictSerializationTest {
 		MergeConflict conflictWithAttribute = MergeConflict
 				.builder(this.conflict)
 				.conflictingAttribute(attribute)
-				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property2").oldValue("oldValue2").value("value2").build())
+				.conflictingAttribute(ConflictingAttribute.builder().property("property2").oldValue("oldValue2").sourceValue("value2").build())
 				.build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
-		String result = 
+		String expected = 
 				"{\"componentId\":\"id\","
 				+ "\"componentType\":\"type\","
-				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"value\":\"value\",\"oldValue\":\"oldValue\"},{\"property\":\"property2\",\"value\":\"value2\",\"oldValue\":\"oldValue2\"}],"
+				+ "\"conflictingAttributes\":[{\"property\":\"property\",\"sourceValue\":\"value\",\"oldValue\":\"oldValue\"},{\"property\":\"property2\",\"sourceValue\":\"value2\",\"oldValue\":\"oldValue2\"}],"
 				+ "\"type\":\"CONFLICTING_CHANGE\","
-				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> old value: oldValue, value: value; property2 -> old value: oldValue2, value: value2].\"}";
-		assertEquals(json, result);
+				+ "\"message\":\"type with ID 'id' has a conflict of type 'CONFLICTING_CHANGE' on target branch, conflicting attributes are: [property -> value (old value: oldValue); property2 -> value2 (old value: oldValue2)].\"}";
+		assertEquals(expected, json);
 	}
 	
 	@Test
@@ -162,7 +159,7 @@ public class MergeConflictSerializationTest {
 		ConflictingAttribute attr = conflict.getConflictingAttributes().get(0);
 		assertEquals("property", attr.getProperty());
 		assertEquals("oldValue", attr.getOldValue());
-		assertEquals("value", attr.getValue());
+		assertEquals("value", attr.getSourceValue());
 		
 		assertEquals(MergeConflict.buildDefaultMessage("id", "type", conflict.getConflictingAttributes(), ConflictType.CONFLICTING_CHANGE), conflict.getMessage());
 	}

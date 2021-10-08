@@ -16,41 +16,129 @@
 package com.b2international.snowowl.core.merge;
 
 import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.7
  */
-@JsonDeserialize(as = ConflictingAttributeImpl.class)
-public interface ConflictingAttribute extends Serializable {
+@JsonInclude(Include.NON_NULL)
+@JsonDeserialize(builder = ConflictingAttribute.Builder.class)
+public final class ConflictingAttribute implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
+	public static final Comparator<ConflictingAttribute> ATTRIBUTE_COMPARATOR = (o1, o2) -> o1.toDisplayName().compareTo(o2.toDisplayName());
+	
+	private static final String CONFLICT_TEMPLATE = "%s -> %s vs. %s (old value: %s)";
+	private static final String SINGLE_ATTR_TEMPLATE = "%s -> %s (old value: %s)";
+	
+	private final String property;
+	private final String sourceValue;
+	private final String targetValue;
+	private final String oldValue;
+
+	private ConflictingAttribute(String property, String sourceValue, String targetValue, String oldValue) {
+		this.property = property;
+		this.sourceValue = sourceValue;
+		this.targetValue = targetValue;
+		this.oldValue = oldValue;
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
 	/**
 	 * String representation of the attribute that induced - or was involved in - the conflict
 	 * 
 	 * @return
 	 */
-	String getProperty();
+	public String getProperty() {
+		return property;
+	}
+
+	/**
+	 * @return the value of the property on the source side of changes
+	 */
+	public String getSourceValue() {
+		return sourceValue;
+	}
 	
 	/**
-	 * The value of the property
-	 * 
-	 * @return
+	 * @return the value of the property on the target side of changes
 	 */
-	String getValue();
-	
+	public String getTargetValue() {
+		return targetValue;
+	}
+
 	/**
 	 * If the property was changed and it is possible to extract the old value, then this will return it.
 	 * 
 	 * @return
 	 */
-	String getOldValue();
+	public String getOldValue() {
+		return oldValue;
+	}
 	
 	/**
 	 * Converts a {@link ConflictingAttribute} instance to a human readable form. Default conflict message uses this pattern as well.
 	 * 
 	 * @return
 	 */
-	String toDisplayName();
+	public String toDisplayName() {
+		if (Strings.isNullOrEmpty(getSourceValue())) {
+			return property;
+		} else if (Strings.isNullOrEmpty(getTargetValue())) {
+			return String.format(SINGLE_ATTR_TEMPLATE, getProperty(), getSourceValue(), Optional.ofNullable(Strings.emptyToNull(oldValue)).orElse("n/a"));
+		} else {
+			return String.format(CONFLICT_TEMPLATE, getProperty(), getSourceValue(), getTargetValue(), Optional.ofNullable(Strings.emptyToNull(oldValue)).orElse("n/a"));
+		}
+	}
+	
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class Builder {
+		
+		private String property;
+		private String sourceValue;
+		private String targetValue;
+		private String oldValue;
+
+		@JsonCreator
+		public Builder() {
+		}
+		
+		public Builder property(String property) {
+			this.property = property; 
+			return this;
+		}
+
+		public Builder sourceValue(String sourceValue) {
+			this.sourceValue = sourceValue;
+			return this;
+		}
+		
+		public Builder targetValue(String targetValue) {
+			this.targetValue = targetValue;
+			return this;
+		}
+
+		public Builder oldValue(String oldValue) {
+			this.oldValue = oldValue;
+			return this;
+		}
+		
+		public ConflictingAttribute build() {
+			return new ConflictingAttribute(this.property, this.sourceValue, this.targetValue, this.oldValue);
+		}
+		
+	}
 	
 }
