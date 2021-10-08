@@ -24,7 +24,6 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.b2international.snowowl.snomed.core.branch.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.core.branch.SnomedBranchRequestTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.core.io.MrcmImportExportTest;
 import com.b2international.snowowl.snomed.core.io.SnomedRefSetDSVExportTest;
 import com.b2international.snowowl.snomed.core.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.core.issue.IssueSO2503RemoteJobDynamicMappingFix;
@@ -35,7 +34,6 @@ import com.b2international.snowowl.snomed.core.rest.branches.SnomedBranchingApiT
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
-import com.b2international.snowowl.snomed.core.rest.compare.ConceptMapCompareSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedComponentEffectiveTimeRestoreTest;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionCreationTest;
@@ -106,8 +104,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedComponentEffectiveTimeRestoreTest.class,
 	SnomedExtensionCreationTest.class,
 	SnomedExtensionUpgradeTest.class, 
-	// MRCM export/import
-	MrcmImportExportTest.class,
 	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
