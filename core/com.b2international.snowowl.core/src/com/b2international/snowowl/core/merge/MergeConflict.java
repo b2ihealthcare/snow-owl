@@ -36,6 +36,8 @@ import com.google.common.collect.FluentIterable;
 @JsonDeserialize(builder = MergeConflict.Builder.class)
 public final class MergeConflict implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	public static enum ConflictType {
 		CONFLICTING_CHANGE,
 		DELETED_WHILE_CHANGED,
@@ -185,7 +187,7 @@ public final class MergeConflict implements Serializable {
 		public MergeConflict build() {
 			
 			if (this.conflictingAttributes.size() > 1) {
-				Collections.sort(this.conflictingAttributes, ConflictingAttributeImpl.ATTRIBUTE_COMPARATOR);
+				Collections.sort(this.conflictingAttributes, ConflictingAttribute.ATTRIBUTE_COMPARATOR);
 			}
 			
 			if (Strings.isNullOrEmpty(message)) {

@@ -78,6 +78,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 		for (RevisionPropertyDiff sourceChange : sourceChanges) {
 			if (SnomedDocument.Fields.RELEASED.equals(sourceChange.getProperty())) {
 				conflicting = true;
+				break;
 			}
 		}
 		if (conflicting) {
