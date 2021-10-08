@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.assertj.core.api.Assertions;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,14 +39,8 @@ import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
-import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
-import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ConcreteDomainPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -1209,140 +1202,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedDescription.TYPE, pt2.getId()),
 				ComponentIdentifier.of(SnomedDescription.TYPE, pt3.getId()));
-	}
-	
-	@Test
-	public void rule_mrcm_constraint() throws Exception {
-		final String ruleId = "rule_mrcm_constraint";
-		indexRule(ruleId);
-		
-		//Create MRCM rule
-		final HierarchyDefinitionFragment conceptSetDefinition = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate = relationshipPredicate(predicateType, predicateRange);
-		
-		final SnomedConstraintDocument attributeConstraint = attributeConstraint(conceptSetDefinition, conceptModelPredicate);
-		indexRevision(MAIN, attributeConstraint);
-		
-		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.relationshipGroup(1).build();
-		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(1).build();
-		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(2).build();
-		
-		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.build();
-		
-		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.build();
-		
-		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.build();
-		
-		indexRevision(MAIN, relationship1, relationship2, relationship3, axiomMember1, axiomMember2, axiomMember3);
-		
-		ValidationIssues issues = validate(ruleId);
-		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
-				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()));
-	}
-	
-	@Test
-	public void rule_mrcm_constraint_type() throws Exception {
-		final String ruleId = "rule_mrcm_constraint_type";
-		indexRule(ruleId);
-		
-		//First mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition1 = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType1 = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange1 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate1 = relationshipPredicate(predicateType1, predicateRange1);
-		final SnomedConstraintDocument attributeConstraint1 = attributeConstraint(conceptSetDefinition1, conceptModelPredicate1);
-		
-		//Second mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition2 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType2 = hierarchyConceptSetDefinition(Concepts.HAS_ACTIVE_INGREDIENT, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange2 = hierarchyConceptSetDefinition(Concepts.TEXT_DEFINITION, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate2 = relationshipPredicate(predicateType2, predicateRange2);
-		final SnomedConstraintDocument attributeConstraint2 = attributeConstraint(conceptSetDefinition2, conceptModelPredicate2);
-		
-		//Third mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition3 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType3 = hierarchyConceptSetDefinition(Concepts.HAS_ACTIVE_INGREDIENT, HierarchyInclusionType.SELF);
-		final ConcreteDomainPredicateFragment concreteDomainPredicate3 = concreteDomainPredicate(predicateType3, DataType.INTEGER);
-		final SnomedConstraintDocument attributeConstraint3 = attributeConstraint(conceptSetDefinition3, concreteDomainPredicate3);
-		
-		//Relationships
-		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.IS_A, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.relationshipGroup(1).build();
-		
-		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(1).build();
-		
-		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(2).build();
-		
-		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, Concepts.TEXT_DEFINITION)
-				.relationshipGroup(0).build();
-		
-		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(3).build();
-		
-		final SnomedRelationshipIndexEntry relationship6 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(5))).build();
-		final SnomedRelationshipIndexEntry relationship7 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, new RelationshipValue(Integer.valueOf(15))).build();
-		final SnomedRelationshipIndexEntry relationship8 = concreteValue(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(20))).build();
-		
-		// OWL axioms
-		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
-				.build();
-		
-		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.TEXT_DEFINITION, Concepts.REFSET_OWL_AXIOM)
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
-				.build();
-		
-		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
-				.build();
-		
-		indexRevision(MAIN, attributeConstraint1, attributeConstraint2, attributeConstraint3,
-			relationship1, relationship2, relationship3, relationship4, relationship5, relationship6, relationship7, relationship8,
-			axiomMember1, axiomMember2,	axiomMember3);
-		
-		ValidationIssues issues = validate(ruleId);
-		Assertions.assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
-			.contains(
-				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember2.getId()),
-				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember3.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship3.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship4.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship7.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship8.getId())
-			)
-			.doesNotContain(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship2.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship5.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship5.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship6.getId())
-			);
 	}
 	
 	private SnomedRefSetMemberIndexEntry createLanguageRefsetMember(SnomedDescriptionIndexEntry description) {
