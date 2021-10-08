@@ -174,7 +174,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 						.componentType(((AddedInTargetAndDetachedInSourceConflict) c).getAddedOnTarget().type())
 						.conflictingAttribute(ConflictingAttribute.builder()
 								.property(((AddedInTargetAndDetachedInSourceConflict) c).getFeatureName())
-								.sourceValue(((AddedInTargetAndDetachedInSourceConflict) c).getDetachedOnSource().id())
+								.targetValue(((AddedInTargetAndDetachedInSourceConflict) c).getDetachedOnSource().id())
 								.build())
 						.build();
 			} else {
