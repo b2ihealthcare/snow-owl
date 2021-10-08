@@ -94,8 +94,10 @@ public final class ConflictingAttribute implements Serializable {
 	 * @return
 	 */
 	public String toDisplayName() {
-		if (Strings.isNullOrEmpty(getSourceValue())) {
+		if (Strings.isNullOrEmpty(getSourceValue()) && Strings.isNullOrEmpty(getTargetValue())) {
 			return property;
+		} else if (Strings.isNullOrEmpty(getSourceValue())) {
+			return String.format(SINGLE_ATTR_TEMPLATE, getProperty(), getTargetValue(), Optional.ofNullable(Strings.emptyToNull(oldValue)).orElse("n/a"));
 		} else if (Strings.isNullOrEmpty(getTargetValue())) {
 			return String.format(SINGLE_ATTR_TEMPLATE, getProperty(), getSourceValue(), Optional.ofNullable(Strings.emptyToNull(oldValue)).orElse("n/a"));
 		} else {
