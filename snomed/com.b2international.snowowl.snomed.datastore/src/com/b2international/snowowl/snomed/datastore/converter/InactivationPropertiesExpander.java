@@ -141,15 +141,15 @@ public final class InactivationPropertiesExpander {
 		
 	}
 
-	private Map<String, SnomedConcept> expandConceptByIdMap(final Options expands, final Set<String> componentsToExpand, final BranchContext context) {
+	private Map<String, SnomedConcept> expandConceptByIdMap(final Options expand, final Set<String> componentsToExpand, final BranchContext context) {
 		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
 		
 		Iterables.partition(componentsToExpand, BATCH_SIZE).forEach(idsFilter -> {
 			SnomedRequests.prepareSearchConcept()
-			.setLimit(BATCH_SIZE)
+			.setLimit(idsFilter.size())
 			.filterByIds(idsFilter)
 			.setLocales(locales)
-			.setExpand(expands)
+			.setExpand(expand)
 			.stream(context)
 			.flatMap(SnomedConcepts::stream)
 			.forEachOrdered(concept -> {
