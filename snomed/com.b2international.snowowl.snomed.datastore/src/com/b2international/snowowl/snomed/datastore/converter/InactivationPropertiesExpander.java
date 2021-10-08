@@ -37,6 +37,8 @@ import com.google.common.collect.*;
  */
 public final class InactivationPropertiesExpander {
 
+	private static final int BATCH_SIZE = 10_000;
+	
 	private final BranchContext context;
 	private final Options expand;
 	private final List<ExtendedLocale> locales;
@@ -75,7 +77,7 @@ public final class InactivationPropertiesExpander {
 		
 		final Options nestedExpands = inactivationPropertiesExpand.getOptions("expand");
 		if (nestedExpands != null && nestedExpands.containsKey(InactivationProperties.Expand.ASSOCIATION_TARGETS)) {
-			final Options associationTargetsExpand = nestedExpands.getOptions(InactivationProperties.Expand.ASSOCIATION_TARGETS);
+			final Options associationTargetsExpand = nestedExpands.getOptions(InactivationProperties.Expand.ASSOCIATION_TARGETS).getOptions("expand");
 			
 			final Set<String> componentsToExpand = membersByReferencedComponentId.values().stream()
 					.filter(member -> SnomedRefSetType.ASSOCIATION.equals(member.type()))
@@ -83,7 +85,10 @@ public final class InactivationPropertiesExpander {
 					.filter(id -> !Strings.isNullOrEmpty(id))
 					.collect(Collectors.toSet());
 			
-			associationTargetComponentsById = expandAssociationTargetComponent(associationTargetsExpand, componentsToExpand, context);
+			if (associationTargetsExpand != null && associationTargetsExpand.containsKey(AssociationTarget.Expand.TARGET_COMPONENT)) {
+				associationTargetComponentsById = expandConceptByIdMap(associationTargetsExpand.getOptions(AssociationTarget.Expand.TARGET_COMPONENT).getOptions("expand"), componentsToExpand, context);
+			}
+			
 		}
 		
 		if (nestedExpands != null && nestedExpands.containsKey(InactivationProperties.Expand.INACTIVATION_INDICATOR)) {
@@ -95,7 +100,7 @@ public final class InactivationPropertiesExpander {
 					.filter(id -> !Strings.isNullOrEmpty(id))
 					.collect(Collectors.toSet());
 			
-			inactivationIndicatorsById = expandInactivationIndicator(inactivationIndicatorExpand, componentsToExpand, context);
+			inactivationIndicatorsById = expandConceptByIdMap(inactivationIndicatorExpand.getOptions("expand"), componentsToExpand, context);
 		}
 		
 		for (SnomedCoreComponent result : results) {
@@ -136,42 +141,21 @@ public final class InactivationPropertiesExpander {
 		
 	}
 
-	private Map<String, SnomedConcept> expandAssociationTargetComponent(final Options expands, final Set<String> componentsToExpand, final BranchContext context) {
-		final Options nestedExpands = expands.getOptions("expand");
-		
-		if (!nestedExpands.containsKey(AssociationTarget.Expand.TARGET_COMPONENT)) {
-			return Collections.emptyMap();
-		}
-		
+	private Map<String, SnomedConcept> expandConceptByIdMap(final Options expands, final Set<String> componentsToExpand, final BranchContext context) {
 		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
 		
-		SnomedRequests.prepareSearchConcept()
-			.setLimit(10_000)
-			.filterByIds(componentsToExpand)
+		Iterables.partition(componentsToExpand, BATCH_SIZE).forEach(idsFilter -> {
+			SnomedRequests.prepareSearchConcept()
+			.setLimit(BATCH_SIZE)
+			.filterByIds(idsFilter)
 			.setLocales(locales)
-			.setExpand(nestedExpands.getOptions(AssociationTarget.Expand.TARGET_COMPONENT).getOptions("expand"))
+			.setExpand(expands)
 			.stream(context)
 			.flatMap(SnomedConcepts::stream)
 			.forEachOrdered(concept -> {
 				conceptsById.put(concept.getId(), concept);
 			});
-		
-		return conceptsById;
-	}
-	
-	private Map<String, SnomedConcept> expandInactivationIndicator(final Options expands, final Set<String> componentsToExpand, final BranchContext context) {
-		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
-		
-		SnomedRequests.prepareSearchConcept()
-			.setLimit(10_000)
-			.filterByIds(componentsToExpand)
-			.setLocales(locales)
-			.setExpand(expands.getOptions("expand"))
-			.stream(context)
-			.flatMap(SnomedConcepts::stream)
-			.forEachOrdered(concept -> {
-				conceptsById.put(concept.getId(), concept);
-			});
+		});
 		
 		return conceptsById;
 	}
