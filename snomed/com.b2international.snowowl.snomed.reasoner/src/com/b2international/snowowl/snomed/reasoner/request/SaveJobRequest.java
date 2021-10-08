@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.NAMESPACE_AND_MODULE_ASSIGNER;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.Commit;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
@@ -568,12 +571,13 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		if (assignerType != null) {
 			selectedType = assignerType;
 		} else {
-			final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
-			selectedType = configuration.getNamespaceModuleAssigner();
+			final TerminologyResource resource = context.service(TerminologyResource.class);
+			
+			selectedType = (String) resource.getSettings().getOrDefault(NAMESPACE_AND_MODULE_ASSIGNER, DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER);
 		}
 		
 		final SnomedNamespaceAndModuleAssigner assigner = SnomedNamespaceAndModuleAssigner.create(context, selectedType, moduleId, namespace);
-
+		
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assigner);
 		return assigner;
 	}
