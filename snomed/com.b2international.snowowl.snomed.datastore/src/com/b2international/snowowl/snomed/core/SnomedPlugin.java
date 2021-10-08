@@ -42,8 +42,6 @@ import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -56,10 +54,6 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.merge.SnomedComponentRevisionConflictProcessor;
-import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
-import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterImpl;
-import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
-import com.b2international.snowowl.snomed.core.mrcm.io.MrcmJsonImporter;
 import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer;
 import com.b2international.snowowl.snomed.core.uri.SnomedURLSchemaSupport;
@@ -103,20 +97,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
-	}
-	
-	@Override
-	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		// initialize MRCM Import-Export API
-		if (env.isServer()) {
-			env.services().registerService(MrcmExporter.class, new MrcmExporterImpl(env.provider(IEventBus.class)));
-			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmExporter.class, MrcmExporterImpl.class.getClassLoader());
-			env.services().registerService(MrcmImporter.class, new MrcmJsonImporter(env.provider(IEventBus.class)));
-			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmImporter.class, MrcmJsonImporter.class.getClassLoader());
-		} else {
-			env.services().registerService(MrcmImporter.class, RpcUtil.createProxy(env.container(), MrcmImporter.class));
-			env.services().registerService(MrcmExporter.class, RpcUtil.createProxy(env.container(), MrcmExporter.class));
-		}
 	}
 	
 	@Override
