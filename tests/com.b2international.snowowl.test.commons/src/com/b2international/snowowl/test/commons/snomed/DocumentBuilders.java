@@ -30,11 +30,8 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 
@@ -60,14 +57,6 @@ public abstract class DocumentBuilders {
 				.ancestors(PrimitiveSets.newLongSortedSet())
 				.statedParents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.statedAncestors(PrimitiveSets.newLongSortedSet());
-	}
-	
-	public static SnomedConstraintDocument.Builder constraint() {
-		return SnomedConstraintDocument.builder()
-				.id(UUID.randomUUID().toString())
-				.predicateType(SnomedConstraintPredicateType.RELATIONSHIP)
-				.form(ConstraintForm.ALL_FORMS)
-				.active(true);
 	}
 	
 	public static SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
