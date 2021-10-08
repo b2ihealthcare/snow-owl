@@ -49,7 +49,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
@@ -70,8 +69,8 @@ import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositor
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptMapSearchRequestEvaluator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedValueSetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.SnomedValueSetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.Synonyms;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 import com.google.common.collect.ImmutableList;
@@ -192,7 +191,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			SnomedConcept.class,
 			SnomedDescription.class,
 			SnomedRelationship.class,
-			SnomedConstraint.class,
 			SnomedReferenceSet.class,
 			SnomedReferenceSetMember.class
 		);
