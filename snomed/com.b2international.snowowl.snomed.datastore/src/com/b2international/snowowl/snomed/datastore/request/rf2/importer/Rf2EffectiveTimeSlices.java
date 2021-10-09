@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,20 +45,27 @@ public final class Rf2EffectiveTimeSlices {
 	private final DB db;
 	private final Map<String, Rf2EffectiveTimeSlice> slices = newHashMap();
 	private final boolean loadOnDemand;
+	private final String latestVersionEffectiveTime;
 
-	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand) {
+	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand, String latestVersionEffectiveTime) {
 		this.db = db;
 		this.loadOnDemand = loadOnDemand;
+		this.latestVersionEffectiveTime = latestVersionEffectiveTime;
 	}
 	
 	public Rf2EffectiveTimeSlice getOrCreate(String effectiveTime) {
 		if (!slices.containsKey(effectiveTime)) {
-			slices.put(effectiveTime, new Rf2EffectiveTimeSlice(db, effectiveTime, loadOnDemand));
+			// if the incoming effectiveTime value is greater than or equal to the current release, then allow reading
+			if (effectiveTime.compareTo(latestVersionEffectiveTime) > 0) {
+				slices.put(effectiveTime, new MapDBRf2EffectiveTimeSlice(effectiveTime, db, loadOnDemand));
+			} else {
+				slices.put(effectiveTime, new IgnoredRf2EffectiveTimeSlice(effectiveTime));
+			}
 		}
 		return slices.get(effectiveTime);
 	}
 	
-	public Iterable<Rf2EffectiveTimeSlice> slices() {
+	public List<Rf2EffectiveTimeSlice> slices() {
 		return ImmutableList.copyOf(slices.values());
 	}
 
@@ -67,7 +74,7 @@ public final class Rf2EffectiveTimeSlices {
 	}
 
 	public List<Rf2EffectiveTimeSlice> consumeInOrder() {
-		return slices.values()
+		return slices()
 			.stream()
 			.sorted(UNSET_EFFECTIVE_TIME_LAST)
 			.collect(Collectors.toList());
