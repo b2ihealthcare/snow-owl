@@ -63,6 +63,7 @@ public class SnomedContentRule extends ExternalResource {
 	private final Path importArchive;
 	private final Rf2ReleaseType contentType;
 	private final ResourceURI codeSystemId;
+	private String importUntil;
 
 	public SnomedContentRule(final ResourceURI codeSystemId, final String importArchivePath, final Rf2ReleaseType contentType) {
 		this(codeSystemId, SnomedContentRule.class, importArchivePath, contentType);
@@ -77,6 +78,11 @@ public class SnomedContentRule extends ExternalResource {
 		this.contentType = checkNotNull(contentType, "contentType");
 		this.importArchive = isFragment ? PlatformUtil.toAbsolutePath(relativeClass, importArchivePath) : PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath);
 	}
+	
+	public SnomedContentRule importUntil(String importUntil) {
+		this.importUntil = importUntil;
+		return this;
+	}
 
 	@Override
 	protected void before() throws Throwable {
@@ -86,6 +92,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setRf2Archive(attachment)
 			.setReleaseType(contentType)
 			.setCreateVersions(true)
+			.setImportUntil(importUntil)
 			.build(codeSystemId)
 			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemId), "Initial SNOMEDCT import for tests")
 			.execute(Services.bus())

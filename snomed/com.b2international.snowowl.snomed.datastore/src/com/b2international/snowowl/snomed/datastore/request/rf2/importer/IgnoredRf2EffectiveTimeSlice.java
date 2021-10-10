@@ -36,9 +36,12 @@ final class IgnoredRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 
 	private final LongKeyMap<LongSet> emptyDependencies = PrimitiveMaps.newLongKeyOpenHashMap();
 	private final LongKeyMap<Set<String>> emptyMembers = PrimitiveMaps.newLongKeyOpenHashMap();
+	
+	private final String message;
 
-	public IgnoredRf2EffectiveTimeSlice(String effectiveTimeToIgnore) {
+	public IgnoredRf2EffectiveTimeSlice(String effectiveTimeToIgnore, String message) {
 		super(effectiveTimeToIgnore);
+		this.message = message;
 	}
 	
 	@Override
@@ -74,7 +77,7 @@ final class IgnoredRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 
 	@Override
 	public void doImport(BranchContext context, ResourceURI codeSystemUri, Rf2ImportConfiguration importConfig, Builder<ComponentURI> visitedComponents) throws Exception {
-		context.log().info("EffectiveTime '{}' is already present in the system, skipping.", getEffectiveTime());
+		context.log().info(message);
 	}
 
 }

@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.FixMethodOrder;
@@ -43,20 +42,21 @@ public class SnomedRf2NextReleaseImportTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void import01_CurrentReleaseAgain_NoChanges() throws Exception {
-		doImport(Resources.Snomed.MINI_RF2_INT_20210131);
+		doImport(Resources.Snomed.MINI_RF2_INT_20210731, "20210131");
 	}
 
 	@Test
 	public void import02_NextFullRelease_20210731() throws Exception {
-		doImport(Resources.Snomed.MINI_RF2_INT_20210731);
+		doImport(Resources.Snomed.MINI_RF2_INT_20210731, "20210731");
 	}
 	
-	private void doImport(final String importFile) {
+	private void doImport(final String importFile, final String importUntil) {
 		Attachment attachment = Attachment.upload(Services.context(), PlatformUtil.toAbsolutePathBundleEntry(SnomedContentRule.class, importFile));
 		String jobId = SnomedRequests.rf2().prepareImport()
 			.setRf2Archive(attachment)
 			.setReleaseType(Rf2ReleaseType.FULL)
 			.setCreateVersions(true)
+			.setImportUntil(importUntil)
 			.build(SnomedContentRule.SNOMEDCT)
 			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(SnomedContentRule.SNOMEDCT), String.format("Import %s release", importFile))
 			.execute(Services.bus())

@@ -117,6 +117,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private Set<String> ignoreMissingReferencesIn;
 	
 	@JsonProperty
+	private LocalDate importUntil;
+	
+	@JsonProperty
 	private boolean dryRun = false;
 	
 	private transient Logger log;
@@ -139,6 +142,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	void setDryRun(boolean dryRun) {
 		this.dryRun = dryRun;
+	}
+	
+	void setImportUntil(LocalDate importUntil) {
+		this.importUntil = importUntil;
 	}
 	
 	@Override
@@ -195,7 +202,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		try (final DB db = createDb()) {
 
 			// Read effective time slices from import files
-			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled(), latestVersionEffectiveTime);
+			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled(), latestVersionEffectiveTime, EffectiveTimes.format(importUntil, DateFormats.SHORT));
 			Stopwatch w = Stopwatch.createStarted();
 			read(rf2Archive, effectiveTimeSlices, reporter);
 			log.info("Preparing RF2 import took: {}", w);

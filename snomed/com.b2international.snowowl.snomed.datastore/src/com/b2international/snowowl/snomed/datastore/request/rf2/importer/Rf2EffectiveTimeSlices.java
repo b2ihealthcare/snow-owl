@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.mapdb.DB;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
@@ -46,20 +47,26 @@ public final class Rf2EffectiveTimeSlices {
 	private final Map<String, Rf2EffectiveTimeSlice> slices = newHashMap();
 	private final boolean loadOnDemand;
 	private final String latestVersionEffectiveTime;
+	private final String importUntil;
 
-	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand, String latestVersionEffectiveTime) {
+	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand, String latestVersionEffectiveTime, String importUntil) {
 		this.db = db;
 		this.loadOnDemand = loadOnDemand;
 		this.latestVersionEffectiveTime = latestVersionEffectiveTime;
+		this.importUntil = importUntil;
 	}
 	
 	public Rf2EffectiveTimeSlice getOrCreate(String effectiveTime) {
 		if (!slices.containsKey(effectiveTime)) {
 			// if the incoming effectiveTime value is greater than or equal to the current release, then allow reading
 			if (effectiveTime.compareTo(latestVersionEffectiveTime) > 0) {
-				slices.put(effectiveTime, new MapDBRf2EffectiveTimeSlice(effectiveTime, db, loadOnDemand));
+				if ((Strings.isNullOrEmpty(importUntil) || effectiveTime.compareTo(importUntil) <= 0)) {
+					slices.put(effectiveTime, new MapDBRf2EffectiveTimeSlice(effectiveTime, db, loadOnDemand));
+				} else {
+					slices.put(effectiveTime, new IgnoredRf2EffectiveTimeSlice(effectiveTime, String.format("EffectiveTime '%s' is ignored by importUntil('%s') request parameter.", effectiveTime, importUntil)));
+				}
 			} else {
-				slices.put(effectiveTime, new IgnoredRf2EffectiveTimeSlice(effectiveTime));
+				slices.put(effectiveTime, new IgnoredRf2EffectiveTimeSlice(effectiveTime, String.format("EffectiveTime '%s' is already present in the system, skipping.", effectiveTime)));
 			}
 		}
 		return slices.get(effectiveTime);
