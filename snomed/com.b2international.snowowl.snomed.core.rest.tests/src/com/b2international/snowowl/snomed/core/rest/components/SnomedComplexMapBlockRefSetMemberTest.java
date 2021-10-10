@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -34,6 +36,9 @@ import com.b2international.snowowl.test.commons.rest.BranchBase;
 @RunWith(Parameterized.class)
 public class SnomedComplexMapBlockRefSetMemberTest extends SnomedRefSetMemberParameterizedTest {
 
+	// Single CodeSystem for all refset member tests initialized on first access
+	private static String CODESYSTEM_SHORTNAME;
+	
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -43,6 +48,17 @@ public class SnomedComplexMapBlockRefSetMemberTest extends SnomedRefSetMemberPar
 	
 	public SnomedComplexMapBlockRefSetMemberTest(SnomedRefSetType refSetType) {
 		super(refSetType);
+	}
+
+	@Override
+	protected String getOrCreateCodeSystem() {
+		if (CODESYSTEM_SHORTNAME == null) {
+			// This will create a code system on the branch MAIN/className
+			final String shortName = getClass().getSimpleName();
+			createCodeSystem(branchPath, shortName).statusCode(201);
+			CODESYSTEM_SHORTNAME = shortName;
+		}
+		return CODESYSTEM_SHORTNAME;
 	}
 	
 }

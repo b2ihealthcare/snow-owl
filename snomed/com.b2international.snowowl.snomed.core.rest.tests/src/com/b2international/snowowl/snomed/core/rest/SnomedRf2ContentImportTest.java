@@ -61,12 +61,8 @@ public class SnomedRf2ContentImportTest extends AbstractSnomedApiTest {
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
-
 		final File miniFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_INT_20210731).toFile();
-//		final File complexMapFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP).toFile();
-
 		originalLines = getLines(miniFile);
-//		originalLines.putAll(getLines(complexMapFile));
 
 	}
 

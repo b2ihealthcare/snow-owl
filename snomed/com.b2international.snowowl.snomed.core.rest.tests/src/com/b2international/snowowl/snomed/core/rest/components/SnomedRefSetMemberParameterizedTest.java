@@ -23,7 +23,6 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
@@ -66,9 +65,6 @@ public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomed
 	private static final List<String> REFERENCED_COMPONENT_TYPES = List.of(SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE);
 	
 	private static final Map<SnomedRefSetType, String> REFSET_CACHE = Maps.newHashMap();
-
-	// Single CodeSystem for all refset member tests initialized on first access
-	private static String CODESYSTEM_SHORTNAME;
 
 	private final SnomedRefSetType refSetType;
 
@@ -303,15 +299,7 @@ public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomed
 
 	}
 
-	private String getOrCreateCodeSystem() {
-		if (CODESYSTEM_SHORTNAME == null) {
-			// This will create a code system on the branch MAIN/className
-			final String shortName = getClass().getSimpleName();
-			createCodeSystem(branchPath, shortName).statusCode(201);
-			CODESYSTEM_SHORTNAME = shortName;
-		}
-		return CODESYSTEM_SHORTNAME;
-	}
+	protected abstract String getOrCreateCodeSystem();
 
 	/** 
 	 * Creates a member for the first applicable matching referenced component and returns the memberId and the referencedComponentId in a Pair.
