@@ -71,7 +71,7 @@ public final class SnomedRf2ImportRequestBuilder
 	}
 	
 	public SnomedRf2ImportRequestBuilder setImportUntil(String importUntil) {
-		return setImportUntil(EffectiveTimes.parse(importUntil, DateFormats.SHORT));
+		return setImportUntil(importUntil == null ? null : EffectiveTimes.parse(importUntil, DateFormats.SHORT));
 	}
 	
 	public SnomedRf2ImportRequestBuilder setImportUntil(LocalDate importUntil) {
