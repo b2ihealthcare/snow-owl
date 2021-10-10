@@ -57,6 +57,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
+	// RF2 release handling, imported content verification
+	SnomedRf2NextReleaseImportTest.class,
 	SnomedRf2ContentImportTest.class,
 	// High-level issue test cases, Java API test cases
 	IssueSO2503RemoteJobDynamicMappingFix.class,
@@ -90,6 +92,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 //	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
 	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
 	ConceptMapCompareDsvExportTest.class,
+	SnomedSuggestApiTest.class,
 	// Branch Merge API test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,
@@ -111,7 +114,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
-	SnomedSuggestApiTest.class
 })
 public class AllSnomedApiTests {
 
@@ -120,7 +122,7 @@ public class AllSnomedApiTests {
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT_20210731, Rf2ReleaseType.FULL))
+			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT_20210731, Rf2ReleaseType.FULL).importUntil("20210131"))
 //			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA))
 			;
 
