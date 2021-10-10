@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -74,7 +76,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.config.SnomedLanguageConfig;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.*;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
@@ -180,9 +182,27 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		String codeSystemWorkingBranchPath = context.service(TerminologyResource.class).getBranchPath();
 		
-		if (!codeSystemWorkingBranchPath.equals(context.branch().path()) && importConfig.isCreateVersions()) {
-			throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
-					+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+		if (importConfig.isCreateVersions()) {
+			if (!codeSystemWorkingBranchPath.equals(context.branch().path())) {
+				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
+						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+			} else {
+				// importing into main development branch with create version enabled should be allowed only and only if the branch does not have any unpublished content present
+				for (Class<?> type : List.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
+					try {
+						int numberOfUnpublishedDocuments = context.service(RevisionSearcher.class).search(Query.select(type)
+							.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+							.limit(0)
+							.build()).getTotal();
+						if (numberOfUnpublishedDocuments > 0) {
+							throw new BadRequestException("Creating a version during RF2 import is prohibited when unpublished content is present on the target.");
+						}
+					} catch (IOException e) {
+						throw new RuntimeException("Failed to check unpublished content presence for type: " + type.getSimpleName(), e);
+					}
+				}
+			}
+			
 		}
 	}
 
