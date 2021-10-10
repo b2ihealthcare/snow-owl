@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.ExternalResource;
@@ -38,7 +39,6 @@ import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
-import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -56,14 +56,18 @@ import com.google.common.collect.Lists;
 public class SnomedContentRule extends ExternalResource {
 
 	public static final String SNOMEDCT_ID = "SNOMEDCT";
+	public static final String SNOMEDCT_COMPLEX_MAP_BLOCK_EXT_ID = "SNOMEDCT-COMPLEX-MAP-BLOCK";
 	public static final String SNOMEDCT_OID = "2.16.840.1.113883.6.96";
 	
 	public static final ResourceURI SNOMEDCT = CodeSystem.uri(SNOMEDCT_ID);
+	public static final ResourceURI SNOMEDCT_COMPLEX_MAP_BLOCK_EXT = CodeSystem.uri(SNOMEDCT_COMPLEX_MAP_BLOCK_EXT_ID);
 	
 	private final Path importArchive;
 	private final Rf2ReleaseType contentType;
 	private final ResourceURI codeSystemId;
+	
 	private String importUntil;
+	private ResourceURI extensionOf;
 
 	public SnomedContentRule(final ResourceURI codeSystemId, final String importArchivePath, final Rf2ReleaseType contentType) {
 		this(codeSystemId, SnomedContentRule.class, importArchivePath, contentType);
@@ -83,6 +87,11 @@ public class SnomedContentRule extends ExternalResource {
 		this.importUntil = importUntil;
 		return this;
 	}
+	
+	public SnomedContentRule extensionOf(ResourceURI extensionOf) {
+		this.extensionOf = extensionOf;
+		return this;
+	}
 
 	@Override
 	protected void before() throws Throwable {
@@ -94,7 +103,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setCreateVersions(true)
 			.setImportUntil(importUntil)
 			.build(codeSystemId)
-			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemId), "Initial SNOMEDCT import for tests")
+			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemId), "Importing RF2 content into " + codeSystemId)
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
 		RemoteJobEntry job = JobRequests.waitForJob(Services.bus(), jobId, 2000 /* 2 seconds */);
@@ -114,16 +123,17 @@ public class SnomedContentRule extends ExternalResource {
 			return;
 		}
 		
-		final Versions snomedVersions = ResourceRequests.prepareSearchVersion()
-			.filterByResource(SNOMEDCT)
-			.sortBy(Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
-			.setLimit(1)
-			.buildAsync()
-			.execute(eventBus)
-			.getSync();
-			
-		final ResourceURI extensionOf = snomedVersions.first()
-			.map(Version::getVersionResourceURI)
+		final ResourceURI extensionOf = Optional.ofNullable(this.extensionOf).or(() -> {
+			return ResourceRequests.prepareSearchVersion()
+					.filterByResource(SNOMEDCT)
+					.sortBy(Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
+					.setLimit(1)
+					.buildAsync()
+					.execute(eventBus)
+					.getSync()
+					.first()
+					.map(Version::getVersionResourceURI);
+			})
 			.orElse(null);
 			
 		CodeSystemRequests.prepareNewCodeSystem()
