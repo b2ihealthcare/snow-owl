@@ -192,6 +192,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		String latestVersionEffectiveTime = EffectiveTimes.format(ResourceRequests.prepareSearchVersion()
 			.one()
+			.filterByResource(codeSystemUri.withoutPath())
 			.sortBy("effectiveTime:desc")
 			.buildAsync()
 			.execute(context)
