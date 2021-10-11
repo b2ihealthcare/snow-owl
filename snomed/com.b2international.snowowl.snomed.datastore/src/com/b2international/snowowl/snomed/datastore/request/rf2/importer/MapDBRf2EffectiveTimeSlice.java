@@ -360,14 +360,14 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 			if (dependencies != null) {
 				Set<String> requiredDependencies = LongSets.toStringSet(dependencies);
 				for (String requiredDependency : requiredDependencies) {
-					dependenciesByComponent.put(getCdoType(requiredDependency), requiredDependency);
+					dependenciesByComponent.put(getIndexDocument(requiredDependency), requiredDependency);
 				}
 			}
 		}
 		return dependenciesByComponent;
 	}
 
-	private Class<? extends SnomedDocument> getCdoType(String componentId) {
+	private Class<? extends SnomedDocument> getIndexDocument(String componentId) {
 		ComponentCategory type = SnomedIdentifiers.getComponentCategory(componentId);
 		switch (type) {
 		case CONCEPT: return SnomedConceptDocument.class;
