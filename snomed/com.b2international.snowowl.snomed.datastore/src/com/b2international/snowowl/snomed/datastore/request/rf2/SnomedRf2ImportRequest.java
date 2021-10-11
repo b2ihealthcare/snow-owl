@@ -223,7 +223,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		try (final DB db = createDb()) {
 
 			// Read effective time slices from import files
-			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled(), latestVersionEffectiveTime, EffectiveTimes.format(importUntil, DateFormats.SHORT));
+			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled(), latestVersionEffectiveTime, importUntil == null ? null : EffectiveTimes.format(importUntil, DateFormats.SHORT));
 			Stopwatch w = Stopwatch.createStarted();
 			read(rf2Archive, effectiveTimeSlices, reporter);
 			log.info("Preparing RF2 import took: {}", w);
