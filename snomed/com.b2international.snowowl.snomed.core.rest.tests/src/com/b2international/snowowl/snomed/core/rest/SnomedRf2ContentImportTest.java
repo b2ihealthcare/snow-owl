@@ -55,18 +55,14 @@ public class SnomedRf2ContentImportTest extends AbstractSnomedApiTest {
 	private static final Splitter TAB_SPLITTER = Splitter.on('\t');
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 
-	private static final Set<String> UNSUPPORTED_FILE_TYPES = Set.of("sct2_Identifier", "der2_cciRefset");
+	private static final Set<String> UNSUPPORTED_FILE_TYPES = Set.of("sct2_Identifier", "der2_cciRefset", "Readme");
 
 	private static Multimap<String, String> originalLines;
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
-
-		final File miniFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_INT).toFile();
-		final File complexMapFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP).toFile();
-
+		final File miniFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_INT_20210731).toFile();
 		originalLines = getLines(miniFile);
-		originalLines.putAll(getLines(complexMapFile));
 
 	}
 

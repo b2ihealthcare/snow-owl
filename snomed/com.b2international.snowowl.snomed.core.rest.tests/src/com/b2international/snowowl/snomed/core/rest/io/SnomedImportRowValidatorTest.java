@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -157,6 +158,27 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	}
 	
 	private ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType) throws FileNotFoundException {
+
+		final String codeSystemId = branchPath.lastSegment();
+		
+		try {
+			CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+				.buildAsync()
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+			
+		} catch (NotFoundException e) {
+			CodeSystemRequests.prepareNewCodeSystem()
+				.setBranchPath(branchPath.getPath())
+				.setId(codeSystemId)
+				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+				.setTitle(codeSystemId)
+				.build("info@b2international.com", "Created new code system " + codeSystemId)
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+		}
+		
 		Attachment attachment = Attachment.upload(Services.context(), PlatformUtil.toAbsolutePath(this.getClass(), archiveFilePath));
 		return SnomedRequests.rf2().prepareImport()
 			.setCreateVersions(false)

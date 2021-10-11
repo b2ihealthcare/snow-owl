@@ -87,9 +87,13 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
-			@Parameter(description = "Import should be allowed to progress when members of listed reference sets have missing referenced components")
+			@Parameter(description = "Ignore missing referenced components in listed references instead of reporting them as an error.")
 			@RequestParam(name = "ignoreMissingReferencesIn", required = false)
 			final List<String> ignoreMissingReferencesIn,
+			
+			@Parameter(description = "Import all component until this specified effective time value", schema = @Schema(format = "date", pattern = "\\d{6}"))
+			@RequestParam(name = "importUntil", required = false)
+			final String importUntil,
 			
 			@Parameter(description = "Enable to run the import content integrity validations without pushing any changes", schema = @Schema(defaultValue = "false"))
 			@RequestParam(name = "dryRun", defaultValue = "false")
@@ -110,6 +114,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			.setCreateVersions(createVersions)
 			.setIgnoreMissingReferencesIn(ignoreMissingReferencesIn)
 			.setDryRun(dryRun)
+			.setImportUntil(importUntil)
 			.build(path)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))
 			.execute(getBus())

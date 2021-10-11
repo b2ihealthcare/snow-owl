@@ -23,14 +23,9 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.asser
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -49,35 +44,9 @@ import io.restassured.response.ValidatableResponse;
 /**
  * @since 5.7
  */
-@RunWith(Parameterized.class)
-public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
+public abstract class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 
 	private static final List<String> REFERENCED_COMPONENT_TYPES = List.of(SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE, SnomedConcept.REFSET_TYPE);
-
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-			{ 	SnomedRefSetType.ASSOCIATION					}, 
-			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				}, 
-			//  Concrete data type reference sets are tested separately 
-			{ 	SnomedRefSetType.COMPLEX_MAP					},
-			{ 	SnomedRefSetType.COMPLEX_BLOCK_MAP				},
-			{ 	SnomedRefSetType.DESCRIPTION_TYPE				}, 
-			{ 	SnomedRefSetType.EXTENDED_MAP					},
-			{ 	SnomedRefSetType.LANGUAGE						},
-			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
-			//  Query type reference sets are tested separately 
-			{ 	SnomedRefSetType.SIMPLE							}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
-			{ 	SnomedRefSetType.OWL_AXIOM						},
-			{ 	SnomedRefSetType.OWL_ONTOLOGY					},
-			{ 	SnomedRefSetType.MRCM_DOMAIN					},
-			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN			},
-			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_RANGE			},
-			{ 	SnomedRefSetType.MRCM_MODULE_SCOPE				},
-		});
-	}
 
 	private final SnomedRefSetType refSetType;
 
