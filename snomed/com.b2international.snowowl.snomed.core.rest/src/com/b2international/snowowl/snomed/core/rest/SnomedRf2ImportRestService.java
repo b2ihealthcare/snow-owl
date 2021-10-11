@@ -114,6 +114,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			.setCreateVersions(createVersions)
 			.setIgnoreMissingReferencesIn(ignoreMissingReferencesIn)
 			.setDryRun(dryRun)
+			.setImportUntil(importUntil)
 			.build(path)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))
 			.execute(getBus())
