@@ -174,7 +174,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		changed |= updateProperty(purpose, resource::getPurpose, updated::purpose);
 
 		if (changed) {
-			context.add(updated.build());
+			context.update(resource, updated.build());
 		}
 
 		return changed;

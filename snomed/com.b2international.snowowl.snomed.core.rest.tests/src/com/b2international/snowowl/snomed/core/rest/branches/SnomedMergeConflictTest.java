@@ -40,7 +40,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
-import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
@@ -77,10 +76,11 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		assertEquals(1, conflicts.size());
 
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+		ConflictingAttribute attribute = ConflictingAttribute.builder()
 				.property("caseSignificanceId")
 				.oldValue(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
-				.value(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.sourceValue(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.targetValue(Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.build();
 
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
@@ -127,16 +127,18 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(ConflictType.CONFLICTING_CHANGE, conflict.getType());
 
 		Map<String, ConflictingAttribute> expectedAttributes = newHashMap();
-		expectedAttributes.put("caseSignificanceId", ConflictingAttributeImpl.builder()
+		expectedAttributes.put("caseSignificanceId", ConflictingAttribute.builder()
 				.property("caseSignificanceId")
 				.oldValue(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
-				.value(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.sourceValue(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.targetValue(Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.build());
 
-		expectedAttributes.put("moduleId", ConflictingAttributeImpl.builder()
+		expectedAttributes.put("moduleId", ConflictingAttribute.builder()
 				.property("moduleId")
 				.oldValue(Concepts.MODULE_SCT_CORE)
-				.value(Concepts.MODULE_ROOT)
+				.sourceValue(Concepts.MODULE_ROOT)
+				.targetValue(Concepts.MODULE_SCT_MODEL_COMPONENT)
 				.build());
 
 		for (ConflictingAttribute attribute : conflict.getConflictingAttributes()) {
@@ -180,15 +182,15 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(ConflictType.DELETED_WHILE_CHANGED, conflict.getType());
 
 		Map<String, ConflictingAttribute> expectedAttributes = newHashMap();
-		expectedAttributes.put("effectiveTime", ConflictingAttributeImpl.builder()
+		expectedAttributes.put("effectiveTime", ConflictingAttribute.builder()
 				.property("effectiveTime")
-				.value(nextEffectiveTimeAsString)
+				.sourceValue(nextEffectiveTimeAsString)
 				.build());
 
-		expectedAttributes.put("released", ConflictingAttributeImpl.builder()
+		expectedAttributes.put("released", ConflictingAttribute.builder()
 				.property("released")
 				.oldValue("false")
-				.value("true")
+				.sourceValue("true")
 				.build());
 
 		for (ConflictingAttribute attribute : conflict.getConflictingAttributes()) {
@@ -228,7 +230,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		assertEquals(1, conflicts.size());
 
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder().property("id").build();
+		ConflictingAttribute attribute = ConflictingAttribute.builder().property("id").build();
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(descriptionId, conflict.getComponentId());
@@ -254,9 +256,9 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		assertEquals(1, conflicts.size());
 
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+		ConflictingAttribute attribute = ConflictingAttribute.builder()
 				.property("destinationId")
-				.value(conceptId)
+				.sourceValue(conceptId)
 				.build();
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
@@ -307,9 +309,9 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		assertEquals(1, conflicts.size());
 
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+		ConflictingAttribute attribute = ConflictingAttribute.builder()
 				.property("container")
-				.value(conceptId)
+				.sourceValue(conceptId)
 				.build();
 
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);

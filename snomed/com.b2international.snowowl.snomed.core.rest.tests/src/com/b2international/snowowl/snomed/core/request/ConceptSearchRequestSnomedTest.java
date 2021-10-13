@@ -46,7 +46,7 @@ public class ConceptSearchRequestSnomedTest {
 			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
-		assertThat(matches.getTotal()).isEqualTo(1873);
+		assertThat(matches.getTotal()).isEqualTo(1888);
 	}
 	
 	@Test
@@ -71,7 +71,7 @@ public class ConceptSearchRequestSnomedTest {
 			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
-		assertThat(matches.getTotal()).isEqualTo(1872);
+		assertThat(matches.getTotal()).isEqualTo(1887);
 	}
 	
 	@Test

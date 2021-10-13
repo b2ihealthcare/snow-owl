@@ -25,14 +25,12 @@ import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.*;
-import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
-import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
@@ -130,8 +128,12 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 		final List<ConflictingAttribute> conflictingAttributes = conflicts.stream()
 			.filter(ChangedInSourceAndTargetConflict.class::isInstance)
 			.map(ChangedInSourceAndTargetConflict.class::cast)
-			.map(ChangedInSourceAndTargetConflict::getSourceChange)
-			.map(this::toConflictingAttribute)
+			.map(c -> ConflictingAttribute.builder()
+					.property(c.getSourceChange().getProperty())
+					.oldValue(c.getSourceChange().getOldValue())
+					.sourceValue(c.getSourceChange().getNewValue())
+					.targetValue(c.getTargetChange().getNewValue())
+					.build())
 			.collect(Collectors.toList());
 		
 		if (!conflictingAttributes.isEmpty()) {
@@ -142,7 +144,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 			if (c instanceof AddedInSourceAndTargetConflict) {
 				return conflict
 						.message(c.getMessage())
-						.conflictingAttribute(ConflictingAttributeImpl.builder().property(Revision.Fields.ID).build())
+						.conflictingAttribute(ConflictingAttribute.builder().property(Revision.Fields.ID).build())
 						.build();
 			} else if (c instanceof ChangedInSourceAndDetachedInTargetConflict) {
 				return conflict
@@ -151,7 +153,11 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 						.conflictingAttributes(
 							((ChangedInSourceAndDetachedInTargetConflict) c).getChanges()
 								.stream()
-								.map(this::toConflictingAttribute)
+								.map(attributeChange -> ConflictingAttribute.builder()
+									.property(attributeChange.getProperty())
+									.oldValue(attributeChange.getOldValue())
+									.sourceValue(attributeChange.getNewValue())
+									.build())
 								.collect(Collectors.toList())
 						)
 						.build();
@@ -166,23 +172,15 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 						.type(ConflictType.HAS_MISSING_REFERENCE)
 						.componentId(((AddedInTargetAndDetachedInSourceConflict) c).getAddedOnTarget().id())
 						.componentType(((AddedInTargetAndDetachedInSourceConflict) c).getAddedOnTarget().type())
-						.conflictingAttribute(ConflictingAttributeImpl.builder()
+						.conflictingAttribute(ConflictingAttribute.builder()
 								.property(((AddedInTargetAndDetachedInSourceConflict) c).getFeatureName())
-								.value(((AddedInTargetAndDetachedInSourceConflict) c).getDetachedOnSource().id())
+								.targetValue(((AddedInTargetAndDetachedInSourceConflict) c).getDetachedOnSource().id())
 								.build())
 						.build();
 			} else {
 				return conflict.message("Not implemented conflict mapping").build();
 			}
 		}
-	}
-	
-	private ConflictingAttribute toConflictingAttribute(RevisionPropertyDiff diff) {
-		return ConflictingAttributeImpl.builder()
-			.property(diff.getProperty())
-			.oldValue(diff.getOldValue())
-			.value(diff.getNewValue())
-			.build();
 	}
 	
 	@Override

@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.junit.Test;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -166,5 +168,44 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 
 		assertThat(hits.getTotal()).isEqualTo(1);
 		assertThat(hits.getItems()).allMatch(c -> conceptId.equals(c.getId()));
+	}
+	
+	@Test
+	public void expandInactivationIndicator() {
+		final String inactiveConceptId = createInactiveConcept(branchPath);
+		createNewRefSetMember(branchPath, inactiveConceptId, Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR, Json.object(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.AMBIGUOUS));
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+				.accept(JSON_UTF8)
+				.queryParams(Map.of(
+						"id", List.of(inactiveConceptId),
+						"expand", "inactivationProperties(expand(inactivationIndicator()))"))
+				.get("/{path}/concepts/", branchPath.getPath())
+				.then().assertThat()
+				.statusCode(200)
+				.assertThat()
+				.body("total", equalTo(1))
+				.body("items[0].inactivationProperties.inactivationIndicator.id", equalTo(Concepts.AMBIGUOUS));
+	}
+	
+	@Test
+	public void expandAssociationTargetComponents() throws Exception {
+		final String inactiveConceptId = createInactiveConcept(branchPath);
+		final String wasAConceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		createNewRefSetMember(branchPath, inactiveConceptId, Concepts.REFSET_WAS_A_ASSOCIATION, Json.object(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, wasAConceptId));
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+				.accept(JSON_UTF8)
+				.queryParams(Map.of(
+						"id", List.of(inactiveConceptId),
+						"expand", "inactivationProperties(expand(associationTargets(expand(targetComponent(expand(fsn()))))))"))
+				.get("/{path}/concepts/", branchPath.getPath())
+				.then().assertThat()
+				.statusCode(200)
+				.assertThat()
+				.body("total", equalTo(1))
+				.body("items[0].inactivationProperties.associationTargets.size()", equalTo(1))
+				.body("items[0].inactivationProperties.associationTargets[0].targetComponent.id", equalTo(wasAConceptId))
+				.body("items[0].inactivationProperties.associationTargets[0].targetComponent.fsn.term", equalTo("FSN of concept"));
 	}
 }
