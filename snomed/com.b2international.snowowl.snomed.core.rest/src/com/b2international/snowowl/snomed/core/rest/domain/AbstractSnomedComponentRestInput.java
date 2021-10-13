@@ -85,7 +85,7 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 
 	protected IdGenerationStrategy createIdGenerationStrategy(String idOrNull) {
 		if (idOrNull == null) {
-			if (namespaceId != null || namespaceConceptId != null) {
+			if (namespaceId != null && namespaceConceptId != null) {
 				throw new BadRequestException("Either namespaceId or namespaceConceptId needs to be specified, but not both.");
 			} else if (namespaceConceptId != null) {
 				return new NamespaceConceptIdStrategy(namespaceConceptId);
