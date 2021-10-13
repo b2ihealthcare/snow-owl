@@ -31,8 +31,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 public final class SnomedRf2ExportConfiguration {
 
-	@Parameter(description = "The expected RF2 release type", schema = @Schema(allowableValues = { "full", "snapshot", "delta" }, defaultValue = "delta"))
-	private String type = Rf2ReleaseType.DELTA.name();
+	@Parameter(description = "The expected RF2 release type", schema = @Schema(allowableValues = { "full", "snapshot", "delta" }, defaultValue = "snapshot"))
+	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
 	@Parameter(description = "The namespaceId to use in the release archive name")
 	private String namespaceId = "";
