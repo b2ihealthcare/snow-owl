@@ -42,19 +42,10 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.cis.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceConceptIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.google.common.collect.*;
 
 /**
  * @since 4.5
@@ -129,11 +120,38 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 							}
 						}
 						
-						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespace = FluentIterable.from(categoryRequests)
-								.filter(BaseSnomedComponentCreateRequest.class)
+						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespace = HashMultimap.create();
+						
+						// index requests where an explicit namespace identifier is specified (use it directly)
+						categoryRequests.stream()
+								.filter(BaseSnomedComponentCreateRequest.class::isInstance)
+								.map(BaseSnomedComponentCreateRequest.class::cast)
 								.filter(request -> request.getIdGenerationStrategy() instanceof NamespaceIdStrategy)
-								.index(request -> getNamespaceKey(request));
-
+								.forEach(request -> {
+									requestsByNamespace.put(getNamespaceKey(request), request);
+								});
+						
+						// convert requests that define a namespaceConceptId by extracting the namespaceId from the namespaceConcept's FSN
+						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespaceConceptId = HashMultimap.create();
+						categoryRequests.stream()
+							.filter(BaseSnomedComponentCreateRequest.class::isInstance)
+							.map(BaseSnomedComponentCreateRequest.class::cast)
+							.filter(request -> request.getIdGenerationStrategy() instanceof NamespaceConceptIdStrategy)
+							.forEach(request -> {
+								requestsByNamespaceConceptId.put(request.getIdGenerationStrategy().getNamespace(), request);
+							});
+						
+						if (!requestsByNamespaceConceptId.isEmpty()) {
+							final Map<String, String> namespacesByNamespaceConceptId = context.service(NamespaceIdProvider.class).extractNamespaceIds(context, requestsByNamespaceConceptId.keySet(), false);
+							for (String namespaceConceptId : Set.copyOf(requestsByNamespaceConceptId.keySet())) {
+								Collection<BaseSnomedComponentCreateRequest> requests = requestsByNamespaceConceptId.removeAll(namespaceConceptId);
+								if (!namespacesByNamespaceConceptId.containsKey(namespaceConceptId)) {
+									throw new BadRequestException("There is no namespace value associated with the '%s' namespaceConcept's FSN.", namespaceConceptId);
+								}
+ 								requestsByNamespace.putAll(namespacesByNamespaceConceptId.get(namespaceConceptId), requests);
+							}
+						}
+						
 						for (final String namespace : requestsByNamespace.keySet()) {
 							final String convertedNamespace = SnomedIdentifiers.INT_NAMESPACE.equals(namespace) ? null : namespace;
 							final Collection<BaseSnomedComponentCreateRequest> namespaceRequests = requestsByNamespace.get(namespace);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceConceptIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequestBuilder;
 
@@ -29,6 +31,7 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String namespaceId;
+	private String namespaceConceptId;
 
 	public Boolean isActive() {
 		return active;
@@ -49,6 +52,10 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 	public String getNamespaceId() {
 		return namespaceId;
 	}
+	
+	public String getNamespaceConceptId() {
+		return namespaceConceptId;
+	}
 
 	public void setId(final String id) {
 		this.id = id;
@@ -60,6 +67,10 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 	
 	public void setNamespaceId(final String namespaceId) {
 		this.namespaceId = namespaceId;
+	}
+	
+	public void setNamespaceConceptId(String namespaceConceptId) {
+		this.namespaceConceptId = namespaceConceptId;
 	}
 
 	protected abstract I createRequestBuilder();
@@ -74,7 +85,13 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 
 	protected IdGenerationStrategy createIdGenerationStrategy(String idOrNull) {
 		if (idOrNull == null) {
-			return new NamespaceIdStrategy(namespaceId);
+			if (namespaceId != null || namespaceConceptId != null) {
+				throw new BadRequestException("Either namespaceId or namespaceConceptId needs to be specified, but not both.");
+			} else if (namespaceConceptId != null) {
+				return new NamespaceConceptIdStrategy(namespaceConceptId);
+			} else {
+				return new NamespaceIdStrategy(namespaceId);
+			}
 		} else {
 			return new ConstantIdStrategy(idOrNull);
 		}
