@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest;
 import java.io.File;
 
 import org.elasticsearch.common.Strings;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -68,6 +69,7 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			@PathVariable(value="path")
 			final String branch,
 
+			@ParameterObject
 			final SnomedRf2ExportConfiguration params,
 			
 			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
