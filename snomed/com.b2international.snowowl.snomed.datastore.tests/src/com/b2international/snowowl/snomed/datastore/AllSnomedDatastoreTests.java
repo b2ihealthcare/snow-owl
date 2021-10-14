@@ -46,7 +46,6 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedConceptDocumentSerializationTest.class,
 	SnomedRelationshipIndexEntrySerializationTest.class,
 	SnomedDescriptionIndexEntrySerializationTest.class,
-	SnomedConstraintDocumentSerializationTest.class,
 	SnomedRefSetMemberDocumentSerializationTest.class,
 	SnomedConceptDocumentTermSortTest.class,
 	// change proc test cases
