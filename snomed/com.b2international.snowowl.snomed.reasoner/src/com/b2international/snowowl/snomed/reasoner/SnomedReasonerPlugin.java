@@ -22,14 +22,11 @@ import com.b2international.index.Index;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
-import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
-import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryConfigurer;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.index.*;
 import com.google.common.collect.ImmutableList;
@@ -68,11 +65,6 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 	@Override
 	public String getToolingId() {
 		return SnomedTerminologyComponentConstants.TOOLING_ID;
-	}
-	
-	@Override
-	public CompositeComponentDeletionPolicy getComponentDeletionPolicy() {
-		return CompositeComponentDeletionPolicy.of(SnomedConstraintDocument.class, ComponentDeletionPolicy.ALLOW);
 	}
 	
 }
