@@ -16,12 +16,13 @@
 package com.b2international.index.query;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.revision.Revision;
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -32,7 +33,6 @@ import com.google.common.collect.ImmutableList;
 public final class Query<T> {
 
 	private static final Joiner COMMA_JOINER = Joiner.on(",");
-	public static final String DEFAULT_SCROLL_KEEP_ALIVE = "60s";
 	
 	/**
 	 * @since 4.7
@@ -61,29 +61,8 @@ public final class Query<T> {
 	public interface AfterWhereBuilder<T> extends Buildable<Query<T>> {
 		
 		/**
-		 * Keeps the context of the search alive with a default <code>60s</code> keep alive time value.
-		 *  
-		 * @return
-		 * @see #scroll(String)
-		 */
-		default AfterWhereBuilder<T> scroll() {
-			return scroll(DEFAULT_SCROLL_KEEP_ALIVE);
-		}
-		
-		/**
-		 * A keep alive time value to pass to the query. This will keep the context of the search alive until the specified time value to scroll the
-		 * results in subsequent {@link Searcher#scroll(com.b2international.index.Scroll)} calls. 
-		 * <br/ >
-		 * Example values are <code>15s</code>, <code>1m</code>, <code>1h</code>.
-		 * 
-		 * @param scrollKeepAlive
-		 * @return
-		 */
-		AfterWhereBuilder<T> scroll(String scrollKeepAlive);
-		
-		/**
 		 * Return matches after the specified sort values. This can be used for live scrolling on large result sets. If you would like to iterate over
-		 * the entire result set, use the {@link #scroll(String) scroll API} instead.
+		 * the entire result set, use the {@link #stream(String) scroll API} instead.
 		 * 
 		 * @param sortValues - the last sort values in sort order 
 		 * @return
@@ -114,7 +93,6 @@ public final class Query<T> {
 		AfterWhereBuilder<T> withScores(boolean withScores);
 	}
 
-	private String scrollKeepAlive;
 	private String searchAfter;
 	private int limit;
 	private IndexSelection<T> selection;
@@ -173,14 +151,6 @@ public final class Query<T> {
 		this.fields = fields;
 	}
 	
-	public String getScrollKeepAlive() {
-		return scrollKeepAlive;
-	}
-	
-	public void setScrollKeepAlive(String scrollKeepAlive) {
-		this.scrollKeepAlive = scrollKeepAlive;
-	}
-	
 	public String getSearchAfter() {
 		return searchAfter;
 	}
@@ -199,9 +169,6 @@ public final class Query<T> {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);
-		if (!Strings.isNullOrEmpty(scrollKeepAlive)) {
-			sb.append(" SCROLL("+scrollKeepAlive+") ");
-		}
 		if (selection.getParentScope() != null) {
 			sb.append(" HAS_PARENT(" + selection.getParentScopeDocumentType() + ")");
 		}
@@ -232,9 +199,46 @@ public final class Query<T> {
 			.where(where)
 			.sortBy(getSortBy())
 			.limit(getLimit())
-			.scroll(getScrollKeepAlive())
 			.searchAfter(getSearchAfter())
 			.withScores(isWithScores());
+	}
+	
+	public AfterWhereBuilder<T> withSearchAfter(String searchAfter) {
+		return Query.select(getSelection())
+				.fields(getFields())
+				.where(getWhere())
+				.sortBy(getSortBy())
+				.limit(getLimit())
+				.searchAfter(searchAfter)
+				.withScores(isWithScores());
+	}
+
+	/**
+	 * Convenience method for returning all search results in batches.
+	 * <p>
+	 * If the index does not change in the meantime, or the query is idempotent, the
+	 * total number of returned documents should match the {@link Hits#getTotal()
+	 * total hit count} property included in any of the returned elements of the
+	 * Stream. Batch size is controlled by the query's {@code limit} parameter.
+	 * <p>
+	 * If you would like to process individual documents instead of larger batches,
+	 * keep the limit setting at a reasonably high value, eg. {@code 1000}, and
+	 * consider using {@code flatMap}:
+	 * <pre>
+	 * Query.select(...)
+	 *     [...]
+	 *     .limit(1000)
+	 *     .build()
+	 *     .stream(searcher)
+	 *     .flatMap(Hits::stream)
+	 *     .forEachOrdered(doc -> { ... });
+	 * </pre>
+	 * 
+	 * @param searcher the searcher to use for streaming results
+	 * @return
+	 */
+	public final Stream<Hits<T>> stream(Searcher searcher) {
+		return searcher.stream(this);
 	}
 	
 }

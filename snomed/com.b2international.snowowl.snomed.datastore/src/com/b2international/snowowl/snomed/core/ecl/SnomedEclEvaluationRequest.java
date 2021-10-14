@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static com.b2international.index.revision.Revision.Expressions.id;
+import static com.b2international.index.revision.Revision.Expressions.ids;
 import static com.b2international.index.revision.Revision.Fields.ID;
-import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
-import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.snomed.core.ecl.EclExpression.isAnyExpression;
 import static com.b2international.snowowl.snomed.core.ecl.EclExpression.isEclConceptReference;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
@@ -26,6 +26,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -60,10 +61,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 /**
  * Evaluates the given ECL expression {@link String} or parsed {@link ExpressionConstraint} to an executable {@link Expression query expression}.
@@ -80,9 +78,9 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	
 	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 	
-	private static final Map<String, String> KNOWN_ACCEPTABILITIES = Map.of(
-		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, "preferred",
-		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, "acceptable"
+	private static final Map<String, String> ACCEPTABILITY_ID_TO_FIELD = Map.of(
+		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, "preferredIn",
+		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, "acceptableIn"
 	);
 
 	@Nullable
@@ -137,6 +135,15 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, EclConceptReference concept) {
 		return Promise.immediate(id(concept.getId()));
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, EclConceptReferenceSet conceptSet) {
+		final Set<String> conceptIds = conceptSet.getConcepts()
+			.stream()
+			.map(EclConceptReference::getId)
+			.collect(ImmutableSet.toImmutableSet());
+		
+		return Promise.immediate(ids(conceptIds));
 	}
 	
 	/**
@@ -466,8 +473,9 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final FilteredExpressionConstraint filtered) {
 		final ExpressionConstraint constraint = filtered.getConstraint();
-		final FilterConstraint filter = filtered.getFilter();
-		final Domain filterDomain = Ecl.getDomain(filter);
+		final FilterConstraint filterConstraint = filtered.getFilter();
+		final Domain filterDomain = Ecl.getDomain(filterConstraint);
+		final Filter filter = filterConstraint.getFilter();
 		
 		final Promise<Expression> evaluatedConstraint = evaluate(context, constraint);
 		Promise<Expression> evaluatedFilter = evaluate(context, filter);
@@ -527,9 +535,9 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final ModuleFilter moduleFilter) {
-		final ExpressionConstraint innerConstraint = moduleFilter.getModuleId();
-		return evaluate(context, innerConstraint)
-			.thenWith(resolveIds(context, innerConstraint, expressionForm))
+		final FilterValue moduleId = moduleFilter.getModuleId();
+		return evaluate(context, moduleId)
+			.thenWith(resolveIds(context, moduleId, expressionForm))
 			.then(SnomedDocument.Expressions::modules);
 	}
 	
@@ -568,10 +576,44 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		return Promise.immediate(expression);
 	}
 
+	protected Promise<Expression> eval(BranchContext context, final DefinitionStatusIdFilter definitionStatusIdFilter) {
+		final String op = definitionStatusIdFilter.getOp();
+		final Operator eclOperator = Operator.fromString(op);
+		final FilterValue definitionStatus = definitionStatusIdFilter.getDefinitionStatus();
+		
+		return evalDefinitionStatus(evaluate(context, definitionStatus)
+				.thenWith(resolveIds(context, definitionStatus, expressionForm)),
+				Operator.NOT_EQUALS.equals(eclOperator));
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final DefinitionStatusTokenFilter definitionStatusTokenFilter) {
+		final String op = definitionStatusTokenFilter.getOp();
+		final Operator eclOperator = Operator.fromString(op);
+
+		final Set<String> definitionStatusIds = definitionStatusTokenFilter.getDefinitionStatusTokens()
+			.stream()
+			.map(DefinitionStatusToken::fromString)
+			.filter(Predicates.notNull())
+			.map(DefinitionStatusToken::getConceptId)
+			.collect(Collectors.toSet());
+		
+		return evalDefinitionStatus(Promise.immediate(definitionStatusIds), 
+				Operator.NOT_EQUALS.equals(eclOperator));
+	}
+	
+	private Promise<Expression> evalDefinitionStatus(final Promise<? extends Iterable<String>> definitionStatusIds, final boolean negate) {
+		return definitionStatusIds				
+			.then(SnomedConceptDocument.Expressions::definitionStatusIds)
+			.then(expression -> negate
+				? Expressions.builder().mustNot(expression).build()
+				: expression);
+	}
+
 	protected Promise<Expression> eval(BranchContext context, final SemanticTagFilter semanticTagFilter) {
 		final String op = semanticTagFilter.getOp();
 		final Operator eclOperator = Operator.fromString(op);
-
+		
+		// XXX: Both concept and description documents support the same field and query
 		Expression expression = SnomedDescriptionIndexEntry.Expressions.semanticTags(List.of(semanticTagFilter.getSemanticTag()));
 		if (Operator.NOT_EQUALS.equals(eclOperator)) {
 			expression = Expressions.builder()
@@ -633,48 +675,43 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final TypeIdFilter typeIdFilter) {
-		final /* EclConceptReference|EclConceptReferenceSet */ EObject innerConstraint = typeIdFilter.getType();
-		if (innerConstraint instanceof EclConceptReference) {
-			final EclConceptReference conceptReference = (EclConceptReference) innerConstraint;
-			return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.type(conceptReference.getId()));
-		} else if (innerConstraint instanceof EclConceptReferenceSet) {
-			final EclConceptReferenceSet conceptReferenceSet = (EclConceptReferenceSet) innerConstraint;
-			final Set<String> conceptIds = FluentIterable.from(conceptReferenceSet.getConcepts())
-				.transform(EclConceptReference::getId)
-				.toSet();
-			return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.types(conceptIds));
-		} else {
-			throw new IllegalArgumentException("Unexpected type in TypeIdFilter");
-		}
+		final FilterValue type = typeIdFilter.getType();
+		return evaluate(context, type)
+			.thenWith(resolveIds(context, type, expressionForm))
+			.then(SnomedDescriptionIndexEntry.Expressions::types);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
-		return EclExpression.of(preferredInFilter.getLanguageRefSetId(), Trees.INFERRED_FORM)
-				.resolve(context)
-				.then(SnomedDescriptionIndexEntry.Expressions::preferredIn);
+		final FilterValue languageRefSetId = preferredInFilter.getLanguageRefSetId();
+		return evaluate(context, languageRefSetId)
+			.thenWith(resolveIds(context, languageRefSetId, expressionForm))
+			.then(SnomedDescriptionIndexEntry.Expressions::preferredIn);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final AcceptableInFilter acceptableInFilter) {
-		return EclExpression.of(acceptableInFilter.getLanguageRefSetId(), Trees.INFERRED_FORM)
-				.resolve(context)
-				.then(SnomedDescriptionIndexEntry.Expressions::acceptableIn);
+		final FilterValue languageRefSetId = acceptableInFilter.getLanguageRefSetId();
+		return evaluate(context, languageRefSetId)
+			.thenWith(resolveIds(context, languageRefSetId, expressionForm))
+			.then(SnomedDescriptionIndexEntry.Expressions::acceptableIn);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final LanguageRefSetFilter languageRefSetFilter) {
-		return EclExpression.of(languageRefSetFilter.getLanguageRefSetId(), Trees.INFERRED_FORM)
-				.resolve(context)
-				.then(languageReferenceSetIds -> {
-					return Expressions.builder()
-							.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageReferenceSetIds))
-							.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageReferenceSetIds))
-							.build();
-				});
+		final FilterValue languageRefSetId = languageRefSetFilter.getLanguageRefSetId();
+		return evaluate(context, languageRefSetId)
+			.thenWith(resolveIds(context, languageRefSetId, expressionForm))
+			.then(languageReferenceSetIds -> {
+				return Expressions.builder()
+					.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageReferenceSetIds))
+					.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageReferenceSetIds))
+					.build();
+			});
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final CaseSignificanceFilter caseSignificanceFilter) {
-		return EclExpression.of(caseSignificanceFilter.getCaseSignificanceId(), Trees.INFERRED_FORM)
-				.resolve(context)
-				.then(SnomedDescriptionIndexEntry.Expressions::caseSignificances);
+		final FilterValue caseSignificanceId = caseSignificanceFilter.getCaseSignificanceId();
+		return evaluate(context, caseSignificanceId)
+			.thenWith(resolveIds(context, caseSignificanceId, expressionForm))
+			.then(SnomedDescriptionIndexEntry.Expressions::caseSignificances);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final LanguageFilter languageCodeFilter) {
@@ -707,32 +744,33 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	
 	protected Promise<Expression> eval(BranchContext context, final DialectAliasFilter dialectAliasFilter) {
 		final ListMultimap<String, String> languageMapping = SnomedDescriptionUtils.getLanguageMapping(context);
-		final Multimap<String, String> languageRefSetsByAcceptability = HashMultimap.create();
+		final Multimap<String, String> languageRefSetsByAcceptabilityField = HashMultimap.create();
 		final ExpressionBuilder dialectQuery = Expressions.builder();
 		for (DialectAlias alias : dialectAliasFilter.getDialects()) {
-			final Set<String> acceptabilitiesToMatch = getAcceptabilityIds(alias.getAcceptability());
+			final Set<String> acceptabilityFields = getAcceptabilityFields(alias.getAcceptability());
 			final Collection<String> languageReferenceSetIds = languageMapping.get(alias.getAlias());
 			
 			// empty acceptabilities or empty language reference set IDs mean that none of the provided values were valid so no match should be returned
-			if (acceptabilitiesToMatch.isEmpty() || languageReferenceSetIds.isEmpty()) {
+			if (acceptabilityFields.isEmpty() || languageReferenceSetIds.isEmpty()) {
 				return Promise.immediate(Expressions.matchNone());
 			}
 			
-			for (String acceptability : acceptabilitiesToMatch) {
-				languageRefSetsByAcceptability.putAll(acceptability, languageReferenceSetIds);
+			for (String acceptabilityField : acceptabilityFields) {
+				languageRefSetsByAcceptabilityField.putAll(acceptabilityField, languageReferenceSetIds);
 			}
 		}
 		
-		languageRefSetsByAcceptability.asMap().forEach((key, values) -> {
+		languageRefSetsByAcceptabilityField.asMap().forEach((key, values) -> {
 			Operator op = Operator.fromString(dialectAliasFilter.getOp());
 			switch (op) {
-			case EQUALS: 
-				dialectQuery.should(Expressions.matchAny(key + "In", values));
-				break;
-			case NOT_EQUALS:
-				dialectQuery.mustNot(Expressions.matchAny(key + "In", values));
-				break;
-			default: throw new NotImplementedException("Unsupported dialectAliasFilter operator '%s'", dialectAliasFilter.getOp());
+				case EQUALS: 
+					dialectQuery.should(Expressions.matchAny(key, values));
+					break;
+				case NOT_EQUALS:
+					dialectQuery.mustNot(Expressions.matchAny(key, values));
+					break;
+				default: 
+					throw new NotImplementedException("Unsupported dialectAliasFilter operator '%s'", dialectAliasFilter.getOp());
 			}
 		});
 		
@@ -743,14 +781,19 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final Multimap<String, String> languageRefSetsByAcceptability = HashMultimap.create();
 		final ExpressionBuilder dialectQuery = Expressions.builder();
 		for (Dialect dialect : dialectIdFilter.getDialects()) {
-			final Set<String> acceptabilitiesToMatch = getAcceptabilityIds(dialect.getAcceptability());
+			final ExpressionConstraint languageRefSetId = dialect.getLanguageRefSetId();
+			final Set<String> evaluatedIds = EclExpression.of(languageRefSetId, expressionForm)
+				.resolve(context)
+				.getSync();
+
+			final Set<String> acceptabilitiesToMatch = getAcceptabilityFields(dialect.getAcceptability());
 			// empty set means that acceptability values are not valid and it should not match any descriptions/concepts
 			if (acceptabilitiesToMatch.isEmpty()) {
 				return Promise.immediate(Expressions.matchNone());
 			}
 			
 			for (String acceptability : acceptabilitiesToMatch) {
-				languageRefSetsByAcceptability.put(acceptability, dialect.getLanguageRefSetId().getId());
+				languageRefSetsByAcceptability.putAll(acceptability, evaluatedIds);
 			}
 		}
 		
@@ -758,31 +801,41 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			Operator op = Operator.fromString(dialectIdFilter.getOp());
 			switch (op) {
 			case EQUALS: 
-				dialectQuery.should(Expressions.matchAny(key + "In", values));
+				dialectQuery.should(Expressions.matchAny(key, values));
 				break;
 			case NOT_EQUALS:
-				dialectQuery.mustNot(Expressions.matchAny(key + "In", values));
+				dialectQuery.mustNot(Expressions.matchAny(key, values));
 				break;
-			default: throw new NotImplementedException("Unsupported dialectIdFilter operator '%s'", dialectIdFilter.getOp());
+			default: 
+				throw new NotImplementedException("Unsupported dialectIdFilter operator '%s'", dialectIdFilter.getOp());
 			}
 		});
 		
 		return Promise.immediate(dialectQuery.build());
 	}
 
-	private Set<String> getAcceptabilityIds(Acceptability acceptability) {
+	private Set<String> getAcceptabilityFields(Acceptability acceptability) {
 		// in case of acceptability not defined accept any known acceptability value
 		if (acceptability == null) {
-			return Set.of("preferred", "acceptable");
+			return Set.of("preferredIn", "acceptableIn");
 		} else if (acceptability instanceof AcceptabilityIdSet) {
-			return ((AcceptabilityIdSet) acceptability).getAcceptabilities().getConcepts().stream().map(EclConceptReference::getId)
-					.filter(KNOWN_ACCEPTABILITIES::containsKey)
-					.map(KNOWN_ACCEPTABILITIES::get)
-					.collect(Collectors.toSet());
+			final AcceptabilityIdSet acceptabilityIdSet = (AcceptabilityIdSet) acceptability;
+			return acceptabilityIdSet.getAcceptabilities()
+				.getConcepts()
+				.stream()
+				.map(EclConceptReference::getId)
+				.filter(ACCEPTABILITY_ID_TO_FIELD::containsKey)
+				.map(ACCEPTABILITY_ID_TO_FIELD::get)
+				.collect(Collectors.toSet());
 		} else if (acceptability instanceof AcceptabilityTokenSet) {
-			return ((AcceptabilityTokenSet) acceptability).getAcceptabilities().stream()
-				.map(String::toLowerCase)
-				.filter(KNOWN_ACCEPTABILITIES::containsValue)
+			final AcceptabilityTokenSet acceptabilityTokenSet = (AcceptabilityTokenSet) acceptability;
+			return acceptabilityTokenSet.getAcceptabilities()
+				.stream()
+				.map(AcceptabilityToken::fromString)
+				.filter(Predicates.notNull())
+				.map(AcceptabilityToken::getConceptId)
+				.filter(ACCEPTABILITY_ID_TO_FIELD::containsKey)
+				.map(ACCEPTABILITY_ID_TO_FIELD::get)
 				.collect(Collectors.toSet());
 		} else {
 			throwUnsupported(acceptability);
@@ -818,17 +871,27 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	/**
-	 * Extracts SNOMED CT IDs from the given expression if it is either single or multi-valued String predicate and the field is equal to RevisionDocument.Fields.ID.
-	 * Otherwise it will try to evaluate the ecl completely without using the first returned expression.
-	 * @param ecl - the original ECL which will resolve to the returned function parameter as {@link Expression}
+	 * Extracts SNOMED CT IDs from the given expression if it is either single or multi-valued 
+	 * String predicate and the field is equal to RevisionDocument.Fields.ID. Otherwise it will 
+	 * treat the received value as an ECL expression and evaluates it  completely without using 
+	 * the returned index query expression.
+	 * 
+	 * @param filterValue
 	 */
-	private static Function<Expression, Promise<Set<String>>> resolveIds(BranchContext context, ExpressionConstraint ecl, String expressionForm) {
+	private static Function<Expression, Promise<Set<String>>> resolveIds(BranchContext context, FilterValue filterValue, String expressionForm) {
 		return expression -> {
 			try {
+				/* 
+				 * It should always be possible to extract identifiers from an index query expression derived from 
+				 * an EclConceptReferenceSet, and occasionally ExpressionConstraints also have this property.
+				 */
 				return Promise.immediate(extractIds(expression));
 			} catch (UnsupportedOperationException e) {
-				// otherwise always evaluate the expression to ID set and return that
-				return EclExpression.of(ecl, expressionForm).resolve(context);
+				/* 
+				 * If ID extraction failed, the original filter value must be an ExpressionConstraint that is more
+				 * complex. Evaluate it to retrieve the SCTIDs. 
+				 */
+				return EclExpression.of((ExpressionConstraint) filterValue, expressionForm).resolve(context);
 			}
 		};
 	}

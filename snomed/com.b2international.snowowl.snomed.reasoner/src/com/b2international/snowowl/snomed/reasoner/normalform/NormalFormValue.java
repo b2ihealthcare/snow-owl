@@ -17,10 +17,12 @@ package com.b2international.snowowl.snomed.reasoner.normalform;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Objects;
 
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -41,17 +43,26 @@ final class NormalFormValue implements NormalFormProperty {
 	private static RelationshipValue relationshipValue(final long refSetId, final String serializedValue) {
 		final DataType dataType = SnomedRefSetUtil.getDataType(Long.toString(refSetId));
 		switch (dataType) {
-			case DECIMAL: return new RelationshipValue(Double.valueOf(serializedValue));
+			case DECIMAL: return new RelationshipValue(new BigDecimal(serializedValue));
 			case INTEGER: return new RelationshipValue(Integer.valueOf(serializedValue));
 			case STRING: return new RelationshipValue(serializedValue);
 			default: throw new IllegalArgumentException("Unsupported data type '" + dataType + "'.");
+		}
+	}
+	
+	private static RelationshipValue relationshipValue(final RelationshipValueType valueType, final String rawValue) {
+		switch (valueType) {
+			case DECIMAL: return new RelationshipValue(new BigDecimal(rawValue));
+			case INTEGER: return new RelationshipValue(Integer.valueOf(rawValue));
+			case STRING: return new RelationshipValue(rawValue);
+			default: throw new IllegalArgumentException("Unsupported relationship value type '" + valueType + "'.");
 		}
 	}
 
 	public NormalFormValue(final StatementFragmentWithValue statement, final ReasonerTaxonomy reasonerTaxonomy) {
 		this(
 			statement.getTypeId(), 
-			RelationshipValue.fromLiteral(statement.getValue()), 
+			relationshipValue(statement.getValueType(), statement.getRawValue()), 
 			statement.isReleased(), 
 			statement.getStatementId(),
 			reasonerTaxonomy);
@@ -112,10 +123,14 @@ final class NormalFormValue implements NormalFormProperty {
 
 		final NormalFormValue other = (NormalFormValue) property;
 
-		// Check type SCTID subsumption, data type (reference set SCTID) and value equality 
+		/*
+		 * Check type SCTID subsumption, and RF2 literal equality. Value type is taken
+		 * into account, but allows matching numbers like #50 (decimal) and #50
+		 * (integer).
+		 */
 		return true
 				&& closureContains(getTypeId(), other.getTypeId())
-				&& getValue().equals(other.getValue());
+				&& getValue().toLiteral().equals(other.getValue().toLiteral());
 	}
 
 	private boolean ancestorsContains(final long conceptId1, final long conceptId2) {

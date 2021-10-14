@@ -33,13 +33,12 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
-import com.b2international.snowowl.snomed.datastore.index.constraint.*;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -112,7 +111,6 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	protected Collection<Class<?>> getAdditionalTypes() {
 		return List.of(
 			SnomedConceptDocument.class, 
-			SnomedConstraintDocument.class, 
 			SnomedRelationshipIndexEntry.class, 
 			SnomedDescriptionIndexEntry.class,
 			SnomedRefSetMemberIndexEntry.class
@@ -166,10 +164,6 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 		return DocumentBuilders.concept(id).effectiveTime(effectiveTime);
 	}
 	
-	protected final SnomedConstraintDocument.Builder constraint(SnomedConstraintDocument constraint) {
-		return SnomedConstraintDocument.builder(constraint).effectiveTime(generateRandomEffectiveTime());
-	}
-	
 	protected final SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
 		return DocumentBuilders.description(id, type, term).effectiveTime(effectiveTime);
 	}
@@ -186,27 +180,16 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(effectiveTime);
 	}
 	
+	protected final SnomedRelationshipIndexEntry.Builder concreteValue(final String source, final String type, final RelationshipValue value) {
+		return DocumentBuilders.concreteValue(source, type, value).effectiveTime(effectiveTime);
+	}
+	
 	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, String referenceSetId) {
 		return member(UUID.randomUUID().toString(), referencedComponentId, referenceSetId);
 	}
 	
 	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, String referenceSetId) {
 		return DocumentBuilders.member(id, referencedComponentId, SnomedComponent.getType(referencedComponentId), referenceSetId).effectiveTime(effectiveTime);
-	}
-	
-	protected final HierarchyDefinitionFragment hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {
-		return new HierarchyDefinitionFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", focusConceptId, inclusionType);
-	}
-	
-	protected final RelationshipPredicateFragment relationshipPredicate(ConceptSetDefinitionFragment predicateType, ConceptSetDefinitionFragment predicateRange) {
-		return new RelationshipPredicateFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", predicateType, predicateRange, null);
-	}
-	
-	protected final SnomedConstraintDocument attributeConstraint(ConceptSetDefinitionFragment conceptSetDefinition, PredicateFragment conceptModelPredicate) {
-		return DocumentBuilders.constraint()
-				.domain(conceptSetDefinition)
-				.predicate(conceptModelPredicate)
-				.build();
 	}
 	
 	protected final String generateTermOfLength(int length) {

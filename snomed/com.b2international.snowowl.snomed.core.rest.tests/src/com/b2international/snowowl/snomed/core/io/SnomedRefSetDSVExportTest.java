@@ -39,11 +39,11 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.constraint.*;
-import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.*;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SimpleSnomedDsvExportItem;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.datastore.request.*;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
@@ -156,18 +156,18 @@ public class SnomedRefSetDSVExportTest {
 				.execute(bus)
 				.getSync();
 		
-		return transformToExportItems(getConstraints(branchPath, concepts));
+		return transformToExportItems(/*getConstraints(branchPath, concepts)*/);
 	}
 
-	private Iterable<SnomedConstraint> getConstraints(String branchPath, SnomedConcepts concepts) {
-		return SnomedRequests
-				.prepareGetApplicablePredicates(bus, branchPath, 
-						idsOf(concepts), 
-						ancestorsOf(concepts), 
-						Collections.emptySet(), 
-						relationshipKeysOf(concepts))
-				.getSync();
-	}
+//	private Iterable<SnomedConstraint> getConstraints(String branchPath, SnomedConcepts concepts) {
+//		return SnomedRequests
+//				.prepareGetApplicablePredicates(bus, branchPath, 
+//						idsOf(concepts), 
+//						ancestorsOf(concepts), 
+//						Collections.emptySet(), 
+//						relationshipKeysOf(concepts))
+//				.getSync();
+//	}
 
 	private Set<String> idsOf(SnomedConcepts concepts) {
 		return concepts.getItems().stream()
@@ -289,33 +289,33 @@ public class SnomedRefSetDSVExportTest {
 				.preferredIn(Concepts.REFSET_LANGUAGE_TYPE_UK);
 	}
 	
-	private List<AbstractSnomedDsvExportItem> transformToExportItems(final Iterable<SnomedConstraint> constraints) {
+	private List<AbstractSnomedDsvExportItem> transformToExportItems(/*final Iterable<SnomedConstraint> constraints*/) { //XXX: Migrate to new MRCM model
 		List<AbstractSnomedDsvExportItem> results = Lists.newArrayList();
 
-		for (final SnomedConstraint constraint : constraints) {
-			SnomedPredicate predicate = constraint.getPredicate();
-			
-			// Inspect the predicate within the cardinality predicate
-			if (predicate instanceof SnomedCardinalityPredicate) {
-				predicate = ((SnomedCardinalityPredicate) predicate).getPredicate();
-			}
-			
-			if (predicate instanceof SnomedDescriptionPredicate) {
-				final String descriptionTypeId = ((SnomedDescriptionPredicate) predicate).getTypeId();
-				final ComponentIdSnomedDsvExportItem descriptionExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, descriptionTypeId, descriptionTypeId);
-				results.add(descriptionExportItem);
-			} else if (predicate instanceof SnomedRelationshipPredicate) {
-				final String typeId = ((SnomedRelationshipPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
-				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, typeId, typeId);
-				results.add(relationshipExportItem);
-			} else if (predicate instanceof SnomedConcreteDomainPredicate) {
-				final String attributeId = ((SnomedConcreteDomainPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
-				final DataType dataType = ((SnomedConcreteDomainPredicate) predicate).getRange();
-				final boolean dataTypeBoolean = DataType.BOOLEAN.equals(dataType);
-				final DatatypeSnomedDsvExportItem datatypeExportItem = new DatatypeSnomedDsvExportItem(SnomedDsvExportItemType.DATAYPE, attributeId, attributeId, dataTypeBoolean);
-				results.add(datatypeExportItem);
-			}
-		}
+//		for (final SnomedConstraint constraint : constraints) {
+//			SnomedPredicate predicate = constraint.getPredicate();
+//			
+//			// Inspect the predicate within the cardinality predicate
+//			if (predicate instanceof SnomedCardinalityPredicate) {
+//				predicate = ((SnomedCardinalityPredicate) predicate).getPredicate();
+//			}
+//			
+//			if (predicate instanceof SnomedDescriptionPredicate) {
+//				final String descriptionTypeId = ((SnomedDescriptionPredicate) predicate).getTypeId();
+//				final ComponentIdSnomedDsvExportItem descriptionExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, descriptionTypeId, descriptionTypeId);
+//				results.add(descriptionExportItem);
+//			} else if (predicate instanceof SnomedRelationshipPredicate) {
+//				final String typeId = ((SnomedRelationshipPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
+//				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, typeId, typeId);
+//				results.add(relationshipExportItem);
+//			} else if (predicate instanceof SnomedConcreteDomainPredicate) {
+//				final String attributeId = ((SnomedConcreteDomainPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
+//				final DataType dataType = ((SnomedConcreteDomainPredicate) predicate).getRange();
+//				final boolean dataTypeBoolean = DataType.BOOLEAN.equals(dataType);
+//				final DatatypeSnomedDsvExportItem datatypeExportItem = new DatatypeSnomedDsvExportItem(SnomedDsvExportItemType.DATAYPE, attributeId, attributeId, dataTypeBoolean);
+//				results.add(datatypeExportItem);
+//			}
+//		}
 		
 		results.add(new SimpleSnomedDsvExportItem(SnomedDsvExportItemType.PREFERRED_TERM));
 		results.add(new SimpleSnomedDsvExportItem(SnomedDsvExportItemType.MODULE));

@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REASONER_EXCLUDE_MODULE_IDS;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -32,8 +35,10 @@ import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -122,12 +127,17 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 			final ClassificationTracker tracker) {
 		
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
+		
+		TerminologyResource resource = context.service(TerminologyResource.class);
+		
+		@SuppressWarnings("unchecked")
+		final Set<String> reasonerExcludedModuleIds = Collections3.toImmutableSet((Iterable) resource.getSettings().getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet()));
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext)) {
-			taxonomy = buildTaxonomy(revisionSearcher, context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds(), concreteDomainSupported);
+			taxonomy = buildTaxonomy(revisionSearcher, reasonerExcludedModuleIds, concreteDomainSupported);
 		} catch (final LockedException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		}

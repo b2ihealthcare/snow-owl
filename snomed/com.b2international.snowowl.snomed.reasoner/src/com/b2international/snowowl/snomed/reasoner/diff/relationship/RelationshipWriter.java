@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.diff.relationship;
 
 import com.b2international.index.Writer;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
 import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
@@ -45,8 +46,11 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 			final long destinationId = ((StatementFragmentWithDestination) fragment).getDestinationId();
 			builder.destinationId(Long.toString(destinationId));
 		} else {
-			final String value = ((StatementFragmentWithValue) fragment).getValue();
-			builder.value(value);
+			final StatementFragmentWithValue fragmentWithValue = (StatementFragmentWithValue) fragment;
+			final RelationshipValueType valueType = fragmentWithValue.getValueType();
+			final String rawValue = fragmentWithValue.getRawValue();
+			builder.valueType(valueType);
+			builder.rawValue(rawValue);
 		}
 		
 		switch (nature) {

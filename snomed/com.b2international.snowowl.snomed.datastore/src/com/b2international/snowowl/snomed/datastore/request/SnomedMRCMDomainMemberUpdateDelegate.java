@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ final class SnomedMRCMDomainMemberUpdateDelegate extends SnomedRefSetMemberUpdat
 		final String proximalPrimitiveRefinement = getProperty(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT);
 		final String domainTemplateForPrecoordination = getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION);
 		final String domainTemplateForPostcoordination = getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION);
-		final String editorialGuideReference = getProperty(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE);
+		final String guideURL = getProperty(SnomedRf2Headers.FIELD_MRCM_GUIDEURL);
 
 		boolean changed = false;
 
@@ -71,8 +71,8 @@ final class SnomedMRCMDomainMemberUpdateDelegate extends SnomedRefSetMemberUpdat
 			changed |= true;
 		}
 
-		if (editorialGuideReference != null && !editorialGuideReference.equals(original.getEditorialGuideReference())) {
-			member.field(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, editorialGuideReference);
+		if (guideURL != null && !guideURL.equals(original.getGuideURL())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_GUIDEURL, guideURL);
 			changed |= true;
 		}
 

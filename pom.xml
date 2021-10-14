@@ -16,7 +16,7 @@
 		<!-- Maven Dependency Versions -->
 		<jackson.version>2.10.5</jackson.version>
 		<jackson.databind.version>2.10.5.1</jackson.databind.version>
-		<netty.version>4.1.59.Final</netty.version>
+		<netty.version>4.1.68.Final</netty.version>
 		<slf4j.version>1.7.30</slf4j.version>
 		<logback.version>1.2.3</logback.version>
 		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
@@ -40,8 +40,8 @@
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		
 		<!-- Build tool/compiler versions -->
-		<tycho.version>2.4.0</tycho.version>
-		<tycho-extras.version>2.4.0</tycho-extras.version>
+		<tycho.version>2.5.0</tycho.version>
+		<tycho-extras.version>2.5.0</tycho-extras.version>
 		<xtend.compiler.version>2.23.0</xtend.compiler.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		

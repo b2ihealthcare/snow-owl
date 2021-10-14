@@ -15,18 +15,23 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,7 +49,7 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 		description="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Upgrade "),
+		@ApiResponse(responseCode = "201", description = "Upgrade created"),
 		@ApiResponse(responseCode = "400", description = "Code System cannot be upgraded")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
@@ -70,4 +75,60 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 			});
 	}
 	
+	@Operation(
+		summary="Synchronize upgrade codesystem with the original codesystem (EXPERIMENTAL)",
+		description="Synchronize any changes on the original code system with the upgrade code system."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "204", description = "Upgrade code system synchronized"),
+		@ApiResponse(responseCode = "400", description = "Code system could not be synchronized with the downstream code system")
+	})
+	@PostMapping(value = "/sync/", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void sync(
+			@RequestBody
+			final CodeSystemUpgradeSyncRestInput body) {
+		final String codeSystemId = body.getCodeSystemId();
+		final ResourceURI source = body.getSource();
+		
+		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
+			.filterById(codeSystemId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.first()
+			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+		
+		 CodeSystemRequests.prepareUpgradeSynchronization(codeSystem.getResourceURI(), source)
+			.buildAsync()
+			.execute(getBus());
+	}
+	
+	@Operation(
+		summary="Complete a codesystem upgrade (EXPERIMENTAL)",
+		description="Completes the upgrade process of a Code System to the newer extensionOf Code System dependency."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "204", description = "Code system upgrade completed"),
+		@ApiResponse(responseCode = "400", description = "Code System upgrade cannot be completed")
+	})
+	@PostMapping("/{id}/complete")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void complete(
+			@Parameter(description = "Code System identifier", required = true)
+			@PathVariable("id") 
+			final String codeSystemId) {
+		
+		CodeSystemRequests.prepareSearchCodeSystem()
+			.filterById(codeSystemId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.first()
+			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+		
+		CodeSystemRequests.prepareComplete(codeSystemId)
+			.buildAsync()
+			.execute(getBus());		
+	}
 }

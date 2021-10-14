@@ -85,7 +85,7 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 			
 			if (uriToResolve.isLatest()) {
 				// fetch the latest resource version if LATEST is specified in the URI
-				versionSearch.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME));
+				versionSearch.sortBy(SearchResourceRequest.Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME));
 			} else {
 				// try to fetch the path as exact version if not the special LATEST is specified in the URI
 				versionSearch.filterByVersionId(uriToResolve.getPath());

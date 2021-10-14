@@ -53,6 +53,7 @@ import org.junit.Test;
 import com.b2international.commons.Pair;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.json.Json;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -1082,7 +1083,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination",
-					SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference",
+					SnomedRf2Headers.FIELD_MRCM_GUIDEURL, "guideURL",
 					"commitComment", "Created new MRCM domain reference set member"
 				));
 
@@ -1134,7 +1135,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				"proximalPrimitiveRefinement",
 				"domainTemplateForPrecoordination",
 				"domainTemplateForPostcoordination",
-				"editorialGuideReference");
+				"guideURL");
 
 		String mrcmAttributeDomainLine = TAB_JOINER.join(mrcmAttributeDomainRefsetMemberId, 
 				"", 
@@ -1490,6 +1491,68 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put(relationshipFileName, Pair.of(false, relationshipLine));
 		
 		assertArchiveContainsLines(exportArchiveWithTimestamp, fileToLinesMap);
+	}
+
+	@Test
+	public void exportSnapshotWithBranchRange() throws Exception {
+		final IBranchPath taskBranchPath = BranchPathUtils.createPath(branchPath, "task");
+		branching.createBranch(taskBranchPath).statusCode(201);
+		
+		final Json exportConfig = Json.object("type", Rf2ReleaseType.SNAPSHOT.name());
+		
+		export(RevisionIndex.toRevisionRange(branchPath.getPath(), taskBranchPath.getPath()), exportConfig)
+			.then()
+			.statusCode(400);
+	}
+	
+	@Test
+	public void exportDeltaWithBranchRange() throws Exception {
+		final String relationshipOnParent = createNewRelationship(branchPath);
+		
+		final IBranchPath taskBranchPath = BranchPathUtils.createPath(branchPath, "task");
+		branching.createBranch(taskBranchPath).statusCode(201);
+
+		final String relationshipOnTask = createNewRelationship(taskBranchPath);
+		
+		final Map<String, Object> config = Map.of(
+			"type", Rf2ReleaseType.DELTA.name(),
+			"includeUnpublished", true
+		);
+		
+		// A "standard" delta export should include both unpublished lines
+		final File exportArchive = doExport(taskBranchPath, config);
+		
+		final String relationshipFileName = "sct2_StatedRelationship_Delta";
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, createRelationshipLine(relationshipOnParent)));
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, createRelationshipLine(relationshipOnTask)));
+
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+		
+		// Delta export with a path range can restrict the set of visible components
+		final IBranchPath branchRange = BranchPathUtils.createPath(branchPath.getPath() + RevisionIndex.REV_RANGE + taskBranchPath.getPath());
+		final File exportArchiveWithBranchRange = doExport(branchRange, config);
+		
+		fileToLinesMap.clear();
+		fileToLinesMap.put(relationshipFileName, Pair.of(false, createRelationshipLine(relationshipOnParent)));
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, createRelationshipLine(relationshipOnTask)));
+		
+		assertArchiveContainsLines(exportArchiveWithBranchRange, fileToLinesMap);
+	}
+
+	private String createRelationshipLine(final String relationshipId) {
+		// id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId
+		return getComponentLine(List.of(
+			relationshipId, 
+			"", 
+			"1", 
+			Concepts.MODULE_SCT_CORE, 
+			Concepts.ROOT_CONCEPT, 
+			Concepts.NAMESPACE_ROOT, 
+			"0", 
+			Concepts.PART_OF, 
+			Concepts.STATED_RELATIONSHIP, 
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
 	}
 	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {

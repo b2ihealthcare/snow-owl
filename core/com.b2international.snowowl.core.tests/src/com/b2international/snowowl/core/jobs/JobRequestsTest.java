@@ -19,10 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -131,17 +128,24 @@ public class JobRequestsTest {
 	
 	@Test
 	public void scheduleAndDelete() throws Exception {
+		CyclicBarrier barrier = new CyclicBarrier(2);
+		
 		final String jobId = schedule("scheduleAndDelete", context -> {
-			// wait 100 ms, then return the result, so the main thread have time to actually initiate the delete request
+			// wait until barrier is ready (main thread initiated delete request), return the result
 			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
+				barrier.await();
+			} catch (InterruptedException | BrokenBarrierException e) {
 				throw new RuntimeException(e);
 			}
 			return RESULT;
 		});
 		// delete should immediately mark the object deleted, but wait until the job actually completes then delete the entry
 		delete(jobId);
+		try {
+			barrier.await();
+		} catch (InterruptedException | BrokenBarrierException e) {
+			throw new RuntimeException(e);
+		}
 		// get throws NotFoundException
 		try {
 			get(jobId);
@@ -151,7 +155,7 @@ public class JobRequestsTest {
 		}
 		// assert that the tracker will eventually delete the job entry
 		RemoteJobEntry entry = null;
-		int numberOfTries = 10; 
+		int numberOfTries = 20; 
 		do {
 			entry = tracker.get(jobId);
 			Thread.sleep(50);

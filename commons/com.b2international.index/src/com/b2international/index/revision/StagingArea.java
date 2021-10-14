@@ -883,13 +883,13 @@ public final class StagingArea {
 		applyPropertyUpdates(toRef, propertyUpdatesToApply);
 		
 		// apply new objects
-		applyNewObjects(added, fromRef, toRef, squash);
+		applyNewObjects(added, mergeFromBranchRef, toRef, squash);
 		
 		// apply changed objects
-		applyChangedObjects(changed, fromRef, toRef, squash);
+		applyChangedObjects(changed, mergeFromBranchRef, toRef, squash);
 		
 		// always apply deleted objects, they set the revised timestamp properly without introducing any new document
-		applyRemovedObjects(removed, fromRef, toRef, squash);
+		applyRemovedObjects(removed, mergeFromBranchRef, toRef, squash);
 		
 		// any externally marked revised revisions should be applied here
 		revisionsToReviseOnMergeSource.putAll(externalRevisionsToReviseOnMergeSource);
@@ -1075,7 +1075,8 @@ public final class StagingArea {
 			
 				for (String updatedId : updatedRevisionsById.keySet()) {
 					if (oldRevisionsById.containsKey(updatedId)) {
-						stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId), squash);
+						// actual changed revisions should always register themselves for commit if there is a revision on the target
+						stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId), true);
 					} else {
 						stageNew(updatedRevisionsById.get(updatedId), squash);
 					}
@@ -1098,7 +1099,8 @@ public final class StagingArea {
 				
 				newRevisions.forEach(rev -> {
 					if (oldRevisionsById.containsKey(rev.getId())) {
-						stageChange(oldRevisionsById.get(rev.getId()), rev, squash);
+						// actual changed revisions should always register themselves for commit if there is a revision on the target 
+						stageChange(oldRevisionsById.get(rev.getId()), rev, true); 
 					} else {
 						stageNew(rev, squash);
 					}

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.NAMESPACE_AND_MODULE_ASSIGNER;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.Commit;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
@@ -568,12 +571,13 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		if (assignerType != null) {
 			selectedType = assignerType;
 		} else {
-			final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
-			selectedType = configuration.getNamespaceModuleAssigner();
+			final TerminologyResource resource = context.service(TerminologyResource.class);
+			
+			selectedType = (String) resource.getSettings().getOrDefault(NAMESPACE_AND_MODULE_ASSIGNER, DEFAULT_NAMESPACE_AND_MODULE_ASSIGNER);
 		}
 		
 		final SnomedNamespaceAndModuleAssigner assigner = SnomedNamespaceAndModuleAssigner.create(context, selectedType, moduleId, namespace);
-
+		
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assigner);
 		return assigner;
 	}
@@ -695,14 +699,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
-		final RelationshipValue value = relationship.getValueAsObject();
+		final RelationshipValue valueAsObject = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
-				sourceId, typeId, destinationId, destinationNegated, value,
+				sourceId, typeId, destinationId, destinationNegated, valueAsObject,
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
@@ -731,9 +735,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final String typeId, 
 			final String destinationId, 
 			final boolean destinationNegated,
-			final RelationshipValue value,
+			final RelationshipValue valueAsObject,
 			final String characteristicTypeId, 
-			final int group, 
+			final int relationshipGroup, 
 			final int unionGroup,
 			final String modifier) {
 		
@@ -748,8 +752,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 				.setSourceId(sourceId)
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
-				.setValue(value)
-				.setRelationshipGroup(group)
+				.setValue(valueAsObject)
+				.setRelationshipGroup(relationshipGroup)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)
 				.setModuleId(moduleId);

@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest.OptionKey;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.google.common.collect.ImmutableList;
@@ -91,11 +90,11 @@ public abstract class FhirResourceSearchRequestBuilder<B extends FhirResourceSea
 		if (summary == null || Summary.FALSE.equalsIgnoreCase(summary)) {
 			return getSelf();
 		} else if (Summary.TRUE.equalsIgnoreCase(summary)) {
-			return setElements(CodeSystem.Fields.SUMMARY);
+			return setElements(getSummaryFields());
 		} else if (Summary.TEXT.equalsIgnoreCase(summary)) {
-			return setElements(CodeSystem.Fields.SUMMARY_TEXT);
+			return setElements(getSummaryTextFields());
 		} else if (Summary.DATA.equalsIgnoreCase(summary)) {
-			return setElements(CodeSystem.Fields.SUMMARY_DATA);
+			return setElements(getSummaryDataFields());
 		} else if (Summary.COUNT.equalsIgnoreCase(summary)) {
 			return setLimit(0);
 		} else {
@@ -109,23 +108,29 @@ public abstract class FhirResourceSearchRequestBuilder<B extends FhirResourceSea
 		} else {
 			final Set<String> fields = new LinkedHashSet<>();
 			// when called with a non-null value, make sure mandatory fields are implicitly included
-			fields.addAll(CodeSystem.Fields.MANDATORY);
+			fields.addAll(getMandatoryFields());
 			// add all other fields
 			elements.forEach(fields::add);
 			
-			Set<String> unrecognizedElements = Sets.difference(fields, CodeSystem.Fields.ALL);
+			Set<String> unrecognizedElements = Sets.difference(fields, getKnownResourceFields());
 			if (!unrecognizedElements.isEmpty()) {
 				throw new BadRequestException(String.format(
 					"'%s' %s unrecognized or not yet supported _elements value(s). Supported values are: '%s'", 
 					unrecognizedElements, 
 					unrecognizedElements.size() == 1 ? "is" : "are",
-					CodeSystem.Fields.ALL
+					getKnownResourceFields()
 				));
 			}
 			
 			return setFields(ImmutableList.copyOf(fields));
 		}
 	}
+
+	protected abstract Set<String> getMandatoryFields();
+	protected abstract Set<String> getSummaryFields();
+	protected abstract Set<String> getSummaryTextFields();
+	protected abstract Set<String> getSummaryDataFields();
+	protected abstract Set<String> getKnownResourceFields();
 	
 	public B filterByLastUpdated(String lastUpdated) {
 		return addOption(OptionKey.LAST_UPDATED, lastUpdated);

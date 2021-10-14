@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.mapdb.DB;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
@@ -45,20 +46,33 @@ public final class Rf2EffectiveTimeSlices {
 	private final DB db;
 	private final Map<String, Rf2EffectiveTimeSlice> slices = newHashMap();
 	private final boolean loadOnDemand;
+	private final String latestVersionEffectiveTime;
+	private final String importUntil;
 
-	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand) {
+	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand, String latestVersionEffectiveTime, String importUntil) {
 		this.db = db;
 		this.loadOnDemand = loadOnDemand;
+		this.latestVersionEffectiveTime = latestVersionEffectiveTime;
+		this.importUntil = importUntil;
 	}
 	
 	public Rf2EffectiveTimeSlice getOrCreate(String effectiveTime) {
 		if (!slices.containsKey(effectiveTime)) {
-			slices.put(effectiveTime, new Rf2EffectiveTimeSlice(db, effectiveTime, loadOnDemand));
+			// if the incoming effectiveTime value is greater than or equal to the current release, then allow reading
+			if (effectiveTime.compareTo(latestVersionEffectiveTime) > 0) {
+				if ((Strings.isNullOrEmpty(importUntil) || effectiveTime.compareTo(importUntil) <= 0)) {
+					slices.put(effectiveTime, new MapDBRf2EffectiveTimeSlice(effectiveTime, db, loadOnDemand));
+				} else {
+					slices.put(effectiveTime, new IgnoredRf2EffectiveTimeSlice(effectiveTime, String.format("EffectiveTime '%s' is ignored by importUntil('%s') request parameter.", effectiveTime, importUntil)));
+				}
+			} else {
+				slices.put(effectiveTime, new IgnoredRf2EffectiveTimeSlice(effectiveTime, String.format("EffectiveTime '%s' is already present in the system, skipping.", effectiveTime)));
+			}
 		}
 		return slices.get(effectiveTime);
 	}
 	
-	public Iterable<Rf2EffectiveTimeSlice> slices() {
+	public List<Rf2EffectiveTimeSlice> slices() {
 		return ImmutableList.copyOf(slices.values());
 	}
 
@@ -67,7 +81,7 @@ public final class Rf2EffectiveTimeSlices {
 	}
 
 	public List<Rf2EffectiveTimeSlice> consumeInOrder() {
-		return slices.values()
+		return slices()
 			.stream()
 			.sorted(UNSET_EFFECTIVE_TIME_LAST)
 			.collect(Collectors.toList());

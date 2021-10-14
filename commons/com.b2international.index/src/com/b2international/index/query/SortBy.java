@@ -45,9 +45,14 @@ public abstract class SortBy {
 	public static final String FIELD_SCORE = "_score";
 	
 	/**
+	 * Special field name for sorting by the default sort field.
+	 */
+	public static final String FIELD_DEFAULT = "_default";
+	
+	/**
 	 * Singleton representing document sort based on their default sort field (usually the ID, but in case of scroll we can use _doc to speed things up) in ascending order.
 	 */
-	public static final SortByField DEFAULT = SortBy.field("_default", Order.ASC);
+	public static final SortByField DEFAULT = SortBy.field(FIELD_DEFAULT, Order.ASC);
 	
 	/**
 	 * Singleton representing document sort based on their score in decreasing order (higher score first).

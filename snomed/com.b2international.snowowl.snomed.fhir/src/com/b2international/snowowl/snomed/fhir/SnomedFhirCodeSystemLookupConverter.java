@@ -151,7 +151,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 						RelationshipValue value = r.getValueAsObject();
 						value.map(
 							i -> propertyBuilder.valueInteger(i),
-							d -> propertyBuilder.valueDecimal(d),
+							d -> propertyBuilder.valueDecimal(d.doubleValue()),
 							s -> propertyBuilder.valueString(s));
 					} else {
 						propertyBuilder.valueCode(r.getDestinationId());

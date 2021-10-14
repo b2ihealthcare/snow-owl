@@ -147,6 +147,9 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			if (!resourceIdPrefixes.isEmpty()) {
 				// partial IDs, prefixes
 				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
+				// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively)
+				bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
+				bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
 			}
 			
 			queryBuilder.filter(bool.build());

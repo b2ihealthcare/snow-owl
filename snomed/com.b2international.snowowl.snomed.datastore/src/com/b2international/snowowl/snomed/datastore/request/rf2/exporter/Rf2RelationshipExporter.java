@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -73,7 +73,7 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 				.prepareSearchRelationship()
 				.hasDestinationId()
 				.filterByCharacteristicTypes(characteristicTypes)
-				.sortBy(SortField.ascending(SnomedRelationshipIndexEntry.Fields.ID));
+				.sortBy(Sort.fieldAsc(SnomedRelationshipIndexEntry.Fields.ID));
 	}
 
 	@Override

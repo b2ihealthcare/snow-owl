@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,8 +31,8 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 5.11
@@ -45,36 +47,17 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
-	public static final SortField SCORE = SortField.descending(SortBy.FIELD_SCORE);
+	public static final SortField SCORE = Sort.fieldDesc(SortBy.FIELD_SCORE);
 	
 	@Override
 	protected final B doExecute(C context) throws IOException {
 		final Searcher searcher = searcher(context);
 		final Expression where = prepareQuery(context);
 		
-		ImmutableSet.Builder<String> additionalFieldsToLoad = ImmutableSet.builder();
-		
 		// configure additional fields to load when subsetting the response
 		List<String> fields = fields();
 		if (!fields().isEmpty()) {
-			collectAdditionalFieldsToFetch(additionalFieldsToLoad);
-			
-			// in case of Revisions always include the ID field (if not requested) to avoid low-level error
-			// after configuring the additional field inclusions
-			if (Revision.class.isAssignableFrom(getFrom()) && !fields().contains(Revision.Fields.ID)) {
-				additionalFieldsToLoad.add(Revision.Fields.ID);
-			}
-			
-			final Set<String> additionalFields = additionalFieldsToLoad.build();
-			
-			if (!additionalFields.isEmpty()) {
-				fields = Lists.newArrayList(fields());
-				for (String additionalField : additionalFields) {
-					if (!fields.contains(additionalField)) {
-						fields.add(additionalField);
-					}
-				}
-			}
+			fields = configureFieldsToLoad(fields);
 		}
 		
 		
@@ -90,15 +73,49 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		
 		return toCollectionResource(context, hits);
 	}
+
+	private final List<String> configureFieldsToLoad(List<String> fields) {
+		final Set<String> fieldsToLoad = new LinkedHashSet<>(fields);
+		
+		collectAdditionalFieldsToFetch(fieldsToLoad);
+		
+		// perform field replacements between known model and index fields, if specified by the subclass
+		final Multimap<String, String> fieldReplacements = collectFieldsToLoadReplacements();
+		if (!fieldReplacements.isEmpty()) {
+			for (String fieldToLoad : List.copyOf(fieldsToLoad)) {
+				Collection<String> replacements = fieldReplacements.get(fieldToLoad);
+				if (!replacements.isEmpty()) {
+					fieldsToLoad.remove(fieldToLoad);
+					fieldsToLoad.addAll(replacements);
+				}
+			}
+		}
+		
+		// in case of Revisions always include the ID field (if not requested) to avoid low-level error
+		// after configuring the additional field inclusions
+		if (Revision.class.isAssignableFrom(getFrom())) {
+			fieldsToLoad.add(Revision.Fields.ID);
+		}
+		
+		return List.copyOf(fieldsToLoad);
+	}
 	
 	/**
+	 * Based on the current set of fields to load, possible field name replacements can be provided here if the index mapping is different than the current model representation. 
+	 * @return
+	 */
+	protected Multimap<String, String> collectFieldsToLoadReplacements() {
+		return ImmutableMultimap.of();
+	}
+
+	/**
 	 * Subclasses may override this method to provide additional fields to fetch from the underlying index, if those fields are necessary to complete
-	 * the request. This method is only being called if there is at least client requested field. If there is none it will load the entire object and
+	 * the request. This method is only being called if there is at least one client requested field. If there is none it will load the entire object and
 	 * no need to configure additional fields.
 	 * 
-	 * @param additionalFieldsToLoad
+	 * @param fieldsToLoad
 	 */
-	protected void collectAdditionalFieldsToFetch(ImmutableSet.Builder<String> additionalFieldsToLoad) {
+	protected void collectAdditionalFieldsToFetch(Set<String> fieldsToLoad) {
 	}
 
 	/**

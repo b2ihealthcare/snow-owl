@@ -37,6 +37,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -83,6 +84,26 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void importArchive(final IBranchPath branchPath, Map<String, ?> importConfiguration, final String fileName) {
+		final String codeSystemId = branchPath.lastSegment();
+		
+		try {
+			CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+				.buildAsync()
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+			
+		} catch (NotFoundException e) {
+			CodeSystemRequests.prepareNewCodeSystem()
+				.setBranchPath(branchPath.getPath())
+				.setId(codeSystemId)
+				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+				.setTitle(codeSystemId)
+				.build("info@b2international.com", "Created new code system " + codeSystemId)
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+		}
+		
 		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), fileName).statusCode(201)
 				.extract().header("Location"));
 		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
@@ -388,7 +409,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals("proximalPrimitiveRefinement", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT));
 		assertEquals("domainTemplateForPrecoordination", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION));
 		assertEquals("domainTemplateForPostcoordination", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION));
-		assertEquals("guideURL", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE));
+		assertEquals("guideURL", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_GUIDEURL));
 		
 		Optional<SnomedReferenceSetMember> mrcmAttributeDomainMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
 				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
@@ -534,20 +555,18 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		assertEquals("Base and head timestamp must be equal after branch creation", baseTimestamp, headTimestamp);
 
-		if (createVersions) {
-			// Create a code system with the test branch path as its working branch
-			final String codeSystemId = branch.lastSegment();
-			
-			CodeSystemRequests.prepareNewCodeSystem()
-				.setBranchPath(branch.getPath())
-				.setId(codeSystemId)
-				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
-				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
-				.setTitle(codeSystemId)
-				.build("info@b2international.com", "Created new code system " + codeSystemId)
-				.execute(getBus())
-				.getSync(1L, TimeUnit.MINUTES);
-		}
+		// always create a new code system for each test that uses this method with the test branch path as its working branch
+		final String codeSystemId = branch.lastSegment();
+		
+		CodeSystemRequests.prepareNewCodeSystem()
+			.setBranchPath(branch.getPath())
+			.setId(codeSystemId)
+			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+			.setTitle(codeSystemId)
+			.build("info@b2international.com", "Created new code system " + codeSystemId)
+			.execute(getBus())
+			.getSync(1L, TimeUnit.MINUTES);
 		
 		importArchive(branch, createVersions, Rf2ReleaseType.DELTA, importArchiveFileName);
 

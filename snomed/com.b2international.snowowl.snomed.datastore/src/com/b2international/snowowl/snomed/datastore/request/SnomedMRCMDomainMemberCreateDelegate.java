@@ -55,7 +55,7 @@ final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreat
 				.withProximalPrimitiveRefinement(getProperty(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT))
 				.withDomainTemplateForPrecoordination(getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION))
 				.withDomainTemplateForPostcoordination(getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION))
-				.withEditorialGuideReference(getProperty(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE))
+				.withGuideURL(getProperty(SnomedRf2Headers.FIELD_MRCM_GUIDEURL))
 				.addTo(context);
 
 		return member.getId();

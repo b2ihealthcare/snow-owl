@@ -21,7 +21,7 @@ def Set<String> relationshipIdsToReport = []
 if (params.isUnpublishedOnly) {
 	// unpublished only
 	searcher
-		.scroll(Query.select(String[].class)
+		.stream(Query.select(String[].class)
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.TYPE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 		.where(
@@ -32,7 +32,7 @@ if (params.isUnpublishedOnly) {
 		)
 		.limit(10_000)
 		.build())
-		.each { Hits<String[]> relationships ->
+		.forEachOrdered({ Hits<String[]> relationships ->
 			
 			def Multimap<String, String> relationshipsBySource = HashMultimap.create() 
 			def Multimap<String, String> relationshipsByType = HashMultimap.create()
@@ -67,21 +67,21 @@ if (params.isUnpublishedOnly) {
 					relationshipIdsToReport.addAll(relationshipsByType.get(inactiveConceptId))
 					relationshipIdsToReport.addAll(relationshipsByDestination.get(inactiveConceptId))
 				}
-		}
+		})
 } else {
 	// published + unpublished
 	searcher
-		.scroll(Query.select(String.class)
+		.stream(Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
 		.where(SnomedConceptDocument.Expressions.inactive())
 		.limit(30_000)
 		.build())
-		.each { Hits<String> conceptBatch ->
+		.forEachOrdered({ Hits<String> conceptBatch ->
 			def inactiveConceptIds = ImmutableSet.copyOf(conceptBatch.getHits())
 			
 			searcher
-				.scroll(Query.select(String.class)
+				.stream(Query.select(String.class)
 				.from(SnomedRelationshipIndexEntry.class)
 				.fields(SnomedRelationshipIndexEntry.Fields.ID)
 				.where(
@@ -94,10 +94,10 @@ if (params.isUnpublishedOnly) {
 				)
 				.limit(10_000)
 				.build())
-				.each { Hits<String> relationshipBatch ->
+				.forEachOrdered({ Hits<String> relationshipBatch ->
 					relationshipIdsToReport.addAll(relationshipBatch.getHits())
-				}
-		}
+				})
+		})
 }
 
 return relationshipIdsToReport.stream().map({id -> ComponentIdentifier.of(SnomedRelationship.TYPE, id)}).collect(Collectors.toList())

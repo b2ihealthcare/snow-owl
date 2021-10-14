@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,10 +49,10 @@ public class ApiTestWatcher extends TestWatcher {
 					.replace("[", "_") // Remove special characters from parameterized test names
 					.replace("]", "");
 
-			// Also add a random suffix if it would go over the 50 character branch name limit
-			if (testMethodName.length() > 50) {
+			// Also add a random suffix if it would go over the 100 character branch name limit
+			if (testMethodName.length() > 100) {
 				String suffix = Integer.toString(RANDOM.nextInt(Integer.MAX_VALUE), 36);
-				testMethodName = testMethodName.substring(0, 44) + suffix;
+				testMethodName = testMethodName.substring(0, 94) + suffix;
 			}
 			
 			return BranchPathUtils.createPath(PATH_JOINER.join(testBasePath, testClassName, testMethodName));

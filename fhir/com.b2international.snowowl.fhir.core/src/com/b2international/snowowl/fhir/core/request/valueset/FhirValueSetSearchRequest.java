@@ -15,13 +15,18 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 
 /**
  * @since 8.0
  */
 final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet.Builder, ValueSet> {
+
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected String getResourceType() {
@@ -31,6 +36,16 @@ final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet
 	@Override
 	protected ValueSet.Builder createResourceBuilder() {
 		return ValueSet.builder();
+	}
+	
+	@Override
+	protected void expandResourceSpecificFields(RepositoryContext context, Builder entry, ResourceFragment resource) {
+		FhirValueSetResourceConverter converter = context.service(RepositoryManager.class)
+				.get(resource.getToolingId())
+				.optionalService(FhirValueSetResourceConverter.class)
+				.orElse(FhirValueSetResourceConverter.DEFAULT);
+		
+		includeIfFieldSelected(ValueSet.Fields.COMPOSE, () -> converter.expandCompose(context, resource.getResourceURI()), entry::compose);
 	}
 	
 }

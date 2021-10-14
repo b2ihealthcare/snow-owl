@@ -102,7 +102,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				RemoteJobEntry.class, 
 				filter, 
 				RemoteJobEntry.WITH_DONE,
-				ImmutableMap.of("state", RemoteJobState.FAILED.name(), "finishDate", System.currentTimeMillis())
+				Map.of("state", RemoteJobState.FAILED.name(), "finishDate", System.currentTimeMillis())
 			);
 			writer.bulkUpdate(update);
 			writer.commit();
@@ -150,7 +150,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		final RemoteJobEntry job = get(jobId);
 		if (job != null && !job.isCancelled()) {
 			LOG.trace("Cancelling job {}", jobId);
-			update(jobId, RemoteJobEntry.WITH_STATE, ImmutableMap.of("expectedState", RemoteJobState.RUNNING.name(), "newState", RemoteJobState.CANCEL_REQUESTED.name()));
+			update(jobId, RemoteJobEntry.WITH_STATE, Map.of("expectedState", RemoteJobState.RUNNING.name(), "newState", RemoteJobState.CANCEL_REQUESTED.name()));
 			Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
 		}
 	}
@@ -173,7 +173,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		index.write(writer -> {
 			// if the job still running or scheduled, then mark it deleted and the done handler will delete it
 			LOG.trace("Deleting jobs {}", remoteJobsToDelete);
-			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
+			writer.removeAll(Map.of(RemoteJobEntry.class, remoteJobsToDelete));
 			if (!remoteJobsToCancel.isEmpty()) {
 				LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
 				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, RemoteJobEntry.Expressions.ids(remoteJobsToCancel), RemoteJobEntry.WITH_DELETED));
@@ -230,7 +230,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	IProgressMonitor createMonitor(String jobId, IProgressMonitor monitor) {
-		return new RemoteJobProgressMonitor(monitor, percentComplete -> update(jobId, RemoteJobEntry.WITH_COMPLETION_LEVEL, ImmutableMap.of("completionLevel", percentComplete)));
+		return new RemoteJobProgressMonitor(monitor, percentComplete -> update(jobId, RemoteJobEntry.WITH_COMPLETION_LEVEL, Map.of("completionLevel", percentComplete)));
 	}
 	
 	private class RemoteJobChangeAdapter extends JobChangeAdapter {
@@ -265,7 +265,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String jobId = job.getId();
 				LOG.trace("Running job {}", jobId);
-				update(jobId, RemoteJobEntry.WITH_RUNNING, ImmutableMap.of("state", RemoteJobState.RUNNING.name(), "startDate", System.currentTimeMillis()));
+				update(jobId, RemoteJobEntry.WITH_RUNNING, Map.of("state", RemoteJobState.RUNNING.name(), "startDate", System.currentTimeMillis()));
 			}
 		}
 		
@@ -310,19 +310,6 @@ public final class RemoteJobTracker implements IDisposableService {
 			@Override
 			public <T> Hits<T> search(Query<T> query) throws IOException {
 				return (Hits<T>) searchHits(query.getWhere(), query.getFields(), query.getSortBy(), query.getLimit());
-			}
-			
-			@Override
-			public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-				return index.read(searcher -> searcher.scroll(scroll));
-			}
-			
-			@Override
-			public void cancelScroll(String scrollId) {
-				index.read(searcher -> {
-					searcher.cancelScroll(scrollId);
-					return null;
-				});
 			}
 			
 			@Override

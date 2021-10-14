@@ -63,8 +63,8 @@ if (params.isUnpublishedOnly) {
 	
 }
 
-final SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> iterator = new SearchResourceRequestIterator<>(conceptsRequestBuilder, {scrolledBuilder ->
-	return scrolledBuilder.build().execute(ctx)
+final SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> iterator = new SearchResourceRequestIterator<>(conceptsRequestBuilder, { b ->
+	return b.build().execute(ctx)
 });
 
 while(iterator.hasNext()) {

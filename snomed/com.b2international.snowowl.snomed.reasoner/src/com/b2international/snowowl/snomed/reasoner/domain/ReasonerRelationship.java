@@ -107,11 +107,12 @@ public final class ReasonerRelationship implements Serializable {
 		return destination;
 	}
 	
-	@JsonIgnore
+	@JsonProperty("value")
 	public RelationshipValue getValueAsObject() {
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getValue() {
 		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
@@ -199,15 +200,11 @@ public final class ReasonerRelationship implements Serializable {
 		setDestination(ifNotNull(destinationId, SnomedConcept::new));
 	}
 	
-	@JsonIgnore
+	@JsonProperty("value")
 	public void setValueAsObject(final RelationshipValue value) {
 		this.value = value;
 	}
 
-	public void setValue(final String literal) {
-		setValueAsObject(RelationshipValue.fromLiteral(literal));
-	}
-	
 	public void setType(final SnomedConcept type) {
 		this.type = type;
 	}

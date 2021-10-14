@@ -48,7 +48,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", notNullValue()) // actual number depends on test data, just verify existence
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
 			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()))
-			.body("entry[0].resource.count", equalTo(1928)); // base RF2 package count
+			.body("entry[0].resource.count", equalTo(1943)); // base RF2 package count
 	}
 	
 	@Test

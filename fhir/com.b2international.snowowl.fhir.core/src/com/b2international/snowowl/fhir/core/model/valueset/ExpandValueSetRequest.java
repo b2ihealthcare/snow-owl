@@ -96,6 +96,9 @@ public class ExpandValueSetRequest {
 
 	private final Uri forceSystemVersion;
 	
+	// FHIR API Extension to allow cursor pased paging instead of offset+count
+	private final String after;
+	
 	ExpandValueSetRequest(
 		Uri url,
 		ValueSet valueSet,
@@ -117,7 +120,8 @@ public class ExpandValueSetRequest {
 		Uri excludeSystem,
 		Uri systemVersion,
 		Uri checkSystemVersion,
-		Uri forceSystemVersion) {
+		Uri forceSystemVersion,
+		String after) {
 		
 		this.url = url;
 		this.valueSet = valueSet;
@@ -140,6 +144,7 @@ public class ExpandValueSetRequest {
 		this.systemVersion = systemVersion;
 		this.checkSystemVersion = checkSystemVersion;
 		this.forceSystemVersion = forceSystemVersion;
+		this.after = after;
 	}
 	
 	public Uri getUrl() {
@@ -229,6 +234,10 @@ public class ExpandValueSetRequest {
 	public static Builder builder() {
 		return new Builder();
 	}
+	
+	public String getAfter() {
+		return after;
+	}
 
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends ValidatingBuilder<ExpandValueSetRequest> {
@@ -254,6 +263,7 @@ public class ExpandValueSetRequest {
 		private Uri systemVersion;
 		private Uri checkSystemVersion;
 		private Uri forceSystemVersion;
+		private String after;
 		
 		Builder() {}
 		
@@ -387,10 +397,16 @@ public class ExpandValueSetRequest {
 			return this;
 		}
 		
+		public Builder after(String after) {
+			this.after = after;
+			return this;
+		}
+		
 		@Override
 		protected ExpandValueSetRequest doBuild() {
 			return new ExpandValueSetRequest(url, valueSet, valueSetVersion, context, contextDirection, filter, date, offset, count, includeDesignations, designations.build(),
-					includeDefinition, activeOnly, excludeNested, excludeNotForUI, excludePostCoordinated, displayLanguage, excludeSystem, systemVersion, checkSystemVersion, forceSystemVersion);
+					includeDefinition, activeOnly, excludeNested, excludeNotForUI, excludePostCoordinated, displayLanguage, excludeSystem, systemVersion, checkSystemVersion, forceSystemVersion,
+					after);
 		}
 
 	}

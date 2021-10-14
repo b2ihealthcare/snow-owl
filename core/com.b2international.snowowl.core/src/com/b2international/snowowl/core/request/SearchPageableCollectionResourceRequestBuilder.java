@@ -15,13 +15,16 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.Streams;
 
@@ -45,6 +48,19 @@ public abstract class SearchPageableCollectionResourceRequestBuilder<B extends S
 	
 	public final Stream<R> streamAsync(IEventBus bus, Function<B, AsyncRequest<R>> build) {
 		return Streams.stream(new SearchResourceRequestIterator<B, R>(getSelf(), (builder) -> build.apply(builder).execute(bus).getSync(3, TimeUnit.MINUTES)));
+	}
+	
+	public final <T> Promise<Collection<T>> transformAsync(ServiceProvider context, Function<B, AsyncRequest<R>> build, Function<R, Stream<T>> transform) {
+		return transformAsync(context.service(IEventBus.class), build, transform);
+	}
+	
+	public final <T> Promise<Collection<T>> transformAsync(IEventBus bus, Function<B, AsyncRequest<R>> build, Function<R, Stream<T>> transform) {
+		return Promise.wrap(() -> {
+			return streamAsync(bus, build)
+					.map(transform)
+					.flatMap(t -> t)
+					.collect(Collectors.toList());
+		});
 	}
 
 }

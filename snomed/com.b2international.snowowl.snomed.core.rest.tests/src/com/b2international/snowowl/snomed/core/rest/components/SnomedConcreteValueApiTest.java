@@ -31,8 +31,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -71,7 +73,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConcreteValueInvalidSource() {
 		Json requestBody = createConcreteValueRequestBody(
-			"11110000", Concepts.PART_OF, new RelationshipValue(3.334d))
+			"11110000", Concepts.PART_OF, new RelationshipValue(new BigDecimal("3.334")))
 			.with("commitComment", "Created new concrete value with invalid sourceId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
@@ -301,7 +303,10 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	public void updateUnreleasedConcreteValue() throws Exception {
 		String relationshipId = createNewConcreteValue(branchPath);
 		Json update = Json.object(
-			"value", "#15",
+			"value", Json.object(
+				"type", "INTEGER", 
+				"numericValue", "15"
+			),
 			"commitComment", "Updated value of unreleased concrete value"
 		);
 
@@ -310,7 +315,8 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("value", equalTo("#15"));
+			.body("value.type", equalTo("INTEGER"))
+			.body("value.numericValue", equalTo("15"));
 	}
 	
 	@Test
@@ -348,7 +354,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("value", equalTo("\"Hello World!\""));
+			.body("value.stringValue", equalTo("Hello World!"));
 	}
 	
 	@Test(expected = ConflictException.class)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public final class SnomedMRCMDomainReferenceSetMemberBuilder extends SnomedMembe
 	private String proximalPrimitiveRefinement;
 	private String domainTemplateForPrecoordination;
 	private String domainTemplateForPostcoordination;
-	private String editorialGuideReference;
+	private String guideURL;
 
 	public SnomedMRCMDomainReferenceSetMemberBuilder withDomainConstraint(final String domainConstraint) {
 		this.domainConstraint = domainConstraint;
@@ -62,8 +62,8 @@ public final class SnomedMRCMDomainReferenceSetMemberBuilder extends SnomedMembe
 		return getSelf();
 	}
 
-	public SnomedMRCMDomainReferenceSetMemberBuilder withEditorialGuideReference(final String editorialGuideReference) {
-		this.editorialGuideReference = editorialGuideReference;
+	public SnomedMRCMDomainReferenceSetMemberBuilder withGuideURL(final String guideURL) {
+		this.guideURL = guideURL;
 		return getSelf();
 	}
 
@@ -77,7 +77,7 @@ public final class SnomedMRCMDomainReferenceSetMemberBuilder extends SnomedMembe
 			.field(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, proximalPrimitiveRefinement)
 			.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, domainTemplateForPrecoordination)
 			.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, domainTemplateForPostcoordination)
-			.field(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, editorialGuideReference);
+			.field(SnomedRf2Headers.FIELD_MRCM_GUIDEURL, guideURL);
 	}
 
 }

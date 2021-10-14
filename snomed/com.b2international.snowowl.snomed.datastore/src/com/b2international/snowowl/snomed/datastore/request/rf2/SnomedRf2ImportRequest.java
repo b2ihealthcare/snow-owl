@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -49,6 +52,7 @@ import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -57,11 +61,13 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -70,7 +76,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.config.SnomedLanguageConfig;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.*;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
@@ -95,8 +101,6 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger LOG = LoggerFactory.getLogger("import");
-	
 	private static final String TXT_EXT = ".txt";
 	
 	@NotNull
@@ -115,7 +119,12 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private Set<String> ignoreMissingReferencesIn;
 	
 	@JsonProperty
+	private LocalDate importUntil;
+	
+	@JsonProperty
 	private boolean dryRun = false;
+	
+	private transient Logger log;
 
 	SnomedRf2ImportRequest(Attachment rf2Archive) {
 		this.rf2Archive = rf2Archive;
@@ -137,8 +146,15 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		this.dryRun = dryRun;
 	}
 	
+	void setImportUntil(LocalDate importUntil) {
+		this.importUntil = importUntil;
+	}
+	
 	@Override
 	public ImportResponse execute(BranchContext context) {
+		log = LoggerFactory.getLogger("import");
+		context = context.inject().bind(Logger.class, log).build();
+		
 		Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(releaseType, createVersions);
 		validate(context, importConfig);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
@@ -157,13 +173,6 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private void validate(BranchContext context, final Rf2ImportConfiguration importConfig) {
 		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
 		
-		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType)) {
-			throw new BadRequestException("Importing a Full RF2 release of SNOMED CT "
-					+ "from an archive to any branch is prohibited when SNOMED CT "
-					+ "ontology is already available on the terminology server. "
-					+ "Please perform either a Delta or a Snapshot import instead.");
-		}
-		
 		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType)) {
 			throw new BadRequestException("Importing a Delta release of SNOMED CT "
 					+ "from an archive to any branch is prohibited when SNOMED CT "
@@ -173,9 +182,27 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		String codeSystemWorkingBranchPath = context.service(TerminologyResource.class).getBranchPath();
 		
-		if (!codeSystemWorkingBranchPath.equals(context.branch().path()) && importConfig.isCreateVersions()) {
-			throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
-					+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+		if (importConfig.isCreateVersions()) {
+			if (!codeSystemWorkingBranchPath.equals(context.branch().path())) {
+				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
+						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+			} else {
+				// importing into main development branch with create version enabled should be allowed only and only if the branch does not have any unpublished content present
+				for (Class<?> type : List.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
+					try {
+						int numberOfUnpublishedDocuments = context.service(RevisionSearcher.class).search(Query.select(type)
+							.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+							.limit(0)
+							.build()).getTotal();
+						if (numberOfUnpublishedDocuments > 0) {
+							throw new BadRequestException("Creating a version during RF2 import is prohibited when unpublished content is present on the target.");
+						}
+					} catch (IOException e) {
+						throw new RuntimeException("Failed to check unpublished content presence for type: " + type.getSimpleName(), e);
+					}
+				}
+			}
+			
 		}
 	}
 
@@ -183,13 +210,23 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		final ResourceURI codeSystemUri = context.service(ResourceURI.class);
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		
+		String latestVersionEffectiveTime = EffectiveTimes.format(ResourceRequests.prepareSearchVersion()
+			.one()
+			.filterByResource(codeSystemUri.withoutPath())
+			.sortBy("effectiveTime:desc")
+			.buildAsync()
+			.execute(context)
+			.first()
+			.map(Version::getEffectiveTime)
+			.orElse(LocalDate.EPOCH), DateFormats.SHORT);
+		
 		try (final DB db = createDb()) {
 
 			// Read effective time slices from import files
-			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled());
+			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled(), latestVersionEffectiveTime, importUntil == null ? null : EffectiveTimes.format(importUntil, DateFormats.SHORT));
 			Stopwatch w = Stopwatch.createStarted();
 			read(rf2Archive, effectiveTimeSlices, reporter);
-			LOG.info("Preparing RF2 import took: {}", w);
+			log.info("Preparing RF2 import took: {}", w);
 			w.reset().start();
 			
 			// Log issues with rows from the import files
@@ -200,7 +237,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			
 			// Run validation that takes current terminology content into account
 			final List<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG, ignoreMissingReferencesIn);
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(log, ignoreMissingReferencesIn);
 			
 			/* 
 			 * TODO: Use Attachment to get the release file name and/or track file and line number sources for each row 
@@ -235,17 +272,17 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	}
 
 	private void logValidationIssues(final Rf2ValidationIssueReporter reporter) {
-		reporter.logWarnings(LOG);
-		reporter.logErrors(LOG);
+		reporter.logWarnings(log);
+		reporter.logErrors(log);
 	}
 	
 	private void logValidationIssues(final ImportDefectAcceptor defectAcceptor) {
 		defectAcceptor.getDefects()
 			.forEach(defect -> {
 				if (defect.isError()) {
-					LOG.error(defect.getMessage());
+					log.error(defect.getMessage());
 				} else if (defect.isWarning()) {
-					LOG.warn(defect.getMessage());
+					log.warn(defect.getMessage());
 				}
 			});
 	}
@@ -273,7 +310,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 						try (final InputStream in = zip.getInputStream(entry)) {
 							readFile(entry, in, oReader, slices, reporter);
 						}
-						LOG.info("{} - {}", entry.getName(), w);
+						log.info("{} - {}", entry.getName(), w);
 					}
 				}
 			}
@@ -307,7 +344,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 				}
 
 				if (resolver == null) {
-					LOG.warn("Unrecognized RF2 file: {}", entryName);
+					log.warn("Unrecognized RF2 file: {}", entryName);
 					break;
 				}
 				
@@ -366,7 +403,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			.filterByType(SnomedRefSetType.LANGUAGE)
 			.filterByActive(true)
 			.setFields(SnomedConceptDocument.Fields.ID)
-			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
+			.sortBy(Sort.fieldAsc(SnomedConceptDocument.Fields.ID))
 			.build()
 			.execute(context);
 		

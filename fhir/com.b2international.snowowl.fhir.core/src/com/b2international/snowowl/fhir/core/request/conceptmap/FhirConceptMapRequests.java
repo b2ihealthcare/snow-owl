@@ -27,5 +27,9 @@ public class FhirConceptMapRequests {
 	public FhirConceptMapGetRequestBuilder prepareGet(String idOrUrl) {
 		return new FhirConceptMapGetRequestBuilder(idOrUrl);
 	}
+
+	public FhirConceptMapTranslateRequestBuilder prepareTranslate() {
+		return new FhirConceptMapTranslateRequestBuilder();
+	}
 	
 }
