@@ -28,6 +28,7 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
@@ -68,6 +69,7 @@ public interface NamespaceIdProvider {
 			.filterByActive(true)
 			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 			.filterByConcepts(mutableNamespaceConceptIds)
+			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, SnomedDescriptionIndexEntry.Fields.TERM)
 			.setLimit(1000)
 			.stream(context)
 			.flatMap(SnomedDescriptions::stream)
