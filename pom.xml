@@ -897,7 +897,8 @@
 					<version>${tycho.version}</version>
 					<configuration>
 						<useProjectSettings>false</useProjectSettings>
-						<release>16</release>
+						<source>16</source>
+						<target>16</target>
 						<excludeResources>
 							<excludeResource>**/*.groovy</excludeResource>
 							<excludeResource>**/*.xtend</excludeResource>
@@ -910,7 +911,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.0</version>
 					<configuration>
-						<release>16</release>
+						<source>16</source>
+						<target>16</target>
 					</configuration>
 				</plugin>
 				<plugin>
