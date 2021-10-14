@@ -18,7 +18,7 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-web-5.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-web-5.3.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-webmvc-5.3.8.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-16">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
