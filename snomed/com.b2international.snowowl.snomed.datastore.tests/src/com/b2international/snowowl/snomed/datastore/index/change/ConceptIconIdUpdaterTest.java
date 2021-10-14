@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -61,6 +62,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expected = docWithDefaults(concept)
+				.semanticTags(ImmutableSortedSet.of("apple"))
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_US)
 						))
@@ -95,6 +97,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expected = docWithDefaults(concept)
+				.semanticTags(ImmutableSortedSet.of(FINDING_SEMANTIC_TAG))
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_US)
 						))
@@ -143,6 +146,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expectedChild = docWithDefaults(childConcept)
+				.semanticTags(ImmutableSortedSet.of("apple"))
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_US)
 						))
@@ -197,6 +201,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expectedChild = docWithDefaults(childConcept)
+				.semanticTags(ImmutableSortedSet.of(DISORDER_SEMANTIC_TAG))
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_US)
 						))
@@ -249,6 +254,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expectedChild = docWithDefaults(childConcept)
+				.semanticTags(ImmutableSortedSet.of("apple"))
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_US)
 						))
@@ -311,6 +317,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expectedChild = docWithDefaults(childConcept)
+				.semanticTags(ImmutableSortedSet.of(DISORDER_SEMANTIC_TAG))
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_US)
 						))
@@ -374,6 +381,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expectedChild = docWithDefaults(childConcept)
+				.semanticTags(ImmutableSortedSet.of(DISORDER_SEMANTIC_TAG, "trouble")) // both semantic tags should be extracted
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_US),
 						new SnomedDescriptionFragment(fsn3.getId(), fsn3.getTypeId(), fsn3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
@@ -437,6 +445,7 @@ public class ConceptIconIdUpdaterTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 
 		final SnomedConceptDocument expectedChild = docWithDefaults(childConcept)
+				.semanticTags(ImmutableSortedSet.of(DISORDER_SEMANTIC_TAG, "trouble")) // both semantic tags should be present
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK),
 						new SnomedDescriptionFragment(fsn3.getId(), fsn3.getTypeId(), fsn3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_SG)

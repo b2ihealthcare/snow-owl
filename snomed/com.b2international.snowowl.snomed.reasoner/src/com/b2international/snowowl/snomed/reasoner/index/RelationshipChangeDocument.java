@@ -21,6 +21,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 import com.b2international.index.Doc;
 import com.b2international.index.mapping.AutoGenerateID;
 import com.b2international.index.query.Expression;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -79,7 +80,8 @@ public final class RelationshipChangeDocument {
 		private String sourceId;
 		private String typeId;
 		private String destinationId;
-		private String value;
+		private RelationshipValueType valueType;
+		private String rawValue;
 		private Integer group;
 		private Integer unionGroup;
 		private Boolean released;
@@ -120,8 +122,13 @@ public final class RelationshipChangeDocument {
 			return this;
 		}
 
-		public Builder value(final String value) {
-			this.value = value;
+		public Builder valueType(final RelationshipValueType valueType) {
+			this.valueType = valueType;
+			return this;
+		}
+		
+		public Builder rawValue(final String rawValue) {
+			this.rawValue = rawValue;
 			return this;
 		}
 
@@ -152,7 +159,8 @@ public final class RelationshipChangeDocument {
 					sourceId, 
 					typeId,
 					destinationId,
-					value,
+					valueType,
+					rawValue,
 					group, 
 					unionGroup,
 					released,
@@ -173,8 +181,9 @@ public final class RelationshipChangeDocument {
 
 	private final String sourceId; 
 	private final String typeId;
-	private final String destinationId; 
-	private final String value;
+	private final String destinationId;
+	private final RelationshipValueType valueType;
+	private final String rawValue;
 	private final Integer group;
 	private final Integer unionGroup;
 	private final String characteristicTypeId;
@@ -184,8 +193,9 @@ public final class RelationshipChangeDocument {
 			final String relationshipId,
 			final String sourceId, 
 			final String typeId, 
-			final String destinationId, 
-			final String value,
+			final String destinationId,
+			final RelationshipValueType valueType,
+			final String rawValue,
 			final Integer group, 
 			final Integer unionGroup,
 			final Boolean released, 
@@ -197,7 +207,8 @@ public final class RelationshipChangeDocument {
 		this.sourceId = sourceId;
 		this.typeId = typeId;
 		this.destinationId = destinationId;
-		this.value = value;
+		this.valueType = valueType;
+		this.rawValue = rawValue;
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.released = released;
@@ -228,8 +239,12 @@ public final class RelationshipChangeDocument {
 		return destinationId;
 	}
 	
-	public String getValue() {
-		return value;
+	public RelationshipValueType getValueType() {
+		return valueType;
+	}
+	
+	public String getRawValue() {
+		return rawValue;
 	}
 
 	public Integer getGroup() {
@@ -263,6 +278,10 @@ public final class RelationshipChangeDocument {
 		builder.append(typeId);
 		builder.append(", destinationId=");
 		builder.append(destinationId);
+		builder.append(", valueType=");
+		builder.append(valueType);
+		builder.append(", rawValue=");
+		builder.append(rawValue);
 		builder.append(", group=");
 		builder.append(group);
 		builder.append(", unionGroup=");

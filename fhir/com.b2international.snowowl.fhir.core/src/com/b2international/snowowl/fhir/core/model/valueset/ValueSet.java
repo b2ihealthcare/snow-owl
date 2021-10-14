@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.valueset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A value set contains a set of codes from those defined by one or more code systems to specify which codes can be used in a particular context.
@@ -56,6 +58,39 @@ public class ValueSet extends MetadataResource {
 	private static final long serialVersionUID = 1L;
 	
 	public static final String RESOURCE_TYPE_VALUE_SET = "ValueSet";
+	
+	/**
+	 * @since 8.0
+	 */
+	public static final class Fields extends MetadataResource.Fields {
+		
+		public static final String IMMUTABLE = "immutable";
+		public static final String COMPOSE = "compose";
+		public static final String EXPANSION = "expansion";
+		
+		public static final Set<String> MANDATORY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.build();
+		
+		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.SUMMARY)
+				.build();
+		
+		public static final Set<String> SUMMARY_TEXT = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.build();
+		
+		public static final Set<String> SUMMARY_DATA = MANDATORY;
+		
+		public static final Set<String> ALL = ImmutableSet.<String>builder()
+				.addAll(MANDATORY)
+				.addAll(SUMMARY)
+				.add(IMMUTABLE)
+				.add(COMPOSE)
+				.add(EXPANSION)
+				.build();
+			
+	}
 
 	//FHIR header "resourceType" : "ValueSet",
 	@Mandatory
@@ -83,17 +118,36 @@ public class ValueSet extends MetadataResource {
 	private final Expansion expansion;
 	
 	@SuppressWarnings("rawtypes")
-	public ValueSet(Id id, final Meta meta, final Uri impliciteRules, Code language, Narrative text,
-			
-			final Uri url, final String version, final String name, final String title, Code status, 
-			final Boolean experimental, final Date date, String publisher, 
-			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
+	public ValueSet(
+			// MetadataResource properties
+			final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text,
+			final Uri url, 
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status, 
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, 
-			final String resourceType, final Collection<Identifier> identifiers, final String copyright,
-			final Boolean immutable, final String purpose, final String toolingId,
-			final Compose compose, final Expansion expansion) {
+			final String purpose,
+			final String toolingId,
+			// ValueSet properties
+			final String resourceType, 
+			final Collection<Identifier> identifiers, 
+			final String copyright, 
+			final Boolean immutable,
+			final Compose compose, 
+			final Expansion expansion) {
 		
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
+		super(id, meta, implicitRules, language, text, url, version, name, title, status, experimental, 
 				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId);
 		
 		this.resourceType = resourceType;
@@ -126,6 +180,38 @@ public class ValueSet extends MetadataResource {
 	
 	public Expansion getExpansion() {
 		return expansion;
+	}
+	
+	public ValueSet withExpansion(Expansion newExpansion) {
+		return new ValueSet(
+			// MetadataResource properties
+			getId(), 
+			getMeta(), 
+			getImplicitRules(), 
+			getLanguage(), 
+			getText(), 
+			getUrl(), 
+			getVersion(), 
+			getName(),
+			getTitle(), 
+			getStatus(), 
+			getExperimental(), 
+			getDate(), 
+			getPublisher(), 
+			getContacts(), 
+			getDescription(), 
+			getUsageContexts(),
+			getJurisdictions(), 
+			getPurpose(), 
+			getToolingId(),
+			// ValueSet properties
+			getResourceType(), 
+			getIdentifiers(), 
+			getCopyright(), 
+			getImmutable(), 
+			getCompose(), 
+			newExpansion)
+		;
 	}
 	
 	public static Builder builder() {
@@ -202,16 +288,39 @@ public class ValueSet extends MetadataResource {
 		
 		@Override
 		protected ValueSet doBuild() {
+//			// cross field validation
+//			if (composeParts.isEmpty() && expansion == null) {
+//				throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
+//			}
 			
-			//cross field validation
-			//if (composeParts.isEmpty() && expansion == null) {
-			//	throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
-			//}
-			
-			return new ValueSet(id, meta, implicitRules, language, text, url, version, name,  title, status, experimental, 
-					date, publisher, contacts, description, usageContexts,	jurisdictions, 
-					
-					resourceType, identifiers, copyright, immutable, purpose, toolingId, compose, expansion);
+			return new ValueSet(
+				// MetadataResource properties
+				id, 
+				meta, 
+				implicitRules, 
+				language, 
+				text, 
+				url, 
+				version, 
+				name,
+				title, 
+				status, 
+				experimental, 
+				date, 
+				publisher, 
+				contacts, 
+				description, 
+				usageContexts,
+				jurisdictions, 
+				purpose, 
+				toolingId,
+				// ValueSet properties
+				resourceType, 
+				identifiers, 
+				copyright, 
+				immutable, 
+				compose, 
+				expansion);
 		}
 	}
 		

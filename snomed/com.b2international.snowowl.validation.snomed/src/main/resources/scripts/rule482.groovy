@@ -1,6 +1,7 @@
 package scripts;
 
 import java.util.Map.Entry
+import java.util.stream.Stream
 
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
@@ -36,8 +37,8 @@ if (params.isUnpublishedOnly) {
 	filterExpressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }
 
-Iterable<Hits<String[]>> queryResult = ctx.service(RevisionSearcher.class)
-		.scroll(Query.select(String[].class)
+Stream<Hits<String[]>> queryResult = ctx.service(RevisionSearcher.class)
+		.stream(Query.select(String[].class)
 		.from(SnomedDescriptionIndexEntry.class)
 		.fields(
 			SnomedDescriptionIndexEntry.Fields.ID,
@@ -47,7 +48,7 @@ Iterable<Hits<String[]>> queryResult = ctx.service(RevisionSearcher.class)
 		.limit(50000)
 		.build())
 		
-queryResult.each({ hits ->
+queryResult.forEachOrdered({ hits ->
 	for (String[] hit : hits) {
 		def descId = hit[0]
 		def descTerm = hit[1]

@@ -28,16 +28,14 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.1
  */
-final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, RevisionBranch> implements AccessControl {
+final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, RevisionBranch> {
 
 	enum OptionKey {
 		
@@ -130,11 +128,6 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 				branchHit.setChildren(new Branches(children, null, children.size(), children.size()));
 			}
 		}
-	}
-
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
 	}
 
 }

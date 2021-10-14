@@ -24,11 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,7 +33,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -139,7 +135,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
 			.setLocales(locales)
 			.setExpand(expand)
-			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
+			.sortBy(Sort.fieldAsc(SnomedConceptDocument.Fields.ID))
 			.setLimit(10_000);
 		
 		if (includeInactiveMembers) {

@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.conceptmap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
@@ -62,6 +64,36 @@ public class ConceptMap extends MetadataResource {
 	
 	public static final String RESOURCE_TYPE_CONCEPT_MAP = "ConceptMap";
 
+	/**
+	 * @since 8.0
+	 */
+	public static final class Fields extends MetadataResource.Fields {
+		
+		public static final String GROUP = "group";
+		
+		public static final Set<String> MANDATORY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.build();
+		
+		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.SUMMARY)
+				.build();
+		
+		public static final Set<String> SUMMARY_TEXT = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.build();
+		
+		public static final Set<String> SUMMARY_DATA = MANDATORY;
+		
+		public static final Set<String> ALL = ImmutableSet.<String>builder()
+				.addAll(MANDATORY)
+				.addAll(SUMMARY)
+				.add(GROUP)
+				.build();
+
+		
+	}
+	
 	// FHIR header "resourceType" : "ConceptMap",
 	@Mandatory
 	@JsonProperty

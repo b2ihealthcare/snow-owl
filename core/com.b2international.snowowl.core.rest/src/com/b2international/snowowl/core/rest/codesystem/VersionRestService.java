@@ -28,8 +28,8 @@ import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiErrorException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
@@ -89,8 +89,9 @@ public class VersionRestService extends AbstractRestService {
 	}
 
 	@Operation(
-			summary="Retrieve a resource version by identifier (<resourceType/resourceId/version>)",
-			description="Returns a published resource version for the specified resource with the given version identifier.")
+		summary="Retrieve a resource version by identifier (<resourceType/resourceId/version>)",
+		description="Returns a published resource version for the specified resource with the given version identifier."
+	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "404", description = "Version Not Found")
@@ -99,16 +100,16 @@ public class VersionRestService extends AbstractRestService {
 	public Promise<Version> getVersion(
 			@Parameter(description="The resource version uri")
 			@PathVariable(value="versionUri") 
-			final ResourceURI versionUri) {
+			final String versionUri) {
 		return ResourceRequests.prepareGetVersion(versionUri).buildAsync().execute(getBus());
-
 	}
 	
 	@Operation(
-			summary="Create a new resource version",
-			description="Creates a new resource version. "
-					+ "The version tag (represented by an empty branch) is created on the resource's current working branch. "
-					+ "Where applicable, effective times are set on the unpublished content as part of this operation.")
+		summary="Create a new resource version",
+		description="Creates a new resource version. "
+				+ "The version tag (represented by an empty branch) is created on the resource's current working branch. "
+				+ "Where applicable, effective times are set on the unpublished content as part of this operation."
+	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "Created"),
 		@ApiResponse(responseCode = "404", description = "Not found"),
@@ -122,7 +123,7 @@ public class VersionRestService extends AbstractRestService {
 		final VersionRestInput change = input.getChange();
 		ApiValidation.checkInput(change);
 		
-		ResourceURI versionUri = change.getResource().withPath(change.getVersion());
+		String newVersionUri = String.join(Branch.SEPARATOR, change.getResource().toString(), change.getVersion());
 		
 		String jobId = ResourceRequests.prepareNewVersion()
 				.setResource(change.getResource())
@@ -132,14 +133,14 @@ public class VersionRestService extends AbstractRestService {
 				.setForce(change.isForce())
 				.setCommitComment(input.getCommitComment())
 				.buildAsync()
-				.runAsJobWithRestart(ResourceRequests.versionJobKey(change.getResource()), "Creating version " + versionUri)
+				.runAsJobWithRestart(ResourceRequests.versionJobKey(change.getResource()), "Creating version " + newVersionUri)
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
 		RemoteJobEntry job = JobRequests.waitForJob(getBus(), jobId, 500);
 		
 		if (job.isSuccessful()) {
-			final URI location = MvcUriComponentsBuilder.fromMethodName(VersionRestService.class, "getVersion", versionUri).build().toUri();
+			final URI location = MvcUriComponentsBuilder.fromMethodName(VersionRestService.class, "getVersion", newVersionUri).build().toUri();
 			return ResponseEntity.created(location).build();
 		} else if (!Strings.isNullOrEmpty(job.getResult())) {
 			ApiError error = job.getResultAs(ApplicationContext.getServiceForClass(ObjectMapper.class), ApiError.class);

@@ -31,14 +31,10 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
-import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -210,8 +206,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		return SnomedRequests.prepareSearchMember()
 				.filterByRefSet(referenceSetIds)
 				.sortBy(
-						SortField.ascending(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID), 
-						SortField.ascending(SnomedRefSetMemberIndexEntry.Fields.ID));
+						Sort.fieldAsc(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID), 
+						Sort.fieldAsc(SnomedRefSetMemberIndexEntry.Fields.ID));
 	}
 
 	@Override

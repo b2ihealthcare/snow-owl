@@ -68,12 +68,15 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 			TerminologyResource terminologyResource = (TerminologyResource) resource;
 			if (uriToResolve.isHead()) {
 				// use code system working branch directly when HEAD is specified
-				return new PathWithVersion(terminologyResource.getBranchPath());
+				final String workingBranchPath = terminologyResource.getBranchPath() + uriToResolve.getTimestampPart();
+				return new PathWithVersion(workingBranchPath);
 			}
 			
 			// prevent running version search if path does not look like a versionId (single path segment)
+			final String relativeBranchPath = terminologyResource.getRelativeBranchPath(uriToResolve.getPath());
 			if (uriToResolve.getPath().contains(Branch.SEPARATOR)) {
-				return new PathWithVersion(terminologyResource.getRelativeBranchPath(uriToResolve.getPath()));
+				final String absoluteBranchPath = relativeBranchPath + uriToResolve.getTimestampPart();
+				return new PathWithVersion(absoluteBranchPath);
 			}
 				
 			VersionSearchRequestBuilder versionSearch = ResourceRequests.prepareSearchVersion()
@@ -82,27 +85,30 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 			
 			if (uriToResolve.isLatest()) {
 				// fetch the latest resource version if LATEST is specified in the URI
-				versionSearch.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME));
+				versionSearch.sortBy(SearchResourceRequest.Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME));
 			} else {
 				// try to fetch the path as exact version if not the special LATEST is specified in the URI
 				versionSearch.filterByVersionId(uriToResolve.getPath());
 			}
 			
 			// determine the final branch path, if based on the version search we find a version, then use that, otherwise use the defined path as relative branch of the code system working branch
-			Versions versions = versionSearch
-				.buildAsync()
+			Versions versions = versionSearch.buildAsync()
 				.getRequest()
 				.execute(context);
 			
 			return versions.first()
-				.map(v -> new PathWithVersion(v.getBranchPath(), v.getVersionResourceURI()))
+				.map(v -> {
+					final String versionBranchPath = v.getBranchPath() + uriToResolve.getTimestampPart();
+					final ResourceURI versionResourceURI = v.getVersionResourceURI().withTimestampPart(uriToResolve.getTimestampPart());
+					return new PathWithVersion(versionBranchPath, versionResourceURI);
+				})
 				.orElseGet(() -> {
 					if (uriToResolve.isLatest() || !allowBranches) {
 						throw new BadRequestException("No Resource version is present in '%s'. Explicit '%s' can be used to retrieve the latest work in progress version of the Resource.", 
 							terminologyResource.getId(), terminologyResource.getId());
 					}
 					
-					return new PathWithVersion(terminologyResource.getRelativeBranchPath(uriToResolve.getPath())); 
+					return new PathWithVersion(relativeBranchPath); 
 				});
 		}
 		

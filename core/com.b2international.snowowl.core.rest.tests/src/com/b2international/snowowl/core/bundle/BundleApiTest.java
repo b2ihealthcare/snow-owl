@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.bundle;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Set;
@@ -28,8 +29,11 @@ import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.TermFilter;
@@ -255,6 +259,42 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	}
 	
 	@Test
+	public void searchByBundleId() {
+		final String parentBundleId = createBundle("b1", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("b2", parentBundleId, "Middle bundle");
+		createBundle("b3", middleBundleId, "Child bundle");
+		
+		final Bundles childrenOfParent = ResourceRequests.bundles()
+			.prepareSearch()
+			.all()
+			.filterByBundleId(parentBundleId)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(1L, TimeUnit.MINUTES);
+		
+		assertEquals(1, childrenOfParent.getTotal());
+		assertEquals(middleBundleId, childrenOfParent.first().get().getId());
+	}
+	
+	@Test
+	public void searchByBundleAncestorId() {
+		final String parentBundleId = createBundle("e1", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("e2", parentBundleId, "Middle bundle");
+		final String childBundleId = createBundle("e3", middleBundleId, "Child bundle");
+		
+		final Bundles descendantsOfParent = ResourceRequests.bundles()
+			.prepareSearch()
+			.all()
+			.filterByBundleAncestorId(parentBundleId)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(10L, TimeUnit.MINUTES);
+		
+		assertEquals(2, descendantsOfParent.getTotal());
+		assertThat(descendantsOfParent).extracting(Bundle::getId).containsOnly(middleBundleId, childBundleId);
+	}
+	
+	@Test
 	public void expandResources() {
 		final String rootBundleId = createBundle();
 		
@@ -357,5 +397,66 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final Stream<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId);
 		
 		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, cs3Id);
+	}
+	
+	@Test(expected = CycleDetectedException.class)
+	public void updateBundleBundleId_DirectCycle() {
+		final String parentBundleId = createBundle("p1", IComponent.ROOT_ID, "Parent bundle");
+		final String childBundleId = createBundle("c1", parentBundleId, "Child bundle");
+		
+		/* 
+		 * Make "parent" the child of "child" -- but "child" is already a child of "parent",
+		 * so that is not possible. 
+		 */
+		ResourceRequests.bundles()
+			.prepareUpdate(parentBundleId)
+			.setBundleId(childBundleId)
+			.build(USER, String.format("Update bundle: %s", parentBundleId))
+			.execute(Services.bus())
+			.getSync(1L, TimeUnit.MINUTES);
+	}
+	
+	@Test(expected = CycleDetectedException.class)
+	public void updateBundleBundleId_IndirectCycle() {
+		final String parentBundleId = createBundle("p2", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("m2", parentBundleId, "Middle bundle");
+		final String childBundleId = createBundle("c2", middleBundleId, "Child bundle");
+		
+		/* 
+		 * Make "parent" the child of "child" -- but "child" is already an indirect descendant of "parent",
+		 * so that is not possible. 
+		 */
+		ResourceRequests.bundles()
+			.prepareUpdate(parentBundleId)
+			.setBundleId(childBundleId)
+			.build(USER, String.format("Update bundle: %s", parentBundleId))
+			.execute(Services.bus())
+			.getSync(1L, TimeUnit.MINUTES);
+	}
+	
+	@Test
+	public void updateBundleBundleId_Hierarchy() {
+		final String parentBundleId = createBundle("p3", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("m3", parentBundleId, "Middle bundle");
+		final String childBundleId = createBundle("c3", middleBundleId, "Child bundle");
+	
+		final String otherParentBundleId = createBundle("p4", IComponent.ROOT_ID, "Other parent bundle");
+		
+		ResourceRequests.bundles()
+			.prepareUpdate(parentBundleId)
+			.setBundleId(otherParentBundleId)
+			.build(USER, String.format("Update bundle: %s", parentBundleId))
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES);
+		
+		final Resources descendants = ResourceRequests.prepareSearch()
+			.all()
+			.filterByBundleAncestorId(otherParentBundleId)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(100L, TimeUnit.MINUTES);
+		
+		assertEquals(3, descendants.getTotal());
+		assertThat(descendants).extracting(Resource::getId).containsOnly(parentBundleId, middleBundleId, childBundleId);
 	}
 }

@@ -33,7 +33,7 @@ public abstract class SnomedApiTestConstants implements ApiTestConstants {
 	/**
 	 * The context-relative base URL for SNOMED CT-related controllers.
 	 */
-	public static final String SCT_API = "/snomed-ct/v3";
+	public static final String SCT_API = "/snomedct";
 
 	/**
 	 * An acceptability map which specifies that the corresponding description is acceptable in the UK language reference set.
@@ -184,7 +184,7 @@ public abstract class SnomedApiTestConstants implements ApiTestConstants {
 	public static final String DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2 = "[[+scg(<< ^ 723264001 |Lateralizable body structure reference set (foundation metadata concept)|)]]: "
 			+ "[[0..1]] 272741003 |Laterality| = [[+id(<< 182353008 |Side (qualifier value)|)]]";
 	
-	public static final String EDITORIAL_GUIDE_REFERENCE = "http://snomed.org/dom386053000";
+	public static final String GUIDEURL = "http://snomed.org/dom386053000";
 	
 	public static final String DOMAIN_ID = "386053000";
 	public static final String DOMAIN_ID_2 = "363787002";

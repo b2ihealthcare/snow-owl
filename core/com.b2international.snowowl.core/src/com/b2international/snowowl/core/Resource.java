@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -40,6 +41,7 @@ public abstract class Resource implements Serializable {
 		public static final String LANGUAGE = ResourceDocument.Fields.LANGUAGE;
 		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
 		public static final String RESOURCE_TYPE = ResourceDocument.Fields.RESOURCE_TYPE;
+		public static final String TYPE_RANK = ResourceDocument.Fields.TYPE_RANK;
 		
 		// TerminologyResource subtype specific fields, but for convenience and single API access, they are defined here
 		public static final String OID = ResourceDocument.Fields.OID;
@@ -53,7 +55,8 @@ public abstract class Resource implements Serializable {
 			OWNER,
 			OID,
 			CREATED_AT,
-			RESOURCE_TYPE
+			RESOURCE_TYPE,
+			TYPE_RANK
 		);
 	}
 	
@@ -90,7 +93,10 @@ public abstract class Resource implements Serializable {
 	// FHIR property, supports markdown
 	private String purpose;
 
-	// The ID of the bundle this resource is contained by
+	// Hierarchical path from the resource root; contains all indirect ancestor bundle ID(s) of this resource
+	private List<String> bundleAncestorIds;
+	
+	// The ID of the bundle this resource is directly contained by
 	private String bundleId;
 
 	/**
@@ -219,6 +225,14 @@ public abstract class Resource implements Serializable {
 
 	public void setPurpose(String purpose) {
 		this.purpose = purpose;
+	}
+	
+	public List<String> getBundleAncestorIds() {
+		return bundleAncestorIds;
+	}
+	
+	public void setBundleAncestorIds(List<String> bundleAncestorIds) {
+		this.bundleAncestorIds = bundleAncestorIds;
 	}
 	
 	public String getBundleId() {

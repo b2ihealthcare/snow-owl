@@ -48,21 +48,21 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 
 	@Test
 	public void activeOnly() throws Exception {
-		final Expression actual = eval("* {{ active=true }}");
+		final Expression actual = eval("* {{ c active=true }}");
 		final Expression expected = SnomedDocument.Expressions.active();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void inactiveOnly() throws Exception {
-		final Expression actual = eval("* {{ active=false }}");
+		final Expression actual = eval("* {{ c active=false }}");
 		final Expression expected = SnomedDocument.Expressions.inactive();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void moduleId() throws Exception {
-		final Expression actual = eval("* {{ moduleId= " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression actual = eval("* {{ c moduleId= " + Concepts.MODULE_SCT_CORE + " }}");
 		final Expression expected = SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE));
 		assertEquals(expected, actual);
 	}
@@ -90,7 +90,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	
 	@Test
 	public void conjunctionActiveAndModuleId() throws Exception {
-		final Expression actual = eval("* {{ active = true, moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression actual = eval("* {{ c active = true, moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
 		final Expression expected = Expressions.builder()
 			.filter(SnomedDocument.Expressions.active())
 			.filter(SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE)))
@@ -125,7 +125,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	
 	@Test
 	public void disjunctionActiveAndModuleId() throws Exception {
-		final Expression actual = eval("* {{ active = true OR moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression actual = eval("* {{ c active = true OR moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
 		final Expression expected = Expressions.builder()
 			.should(SnomedDocument.Expressions.active())
 			.should(SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE)))
@@ -135,12 +135,12 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	
 	@Test(expected = BadRequestException.class)
 	public void conjunctionDomainInconsistency() throws Exception {
-		eval("* {{ active=true AND Description.moduleId = "+ Concepts.MODULE_SCT_CORE +" }}");
+		eval("* {{ active=true AND definitionStatusId = "+ Concepts.MODULE_SCT_CORE +" }}");
 	}
 	
 	@Test(expected = BadRequestException.class)
 	public void disjunctionDomainInconsistency() throws Exception {
-		eval("* {{ Description.active=true OR moduleId = "+ Concepts.MODULE_SCT_CORE +" }}");
+		eval("* {{ active=true OR definitionStatusId = "+ Concepts.MODULE_SCT_CORE +" }}");
 	}
 	
 	@Test
@@ -161,22 +161,22 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	
 	@Test(expected = BadRequestException.class)
 	public void conjunctionAmbiguity() throws Exception {
-		eval("* {{ Description.active=true AND Description.moduleId = " + Concepts.MODULE_SCT_CORE + " OR term=\"clinical finding\" }}");
+		eval("* {{ active=true AND moduleId = " + Concepts.MODULE_SCT_CORE + " OR term=\"clinical finding\" }}");
 	}
 	
 	@Test(expected = BadRequestException.class)
 	public void disjunctionAmbiguity() throws Exception {
-		eval("* {{ Description.active=true OR Description.moduleId = " + Concepts.MODULE_SCT_CORE + " AND term=\"clinical finding\" }}");
+		eval("* {{ active=true OR moduleId = " + Concepts.MODULE_SCT_CORE + " AND term=\"clinical finding\" }}");
 	}
 	
 	@Test(expected = BadRequestException.class)
 	public void exclusionAmbiguity() throws Exception {
-		eval("* {{ Description.active=true OR Description.moduleId = " + Concepts.MODULE_SCT_CORE +" MINUS term=\"clinical finding\" }}");
+		eval("* {{ active=true OR moduleId = " + Concepts.MODULE_SCT_CORE +" MINUS term=\"clinical finding\" }}");
 	}
 	
 	@Test
 	public void multiDomainQueryAnd() throws Exception {
-		Expression actual = eval("* {{ active=false }} AND * {{ term=\"clin find\" }}");
+		Expression actual = eval("* {{ c active=false }} AND * {{ d term=\"clin find\" }}");
 		Expression expected = Expressions.builder()
 			.filter(SnomedDocument.Expressions.inactive())
 			.filter(SnomedDocument.Expressions.ids(Collections.emptySet()))
@@ -186,7 +186,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	
 	@Test
 	public void multiDomainQueryOr() throws Exception {
-		Expression actual = eval("* {{ active=false }} OR * {{ term=\"clin find\" }}");
+		Expression actual = eval("* {{ c active=false }} OR * {{ d term=\"clin find\" }}");
 		Expression expected = Expressions.builder()
 			.should(SnomedDocument.Expressions.inactive())
 			.should(SnomedDocument.Expressions.ids(Collections.emptySet()))
@@ -196,7 +196,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	
 	@Test
 	public void multiDomainQueryExclusion() throws Exception {
-		Expression actual = eval("* {{ active=false }} MINUS * {{ term=\"clin find\" }}");
+		Expression actual = eval("* {{ c active=false }} MINUS * {{ d term=\"clin find\" }}");
 		Expression expected = Expressions.builder()
 			.filter(SnomedDocument.Expressions.inactive())
 			.mustNot(SnomedDocument.Expressions.ids(Collections.emptySet()))
@@ -365,35 +365,35 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 				.build());
 		
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
-		Expression actual = eval("* {{ Description.effectiveTime = \"20210731\" }}");
+		Expression actual = eval("* {{ effectiveTime = \"20210731\" }}");
 		assertEquals(expected, actual);
 
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
-		actual = eval("* {{ Description.effectiveTime > \"20210605\" }}");
+		actual = eval("* {{ effectiveTime > \"20210605\" }}");
 		assertEquals(expected, actual);
 
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
-		actual = eval("* {{ Description.effectiveTime < \"20020201\" }}");
+		actual = eval("* {{ effectiveTime < \"20020201\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ Description.effectiveTime >= \"20020131\" }}");
+		actual = eval("* {{ effectiveTime >= \"20020131\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ Description.effectiveTime >= \"20010731\" }}");
+		actual = eval("* {{ effectiveTime >= \"20010731\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ Description.effectiveTime <= \"20210731\" }}");
+		actual = eval("* {{ effectiveTime <= \"20210731\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ Description.effectiveTime <= \"20211030\" }}");
+		actual = eval("* {{ effectiveTime <= \"20211030\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ Description.effectiveTime != \"20211030\" }}");
+		actual = eval("* {{ effectiveTime != \"20211030\" }}");
 		assertEquals(expected, actual);
 	}
 	
@@ -416,7 +416,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 				.build());
 		
 		Expression expected = SnomedDocument.Expressions.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT));
-		Expression actual = eval("* {{ effectiveTime = \"20210731\" }}");
+		Expression actual = eval("* {{ c effectiveTime = \"20210731\" }}");
 		assertEquals(expected, actual);
 	}
 	
@@ -477,7 +477,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra acceptable description on another concept to demonstrate that it won't match
 		generateAcceptableDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialect = en-gb (preferred) }}");
+		Expression actual = eval("* {{ dialect = en-gb (prefer) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
 		assertEquals(expected, actual);
 	}
@@ -488,7 +488,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra acceptable description on another concept to demonstrate that it won't match
 		generateAcceptableDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialect != en-gb (preferred) }}");
+		Expression actual = eval("* {{ dialect != en-gb (prefer) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
 	}
@@ -499,7 +499,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra preferred description on another concept to demonstrate that it won't match
 		generatePreferredDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialect = en-gb (acceptable) }}");
+		Expression actual = eval("* {{ dialect = en-gb (accept) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
 		assertEquals(expected, actual);
 	}
@@ -510,7 +510,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra preferred description on another concept to demonstrate that it won't match
 		generatePreferredDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialect != en-gb (acceptable) }}");
+		Expression actual = eval("* {{ dialect != en-gb (accept) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
 	}
@@ -541,7 +541,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra acceptable description on another concept to demonstrate that it won't match
 		generateAcceptableDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialectId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (preferred) }}");
+		Expression actual = eval("* {{ dialectId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (prefer) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
 		assertEquals(expected, actual);
 	}
@@ -552,7 +552,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra acceptable description on another concept to demonstrate that it won't match
 		generateAcceptableDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (preferred) }}");
+		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (prefer) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
 	}
@@ -563,7 +563,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra preferred description on another concept to demonstrate that it won't match
 		generatePreferredDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialectId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (acceptable) }}");
+		Expression actual = eval("* {{ dialectId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (accept) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
 		assertEquals(expected, actual);
 	}
@@ -574,7 +574,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// extra preferred description on another concept to demonstrate that it won't match
 		generatePreferredDescription(Concepts.MODULE_ROOT);
 		
-		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (acceptable) }}");
+		Expression actual = eval("* {{ dialectId != " + Concepts.REFSET_LANGUAGE_TYPE_UK + " (accept) }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
 	}
@@ -595,11 +595,9 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		eval("* {{ dialect > en-gb (preferred) }}");
 	}
 	
-	@Test
+	@Test(expected = SyntaxException.class)
 	public void dialectUnknownAcceptability() throws Exception {
-		Expression actual = eval("* {{ dialect = en-gb (unknown) }}");
-		Expression expected = SnomedDocument.Expressions.ids(Set.of());
-		assertEquals(expected, actual);
+		eval("* {{ dialect = en-gb (unknown) }}");
 	}
 	
 	@Test
@@ -621,6 +619,27 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		Expression actual = eval("* {{ dialect = en-sg }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of());
 		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void definitionStatus() throws Exception {
+		Expression actual1 = eval("* {{ c definitionStatusId = 900000000000073002 }}");
+		Expression actual2 = eval("* {{ c definitionStatus = defined }}");
+		Expression expected = SnomedConceptDocument.Expressions.definitionStatusIds(Set.of(Concepts.FULLY_DEFINED));
+		assertEquals(expected, actual1);
+		assertEquals(expected, actual2);
+	}
+	
+	@Test
+	public void definitionStatusNotEquals() throws Exception {
+		Expression actual1 = eval("* {{ c definitionStatusId != 900000000000074008 }}");
+		Expression actual2 = eval("* {{ c definitionStatus != primitive }}");
+		Expression expected = Expressions.builder()
+			.mustNot(SnomedConceptDocument.Expressions.definitionStatusIds(Set.of(Concepts.PRIMITIVE)))
+			.build();
+		
+		assertEquals(expected, actual1);
+		assertEquals(expected, actual2);
 	}
 	
 	private void generatePreferredDescription(String conceptId) {

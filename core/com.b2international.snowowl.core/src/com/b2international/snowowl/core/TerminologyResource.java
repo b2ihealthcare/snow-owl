@@ -206,6 +206,7 @@ public abstract class TerminologyResource extends Resource {
 				.contact(getContact())
 				.usage(getUsage())
 				.purpose(getPurpose())
+				.bundleAncestorIds(getBundleAncestorIds())
 				.bundleId(getBundleId())
 				.branchPath(getBranchPath())
 				.extensionOf(getExtensionOf())

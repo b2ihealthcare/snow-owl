@@ -80,14 +80,14 @@ public class BundleRestApiTest {
 	}
 	
 	@Test
-	public void serachBundleById() {
+	public void searchBundleById() {
 		createBundle(prepareBundleCreateRequestBody("b2"));
 		assertBundleSearch(Map.of("id", Set.of("b2")))
 			.body("items", hasItem(hasEntry("id", "b2")));
 	}
 
 	@Test
-	public void serachBundleByTitle() {
+	public void searchBundleByTitle() {
 		createBundle(prepareBundleCreateRequestBody("b3").with("title", "Unique bundle title"));
 		
 		//Exact case insensitive match

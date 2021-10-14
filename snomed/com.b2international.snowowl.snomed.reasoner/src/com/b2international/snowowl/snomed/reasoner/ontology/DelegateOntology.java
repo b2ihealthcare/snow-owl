@@ -45,7 +45,6 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -791,7 +790,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	private OWLClassExpression getRelationshipExpression(final StatementFragment fragment) {
 		return fragment.map(
 			d -> getRelationshipExpression(d.getTypeId(), d.getDestinationId(), d.isDestinationNegated(), d.isUniversal()),
-			v -> getRelationshipValueExpression(v.getTypeId(), v.getValue()));
+			v -> getRelationshipValueExpression(v.getTypeId(), v.getValueType(), v.getRawValue()));
 	}
 
 	private OWLQuantifiedObjectRestriction getRelationshipExpression(final long typeId, final long destinationId, final boolean destinationNegated, final boolean universal) {
@@ -813,14 +812,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		}
 	}
 
-	private OWLDataHasValue getRelationshipValueExpression(final long typeId, final String literal) {
-		final RelationshipValue relationshipValue = RelationshipValue.fromLiteral(literal);
-		final OWL2Datatype owl2Datatype = getOWL2Datatype(relationshipValue.type());
-		// Remove prefix and quoting from literals
-		final String serializedValue = relationshipValue.toObject().toString();
-		
+	private OWLDataHasValue getRelationshipValueExpression(final long typeId, RelationshipValueType valueType, final String rawValue) {
+		final OWL2Datatype owl2Datatype = getOWL2Datatype(valueType);
 		final OWLDataProperty property = getConceptDataProperty(typeId);
-		final OWLLiteral owlLiteral = getOWLLiteral(serializedValue, owl2Datatype);
+		final OWLLiteral owlLiteral = getOWLLiteral(rawValue, owl2Datatype);
 		return getOWLDataHasValue(property, owlLiteral);
 	}
 

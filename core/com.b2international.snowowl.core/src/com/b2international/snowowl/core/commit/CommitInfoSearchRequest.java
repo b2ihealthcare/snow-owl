@@ -24,15 +24,13 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 
 /**
  * @since 5.2
  */
-final class CommitInfoSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CommitInfos, Commit> implements AccessControl {
+final class CommitInfoSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CommitInfos, Commit> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -60,6 +58,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	protected Expression prepareQuery(RepositoryContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		addIdFilter(queryBuilder, Commit.Expressions::ids);
+		// TODO add a security filter to return commits from resources that can be accessed by the current user
 		addBranchClause(queryBuilder);
 		addBranchPrefixClause(queryBuilder);
 		addUserIdClause(queryBuilder);
@@ -140,11 +139,6 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			final String branchPrefix = getString(OptionKey.BRANCH_PREFIX);
 			queryBuilder.filter(branchPrefix(branchPrefix));
 		}
-	}
-
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
 	}
 
 }

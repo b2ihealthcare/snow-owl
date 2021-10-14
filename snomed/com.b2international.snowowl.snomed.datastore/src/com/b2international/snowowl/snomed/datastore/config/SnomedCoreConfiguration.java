@@ -15,12 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
-import java.util.Collections;
-import java.util.Set;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -35,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SnomedCoreConfiguration {
 	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
-	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
+	public static final String DEFAULT_REASONER = ELK_REASONER_ID;
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
@@ -45,15 +41,8 @@ public class SnomedCoreConfiguration {
 	private int maxReasonerCount = DEFAULT_MAXIMUM_REASONER_COUNT;
 	
 	@Min(1)
-	@Max(100)
-	private int maxReasonerResults = DEFAULT_MAXIMUM_REASONER_RESULTS;
-	
-	@Min(1)
 	@Max(1_000_000)
 	private int maxReasonerRuns = DEFAULT_MAXIMUM_REASONER_RUNS;
-	
-	@NotEmpty
-	private String defaultReasoner = DEFAULT_REASONER;
 	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
@@ -73,20 +62,8 @@ public class SnomedCoreConfiguration {
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
 	
-	private boolean collectSystemChanges = false;
-	
 	private boolean concreteDomainSupport = false;
 	
-	private boolean showReasonerUsageWarning = true;
-	
-	//enables the manual editing of inferred relationships and concrete data types
-	private boolean inferredEditingEnabled = false;
-
-	@NotNull
-	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
-	
-	@NotNull
-	private String namespaceModuleAssigner = "default";
 	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
@@ -105,23 +82,6 @@ public class SnomedCoreConfiguration {
 	}
 	
 	/**
-	 * @return the number of inferred taxonomies that should be kept in memory. The user can only choose to save
-	 *         the results of the classification run if the corresponding inferred taxonomy is still present.
-	 */
-	@JsonProperty
-	public int getMaxReasonerResults() {
-		return maxReasonerResults;
-	}
-	
-	/**
-	 * @param maxReasonerResults the maxReasonerResults to set
-	 */
-	@JsonProperty
-	public void setMaxReasonerResults(int maxReasonerResults) {
-		this.maxReasonerResults = maxReasonerResults;
-	}
-	
-	/**
 	 * @return the number of classification run details to preserve. Details include inferred and redundant 
 	 *         relationships, the list of equivalent concepts found during classification, and job metadata
 	 *         (creation, start and end times, final state, requesting user). 
@@ -136,67 +96,24 @@ public class SnomedCoreConfiguration {
 		this.maxReasonerRuns = maxReasonerRuns;
 	}
 	
-	/**
-	 * @return the currently set default reasoner ID 
-	 */
-	@JsonProperty
-	public String getDefaultReasoner() {
-		return defaultReasoner;
-	}
-	
-	/**
-	 * @param defaultReasoner - the reasoner to set as default
-	 */
-	@JsonProperty
-	public void setDefaultReasoner(String defaultReasoner) {
-		this.defaultReasoner = defaultReasoner;
-	}
-
+	@Deprecated
 	@JsonProperty("concreteDomainSupport")
 	public boolean isConcreteDomainSupported() {
 		return concreteDomainSupport;
 	}
 	
+	@Deprecated
 	@JsonProperty("concreteDomainSupport")
 	public void setConcreteDomainSupported(boolean concreteDomainSupport) {
 		this.concreteDomainSupport = concreteDomainSupport;
 	}
-
-	@JsonProperty("showReasonerUsageWarning")
-	public boolean isShowReasonerUsageWarningEnabled() {
-		return showReasonerUsageWarning ;
-	}
-	
-	@JsonProperty("showReasonerUsageWarning")
-	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
-		this.showReasonerUsageWarning = showReasonerUsageWarning;
-	}
-	
-	@JsonProperty("inferredEditingEnabled")
-	public boolean isInferredEditingEnabled() {
-		return inferredEditingEnabled;
-	}
-
-	@JsonProperty("inferredEditingEnabled")
-	public void setInferredEditingEnabled(boolean inferredEditingEnabled) {
-		this.inferredEditingEnabled = inferredEditingEnabled;
-	}
-	
-	@JsonProperty("collectSystemChanges")
-	public boolean isCollectSystemChanges() {
-		return collectSystemChanges;
-	}
-	
-	@JsonProperty("collectSystemChanges")
-	public void setCollectSystemChanges(boolean collectSystemChanges) {
-		this.collectSystemChanges = collectSystemChanges;
-	}
-	
+		
 	/**
 	 * The ID of the concrete domain type reference set identifier concept
 	 * 
 	 * @return the concreteDomainTypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("concreteDomainTypeRefsetIdentifier")
 	public String getConcreteDomainTypeRefsetIdentifier() {
 		return concreteDomainTypeRefsetIdentifier;
@@ -207,6 +124,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param concreteDomainTypeRefsetIdentifier the concreteDomainTypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("concreteDomainTypeRefsetIdentifier")
 	public void setConcreteDomainTypeRefsetIdentifier(String concreteDomainTypeRefsetIdentifier) {
 		this.concreteDomainTypeRefsetIdentifier = concreteDomainTypeRefsetIdentifier;
@@ -217,6 +135,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the stringDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("stringDataTypeRefsetIdentifier")
 	public String getStringDatatypeRefsetIdentifier() {
 		return stringDatatypeRefsetIdentifier;
@@ -227,6 +146,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param stringDatatypeRefsetIdentifier the stringDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("stringDataTypeRefsetIdentifier")
 	public void setStringDatatypeRefsetIdentifier(String stringDatatypeRefsetIdentifier) {
 		this.stringDatatypeRefsetIdentifier = stringDatatypeRefsetIdentifier;
@@ -237,6 +157,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the booleanDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("booleanDataTypeRefsetIdentifier")
 	public String getBooleanDatatypeRefsetIdentifier() {
 		return booleanDatatypeRefsetIdentifier;
@@ -247,6 +168,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param booleanDatatypeRefsetIdentifier the booleanDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("booleanDataTypeRefsetIdentifier")
 	public void setBooleanDatatypeRefsetIdentifier(String booleanDatatypeRefsetIdentifier) {
 		this.booleanDatatypeRefsetIdentifier = booleanDatatypeRefsetIdentifier;
@@ -257,6 +179,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the floatDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("floatDataTypeRefsetIdentifier")
 	public String getFloatDatatypeRefsetIdentifier() {
 		return floatDatatypeRefsetIdentifier;
@@ -267,6 +190,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param floatDatatypeRefsetIdentifier the floatDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("floatDataTypeRefsetIdentifier")
 	public void setFloatDatatypeRefsetIdentifier(String floatDatatypeRefsetIdentifier) {
 		this.floatDatatypeRefsetIdentifier = floatDatatypeRefsetIdentifier;
@@ -277,6 +201,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the integerDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("integerDataTypeRefsetIdentifier")
 	public String getIntegerDatatypeRefsetIdentifier() {
 		return integerDatatypeRefsetIdentifier;
@@ -287,6 +212,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param integerDatatypeRefsetIdentifier the integerDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("integerDataTypeRefsetIdentifier")
 	public void setIntegerDatatypeRefsetIdentifier(String integerDatatypeRefsetIdentifier) {
 		this.integerDatatypeRefsetIdentifier = integerDatatypeRefsetIdentifier;
@@ -297,6 +223,7 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @return the datetimeDatatypeRefsetIdentifier
 	 */
+	@Deprecated
 	@JsonProperty("datetimeDataTypeRefsetIdentifier")
 	public String getDatetimeDatatypeRefsetIdentifier() {
 		return datetimeDatatypeRefsetIdentifier;
@@ -307,29 +234,10 @@ public class SnomedCoreConfiguration {
 	 * 
 	 * @param datetimeDatatypeRefsetIdentifier the datetimeDatatypeRefsetIdentifier to set
 	 */
+	@Deprecated
 	@JsonProperty("datetimeDataTypeRefsetIdentifier")
 	public void setDatetimeDatatypeRefsetIdentifier(String datetimeDatatypeRefsetIdentifier) {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
 	}
 	
-	@JsonProperty
-	public String getNamespaceModuleAssigner() {
-		return namespaceModuleAssigner;
-	}
-	
-	@JsonProperty
-	public void setNamespaceModuleAssigner(String namespaceModuleAssigner) {
-		this.namespaceModuleAssigner = namespaceModuleAssigner;
-	}
-	
-	@JsonProperty
-	public Set<String> getReasonerExcludedModuleIds() {
-		return this.reasonerExcludedModuleIds;
-	}
-	
-	@JsonProperty
-	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
-		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
-	}
-
 }

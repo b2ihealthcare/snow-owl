@@ -23,6 +23,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -30,43 +31,43 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 public final class SnomedRf2ExportConfiguration {
 
-	@Schema(description = "The RF2 type to use", allowableValues = "full,snapshot,delta", defaultValue = "snapshot")
+	@Parameter(description = "The expected RF2 release type", schema = @Schema(allowableValues = { "full", "snapshot", "delta" }, defaultValue = "snapshot"))
 	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
-	@Schema(description = "The namespaceId to use in the release archive name")
+	@Parameter(description = "The namespaceId to use in the release archive name")
 	private String namespaceId = "";
 	
-	@Schema(description = "Optional moduleIds to restrict the exported content")
+	@Parameter(description = "Optional moduleIds to restrict the exported content")
 	private Collection<String> moduleIds;
 	
-	@Schema(description = "Optional refSetIds to restrict the export content")
+	@Parameter(description = "Optional refSetIds to restrict the export content")
 	private Collection<String> refSetIds;
 	
-	@Schema(description = "Delta export start effectiveTime. By default unbounded.")
+	@Parameter(description = "Delta export start effectiveTime. By default unbounded.")
 	private String startEffectiveTime;
 	
-	@Schema(description = "Delta export end effectiveTime. By default unbounded.")
+	@Parameter(description = "Delta export end effectiveTime. By default unbounded.")
 	private String endEffectiveTime;
 	
-	@Schema(description = "Transient effectiveTime to apply on unpublished content")
+	@Parameter(description = "Transient effective time to apply on unpublished content")
 	private String transientEffectiveTime;
 	
-	@Schema(description = "To include unreleased changes in the export result")
+	@Parameter(description = "To include unreleased changes in the export result")
 	private boolean includeUnpublished = true;
 	
-	@Schema(description = "To export the content of the Extension only or all dependencies as well forming an Edition Release.")
+	@Parameter(description = "To export the content of the SNOMED CT Extension only or all dependencies as well forming an Edition Release.")
 	private boolean extensionOnly = false;
 	
-	@Schema(description = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
+	@Parameter(description = "The RF2 reference set file layout to use. Defaults to the given SNOMED CT code system's 'refSetExportLayout' setting.", schema = @Schema(allowableValues = { "combined", "individual" }, defaultValue = "combined"))
 	private String refSetLayout;
 	
-	@Schema(description = "The nrcCountryCode to use un the release archive name")
+	@Parameter(description = "The NRC country code to use in the release archive name")
 	private String nrcCountryCode = "";
 	
-	@Schema(description = "The maintainerType to use un the release archive name")
+	@Parameter(description = "The maintainer type to use in the release archive name")
 	private String maintainerType = "";
 	
-	@Schema(description = "The component types to export. By default it exports every core and refset component type.", allowableValues = {SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE, SnomedConcept.REFSET_TYPE})
+	@Parameter(description = "The component types to export. By default everything is exported.", schema = @Schema(allowableValues = { SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE, SnomedConcept.REFSET_TYPE }))
 	private List<String> componentTypes;
 	
 	/**

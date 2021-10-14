@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.identity;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -44,6 +47,7 @@ public final class User implements Serializable {
 	});
 
 	public User(String username, List<Role> roles) {
+		checkArgument(!Strings.isNullOrEmpty(username), "Username may not be null or empty");
 		this.username = username;
 		this.roles = roles;
 	}

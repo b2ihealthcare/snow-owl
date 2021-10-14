@@ -44,6 +44,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
@@ -65,7 +66,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.*;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
@@ -272,6 +273,15 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	public Attachment execute(final BranchContext context) {
 
 		final String referenceBranch = context.path();
+		if (referenceBranch.contains(RevisionIndex.AT_CHAR) && !Rf2ReleaseType.SNAPSHOT.equals(releaseType)) {
+			throw new BadRequestException("Only snapshot export is allowed for point-in-time branch path '%s'.", referenceBranch);
+		}
+		
+		if (referenceBranch.contains(RevisionIndex.REV_RANGE)) {
+			if (!Rf2ReleaseType.DELTA.equals(releaseType) || needsVersionBranchesForDeltaExport()) {
+				throw new BadRequestException("Only unpublished delta export is allowed for branch path range '%s'.", referenceBranch);
+			}
+		}
 		
 		// register export start time for later use
 		final long exportStartTime = Instant.now().toEpochMilli();
@@ -358,7 +368,12 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			
 			// export content from reference branch
 			if (includePreReleaseContent) {
-				final String referenceBranchToExport = String.format("%s%s%s", referenceBranch, RevisionIndex.AT_CHAR, exportStartTime);
+				
+				// If a special branch path was given, use it directly
+				final String referenceBranchToExport = containsSpecialCharacter(referenceBranch) 
+						? referenceBranch
+						: RevisionIndex.toBranchAtPath(referenceBranch, exportStartTime);
+				
 				exportBranch(releaseDirectory, 
 						context, 
 						referenceBranchToExport, 
@@ -382,6 +397,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				FileUtils.deleteDirectory(exportDirectory.toFile());
 			}
 		}
+	}
+
+	private boolean containsSpecialCharacter(final String referenceBranch) {
+		return referenceBranch.contains(RevisionIndex.AT_CHAR) || referenceBranch.contains(RevisionIndex.REV_RANGE);
 	}
 
 	private Multimap<String, String> getLanguageCodes(BranchContext context, List<String> branchesToExport) {
@@ -451,7 +470,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				}
 				break;
 			case DELTA:
-				if (startEffectiveTime != null || endEffectiveTime != null || !includePreReleaseContent) {
+				if (needsVersionBranchesForDeltaExport()) {
 					versionsToExport.stream()
 						.map(v -> v.getBranchPath())
 						.filter(v -> !branchesToExport.contains(v))
@@ -480,6 +499,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return branchRangesToExport.build();
 	}
 
+	private boolean needsVersionBranchesForDeltaExport() {
+		return startEffectiveTime != null || endEffectiveTime != null || !includePreReleaseContent;
+	}
+	
 	private LocalDateTime getArchiveEffectiveTime(final RepositoryContext context, final TreeSet<Version> versionsToExport) {
 
 		Optional<Version> lastVersionToExport;
@@ -557,7 +580,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 				.filterByActive(true)
-				.sortBy(SortField.descending(field))
+				.sortBy(Sort.fieldDesc(field))
 				.setLimit(1);
 			
 			// See the comment in setModules; a value of "null" means that all modules should be exported 
@@ -586,9 +609,14 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	private TreeSet<Version> getAllExportableCodeSystemVersions(final BranchContext context, final TerminologyResource codeSystem) {
 		final String referenceBranch = context.path();
-		final TreeSet<Version> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
-		collectExportableCodeSystemVersions(context, visibleVersions, codeSystem, referenceBranch);
-		return visibleVersions;
+		final TreeSet<Version> versionsToExport = newTreeSet(EFFECTIVE_DATE_ORDERING);
+		
+		// XXX: Versions do not need to be calculated for special path exports
+		if (Rf2ReleaseType.SNAPSHOT != releaseType && !containsSpecialCharacter(referenceBranch)) {
+			collectExportableCodeSystemVersions(context, versionsToExport, codeSystem, referenceBranch);
+		}
+		
+		return versionsToExport;
 	}
 
 	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<Version> versionsToExport, final TerminologyResource codeSystem,
@@ -1073,7 +1101,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return ResourceRequests.prepareSearchVersion()
 				.all()
 				.filterByResource(resource)
-				.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
+				.sortBy(SearchResourceRequest.Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
 				.buildAsync()
 				.get(context);
 	}

@@ -23,7 +23,8 @@ import java.net.InetSocketAddress;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.*;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -60,10 +61,6 @@ public interface EsClient extends AutoCloseable {
 	GetResponse get(GetRequest req) throws IOException;
 	
 	SearchResponse search(SearchRequest req) throws IOException;
-	
-	SearchResponse scroll(SearchScrollRequest req) throws IOException;
-	
-	ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException;
 	
 	BulkProcessor.Builder bulk(BulkProcessor.Listener listener);
 	

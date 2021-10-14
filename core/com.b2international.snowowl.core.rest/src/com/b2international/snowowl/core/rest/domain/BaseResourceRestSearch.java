@@ -33,6 +33,9 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 	@Parameter(description = "One or more container bundles to match")
 	private List<String> bundleId;
 	
+	@Parameter(description = "One or more container ancestor bundles to match")
+	private List<String> bundleAncestorId;
+	
 	public List<String> getTitleExact() {
 		return titleExact;
 	}
@@ -57,4 +60,11 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 		this.bundleId = bundleId;
 	}
 	
+	public List<String> getBundleAncestorId() {
+		return bundleAncestorId;
+	}
+	
+	public void setBundleAncestorId(List<String> bundleAncestorId) {
+		this.bundleAncestorId = bundleAncestorId;
+	}
 }

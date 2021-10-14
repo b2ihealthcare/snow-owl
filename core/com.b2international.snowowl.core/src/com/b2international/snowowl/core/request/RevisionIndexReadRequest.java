@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import com.b2international.commons.exceptions.IllegalQueryParameterException;
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -73,19 +72,6 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 		} else {
 			return next(context.inject()
 					.bind(RevisionSearcher.class, new RevisionSearcher() {
-						
-						@Override
-						public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-							return index.read(branchPath, searcher -> searcher.scroll(scroll));
-						}
-						
-						@Override
-						public void cancelScroll(String scrollId) {
-							index.read(branchPath, searcher -> {
-								searcher.cancelScroll(scrollId);
-								return null;
-							});
-						}
 						
 						@Override
 						public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {

@@ -47,6 +47,8 @@ import com.google.common.collect.Maps;
  */
 public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest<BranchContext, QueryRefSetMemberEvaluation> implements AccessControl {
 
+	private static final long serialVersionUID = 1L;
+	
 	@NotEmpty
 	private String memberId;
 	
@@ -85,45 +87,41 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, Collections.emptyList());
 		}
 
-		// GET matching members of a query
-		final SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
-				.filterByEcl(query)
-				.all()
-				.build()
-				.execute(context);
-		
+		// add all matching first
 		final Map<String, SnomedConcept> conceptsToAdd = newHashMap();
+		// GET matching members of a query
+		SnomedRequests.prepareSearchConcept()
+				.filterByEcl(query)
+				.setLimit(10_000)
+				.stream(context)
+				.flatMap(SnomedConcepts::stream)
+				.forEach(match -> conceptsToAdd.put(match.getId(), match));
+		
 		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();
 		final Collection<SnomedReferenceSetMember> conceptsToActivate = newHashSet();
 
-		// add all matching first
-		for (SnomedConcept matchedConcept : matchingConcepts.getItems()) {
-			conceptsToAdd.put(matchedConcept.getId(), matchedConcept);
-		}
-		
 		// then re-evaluate all current members of the target simple type reference set
-		final Collection<SnomedReferenceSetMember> curretMembersOfTarget = SnomedRequests.prepareSearchMember()
-					.all()
-					.filterByRefSet(targetReferenceSet)
-					.build()
-					.execute(context)
-					.getItems();
+		SnomedRequests.prepareSearchMember()
+				.filterByRefSet(targetReferenceSet)
+				.setLimit(10_000)
+				.stream(context)
+				.flatMap(SnomedReferenceSetMembers::stream)
+				.forEach(member -> {
+					final String referencedComponentId = member.getReferencedComponent().getId();
+					if (conceptsToAdd.containsKey(referencedComponentId)) {
+						if (!member.isActive()) {
+							conceptsToAdd.remove(referencedComponentId);
+							conceptsToActivate.add(member);
+						} else {
+							conceptsToAdd.remove(referencedComponentId);
+						}
+					} else {
+						if (member.isActive()) {
+							membersToRemove.add(member);
+						}
+					}
+				});
 		
-		for (SnomedReferenceSetMember currentMember : curretMembersOfTarget) {
-			final String referencedComponentId = currentMember.getReferencedComponent().getId();
-			if (conceptsToAdd.containsKey(referencedComponentId)) {
-				if (!currentMember.isActive()) {
-					conceptsToAdd.remove(referencedComponentId);
-					conceptsToActivate.add(currentMember);
-				} else {
-					conceptsToAdd.remove(referencedComponentId);
-				}
-			} else {
-				if (currentMember.isActive()) {
-					membersToRemove.add(currentMember);
-				}
-			}
-		}
 		
 		// fetch all referenced components
 		final Set<String> referencedConceptIds = newHashSet();

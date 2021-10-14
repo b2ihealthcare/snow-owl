@@ -17,10 +17,7 @@ package com.b2international.snowowl.core.identity;
 
 import static com.b2international.snowowl.core.identity.Permission.OPERATION_BROWSE;
 import static com.b2international.snowowl.core.identity.Permission.OPERATION_IMPORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -54,8 +51,7 @@ public class PermissionTest {
 	@Test
 	public void pathUriResourceTest() {
 		
-		String extensionUri = "SNOMEDCT-EXT/2020-01-31";
-		Permission resourceToAuthorize = Permission.requireAll(OPERATION_BROWSE, extensionUri);
+		Permission resourceToAuthorize = Permission.requireAll(OPERATION_BROWSE, "SNOMEDCT-EXT/2020-01-31");
 		
 		Permission userPermission = Permission.requireAll(OPERATION_BROWSE, "SNOMEDCT-EXT/2020-01-31");
 		assertTrue(userPermission.implies(resourceToAuthorize));
@@ -83,6 +79,14 @@ public class PermissionTest {
 		
 		userPermission = Permission.requireAll(OPERATION_BROWSE, "*/2020-01-31/*");
 		assertFalse(userPermission.implies(resourceToAuthorize));
+		
+	}
+	
+	@Test
+	public void authorizeAnyPermission() throws Exception {
+		Permission userPermission = Permission.requireAll(OPERATION_BROWSE, "SNOMEDCT-UK-CL*");
+		assertTrue(userPermission.implies(Permission.requireAny(OPERATION_BROWSE, "codeSystems/SNOMEDCT-UK-CL", "SNOMEDCT-UK-CL")));
+		assertTrue(userPermission.implies(Permission.requireAny(OPERATION_BROWSE, "codeSystems/SNOMEDCT-UK-CL/2021-03-17", "SNOMEDCT-UK-CL/2021-03-17")));
 	}
 	
 	@Test

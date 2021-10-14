@@ -46,7 +46,7 @@ import com.google.common.collect.ImmutableList;
 public class TranslateRequest {
 	
 	//A canonical URL for the concept map. (0..1)
-	private final Uri url;
+	private Uri url;
 	
 	//The concept map is provided directly as part of the request. Servers may choose not to accept concept maps in this fashion. (0..1)
 	private final ConceptMap conceptMap;
@@ -185,6 +185,11 @@ public class TranslateRequest {
 	
 	public Boolean getReverse() {
 		return reverse;
+	}
+	
+	// XXX temporary setter for URL value
+	public void setUrl(String url) {
+		this.url = new Uri(url);
 	}
 	
 	@AssertTrue(message = "Both code and system needs to be provided")
@@ -355,5 +360,5 @@ public class TranslateRequest {
 		}
 
 	}
-	
+
 }

@@ -44,6 +44,8 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public abstract class SearchResourceRequest<C extends ServiceProvider, B> extends IndexResourceRequest<C, B> {
 	
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Special option character that can be used for special search expressions in filters where usually a user enters a text, like a term filter.
 	 * @see #getSpecialOptionKey
@@ -81,10 +83,26 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		public boolean isAscending() {
 			return ascending;
 		}
+
+		public static SortField fieldAsc(String field) {
+			return SortField.of(field, true);
+		}
+		
+		public static SortField fieldDesc(String field) {
+			return SortField.of(field, false);
+		}
+		
+		public static SortScript scriptAsc(String script, final Map<String, Object> arguments) {
+			return SortScript.of(script, arguments, true);
+		}
+		
+		public static SortScript scriptDesc(String script, final Map<String, Object> arguments) {
+			return SortScript.of(script, arguments, false);
+		}
 		
 	}
 	
-	public static class SortField extends Sort {
+	public static final class SortField extends Sort {
 		
 		private static final long serialVersionUID = 2L;
 		
@@ -103,14 +121,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			return new SortField(field, ascending);
 		}
 		
-		public static SortField ascending(String field) {
-			return of(field, true);
-		}
-		
-		public static SortField descending(String field) {
-			return of(field, false);
-		}
-
 		@Override
 		public int hashCode() {
 			return Objects.hash(field, isAscending());
@@ -133,7 +143,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		}
 	}
 	
-	public static class SortScript extends Sort {
+	public static final class SortScript extends Sort {
 		
 		private static final long serialVersionUID = 2L;
 		
@@ -158,14 +168,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		
 		public static SortScript of(String script, final Map<String, Object> arguments, boolean ascending) {
 			return new SortScript(script, arguments, ascending);
-		}
-		
-		public static SortScript ascending(String script, final Map<String, Object> arguments) {
-			return of(script, arguments, true);
-		}
-		
-		public static SortScript descending(String script, final Map<String, Object> arguments) {
-			return of(script, arguments, false);
 		}
 		
 		@Override

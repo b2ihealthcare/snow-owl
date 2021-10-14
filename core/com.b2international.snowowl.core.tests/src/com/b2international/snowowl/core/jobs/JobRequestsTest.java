@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -38,6 +35,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.SystemNotification;
 import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -67,6 +65,7 @@ public class JobRequestsTest {
 				.bind(ObjectMapper.class, mapper)
 				.bind(RemoteJobTracker.class, tracker)
 				.bind(IdentityProvider.class, IdentityProvider.NOOP)
+				.bind(User.class, User.SYSTEM)
 				.build();
 		this.bus.registerHandler(SystemNotification.ADDRESS, message -> {
 			try {
@@ -129,17 +128,24 @@ public class JobRequestsTest {
 	
 	@Test
 	public void scheduleAndDelete() throws Exception {
+		CyclicBarrier barrier = new CyclicBarrier(2);
+		
 		final String jobId = schedule("scheduleAndDelete", context -> {
-			// wait 100 ms, then return the result, so the main thread have time to actually initiate the delete request
+			// wait until barrier is ready (main thread initiated delete request), return the result
 			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
+				barrier.await();
+			} catch (InterruptedException | BrokenBarrierException e) {
 				throw new RuntimeException(e);
 			}
 			return RESULT;
 		});
 		// delete should immediately mark the object deleted, but wait until the job actually completes then delete the entry
 		delete(jobId);
+		try {
+			barrier.await();
+		} catch (InterruptedException | BrokenBarrierException e) {
+			throw new RuntimeException(e);
+		}
 		// get throws NotFoundException
 		try {
 			get(jobId);
@@ -149,7 +155,7 @@ public class JobRequestsTest {
 		}
 		// assert that the tracker will eventually delete the job entry
 		RemoteJobEntry entry = null;
-		int numberOfTries = 10; 
+		int numberOfTries = 20; 
 		do {
 			entry = tracker.get(jobId);
 			Thread.sleep(50);

@@ -60,7 +60,11 @@ public class Expressions {
 	}
 	
 	public static Expression prefixMatch(final String field, final String prefix) {
-		return new PrefixPredicate(field, prefix);
+		return new PrefixPredicate(field, List.of(prefix));
+	}
+	
+	public static Expression prefixMatch(final String field, final Iterable<String> prefixes) {
+		return new PrefixPredicate(field, prefixes);
 	}
 	
 	public static Expression exactMatch(String field, String value) {

@@ -274,7 +274,11 @@ public abstract class SnomedRestFixtures {
 			"moduleId", moduleId,
 			"sourceId", sourceId,
 			"typeId", typeId,
-			"value", value.toLiteral(),
+			"value", value.map(
+				i -> Json.object("type", value.type(), "numericValue", i.toString()),
+				d -> Json.object("type", value.type(), "numericValue", d.toPlainString()),
+				s -> Json.object("type", value.type(), "stringValue", s)
+			),
 			"characteristicTypeId", characteristicTypeId,
 			"relationshipGroup", relationshipGroup
 		);
@@ -668,7 +672,7 @@ public abstract class SnomedRestFixtures {
 				SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, PROXIMAL_PRIMITIVE_REFINEMENT,
 				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
 				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
-				SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, EDITORIAL_GUIDE_REFERENCE
+				SnomedRf2Headers.FIELD_MRCM_GUIDEURL, GUIDEURL
 			);
 		case MRCM_ATTRIBUTE_DOMAIN:
 			return Json.object(

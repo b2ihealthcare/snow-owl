@@ -30,11 +30,8 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 
@@ -60,14 +57,6 @@ public abstract class DocumentBuilders {
 				.ancestors(PrimitiveSets.newLongSortedSet())
 				.statedParents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.statedAncestors(PrimitiveSets.newLongSortedSet());
-	}
-	
-	public static SnomedConstraintDocument.Builder constraint() {
-		return SnomedConstraintDocument.builder()
-				.id(UUID.randomUUID().toString())
-				.predicateType(SnomedConstraintPredicateType.RELATIONSHIP)
-				.form(ConstraintForm.ALL_FORMS)
-				.active(true);
 	}
 	
 	public static SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
@@ -108,6 +97,18 @@ public abstract class DocumentBuilders {
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
+	public static SnomedRelationshipIndexEntry.Builder concreteValue(final String source, final String type, final RelationshipValue value) {
+		return SnomedRelationshipIndexEntry.builder()
+				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.sourceId(source)
+				.typeId(type)
+				.value(value)
+				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
+				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+	}
+	
 	public static SnomedRefSetMemberIndexEntry.Builder classAxioms(final String sourceId, final Object...axioms) {
 		checkArgument(!CompareUtils.isEmpty(axioms), "At least one axiom must be provided");
 		checkArgument(axioms.length % 3 == 0, "Each axiom should have 3 arguments [typeId:String, destinationId:String, group:Integer].");
@@ -134,8 +135,8 @@ public abstract class DocumentBuilders {
 			final RelationshipValue relationshipValue;
 			if (value instanceof Integer) {
 				relationshipValue = new RelationshipValue((Integer) value);
-			} else if (value instanceof Double) {
-				relationshipValue = new RelationshipValue((Double) value);
+			} else if (value instanceof BigDecimal) {
+				relationshipValue = new RelationshipValue((BigDecimal) value);
 			} else if (value instanceof String) {
 				relationshipValue = new RelationshipValue((String) value);
 			} else {
@@ -189,7 +190,7 @@ public abstract class DocumentBuilders {
 				.field(SnomedRf2Headers.FIELD_VALUE, value);
 	}
 	
-	public static SnomedRelationshipIndexEntry.Builder decimalValue(final String referencedComponentId, final String typeId, final Double value, final String characteristicTypeId) {
+	public static SnomedRelationshipIndexEntry.Builder decimalValue(final String referencedComponentId, final String typeId, final BigDecimal value, final String characteristicTypeId) {
 		return relationshipWithValue(referencedComponentId, typeId, new RelationshipValue(value), characteristicTypeId);
 	}
 	

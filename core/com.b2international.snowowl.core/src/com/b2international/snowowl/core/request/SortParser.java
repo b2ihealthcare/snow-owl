@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 import com.b2international.commons.CompareUtils;
 import com.google.common.base.Splitter;
 
+/**
+ * @since 7.0
+ */
 public final class SortParser {
 
 	private static final Pattern FIELD_PATTERN = Pattern.compile("^[a-zA-Z0-9_\\.]+$");
@@ -69,9 +72,9 @@ public final class SortParser {
 					}
 
 					if (ascending) {
-						return SearchResourceRequest.SortField.ascending(field);
+						return SearchResourceRequest.Sort.fieldAsc(field);
 					} else {
-						return SearchResourceRequest.SortField.descending(field);
+						return SearchResourceRequest.Sort.fieldDesc(field);
 					}
 				})
 				.collect(Collectors.toList());

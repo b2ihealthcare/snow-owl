@@ -63,19 +63,6 @@ public final class ValidationRepository implements Index {
 			}
 			
 			@Override
-			public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-				return read(searcher -> searcher.scroll(scroll));
-			}
-			
-			@Override
-			public void cancelScroll(String scrollId) {
-				read(searcher -> {
-					searcher.cancelScroll(scrollId);
-					return null;
-				});
-			}
-			
-			@Override
 			public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
 				throw new UnsupportedOperationException();
 			}

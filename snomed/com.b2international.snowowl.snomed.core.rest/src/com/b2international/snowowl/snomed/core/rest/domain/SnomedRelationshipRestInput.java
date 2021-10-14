@@ -30,7 +30,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	private String typeId;
 	private String destinationId;
 	private boolean destinationNegated = false;
-	private String value;
+	private RelationshipValue value;
 	private int relationshipGroup = 0;
 	private int unionGroup = 0;
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
@@ -52,7 +52,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		return destinationNegated;
 	}
 
-	public String getValue() {
+	public RelationshipValue getValue() {
 		return value;
 	}
 
@@ -88,7 +88,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		this.destinationNegated = destinationNegated;
 	}
 
-	public void setValue(final String value) {
+	public void setValue(final RelationshipValue value) {
 		this.value = value;
 	}
 
@@ -120,7 +120,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 			.setTypeId(typeId)
 			.setDestinationId(destinationId)
 			.setDestinationNegated(destinationNegated)
-			.setValue(RelationshipValue.fromLiteral(value))
+			.setValue(value)
 			.setRelationshipGroup(relationshipGroup)
 			.setUnionGroup(unionGroup)
 			.setCharacteristicTypeId(characteristicTypeId)

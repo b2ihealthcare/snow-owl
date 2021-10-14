@@ -231,7 +231,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		return ResourceRequests.prepareSearchVersion()
 				.one()
 				.filterByResource(codeSystemUri)
-				.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
+				.sortBy(SearchResourceRequest.Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
 				.buildAsync()
 				.get(context)
 				.stream()

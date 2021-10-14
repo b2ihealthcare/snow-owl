@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -65,6 +68,11 @@ public final class DeleteRequest implements Request<TransactionContext, Boolean>
 	@Override
 	public String getOperation() {
 		return Permission.OPERATION_EDIT;
+	}
+	
+	@Override
+	public void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, List<String> accessedResources) {
+		accessedResources.add(componentId);
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.classification;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -32,13 +26,7 @@ import org.eclipse.core.runtime.Platform;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.reasoner.InferenceType;
-import org.semanticweb.owlapi.reasoner.Node;
-import org.semanticweb.owlapi.reasoner.NodeSet;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
-import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
-import org.semanticweb.owlapi.reasoner.ReasonerProgressMonitor;
+import org.semanticweb.owlapi.reasoner.*;
 import org.semanticweb.owlapi.reasoner.impl.OWLClassNodeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +38,10 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdEdges;
-import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdMap;
-import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalSctIdMultimap;
-import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalSctIdSet;
-import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
@@ -314,7 +298,7 @@ public final class ReasonerTaxonomyInferrer {
 				.one()
 				.filterByIds(conceptIdsAsString)
 				.setFields(SnomedConceptDocument.Fields.ID)
-				.sortBy(SortField.ascending(RevisionDocument.Fields.ID))
+				.sortBy(Sort.fieldAsc(RevisionDocument.Fields.ID))
 				.build()
 				.execute(branchContext)
 				.first()

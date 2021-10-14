@@ -15,11 +15,16 @@
  */
 package com.b2international.snowowl.core.bundle;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 8.0
@@ -84,6 +89,7 @@ public final class Bundle extends Resource {
 				.contact(getContact())
 				.usage(getUsage())
 				.purpose(getPurpose())
+				.bundleAncestorIds(getBundleAncestorIds())
 				.bundleId(getBundleId());
 	}
 	
@@ -100,8 +106,22 @@ public final class Bundle extends Resource {
 		bundle.setContact(doc.getContact());
 		bundle.setUsage(doc.getUsage());
 		bundle.setPurpose(doc.getPurpose());
+		bundle.setBundleAncestorIds(doc.getBundleAncestorIds());
 		bundle.setBundleId(doc.getBundleId());
 		return bundle;
 	}
-	
+
+	@JsonIgnore
+	public List<String> getBundleAncestorIdsForChild() {
+		final List<String> ancestorIds = getBundleAncestorIds();
+		if (IComponent.ROOT_ID.equals(getBundleId())) {
+			return ancestorIds;
+		}
+		
+		// Append our _parent ID_ to our ancestor ID array to get a child resource's ancestor ID array
+		return ImmutableList.<String>builder()
+			.addAll(ancestorIds)
+			.add(getBundleId())
+			.build();
+	}
 }

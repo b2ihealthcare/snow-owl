@@ -1292,10 +1292,10 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 					PREFERRED_STRENGTH, -500, 0).build())
 				.stageNew(classAxiomsWithValue(AMOXICILLIN_TABLET, 
 					HAS_TRADE_NAME, "AMOXICILLIN", 0,
-					PREFERRED_STRENGTH, 5.5d, 0).build())
+					PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d), 0).build())
 				// strengths as axioms
 				.stageNew(classAxiomsWithValue(ABACAVIR_TABLET, 
-					PREFERRED_STRENGTH, -5.5d, 0).build());
+					PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d), 0).build());
 
 			} else {
 				staging
@@ -1306,8 +1306,8 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 				// strengths
 				.stageNew(integerValue(PANADOL_TABLET, PREFERRED_STRENGTH, 500, getCharacteristicType()).build())
 				.stageNew(integerValue(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500, getCharacteristicType()).build())
-				.stageNew(decimalValue(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, 5.5d, getCharacteristicType()).build())
-				.stageNew(decimalValue(ABACAVIR_TABLET, PREFERRED_STRENGTH, -5.5d, getCharacteristicType()).build());
+				.stageNew(decimalValue(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d), getCharacteristicType()).build())
+				.stageNew(decimalValue(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d), getCharacteristicType()).build());
 				// XXX: manufactured flags are not indexed as relationships do not support boolean values
 			}
 		} else {
@@ -1550,7 +1550,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 				.build(),
 				
 			isStatementsWithValue()
-				? decimalValue(DRUG_1D_MG, PREFERRED_STRENGTH, 1.0d, getCharacteristicType()).build()
+				? decimalValue(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build()
 				: decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build()
 		);
 	}

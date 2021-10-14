@@ -15,15 +15,7 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.prefixMatch;
-import static com.b2international.index.query.Expressions.regexp;
-
-import java.util.Collection;
-
 import com.b2international.index.WithScore;
-import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -33,29 +25,12 @@ import com.google.common.base.MoreObjects.ToStringHelper;
  */
 public abstract class RevisionDocument extends Revision implements WithScore {
 
-	public static abstract class Expressions {
-
-		protected Expressions() {
-		}
-		
-		public static final Expression id(String id) {
-			return exactMatch(Fields.ID, id);
-		}
-		
-		public static final Expression ids(Collection<String> ids) {
-			return matchAny(Fields.ID, ids);
-		}
-		
-		public static Expression idPrefix(String idPrefix) {
-			return prefixMatch(Fields.ID, idPrefix);
-		}
-		
-		public static Expression idRegex(String idRegex) {
-			return regexp(Fields.ID, idRegex);
-		}
-
+	/**
+	 * @since 8.0
+	 */
+	public static abstract class Expressions extends Revision.Expressions {
 	}
-
+	
 	/**
 	 * @since 4.7
 	 */

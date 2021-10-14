@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -117,16 +116,6 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 				.filter(branch.toRevisionFilter())
 			.build());
 		return searcher.aggregate(aggregation);
-	}
-	
-	@Override
-	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-		return searcher.scroll(scroll);
-	}
-	
-	@Override
-	public void cancelScroll(String scrollId) {
-		searcher.cancelScroll(scrollId);
 	}
 	
 	@Override

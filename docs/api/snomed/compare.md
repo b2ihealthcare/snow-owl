@@ -37,7 +37,7 @@ To get the state of a SNOMED CT Concept from the previous comparison on the `com
 
 Request
 
-    GET /snomed-ct/v3/MAIN@1567282434400/concepts/138875005
+    GET /snomedct/MAIN@1567282434400/concepts/138875005
 
 Response
 
@@ -51,7 +51,7 @@ To get the state of the same SNOMED CT Concept but on the base branch, you can u
 
 Request
 
-    GET /snomed-ct/v3/MAIN/concepts/138875005
+    GET /snomedct/MAIN/concepts/138875005
 
 Response
 
@@ -65,7 +65,7 @@ Additionally, if required to compute what's changed on the component since the c
 
 Request
 
-    GET /snomed-ct/v3/MAIN/a^/concepts/138875005
+    GET /snomedct/MAIN/a^/concepts/138875005
 
 Response
 

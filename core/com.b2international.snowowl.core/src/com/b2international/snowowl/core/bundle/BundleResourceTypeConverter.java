@@ -35,5 +35,10 @@ public final class BundleResourceTypeConverter implements ResourceTypeConverter 
 	public Resource toResource(ResourceDocument doc) {
 		return Bundle.from(doc);
 	}
+	
+	@Override
+	public Integer getRank() {
+		return 1;
+	}
 
 }
