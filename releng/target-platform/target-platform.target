@@ -66,8 +66,8 @@
 		<unit id="com.b2international.snomed.ecl.ui.feature.feature.group" version="1.5.2"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<repository location="https://download.eclipse.org/justj/jres/16/updates/release/latest/"/>
-		<unit id="org.eclipse.justj.openjdk.hotspot.jre.full.feature.group" version="16.0.2.v20210721-1149"/>
+		<repository location="https://download.eclipse.org/justj/jres/17/updates/release/latest/"/>
+		<unit id="org.eclipse.justj.openjdk.hotspot.jre.full.feature.group" version="17.0.0.v20211012-1059"/>
 	</location>
 </locations>
 </target>
