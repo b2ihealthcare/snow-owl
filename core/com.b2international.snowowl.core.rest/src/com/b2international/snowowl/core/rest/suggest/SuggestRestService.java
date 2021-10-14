@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -61,11 +62,18 @@ public class SuggestRestService extends AbstractRestService {
 			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		return CodeSystemRequests.prepareSuggestConcepts()
-				.setLimit(params.getLimit())
-				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
-				.setPreferredDisplay(params.getPreferredDisplay())
-				.filterByTerm(params.getTerm())
+		ConceptSuggestionRequestBuilder requestBuilder = CodeSystemRequests.prepareSuggestConcepts()
+						.setLimit(params.getLimit())
+						.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
+						.setPreferredDisplay(params.getPreferredDisplay())
+						.setMinOccurrenceCount(params.getMinOccurrenceCount())
+						.filterByTerm(params.getTerm());
+		
+		if (params.getMinOccurrenceCount() != null) {
+			requestBuilder.setMinOccurrenceCount(params.getMinOccurrenceCount());
+		}
+		
+		return requestBuilder
 				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
 				.execute(getBus());
@@ -86,11 +94,18 @@ public class SuggestRestService extends AbstractRestService {
 			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		return CodeSystemRequests.prepareSuggestConcepts()
-				.setLimit(body.getLimit())
-				.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
-				.setPreferredDisplay(body.getPreferredDisplay())
-				.filterByTerm(body.getTerm())
+		ConceptSuggestionRequestBuilder requestBuilder = CodeSystemRequests.prepareSuggestConcepts()
+						.setLimit(body.getLimit())
+						.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
+						.setPreferredDisplay(body.getPreferredDisplay())
+						.setMinOccurrenceCount(body.getMinOccurrenceCount())
+						.filterByTerm(body.getTerm());
+		
+		if (body.getMinOccurrenceCount() != null) {
+			requestBuilder.setMinOccurrenceCount(body.getMinOccurrenceCount());
+		}
+		
+		return requestBuilder
 				.sortBy(SORT_BY)
 				.build(body.getCodeSystemPath())
 				.execute(getBus());
@@ -112,11 +127,17 @@ public class SuggestRestService extends AbstractRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
-			return CodeSystemRequests.prepareSuggestConcepts()
+			ConceptSuggestionRequestBuilder requestBuilder = CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
 				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
-				.filterByTerm(params.getTerm())
+				.filterByTerm(params.getTerm());
+
+			if (params.getMinOccurrenceCount() != null) {
+				requestBuilder.setMinOccurrenceCount(params.getMinOccurrenceCount());
+			}
+			
+			return requestBuilder
 				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
 				.execute(getBus());

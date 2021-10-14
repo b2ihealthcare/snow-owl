@@ -88,7 +88,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		TermFilter termFilter;
 		
 		if (containsKey(TERM)) {
-			termFilter = TermFilter.defaultTermMatch(getString(TERM)).withIgnoreStopwords();
+			termFilter = TermFilter.minTermMatch(getString(TERM), minOccurrenceCount).withIgnoreStopwords();
 		} else {
 			// Gather tokens
 			final Multiset<String> tokenOccurrences = HashMultiset.create(); 
