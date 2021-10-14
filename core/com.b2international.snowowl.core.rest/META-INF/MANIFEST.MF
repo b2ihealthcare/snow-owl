@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.core.rest;singleton:=true
 Bundle-Version: 8.0.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Automatic-Module-Name: com.b2international.snowowl.rest
-Bundle-RequiredExecutionEnvironment: JavaSE-16
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  WEB-INF/lib/commons-fileupload-1.4.jar,

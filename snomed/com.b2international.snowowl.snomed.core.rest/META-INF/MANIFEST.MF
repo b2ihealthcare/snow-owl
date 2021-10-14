@@ -6,6 +6,6 @@ Bundle-Version: 8.0.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.core.rest
 Automatic-Module-Name: com.b2international.snowowl.rest.snomed
-Bundle-RequiredExecutionEnvironment: JavaSE-16
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.reasoner

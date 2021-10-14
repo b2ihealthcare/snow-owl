@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.cis.rest;singleton:=true
 Bundle-Version: 8.0.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Automatic-Module-Name: com.b2international.snowowl.snomed.cis.rest
-Bundle-RequiredExecutionEnvironment: JavaSE-16
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Fragment-Host: com.b2international.snowowl.core.rest
 Require-Bundle: com.b2international.snowowl.snomed.cis

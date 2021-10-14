@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.datastore.tests;singleto
 Bundle-Version: 8.0.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.snomed.datastore
-Bundle-RequiredExecutionEnvironment: JavaSE-16
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.junit;bundle-version="4.11.0",
  org.mockito.mockito-core;bundle-version="3.11.2",
  com.b2international.snowowl.test.commons,
