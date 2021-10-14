@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.MoreObjects;
+
 /**
  * @since 8.0
  */
@@ -33,6 +35,16 @@ public final class NamespaceConceptIdStrategy implements IdGenerationStrategy {
 	@Override
 	public String getNamespace() {
 		return namespaceConceptId;
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this).add("namespaceConceptId", namespaceConceptId).toString();
+	}
+	
+	@Override
+	public IdGenerationStrategy toNamespaceStrategy() {
+		return this;
 	}
 
 }

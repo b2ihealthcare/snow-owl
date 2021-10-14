@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import com.google.common.base.MoreObjects;
 /**
  * @since 4.5
  */
-public class NamespaceIdStrategy implements IdGenerationStrategy {
+public final class NamespaceIdStrategy implements IdGenerationStrategy {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final String namespace;
 
 	public NamespaceIdStrategy(final String namespace) {
@@ -37,4 +39,10 @@ public class NamespaceIdStrategy implements IdGenerationStrategy {
 	public String toString() {
 		return MoreObjects.toStringHelper(this).add("namespace", namespace).toString();
 	}
+	
+	@Override
+	public IdGenerationStrategy toNamespaceStrategy() {
+		return this;
+	}
+	
 }
