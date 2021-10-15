@@ -62,17 +62,12 @@ public class SuggestRestService extends AbstractRestService {
 			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		ConceptSuggestionRequestBuilder requestBuilder = CodeSystemRequests.prepareSuggestConcepts()
-						.setLimit(params.getLimit())
-						.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
-						.setPreferredDisplay(params.getPreferredDisplay())
-						.filterByTerm(params.getTerm());
-		
-		if (params.getMinOccurrenceCount() != null) {
-			requestBuilder.setMinOccurrenceCount(params.getMinOccurrenceCount());
-		}
-		
-		return requestBuilder
+		return CodeSystemRequests.prepareSuggestConcepts()
+				.setLimit(params.getLimit())
+				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
+				.setPreferredDisplay(params.getPreferredDisplay())
+				.setMinOccurrenceCount(params.getMinOccurrenceCount())
+				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
 				.execute(getBus());
@@ -93,17 +88,12 @@ public class SuggestRestService extends AbstractRestService {
 			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		ConceptSuggestionRequestBuilder requestBuilder = CodeSystemRequests.prepareSuggestConcepts()
-						.setLimit(body.getLimit())
-						.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
-						.setPreferredDisplay(body.getPreferredDisplay())
-						.filterByTerm(body.getTerm());
-		
-		if (body.getMinOccurrenceCount() != null) {
-			requestBuilder.setMinOccurrenceCount(body.getMinOccurrenceCount());
-		}
-		
-		return requestBuilder
+		return CodeSystemRequests.prepareSuggestConcepts()
+				.setLimit(body.getLimit())
+				.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
+				.setPreferredDisplay(body.getPreferredDisplay())
+				.filterByTerm(body.getTerm())
+				.setMinOccurrenceCount(body.getMinOccurrenceCount())
 				.sortBy(SORT_BY)
 				.build(body.getCodeSystemPath())
 				.execute(getBus());
@@ -125,20 +115,15 @@ public class SuggestRestService extends AbstractRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
-			ConceptSuggestionRequestBuilder requestBuilder = CodeSystemRequests.prepareSuggestConcepts()
-				.setLimit(params.getLimit())
-				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
-				.setPreferredDisplay(params.getPreferredDisplay())
-				.filterByTerm(params.getTerm());
-
-			if (params.getMinOccurrenceCount() != null) {
-				requestBuilder.setMinOccurrenceCount(params.getMinOccurrenceCount());
-			}
-			
-			return requestBuilder
-				.sortBy(SORT_BY)
-				.build(params.getCodeSystemPath())
-				.execute(getBus());
+			return CodeSystemRequests.prepareSuggestConcepts()
+					.setLimit(params.getLimit())
+					.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
+					.setPreferredDisplay(params.getPreferredDisplay())
+					.filterByTerm(params.getTerm())
+					.setMinOccurrenceCount(params.getMinOccurrenceCount())
+					.sortBy(SORT_BY)
+					.build(params.getCodeSystemPath())
+					.execute(getBus());
 		}).collect(Collectors.toList());
 		
 		return Promise.all(promises);
