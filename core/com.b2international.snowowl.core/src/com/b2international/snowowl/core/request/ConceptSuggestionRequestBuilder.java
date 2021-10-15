@@ -114,7 +114,7 @@ public final class ConceptSuggestionRequestBuilder
 	 * @param minOccurrenceCount the minimum number of occurrences to use (default is 3)
 	 * @return
 	 */
-	public ConceptSuggestionRequestBuilder setMinOccurrenceCount(int minOccurrenceCount) {
+	public ConceptSuggestionRequestBuilder setMinOccurrenceCount(Integer minOccurrenceCount) {
 		return addOption(OptionKey.MIN_OCCURENCE_COUNT, minOccurrenceCount);
 	}
 	
