@@ -58,23 +58,18 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			.omitEmptyStrings();
 	
 	private static final int SCROLL_LIMIT = 1000;
+	
+	private static final int DEFAULT_MIN_OCCURENCE_COUNT = 3;
 
 	@Min(1)
 	private int topTokenCount;
 	
-	@Min(1)
-	private int minOccurrenceCount = 3;
-
 	private transient List<String> topTokens;
 	
 	void setTopTokenCount(int topTokenCount) {
 		this.topTokenCount = topTokenCount;
 	}
 	
-	void setMinOccurrenceCount(int minOccurrenceCount) {
-		this.minOccurrenceCount = minOccurrenceCount;
-	}
-
 	@Override
 	protected Suggestions createEmptyResult(int limit) {
 		return new Suggestions(topTokens, limit, 0);
@@ -84,12 +79,10 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	protected Suggestions doExecute(BranchContext context) throws IOException {
 		TermFilter termFilter;
 
-		if (containsKey(MIN_OCCURENCE_COUNT)) {
-			setMinOccurrenceCount((Integer) get(MIN_OCCURENCE_COUNT));
-		}
-
+		int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): DEFAULT_MIN_OCCURENCE_COUNT;
+		
 		if (containsKey(TERM)) {
-			termFilter = TermFilter.minTermMatch(getString(TERM), minOccurrenceCount).withIgnoreStopwords();
+			termFilter = TermFilter.minTermMatch(getString(TERM), minShouldMatch).withIgnoreStopwords();
 		} else {
 			// Gather tokens
 			final Multiset<String> tokenOccurrences = HashMultiset.create(); 
@@ -128,7 +121,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 					.limit(topTokenCount)
 					.collect(Collectors.toList());
 			
-			termFilter = TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minOccurrenceCount);
+			termFilter = TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch);
 		}
 		
 		/* 
