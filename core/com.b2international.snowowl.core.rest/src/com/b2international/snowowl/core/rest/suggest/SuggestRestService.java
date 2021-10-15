@@ -66,7 +66,6 @@ public class SuggestRestService extends AbstractRestService {
 						.setLimit(params.getLimit())
 						.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 						.setPreferredDisplay(params.getPreferredDisplay())
-						.setMinOccurrenceCount(params.getMinOccurrenceCount())
 						.filterByTerm(params.getTerm());
 		
 		if (params.getMinOccurrenceCount() != null) {
@@ -98,7 +97,6 @@ public class SuggestRestService extends AbstractRestService {
 						.setLimit(body.getLimit())
 						.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
 						.setPreferredDisplay(body.getPreferredDisplay())
-						.setMinOccurrenceCount(body.getMinOccurrenceCount())
 						.filterByTerm(body.getTerm());
 		
 		if (body.getMinOccurrenceCount() != null) {
