@@ -192,21 +192,63 @@ public class CodeSystem extends MetadataResource {
 	private Collection<Concept> concepts;
 	
 	@SuppressWarnings("rawtypes")
-	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			final Narrative text, Uri url, String version, String name, String title, Code status,
-			final Boolean experimental, final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
-			final Collection<CodeableConcept> jurisdictions, final String purpose,
-			
-			//CodeSystem only
+	CodeSystem(
+			// MetadataResource properties
+			final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url, 
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status,
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose,
+			final String toolingId,
+
+			// CodeSystem properties
 			final String resourceType,
 			final Collection<Identifier> identifiers,
 			final String copyright,
-			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
-			final Code content, final Uri supplements, final Integer count, 
-			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts, final String toolingId) {
+			final Boolean caseSensitive, 
+			final Uri valueSet, 
+			final Code hierarchyMeaning, 
+			final Boolean compositional, 
+			final Boolean versionNeeded,
+			final Code content, 
+			final Uri supplements, 
+			final Integer count, 
+			final Collection<Filter> filters, 
+			final Collection<SupportedConceptProperty> properties, 
+			final Collection<Concept> concepts) {
 
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date, publisher, contacts, 
-				description, usageContexts, jurisdictions, purpose, toolingId);
+		super(id, 
+			meta, 
+			implicitRules, 
+			language, 
+			text, 
+			url, 
+			version, 
+			name, 
+			title, 
+			status, 
+			experimental, 
+			date, 
+			publisher, 
+			contacts, 
+			description, 
+			usageContexts, 
+			jurisdictions, 
+			purpose, 
+			toolingId);
 
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
@@ -455,12 +497,43 @@ public class CodeSystem extends MetadataResource {
 		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, meta, implicitRules, language, text, url, version, name, title, status, 
-				experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose,
+			return new CodeSystem(
+				// MetadataResource properties
+				id, 
+				meta, 
+				implicitRules, 
+				language, 
+				text, 
+				url, 
+				version, 
+				name, 
+				title, 
+				status, 
+				experimental, 
+				date, 
+				publisher, 
+				contacts, 
+				description, 
+				usageContexts, 
+				jurisdictions, 
+				purpose, 
+				toolingId,
 				
-				resourceType, identifiers, copyright, caseSensitive, valueSet, hierarchyMeaning, compositional, 
-				versionNeeded, content, supplements, count, filters, properties, concepts, toolingId);
+				// CodeSystem properties
+				resourceType, 
+				identifiers, 
+				copyright, 
+				caseSensitive, 
+				valueSet, 
+				hierarchyMeaning, 
+				compositional, 
+				versionNeeded, 
+				content, 
+				supplements, 
+				count, 
+				filters, 
+				properties, 
+				concepts);
 		}
 	}
-
 }
