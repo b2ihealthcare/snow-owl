@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -65,6 +66,7 @@ public class SuggestRestService extends AbstractRestService {
 				.setLimit(params.getLimit())
 				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
+				.setMinOccurrenceCount(params.getMinOccurrenceCount())
 				.filterByTerm(params.getTerm())
 				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
@@ -91,6 +93,7 @@ public class SuggestRestService extends AbstractRestService {
 				.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
 				.setPreferredDisplay(body.getPreferredDisplay())
 				.filterByTerm(body.getTerm())
+				.setMinOccurrenceCount(body.getMinOccurrenceCount())
 				.sortBy(SORT_BY)
 				.build(body.getCodeSystemPath())
 				.execute(getBus());
@@ -113,13 +116,14 @@ public class SuggestRestService extends AbstractRestService {
 			final String acceptLanguage) {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
 			return CodeSystemRequests.prepareSuggestConcepts()
-				.setLimit(params.getLimit())
-				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
-				.setPreferredDisplay(params.getPreferredDisplay())
-				.filterByTerm(params.getTerm())
-				.sortBy(SORT_BY)
-				.build(params.getCodeSystemPath())
-				.execute(getBus());
+					.setLimit(params.getLimit())
+					.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
+					.setPreferredDisplay(params.getPreferredDisplay())
+					.filterByTerm(params.getTerm())
+					.setMinOccurrenceCount(params.getMinOccurrenceCount())
+					.sortBy(SORT_BY)
+					.build(params.getCodeSystemPath())
+					.execute(getBus());
 		}).collect(Collectors.toList());
 		
 		return Promise.all(promises);
