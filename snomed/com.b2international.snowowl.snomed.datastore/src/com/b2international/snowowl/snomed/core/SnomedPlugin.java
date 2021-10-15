@@ -61,11 +61,8 @@ import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.request.*;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptMapSearchRequestEvaluator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.SnomedValueSetMemberSearchRequestEvaluator;
-import com.b2international.snowowl.snomed.datastore.request.Synonyms;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
@@ -127,6 +124,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 					return (C) branchContext.inject()
 							.bind(Synonyms.class, new Synonyms(branchContext))
 							.bind(ModuleIdProvider.class, c -> c.getModuleId())
+							.bind(NamespaceIdProvider.class, NamespaceIdProvider.DEFAULT)
 							.build();
 				} else {
 					return context;

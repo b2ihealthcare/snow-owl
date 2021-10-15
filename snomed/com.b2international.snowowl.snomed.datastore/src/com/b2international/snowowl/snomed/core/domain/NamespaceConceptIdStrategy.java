@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,36 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.MoreObjects;
 
 /**
- * @since 4.5
+ * @since 8.0
  */
-public final class NamespaceIdStrategy implements IdGenerationStrategy {
+public final class NamespaceConceptIdStrategy implements IdGenerationStrategy {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final String namespace;
+	private final String namespaceConceptId;
 
-	public NamespaceIdStrategy(final String namespace) {
-		this.namespace = namespace;
+	public NamespaceConceptIdStrategy(String namespaceConceptId) {
+		this.namespaceConceptId = checkNotNull(namespaceConceptId);
 	}
-
+	
 	@Override
 	public String getNamespace() {
-		return namespace;
+		return namespaceConceptId;
 	}
 	
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper(this).add("namespace", namespace).toString();
+		return MoreObjects.toStringHelper(this).add("namespaceConceptId", namespaceConceptId).toString();
 	}
 	
 	@Override
 	public IdGenerationStrategy toNamespaceStrategy() {
 		return this;
 	}
-	
+
 }
