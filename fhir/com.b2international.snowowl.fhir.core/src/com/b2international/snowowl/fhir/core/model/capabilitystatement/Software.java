@@ -47,9 +47,8 @@ public class Software extends BackboneElement {
 	@JsonProperty
 	private final Date releaseDate;
 	
-	@SuppressWarnings("rawtypes")
-	Software(final String id, final List<Extension> extensions,
-			final List<Extension> modifierExtensions,
+	Software(final String id, final List<Extension<?>> extensions,
+			final List<Extension<?>> modifierExtensions,
 			final String name, final String version, final Date releaseDate) {
 		
 		super(id, extensions, modifierExtensions);

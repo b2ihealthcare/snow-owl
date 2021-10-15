@@ -48,7 +48,7 @@ public class Base extends Element {
 	private final String max;
 	
 	Base(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final String path, 
 			final int min,
 			final String max) {

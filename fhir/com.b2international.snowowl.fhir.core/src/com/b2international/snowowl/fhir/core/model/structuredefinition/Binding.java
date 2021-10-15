@@ -58,7 +58,7 @@ public class Binding extends Element {
 	private Reference valueSetReference;
 	
 	Binding(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Code strength, 
 			final String description,
 			final Uri valueSetUri,

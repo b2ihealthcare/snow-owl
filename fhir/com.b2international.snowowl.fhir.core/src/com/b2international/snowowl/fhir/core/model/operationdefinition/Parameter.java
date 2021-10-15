@@ -85,7 +85,7 @@ public class Parameter extends Element {
 	private final Collection<Parameter> parameters;
 	
 	Parameter(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Code name, 
 			final Code use,
 			final Integer min,

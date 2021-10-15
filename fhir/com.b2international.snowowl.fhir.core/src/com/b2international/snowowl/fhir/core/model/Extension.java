@@ -47,7 +47,7 @@ public abstract class Extension<T> extends Element {
 	
 	protected final T value;
 	
-	protected Extension(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
+	protected Extension(final String id, final List<Extension<?>> extensions,
 			final Uri url, final T value) {
 		
 		super(id, extensions);

@@ -54,7 +54,7 @@ public class Discriminator extends Element {
 	private final String path;
 	
 	Discriminator(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Code type, 
 			final String path) {
 		

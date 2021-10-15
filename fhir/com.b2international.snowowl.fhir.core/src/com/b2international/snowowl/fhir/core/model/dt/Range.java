@@ -42,7 +42,7 @@ public class Range extends Element {
 	@JsonProperty
 	private SimpleQuantity high;
 	
-	Range(final SimpleQuantity low, final SimpleQuantity high, final String id, final List<Extension> extensions) {
+	Range(final SimpleQuantity low, final SimpleQuantity high, final String id, final List<Extension<?>> extensions) {
 		super(id, extensions);
 		this.low = low;
 		this.high = high;

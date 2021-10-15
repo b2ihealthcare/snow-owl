@@ -42,7 +42,7 @@ public class Overload extends Element {
 	private final String comment;
 	
 	Overload(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Collection<String> parameterNames, 
 			final String comment) {
 		

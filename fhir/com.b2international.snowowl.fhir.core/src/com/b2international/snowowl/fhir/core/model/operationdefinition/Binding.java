@@ -49,7 +49,7 @@ public class Binding extends Element {
 	private Uri valueSetUri;
 
 	Binding(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Code strength, 
 			final Uri valueSetUri) {
 		

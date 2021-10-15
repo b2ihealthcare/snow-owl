@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -36,9 +35,9 @@ public abstract class Element {
 	private final String id;
 	
 	@JsonProperty("extension")
-	private final List<Extension> extensions;
+	private final List<Extension<?>> extensions;
 	
-	protected Element(final String id, final List<Extension> extensions) {
+	protected Element(final String id, final List<Extension<?>> extensions) {
 		this.id = id;
 		this.extensions = extensions;
 	}
@@ -47,7 +46,7 @@ public abstract class Element {
 		return id;
 	}
 	
-	public final Collection<Extension> getExtensions() {
+	public final Collection<Extension<?>> getExtensions() {
 		return extensions;
 	}
 	
@@ -55,7 +54,7 @@ public abstract class Element {
 
 		protected String id;
 
-		protected List<Extension> extensions;
+		protected List<Extension<?>> extensions;
 		
 		protected abstract B getSelf();
 		
@@ -66,12 +65,12 @@ public abstract class Element {
 		
 		@JsonProperty("extension")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public B extensions(List<Extension> extensions) {
+		public B extensions(List<Extension<?>> extensions) {
 			this.extensions = extensions;
 			return getSelf();
 		}
 		
-		public B addExtension(final Extension extension) {
+		public B addExtension(final Extension<?> extension) {
 			if (extensions == null) {
 				extensions = new ArrayList<>();
 			}

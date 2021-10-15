@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(using = JsonDeserializer.None.class, builder = IntegerExtension.Builder.class)
 public class IntegerExtension extends Extension<Integer> {
 	
-	public IntegerExtension(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
+	public IntegerExtension(final String id, final List<Extension<?>> extensions,
 			final Uri url, final Integer value) {
 		super(id, extensions, url, value);
 	}

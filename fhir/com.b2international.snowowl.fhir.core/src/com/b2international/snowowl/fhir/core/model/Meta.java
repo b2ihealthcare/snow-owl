@@ -40,7 +40,7 @@ public class Meta extends Element {
 	@Summary
 	private final List<Coding> tags;
 
-	Meta(String id, @SuppressWarnings("rawtypes") List<Extension> extensions,
+	Meta(String id, List<Extension<?>> extensions,
 			final Id versionId, final Instant lastUpdated, final List<Uri> profiles, final List<Coding> securities, final List<Coding> tags) {
 		
 		super(id, extensions);

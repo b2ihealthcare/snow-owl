@@ -45,7 +45,7 @@ public class ContactDetail extends Element {
 	 * @param id
 	 * @param extensions
 	 */
-	ContactDetail(final String id, final List<Extension> extensions, final String name, final Collection<ContactPoint> contactPoints) {
+	ContactDetail(final String id, final List<Extension<?>> extensions, final String name, final Collection<ContactPoint> contactPoints) {
 		super(id, extensions);
 		this.name = name;
 		this.contactPoints = contactPoints;

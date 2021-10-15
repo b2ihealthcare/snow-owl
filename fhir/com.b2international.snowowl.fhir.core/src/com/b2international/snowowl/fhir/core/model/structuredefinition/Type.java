@@ -70,7 +70,7 @@ public class Type extends Element {
 	private final Code versioning;
 	
 	Type(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Uri code, 
 			final Uri profile, 
 			final Uri targetProfile, 

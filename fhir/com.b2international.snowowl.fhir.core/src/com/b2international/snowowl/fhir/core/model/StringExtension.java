@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(using = JsonDeserializer.None.class, builder = StringExtension.Builder.class)
 public class StringExtension extends Extension<String> {
 	
-	public StringExtension(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
+	public StringExtension(final String id, final List<Extension<?>> extensions,
 			final Uri url, final String value) {
 		super(id, extensions, url, value);
 	}
