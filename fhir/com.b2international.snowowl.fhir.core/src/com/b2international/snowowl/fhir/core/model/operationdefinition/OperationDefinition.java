@@ -119,12 +119,29 @@ public class OperationDefinition extends MetadataResource {
 	private final Collection<Overload> overloads;
 	
 	
-	public OperationDefinition(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			String version, String name, String title, Code status,
-			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description,
-			@SuppressWarnings("rawtypes") Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose,
-			String toolingId,
-			
+	public OperationDefinition(
+			// MetadataResource properties
+			final Id id,
+			final Meta meta,
+			final Uri implicitRules,
+			final Code language,
+			final Narrative text,
+			final Uri url,
+			final String version,
+			final String name,
+			final String title,
+			final Code status,
+			final Boolean experimental,
+			final Date date,
+			final String publisher,
+			final Collection<ContactDetail> contacts,
+			final String description,
+			final Collection<UsageContext<?>> usageContexts,
+			final Collection<CodeableConcept> jurisdictions,
+			final String purpose,
+			final String toolingId,
+
+			// OperationDefinition properties
 			final String resourceType,
 			final Code kind,
 			final Boolean affectState,
@@ -140,9 +157,26 @@ public class OperationDefinition extends MetadataResource {
 			final Collection<Parameter> parameters,
 			final Collection<Overload> overloads) {
 		
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date,
-				publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId);
-	
+		super(id,
+			meta,
+			implicitRules,
+			language,
+			text,
+			url,
+			version,
+			name,
+			title,
+			status,
+			experimental,
+			date,
+			publisher,
+			contacts,
+			description,
+			usageContexts,
+			jurisdictions,
+			purpose,
+			toolingId);
+
 		this.resourceType = resourceType;
 		this.kind = kind;
 		this.affectState = affectState;
@@ -383,13 +417,43 @@ public class OperationDefinition extends MetadataResource {
 
 		@Override
 		protected OperationDefinition doBuild() {
-			return new OperationDefinition(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId,
-					
-			resourceType, kind, affectState, code, comment, base, resources, system, type, instance,
-			inputProfile, outputProfile, parameters, overloads);
+			return new OperationDefinition(
+				// MetadataResource properties
+				id,
+				meta,
+				implicitRules,
+				language,
+				text,
+				url,
+				version,
+				name,
+				title,
+				status,
+				experimental,
+				date,
+				publisher,
+				contacts,
+				description,
+				usageContexts,
+				jurisdictions,
+				purpose,
+				toolingId,
+
+				// OperationDefinition properties
+				resourceType,
+				kind,
+				affectState,
+				code,
+				comment,
+				base,
+				resources,
+				system,
+				type,
+				instance,
+				inputProfile,
+				outputProfile,
+				parameters,
+				overloads);
 		}
 	}
-	
-	
 }

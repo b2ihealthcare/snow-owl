@@ -117,7 +117,6 @@ public class CodeSystem extends MetadataResource {
 				.add(TEXT)
 				.add(CONCEPT)
 				.build();
-		
 	}
 	
 	public static final String RESOURCE_TYPE_CODE_SYSTEM = "CodeSystem";
@@ -191,7 +190,6 @@ public class CodeSystem extends MetadataResource {
 	@JsonProperty(CodeSystem.Fields.CONCEPT)
 	private Collection<Concept> concepts;
 	
-	@SuppressWarnings("rawtypes")
 	CodeSystem(
 			// MetadataResource properties
 			final Id id, 
@@ -209,7 +207,7 @@ public class CodeSystem extends MetadataResource {
 			final String publisher, 
 			final Collection<ContactDetail> contacts, 
 			final String description, 
-			final Collection<UsageContext> usageContexts, 
+			final Collection<UsageContext<?>> usageContexts, 
 			final Collection<CodeableConcept> jurisdictions, 
 			final String purpose,
 			final String toolingId,

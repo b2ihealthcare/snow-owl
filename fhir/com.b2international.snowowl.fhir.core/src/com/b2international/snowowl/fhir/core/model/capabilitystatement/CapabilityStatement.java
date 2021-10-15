@@ -28,7 +28,6 @@ import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.*;
-import com.b2international.snowowl.fhir.core.model.operationdefinition.OperationDefinition.Builder;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
@@ -127,11 +126,26 @@ public class CapabilityStatement extends MetadataResource {
 	@JsonProperty("document")
 	private final Collection<Document> documents;
 	
-	public CapabilityStatement(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			String version, String name, String title, Code status,
-			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description,
-			@SuppressWarnings("rawtypes") Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose,
-			String toolingId,
+	public CapabilityStatement(
+			final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url,
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status,
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description,
+			final Collection<UsageContext<?>> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose,
+			final String toolingId,
 			
 			final String resourceType,
 			final Collection<Identifier> identifiers,
@@ -149,8 +163,25 @@ public class CapabilityStatement extends MetadataResource {
 			final Collection<Messaging> messagings,
 			final Collection<Document> documents) {
 		
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date,
-				publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId);
+		super(id, 
+			meta, 
+			implicitRules, 
+			language, 
+			text, 
+			url, 
+			version, 
+			name, 
+			title, 
+			status, 
+			experimental, 
+			date,
+			publisher, 
+			contacts, 
+			description, 
+			usageContexts, 
+			jurisdictions, 
+			purpose, 
+			toolingId);
 	
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;

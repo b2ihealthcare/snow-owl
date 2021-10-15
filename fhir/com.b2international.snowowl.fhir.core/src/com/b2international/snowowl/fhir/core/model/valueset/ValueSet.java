@@ -117,7 +117,6 @@ public class ValueSet extends MetadataResource {
 	@JsonProperty
 	private final Expansion expansion;
 	
-	@SuppressWarnings("rawtypes")
 	public ValueSet(
 			// MetadataResource properties
 			final Id id, 
@@ -135,10 +134,11 @@ public class ValueSet extends MetadataResource {
 			final String publisher, 
 			final Collection<ContactDetail> contacts, 
 			final String description, 
-			final Collection<UsageContext> usageContexts,
+			final Collection<UsageContext<?>> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, 
 			final String purpose,
 			final String toolingId,
+
 			// ValueSet properties
 			final String resourceType, 
 			final Collection<Identifier> identifiers, 
@@ -147,8 +147,26 @@ public class ValueSet extends MetadataResource {
 			final Compose compose, 
 			final Expansion expansion) {
 		
-		super(id, meta, implicitRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId);
+		super(id,
+			meta,
+			implicitRules,
+			language,
+			text,
+			url,
+			version,
+			name,
+			title,
+			status,
+			experimental,
+
+			date,
+			publisher,
+			contacts,
+			description,
+			usageContexts,
+			jurisdictions,
+			purpose,
+			toolingId);
 		
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
@@ -314,6 +332,7 @@ public class ValueSet extends MetadataResource {
 				jurisdictions, 
 				purpose, 
 				toolingId,
+				
 				// ValueSet properties
 				resourceType, 
 				identifiers, 

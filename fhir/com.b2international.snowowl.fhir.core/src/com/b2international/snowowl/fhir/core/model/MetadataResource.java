@@ -120,9 +120,8 @@ public abstract class MetadataResource extends DomainResource {
 	
 	@Summary
 	@JsonProperty("useContext")
-	@SuppressWarnings("rawtypes")
 	@JsonInclude(value = Include.NON_EMPTY)
-	private Collection<UsageContext> usageContexts;
+	private Collection<UsageContext<?>> usageContexts;
 	
 	@Valid
 	@Summary
@@ -135,13 +134,27 @@ public abstract class MetadataResource extends DomainResource {
 	
 	private String toolingId;
 
-	@SuppressWarnings("rawtypes")
-	public MetadataResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			Narrative text, Uri url, String version, 
-			String name, String title, Code status, final Boolean experimental, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
-			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String toolingId) {
+	public MetadataResource(final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url, 
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status, 
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext<?>> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose, 
+			final String toolingId) {
 		
-		super(id, meta, impliciteRules, language, text);
+		super(id, meta, implicitRules, language, text);
 		
 		this.url = url;
 		this.version = version;
@@ -199,8 +212,7 @@ public abstract class MetadataResource extends DomainResource {
 		return description;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public Collection<UsageContext> getUsageContexts() {
+	public Collection<UsageContext<?>> getUsageContexts() {
 		return usageContexts;
 	}
 	
@@ -239,8 +251,7 @@ public abstract class MetadataResource extends DomainResource {
 		
 		protected String description;
 		
-		@SuppressWarnings("rawtypes")
-		protected Collection<UsageContext> usageContexts; 
+		protected Collection<UsageContext<?>> usageContexts; 
 
 		protected Collection<CodeableConcept> jurisdictions;
 		
@@ -334,10 +345,9 @@ public abstract class MetadataResource extends DomainResource {
 			return getSelf();
 		}
 		
-		@SuppressWarnings("rawtypes")
 		@JsonProperty("useContext")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public B usageContexts(Collection<UsageContext> usageContexts) {
+		public B usageContexts(Collection<UsageContext<?>> usageContexts) {
 			this.usageContexts = usageContexts;
 			return getSelf();
 		}
