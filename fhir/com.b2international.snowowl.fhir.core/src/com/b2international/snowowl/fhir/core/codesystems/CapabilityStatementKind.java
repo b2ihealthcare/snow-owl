@@ -31,7 +31,7 @@ public enum CapabilityStatementKind implements FhirCodeSystem {
 	CAPABILITY, 
 	REQUIREMENTS;
 	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/capability-statement-kinde";
+	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/capability-statement-kind";
 	
 	public String getDisplayName() {
 		return StringUtils.capitalizeFirstLetter(name().toLowerCase());
