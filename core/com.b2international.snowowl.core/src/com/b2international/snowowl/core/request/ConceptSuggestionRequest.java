@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.DISPLAY;
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.TERM;
+import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.*;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -44,8 +41,8 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 
 /**
- * A generic concept suggestion request that uses the generic search functionality to return related concepts of
- * interest to the user.
+ * A generic concept suggestion request that uses the generic search
+ * functionality to return related concepts of interest to the user.
  * 
  * @since 7.7
  * @see ConceptSearchRequest
@@ -66,8 +63,8 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	private int topTokenCount;
 	
 	@Min(1)
-	private int minOccurrenceCount;
-	
+	private int minOccurrenceCount = 3;
+
 	private transient List<String> topTokens;
 	
 	void setTopTokenCount(int topTokenCount) {
@@ -86,7 +83,11 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	@Override
 	protected Suggestions doExecute(BranchContext context) throws IOException {
 		TermFilter termFilter;
-		
+
+		if (containsKey(MIN_OCCURENCE_COUNT)) {
+			setMinOccurrenceCount((Integer) get(MIN_OCCURENCE_COUNT));
+		}
+
 		if (containsKey(TERM)) {
 			termFilter = TermFilter.minTermMatch(getString(TERM), minOccurrenceCount).withIgnoreStopwords();
 		} else {

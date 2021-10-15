@@ -28,7 +28,6 @@ public final class ConceptSuggestionRequestBuilder
 		implements TerminologyResourceContentRequestBuilder<Suggestions> {
 
 	private int topTokenCount = 9;
-	private int minOccurrenceCount = 3;
 	
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
@@ -116,15 +115,13 @@ public final class ConceptSuggestionRequestBuilder
 	 * @return
 	 */
 	public ConceptSuggestionRequestBuilder setMinOccurrenceCount(int minOccurrenceCount) {
-		this.minOccurrenceCount = minOccurrenceCount;
-		return getSelf();
+		return addOption(OptionKey.MIN_OCCURENCE_COUNT, minOccurrenceCount);
 	}
 	
 	@Override
 	protected SearchResourceRequest<BranchContext, Suggestions> createSearch() {
 		final ConceptSuggestionRequest request = new ConceptSuggestionRequest();
 		request.setTopTokenCount(topTokenCount);
-		request.setMinOccurrenceCount(minOccurrenceCount);
 		return request;
 	}
 
