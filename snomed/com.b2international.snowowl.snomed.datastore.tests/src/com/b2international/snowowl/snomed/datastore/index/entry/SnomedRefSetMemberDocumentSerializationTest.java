@@ -409,7 +409,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 			
 			final SnomedRefSetMemberIndexEntry member =  createBaseMember()
 					.referencedComponentId(referencedComponentId)
-					.refsetId(Concepts.REFSET_OWL_AXIOM)
+					.referenceSetId(Concepts.REFSET_OWL_AXIOM)
 					.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 					.field(Fields.OWL_EXPRESSION, owlExpression)
 					.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
