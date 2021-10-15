@@ -127,6 +127,7 @@ public class CapabilityStatement extends MetadataResource {
 	private final Collection<Document> documents;
 	
 	public CapabilityStatement(
+			// MetadataResource properties
 			final Id id, 
 			final Meta meta, 
 			final Uri implicitRules, 
@@ -147,6 +148,7 @@ public class CapabilityStatement extends MetadataResource {
 			final String purpose,
 			final String toolingId,
 			
+			// CapabilityStatement properties
 			final String resourceType,
 			final Collection<Identifier> identifiers,
 			final String copyright,
@@ -478,26 +480,45 @@ public class CapabilityStatement extends MetadataResource {
 
 		@Override
 		protected CapabilityStatement doBuild() {
-			return new CapabilityStatement(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, toolingId,
-					
-			resourceType,
-			identifiers,
-			copyright,
-			kind,
-			instantiates,
-			imports,
-			software,
-			implementation,
-			fhirVersion,
-			formats,
-			patchFormats,
-			implementationGuides,
-			rests,
-			messagings,
-			documents);
+			return new CapabilityStatement(
+				// MetadataResource properties	
+				id,
+				meta,
+				implicitRules,
+				language,
+				text,
+				url,
+				version,
+				name,
+				title,
+
+				status,
+				experimental,
+				date,
+				publisher,
+				contacts,
+				description,
+				usageContexts,
+				jurisdictions,
+				purpose,
+				toolingId,
+
+				// CapabilityStatement properties
+				resourceType,
+				identifiers,
+				copyright,
+				kind,
+				instantiates,
+				imports,
+				software,
+				implementation,
+				fhirVersion,
+				formats,
+				patchFormats,
+				implementationGuides,
+				rests,
+				messagings,
+				documents);
 		}
 	}
-	
-	
 }
