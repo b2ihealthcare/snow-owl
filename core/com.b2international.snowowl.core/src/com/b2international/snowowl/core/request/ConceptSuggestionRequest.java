@@ -79,10 +79,13 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	protected Suggestions doExecute(BranchContext context) throws IOException {
 		TermFilter termFilter;
 
-		int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): DEFAULT_MIN_OCCURENCE_COUNT;
 		
 		if (containsKey(TERM)) {
-			termFilter = TermFilter.minTermMatch(getString(TERM), minShouldMatch).withIgnoreStopwords();
+			if (containsKey(MIN_OCCURENCE_COUNT)) {
+				termFilter = TermFilter.minTermMatch(getString(TERM), (Integer) get(MIN_OCCURENCE_COUNT)).withIgnoreStopwords();
+			} else {
+				termFilter = TermFilter.defaultTermMatch(getString(TERM)).withIgnoreStopwords();
+			}
 		} else {
 			// Gather tokens
 			final Multiset<String> tokenOccurrences = HashMultiset.create(); 
@@ -121,6 +124,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 					.limit(topTokenCount)
 					.collect(Collectors.toList());
 			
+			int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): DEFAULT_MIN_OCCURENCE_COUNT;
 			termFilter = TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch);
 		}
 		
