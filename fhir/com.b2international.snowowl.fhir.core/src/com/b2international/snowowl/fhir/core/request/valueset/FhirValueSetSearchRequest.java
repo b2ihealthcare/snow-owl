@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.request.valueset;
 
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
@@ -40,6 +41,8 @@ final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet
 	
 	@Override
 	protected void expandResourceSpecificFields(RepositoryContext context, Builder entry, ResourceFragment resource) {
+		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
+		
 		FhirValueSetResourceConverter converter = context.service(RepositoryManager.class)
 				.get(resource.getToolingId())
 				.optionalService(FhirValueSetResourceConverter.class)

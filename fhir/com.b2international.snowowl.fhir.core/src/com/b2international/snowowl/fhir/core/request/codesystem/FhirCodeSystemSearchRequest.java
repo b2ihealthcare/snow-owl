@@ -63,6 +63,7 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 		// treat all CodeSystems complete by default, later we might add this field to the document, if needed
 		entry.content(CodeSystemContentMode.COMPLETE);
 		
+		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
 			if (!CompareUtils.isEmpty(resource.getOid())) {
 				return Identifier.builder()

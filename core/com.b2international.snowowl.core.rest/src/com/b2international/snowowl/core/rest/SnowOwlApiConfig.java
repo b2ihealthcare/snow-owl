@@ -17,16 +17,18 @@ package com.b2international.snowowl.core.rest;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springdoc.core.SpringDocUtils;
+import org.springdoc.core.*;
+import org.springdoc.core.customizers.OpenApiCustomiser;
+import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.webmvc.api.OpenApiWebMvcResource;
+import org.springdoc.webmvc.core.RouterFunctionProvider;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -53,6 +55,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.condition.RequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConfiguration;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.auth0.jwt.interfaces.JWTVerifier;
@@ -124,6 +127,36 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	public OpenAPI openAPI() {
 		return new OpenAPI();
+	}
+	
+	@Bean
+	public OpenApiWebMvcResource openApiWebMvcResource(
+			@Autowired ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, 
+			@Autowired AbstractRequestService requestBuilder, 
+			@Autowired GenericResponseService responseBuilder, 
+			@Autowired OperationService operationParser, 
+			@Autowired RequestMappingInfoHandlerMapping requestMappingHandlerMapping, 
+			@Autowired Optional<ActuatorProvider> actuatorProvider, 
+			@Autowired Optional<List<OperationCustomizer>> operationCustomizers, 
+			@Autowired Optional<List<OpenApiCustomiser>> openApiCustomisers, 
+			@Autowired SpringDocConfigProperties springDocConfigProperties, 
+			@Autowired Optional<SecurityOAuth2Provider> springSecurityOAuth2Provider, 
+			@Autowired Optional<RouterFunctionProvider> routerFunctionProvider, 
+			@Autowired Optional<RepositoryRestResourceProvider> repositoryRestResourceProvider) {
+		
+		return new SnowOwlOpenApiWebMvcResource(
+			openAPIBuilderObjectFactory, 
+			requestBuilder, 
+			responseBuilder, 
+			operationParser, 
+			requestMappingHandlerMapping, 
+			actuatorProvider, 
+			operationCustomizers, 
+			openApiCustomisers, 
+			springDocConfigProperties, 
+			springSecurityOAuth2Provider, 
+			routerFunctionProvider, 
+			repositoryRestResourceProvider);
 	}
 	
 	public static ObjectMapper createObjectMapper() {

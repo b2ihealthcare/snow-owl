@@ -51,7 +51,7 @@ public class Example extends Element {
 	private TypedProperty<?> value;
 	
 	Example(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions, 
+			final List<Extension<?>> extensions, 
 			final String label,
 			final TypedProperty<?> value) {
 		

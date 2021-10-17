@@ -232,10 +232,14 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, resource::getVersion, entry::version);
 		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, resource::getOwner, entry::publisher);
-		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, resource::getLanguage, entry::language);
 		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, resource::getDescription, entry::description);
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, resource::getPurpose, entry::purpose);
+		
+		// XXX: inclusion of the copyright field is pushed to each search request subclass as specific resource 
+		// and builder subtypes are available there.
+		//
+		// includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
 		
 		expandResourceSpecificFields(context, entry, resource);
 		

@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.request.conceptmap;
 
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap.Builder;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
@@ -40,6 +41,8 @@ final class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<Concep
 	
 	@Override
 	protected void expandResourceSpecificFields(RepositoryContext context, Builder entry, ResourceFragment resource) {
+		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
+
 		FhirConceptMapResourceConverter converter = context.service(RepositoryManager.class)
 				.get(resource.getToolingId())
 				.optionalService(FhirConceptMapResourceConverter.class)

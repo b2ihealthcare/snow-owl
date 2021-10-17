@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,114 +13,88 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.structuredefinition;
+package com.b2international.snowowl.fhir.core.model.operationdefinition;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * FHIR {@link ElementDefinition} base definition information for tools.
- * @since 7.1
+ * Binds an operation definition parameter to a value set the parameter is coded.
+ * @since 8.0.0
  */
-@JsonDeserialize(builder = Base.Builder.class)
-public class Base extends Element {
+@JsonDeserialize(builder = Binding.Builder.class)
+public class Binding extends Element {
 
 	@NotNull
+	@Valid
 	@Mandatory
 	@JsonProperty
-	private final String path;
-	
-	@Mandatory
-	@JsonProperty
-	private final int min;
+	private final Code strength;
 	
 	@NotNull
+	@Valid
 	@Mandatory
 	@JsonProperty
-	private final String max;
-	
-	Base(final String id, 
+	private Uri valueSetUri;
+
+	Binding(final String id, 
 			final List<Extension<?>> extensions,
-			final String path, 
-			final int min,
-			final String max) {
+			final Code strength, 
+			final Uri valueSetUri) {
 		
 		super(id, extensions);
-		
-		this.path = path;
-		this.min = min;
-		this.max = max;
+		this.strength = strength;
+		this.valueSetUri = valueSetUri;
 	}
 	
-	public String getPath() {
-		return path;
+	public Code getStrength() {
+		return strength;
 	}
 	
-	public int getMin() {
-		return min;
+	@JsonProperty
+	public Uri getValueSetUri() {
+		return valueSetUri;
 	}
-	
-	public String getMax() {
-		return max;
-	}
-	
+
 	public static Builder builder() {
 		return new Builder();
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends Element.Builder<Builder, Base> {
+	public static class Builder extends Element.Builder<Builder, Binding> {
 		
-		private String path;
-		private int min;
-		private String max;
+		private Code strength;
+		private Uri valueSetUri;
 		
 		@Override
 		protected Builder getSelf() {
 			return this;
 		}
 		
-		/**
-		 * @param path to identify the base element
-		 * @return builder
-		 */
-		public Builder path(String path) {
-			this.path = path;
+		public Builder strength(String strength) {
+			this.strength = new Code(strength);
 			return getSelf();
 		}
 
-		/**
-		 * Min cardinality of the base element
-		 * @param min
-		 * @return
-		 */
-		public Builder min(int min) {
-			this.min = min;
+		public Builder valueSetUri(String valueSetUri) {
+			this.valueSetUri = new Uri(valueSetUri);
 			return getSelf();
 		}
-		
-		/**
-		 * Max cardinality of the base element
-		 * @param max
-		 * @return
-		 */
-		public Builder max(String max) {
-			this.max = max;
-			return getSelf();
-		}
-		
 		
 		@Override
-		protected Base doBuild() {
-			return new Base(id, extensions, path, min, max);
+		protected Binding doBuild() {
+			return new Binding(id, extensions, strength, valueSetUri);
 		}
 	}
 

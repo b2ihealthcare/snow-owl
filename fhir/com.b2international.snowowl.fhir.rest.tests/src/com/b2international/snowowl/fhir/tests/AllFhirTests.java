@@ -26,6 +26,9 @@ import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptPropertyT
 import com.b2international.snowowl.fhir.tests.domain.codesystem.ConceptTest;
 import com.b2international.snowowl.fhir.tests.domain.codesystem.FilterTest;
 import com.b2international.snowowl.fhir.tests.domain.conceptmap.*;
+import com.b2international.snowowl.fhir.tests.domain.operationdefinition.OperationDefinitionTest;
+import com.b2international.snowowl.fhir.tests.domain.operationdefinition.OverloadTest;
+import com.b2international.snowowl.fhir.tests.domain.operationdefinition.ParameterTest;
 import com.b2international.snowowl.fhir.tests.domain.structuredefinition.*;
 import com.b2international.snowowl.fhir.tests.domain.valueset.*;
 import com.b2international.snowowl.fhir.tests.dt.*;
@@ -135,7 +138,13 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	SearchParamTest.class,
 	OperationTest.class,
 	RestTest.class,
-	CapabilityStatementTest.class
+	CapabilityStatementTest.class,
+	
+	//OperationDefinition
+	com.b2international.snowowl.fhir.tests.domain.operationdefinition.BindingTest.class,
+	OverloadTest.class,
+	ParameterTest.class,
+	OperationDefinitionTest.class
 	
 })
 public class AllFhirTests {

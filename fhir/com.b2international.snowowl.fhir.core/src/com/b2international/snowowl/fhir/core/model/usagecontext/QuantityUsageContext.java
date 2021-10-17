@@ -36,7 +36,7 @@ public class QuantityUsageContext extends UsageContext<Quantity> {
 
 	public static final String CONTEXT_TYPE = "Quantity";
 
-	QuantityUsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions, final Coding code, final Quantity value) {
+	QuantityUsageContext(final String id, final List<Extension<?>> extensions, final Coding code, final Quantity value) {
 		super(id, extensions, code, value);
 	}
 	

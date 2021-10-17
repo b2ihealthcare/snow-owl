@@ -104,6 +104,9 @@ public class ConceptMap extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
 	
+	@JsonProperty
+	private String copyright;
+	
 	@Summary
 	@Valid
 	private Uri sourceUri;
@@ -124,19 +127,61 @@ public class ConceptMap extends MetadataResource {
 	@JsonProperty("group")
 	private final Collection<Group> groups;
 
-	@SuppressWarnings("rawtypes")
-	ConceptMap(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			String version, String name, String title, Code status, Boolean experimental, 
-			Date date, String publisher, Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
-			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, String toolingId, 
-			final String resourceType, Collection<Identifier> identifiers, Uri sourceUri, Uri sourceCanonical, Uri targetUri, 
-			final Uri targetCanonical, Collection<Group> groups) {
+	ConceptMap(
+			// MetadataResource properties
+			final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url,
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status, 
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext<?>> usageContexts,
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose, 
+			final String toolingId,
+
+			// ConceptMap properties
+			final String resourceType, 
+			final Collection<Identifier> identifiers, 
+			final String copyright, 
+			final Uri sourceUri, 
+			final Uri sourceCanonical, 
+			final Uri targetUri, 
+			final Uri targetCanonical, 
+			final Collection<Group> groups) {
 		
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
+		super(id, 
+			meta, 
+			implicitRules, 
+			language, 
+			text, 
+			url, 
+			version, 
+			name, 
+			title, 
+			status, 
+			experimental, 
+			date, 
+			publisher, 
+			contacts, 
+			description, 
+			usageContexts, 
+			jurisdictions, 
+			purpose, 
+			toolingId);
 		
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.sourceUri = sourceUri;
 		this.sourceCanonical = sourceCanonical;
 		this.targetUri = targetUri;
@@ -163,6 +208,10 @@ public class ConceptMap extends MetadataResource {
 	
 	public Collection<Identifier> getIdentifiers() {
 		return identifiers;
+	}
+	
+	public String getCopyright() {
+		return copyright;
 	}
 	
 	@JsonProperty
@@ -199,6 +248,7 @@ public class ConceptMap extends MetadataResource {
 		private String resourceType = RESOURCE_TYPE_CONCEPT_MAP;
 		
 		private Collection<Identifier> identifiers;
+		private String copyright;
 		private Uri sourceUri;
 		private Uri sourceCanonical;
 		private Uri targetUri;
@@ -230,6 +280,11 @@ public class ConceptMap extends MetadataResource {
 				identifiers = new ArrayList<>();
 			}
 			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 
@@ -296,11 +351,37 @@ public class ConceptMap extends MetadataResource {
 
 		@Override
 		protected ConceptMap doBuild() {
-			return new ConceptMap(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, 
-					copyright, toolingId, resourceType, identifiers, sourceUri, sourceCanonical, targetUri, targetCanonical, groups);
+			return new ConceptMap(
+				// MetdataResource properties
+				id, 
+				meta, 
+				implicitRules, 
+				language, 
+				text, 
+				url, 
+				version, 
+				name, 
+				title,
+				status, 
+				experimental, 
+				date, 
+				publisher, 
+				contacts, 
+				description, 
+				usageContexts, 
+				jurisdictions, 
+				purpose, 
+				toolingId, 
+				
+				// ConceptMap properties
+				resourceType, 
+				identifiers, 
+				copyright, 
+				sourceUri, 
+				sourceCanonical, 
+				targetUri, 
+				targetCanonical, 
+				groups);
 		}
-
 	}
-
 }

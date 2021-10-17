@@ -63,7 +63,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	@GetMapping("/$lookup")
 	public Promise<Parameters.Fhir> lookup(
 		
-		@Parameter(description = "The code to look up") 
+		@Parameter(description = "The code to look up", required = true) 
 		@RequestParam(value="code") 
 		final String code,
 		
