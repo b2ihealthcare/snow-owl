@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -29,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 /**
  * A value set can also be "expanded", where the value set is turned into a simple collection of enumerated codes. 
@@ -61,19 +62,23 @@ public class Expansion {
 	
 	@Valid
 	@JsonProperty("parameter")
-	private final Collection<Parameter> parameters;
+	private final List<Parameter> parameters;
 	
 	@Valid
 	@JsonProperty
-	private final Collection<Contains> contains;
+	private final List<Contains> contains;
 	
-	Expansion(Uri identifier, Date timestamp, Integer total, Integer offset, Collection<Parameter> parameters, Collection<Contains> contains) {
+	@JsonProperty
+	private final String after;
+	
+	Expansion(Uri identifier, Date timestamp, Integer total, Integer offset, List<Parameter> parameters, List<Contains> contains, String after) {
 		this.identifier = identifier;
 		this.timestamp = timestamp;
 		this.total = total;
 		this.offset = offset;
 		this.parameters = parameters;
 		this.contains = contains;
+		this.after = after;
 	}
 	
 	public Uri getIdentifier() {
@@ -100,6 +105,10 @@ public class Expansion {
 		return contains;
 	}
 	
+	public String getAfter() {
+		return after;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -111,8 +120,9 @@ public class Expansion {
 		private Date timestamp;
 		private Integer total; 
 		private Integer offset; 
-		private Collection<Parameter> parameters;
-		private Collection<Contains> contains;
+		private List<Parameter> parameters;
+		private List<Contains> contains;
+		private String after;
 		
 		public Builder identifier(final String identifier) {
 			this.identifier = new Uri(identifier);
@@ -142,14 +152,13 @@ public class Expansion {
 		@JsonProperty("parameter")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder parameters(Collection<Parameter> parameters) {
-			this.parameters = parameters;
+			this.parameters = List.copyOf(parameters);
 			return this;
 		}
 		
 		public Builder addParameter(Parameter<?> parameter) {
-			
 			if (parameters == null) {
-				parameters = Sets.newHashSet();
+				parameters = Lists.newArrayList();
 			}
 			parameters.add(parameter);
 			return this;
@@ -158,22 +167,26 @@ public class Expansion {
 		@JsonProperty("contains")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder contains(Collection<Contains> contains) {
-			this.contains = contains;
+			this.contains = List.copyOf(contains);
 			return this;
 		}
 		
 		public Builder addContains(Contains content) {
-			
 			if (contains == null) {
-				contains = Sets.newHashSet();
+				contains = Lists.newArrayList();
 			}
 			contains.add(content);
 			return this;
 		}
 		
+		public Builder after(String after) {
+			this.after = after;
+			return this;
+		}
+		
 		@Override
 		protected Expansion doBuild() {
-			return new Expansion(identifier, timestamp, total, offset, parameters, contains);
+			return new Expansion(identifier, timestamp, total, offset, parameters, contains, after);
 		}
 	}
 
