@@ -18,13 +18,18 @@ package com.b2international.snowowl.fhir.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.commons.exceptions.*;
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -83,9 +88,13 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public @ResponseBody OperationOutcome handle(final UnauthorizedException ex) {
+	public @ResponseBody ResponseEntity<OperationOutcome> handle(final UnauthorizedException ex) {
 		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_AUTH_REQUIRED);
-		return fhirException.toOperationOutcome();
+		OperationOutcome body = fhirException.toOperationOutcome();
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("WWW-Authenticate", "Basic");
+		headers.add("WWW-Authenticate", "Bearer");
+		return new ResponseEntity<>(body, headers, HttpStatus.UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler
