@@ -19,13 +19,9 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
@@ -37,29 +33,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST end-point for batch operations.
  * 
  * @since 8.0.0
  */
-//@Api(value = "Bundle", description="Bundle Resource and batch operations", tags = { "Bundle" })
+@Tag(name = "Bundle", description="Bundle Resource and batch operations")
 @RestController
 @RequestMapping(value="/", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class BatchRequestController extends AbstractFhirResourceController<Bundle> {
+public class FhirBatchRequestController extends AbstractFhirResourceController<Bundle> {
 	
 	@Autowired
 	private ObjectMapper objectMapper;
 	
-//	@ApiOperation(
-//			value="Perform batch operations",
-//			notes="Executes the FHIR requests included in the bundle provided.")
-//	@ApiResponses({
-//		@ApiResponse(code = HTTP_OK, message = "OK"),
-//		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
-//	})
+	@Operation(
+		summary = "Perform batch operations",
+	    description = "Executes the FHIR requests included in the bundle provided.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200" , description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+	})
 	@RequestMapping(value="/", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Bundle> getBatchResponse(
-			//@ApiParam(name = "bundle", value = "The bundle including the list of requests to perform")
+			@Parameter(name = "bundle", description = "The bundle including the list of requests to perform")
 			@RequestBody final Bundle bundle, 
 			HttpServletRequest request) throws JsonProcessingException {
 		
@@ -75,7 +77,7 @@ public class BatchRequestController extends AbstractFhirResourceController<Bundl
 		ArrayNode arrayNode = rootNode.putArray("entry");
 		
 		for (Entry entry : entries) {
-			BatchRequestProcessor requestProcessor = BatchRequestProcessor.getInstance(entry, objectMapper, this);
+			FhirBatchRequestProcessor requestProcessor = FhirBatchRequestProcessor.getInstance(entry, objectMapper, this);
 			requestProcessor.process(arrayNode, request);
 		}
 		
@@ -84,22 +86,20 @@ public class BatchRequestController extends AbstractFhirResourceController<Bundl
 	}
 	
 	/**
-	 * Bundles
+	 * @param params
 	 * @return bundle of bundles
 	 */
-//	@ApiOperation(
-//			value="Retrieve all bundles in a bundle",
-//			notes="Returns a collection of the bundles included in a bundle.")
-//	@ApiResponses({
-//		@ApiResponse(code = HTTP_OK, message = "OK"),
-//		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
-//	})
+	@Operation(
+		summary="Retrieve all bundles in a bundle",
+		description="Returns a collection of the bundles included in a bundle.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+	})
 	@GetMapping("/bundle")
-	public Promise<Bundle> getBundles(final FhirBundleSearchParameters params) {
-		
+	public Promise<Bundle> getBundles(@ParameterObject final FhirBundleSearchParameters params) {
 		return FhirRequests.bundles().prepareSearch()
 				.filterByIds(asList(params.get_id()))
-				
 				//TODO: additional supported filters come here
 				.buildAsync()
 				.execute(getBus());
@@ -111,18 +111,17 @@ public class BatchRequestController extends AbstractFhirResourceController<Bundl
 	 * @param id
 	 * @return
 	 */
-//	@ApiOperation(
-//			response=Bundle.class,
-//			value="Retrieve a bundle by id",
-//			notes="Retrieves a bundle specified by its logical id.")
-//	@ApiResponses({
-//		@ApiResponse(code = HTTP_OK, message = "OK"),
-//		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-//		@ApiResponse(code = HTTP_NOT_FOUND, message = "Bundle not found", response = OperationOutcome.class)
-//	})
+	@Operation(
+		summary="Retrieve a bundle by id",
+		description="Retrieves a bundle specified by its logical id.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Bundle not found")
+	})
 	@RequestMapping(value="/bundle/{id:**}", method=RequestMethod.GET)
 	public Promise<Bundle> getBundle(
-			//@ApiParam(value = "The identifier of the bundle resource")
+			@Parameter(name = "id", description = "The identifier of the bundle resource")
 			@PathVariable(value = "id") 
 			final String id,
 			

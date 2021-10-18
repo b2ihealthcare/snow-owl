@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 /**
  * An abstract lock implementation which supports basic methods of {@link IOperationLock}.
  * 
- * @param C the lock context type
  * @see IOperationLock
  */
 public abstract class AbstractOperationLock implements IOperationLock {

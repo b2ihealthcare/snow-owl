@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
+ * @see <a href="https://www.hl7.org/fhir/conceptmap-operations.html">ConceptMap</a>
  * @since 8.0
  */
 @Tag(description = "ConceptMap", name = "ConceptMap")

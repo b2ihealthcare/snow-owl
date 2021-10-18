@@ -21,6 +21,7 @@ package org.apache.hadoop.hbase.util;
  * Copied from apache/hbase.
  * @see https://github.com/apache/hbase/blob/master/hbase-common/src/main/java/org/apache/hadoop/hbase/util/SimplePositionedMutableByteRange.java
  */
+@SuppressWarnings("java/inconsistent-equals-and-hashcode") // ignore lgtm error
 public class SimplePositionedMutableByteRange implements PositionedByteRange {
 
 	public static final int UNSET_HASH_VALUE = -1;

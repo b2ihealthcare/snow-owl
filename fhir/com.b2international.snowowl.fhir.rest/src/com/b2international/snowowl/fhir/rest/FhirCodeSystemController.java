@@ -38,14 +38,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Code system resource REST endpoint.
- * <ul>
- * <li>Concept lookup and decomposition</li>
- * <li>Subsumption testing</li>
- * <li>Code composition based on supplied properties</li>
- * </ul>
- *  
  * @see <a href="https://www.hl7.org/fhir/codesystems.html">FHIR:CodeSystem</a>
- * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html">FHIR:CodeSystem:Operations</a>
  * 
  * @since 8.0
  */
@@ -174,8 +167,8 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	}
 	
 	/**
-	 * CodeSystems
-	 * @param parameters - request parameters
+	 * HTTP GET /CodeSystem
+	 * @param params - request parameters
 	 * @return bundle of code systems
 	 */
 	@Operation(
@@ -220,9 +213,9 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	}
 	
 	/**
-	 * HTTP Get for retrieving a code system by its code system id
+	 * HTTP GET for retrieving a code system by its logical identifier
 	 * @param id
-	 * @param parameters - request parameters
+	 * @param selectors
 	 * @return
 	 */
 	@Operation(

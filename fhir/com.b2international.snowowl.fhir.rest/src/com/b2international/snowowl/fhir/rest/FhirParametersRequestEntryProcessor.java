@@ -34,14 +34,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * {@link BatchRequestProcessor} to process parameters-based POST requests in a batch
+ * {@link FhirBatchRequestProcessor} to process parameters-based POST requests in a batch
  * @since 8.0.0
  */
-public class ParametersRequestEntryProcessor extends BatchRequestProcessor {
+public class FhirParametersRequestEntryProcessor extends FhirBatchRequestProcessor {
 
 	private ParametersRequestEntry requestEntry;
 
-	public ParametersRequestEntryProcessor(ObjectMapper objectMapper, ParametersRequestEntry requestEntry, BatchRequestController batchRequestController) {
+	public FhirParametersRequestEntryProcessor(ObjectMapper objectMapper, ParametersRequestEntry requestEntry, FhirBatchRequestController batchRequestController) {
 		super(objectMapper, batchRequestController);
 		this.requestEntry = requestEntry;
 	}

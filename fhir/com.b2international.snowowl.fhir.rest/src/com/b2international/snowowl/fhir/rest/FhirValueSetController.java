@@ -37,7 +37,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * Value Set contains codes from one or more code systems.
  *  
  * @see <a href="https://www.hl7.org/fhir/valueset.html">FHIR:ValueSet</a>
- * @see <a href="https://www.hl7.org/fhir/valueset-operations.html">FHIR:ValueSet:Operations</a>
  * @since 6.4
  */
 @Tag(description = "ValueSet", name = "ValueSet")
@@ -77,9 +76,9 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 	}
 	
 	/**
-	 * HTTP Get for retrieving a value set by its value set id
-	 * @param valueSetId
-	 * @param parameters - request parameters
+	 * HTTP GET endpoint for retrieving a value set by its logical identifier.
+	 * @param id
+	 * @param selectors
 	 * @return
 	 */
 	@Operation(

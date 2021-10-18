@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
+ * @see <a href="https://www.hl7.org/fhir/valueset-operations.html">FHIR:ValueSet:Operations</a>
  * @since 8.0
  */
 @Tag(description = "ValueSet", name = "ValueSet")
@@ -40,7 +41,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 
 	/**
 	 * HTTP Get request to expand the value set to return its members.
-	 * @param valueSetId
+	 * @param id
 	 * @return expanded {@link ValueSet}
 	 */
 	@Operation(
