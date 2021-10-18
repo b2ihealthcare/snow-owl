@@ -124,7 +124,8 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		String id = Hashing.goodFastHash(8).hashString(urlValue, Charsets.UTF_8).toString();
 		Builder vs = ValueSet.builder(id)
 				.url(urlValue)
-				.status(PublicationStatus.DRAFT); // TODO on-the-fly expanded Value Set's publication status???
+				// according to http://hl7.org/fhir/r4/snomedct.html#implicit they always ACTIVE
+				.status(PublicationStatus.ACTIVE);
 		
 		final Expansion.Builder expansion = Expansion.builder()
 				.identifier(id)
