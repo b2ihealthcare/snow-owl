@@ -83,36 +83,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 	@Override
 	protected final Bundle doExecute(RepositoryContext context) throws IOException {
 		// apply proper field selection
-		List<String> fields = Lists.newArrayList(fields());
-		// if any fields defined for field selection, then make sure toolingId, resourceType and id is part of the selection, so it is returned and will be available when needed
-		if (!fields.isEmpty()) {
-			if (!fields.contains(ResourceDocument.Fields.ID)) {
-				fields.add(ResourceDocument.Fields.ID);
-			}
-			if (!fields.contains(ResourceDocument.Fields.RESOURCE_TYPE)) {
-				fields.add(ResourceDocument.Fields.RESOURCE_TYPE);
-			}
-			if (!fields.contains(ResourceDocument.Fields.TOOLING_ID)) {
-				fields.add(ResourceDocument.Fields.TOOLING_ID);
-			}
-			if (!fields.contains(ResourceDocument.Fields.CREATED_AT)) {
-				fields.add(ResourceDocument.Fields.CREATED_AT);
-			}
-		}
-		
-		// remove all fields that are not part of the current resource model
-		fields.removeAll(EXTERNAL_FHIR_RESOURCE_FIELDS);
-		fields.removeAll(getExternalFhirResourceFields());
-		// replace publisher with internal owner field
-		if (fields.contains(CodeSystem.Fields.PUBLISHER)) {
-			fields.remove(CodeSystem.Fields.PUBLISHER);
-			fields.add(ResourceDocument.Fields.OWNER);
-		}
-		// replace identifier with internal oid field
-		if (fields.contains(CodeSystem.Fields.IDENTIFIER)) {
-			fields.remove(CodeSystem.Fields.IDENTIFIER);
-			fields.add(ResourceDocument.Fields.OID);
-		}
+		List<String> fields = replaceFieldsToLoad(fields());
 		
 		// prepare filters
 		final ExpressionBuilder resourcesQuery = Expressions.builder()
@@ -149,7 +120,51 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				.total(internalResources.getTotal())
 				.build();
 	}
-	
+
+	private final List<String> replaceFieldsToLoad(List<String> fields) {
+		List<String> fieldsToLoad = Lists.newArrayList(fields);
+		// if any fields defined for field selection, then make sure toolingId, resourceType and id is part of the selection, so it is returned and will be available when needed
+		if (!fieldsToLoad.isEmpty()) {
+			if (!fieldsToLoad.contains(ResourceDocument.Fields.ID)) {
+				fieldsToLoad.add(ResourceDocument.Fields.ID);
+			}
+			if (!fieldsToLoad.contains(ResourceDocument.Fields.RESOURCE_TYPE)) {
+				fieldsToLoad.add(ResourceDocument.Fields.RESOURCE_TYPE);
+			}
+			if (!fieldsToLoad.contains(ResourceDocument.Fields.TOOLING_ID)) {
+				fieldsToLoad.add(ResourceDocument.Fields.TOOLING_ID);
+			}
+			if (!fieldsToLoad.contains(ResourceDocument.Fields.CREATED_AT)) {
+				fieldsToLoad.add(ResourceDocument.Fields.CREATED_AT);
+			}
+		}
+		
+		// remove all fields that are not part of the current resource model
+		fieldsToLoad.removeAll(EXTERNAL_FHIR_RESOURCE_FIELDS);
+		fieldsToLoad.removeAll(getExternalFhirResourceFields());
+		// replace publisher with internal owner field
+		if (fieldsToLoad.contains(CodeSystem.Fields.PUBLISHER)) {
+			fieldsToLoad.remove(CodeSystem.Fields.PUBLISHER);
+			fieldsToLoad.add(ResourceDocument.Fields.OWNER);
+		}
+		// replace identifier with internal oid field
+		if (fieldsToLoad.contains(CodeSystem.Fields.IDENTIFIER)) {
+			fieldsToLoad.remove(CodeSystem.Fields.IDENTIFIER);
+			fieldsToLoad.add(ResourceDocument.Fields.OID);
+		}
+		
+		// support any specific field selection changes
+		configureFieldsToLoad(fieldsToLoad);
+		
+		return fieldsToLoad;
+	}
+
+	/**
+	 * Subclasses may optionally override the current field selection list of they know that an index field is not present or named differently in their specific model.
+	 * @param fields
+	 */
+	protected void configureFieldsToLoad(List<String> fields) {
+	}
 
 	protected final Builder prepareBundle() {
 		return Bundle.builder(getResourceType())

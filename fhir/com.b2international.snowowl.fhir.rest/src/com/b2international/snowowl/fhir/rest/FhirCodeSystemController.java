@@ -50,21 +50,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemController extends AbstractFhirResourceController<CodeSystem> {
 	
-	@Override
-	protected Class<CodeSystem> getModelClass() {
-		return CodeSystem.class;
-	}
-	
 	@Operation(
-			summary="Create a code system",
-			description="Create a FHIR code system.", 
-		
-			extensions = {
-					@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
-						@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create a code system"),
-					}),
-				}
-		)
+		summary="Create a code system",
+		description="Create a FHIR code system.", 
+		extensions = {
+			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create a code system"),
+			}),
+		}
+	)
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	//@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {

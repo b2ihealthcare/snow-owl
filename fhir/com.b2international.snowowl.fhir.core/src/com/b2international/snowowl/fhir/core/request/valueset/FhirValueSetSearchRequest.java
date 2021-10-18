@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -37,6 +39,14 @@ final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet
 	@Override
 	protected ValueSet.Builder createResourceBuilder() {
 		return ValueSet.builder();
+	}
+	
+	@Override
+	protected void configureFieldsToLoad(List<String> fields) {
+		// make sure we are not trying to load unindexed fields when requested
+		fields.remove(ValueSet.Fields.COMPOSE);
+		fields.remove(ValueSet.Fields.EXPANSION);
+		fields.remove(ValueSet.Fields.IMMUTABLE);
 	}
 	
 	@Override

@@ -45,11 +45,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value="/ConceptMap", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirConceptMapController extends AbstractFhirResourceController<ConceptMap> {
 	
-	@Override
-	protected Class<ConceptMap> getModelClass() {
-		return ConceptMap.class;
-	}
-	
 	/**
 	 * @param params - request parameters
 	 * @return bundle of concept maps

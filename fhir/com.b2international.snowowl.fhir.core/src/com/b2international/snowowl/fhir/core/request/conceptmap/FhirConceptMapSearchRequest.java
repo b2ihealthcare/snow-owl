@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -37,6 +39,11 @@ final class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<Concep
 	@Override
 	protected Builder createResourceBuilder() {
 		return ConceptMap.builder();
+	}
+	
+	@Override
+	protected void configureFieldsToLoad(List<String> fields) {
+		fields.remove(ConceptMap.Fields.GROUP);
 	}
 	
 	@Override

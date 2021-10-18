@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_INTERACTION_READ;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_PROFILE;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_INTERACTION;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
@@ -323,8 +326,4 @@ public class FhirMetadataController extends AbstractFhirResourceController<Capab
 		return operationDefinitionBuilder.build();
 	}
 
-	@Override
-	protected Class<CapabilityStatement> getModelClass() {
-		return CapabilityStatement.class;
-	}
 }

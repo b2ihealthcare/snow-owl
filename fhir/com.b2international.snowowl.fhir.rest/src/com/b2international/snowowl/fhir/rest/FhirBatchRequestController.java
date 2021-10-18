@@ -132,9 +132,4 @@ public class FhirBatchRequestController extends AbstractFhirResourceController<B
 			.execute(getBus());
 	}
 
-	@Override
-	protected Class<Bundle> getModelClass() {
-		return Bundle.class;
-	}
-	
 }
