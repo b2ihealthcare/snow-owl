@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.commons.exceptions.ConflictException;
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.*;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -81,6 +79,13 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	    	FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
 	    	return fhirException.toOperationOutcome();
 	    }
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.UNAUTHORIZED)
+	public @ResponseBody OperationOutcome handle(final UnauthorizedException ex) {
+		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_AUTH_REQUIRED);
+		return fhirException.toOperationOutcome();
 	}
 	
 	@ExceptionHandler
