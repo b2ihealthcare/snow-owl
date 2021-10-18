@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.elasticsearch.common.Strings;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -29,6 +30,8 @@ import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
+import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
@@ -139,8 +142,8 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 				.setSearchAfter(request.getAfter())
 				// SNOMED only preferred display support (VS should always use FSN)
 				.setPreferredDisplay("FSN") 
-				// always return sorted results for consistency
-				.sortBy("id:asc");
+				// always return sorted results for consistency, in case of term filtering return by score otherwise by ID
+				.sortBy(!CompareUtils.isEmpty(request.getFilter()) ? SearchIndexResourceRequest.SCORE : SearchResourceRequest.Sort.fieldAsc("id"));
 
 		Compose compose = null;
 		
