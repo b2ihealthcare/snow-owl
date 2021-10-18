@@ -41,7 +41,7 @@ public class SnomedSuggestApiTest {
 	private static final String CLINICAL_FINDING_ID = "404684003";
 	private static final String SPECIAL_CONCEPT_ID = "370115009";
 	private static final String ATTRIBUTE_ID = Concepts.ATTRIBUTE;
-	private static final String CONCEPT_HISTROY_ATTRIBUTE_ID = "410663007";
+	private static final String CONCEPT_HISTORY_ATTRIBUTE_ID = "410663007";
 	private static final String CONCEPT_MODEL_ATTRIBUTE_ID = "410662002";
 	private static final String CONCEPT_ATTRIBUTE_ID = "734866006";
 	
@@ -99,7 +99,7 @@ public class SnomedSuggestApiTest {
 				.with("limit", Integer.MAX_VALUE))
 		.statusCode(200)
 		.assertThat()
-		.body("items.id", hasItems(CONCEPT_HISTROY_ATTRIBUTE_ID, CONCEPT_MODEL_ATTRIBUTE_ID, CONCEPT_ATTRIBUTE_ID))
+		.body("items.id", hasItems(CONCEPT_HISTORY_ATTRIBUTE_ID, CONCEPT_MODEL_ATTRIBUTE_ID, CONCEPT_ATTRIBUTE_ID))
 		.body("items.id", not(hasItems(SPECIAL_CONCEPT_ID, ATTRIBUTE_ID)));
 	}
 	
@@ -112,7 +112,7 @@ public class SnomedSuggestApiTest {
 				.with("limit", Integer.MAX_VALUE))
 		.statusCode(200)
 		.assertThat()
-		.body("items.id", hasItems(CONCEPT_HISTROY_ATTRIBUTE_ID, CONCEPT_MODEL_ATTRIBUTE_ID))
+		.body("items.id", hasItems(CONCEPT_HISTORY_ATTRIBUTE_ID, CONCEPT_MODEL_ATTRIBUTE_ID))
 		.body("items.id", not(hasItems(SPECIAL_CONCEPT_ID, ATTRIBUTE_ID, CONCEPT_ATTRIBUTE_ID)));
 	}
 	
