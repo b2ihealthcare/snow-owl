@@ -31,7 +31,6 @@ import org.snomed.otf.owltoolkit.domain.Relationship;
 import org.snomed.otf.owltoolkit.domain.Relationship.ConcreteValue;
 
 import com.b2international.commons.exceptions.ApiException;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -102,15 +101,15 @@ public final class SnomedOWLExpressionConverter {
 			
 			final Long conceptIdLong = Long.valueOf(conceptId);
 			final AxiomRepresentation axiomRepresentation = convertAxiom(conceptId, axiomExpression);
+			
 			if (axiomRepresentation == null) {
 				return SnomedOWLExpressionConverterResult.EMPTY;
 			}
 			
-			final boolean gci;
-			final Map<Integer, List<Relationship>> relationships;
+			boolean gci = false;
+			Map<Integer, List<Relationship>> relationships = null;
 			
 			if (conceptIdLong.equals(axiomRepresentation.getLeftHandSideNamedConcept())) {
-				gci = false;
 				relationships = axiomRepresentation.getRightHandSideRelationships();
 			} else if (conceptIdLong.equals(axiomRepresentation.getRightHandSideNamedConcept())) {
 				/*
@@ -120,7 +119,7 @@ public final class SnomedOWLExpressionConverter {
 				gci = axiomRepresentation.isPrimitive();
 				relationships = axiomRepresentation.getLeftHandSideRelationships();
 			} else {
-				throw new BadRequestException("Focus concept ID '%s' was not referenced on either side of axiom '%s'", conceptId, axiomExpression);
+				LOG.warn("Illegal assignment of referenced component id ('{}') was detected for the OWL expression: '{}'", conceptId, axiomExpression);
 			}
 			
 			if (relationships == null) {
