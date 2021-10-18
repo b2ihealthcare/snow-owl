@@ -32,7 +32,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 	@Test
 	public void expandSnomedCodeSystemURL() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008")
+			.queryParam("url", SNOMEDCT_URL)
 			.when().get("/ValueSet/$expand")
 			.then()
 			.statusCode(200)
@@ -40,7 +40,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("id", notNullValue())
 			.body("expansion.total", equalTo(1943))
 			.body("expansion.contains[0].code", equalTo("103335007"))
-			.body("expansion.contains[0].system", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008"))
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
 			.body("expansion.contains[0].display", equalTo("Duration (attribute)"));
 	}
 	
@@ -55,7 +55,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("id", notNullValue())
 			.body("expansion.total", equalTo(1943))
 			.body("expansion.contains[0].code", equalTo("103335007"))
-			.body("expansion.contains[0].system", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008")) // expanded resource has proper full system value
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL)) // expanded resource has proper full system value
 			.body("expansion.contains[0].display", equalTo("Duration (attribute)"));
 	}
 	
@@ -70,7 +70,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("id", notNullValue())
 			.body("expansion.total", equalTo(1943))
 			.body("expansion.contains[0].code", equalTo("103335007"))
-			.body("expansion.contains[0].system", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008"))
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
 			.body("expansion.contains[0].display", equalTo("Duration (attribute)"));
 	}
 	
@@ -85,7 +85,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("id", notNullValue())
 			.body("expansion.total", equalTo(4))
 			.body("expansion.contains[0].code", equalTo("312412007"))
-			.body("expansion.contains[0].system", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008"))
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
 			.body("expansion.contains[0].display", equalTo("Substance categorized functionally (substance)"));
 	}
 	
@@ -100,7 +100,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("id", notNullValue())
 			.body("expansion.total", equalTo(16)) // minified dataset only has 16 top level nodes
 			.body("expansion.contains[0].code", equalTo("105590001"))
-			.body("expansion.contains[0].system", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008"))
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
 			.body("expansion.contains[0].display", equalTo("Substance (substance)"));
 	}
 	
@@ -116,7 +116,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("id", notNullValue())
 			.body("expansion.total", equalTo(39))
 			.body("expansion.contains[0].code", equalTo("103389009"))
-			.body("expansion.contains[0].system", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008"))
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
 			.body("expansion.contains[0].display", equalTo("Route of administration (qualifier value)"));
 	}
 	
