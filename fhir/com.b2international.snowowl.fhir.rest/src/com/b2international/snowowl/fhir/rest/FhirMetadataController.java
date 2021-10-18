@@ -49,7 +49,6 @@ import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind
 import com.b2international.snowowl.fhir.core.codesystems.OperationKind;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.codesystems.RestfulCapabilityMode;
-import com.b2international.snowowl.fhir.core.model.StringExtension;
 import com.b2international.snowowl.fhir.core.model.capabilitystatement.*;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -174,22 +173,16 @@ public class FhirMetadataController extends AbstractFhirController {
 			.status(PublicationStatus.ACTIVE)
 			.experimental(false)
 			.kind(CapabilityStatementKind.INSTANCE.getCode())
+			.fhirVersion("4.0.1")
 			.addInstantiate(new Uri("http://hl7.org/fhir/CapabilityStatement/terminology-server"))
 			.software(Software.builder()
 				.name("Snow Owl©")
 				.version(serverVersion)
-				.addExtension(StringExtension.builder()
-					.url("http://b2i.sg/profiles/snowowl-server-API-extensions")
-					.addExtension(StringExtension.builder()
-						.url("apiVersion")
-						.value("R4.0.1")
-						.build()) // inner StringExtension
-					.build()) // outer StringExtension
-				.build()) // software
+			.build()) 
 			.implementation(Implementation.builder()
 				.url("https://b2i.sg")
 				.description(description)
-				.build()) // implementation
+			.build())
 			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_JSON))
 			.addRest(restBuilder.build())
 			.build();
