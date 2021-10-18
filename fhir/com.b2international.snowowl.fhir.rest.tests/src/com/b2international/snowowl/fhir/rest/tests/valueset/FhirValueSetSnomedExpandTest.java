@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.rest.tests.valueset;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 
 import org.junit.Test;
 
@@ -114,10 +114,8 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
 			.body("id", notNullValue())
-			.body("expansion.total", equalTo(39))
-			.body("expansion.contains[0].code", equalTo("103389009"))
-			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
-			.body("expansion.contains[0].display", equalTo("Route of administration (qualifier value)"));
+			.body("expansion.total", equalTo(0))
+			.body("expansion.contains.code", nullValue());
 	}
 	
 }

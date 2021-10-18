@@ -29,12 +29,12 @@ import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
+import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.*;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
@@ -122,7 +122,7 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		
 		// return the content of the CodeSystem as Value Set
 		String id = Hashing.goodFastHash(8).hashString(urlValue, Charsets.UTF_8).toString();
-		Builder vs = ValueSet.builder(id)
+		Builder valueSet = ValueSet.builder(id)
 				.url(urlValue)
 				// according to http://hl7.org/fhir/r4/snomedct.html#implicit they always ACTIVE
 				.status(PublicationStatus.ACTIVE);
@@ -142,7 +142,9 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 				// always return sorted results for consistency
 				.sortBy("id:asc");
 
-		// configure query based on fhir_vs query parameter
+		Compose compose = null;
+		
+		// configure query based on fhir_vs query parameter and also build the compose declaration for this implicit Value Set
 		if (Strings.isNullOrEmpty(query) || "fhir_vs".equals(query)) {
 			// do nothing, search all concepts
 		} else if (query.startsWith("fhir_vs=")) {
@@ -150,17 +152,67 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 			if (fhirVsValue.startsWith("ecl/")) {
 				String ecl = fhirVsValue.replace("ecl/", "");
 				req.filterByQuery(ecl);
+				// configure Value Set for ECL
+				valueSet
+					.name(String.format("%s Concepts matching %s", codeSystem.getName(), ecl))
+					.description(String.format("All SNOMED CT concepts that match the expression constraint %s", ecl));
+				// configure compose for ECL
+				compose = Compose.builder().addInclude(Include.builder()
+						.addFilters(
+							ValueSetFilter.builder()
+								.property("constraint")
+								.operator(FilterOperator.EQUALS)
+								.value(ecl)
+							.build()
+						)
+						.build()).build();
 			} else if (fhirVsValue.startsWith("isa/")) {
 				String parent = fhirVsValue.replace("isa/", "");
 				req.filterByAncestor(parent);
+				// configure Value Set for IS A
+				valueSet
+					.name(String.format("%s Concept %s and descendants", codeSystem.getName(), parent))
+					.description(String.format("All SNOMED CT concepts for %s", parent));
+				// configure compose for IS A
+				compose = Compose.builder().addInclude(Include.builder()
+						.system(baseUrl)
+						.addFilters(
+							ValueSetFilter.builder()
+								.property("concept")
+								.operator(FilterOperator.IS_A)
+								.value(parent)
+							.build()
+						)
+						.build()).build();
 			} else if (fhirVsValue.startsWith("refset/")) {
 				String refsetId = fhirVsValue.replace("refset/", "");
-				req.filterByQuery("^"+refsetId);
+				if (Strings.isNullOrEmpty(refsetId)) {
+					// TODO support refset identifier concept search
+					return null;
+				} else {
+					req.filterByQuery("^"+refsetId);
+					// configure Value Set for REFSET
+					valueSet
+						.name(String.format("%s Reference Set %s", codeSystem.getName(), refsetId))
+						.description(String.format("All SNOMED CT concepts in the reference set %s", refsetId));
+					// configure compose for REFSET
+					compose = Compose.builder().addInclude(Include.builder()
+							.addFilters(
+								ValueSetFilter.builder()
+									.property("concept")
+									.operator(FilterOperator.IN)
+									.value(refsetId)
+								.build()
+							)
+							.build()).build();
+				}
 			} else {
-				// do nothing, search all concepts
+				// no support for this unknown filter, return 404
+				// TODO return unsupported maybe?
+				// TODO check against declared filter values in CodeSystem
+				return null;
 			}
 		}
-		
 		
 		Concepts concepts = req.buildAsync().execute(context);
 		
@@ -176,7 +228,10 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 					.build());
 		}
 		
-		return vs.expansion(expansion.build()).build();
+		return valueSet
+				.compose(compose)
+				.expansion(expansion.build())
+				.build();
 	}
 
 }
