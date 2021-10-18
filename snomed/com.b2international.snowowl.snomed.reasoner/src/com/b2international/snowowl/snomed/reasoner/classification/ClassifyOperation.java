@@ -48,7 +48,7 @@ import io.reactivex.observers.DisposableObserver;
  * Represents an abstract operation which requires the classification of the
  * SNOMED CT terminology on the active branch path.
  * 
- * @param T the operation return type
+ * @param <T> - the operation return type
  * @since
  */
 public abstract class ClassifyOperation<T> {

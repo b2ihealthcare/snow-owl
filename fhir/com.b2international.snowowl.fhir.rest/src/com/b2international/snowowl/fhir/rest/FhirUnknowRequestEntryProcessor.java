@@ -25,14 +25,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * {@link BatchRequestProcessor} to process an unknown requests in a batch
+ * {@link FhirBatchRequestProcessor} to process an unknown requests in a batch
  * @since 8.0.0
  */
-public class UnknowRequestEntryProcessor extends BatchRequestProcessor {
+public class FhirUnknowRequestEntryProcessor extends FhirBatchRequestProcessor {
 
 	private Entry entry;
 
-	public UnknowRequestEntryProcessor(ObjectMapper objectMapper, Entry entry, BatchRequestController batchRequestController) {
+	public FhirUnknowRequestEntryProcessor(ObjectMapper objectMapper, Entry entry, FhirBatchRequestController batchRequestController) {
 		super(objectMapper, batchRequestController);
 		this.entry = entry;
 	}

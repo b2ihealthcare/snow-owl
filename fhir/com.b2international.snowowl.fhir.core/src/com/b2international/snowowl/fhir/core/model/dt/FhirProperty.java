@@ -25,7 +25,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 6.4
- * @param <T>
  */
 public abstract class FhirProperty {
 	

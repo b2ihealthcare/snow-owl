@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_INTERACTION_READ;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_PROFILE;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_INTERACTION;
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
@@ -37,7 +40,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.core.rest.SnowOwlOpenApiWebMvcResource;
 import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind;
@@ -74,8 +79,8 @@ import io.swagger.v3.oas.models.media.Schema;
 	})
 })
 @RestController
-@RequestMapping(value="/", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class MetadataController extends AbstractFhirResourceController<CapabilityStatement> {
+@RequestMapping(value="/", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+public class FhirMetadataController extends AbstractFhirController {
 	
 	@Autowired
 	private OpenApiWebMvcResource openApiWebMvcResource;
@@ -90,11 +95,6 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 	
 	private final Supplier<Holder> capabilityStatementSupplier = Suppliers.memoize(this::initCache);
 
-	/**
-	 * Returns the server's capability statement
-	 * @param request the injected http servlet request
-	 * @return
-	 */
 	@Operation(
 		summary="Retrieve the capability statement", 
 		description="Retrieves this server's capability statement.",
@@ -167,6 +167,8 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 			.getVersion()
 			.toString();
 		
+		String description = ApplicationContext.getServiceForClass(SnowOwlConfiguration.class).getDescription();
+		
 		holder.capabilityStatement = CapabilityStatement.builder()
 			.name("FHIR Capability statement for Snow Owl© Terminology Server")
 			.status(PublicationStatus.ACTIVE)
@@ -180,15 +182,15 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 					.url("http://b2i.sg/profiles/snowowl-server-API-extensions")
 					.addExtension(StringExtension.builder()
 						.url("apiVersion")
-						.value("Snow Owl API Version comes here")
+						.value("R4.0.1")
 						.build()) // inner StringExtension
 					.build()) // outer StringExtension
 				.build()) // software
 			.implementation(Implementation.builder()
-				.url("b2i.sg")
-				.description("Demo server")
+				.url("https://b2i.sg")
+				.description(description)
 				.build()) // implementation
-			.addFormat(new Code(AbstractFhirResourceController.APPLICATION_FHIR_JSON))
+			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_JSON))
 			.addRest(restBuilder.build())
 			.build();
 		
@@ -257,7 +259,7 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 	}
 
 	private String buildOperationUrl(final Code code, final OperationDefinition operationDefinition) {
-		return MvcUriComponentsBuilder.fromController(MetadataController.class)
+		return MvcUriComponentsBuilder.fromController(FhirMetadataController.class)
 			.pathSegment(code.getCodeValue(), operationDefinition.getName())
 			.build()
 			.toUriString();
@@ -324,8 +326,4 @@ public class MetadataController extends AbstractFhirResourceController<Capabilit
 		return operationDefinitionBuilder.build();
 	}
 
-	@Override
-	protected Class<CapabilityStatement> getModelClass() {
-		return CapabilityStatement.class;
-	}
 }

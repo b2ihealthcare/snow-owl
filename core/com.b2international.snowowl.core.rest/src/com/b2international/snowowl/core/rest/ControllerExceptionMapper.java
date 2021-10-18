@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -112,9 +113,12 @@ public class ControllerExceptionMapper {
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public RestApiError handle(final UnauthorizedException ex) {
+	public ResponseEntity<RestApiError> handle(final UnauthorizedException ex) {
 		final ApiError err = ex.toApiError();
-		return RestApiError.of(err).build(HttpStatus.UNAUTHORIZED.value());
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("WWW-Authenticate", "Basic");
+		headers.add("WWW-Authenticate", "Bearer");
+		return new ResponseEntity<>(RestApiError.of(err).build(HttpStatus.UNAUTHORIZED.value()), headers, HttpStatus.UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler

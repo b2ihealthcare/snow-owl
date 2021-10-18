@@ -40,9 +40,7 @@ import com.google.common.collect.Multimap;
 
 /**
  * @since 6.5
- * @param <C>
- * @param <T>
- * @param <R>
+ * @param <R> - the response type
  */
 public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionContext, TransactionContext, R> {
 

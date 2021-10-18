@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -46,29 +42,29 @@ import com.fasterxml.jackson.databind.node.TextNode;
  * Class to process a bulk request
  * @since 8.0.0
  */
-public abstract class BatchRequestProcessor {
+public abstract class FhirBatchRequestProcessor {
 	
 	protected ObjectMapper objectMapper;
-	private BatchRequestController batchRequestController;
+	private FhirBatchRequestController batchRequestController;
 
-	public BatchRequestProcessor(ObjectMapper objectMapper, BatchRequestController batchRequestController) {
+	public FhirBatchRequestProcessor(ObjectMapper objectMapper, FhirBatchRequestController batchRequestController) {
 		this.objectMapper = objectMapper;
 		this.batchRequestController = batchRequestController;
 	}
 
-	public static BatchRequestProcessor getInstance(Entry entry, ObjectMapper objectMapper, BatchRequestController batchRequestController) {
+	public static FhirBatchRequestProcessor getInstance(Entry entry, ObjectMapper objectMapper, FhirBatchRequestController batchRequestController) {
 		
 		if (entry instanceof RequestEntry) {
 			RequestEntry requestEntry = (RequestEntry) entry;
-			return new RequestEntryProcessor(objectMapper, requestEntry, batchRequestController);
+			return new FhirRequestEntryProcessor(objectMapper, requestEntry, batchRequestController);
 		} else if (entry instanceof ResourceRequestEntry) {
 			ResourceRequestEntry requestEntry = (ResourceRequestEntry) entry;
-			return new ResourceRequestEntryProcessor(objectMapper, requestEntry, batchRequestController);
+			return new FhirResourceRequestEntryProcessor(objectMapper, requestEntry, batchRequestController);
 		} else if (entry instanceof ParametersRequestEntry) {
 			ParametersRequestEntry requestEntry = (ParametersRequestEntry) entry;
-			return new ParametersRequestEntryProcessor(objectMapper, requestEntry, batchRequestController);
+			return new FhirParametersRequestEntryProcessor(objectMapper, requestEntry, batchRequestController);
 		} else {
-			return new UnknowRequestEntryProcessor(objectMapper, entry, batchRequestController);
+			return new FhirUnknowRequestEntryProcessor(objectMapper, entry, batchRequestController);
 		}
 		
 	}
@@ -209,26 +205,25 @@ public abstract class BatchRequestProcessor {
 	protected RestTemplate getRestTemplate() {
 		RestTemplate restTemplate = new RestTemplate();
 		
-		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
-		MappingJackson2HttpMessageConverter jsonMessageConverter = new MappingJackson2HttpMessageConverter() {
-
-			public boolean canRead(java.lang.Class<?> clazz, org.springframework.http.MediaType mediaType) {
-				return true;
-			}
-
-			public boolean canRead(java.lang.reflect.Type type, java.lang.Class<?> contextClass,
-					org.springframework.http.MediaType mediaType) {
-				return true;
-			}
-
-			protected boolean canRead(org.springframework.http.MediaType mediaType) {
-				return true;
-			}
-		};
-
-		jsonMessageConverter.setObjectMapper(objectMapper);
-		messageConverters.add(jsonMessageConverter);
-
+//		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+//		MappingJackson2HttpMessageConverter jsonMessageConverter = new MappingJackson2HttpMessageConverter() {
+//
+//			public boolean canRead(java.lang.Class<?> clazz, org.springframework.http.MediaType mediaType) {
+//				return true;
+//			}
+//
+//			public boolean canRead(java.lang.reflect.Type type, java.lang.Class<?> contextClass,
+//					org.springframework.http.MediaType mediaType) {
+//				return true;
+//			}
+//
+//			protected boolean canRead(org.springframework.http.MediaType mediaType) {
+//				return true;
+//			}
+//		};
+//
+//		jsonMessageConverter.setObjectMapper(objectMapper);
+//		messageConverters.add(jsonMessageConverter);
 		//restTemplate.setMessageConverters(messageConverters);
 		return restTemplate;
 	}

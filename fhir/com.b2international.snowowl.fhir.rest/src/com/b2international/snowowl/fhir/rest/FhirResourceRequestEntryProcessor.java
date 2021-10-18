@@ -25,41 +25,42 @@ import org.springframework.web.client.RestTemplate;
 
 import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.model.BatchRequest;
-import com.b2international.snowowl.fhir.core.model.RequestEntry;
+import com.b2international.snowowl.fhir.core.model.ResourceRequestEntry;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * {@link BatchRequestProcessor} to process GET requests in a batch
+ * {@link FhirBatchRequestProcessor} to process resource POST requests in a batch
  * @since 8.0.0
  */
-public class RequestEntryProcessor extends BatchRequestProcessor {
+public class FhirResourceRequestEntryProcessor extends FhirBatchRequestProcessor {
 
-	private RequestEntry requestEntry;
+	private ResourceRequestEntry requestEntry;
 
-	public RequestEntryProcessor(ObjectMapper objectMapper, RequestEntry requestEntry, BatchRequestController batchRequestController) {
+	public FhirResourceRequestEntryProcessor(ObjectMapper objectMapper, ResourceRequestEntry requestEntry, FhirBatchRequestController batchRequestController) {
 		super(objectMapper, batchRequestController);
 		this.requestEntry = requestEntry;
 	}
 
 	@Override
-	public void doProcess(ArrayNode arrayNode, HttpServletRequest request) throws Exception {
-		 
-
+	public void doProcess(ArrayNode arrayNode, HttpServletRequest request) throws JsonMappingException, JsonProcessingException {
+		
 		BatchRequest batchRequest = requestEntry.getRequest();
 		Code requestMethod = batchRequest.getMethod();
 		
-		if (!requestMethod.equals(HttpVerb.GET.getCode())) {
+		if (!requestMethod.equals(HttpVerb.POST.getCode())) {
 			createInvalidMethodResponse(arrayNode, requestMethod);
 			return;
 		}
-
+		
 		HttpHeaders headers = getHeaders(request);
-			
+		
 		RestTemplate restTemplate = getRestTemplate();
-			
+		
 		StringBuilder uriBuilder = new StringBuilder(request.getScheme())
 				.append("://")
 				.append(request.getServerName())
@@ -67,10 +68,9 @@ public class RequestEntryProcessor extends BatchRequestProcessor {
 				.append(request.getLocalPort())
 				.append(request.getRequestURI())
 				.append(batchRequest.getUrl().getUriValue());
-			
-			
-		HttpEntity<String> httpEntity = new HttpEntity<>(headers);
-		ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, httpEntity, String.class);
+		
+		HttpEntity<?> httpEntity = new HttpEntity<>(requestEntry.getRequestResource(), headers);
+		ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.POST, httpEntity, String.class);
 		
 		String json = response.getBody();
 		
