@@ -19,6 +19,7 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -387,6 +388,49 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertDocEquals(member, actual);
 	}
 
+	@Test
+	public void indexOWLAxiomMember_MalformedGCIAxiom() throws Exception {
+		
+		/*
+		 * According to the OWL Guide (Yong):
+		 * If an axiom is in the form of SubClassOf(C D) and C is a precoordinated concept,
+		 * this SubclassOf axiom is NOT a GCI axiom and the concept D should not be assigned as the referencedComponentId.
+		 * 
+		 * This would be a normal SubclassOf axiom and C is the referenced component.
+		 * 
+		 */		
+		
+		final String referencedComponentId = "231907006";
+		final String owlExpression = "SubClassOf(:193783008 :231907006)";
+		
+		try {
+			
+			final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
+			
+			final SnomedRefSetMemberIndexEntry member =  createBaseMember()
+					.referencedComponentId(referencedComponentId)
+					.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+					.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+					.field(Fields.OWL_EXPRESSION, owlExpression)
+					.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
+					.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
+					.build();
+			
+			indexRevision(RevisionBranch.MAIN_PATH, member);
+			final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
+			assertThat(actual.getGciAxiomRelationships()).isEmpty();
+			assertThat(actual.getClassAxiomRelationships()).isEmpty();
+			
+			assertDocEquals(member, actual);
+			
+		} catch (Exception e) {
+			// the OWL conversion process must not throw any exception in such cases, but
+			// rather convert the expression with empty relationship results
+			fail();
+		}
+		
+	}
+	
 	@Test
 	public void searchByOwlExpressionConcept_TypeId() throws Exception {
 		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
