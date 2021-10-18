@@ -125,7 +125,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value = "/$lookup", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value = "/$lookup", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> lookup(
 			@Parameter(description = "The lookup request parameters")
 			@RequestBody 

@@ -42,8 +42,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "ConceptMap", name = "ConceptMap")
 @RestController
-@RequestMapping(value="/ConceptMap", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class FhirConceptMapController extends AbstractFhirResourceController<ConceptMap> {
+@RequestMapping(value="/ConceptMap", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+public class FhirConceptMapController extends AbstractFhirController {
 	
 	/**
 	 * @param params - request parameters

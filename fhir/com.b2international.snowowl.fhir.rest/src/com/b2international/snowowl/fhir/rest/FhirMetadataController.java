@@ -79,8 +79,8 @@ import io.swagger.v3.oas.models.media.Schema;
 	})
 })
 @RestController
-@RequestMapping(value="/", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class FhirMetadataController extends AbstractFhirResourceController<CapabilityStatement> {
+@RequestMapping(value="/", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+public class FhirMetadataController extends AbstractFhirController {
 	
 	@Autowired
 	private OpenApiWebMvcResource openApiWebMvcResource;
@@ -190,7 +190,7 @@ public class FhirMetadataController extends AbstractFhirResourceController<Capab
 				.url("https://b2i.sg")
 				.description(description)
 				.build()) // implementation
-			.addFormat(new Code(AbstractFhirResourceController.APPLICATION_FHIR_JSON))
+			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_JSON))
 			.addRest(restBuilder.build())
 			.build();
 		

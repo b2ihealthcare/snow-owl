@@ -48,7 +48,7 @@ import com.google.common.base.Throwables;
  */
 public abstract class AbstractFhirController extends AbstractRestService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractFhirResourceController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractFhirController.class);
 	
 	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	

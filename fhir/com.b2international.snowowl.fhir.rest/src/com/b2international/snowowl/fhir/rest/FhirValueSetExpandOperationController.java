@@ -103,7 +103,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
-	@PostMapping(value="/$expand", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/$expand", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
 	public Promise<ValueSet> expandBodyRequest(
 			@Parameter(description = "The lookup request parameters")
 			@RequestBody 

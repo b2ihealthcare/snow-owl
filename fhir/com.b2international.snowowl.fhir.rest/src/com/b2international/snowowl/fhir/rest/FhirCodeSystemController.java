@@ -47,8 +47,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		  @ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CodeSystem")
 	}))
 @RestController
-@RequestMapping(value="/CodeSystem", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class FhirCodeSystemController extends AbstractFhirResourceController<CodeSystem> {
+@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+public class FhirCodeSystemController extends AbstractFhirController {
 	
 	@Operation(
 		summary="Create a code system",

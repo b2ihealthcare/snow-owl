@@ -41,8 +41,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "ValueSet", name = "ValueSet")
 @RestController
-@RequestMapping(value="/ValueSet", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class FhirValueSetController extends AbstractFhirResourceController<ValueSet> {
+@RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+public class FhirValueSetController extends AbstractFhirController {
 	
 	@Operation(
 		summary="Retrieve all value sets",
