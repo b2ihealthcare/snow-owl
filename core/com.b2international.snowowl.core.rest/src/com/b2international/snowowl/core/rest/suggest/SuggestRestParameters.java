@@ -42,6 +42,12 @@ public class SuggestRestParameters {
 	@Parameter(description = "The minimum number of words that should match")
 	private Integer minOccurrenceCount;
 
+	@Parameter(description = "The query to match")
+	private String query;
+	
+	@Parameter(description = "Exclude elements by query")
+	private String mustNotQuery;
+
 	public String getCodeSystemPath() {
 		return codeSystemPath;
 	}
@@ -88,5 +94,21 @@ public class SuggestRestParameters {
 
 	public void setMinOccurrenceCount(Integer minOccurrenceCount) {
 		this.minOccurrenceCount = minOccurrenceCount;
+	}
+
+	public String getQuery() {
+		return query;
+	}
+	
+	public void setQuery(String query) {
+		this.query = query;
+	}
+	
+	public String getMustNotQuery() {
+		return mustNotQuery;
+	}
+	
+	public void setMustNotQuery(String mustNotQuery) {
+		this.mustNotQuery = mustNotQuery;
 	}
 }

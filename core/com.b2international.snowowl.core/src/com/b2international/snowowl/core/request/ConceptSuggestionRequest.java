@@ -105,10 +105,6 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 				baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
 			}
 			
-			if (containsKey(TERM)) {
-				baseRequestBuilder.filterByTerm(getString(TERM));
-			}
-			
 			baseRequestBuilder.stream(context)
 			.flatMap(Concepts::stream)
 			.flatMap(concept -> getAllTerms(concept).stream())
