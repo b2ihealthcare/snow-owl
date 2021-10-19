@@ -32,7 +32,7 @@ public class FhirUnknowRequestEntryProcessor extends FhirBatchRequestProcessor {
 
 	private Entry entry;
 
-	public FhirUnknowRequestEntryProcessor(ObjectMapper objectMapper, Entry entry, FhirBatchRequestController batchRequestController) {
+	public FhirUnknowRequestEntryProcessor(ObjectMapper objectMapper, Entry entry, FhirBundleController batchRequestController) {
 		super(objectMapper, batchRequestController);
 		this.entry = entry;
 	}

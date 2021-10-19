@@ -41,7 +41,7 @@ public class FhirParametersRequestEntryProcessor extends FhirBatchRequestProcess
 
 	private ParametersRequestEntry requestEntry;
 
-	public FhirParametersRequestEntryProcessor(ObjectMapper objectMapper, ParametersRequestEntry requestEntry, FhirBatchRequestController batchRequestController) {
+	public FhirParametersRequestEntryProcessor(ObjectMapper objectMapper, ParametersRequestEntry requestEntry, FhirBundleController batchRequestController) {
 		super(objectMapper, batchRequestController);
 		this.requestEntry = requestEntry;
 	}

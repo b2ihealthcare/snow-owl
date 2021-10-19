@@ -47,7 +47,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Bundle", description="Bundle Resource and batch operations")
 @RestController
 @RequestMapping(value="/", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
-public class FhirBatchRequestController extends AbstractFhirController {
+public class FhirBundleController extends AbstractFhirController {
 	
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -96,7 +96,7 @@ public class FhirBatchRequestController extends AbstractFhirController {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
-	@GetMapping("/bundle")
+	@GetMapping("/Bundle")
 	public Promise<Bundle> getBundles(@ParameterObject final FhirBundleSearchParameters params) {
 		return FhirRequests.bundles().prepareSearch()
 				.filterByIds(asList(params.get_id()))
@@ -119,7 +119,7 @@ public class FhirBatchRequestController extends AbstractFhirController {
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Bundle not found")
 	})
-	@RequestMapping(value="/bundle/{id:**}", method=RequestMethod.GET)
+	@RequestMapping(value="/Bundle/{id:**}", method=RequestMethod.GET)
 	public Promise<Bundle> getBundle(
 			@Parameter(name = "id", description = "The identifier of the bundle resource")
 			@PathVariable(value = "id") 
