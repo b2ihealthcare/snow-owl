@@ -25,6 +25,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -207,5 +208,51 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 				.body("items[0].inactivationProperties.associationTargets.size()", equalTo(1))
 				.body("items[0].inactivationProperties.associationTargets[0].targetComponent.id", equalTo(wasAConceptId))
 				.body("items[0].inactivationProperties.associationTargets[0].targetComponent.fsn.term", equalTo("FSN of concept"));
+	}
+	
+	@Test
+	public void sortAscending() throws Exception {
+		String conceptId1 = createNewConceptWithDescription(branchPath, Concepts.ROOT_CONCEPT, "AAA AAA");
+		String conceptId2 = createNewConceptWithDescription(branchPath, Concepts.ROOT_CONCEPT, "AAA BBB");
+		String conceptId3 = createNewConceptWithDescription(branchPath, Concepts.ROOT_CONCEPT, "AAA CCC");
+		
+		List<String> hits = givenAuthenticatedRequest(getApiBaseUrl())
+				.accept(JSON_UTF8)
+				.queryParams(Map.of("sort", "term:asc",
+						"limit", "3",
+						"term", "AAA"))
+				.get("/{path}/concepts/", branchPath.getPath())
+				.then().assertThat()
+				.statusCode(200)
+				.extract().as(SnomedConcepts.class)
+				.getItems()
+				.stream()
+				.map(concept -> concept.getId())
+				.collect(Collectors.toList());
+
+		assertThat(hits).containsExactly(conceptId1, conceptId2, conceptId3);
+	}
+	
+	@Test
+	public void sortDescending() throws Exception {
+		String conceptId1 = createNewConceptWithDescription(branchPath, Concepts.ROOT_CONCEPT, "AAA AAA");
+		String conceptId2 = createNewConceptWithDescription(branchPath, Concepts.ROOT_CONCEPT, "AAA BBB");
+		String conceptId3 = createNewConceptWithDescription(branchPath, Concepts.ROOT_CONCEPT, "AAA CCC");
+		
+		List<String> hits = givenAuthenticatedRequest(getApiBaseUrl())
+				.accept(JSON_UTF8)
+				.queryParams(Map.of("sort", "term:desc",
+						"limit", "3",
+						"term", "AAA"))
+				.get("/{path}/concepts/", branchPath.getPath())
+				.then().assertThat()
+				.statusCode(200)
+				.extract().as(SnomedConcepts.class)
+				.getItems()
+				.stream()
+				.map(concept -> concept.getId())
+				.collect(Collectors.toList());
+		
+		assertThat(hits).containsExactly(conceptId3, conceptId2, conceptId1);
 	}
 }
