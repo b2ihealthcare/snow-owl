@@ -55,12 +55,13 @@ public class SuggestRestService extends AbstractRestService {
 	})
 	@GetMapping
 	public Promise<Suggestions> getSuggest(
-			@ParameterObject
-			final SuggestRestParameters params,
-			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage) {
+		@ParameterObject
+		final SuggestRestParameters params,
+		
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		final String acceptLanguage) {
+		
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
 				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
@@ -75,20 +76,20 @@ public class SuggestRestService extends AbstractRestService {
 	}
 	
 	@Operation(
-			summary = "Concept suggestion", 
-			description = "Returns an actual concept of the specified code system based on the source term.")
+		summary = "Concept suggestion", 
+		description = "Returns an actual concept of the specified code system based on the source term.")
 	@ApiResponses({ 
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Suggestions> postSuggest(
-			@RequestBody
-			final SuggestRestParameters body,
-			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage) {
+		@RequestBody
+		final SuggestRestParameters body,
+		
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		final String acceptLanguage) {
 		return getSuggest(body, acceptLanguage);
 	}
 	
@@ -101,18 +102,17 @@ public class SuggestRestService extends AbstractRestService {
 	})
 	@PostMapping(value = "/bulk", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<List<Object>> postBulkSuggest(
-			@RequestBody
-			final List<SuggestRestParameters> body,
-			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage) {
-		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
-			final List<Promise<Suggestions>> promises = body.stream()
-					.map(params -> getSuggest(params, acceptLanguage))
-					.collect(Collectors.toList());
-		}).collect(Collectors.toList());
+		@RequestBody
+		final List<SuggestRestParameters> body,
 		
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		final String acceptLanguage) {
+		
+		final List<Promise<Suggestions>> promises = body.stream()
+				.map(params -> getSuggest(params, acceptLanguage))
+				.collect(Collectors.toList());
+	
 		return Promise.all(promises);
 	}
 }
