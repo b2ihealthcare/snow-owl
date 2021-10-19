@@ -67,4 +67,4 @@
         * [ConceptMap](docs/api/fhir/conceptmaps.md)
 * [Backup and Restore](docs/backup/index.md)
     * [Curator](docs/backup/curator.md)
-* [Migrate from 6.x](docs/migration/from-6x.md)
+* [Migrate from 7.x](docs/migration/from-7x.md)
