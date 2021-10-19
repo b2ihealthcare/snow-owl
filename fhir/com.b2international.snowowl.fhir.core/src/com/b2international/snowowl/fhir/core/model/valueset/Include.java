@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,20 +37,15 @@ import com.google.common.collect.Lists;
 public class Include {
 	
 	@Valid
-	@JsonProperty
 	private final Uri system;
 	
 	@Summary
-	@JsonProperty
 	private final String version;
 	
-	@JsonProperty("concept")
 	private final Collection<ValueSetConcept> concepts;
 	
-	@JsonProperty("filter")
 	private final Collection<ValueSetFilter> filters;
 	
-	@JsonProperty("valueSet")
 	private final Collection<Uri> valueSets;
 	
 	Include(Uri system, String version, Collection<ValueSetConcept> concepts, Collection<ValueSetFilter> filters, Collection<Uri> valueSets) {
@@ -69,14 +64,17 @@ public class Include {
 		return version;
 	}
 	
+	@JsonProperty("concept")
 	public Collection<ValueSetConcept> getConcepts() {
 		return concepts;
 	}
 	
+	@JsonProperty("filter")
 	public Collection<ValueSetFilter> getFilters() {
 		return filters;
 	}
 	
+	@JsonProperty("valueSet")
 	public Collection<Uri> getValueSets() {
 		return valueSets;
 	}

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
@@ -39,11 +40,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirValueSetExpandOperationController extends AbstractFhirController {
 
-	/**
-	 * HTTP Get request to expand the value set to return its members.
-	 * @param id
-	 * @return expanded {@link ValueSet}
-	 */
 	@Operation(
 		summary="Expand a value set",
 		description="Expand a value set specified by its logical id."
@@ -55,20 +51,46 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 	})
 	@GetMapping(value="/{id:**}/$expand")
 	public Promise<ValueSet> expand(
-			@Parameter(description = "The id of the value set to expand") 
-			@PathVariable("id") 
-			final String id) {
+			@Parameter(description = "The logical id of the value set to expand") 
+			@PathVariable(value = "id", required = true) 
+			final String id,
+			
+			@Parameter(description = "Textual filter value to use") 
+			@RequestParam(value = "filter", required = false)
+			final String filter,
+			
+			@Parameter(description = "Return only active codes or not (default: return both)") 
+			@RequestParam(value = "activeOnly", required = false)
+			final Boolean activeOnly,
+			
+			@Parameter(description = "Specify the display language for the returned codes") 
+			@RequestParam(value = "displayLanguage", required = false)
+			final String displayLanguage,
+			
+			@Parameter(description = "Controls whether concept designations are to be included or excluded in value set expansions") 
+			@RequestParam(value = "includeDesignations", required = false)
+			final Boolean includeDesignations,
+			
+			@Parameter(description = "The number of codes to return in a page") 
+			@RequestParam(value = "count", required = false, defaultValue = "10")
+			final Integer count,
+			
+			@Parameter(description = "Specify the search after value to return the next page") 
+			@RequestParam(value = "after", required = false)
+			final String after) {
 		return FhirRequests.valueSets().prepareExpand()
-				.setRequest(ExpandValueSetRequest.builder().url(id).build())
+				.setRequest(ExpandValueSetRequest.builder()
+						.url(id)
+						.filter(filter)
+						.after(after)
+						.activeOnly(activeOnly)
+						.count(count)
+						.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
+						.build())
 				.buildAsync()
 				.execute(getBus());
 	}
 	
-	/**
-	 * HTTP Get request to expand a value set specified by its URL
-	 * @param url
-	 * @return expanded {@link ValueSet}
-	 */
 	@Operation(
 		summary="Expand a value set",
 		description="Expand a value set specified by its url."
@@ -81,19 +103,46 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 	@GetMapping(value="/$expand")
 	public Promise<ValueSet> expandByURL(
 			@Parameter(description = "Canonical URL of the value set") 
-			@RequestParam(value="url") 
-			final String url) {
+			@RequestParam(value = "url", required = true) 
+			final String url,
+
+			@Parameter(description = "Textual filter value to use") 
+			@RequestParam(value = "filter", required = false)
+			final String filter,
+			
+			@Parameter(description = "Return only active codes or not (default: return both)") 
+			@RequestParam(value = "activeOnly", required = false)
+			final Boolean activeOnly,
+			
+			@Parameter(description = "Specify the display language for the returned codes") 
+			@RequestParam(value = "displayLanguage", required = false)
+			final String displayLanguage,
+			
+			@Parameter(description = "Controls whether concept designations are to be included or excluded in value set expansions") 
+			@RequestParam(value = "includeDesignations", required = false)
+			final Boolean includeDesignations,
+			
+			@Parameter(description = "The number of codes to return in a page") 
+			@RequestParam(value = "count", required = false, defaultValue = "10")
+			final Integer count,
+			
+			@Parameter(description = "Specify the search after value to return the next page") 
+			@RequestParam(value = "after", required = false)
+			final String after) {
 		return FhirRequests.valueSets().prepareExpand()
-				.setRequest(ExpandValueSetRequest.builder().url(url).build())
+				.setRequest(ExpandValueSetRequest.builder()
+						.url(url)
+						.filter(filter)
+						.after(after)
+						.activeOnly(activeOnly)
+						.count(count)
+						.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
+						.includeDesignations(includeDesignations)
+						.build())
 				.buildAsync()
 				.execute(getBus());
 	}
 	
-	/**
-	 * HTTP Post request to expand a value set
-	 * @param body - FHIR parameters
-	 * @return expanded {@link ValueSet}
-	 */
 	@Operation(
 		summary="Expand a value set",
 		description="Expand a value set specified by a request body."
@@ -104,8 +153,8 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
 	@PostMapping(value="/$expand", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
-	public Promise<ValueSet> expandBodyRequest(
-			@Parameter(description = "The lookup request parameters")
+	public Promise<ValueSet> expandByPost(
+			@Parameter(description = "The expansion request parameters")
 			@RequestBody 
 			Parameters.Fhir body) {
 		
