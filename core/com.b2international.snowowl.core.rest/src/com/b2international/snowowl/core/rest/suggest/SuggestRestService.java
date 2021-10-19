@@ -89,17 +89,7 @@ public class SuggestRestService extends AbstractRestService {
 			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		return CodeSystemRequests.prepareSuggestConcepts()
-				.setLimit(body.getLimit())
-				.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
-				.setPreferredDisplay(body.getPreferredDisplay())
-				.setMinOccurrenceCount(body.getMinOccurrenceCount())
-				.filterByTerm(body.getTerm())
-				.filterByQuery(body.getQuery())
-				.filterByExclusion(body.getMustNotQuery())
-				.sortBy(SORT_BY)
-				.build(body.getCodeSystemPath())
-				.execute(getBus());
+		return getSuggest(body, acceptLanguage);
 	}
 	
 	@Operation(
@@ -118,17 +108,9 @@ public class SuggestRestService extends AbstractRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
-			return CodeSystemRequests.prepareSuggestConcepts()
-					.setLimit(params.getLimit())
-					.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
-					.setPreferredDisplay(params.getPreferredDisplay())
-					.setMinOccurrenceCount(params.getMinOccurrenceCount())
-					.filterByTerm(params.getTerm())
-					.filterByQuery(params.getQuery())
-					.filterByExclusion(params.getMustNotQuery())
-					.sortBy(SORT_BY)
-					.build(params.getCodeSystemPath())
-					.execute(getBus());
+			final List<Promise<Suggestions>> promises = body.stream()
+					.map(params -> getSuggest(params, acceptLanguage))
+					.collect(Collectors.toList());
 		}).collect(Collectors.toList());
 		
 		return Promise.all(promises);
