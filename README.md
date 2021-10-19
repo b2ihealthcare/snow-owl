@@ -3,7 +3,7 @@
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 
 [![build status](https://img.shields.io/github/workflow/status/b2ihealthcare/snow-owl/Java%20CI/8.x?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.17.3)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.17.6)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/8.x/LICENSE)
@@ -21,7 +21,7 @@ Features include:
 * SNOMED CT and others
     * SNOMED CT terminology support
         * RF2 Release File Specification as of 2021-07-31
-        * :new: Support for Relationships with concrete values
+        * Support for Relationships with concrete values
         * Official and Custom Reference Sets
         * Expression Constraint Language v1.6.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v1.6-en-US_INT_20211005.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl) including advanced unofficial property filters and others (see [Query Language Draft 0.1.0](https://confluence.ihtsdotools.org/download/attachments/52180605/Draft%20SNOMED%20Query%20Language%20-%20Examples%20for%20Discussion.pptx?api=v2))
         * Compositional Grammar 2.3.1 [spec](https://confluence.ihtsdotools.org/download/attachments/33496020/doc_CompositionalGrammar_v2.3.1-en-US_INT_20161118.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-scg)
@@ -39,16 +39,16 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-oss.zip.sha1)
-* [MACOS/LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-oss.tar.gz.sha1) 
-* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-rpm.rpm.sha1)
-* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.3/com.b2international.snowowl.server.update-7.17.3-deb.deb.sha1)
+* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-oss.zip.sha1)
+* [MACOS/LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-oss.tar.gz.sha1) 
+* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-rpm.rpm.sha1)
+* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.17.6/com.b2international.snowowl.server.update-7.17.6-deb.deb.sha1)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.17.3).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.17.6).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
@@ -59,9 +59,10 @@ NOTE: You need to have a recent version of Java installed (Java 11+, https://ado
 Once you have downloaded the appropriate package:
 
 * Run `bin/snowowl.sh` on unix, or `bin/snowowl.bat` on windows
-* Run `curl http://localhost:8080/snowowl/info`
-* Navigate to `http://localhost:8080/snowowl`
-* See [SNOMED CT API docs](https://docs.b2i.sg/snow-owl/api/snomed), [FHIR API docs](https://docs.b2i.sg/snow-owl/api/fhir)
+* Run `curl http://localhost:8080/snowowl/info` to access server health status information
+* Run `curl http://localhost:8080/snowowl/fhir/metadata` to access FHIR terminology capabilities
+* Navigate to `http://localhost:8080/snowowl` to access the REST API documentation page
+* See more documentation at [SNOMED CT API docs](https://docs.b2i.sg/snow-owl/api/snomed) and at [FHIR API docs](https://docs.b2i.sg/snow-owl/api/fhir)
 
 # Learn Snow Owl
 
