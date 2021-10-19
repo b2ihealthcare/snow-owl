@@ -4,47 +4,52 @@ Fast Healthcare Interoperability Resources (FHIR) specifies resources, operation
 
 Snow Owl's pluggable and extensible architecture allows modular development of the FHIR API both in terms of the supported functionality as well as the exposed terminologies.  Additionally, Snow Owl's revision-based model allows the concurrent management of multiple versions. 
 
-#Resources
+# Resources
 
 The Snow Owl terminology server's FHIR API release includes support for the following resources:
 
 * [CodeSystem API](./codesystems.md)
 * [ValueSet API](./valuesets.md)
 * [ConceptMap API](./conceptmaps.md)
+* [Bundle API](./bundles.md)
+* [CapabilityStatement API](./metadata.md)
 
-#Implementation
+## Versions
 
-##Versions
-
-Snow Owl's repository is a fully-fledged revision control system with branches, versions and revisions.  Snow Owl's terminology artefact _versions_ are exposed as FHIR versions for every supported code system with the exception of SNOMED CT where the standard SNOMED CT URI specification governs the format (short date) of the version.  If there is no version specified in a request, the last version is assumed.  If there is no version in the system, the last state (head of MAIN) is considered.
+Versions in Snow Owl are represented as individual FHIR Resources when accessed via the FHIR API endpoints. If there are no versions present for a given resource, only the latest development version is returned as available FHIR Resource. When accessing a terminology resource via the FHIR API, but without specifying an exact version tag, then the system will always assume and return the latest development version, including not yet published changes. It is recommended to always query a specific version of any terminology content to get consistent results, especially when the same terminology server instance is being used for both authoring and distribution.
 
 ## Search
 
-The supported search result filters:
+Resource representations can be filtered by the following supported official FHIR payload filters:
 
-*   _summary
-*   _elements
+*   _summary - to return a predefined set of properties and their values
+*   _elements - to return only the mandatory and the specified list of properties and nothing else
 
 The supported search parameters:
-* _id
+* _id - to filter FHIR resources by their logical identifier
+* name - to filter FHIR resources by their name (which in Snow Owl equals to the logical identifier)
+* title - to filter FHIR resources by their title property lexically (Snow Owl by default uses exact, phrase and prefix matching during its lexical search activities)
+* url - to filter FHIR resources by their assigned `url` value
+* system - to filter FHIR resources by their assigned `system` value (which in Snow Owl always matches the `url` value)
+* version - to filter FHIR resource by their `version` property value
+* _lastUpdated - exposed but not supported yet
 
 ## Sorting and paging
-Sorting and paging are not yet supported.
+Sorting supported via standard FHIR sort parameters, while paging is supported with a new `after` parameter (using `count` as page size). `Offset` + `count` based traditional paging is not supported.
 
 ## URIs
 Globally unique logical URIs that represent a terminology resource. For code systems these are:
 
-| Code system               | URI                                  |
-|---------------------------|--------------------------------------|
-| ATC                       | http://www.whocc.no/atc              |
-| SNOMED CT                 | http://snomed.info/sct               |
-| ICD-10                    | http://hl7.org/fhir/sid/icd-10       |
-| LOINC                     | http://loinc.org                     |   
-| FHIR                      | Prefixed with http://hl7.org/fhir    |
-| LCS                       | Prefixed with the organization link  |
-| Value Set                 | Prefixed with the source URI         | 
-| Mapping Set               | Prefixed with the source URI         | 
-|                           |                                      |
+| Code system               | URI                                   |
+|---------------------------|---------------------------------------|
+| SNOMED CT                 | http://snomed.info/sct                |
+| LCS                       | Defined when the resource was created |
+| Value Set                 | Defined when the resource was created | 
+| Concept Map               | Defined when the resource was created | 
+| ATC                       | http://www.whocc.no/atc               |
+| ICD-10                    | http://hl7.org/fhir/sid/icd-10        |
+| LOINC                     | http://loinc.org                      |   
+|                           |                                       |
 
 ### SNOMED CT
 
@@ -61,39 +66,17 @@ Snow Owl's Local Code Systems (LCS) identified by the URI that is based on the _
 
 ## IDs
 
-The _id_ field of each terminology resource is assigned by our terminology server and is unique within Snow Owl.  Once is has been assigned, the _id_ never changes.  For this logical identifier, Snow Owl follows the pattern:
+The logical _id_ field of each resource is assigned by Snow Owl and is unique within it. Once it has been assigned, the _id_ never changes. For this logical identifier, Snow Owl follows the pattern:
 
-	repository:{branchPath}:{code}[|{member}]
+	resourceId[/version]
 
-For example to identify a particular LOINC code system with the version tag _20180131_:
-	
-	loincStore:MAIN/20180131
+For example to identify a particular SNOMED CT Edition with its version _2021-03-01_:
 
-For example to address a particular SNOMED CT concept (_Blood bank procedure_):
+   SNOMEDCT-US/2021-03-01
 
-	snomedStore:MAIN/201101031/DK/20140203:59524001
+For example to identify a particular LOINC code system with the version tag _v2.64_:
 
-where
-* 59524001 represents the concept id
-* 20140203 represents the extension version
-* DK represents the extension branch
-* 20110131 represents the version of the International Edition the DK extension is based on
-
-Our logical id has been extended to cover individual Reference Set members as well:
-	
-	snomedStore:MAIN/201101031/DK/20140203:98403008|84f56f72-9f8b-423d-98b8-25961811393c 
-
-where
-* 98403008 is the Reference Set ID
-* 98484f56f72-9f8b-423d-98b8-25961811393c03008 is the reference set member
-
-# Snow Owl's extension API
-
-Snow Owl exposes a comprehensive REST API to support areas such as:
- * Syndication - content provisioning between servers or between the Snow Owl Authoring platform and servers 
- * Administration (repository and revision control management) 
- * Auditing
- * SNOMED CT specific browsing and authoring API 
+	 LOINC/v2.64
 
 ## REST API
 
@@ -108,3 +91,10 @@ Currently only JSON format is supported with UTF-8 encoding and content type of 
 | 404           | Not Found      |
 | 500           | Internal Error |
 
+# Snow Owl's extension API
+
+Snow Owl exposes a comprehensive REST API to support areas such as:
+ * Syndication - content provisioning between servers or between the Snow Owl Authoring platform and servers 
+ * Administration (repository and revision control management) 
+ * Auditing
+ * SNOMED CT specific browsing and authoring API 
