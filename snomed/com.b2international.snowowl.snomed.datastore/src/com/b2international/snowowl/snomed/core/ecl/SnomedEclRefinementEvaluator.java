@@ -45,7 +45,6 @@ import com.b2international.snomed.ecl.ecl.*;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -417,7 +416,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByReferencedComponent(focusConceptIds)
 				.filterByProps(propFilter)
 				.setEclExpressionForm(expressionForm)
-				.setLimit(context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
+				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
 				.<Property>transformAsync(context, req -> req.build(context.path()), members -> members.stream().map(input -> {
 					return new Property(
 							input.getReferencedComponent().getId(), 
@@ -471,7 +470,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
 				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
-				.setLimit(context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
+				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
 				.transformAsync(context, req -> req.build(context.path()), relationships -> relationships.stream().map(relationship -> {
 					return new Property(
 							relationship.getSourceId(), 
@@ -527,7 +526,7 @@ final class SnomedEclRefinementEvaluator {
 		
 		final Query<SnomedRefSetMemberIndexEntry> activeAxiomStatementsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
 			.where(activeOwlAxiomMemberQuery.build())
-			.limit(context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
+			.limit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
 			.build();
 		
 		final Set<Property> axiomProperties = newHashSet();
@@ -650,10 +649,6 @@ final class SnomedEclRefinementEvaluator {
 			fieldsToLoad.add(RELATIONSHIP_GROUP);
 		}
 		
-		System.err.println("Filtering by source: " + sourceFilter);
-		System.err.println("Filtering by typeFilter: " + typeFilter);
-		System.err.println("Filtering by destinationFilter: " + destinationFilter);
-		
 		SnomedRelationshipSearchRequestBuilder searchRelationships = SnomedRequests.prepareSearchRelationship()
 				.filterByActive(true) 
 				.filterBySources(sourceFilter)
@@ -662,7 +657,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
 				.setEclExpressionForm(expressionForm)
 				.setFields(fieldsToLoad.build())
-				.setLimit(context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow());
+				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow());
 		
 		// if a grouping refinement, then filter relationships with group >= 1
 		if (groupedRelationshipsOnly) {

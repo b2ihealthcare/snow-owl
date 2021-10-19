@@ -86,7 +86,9 @@ public final class RepositoryPlugin extends Plugin {
 		LOG.debug("Preparing RPC communication (config={},gzip={})", rpcConfig, gzip);
 		RpcUtil.prepareContainer(container, rpcConfig, gzip);
 		LOG.debug("Preparing EventBus communication (gzip={})", gzip);
-		int maxThreads = configuration.getModuleConfig(RepositoryConfiguration.class).getMaxThreads();
+		RepositoryConfiguration repositoryConfiguration = configuration.getModuleConfig(RepositoryConfiguration.class);
+		env.services().registerService(RepositoryConfiguration.class, repositoryConfiguration);
+		int maxThreads = repositoryConfiguration.getMaxThreads();
 		EventBusNet4jUtil.prepareContainer(container, gzip, maxThreads);
 		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container, maxThreads));
 		LOG.debug("Preparing JSON support");
@@ -103,8 +105,7 @@ public final class RepositoryPlugin extends Plugin {
 	}
 	
 	private Map<String, Object> initIndexSettings(Environment env) {
-		final RepositoryConfiguration repositoryConfig = env.service(SnowOwlConfiguration.class)
-				.getModuleConfig(RepositoryConfiguration.class);
+		final RepositoryConfiguration repositoryConfig = env.service(RepositoryConfiguration.class);
 		final IndexConfiguration indexConfig = repositoryConfig.getIndexConfiguration();
 		
 		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
@@ -136,7 +137,7 @@ public final class RepositoryPlugin extends Plugin {
 			
 			LifecycleUtil.activate(container);
 			
-			final HostAndPort hostAndPort = configuration.getModuleConfig(RepositoryConfiguration.class).getHostAndPort();
+			final HostAndPort hostAndPort = env.service(RepositoryConfiguration.class).getHostAndPort();
 			// open port in server environments
 			if (hostAndPort.getPort() > 0) {
 				TCPUtil.getAcceptor(container, hostAndPort.toString()); // Starts the TCP transport 
@@ -149,7 +150,7 @@ public final class RepositoryPlugin extends Plugin {
 			env.services().registerService(RepositoryManager.class, repositoryManager);
 			env.services().registerService(RepositoryContextProvider.class, repositoryManager);
 			
-			int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getMaxThreads();
+			int numberOfWorkers = env.service(RepositoryConfiguration.class).getMaxThreads();
 			initializeRequestSupport(env, numberOfWorkers);
 			
 			LOG.debug("Initialized repository plugin.");
