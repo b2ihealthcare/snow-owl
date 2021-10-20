@@ -31,16 +31,19 @@ public final class ConceptMapMappingSearchRequestBuilder
 		extends SearchPageableCollectionResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, ServiceProvider, ConceptMapMappings> 
 		implements SystemRequestBuilder<ConceptMapMappings> {
 	
+	//TODO: filterByConceptMap and filterByConceptMapUri should use a common uri because they use the same OptionKey
+	@Deprecated
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMap) {
 		return addOption(OptionKey.URI, conceptMap);
 	}
 	
+	@Deprecated
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMaps(Iterable<String> conceptMaps) {
 		return addOption(OptionKey.URI, conceptMaps);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUri(ResourceURI conceptMapUri) {
-		return addOption(OptionKey.URI, conceptMapUri == null ? null : conceptMapUri.toString());
+		return addOption(OptionKey.URI, conceptMapUri == null ? null : conceptMapUri.getResourceId());
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUris(Iterable<ResourceURI> conceptMapUris) {
@@ -48,7 +51,7 @@ public final class ConceptMapMappingSearchRequestBuilder
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentId(String componentId) {
-		return addOption(OptionKey.REFERENCED_COMPONENT, componentId);
+		return filterByReferencedComponentIds(Set.of(componentId));
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentIds(Iterable<String> componentIds) {
@@ -56,7 +59,7 @@ public final class ConceptMapMappingSearchRequestBuilder
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByMapTarget(String mapTarget) {
-		return addOption(OptionKey.MAP_TARGET, mapTarget);
+		return filterByMapTargets(Set.of(mapTarget));
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByMapTargets(Iterable<String> mapTargets) {
