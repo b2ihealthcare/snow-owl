@@ -200,6 +200,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		return new SnomedValueSetMemberSearchRequestEvaluator();
 	}
 	
+	//TODO: Refactor SnomedConceptMapSearchRequestEvaluator
 	@Override
 	protected ConceptMapMappingSearchRequestEvaluator getConceptMapMappingSearchRequestEvaluator() {
 		return new SnomedConceptMapSearchRequestEvaluator();
