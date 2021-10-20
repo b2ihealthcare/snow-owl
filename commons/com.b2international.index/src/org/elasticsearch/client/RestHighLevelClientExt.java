@@ -35,7 +35,6 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.lucene.uid.Versions;
@@ -217,7 +216,7 @@ public class RestHighLevelClientExt {
      *
      * @return the {@link IndexRequest}'s content type
      */
-    static XContentType enforceSameContentType(IndexRequest indexRequest, @Nullable XContentType xContentType) {
+    static XContentType enforceSameContentType(IndexRequest indexRequest, XContentType xContentType) {
         XContentType requestContentType = indexRequest.getContentType();
         if (requestContentType != XContentType.JSON && requestContentType != XContentType.SMILE) {
             throw new IllegalArgumentException("Unsupported content-type found for request with content-type [" + requestContentType
