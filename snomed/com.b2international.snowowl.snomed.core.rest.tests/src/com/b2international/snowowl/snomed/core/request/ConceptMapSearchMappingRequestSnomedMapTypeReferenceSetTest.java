@@ -231,6 +231,59 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 			assertEquals(testName.getMethodName(), conceptMapMapping.getConceptMapTerm());
 	}
 	
+	@Test
+	public void filterByActive() {
+		final String refSetId = createSimpleMapTypeRefSet();
+		createInactiveSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_2);
+		
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
+				.all()
+				.filterByConceptMap(ComponentURI.of(CODESYSTEM, SnomedConcept.REFSET_TYPE, refSetId).toString())
+				.filterByActive(true)
+				.setLocales("en")
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES);
+		
+		assertEquals(1, conceptMaps.getTotal());
+	}
+	
+	@Test
+	public void filterByActiveInactiveConcepts() {
+		final String refSetId = createSimpleMapTypeRefSet();
+		createInactiveSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_2);
+		
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
+				.all()
+				.filterByConceptMap(ComponentURI.of(CODESYSTEM, SnomedConcept.REFSET_TYPE, refSetId).toString())
+				.filterByActive(false)
+				.setLocales("en")
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES);
+		
+		assertEquals(1, conceptMaps.getTotal());
+	}
+	@Test
+	public void filterByComponentId() {
+		final String refSetId = createSimpleMapTypeRefSet();
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_2);
+		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, MAP_TARGET_2);
+		
+		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
+				.all()
+				.filterByComponentId(REFERENCED_COMPONENT)
+				.setLocales("en")
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES);
+		
+		assertEquals(2, conceptMaps.getTotal());
+	}
+	
 	private Set<ComponentURI> getComponentUris(ConceptMapMappings maps) {
 		Set<ComponentURI> uris = Sets.newHashSet();
 		maps.stream().forEach(map -> {
@@ -293,5 +346,18 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 			.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
+	}
+	
+	private void createInactiveSimpleMapTypeRefSetMember(final String rfId, final String sourceCode, final String targetCode) {
+		SnomedRequests.prepareNewMember()
+		.setId(UUID.randomUUID().toString())
+		.setRefsetId(rfId)
+		.setReferencedComponentId(sourceCode)
+		.setActive(false)
+		.setModuleId(Concepts.MODULE_SCT_CORE)
+		.setProperties(Map.of(SnomedRf2Headers.FIELD_MAP_TARGET, targetCode))
+		.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
+		.execute(Services.bus())
+		.getSync(1, TimeUnit.MINUTES);
 	}
 }
