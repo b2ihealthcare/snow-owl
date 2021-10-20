@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -56,47 +55,42 @@ public class SuggestRestService extends AbstractRestService {
 	})
 	@GetMapping
 	public Promise<Suggestions> getSuggest(
-			@ParameterObject
-			final SuggestRestParameters params,
-			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage) {
+		@ParameterObject
+		final SuggestRestParameters params,
+		
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		final String acceptLanguage) {
+		
 		return CodeSystemRequests.prepareSuggestConcepts()
 				.setLimit(params.getLimit())
 				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
 				.setMinOccurrenceCount(params.getMinOccurrenceCount())
 				.filterByTerm(params.getTerm())
+				.filterByQuery(params.getQuery())
+				.filterByExclusion(params.getMustNotQuery())
 				.sortBy(SORT_BY)
 				.build(params.getCodeSystemPath())
 				.execute(getBus());
 	}
 	
 	@Operation(
-			summary = "Concept suggestion", 
-			description = "Returns an actual concept of the specified code system based on the source term.")
+		summary = "Concept suggestion", 
+		description = "Returns an actual concept of the specified code system based on the source term.")
 	@ApiResponses({ 
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Suggestions> postSuggest(
-			@RequestBody
-			final SuggestRestParameters body,
-			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage) {
-		return CodeSystemRequests.prepareSuggestConcepts()
-				.setLimit(body.getLimit())
-				.setLocales(Strings.isNullOrEmpty(body.getAcceptLanguage()) ? acceptLanguage : body.getAcceptLanguage())
-				.setPreferredDisplay(body.getPreferredDisplay())
-				.filterByTerm(body.getTerm())
-				.setMinOccurrenceCount(body.getMinOccurrenceCount())
-				.sortBy(SORT_BY)
-				.build(body.getCodeSystemPath())
-				.execute(getBus());
+		@RequestBody
+		final SuggestRestParameters body,
+		
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		final String acceptLanguage) {
+		return getSuggest(body, acceptLanguage);
 	}
 	
 	@Operation(
@@ -108,24 +102,17 @@ public class SuggestRestService extends AbstractRestService {
 	})
 	@PostMapping(value = "/bulk", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<List<Object>> postBulkSuggest(
-			@RequestBody
-			final List<SuggestRestParameters> body,
-			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage) {
-		final List<Promise<Suggestions>> promises = body.stream().map(params -> {
-			return CodeSystemRequests.prepareSuggestConcepts()
-					.setLimit(params.getLimit())
-					.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
-					.setPreferredDisplay(params.getPreferredDisplay())
-					.filterByTerm(params.getTerm())
-					.setMinOccurrenceCount(params.getMinOccurrenceCount())
-					.sortBy(SORT_BY)
-					.build(params.getCodeSystemPath())
-					.execute(getBus());
-		}).collect(Collectors.toList());
+		@RequestBody
+		final List<SuggestRestParameters> body,
 		
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		final String acceptLanguage) {
+		
+		final List<Promise<Suggestions>> promises = body.stream()
+				.map(params -> getSuggest(params, acceptLanguage))
+				.collect(Collectors.toList());
+	
 		return Promise.all(promises);
 	}
 }

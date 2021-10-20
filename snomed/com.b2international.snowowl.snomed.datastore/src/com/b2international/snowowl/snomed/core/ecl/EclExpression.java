@@ -35,6 +35,7 @@ import com.b2international.snomed.ecl.ecl.Any;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snomed.ecl.ecl.NestedExpression;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -137,7 +138,7 @@ public final class EclExpression {
 			conceptPromise = SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByEcl(eclToEvaluate)
-					.build(context.path())
+					.build(context.service(ResourceURI.class))
 					.execute(context.service(IEventBus.class));
 		}
 		return conceptPromise;
@@ -199,7 +200,7 @@ public final class EclExpression {
 				.filterByGroup(1, Integer.MAX_VALUE)
 				.setEclExpressionForm(expressionForm)
 				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP)
-				.build(context.path())
+				.build(context.service(ResourceURI.class))
 				.execute(context.service(IEventBus.class))
 				.then(new Function<SnomedRelationships, Multimap<String, Integer>>() {
 					@Override
@@ -227,7 +228,7 @@ public final class EclExpression {
 					.filterByRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 					.filterByProps(propFilter)
 					.setEclExpressionForm(expressionForm)
-					.build(context.path())
+					.build(context.service(ResourceURI.class))
 					.execute(context.service(IEventBus.class))
 					.then(members -> {
 						final Multimap<String, SnomedReferenceSetMember> relationshipsBySource = Multimaps.index(members, m -> m.getReferencedComponent().getId());

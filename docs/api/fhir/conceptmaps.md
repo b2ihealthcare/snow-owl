@@ -5,7 +5,7 @@ The endpoints `/ConceptMap` and `/ConceptMap/{conceptMapId}` and corresponding o
 * SNOMED CT Simple Map Reference Sets with Concepts as referenced components
 * SNOMED CT Complex Map Reference Sets
 * SNOMED CT Extended Map Reference Sets
-* Snow Owl's generic Mapping Sets
+* Snow Owl's generic Concept Maps
 
 ## $translate
 

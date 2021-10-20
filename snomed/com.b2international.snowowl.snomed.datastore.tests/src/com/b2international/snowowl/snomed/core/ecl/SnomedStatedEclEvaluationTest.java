@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.ids;
+import static com.b2international.index.revision.Revision.Expressions.ids;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
@@ -32,10 +32,16 @@ import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.Index;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -46,7 +52,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -73,12 +78,19 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
 		config.setConcreteDomainSupported(true);
 		
+		RepositoryConfiguration repositoryConfig = new RepositoryConfiguration();
+		IndexConfiguration indexConfiguration = new IndexConfiguration();
+		indexConfiguration.setResultWindow(IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		repositoryConfig.setIndexConfiguration(indexConfiguration);
+		
 		context = TestBranchContext.on(MAIN)
 				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.with(SnomedCoreConfiguration.class, config)
+				.with(RepositoryConfiguration.class, repositoryConfig)
+				.with(ResourceURI.class, CodeSystem.uri("SNOMEDCT"))
 				.build();
 	}
 	

@@ -45,14 +45,14 @@ import com.fasterxml.jackson.databind.node.TextNode;
 public abstract class FhirBatchRequestProcessor {
 	
 	protected ObjectMapper objectMapper;
-	private FhirBatchRequestController batchRequestController;
+	private FhirBundleController batchRequestController;
 
-	public FhirBatchRequestProcessor(ObjectMapper objectMapper, FhirBatchRequestController batchRequestController) {
+	public FhirBatchRequestProcessor(ObjectMapper objectMapper, FhirBundleController batchRequestController) {
 		this.objectMapper = objectMapper;
 		this.batchRequestController = batchRequestController;
 	}
 
-	public static FhirBatchRequestProcessor getInstance(Entry entry, ObjectMapper objectMapper, FhirBatchRequestController batchRequestController) {
+	public static FhirBatchRequestProcessor getInstance(Entry entry, ObjectMapper objectMapper, FhirBundleController batchRequestController) {
 		
 		if (entry instanceof RequestEntry) {
 			RequestEntry requestEntry = (RequestEntry) entry;

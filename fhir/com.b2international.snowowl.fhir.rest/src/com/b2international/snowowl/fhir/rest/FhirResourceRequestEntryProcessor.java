@@ -41,7 +41,7 @@ public class FhirResourceRequestEntryProcessor extends FhirBatchRequestProcessor
 
 	private ResourceRequestEntry requestEntry;
 
-	public FhirResourceRequestEntryProcessor(ObjectMapper objectMapper, ResourceRequestEntry requestEntry, FhirBatchRequestController batchRequestController) {
+	public FhirResourceRequestEntryProcessor(ObjectMapper objectMapper, ResourceRequestEntry requestEntry, FhirBundleController batchRequestController) {
 		super(objectMapper, batchRequestController);
 		this.requestEntry = requestEntry;
 	}

@@ -119,6 +119,41 @@ public abstract class SnomedRestFixtures {
 			)
 		);
 	}
+	
+	public static String createNewConceptWithDescription(IBranchPath conceptPath, String parentConceptId, String term) {
+		return createNewConcept(conceptPath, Json.assign(
+				createConceptRequestBody(parentConceptId, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, term, true),
+				Json.object("commitComment", "Created new concept")
+				)); 
+	}
+	
+	public static Json createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap, String term, boolean active) {
+		return Json.object(
+				"active", active,
+				"moduleId", moduleId, // module is applied to all subcomponents implicitly via the API
+				"descriptions", Json.array(
+						Json.object(
+								"typeId", Concepts.FULLY_SPECIFIED_NAME,
+								"term", term,
+								"languageCode", DEFAULT_LANGUAGE_CODE,
+								"acceptability", acceptabilityMap
+								),
+						Json.object(
+								"typeId", Concepts.SYNONYM,
+								"term", term,
+								"languageCode", DEFAULT_LANGUAGE_CODE,
+								"acceptability", acceptabilityMap
+								)
+						),
+				"relationships", Json.array(
+						Json.object(
+								"active", active,
+								"typeId", Concepts.IS_A,
+								"destinationId", parentConceptId
+								)
+						)
+				);
+	}
 
 	public static String createNewDescription(IBranchPath descriptionPath) {
 		return createNewDescription(descriptionPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);

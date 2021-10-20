@@ -42,7 +42,9 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.ecl.*;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -67,8 +69,6 @@ import com.google.common.collect.*;
  */
 final class SnomedEclRefinementEvaluator {
 
-	private static final int SCROLL_LIMIT = 10_000;
-	
 	static final Set<String> STATED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.STATED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	static final Set<String> INFERRED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	private static final int UNBOUNDED_CARDINALITY = -1;
@@ -416,7 +416,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByReferencedComponent(focusConceptIds)
 				.filterByProps(propFilter)
 				.setEclExpressionForm(expressionForm)
-				.setLimit(10_000)
+				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
 				.<Property>transformAsync(context, req -> req.build(context.path()), members -> members.stream().map(input -> {
 					return new Property(
 							input.getReferencedComponent().getId(), 
@@ -470,7 +470,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
 				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
-				.setLimit(10_000)
+				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
 				.transformAsync(context, req -> req.build(context.path()), relationships -> relationships.stream().map(relationship -> {
 					return new Property(
 							relationship.getSourceId(), 
@@ -526,7 +526,7 @@ final class SnomedEclRefinementEvaluator {
 		
 		final Query<SnomedRefSetMemberIndexEntry> activeAxiomStatementsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
 			.where(activeOwlAxiomMemberQuery.build())
-			.limit(SCROLL_LIMIT)
+			.limit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
 			.build();
 		
 		final Set<Property> axiomProperties = newHashSet();
@@ -657,7 +657,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
 				.setEclExpressionForm(expressionForm)
 				.setFields(fieldsToLoad.build())
-				.setLimit(10_000);
+				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow());
 		
 		// if a grouping refinement, then filter relationships with group >= 1
 		if (groupedRelationshipsOnly) {
@@ -665,7 +665,7 @@ final class SnomedEclRefinementEvaluator {
 		}
 		
 		Promise<Collection<Property>> relationshipSearch = searchRelationships
-				.transformAsync(context, req -> req.build(context.path()), relationships -> relationships.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getRelationshipGroup())));
+				.transformAsync(context, req -> req.build(context.service(ResourceURI.class)), relationships -> relationships.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getRelationshipGroup())));
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
 			final Set<Property> axiomStatements = evalAxiomStatements(context, groupedRelationshipsOnly, sourceFilter, typeFilter, destinationFilter);
