@@ -22,7 +22,6 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.MemberSearchRequestEvaluator.OptionKey;
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.google.common.collect.FluentIterable;
 
 /**
 * @since 7.8
@@ -31,24 +30,27 @@ public final class ConceptMapMappingSearchRequestBuilder
 		extends SearchPageableCollectionResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, ServiceProvider, ConceptMapMappings> 
 		implements SystemRequestBuilder<ConceptMapMappings> {
 	
+	//TODO: filterByConceptMap and filterByConceptMapUri should use a common uri because they use the same OptionKey
+	@Deprecated
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMap) {
 		return addOption(OptionKey.URI, conceptMap);
 	}
 	
+	@Deprecated
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMaps(Iterable<String> conceptMaps) {
 		return addOption(OptionKey.URI, conceptMaps);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUri(ResourceURI conceptMapUri) {
-		return addOption(OptionKey.URI, conceptMapUri == null ? null : conceptMapUri.toString());
+		return filterByConceptMapUris(Set.of(conceptMapUri));
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUris(Iterable<ResourceURI> conceptMapUris) {
-		return addOption(OptionKey.URI, conceptMapUris == null ? null : FluentIterable.from(conceptMapUris).transform(ResourceURI::toString).toSet());
+		return addOption(OptionKey.URI, conceptMapUris == null ? null : conceptMapUris);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentId(String componentId) {
-		return addOption(OptionKey.REFERENCED_COMPONENT, componentId);
+		return filterByReferencedComponentIds(Set.of(componentId));
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentIds(Iterable<String> componentIds) {
@@ -56,7 +58,7 @@ public final class ConceptMapMappingSearchRequestBuilder
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByMapTarget(String mapTarget) {
-		return addOption(OptionKey.MAP_TARGET, mapTarget);
+		return filterByMapTargets(Set.of(mapTarget));
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByMapTargets(Iterable<String> mapTargets) {
