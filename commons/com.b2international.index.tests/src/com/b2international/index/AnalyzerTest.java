@@ -18,9 +18,9 @@ package com.b2international.index;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
-import org.elasticsearch.common.collect.List;
 import org.junit.ClassRule;
 import org.junit.Test;
 
