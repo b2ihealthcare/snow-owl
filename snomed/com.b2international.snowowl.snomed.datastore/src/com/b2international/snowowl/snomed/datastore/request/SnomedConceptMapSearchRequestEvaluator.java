@@ -61,7 +61,6 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		if (search.containsKey(OptionKey.URI)) {
 			// TODO support proper refset SNOMED URIs as well
 			
-			//Try to pars URIs to string, else return no results
 			Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
 					.filter(ComponentURI::isValid)
 					.map(ComponentURI::of)
