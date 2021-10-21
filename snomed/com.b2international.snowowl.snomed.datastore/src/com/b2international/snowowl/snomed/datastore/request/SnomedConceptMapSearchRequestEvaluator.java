@@ -62,19 +62,13 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			// TODO support proper refset SNOMED URIs as well
 			
 			//Try to pars URIs to string, else return no results
-			try {
-				Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
-						.filter(ComponentURI::isValid)
-						.map(ComponentURI::of)
-						.map(ComponentURI::resourceUri)
-						.collect(Collectors.toSet());
-				
-				if (!targetResources.isEmpty()) {
-					return targetResources;
-				}
-			} catch (IllegalArgumentException e) {
-				return Set.of();
-			}
+			Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
+					.filter(ComponentURI::isValid)
+					.map(ComponentURI::of)
+					.map(ComponentURI::resourceUri)
+					.collect(Collectors.toSet());
+			
+			return targetResources;
 		}
 
 		// any SNOMED CT CodeSystem can be target resource, so search all by default
