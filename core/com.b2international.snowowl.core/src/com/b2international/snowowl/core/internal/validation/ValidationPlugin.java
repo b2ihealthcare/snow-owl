@@ -34,6 +34,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.config.IndexSettings;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
@@ -62,6 +63,8 @@ public final class ValidationPlugin extends Plugin {
 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
+	private static final String VALIDATIONS_INDEX = "validations";
+	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
 		registry.add("validation", ValidationConfiguration.class);
@@ -72,10 +75,10 @@ public final class ValidationPlugin extends Plugin {
 		if (env.isServer()) {
 			final ObjectMapper mapper = env.service(ObjectMapper.class);
 			final Index validationIndex = Indexes.createIndex(
-				"validations", 
+				VALIDATIONS_INDEX, 
 				mapper, 
 				new Mappings(ValidationIssue.class, ValidationRule.class, ValidationWhiteList.class), 
-				env.service(IndexSettings.class)
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), VALIDATIONS_INDEX, Map.of())
 			);
 			
 			final ValidationRepository repository = new ValidationRepository(validationIndex);

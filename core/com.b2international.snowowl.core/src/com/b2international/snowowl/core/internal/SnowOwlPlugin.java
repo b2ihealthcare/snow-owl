@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
 import java.util.List;
@@ -31,6 +30,7 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.config.IndexSettings;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
@@ -65,6 +65,11 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 @Component
 public final class SnowOwlPlugin extends Plugin {
 
+	private static final String RESOURCES_INDEX = "resources";
+	private static final Map<String, Object> RESOURCES_INDEX_DEFAULT_SETTINGS = Map.of(
+		IndexClientFactory.NUMBER_OF_SHARDS, 3
+	);
+
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
@@ -88,13 +93,11 @@ public final class SnowOwlPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer()) {
 			final ObjectMapper mapper = env.service(ObjectMapper.class);
-			final Map<String, Object> indexSettings = newHashMap(env.service(IndexSettings.class));
-			indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, 3); // TODO make this configurable
 			final Index resourceIndex = Indexes.createIndex(
-				"resources", 
+				RESOURCES_INDEX, 
 				mapper, 
 				new Mappings(ResourceDocument.class, VersionDocument.class), 
-				env.service(IndexSettings.class)
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), RESOURCES_INDEX, RESOURCES_INDEX_DEFAULT_SETTINGS)
 			);
 			
 			final RevisionIndex revisionIndex = new DefaultRevisionIndex(resourceIndex, env.service(TimestampProvider.class), mapper);

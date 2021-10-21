@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.core.internal.locks;
 
+import org.elasticsearch.core.Map;
+
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.IndexSettings;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry;
 import com.b2international.snowowl.core.locks.DefaultOperationLockManager;
@@ -36,10 +39,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public final class LockPlugin extends Plugin {
 
+	private static final String LOCKS_INDEX = "locks";
+
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer()) {
-			final Index locksIndex = Indexes.createIndex("locks", env.service(ObjectMapper.class), new Mappings(DatastoreLockIndexEntry.class), env.service(IndexSettings.class));
+			final Index locksIndex = Indexes.createIndex(
+				LOCKS_INDEX, 
+				env.service(ObjectMapper.class), 
+				new Mappings(DatastoreLockIndexEntry.class), 
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), LOCKS_INDEX, Map.of())
+			);
 			final DefaultOperationLockManager lockManager = new DefaultOperationLockManager(locksIndex);
 			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
 			lockManager.addLockTargetListener(new Slf4jOperationLockTargetListener());
