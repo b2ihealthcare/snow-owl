@@ -20,7 +20,7 @@
 		<module>com.b2international.commons.test</module>
 		<module>com.b2international.index</module>
 		<module>com.b2international.index.tests</module>
-		<module>com.b2international.index.tests.tools</module>
+		<module>com.b2international.index.test.tools</module>
 		<module>com.b2international.mapdb</module>
 	</modules>
 	

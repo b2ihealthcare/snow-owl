@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.snomed.datastore,
  com.b2international.collections.jackson,
  com.b2international.snowowl.test.commons;resolution:=optional,
- com.b2international.index.tests.tools;resolution:=optional,
+ com.b2international.index.test.tools;resolution:=optional,
  com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.9.9,3.0.0]",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.9.9,3.0.0]"
 Bundle-ActivationPolicy: lazy
