@@ -10,7 +10,6 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-boot-2.5.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-boot-autoconfigure-2.5.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-core-2.1.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-crypto-5.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/commons-fileupload-1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/commons-logging-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-aop-5.3.8.jar"/>
@@ -23,6 +22,7 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-config-5.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-core-5.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-web-5.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-crypto-5.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-web-5.3.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-webmvc-5.3.8.jar"/>
 	<classpathentry kind="output" path="target/classes/"/>
