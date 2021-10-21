@@ -60,15 +60,14 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 	public Set<ResourceURI> evaluateSearchTargetResources(ServiceProvider context, Options search) {
 		if (search.containsKey(OptionKey.URI)) {
 			// TODO support proper refset SNOMED URIs as well
-			Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
-				.filter(ComponentURI::isValid)
-				.map(ComponentURI::of)
-				.map(ComponentURI::resourceUri)
-				.collect(Collectors.toSet());
 			
-			if (!targetResources.isEmpty()) {
-				return targetResources;
-			}
+			Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
+					.filter(ComponentURI::isValid)
+					.map(ComponentURI::of)
+					.map(ComponentURI::resourceUri)
+					.collect(Collectors.toSet());
+			
+			return targetResources;
 		}
 
 		// any SNOMED CT CodeSystem can be target resource, so search all by default

@@ -39,10 +39,13 @@ public final class ConceptMapMappingSearchRequestBuilder
 		return addOption(OptionKey.URI, conceptMaps);
 	}
 	
+	//TODO: filterByConceptMap and filterByConceptMapUri should use a common uri because they use the same OptionKey
+	@Deprecated
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUri(ResourceURI conceptMapUri) {
 		return addOption(OptionKey.URI, conceptMapUri == null ? null : conceptMapUri.toString());
 	}
 	
+	@Deprecated
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUris(Iterable<ResourceURI> conceptMapUris) {
 		return addOption(OptionKey.URI, conceptMapUris == null ? null : FluentIterable.from(conceptMapUris).transform(ResourceURI::toString).toSet());
 	}
