@@ -7,16 +7,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src/main/resources/"/>
-	<classpathentry kind="src" path="src/test/java/" output="target/test-classes/">
-		<attributes>
-			<attribute name="test" value="true"/>
-			<!-- 
-				TODO: M2e removes this classpath entry when selecting "Maven > Update Project"; move 
-				test classes to a separate test bundle if necessary 
-			-->
-			<attribute name="maven.pomderived" value="false"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry exported="true" kind="con" path="GROOVY_DSL_SUPPORT"/>
+	<classpathentry kind="src" path="src/test/java/"/>
 	<classpathentry kind="output" path="target/classes/"/>
 </classpath>
