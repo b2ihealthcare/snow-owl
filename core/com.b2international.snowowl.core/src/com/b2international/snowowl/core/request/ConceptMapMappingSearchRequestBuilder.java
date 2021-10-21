@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.MemberSearchRequestEvaluator.OptionKey;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.google.common.collect.FluentIterable;
 
 /**
 * @since 7.8
@@ -46,7 +47,7 @@ public final class ConceptMapMappingSearchRequestBuilder
 	
 	@Deprecated
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMapUris(Iterable<ResourceURI> conceptMapUris) {
-		return addOption(OptionKey.URI, conceptMapUris == null ? null : conceptMapUris);
+		return addOption(OptionKey.URI, conceptMapUris == null ? null : FluentIterable.from(conceptMapUris).transform(ResourceURI::toString).toSet());
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentId(String componentId) {
