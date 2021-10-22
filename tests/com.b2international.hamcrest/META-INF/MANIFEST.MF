@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Hamcrest 2 compatibility bundle
+Bundle-SymbolicName: org.hamcrest.core;singleton:=true
+Bundle-Version: 1.99.0
+Automatic-Module-Name: org.hamcrest
+Bundle-ClassPath: lib/hamcrest-2.2.jar
+Export-Package: org.hamcrest;version="2.2.0",
+ org.hamcrest.beans;version="2.2.0",
+ org.hamcrest.collection;version="2.2.0",
+ org.hamcrest.comparator;version="2.2.0",
+ org.hamcrest.core;version="2.2.0",
+ org.hamcrest.internal;version="2.2.0",
+ org.hamcrest.io;version="2.2.0",
+ org.hamcrest.number;version="2.2.0",
+ org.hamcrest.object;version="2.2.0",
+ org.hamcrest.text;version="2.2.0",
+ org.hamcrest.xml;version="2.2.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-11

@@ -28,10 +28,10 @@ Visit us at http://b2i.sg
          version="0.0.0"/>
 
    <plugin
-         id="com.b2international.restassured-all"
+         id="org.hamcrest.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="1.99.0"/>
 
    <plugin
          id="com.b2international.index.test.tools"
