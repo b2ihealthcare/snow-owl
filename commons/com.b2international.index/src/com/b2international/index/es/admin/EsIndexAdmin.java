@@ -116,10 +116,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 		
-		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
+		// configuration settings for ES index
+		this.settings.putIfAbsent(IndexClientFactory.NUMBER_OF_SHARDS, IndexClientFactory.DEFAULT_NUMBER_OF_SHARDS);
+		this.settings.putIfAbsent(IndexClientFactory.NUMBER_OF_REPLICAS, IndexClientFactory.DEFAULT_NUMBER_OF_REPLICAS);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		this.settings.putIfAbsent(IndexClientFactory.MAX_TERMS_COUNT_KEY, ""+IndexClientFactory.DEFAULT_MAX_TERMS_COUNT);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
+		
+		// local configuration settings for bulk writes, monitoring, etc.
+		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.BULK_ACTIONS_SIZE, IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE);
 		this.settings.putIfAbsent(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB, IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE_IN_MB);
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_WATERMARK_LOW_KEY, IndexClientFactory.DEFAULT_COMMIT_WATERMARK_LOW_VALUE);
@@ -270,17 +275,20 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		return ImmutableMap.<String, Object>builder()
 				.put("analysis", analysisMap)
-				.put("number_of_shards", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")))
-				.put("number_of_replicas", "0")
-				// disable es refresh, we will do it manually on each commit
-				.put("refresh_interval", "-1")
-				// use async durability for the translog
-				.put("translog.durability", "async")
-				// wait all shards during writes
-				.put("write.wait_for_active_shards", "all")
+				.put(IndexClientFactory.NUMBER_OF_SHARDS, settings().get(IndexClientFactory.NUMBER_OF_SHARDS))
+				.put(IndexClientFactory.NUMBER_OF_REPLICAS, settings().get(IndexClientFactory.NUMBER_OF_REPLICAS))
 				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
 				.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY))
 				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
+				// disable es refresh, we will do it manually on each commit
+				// XXX we intentionally disallow the configuration of the refresh_interval via configuration (required for consistent writes)
+				.put("refresh_interval", "-1")
+				// use async durability for the translog
+				// XXX we intentionally disallow the configuration of the translog.durability via configuration (required for consistent writes)
+				.put("translog.durability", "async")
+				// wait all shards during writes
+				// XXX we intentionally disallow the configuration of the write.wait_for_active_shards via configuration (required for consistent writes)
+				.put("write.wait_for_active_shards", "all")
 				.build();
 	}
 	
