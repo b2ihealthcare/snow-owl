@@ -1,312 +1,260 @@
 package scripts
 
-//XXX: Rule disabled until migration to new MRCM model
+import com.b2international.index.query.Expressions
+import com.b2international.index.query.Query
+import com.b2international.index.query.Expressions.ExpressionBuilder
+import com.b2international.index.revision.RevisionSearcher
+import com.b2international.snowowl.core.ComponentIdentifier
+import com.b2international.snowowl.core.date.EffectiveTimes
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
+import com.b2international.snowowl.snomed.core.ecl.EclExpression
+import com.b2international.snowowl.snomed.core.tree.Trees
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
+import com.google.common.base.Joiner
+import com.google.common.base.Strings
+import com.google.common.collect.HashMultimap
+import com.google.common.collect.Maps
+import com.google.common.collect.Multimap
+import com.google.common.collect.Sets
 
-//import java.util.stream.Collectors
-//
-//import com.b2international.index.Hits
-//import com.b2international.index.query.Expression
-//import com.b2international.index.query.Expressions
-//import com.b2international.index.query.Query
-//import com.b2international.index.query.Expressions.ExpressionBuilder
-//import com.b2international.index.revision.RevisionSearcher
-//import com.b2international.snowowl.core.ComponentIdentifier
-//import com.b2international.snowowl.core.date.EffectiveTimes
-//import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
-//import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
-//import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
-//import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate
-//import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
-//import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate
-//import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
-//import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
-//import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
-//import com.b2international.snowowl.snomed.core.ecl.EclExpression
-//import com.b2international.snowowl.snomed.core.tree.Trees
-//import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
-//import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument
-//import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
-//import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
-//import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder
-//import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
-//import com.google.common.base.Joiner
-//import com.google.common.base.Strings
-//import com.google.common.collect.ImmutableMultimap
-//import com.google.common.collect.Multimap
-//import com.google.common.collect.Sets
-//
-//RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
-//Set<ComponentIdentifier> issues = Sets.newHashSet()
-//
-//def getInnerPredicate = { SnomedPredicate predicate ->
-//	if (predicate instanceof SnomedCardinalityPredicate) {
-//		return predicate.getPredicate()
-//	} else {
-//		return predicate
-//	}
-//}
-//
-//def getInnerPredicateFromConstraint = { SnomedConstraint constraint ->
-//	return getInnerPredicate(constraint.getPredicate())
-//}
-//
-//def getCharacteristicTypeId = { SnomedPredicate predicate ->
-//	if (predicate instanceof SnomedRelationshipPredicate) {
-//		return predicate.getCharacteristicTypeId()
-//	} else if (predicate instanceof SnomedConcreteDomainPredicate) {
-//		return predicate.getCharacteristicTypeId()
-//	} else {
-//		return ""
-//	}
-//}
-//
-//def getAttributeExpression = { SnomedPredicate predicate ->
-//	if (predicate instanceof SnomedRelationshipPredicate) {
-//		return predicate.getAttributeExpression()
-//	} else if (predicate instanceof SnomedConcreteDomainPredicate) {
-//		return predicate.getAttributeExpression()
-//	} else {
-//		return ""
-//	}
-//}
-//
-//def isRelationshipConstraint = { SnomedConstraint constraint -> 
-//	SnomedPredicate predicate = getInnerPredicateFromConstraint(constraint)
-//	return predicate instanceof SnomedRelationshipPredicate || predicate instanceof SnomedConcreteDomainPredicate
-//}
-//
-//def mrcmRules = SnomedRequests.prepareSearchConstraint()
-//	.all()
-//	.build()
-//	.execute(ctx)
-//	.stream()
-//	.filter({SnomedConstraint constraint -> isRelationshipConstraint(constraint)})
-//	.collect();
-//
-//def getApplicableConcepts = { String conceptSetExpression ->
-//	def expression = Expressions.builder()
-//		.filter(EclExpression.of(conceptSetExpression, Trees.INFERRED_FORM).resolveToExpression(ctx).getSync())
-//		.build()
-//	
-//	Query<String> conceptSetQuery = Query.select(String.class)
-//		.from(SnomedConceptDocument.class)
-//		.fields(SnomedConceptDocument.Fields.ID)
-//		.where(expression)
-//		.limit(Integer.MAX_VALUE)
-//		.build()
-//	
-//	Set<String> conceptIds = Sets.newHashSet()
-//	searcher.search(conceptSetQuery)
-//		.each({id -> conceptIds.add(id)})
-//	return conceptIds
-//}
-//
-//def typeMultimapBuilder = ImmutableMultimap.builder()
-//for (SnomedConstraint constraint : mrcmRules) {
-//	final SnomedPredicate predicate = getInnerPredicateFromConstraint(constraint)
-//	final String attributeExpression = getAttributeExpression(predicate) 
-//
-//	if (!Concepts.IS_A.equals(attributeExpression) && !Strings.isNullOrEmpty(attributeExpression)) {		
-//		getApplicableConcepts(attributeExpression).forEach({		
-//			typeMultimapBuilder.put(it, constraint)		
-//		})
-//	}
-//}
-//Multimap<String, SnomedConstraint> mrcmRulesByAttributeType = typeMultimapBuilder.build()
-//
-//def getCachedApplicableConcepts = { String conceptSetExpression ->
-//	return getApplicableConcepts(conceptSetExpression)
-//}.memoize()
-//
-//def getApplicableRules = { String conceptId, String typeId, boolean checkCharacteristicType ->
-//	final Set<SnomedConstraint> applicableConstraints = Sets.newHashSet()
-//	
-//	if (mrcmRulesByAttributeType.keySet().contains(typeId)) {
-//		for (SnomedConstraint constraint : mrcmRulesByAttributeType.get(typeId)) {
-//			if (getCachedApplicableConcepts(constraint.getDomain().toEcl()).contains(conceptId)) {
-//				if (checkCharacteristicType) {
-//					String charType = getCharacteristicTypeId(getInnerPredicateFromConstraint(constraint));
-//					if (Concepts.STATED_RELATIONSHIP.equals(charType) || Strings.isNullOrEmpty(charType)) {
-//						applicableConstraints.add(constraint)
-//					}
-//				} else {
-//					applicableConstraints.add(constraint)
-//				}
-//			}
-//		}
-//	}
-//	
-//	return applicableConstraints
-//}
-//
-//def getOWLRelationships = { SnomedReferenceSetMember owlMember ->
-//	def owlRelationships = [] as List
-//	if (owlMember.getClassOWLRelationships() != null) {
-//		owlRelationships.addAll(owlMember.getClassOWLRelationships());
-//	} else if (owlMember.getEquivalentOWLRelationships() != null) {
-//		owlRelationships.addAll(owlMember.getEquivalentOWLRelationships());
-//	}
-//	return owlRelationships
-//}
-//
-//if (params.isUnpublishedOnly) {
-//	SnomedRelationshipSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRelationship()
-//			.filterByActive(true)
-//			.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-//			.all()
-//	
-//	Expression where = requestBuilder.build().prepareQuery(ctx);
-//	
-//	final Query<String[]> relationshipQuery = Query.select(String[].class)
-//			.from(SnomedRelationshipIndexEntry.class)
-//			.fields(SnomedRelationshipIndexEntry.Fields.ID,
-//					SnomedRelationshipIndexEntry.Fields.SOURCE_ID,
-//					SnomedRelationshipIndexEntry.Fields.TYPE_ID)
-//			.where(where)
-//			.limit(Integer.MAX_VALUE)
-//			.build();
-//	
-//	Iterable<Hits<String[]>> queryResult = ctx.service(RevisionSearcher.class).search(relationshipQuery);
-//	
-//	queryResult.each { hit ->
-//		def relationshipId = hit[0]
-//		def sourceId = hit[1]
-//		def typeId = hit[2]
-//		
-//		if (!typeId.equals(Concepts.IS_A) && getApplicableRules(sourceId, typeId, false).isEmpty()) {
-//			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId))			
-//		}
-//	}
-//	
-//	def owlAxiomMembers = SnomedRequests.prepareSearchMember()
-//		.filterByRefSet(Concepts.REFSET_OWL_AXIOM)
-//		.filterByActive(true)
-//		.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-//		.all()
-//		.setExpand("owlRelationships()")
-//		.build()
-//		.execute(ctx)
-//	
-//	for (SnomedReferenceSetMember owlAxiomMember : owlAxiomMembers) {
-//		def sourceId = owlAxiomMember.getReferencedComponent().getId()
-//		for (SnomedOWLRelationshipDocument relationship : getOWLRelationships(owlAxiomMember)) {
-//			def typeId = relationship.getTypeId()
-//			if (!typeId.equals(Concepts.IS_A) && getApplicableRules(sourceId, typeId, true).isEmpty()) {
-//				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, owlAxiomMember.getId()))
-//			}
-//		}
-//	}
-//	
-//} else {
-//	//Relationship search based checks
-//	for (String typeExpression : mrcmRulesByAttributeType.keySet()) {
-//		def allowedDomainExpressions = mrcmRulesByAttributeType.get(typeExpression)
-//			.stream()
-//			.map({SnomedConstraint constraint -> constraint.getDomain().toEcl()})
-//			.collect(Collectors.toSet())
-//		
-//		def domainExpression = Joiner.on(" OR ").join(allowedDomainExpressions);
-//		
-//		final ExpressionBuilder expressionBuilder = Expressions.builder()
-//				.filter(SnomedRelationshipIndexEntry.Expressions.active())
-//				.filter(SnomedRelationshipIndexEntry.Expressions.typeId(typeExpression)) //Assuming single id attribute expressions
-//				.mustNot(SnomedRelationshipIndexEntry.Expressions.sourceIds(getCachedApplicableConcepts(domainExpression)))
-//		
-//		Query.select(String.class)
-//				.from(SnomedRelationshipIndexEntry.class)
-//				.fields(SnomedRelationshipIndexEntry.Fields.ID)
-//				.where(expressionBuilder.build())
-//				.limit(10_000)
-//				.build()
-//				.stream(searcher)
-//				.flatMap({ it.stream() })
-//				.forEachOrdered({ id ->
-//					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
-//				})
-//	}
-//	
-//	def allowedTypeIds = new HashSet(mrcmRulesByAttributeType.keySet())
-//	allowedTypeIds.add(Concepts.IS_A)
-//	
-//	final ExpressionBuilder expressionBuilder = Expressions.builder()
-//		.filter(SnomedRelationshipIndexEntry.Expressions.active())
-//		.mustNot(SnomedRelationshipIndexEntry.Expressions.typeIds(allowedTypeIds))
-//	
-//	final Query<String> query = Query.select(String.class)
-//		.from(SnomedRelationshipIndexEntry.class)
-//		.fields(SnomedRelationshipIndexEntry.Fields.ID)
-//		.where(expressionBuilder.build())
-//		.limit(10_000)
-//		.build()
-//		.stream(searcher)
-//		.flatMap({ it.stream() })
-//		.forEachOrdered({ id ->
-//			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
-//		})
-//	
-//	//OWL axiom member search based checks
-//	for (String typeExpression : mrcmRulesByAttributeType.keySet()) {
-//		def allowedDomainExpressions = mrcmRulesByAttributeType.get(typeExpression)
-//			.stream()
-//			.filter({ SnomedConstraint constraint -> 
-//				String charType = getCharacteristicTypeId(getInnerPredicateFromConstraint(constraint));				
-//				return Strings.isNullOrEmpty(charType) || Concepts.STATED_RELATIONSHIP.equals(charType)})
-//			.map({SnomedConstraint constraint -> constraint.getDomain().toEcl()})
-//			.collect(Collectors.toSet())
-//		
-//		if (allowedDomainExpressions.isEmpty()) {
-//			continue
-//		}
-//		
-//		def domainExpression = Joiner.on(" OR ").join(allowedDomainExpressions);
-//		
-//		final ExpressionBuilder owlMemberExpressionBuilder = Expressions.builder()
-//				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-//				.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(Collections.singleton(typeExpression)))
-//				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(getCachedApplicableConcepts(domainExpression)))
-//		
-//		Query.select(String.class)
-//				.from(SnomedRefSetMemberIndexEntry.class)
-//				.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
-//				.where(owlMemberExpressionBuilder.build())
-//				.limit(10_000)
-//				.build()
-//				.stream(searcher)
-//				.flatMap({ it.stream() })
-//				.forEachOrdered({ id ->
-//					issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
-//				})
-//	}
-//	
-//	def allowedTypeIdsForOwlRelationships = mrcmRulesByAttributeType.keySet()
-//		.stream()
-//		.filter({ String typeId ->
-//			mrcmRulesByAttributeType.get(typeId).stream()
-//				.map({getInnerPredicateFromConstraint(it)})
-//				.filter({SnomedPredicate predicate ->
-//					String charType = getCharacteristicTypeId(predicate);
-//					return Concepts.STATED_RELATIONSHIP.equals(charType) || Strings.isNullOrEmpty(charType)
-//				}).findAny().isPresent()
-//		}).collect(Collectors.toSet())
-//		
-//	allowedTypeIdsForOwlRelationships.add(Concepts.IS_A)
-//	
-//	final ExpressionBuilder owlMemberExpressionBuilder = Expressions.builder()
-//		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-//		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
-//		.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(allowedTypeIdsForOwlRelationships))
-//	
-//	Query.select(String.class)
-//		.from(SnomedRefSetMemberIndexEntry.class)
-//		.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
-//		.where(owlMemberExpressionBuilder.build())
-//		.limit(10_000)
-//		.build()
-//		.stream(searcher)
-//		.flatMap({ it.stream() })
-//		.forEachOrdered({ id ->
-//			issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
-//		})
-//}
-//
-//return issues as List
+import groovy.transform.Field
+
+RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
+Set<ComponentIdentifier> issues = Sets.newHashSet();
+Set<ComponentIdentifier> potentialIssues = Sets.newHashSet();
+
+final String domainRefset = Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
+final String attributeRefset = Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL;
+
+def getApplicableConcepts = { String conceptSetExpression ->
+	def expression = Expressions.builder()
+		.filter(EclExpression.of(conceptSetExpression, Trees.INFERRED_FORM).resolveToExpression(ctx).getSync())
+		.build();
+	
+	Query<String> conceptSetQuery = Query.select(String.class)
+		.from(SnomedConceptDocument.class)
+		.fields(SnomedConceptDocument.Fields.ID)
+		.where(expression)
+		.limit(Integer.MAX_VALUE)
+		.build();
+	
+	Set<String> conceptIds = Sets.newHashSet();
+	searcher.search(conceptSetQuery).each({id -> conceptIds.add(id)})
+	return conceptIds;
+}
+
+@Field
+Map<String, String> parentDomains = Maps.newHashMap();
+@Field
+Multimap<String, String> allowedTypeIds = new HashMultimap();
+Multimap<String, String> childDomains = new HashMultimap();
+Map<String, SnomedReferenceSetMember> domainMembers = Maps.newHashMap();
+
+SnomedRequests.prepareSearchMember()
+	.filterByActive(true)
+	.filterByRefSet(domainRefset)
+	.all()
+	.setFields(SnomedRefSetMemberIndexEntry.Fields.ID,
+		SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID,
+		SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT,
+		SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN)
+	.build()
+	.execute(ctx)
+	.forEach({ SnomedReferenceSetMember member ->
+		final String parentDomain = member.getProperties().get(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN);
+		if (!Strings.isNullOrEmpty(parentDomain)) {
+			int lastChar = parentDomain.contains('|') ? parentDomain.indexOf('|') : parentDomain.length();
+			String parentDomainId = parentDomain.substring(0, lastChar).trim();
+			parentDomains.put(member.getReferencedComponentId(), parentDomainId);
+			childDomains.put(parentDomainId, member.getReferencedComponentId());				
+		}
+		domainMembers.put(member.getReferencedComponentId(), member);	
+	});
+
+domainMembers.keySet().forEach({ String domainId ->
+	final Query<String> attributeQuery = Query.select(String.class)
+		.from(SnomedRefSetMemberIndexEntry.class)
+		.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+		.where(Expressions.builder()
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN]))
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.domainIds(Collections.singleton(domainId)))
+			.build())
+		.limit(Integer.MAX_VALUE)
+		.build();
+	
+	Set<String> attributes = searcher.search(attributeQuery).collect() as Set;
+	allowedTypeIds.putAll(domainId, attributes);
+})
+
+def getConstraint = { String domain ->
+	final SnomedReferenceSetMember member = domainMembers.get(domain);
+	final String domainConstraint = member.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT);
+}
+
+def getDomainConstraint = { String domain ->
+	final String domainConstraint = getConstraint(domain);
+	if (childDomains.containsKey(domain)) {
+		List<String> childDomainConstraints = childDomains.get(domain).collect({ String domainId -> "(${getConstraint(domainId)})" });
+		String openBrace = childDomainConstraints.size() == 1 ? "" : "(";
+		String closeBrace = childDomainConstraints.size() == 1 ? "" : ")";
+		return "${domainConstraint} MINUS (${Joiner.on(" OR ").join(childDomainConstraints)})"
+	}
+	return domainConstraint;
+}
+
+def getAllowedTypeIds (String domain) {
+	final Set<String> typeIds = allowedTypeIds.get(domain);
+	
+	if (parentDomains.containsKey(domain)) {
+		final String parentDomain = parentDomains.get(domain);		
+		typeIds.addAll(getAllowedTypeIds(parentDomain));
+	}
+	
+	return typeIds;
+}
+
+Set<String> reportedRelationshipIds;
+def searchRelationships = { boolean isValidationRun ->
+	domainMembers.keySet().forEach({ String domain ->
+		final SnomedReferenceSetMember domainMember = domainMembers.get(domain); 
+		
+		final String domainConstraint = getDomainConstraint(domain);
+		final Set<String> domainConcepts = getApplicableConcepts(domainConstraint);
+		final Set<String> attributes = getAllowedTypeIds(domain);
+		attributes.add(Concepts.IS_A);
+		
+		//Find relationships that have no applicable MRCM rules for their types
+		ExpressionBuilder relationshipQueryBuilder = Expressions.builder()
+				.filter(SnomedRelationshipIndexEntry.Expressions.active())
+				.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(domainConcepts));
+
+		if (isValidationRun) {
+			relationshipQueryBuilder
+				.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(attributes))
+				.filter(SnomedRelationshipIndexEntry.Expressions.ids(reportedRelationshipIds));
+
+		} else {
+			relationshipQueryBuilder
+				.mustNot(SnomedRelationshipIndexEntry.Expressions.typeIds(attributes));
+		}
+		
+		if (params.isUnpublishedOnly) {
+			relationshipQueryBuilder
+				.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+		}
+		
+		final Query<String> relationshipQuery = Query.select(String.class)
+			.from(SnomedRelationshipIndexEntry.class)
+			.fields(SnomedRelationshipIndexEntry.Fields.ID)
+			.where(relationshipQueryBuilder.build())
+			.limit(50_000)
+			.build();
+		
+		searcher.stream(relationshipQuery).each { hits ->
+			hits.forEach({ String relationshipId ->
+				if (isValidationRun) {
+					issues.remove(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId));
+				} else {
+					issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId));
+				}
+			})
+		}
+		
+		//Find OWL axiom members with relationships that have no applicable MRCM rules for their types
+		final ExpressionBuilder owlMemberExpressionBuilder = Expressions.builder()
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(domainConcepts));
+
+		if (isValidationRun) {
+			owlMemberExpressionBuilder
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attributes))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.ids(reportedRelationshipIds));
+		} else {
+			owlMemberExpressionBuilder
+				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attributes));
+		}
+
+		if (params.isUnpublishedOnly) {
+			owlMemberExpressionBuilder
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+		}
+		
+		final Query<String> owlMemberQuery = Query.select(String.class)
+			.from(SnomedRefSetMemberIndexEntry.class)
+			.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
+			.where(owlMemberExpressionBuilder.build())
+			.limit(50_000)
+			.build();
+		
+		searcher.stream(owlMemberQuery).forEach({ hits ->
+			hits.forEach({ id ->
+				if (isValidationRun) {
+					issues.remove(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
+				} else {
+					issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
+				}
+			})
+		})
+	})
+}
+
+def searchRelationshipsWithUnregulatedTypeIds =  {
+	Set<String> typeIdsInMrcmRules = Sets.newHashSet(allowedTypeIds.values());
+	typeIdsInMrcmRules.add(Concepts.IS_A);
+	
+	//Find relationships that have no MRCM rules with this type
+	ExpressionBuilder relationshipQueryBuilder = Expressions.builder()
+			.filter(SnomedRelationshipIndexEntry.Expressions.active())
+			.mustNot(SnomedRelationshipIndexEntry.Expressions.typeIds(typeIdsInMrcmRules));
+	
+	if (params.isUnpublishedOnly) {
+		relationshipQueryBuilder.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+	}
+	
+	final Query<String> relationshipQuery = Query.select(String.class)
+		.from(SnomedRelationshipIndexEntry.class)
+		.fields(SnomedRelationshipIndexEntry.Fields.ID)
+		.where(relationshipQueryBuilder.build())
+		.limit(50_000)
+		.build();
+	
+	searcher.stream(relationshipQuery).each { hits -> hits.each { id -> 
+		issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
+	}}
+	
+	//Find OWL Axiom relationships that have no MRCM rules with this type
+	final ExpressionBuilder owlMemberExpressionBuilder = Expressions.builder()
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
+		.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(typeIdsInMrcmRules));
+	
+	if (params.isUnpublishedOnly) {
+		owlMemberExpressionBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+	}
+	
+	final Query<String> owlMemberQuery = Query.select(String.class)
+		.from(SnomedRefSetMemberIndexEntry.class)
+		.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
+		.where(owlMemberExpressionBuilder.build())
+		.limit(50_000)
+		.build();
+	
+	searcher.stream(owlMemberQuery).forEach({ hits -> });
+}
+
+searchRelationships(false);
+reportedRelationshipIds = issues.collect{ ComponentIdentifier identifier -> identifier.getComponentId()} as Set
+searchRelationships(true);
+searchRelationshipsWithUnregulatedTypeIds();
+
+return issues as List;
