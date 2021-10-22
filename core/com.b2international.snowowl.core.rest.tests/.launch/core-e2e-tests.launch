@@ -26,6 +26,7 @@
     <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
     <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
     <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.b2international.snowowl.core.rest.AllSnowOwlApiTests"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog -console"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.b2international.snowowl.core.rest.tests"/>
@@ -60,6 +61,9 @@
         <setEntry value="com.sun.xml.bind.jaxb-core@default:default"/>
         <setEntry value="com.sun.xml.bind.jaxb-impl@default:default"/>
         <setEntry value="de.svenkubiak.jBCrypt@default:default"/>
+        <setEntry value="groovy-json@default:false"/>
+        <setEntry value="groovy-xml@default:false"/>
+        <setEntry value="groovy@default:default"/>
         <setEntry value="io.github.classgraph.classgraph@default:default"/>
         <setEntry value="io.github.classgraph@default:default"/>
         <setEntry value="io.netty.buffer@default:default"/>
@@ -70,6 +74,10 @@
         <setEntry value="io.netty.resolver@default:default"/>
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
+        <setEntry value="io.rest-assured.common@default:default"/>
+        <setEntry value="io.rest-assured.json-path@default:default"/>
+        <setEntry value="io.rest-assured.xml-path@default:default"/>
+        <setEntry value="io.rest-assured@default:default"/>
         <setEntry value="io.swagger.core.v3.swagger-annotations@default:default"/>
         <setEntry value="io.swagger.core.v3.swagger-models@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
@@ -86,6 +94,7 @@
         <setEntry value="net.jodah.typetools@default:default"/>
         <setEntry value="org.antlr.runtime@default:default"/>
         <setEntry value="org.apache.ant@default:default"/>
+        <setEntry value="org.apache.aries.spifly.dynamic.bundle@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.lang3@default:default"/>
@@ -99,8 +108,8 @@
         <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
         <setEntry value="org.apache.lucene.core@default:default"/>
+        <setEntry value="org.apiguardian@default:default"/>
         <setEntry value="org.ccil.cowan.tagsoup@default:default"/>
-        <setEntry value="org.codehaus.groovy@default:default"/>
         <setEntry value="org.eclipse.ant.core@default:default"/>
         <setEntry value="org.eclipse.compare.core@default:default"/>
         <setEntry value="org.eclipse.core.commands@default:default"/>
@@ -177,16 +186,22 @@
         <setEntry value="org.eclipse.xtext.util@default:default"/>
         <setEntry value="org.eclipse.xtext.xbase.lib@default:default"/>
         <setEntry value="org.eclipse.xtext@default:default"/>
-        <setEntry value="org.hamcrest.core@default:default"/>
-        <setEntry value="org.hamcrest.library@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
         <setEntry value="org.junit@default:default"/>
         <setEntry value="org.mapstruct@default:default"/>
+<<<<<<< Upstream, based on origin/8.x
         <setEntry value="org.mockito.mockito-core@default:default"/>
+=======
+        <setEntry value="org.mockito@default:default"/>
+        <setEntry value="org.objectweb.asm.commons@default:default"/>
+        <setEntry value="org.objectweb.asm.tree.analysis@default:default"/>
+>>>>>>> 51f5fd7 chore(launch): Update launch configuration of e2e tests
         <setEntry value="org.objectweb.asm.tree@default:default"/>
+        <setEntry value="org.objectweb.asm.util@default:default"/>
         <setEntry value="org.objectweb.asm@default:default"/>
         <setEntry value="org.objenesis@default:default"/>
+        <setEntry value="org.opentest4j@default:default"/>
         <setEntry value="org.protege.common@default:default"/>
         <setEntry value="org.protege.editor.core.application@default:default"/>
         <setEntry value="org.protege.editor.owl@default:default"/>
@@ -206,7 +221,6 @@
         <setEntry value="com.b2international.index.tests@default:false"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
-        <setEntry value="com.b2international.restassured-all@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest.tests@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core.tests@default:false"/>
@@ -225,6 +239,7 @@
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
         <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
+        <setEntry value="org.hamcrest.core@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
     <booleanAttribute key="tracing" value="false"/>
