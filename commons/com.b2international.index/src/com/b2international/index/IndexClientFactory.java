@@ -58,9 +58,13 @@ public interface IndexClientFactory {
 	
 	/**
 	 * Configuration key to specify the number of shards for the index.
-	 * Currently only the index.es fragment supports.
 	 */
 	String NUMBER_OF_SHARDS = "number_of_shards";
+	
+	/**
+	 * Configuration key to specify the number of replicas for the index.
+	 */
+	String NUMBER_OF_REPLICAS = "number_of_replicas";
 
 	/**
 	 * Configuration key to specify the concurrency level for bulk commit operations.
@@ -201,6 +205,15 @@ public interface IndexClientFactory {
 	 */
 	int DEFAULT_COMMIT_WATERMARK_HIGH_VALUE = 50_000;
 
+	/**
+	 * Default number_of_shards value for all indices.
+	 */
+	String DEFAULT_NUMBER_OF_SHARDS = "1";
+
+	/**
+	 * Default number_of_replicas value for all indices. 
+	 */
+	String DEFAULT_NUMBER_OF_REPLICAS = "0";
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.

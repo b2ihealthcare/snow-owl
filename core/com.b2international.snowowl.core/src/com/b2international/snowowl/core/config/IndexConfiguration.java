@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.core.config;
 
+import java.util.Map;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.index.IndexClientFactory;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Maps;
 
 /**
  * @since 5.0
@@ -34,8 +39,6 @@ public class IndexConfiguration {
 	
 	@NotEmpty
 	private String commitInterval = IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL;
-	@Min(1)
-	private Integer numberOfShards = 6;
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 	@Min(1)
@@ -72,6 +75,8 @@ public class IndexConfiguration {
 	@Max(IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE)
 	private int commitWatermarkHigh = IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE;
 	
+	private Map<String, Object> customIndexConfigurations = Maps.newHashMapWithExpectedSize(1);
+	
 	@JsonProperty
 	public String getCommitInterval() {
 		return commitInterval;
@@ -82,16 +87,6 @@ public class IndexConfiguration {
 		this.commitInterval = commitInterval;
 	}
 
-	@JsonProperty
-	public void setNumberOfShards(Integer numberOfShards) {
-		this.numberOfShards = numberOfShards;
-	}
-	
-	@JsonProperty
-	public Integer getNumberOfShards() {
-		return numberOfShards;
-	}
-	
 	@JsonProperty
 	public int getCommitConcurrencyLevel() {
 		return commitConcurrencyLevel;
@@ -218,6 +213,16 @@ public class IndexConfiguration {
 	
 	public void setCommitWatermarkLow(int commitWatermarkLow) {
 		this.commitWatermarkLow = commitWatermarkLow;
+	}
+	
+	@JsonAnyGetter
+	public Map<String, Object> getCustomIndexConfigurations() {
+		return customIndexConfigurations;
+	}
+	
+	@JsonAnySetter
+	public void setCustomIndexConfigurations(String indexName, Object config) {
+		this.customIndexConfigurations.put(indexName, config);
 	}
 
 	public void configure(Builder<String, Object> settings) {

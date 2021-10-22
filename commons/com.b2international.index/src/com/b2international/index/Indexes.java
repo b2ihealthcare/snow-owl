@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class Indexes {
 	}
 	
 	public static IndexClient createIndexClient(String name, ObjectMapper mapper, Mappings mappings) {
-		return FACTORY.createClient(name, configure(mapper), mappings, Collections.<String, Object>emptyMap());
+		return FACTORY.createClient(name, configure(mapper), mappings, Collections.emptyMap());
 	}
 	
 	public static IndexClient createIndexClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {

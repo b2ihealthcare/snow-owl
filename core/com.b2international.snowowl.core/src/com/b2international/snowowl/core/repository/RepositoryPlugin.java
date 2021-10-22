@@ -71,6 +71,8 @@ public final class RepositoryPlugin extends Plugin {
 
 	private static final Logger LOG = LoggerFactory.getLogger("core");
 	
+	private static final String JOBS_INDEX = "jobs";
+	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
 		registry.add("repository", RepositoryConfiguration.class);
@@ -199,7 +201,12 @@ public final class RepositoryPlugin extends Plugin {
 	
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
 		final ObjectMapper objectMapper = env.service(ObjectMapper.class);
-		final Index jobsIndex = Indexes.createIndex("jobs", objectMapper, new Mappings(RemoteJobEntry.class), env.service(IndexSettings.class));
+		final Index jobsIndex = Indexes.createIndex(
+			JOBS_INDEX, 
+			objectMapper, 
+			new Mappings(RemoteJobEntry.class), 
+			env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), JOBS_INDEX)
+		);
 		// TODO make this configurable
 		final long defaultJobCleanUpInterval = TimeUnit.MINUTES.toMillis(1);
 		env.services()

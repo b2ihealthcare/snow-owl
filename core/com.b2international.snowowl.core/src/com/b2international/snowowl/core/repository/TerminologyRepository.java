@@ -15,17 +15,17 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.RequestTimeoutException;
-import com.b2international.index.*;
+import com.b2international.index.DefaultIndex;
+import com.b2international.index.Index;
+import com.b2international.index.IndexClient;
+import com.b2international.index.Indexes;
 import com.b2international.index.es.client.EsClusterStatus;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -37,9 +37,9 @@ import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.BranchChangedEvent;
+import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.context.ServiceContext;
 import com.b2international.snowowl.core.setup.Plugins;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -83,9 +83,13 @@ public final class TerminologyRepository extends ServiceContext implements Repos
 	private RevisionIndex initIndex(final ServiceProvider context, Mappings mappings) {
 		final ObjectMapper mapper = context.service(ObjectMapper.class);
 		
-		final Map<String, Object> indexSettings = newHashMap(context.service(IndexSettings.class));
-		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getNumberOfShards());
-		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, mappings, indexSettings);
+		IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
+		final IndexClient indexClient = Indexes.createIndexClient(
+			repositoryId, 
+			mapper, 
+			mappings, 
+			context.service(IndexSettings.class).forIndex(indexConfiguration, repositoryId)
+		);
 		final Index index = new DefaultIndex(indexClient);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, context.service(TimestampProvider.class), mapper);
 		revisionIndex.branching().addBranchChangeListener(path -> {
