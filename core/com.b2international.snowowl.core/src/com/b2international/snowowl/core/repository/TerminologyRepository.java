@@ -18,12 +18,14 @@ package com.b2international.snowowl.core.repository;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.RequestTimeoutException;
-import com.b2international.index.*;
+import com.b2international.index.DefaultIndex;
+import com.b2international.index.Index;
+import com.b2international.index.IndexClient;
+import com.b2international.index.Indexes;
 import com.b2international.index.es.client.EsClusterStatus;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -86,10 +88,7 @@ public final class TerminologyRepository extends ServiceContext implements Repos
 			repositoryId, 
 			mapper, 
 			mappings, 
-			context.service(IndexSettings.class).forIndex(indexConfiguration, repositoryId, Map.of(
-				// TODO decide the fate of the global number of shards settings key
-				IndexClientFactory.NUMBER_OF_SHARDS, indexConfiguration.getNumberOfShards() 
-			))
+			context.service(IndexSettings.class).forIndex(indexConfiguration, repositoryId)
 		);
 		final Index index = new DefaultIndex(indexClient);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, context.service(TimestampProvider.class), mapper);

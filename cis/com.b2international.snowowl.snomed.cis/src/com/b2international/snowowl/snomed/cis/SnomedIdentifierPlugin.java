@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.elasticsearch.core.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +121,7 @@ public final class SnomedIdentifierPlugin extends Plugin {
 				SNOMED_IDS_INDEX, 
 				env.service(ObjectMapper.class), 
 				new Mappings(SctId.class), 
-				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), SNOMED_IDS_INDEX, Map.of())
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), SNOMED_IDS_INDEX)
 			);
 			index.admin().create();
 			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(reservationService); 

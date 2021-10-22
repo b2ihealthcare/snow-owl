@@ -78,7 +78,7 @@ public final class ValidationPlugin extends Plugin {
 				VALIDATIONS_INDEX, 
 				mapper, 
 				new Mappings(ValidationIssue.class, ValidationRule.class, ValidationWhiteList.class), 
-				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), VALIDATIONS_INDEX, Map.of())
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), VALIDATIONS_INDEX)
 			);
 			
 			final ValidationRepository repository = new ValidationRepository(validationIndex);

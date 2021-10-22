@@ -40,8 +40,6 @@ public class IndexConfiguration {
 	@NotEmpty
 	private String commitInterval = IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL;
 	@Min(1)
-	private Integer numberOfShards = 6;
-	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 	@Min(1)
 	private int bulkActionSize = IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE;
@@ -89,16 +87,6 @@ public class IndexConfiguration {
 		this.commitInterval = commitInterval;
 	}
 
-	@JsonProperty
-	public void setNumberOfShards(Integer numberOfShards) {
-		this.numberOfShards = numberOfShards;
-	}
-	
-	@JsonProperty
-	public Integer getNumberOfShards() {
-		return numberOfShards;
-	}
-	
 	@JsonProperty
 	public int getCommitConcurrencyLevel() {
 		return commitConcurrencyLevel;

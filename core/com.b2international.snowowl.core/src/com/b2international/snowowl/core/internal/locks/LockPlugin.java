@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.internal.locks;
 
-import org.elasticsearch.core.Map;
-
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -48,7 +46,7 @@ public final class LockPlugin extends Plugin {
 				LOCKS_INDEX, 
 				env.service(ObjectMapper.class), 
 				new Mappings(DatastoreLockIndexEntry.class), 
-				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), LOCKS_INDEX, Map.of())
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), LOCKS_INDEX)
 			);
 			final DefaultOperationLockManager lockManager = new DefaultOperationLockManager(locksIndex);
 			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
@@ -61,6 +59,5 @@ public final class LockPlugin extends Plugin {
 			env.services().registerService(IOperationLockManager.class, RpcUtil.createProxy(env.container(), IOperationLockManager.class));
 		}
 	}
-	
 	
 }

@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Index;
-import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.DefaultRevisionIndex;
@@ -66,9 +65,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 public final class SnowOwlPlugin extends Plugin {
 
 	private static final String RESOURCES_INDEX = "resources";
-	private static final Map<String, Object> RESOURCES_INDEX_DEFAULT_SETTINGS = Map.of(
-		IndexClientFactory.NUMBER_OF_SHARDS, 3
-	);
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
@@ -97,7 +93,7 @@ public final class SnowOwlPlugin extends Plugin {
 				RESOURCES_INDEX, 
 				mapper, 
 				new Mappings(ResourceDocument.class, VersionDocument.class), 
-				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), RESOURCES_INDEX, RESOURCES_INDEX_DEFAULT_SETTINGS)
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), RESOURCES_INDEX)
 			);
 			
 			final RevisionIndex revisionIndex = new DefaultRevisionIndex(resourceIndex, env.service(TimestampProvider.class), mapper);

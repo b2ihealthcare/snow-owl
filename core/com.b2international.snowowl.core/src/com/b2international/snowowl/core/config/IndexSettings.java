@@ -34,6 +34,17 @@ public final class IndexSettings extends HashMapOptions {
 	 * 
 	 * @param config - the main index configuration object
 	 * @param indexName - the index to configure
+	 * @return
+	 */
+	public Map<String, Object> forIndex(IndexConfiguration config, String indexName) {
+		return forIndex(config, indexName, Map.of());
+	}
+	
+	/**
+	 * Configures and returns an index specific settings map to use when initializing the given index.
+	 * 
+	 * @param config - the main index configuration object
+	 * @param indexName - the index to configure
 	 * @param defaultIndexSettings - default settings if there is no customized configuration available in the configuration file
 	 * @return
 	 */
