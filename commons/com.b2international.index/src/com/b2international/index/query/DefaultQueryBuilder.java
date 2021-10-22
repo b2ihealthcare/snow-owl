@@ -38,6 +38,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private Expression where;
 	private SortBy sortBy = SortBy.DEFAULT;
 	private boolean withScores = false;
+	private boolean cached = false;
 
 	private List<String> fields = Collections.emptyList();
 
@@ -98,6 +99,12 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		this.withScores = withScores;
 		return this;
 	}
+	
+	@Override
+	public AfterWhereBuilder<T> cached(boolean cached) {
+		this.cached = cached;
+		return this;
+	}
 
 	@Override
 	public Query<T> build() {
@@ -113,6 +120,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		query.setSortBy(sortBy);
 		query.setWithScores(withScores);
 		query.setFields(fields);
+		query.setCached(cached);
 		return query;
 	}
 

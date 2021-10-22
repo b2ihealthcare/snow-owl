@@ -91,6 +91,14 @@ public final class Query<T> {
 		 * @return
 		 */
 		AfterWhereBuilder<T> withScores(boolean withScores);
+		
+		/**
+		 * Request the underlying service to cache the results of this query when possible. By default queries are not cached.
+		 * 
+		 * @param cached - whether this query needs to be cached or not
+		 * @return
+		 */
+		AfterWhereBuilder<T> cached(boolean cached);
 	}
 
 	private String searchAfter;
@@ -98,8 +106,9 @@ public final class Query<T> {
 	private IndexSelection<T> selection;
 	private Expression where;
 	private SortBy sortBy = SortBy.DEFAULT;
-	private boolean withScores;
+	private boolean withScores = false;
 	private List<String> fields;
+	private boolean cached = false;
 
 	Query() {}
 
@@ -159,6 +168,14 @@ public final class Query<T> {
 		this.searchAfter = searchAfter;
 	}
 	
+	public boolean isCached() {
+		return cached;
+	}
+	
+	void setCached(boolean cached) {
+		this.cached = cached;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -171,6 +188,9 @@ public final class Query<T> {
 		sb.append(" LIMIT " + limit);
 		if (selection.getParentScope() != null) {
 			sb.append(" HAS_PARENT(" + selection.getParentScopeDocumentType() + ")");
+		}
+		if (cached) {
+			sb.append(" CACHED");
 		}
 		return sb.toString();
 	}
@@ -240,5 +260,5 @@ public final class Query<T> {
 	public final Stream<Hits<T>> stream(Searcher searcher) {
 		return searcher.stream(this);
 	}
-	
+
 }
