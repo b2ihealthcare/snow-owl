@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -117,6 +118,8 @@ public final class EclExpression {
 								.fields(SnomedConceptDocument.Fields.ID)
 								.where(expression)
 								.limit(Integer.MAX_VALUE)
+								// cache when the current context is executed against a version
+								.cached(context.optionalService(PathWithVersion.class).isPresent())
 								.build()));
 						
 					} catch (IOException e) {
