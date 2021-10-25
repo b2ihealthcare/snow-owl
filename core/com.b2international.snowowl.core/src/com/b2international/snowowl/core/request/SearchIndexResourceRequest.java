@@ -61,7 +61,6 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 			fields = configureFieldsToLoad(fields);
 		}
 		
-		
 		final Hits<D> hits = searcher.search(Query.select(getSelect())
 				.from(getFrom())
 				.fields(fields)
@@ -155,7 +154,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	 * @return whether the search should cache the resulting hits in the underlying index system or not
 	 */
 	protected boolean cacheHits(C context) {
-		return context.optionalService(PathWithVersion.class).isPresent();
+		return Revision.class.isAssignableFrom(getFrom()) && context.optionalService(PathWithVersion.class).isPresent();
 	}
 	
 	/**
