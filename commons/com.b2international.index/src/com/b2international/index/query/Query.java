@@ -185,7 +185,11 @@ public final class Query<T> {
 		if (!SortBy.DEFAULT.equals(sortBy)) {
 			sb.append(" SORT BY " + sortBy);
 		}
-		sb.append(" LIMIT " + limit);
+		sb.append(" LIMIT(").append(limit).append(")");
+		if (searchAfter != null) {
+			sb.append(" AFTER(").append(searchAfter).append(")");
+		}
+		
 		if (selection.getParentScope() != null) {
 			sb.append(" HAS_PARENT(" + selection.getParentScopeDocumentType() + ")");
 		}
