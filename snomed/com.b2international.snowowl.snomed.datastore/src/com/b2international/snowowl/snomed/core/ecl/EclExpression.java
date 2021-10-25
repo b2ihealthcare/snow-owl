@@ -106,6 +106,7 @@ public final class EclExpression {
 	public Promise<Set<String>> resolve(final BranchContext context) {
 		if (promise == null) {
 			RevisionSearcher searcher = context.service(RevisionSearcher.class);
+			boolean cached = context.optionalService(PathWithVersion.class).isPresent();
 			promise = resolveToExpression(context)
 				.then(expression -> {
 					// shortcut to extract IDs from the query itself if possible 
@@ -119,7 +120,7 @@ public final class EclExpression {
 								.where(expression)
 								.limit(Integer.MAX_VALUE)
 								// cache when the current context is executed against a version
-								.cached(context.optionalService(PathWithVersion.class).isPresent())
+								.cached(cached)
 								.build()));
 						
 					} catch (IOException e) {

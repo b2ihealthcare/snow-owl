@@ -220,7 +220,8 @@ public final class Query<T> {
 			.sortBy(getSortBy())
 			.limit(getLimit())
 			.searchAfter(getSearchAfter())
-			.withScores(isWithScores());
+			.withScores(isWithScores())
+			.cached(isCached());
 	}
 	
 	public AfterWhereBuilder<T> withSearchAfter(String searchAfter) {
@@ -230,7 +231,8 @@ public final class Query<T> {
 				.sortBy(getSortBy())
 				.limit(getLimit())
 				.searchAfter(searchAfter)
-				.withScores(isWithScores());
+				.withScores(isWithScores())
+				.cached(isCached());
 	}
 
 	/**
