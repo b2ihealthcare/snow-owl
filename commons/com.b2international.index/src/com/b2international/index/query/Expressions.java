@@ -144,7 +144,11 @@ public class Expressions {
 	}
 
 	public static Expression matchAnyInt(String field, Iterable<Integer> values) {
-		return new IntSetPredicate(field, values);
+		if (Iterables.size(values) == 1) {
+			return new IntPredicate(field, Iterables.getFirst(values, null));
+		} else {
+			return new IntSetPredicate(field, values);
+		}
 	}
 	
 	public static Expression matchAnyEnum(String field, Iterable<? extends Enum<?>> values) {
@@ -153,19 +157,35 @@ public class Expressions {
 	}
 	
 	public static Expression matchAny(String field, Iterable<String> values) {
-		return new StringSetPredicate(field, values);
+		if (Iterables.size(values) == 1) {
+			return new StringPredicate(field, Iterables.getFirst(values, null));
+		} else {
+			return new StringSetPredicate(field, values);
+		}
 	}
 	
 	public static Expression matchAnyLong(String field, Iterable<Long> values) {
-		return new LongSetPredicate(field, values);
+		if (Iterables.size(values) == 1) {
+			return new LongPredicate(field, Iterables.getFirst(values, null));
+		} else {
+			return new LongSetPredicate(field, values);
+		}
 	}
 	
 	public static Expression matchAnyDecimal(String field, Iterable<BigDecimal> values) {
-		return new DecimalSetPredicate(field, values);
+		if (Iterables.size(values) == 1) {
+			return new DecimalPredicate(field, Iterables.getFirst(values, null));
+		} else {
+			return new DecimalSetPredicate(field, values);
+		}
 	}
 	
 	public static Expression matchAnyDouble(String field, Iterable<Double> values) {
-		return new DoubleSetPredicate(field, values);
+		if (Iterables.size(values) == 1) {
+			return new DoublePredicate(field, Iterables.getFirst(values, null));
+		} else {
+			return new DoubleSetPredicate(field, values);
+		}
 	}
 
 	public static Expression boost(Expression expression, float boost) {

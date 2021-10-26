@@ -31,6 +31,7 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
@@ -60,7 +61,6 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 			fields = configureFieldsToLoad(fields);
 		}
 		
-		
 		final Hits<D> hits = searcher.search(Query.select(getSelect())
 				.from(getFrom())
 				.fields(fields)
@@ -69,6 +69,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 				.limit(limit())
 				.sortBy(querySortBy(context))
 				.withScores(trackScores())
+				.cached(cacheHits(context))
 				.build());
 		
 		return toCollectionResource(context, hits);
@@ -145,6 +146,15 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	 */
 	protected boolean trackScores() {
 		return false;
+	}
+	
+	/**
+	 * Subclasses may override to configure caching. By default search requests that are executed against a version URI will be cached.  
+	 * @param context - the context that can be used to determine whether caching should be enabled for this search request or not
+	 * @return whether the search should cache the resulting hits in the underlying index system or not
+	 */
+	protected boolean cacheHits(C context) {
+		return Revision.class.isAssignableFrom(getFrom()) && context.optionalService(PathWithVersion.class).isPresent();
 	}
 	
 	/**

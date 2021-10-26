@@ -47,6 +47,7 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 		if (versionResourceURI != null) {
 			context = context.inject()
 				.bind(ResourceURI.class, versionResourceURI)
+				.bind(PathWithVersion.class, branchPathWithVersion)
 				.build();
 		}
 		

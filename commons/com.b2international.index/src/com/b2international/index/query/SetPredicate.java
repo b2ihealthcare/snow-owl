@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,21 @@ package com.b2international.index.query;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 
 import com.b2international.commons.StringUtils;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 5.0
  */
 public abstract class SetPredicate<T> extends Predicate {
 	
-	private final Set<T> values;
+	private final SortedSet<T> values;
 
 	SetPredicate(String field, Iterable<T> values) {
 		super(field);
-		this.values = ImmutableSet.copyOf(values);
+		this.values = ImmutableSortedSet.copyOf(values);
 	}
 	
 	@Override
