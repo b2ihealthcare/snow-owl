@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
-
-import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.internal.eventbus.EventBus;
 
 /**
@@ -38,7 +35,7 @@ public class EventBusUtil {
 	 */
 	public static final IEventBus getBus() {
 		final EventBus bus = new EventBus();
-		LifecycleUtil.activate(bus);
+		bus.activate();
 		return bus;
 	}
 
@@ -49,10 +46,17 @@ public class EventBusUtil {
 	 */
 	public static final IEventBus getBus(String name, int numberOfWorkers) {
 		final EventBus bus = new EventBus(name, numberOfWorkers);
-		LifecycleUtil.activate(bus);
+		bus.activate();
 		return bus;
 	}
 	
+	/**
+	 * @return an {@link EventBus} with the specified description and 1 direct thread worker.
+	 */
+	public static IEventBus getDirectBus(String name) {
+		return getBus(name, 0);
+	}
+
 	/**
 	 * Sends an asynchronous message like it was a synchronous call. Waits until the response arrives, or the timeout happens.
 	 * @param bus
@@ -80,21 +84,5 @@ public class EventBusUtil {
 			e.printStackTrace();
 		}
 		return result.get();
-	}
-
-	/**
-	 * @return an {@link EventBus} with the specified description and number of workers, using a shared queue for distributing tasks
-	 */
-	public static IEventBus getWorkerBus(String name, int numberOfWorkers) {
-		final IEventBus bus = new EventBus(name, numberOfWorkers);
-		LifecycleUtil.activate(bus);
-		return bus;
-	}
-	
-	/**
-	 * @return an {@link EventBus} with the specified description and 1 direct thread worker.
-	 */
-	public static IEventBus getDirectBus(String name) {
-		return getWorkerBus(name, 0);
 	}
 }
