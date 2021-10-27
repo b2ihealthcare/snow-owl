@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,14 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Map;
-import java.util.Map.Entry;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.eclipse.net4j.util.CheckUtil;
-import org.eclipse.net4j.util.io.ExtendedDataInputStream;
-import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
-import org.eclipse.net4j.util.io.ExtendedIOUtil;
+import java.io.*;
+import java.util.Map;
 
 import com.b2international.snowowl.eventbus.IMessage;
-import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
-import com.google.common.collect.ImmutableMap;
+import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 
 /**
  * @since 3.1
@@ -38,57 +31,65 @@ public class MessageFactory {
 
 	public static final BaseMessage createMessage(String address, Object message, String tag, final Map<String, String> headers) {
 		checkAddress(address);
-		CheckUtil.checkArg(message, "Message should be specified, null messages are not allowed");
+		checkArgument(message != null, "Message should be specified, null messages are not allowed");
 		return new BaseMessage(address, message, tag, headers);
 	}
 	
 	public static final void checkAddress(String address) {
-		CheckUtil.checkArg(!isNullOrEmpty(address), "Address cannot be null or empty");		
+		checkArgument(!isNullOrEmpty(address), "Address cannot be null or empty");		
 	}
 
 	public static boolean isNullOrEmpty(String value) {
 		return value == null || "".equals(value);
 	}
 
-	public static void writeMessage(ExtendedDataOutputStream out, IMessage message) throws IOException {
-		CheckUtil.checkNull(message, "Message should not be null");
-		CheckUtil.checkArg(message.body() instanceof Serializable, String.format("Message body type should be subtype of Serializable on address: %s, but was %s", message.address(), message.body()));
-		out.writeString(message.address());
-		final String replyAddress = message.replyAddress() == null ? "" : message.replyAddress();
-		out.writeString(replyAddress);
-		out.writeBoolean(message.isSend());
-		out.writeBoolean(message.isSucceeded());
-		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		ExtendedDataOutputStream wrap = ExtendedDataOutputStream.wrap(stream);
-		ExtendedIOUtil.writeObject(wrap, message.body());
-		ExtendedIOUtil.writeByteArray(out, stream.toByteArray());
-		out.writeString(message.tag());
-		// write headers, first the size to know how many key-value pairs will follow
-		out.writeInt(message.headers().size());
-		for (Entry<String, String> entry : message.headers().entrySet()) {
-			out.writeString(entry.getKey());
-			out.writeString(entry.getValue());
+	public static IMessage writeMessage(IMessage message) throws IOException {
+		checkNotNull(message, "Message should not be null");
+		checkArgument(message.body() instanceof Serializable, String.format("Message body type should be subtype of Serializable on address: %s, but was %s", message.address(), message.body()));
+
+		/* 
+		 * Replace message body with an input stream; it is unlikely that someone would want to 
+		 * send a stream over a message.
+		 */
+		final Object serializedBody;
+		if (message.body() instanceof ByteArrayInputStream) {
+			serializedBody = message.body();
+		} else {
+			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				try (final ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+					oos.writeObject(message.body());
+				}
+				
+				serializedBody = new ByteArrayInputStream(baos.toByteArray());
+			}
 		}
+			
+		final BaseMessage serializedMessage = createMessage(message.address(), 
+			serializedBody, 
+			message.tag(), 
+			message.headers());
+		
+		serializedMessage.replyAddress = message.replyAddress();
+		serializedMessage.send = message.isSend();
+		serializedMessage.succeeded = message.isSucceeded();
+		
+		return serializedMessage;
 	}
 	
-	public static IMessage readMessage(ExtendedDataInputStream in, IEventBusProtocol protocol) throws IOException {
-		final String address = in.readString();
-		final String replyAddress = in.readString();
-		final boolean send = in.readBoolean();
-		final boolean succeeded = in.readBoolean();
-		final byte[] body = ExtendedIOUtil.readByteArray(in);
-		final String tag = in.readString();
-		final ImmutableMap.Builder<String, String> headers = ImmutableMap.builder();
-		final int numberOfHeaders = in.readInt();
-		for (int i = 0; i < numberOfHeaders; i++) {
-			headers.put(in.readString(), in.readString());
-		}
-		final BaseMessage message = createMessage(address, ExtendedDataInputStream.wrap(new ByteArrayInputStream(body)), tag, headers.build());
-		message.replyAddress = isNullOrEmpty(replyAddress) ? null : replyAddress;
-		message.replyProtocol = protocol;
-		message.send = send;
-		message.succeeded = succeeded;
-		return message;
+	public static IMessage readMessage(IMessage message, IEventBusNettyHandler via) throws IOException {
+		// Keep the message body in input stream form; it will be de-serialized on demand
+		final BaseMessage messageWithSource = createMessage(message.address(), 
+			message.body(), 
+			message.tag(), 
+			message.headers());
+		
+		messageWithSource.replyAddress = message.replyAddress();
+		messageWithSource.send = message.isSend();
+		messageWithSource.succeeded = message.isSucceeded();
+
+		// Indicate that the message came from a bridge, which should be used when replying
+		messageWithSource.via = via;
+		
+		return messageWithSource;
 	}
-	
 }

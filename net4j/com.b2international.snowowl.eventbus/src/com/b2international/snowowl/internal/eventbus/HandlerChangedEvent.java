@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,44 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
-import org.eclipse.net4j.util.event.Event;
-import org.eclipse.net4j.util.event.INotifier;
+import java.io.Serializable;
+import java.util.Set;
 
 /**
  * @since 3.1
  */
-public class HandlerChangedEvent extends Event {
+public class HandlerChangedEvent implements Serializable {
 
-	private static final long serialVersionUID = 4720447719398043456L;
-	private String address;
-	private boolean added;
-
-	public HandlerChangedEvent(INotifier notifier, String address, boolean added) {
-		super(notifier);
-		this.address = address;
-		this.added = added;
+	/**
+	 * Enumerates handler change event types.
+	 */
+	public enum Type {
+		/** Request two-way synchronization of event bus address books */
+		SYNC,
+		/** Indicates that a handler has been registered to the specified address(es) */
+		ADDED,
+		/** Indicates that no handlers remain for the specified address(es) */ 
+		REMOVED;
+	}
+	
+	private final Type type;
+	private final Set<String> addresses;
+	
+	public HandlerChangedEvent(final Type type, final Set<String> addresses) {
+		this.type = type;
+		this.addresses = addresses;
 	}
 
-	public String getAddress() {
-		return address;
+	public Type getType() {
+		return type;
 	}
-
-	public boolean isAdded() {
-		return added;
+	
+	public Set<String> getAddresses() {
+		return addresses;
 	}
-
+	
+	@Override
+	public String toString() {
+		return String.format("Handler %s for addresses %s", type, addresses);
+	}
 }
