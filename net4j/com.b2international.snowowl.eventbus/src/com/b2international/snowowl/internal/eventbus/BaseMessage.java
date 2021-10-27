@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,14 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
-import java.io.IOException;
-import java.io.ObjectStreamClass;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.*;
 import java.util.Collections;
 import java.util.Map;
 
-import org.eclipse.net4j.util.CheckUtil;
-import org.eclipse.net4j.util.io.ExtendedDataInputStream;
-import org.eclipse.net4j.util.io.ExtendedIOUtil;
-
 import com.b2international.snowowl.eventbus.IMessage;
-import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
+import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -43,7 +40,7 @@ import com.google.common.collect.ImmutableMap;
 	/*package*/ String replyAddress;
 	/*package*/ EventBus bus;
 	// used for message reply only
-	/*package*/ IEventBusProtocol replyProtocol;
+	/*package*/ IEventBusNettyHandler via;
 
 	/*package*/ BaseMessage(String address, Object body, String tag, final Map<String, String> headers) {
 		this(address, null, true, body, tag, headers);
@@ -66,11 +63,6 @@ import com.google.common.collect.ImmutableMap;
 	@Override
 	public String address() {
 		return address;
-	}
-
-	@Override
-	public void setAddress(String address) {
-		this.address = address;
 	}
 
 	@Override
@@ -100,26 +92,15 @@ import com.google.common.collect.ImmutableMap;
 
 	@Override
 	public <T> T body(Class<T> type, final ClassLoader classLoader) {
-		CheckUtil.checkNull(body, "Body should not be null.");
-		if (body instanceof ExtendedDataInputStream) {
+		checkNotNull(body, "Body should not be null.");
+		if (body instanceof ByteArrayInputStream) {
 			synchronized (this) {
-				if (body instanceof ExtendedDataInputStream) {
-					try {
-						Object readObject = null;
-						if (classLoader != null) {
-							readObject = ((ExtendedDataInputStream) body).readObject(new ExtendedIOUtil.ClassResolver() {
-								@Override
-								public Class<?> resolveClass(ObjectStreamClass v) throws ClassNotFoundException {
-									return Class.forName(v.getName(), true, classLoader);
-								}
-							});
-						} else {
-							readObject = ((ExtendedDataInputStream) body).readObject();
+				if (body instanceof ByteArrayInputStream) {
+					try (final ByteArrayInputStream bais = (ByteArrayInputStream) body) {
+						try (final ObjectInputStream ois = createObjectInputStream(bais, classLoader)) {
+							body = ois.readObject();
 						}
-						if (readObject != null) {
-							body = readObject;
-						}
-					} catch (IOException e) {
+					} catch (IOException | ClassNotFoundException e) {
 						e.printStackTrace();
 					}
 				}
@@ -129,6 +110,24 @@ import com.google.common.collect.ImmutableMap;
 			return type.cast(body);
 		}
 		throw new IllegalArgumentException("Could not resolve message body with class: " + type + " body: " + body);
+	}
+
+	private ObjectInputStream createObjectInputStream(InputStream in, ClassLoader classLoader) throws IOException {
+		if (classLoader == null) {
+			return new ObjectInputStream(in);
+		}
+		
+		return new ObjectInputStream(in) {
+			@Override
+			protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+				String name = desc.getName();
+		        try {
+		            return Class.forName(name, false, classLoader);
+		        } catch (ClassNotFoundException ex) {
+		        	return super.resolveClass(desc);
+		        }
+			}
+		};
 	}
 
 	@Override
@@ -159,7 +158,7 @@ import com.google.common.collect.ImmutableMap;
 
 	private void sendReply(BaseMessage reply) {
 		if (bus != null && !MessageFactory.isNullOrEmpty(reply.address)) {
-			bus.sendReply(replyProtocol, reply, null);
+			bus.sendReply(via, reply, null);
 		}
 	}
 	
@@ -167,5 +166,4 @@ import com.google.common.collect.ImmutableMap;
 	public String toString() {
 		return String.format("Address: %s, message: %s, tag: %s", address, body, tag);
 	}
-
 }
