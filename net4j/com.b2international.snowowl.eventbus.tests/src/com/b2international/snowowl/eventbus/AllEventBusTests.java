@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,18 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.b2international.snowowl.internal.eventbus.EventBusHandlerRegistrationTest;
 import com.b2international.snowowl.internal.eventbus.EventBusSendPerformanceTest;
 import com.b2international.snowowl.internal.eventbus.EventBusSendTest;
-import com.b2international.snowowl.internal.eventbus.net4j.EventBusProtocolTest;
+import com.b2international.snowowl.internal.eventbus.netty.EventBusProtocolTest;
 
 /**
  * @since 3.1
  */
 @RunWith(Suite.class)
-@SuiteClasses({ EventBusHandlerRegistrationTest.class, EventBusSendTest.class, EventBusProtocolTest.class, EventBusSendPerformanceTest.class })
+@SuiteClasses({ 
+	EventBusHandlerRegistrationTest.class, 
+	EventBusSendTest.class, 
+	EventBusProtocolTest.class, 
+	EventBusSendPerformanceTest.class, 
+})
 public class AllEventBusTests {
-
+	// Empty class body
 }

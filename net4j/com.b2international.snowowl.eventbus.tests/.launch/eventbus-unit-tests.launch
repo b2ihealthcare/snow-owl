@@ -39,6 +39,12 @@
         <setEntry value="ch.qos.logback.core@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.google.guava@default:default"/>
+        <setEntry value="io.netty.buffer@default:default"/>
+        <setEntry value="io.netty.codec@default:default"/>
+        <setEntry value="io.netty.common@default:default"/>
+        <setEntry value="io.netty.handler@default:default"/>
+        <setEntry value="io.netty.resolver@default:default"/>
+        <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy-agent@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
@@ -53,9 +59,6 @@
         <setEntry value="org.eclipse.equinox.supplement@default:default"/>
         <setEntry value="org.eclipse.equinox.transforms.hook@default:false"/>
         <setEntry value="org.eclipse.equinox.weaving.hook@default:false"/>
-        <setEntry value="org.eclipse.net4j.tcp@default:default"/>
-        <setEntry value="org.eclipse.net4j.util@default:default"/>
-        <setEntry value="org.eclipse.net4j@default:default"/>
         <setEntry value="org.eclipse.osgi@-1:true"/>
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.junit@default:default"/>
