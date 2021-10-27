@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@ import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.junit.After;
 import org.junit.Before;
 
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.util.CountDownHandler;
@@ -43,17 +41,17 @@ public class AbstractEventBusTest {
 	protected static final String REPLY_MESSAGE = "Pong";
 	
 	protected IHandler<IMessage> noopHandler = IHandler.NOOP;
-	protected IEventBus bus = new EventBus();
+	protected EventBus bus = new EventBus();
 	private int waitTime = DEFAULT_WAIT_TIME;
 	
 	@Before
 	public void before() {
-		LifecycleUtil.activate(bus);
+		bus.activate();
 	}
-
+	
 	@After
 	public void after() {
-		LifecycleUtil.deactivate(bus);
+		bus.deactivate();
 	}
 	
 	protected void wait(CountDownLatch latch) {
@@ -67,10 +65,6 @@ public class AbstractEventBusTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-	}
-	
-	public void setBus(IEventBus bus) {
-		this.bus = bus;
 	}
 	
 	public void setWaitTime(int waitTime) {

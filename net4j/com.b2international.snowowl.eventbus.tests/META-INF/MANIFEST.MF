@@ -8,4 +8,6 @@ Fragment-Host: com.b2international.snowowl.eventbus;bundle-version="3.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.junit;bundle-version="4.11.0",
  org.mockito;bundle-version="2.13.0",
- com.b2international.snowowl.test.dependencies;bundle-version="3.1.0"
+ com.b2international.snowowl.test.dependencies;bundle-version="3.1.0",
+ io.netty.handler,
+ io.netty.codec

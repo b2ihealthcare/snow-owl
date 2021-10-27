@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,9 @@ package com.b2international.snowowl.internal.eventbus;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.junit.Test;
 
-import com.b2international.snowowl.eventbus.EventBusUtil;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
-import com.b2international.snowowl.eventbus.Pipe;
+import com.b2international.snowowl.eventbus.*;
 import com.b2international.snowowl.eventbus.util.CountDownHandler;
 
 /**
@@ -32,12 +27,12 @@ import com.b2international.snowowl.eventbus.util.CountDownHandler;
  */
 public class PipeTest extends AbstractEventBusTest {
 
-	private final IEventBus target = new EventBus();
+	private final EventBus target = new EventBus();
 	
 	@Override
 	public void before() {
 		super.before();
-		LifecycleUtil.activate(target);
+		target.activate();
 	}
 	
 	@Test
@@ -74,8 +69,7 @@ public class PipeTest extends AbstractEventBusTest {
 
 	@Test
 	public void pipeToWorker() throws Exception {
-		IEventBus target = EventBusUtil.getWorkerBus("worker", 2);
-		LifecycleUtil.activate(target);
+		IEventBus target = EventBusUtil.getBus("worker", 2);
 		
 		final CountDownLatch sourceLatch = new CountDownLatch(1);
 		final CountDownLatch targetLatch = new CountDownLatch(1);
