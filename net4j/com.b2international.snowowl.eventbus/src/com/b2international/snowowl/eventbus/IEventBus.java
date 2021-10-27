@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,20 @@ import java.util.concurrent.ExecutorService;
  */
 public interface IEventBus {
 
+	/**
+	 * Address towards which handler registration and un-registration messages are
+	 * sent by the <i>local event bus</i> itself.
+	 * <p>
+	 * Handlers registered to this address can receive information about when an
+	 * address becomes "active" (by having at least one local, non-reply handler
+	 * registered to it), or when it becomes "inactive" (when the last local and
+	 * non-reply handler disappears).
+	 * <p>
+	 * (To prevent a recursive event storm, this address appears in such
+	 * notifications.)
+	 */
+	String HANDLERS = "handlers";
+	
 	/**
 	 * Sends the message over the event bus to the specified address.
 	 * 
@@ -88,9 +102,12 @@ public interface IEventBus {
 	IEventBus publish(String address, Object message, String tag, Map<String, String> headers);
 
 	/**
-	 * Receives the messages directly on this event bus bypassing all remote
-	 * node. NOTE: DO NOT USE THIS METHOD, NECESSARY FOR THE PROTOCOL BUT NOT
-	 * FOR CLIENTS.
+	 * Notifies the event bus that a message has been received from a remote source.
+	 * To avoid back-and-forth message passing between peers, the event bus will
+	 * bypass all listeners related to remote connections when handling this
+	 * message.
+	 * <p>
+	 * NOTE: DO NOT USE THIS METHOD, NECESSARY FOR THE PROTOCOL BUT NOT FOR CLIENTS.
 	 * 
 	 * @param message
 	 * @return
@@ -114,7 +131,7 @@ public interface IEventBus {
 	 * @return this {@link IEventBus} for chaining
 	 */
 	IEventBus unregisterHandler(String address, IHandler<IMessage> handler);
-	
+
 	/**
 	 * Returns all currently known locally registered addresses.
 	 * @return
@@ -155,5 +172,4 @@ public interface IEventBus {
 	 * @return the amount of succeeded messages that are completed by tag.
 	 */
 	long getSucceededMessages(String tag);
-
 }

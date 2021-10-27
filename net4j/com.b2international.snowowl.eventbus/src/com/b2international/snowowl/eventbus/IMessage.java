@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public interface IMessage {
 	 * @return
 	 */
 	String replyAddress();
-
+	
 	/**
 	 * Returns the address this message is belongs to.
 	 *
@@ -90,33 +90,26 @@ public interface IMessage {
 	boolean isSend();
 
 	/**
-	 * Replies with the given message.
+	 * Replies with the given response.
 	 *
-	 * @param message
+	 * @param response
 	 */
-	void reply(Object message);
+	void reply(Object response);
 	
 	/**
-	 * Replies with the given message and sets the given headers as response headers
+	 * Replies with the given response and sets the given headers as response headers
 	 *
-	 * @param message
+	 * @param response
 	 * @param headers
 	 */
-	void reply(Object message, Map<String, String> headers);
-
+	void reply(Object response, Map<String, String> headers);
+	
 	/**
-	 * Returns a failure message to the replyAddress.
+	 * Returns a failure response to the reply address.
 	 *
 	 * @param failure
 	 */
 	void fail(Object failure);
-
-	/**
-	 * Sets the address for this message;
-	 *
-	 * @param address
-	 */
-	void setAddress(String address);
 	
 	/**
 	 * @return the tag associated with this message.
