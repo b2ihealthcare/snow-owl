@@ -1,5 +1,7 @@
 package scripts
 
+import java.util.concurrent.TimeUnit
+
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
 import com.b2international.index.query.Expressions.ExpressionBuilder
@@ -10,7 +12,6 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.core.ecl.EclExpression
 import com.b2international.snowowl.snomed.core.tree.Trees
@@ -34,9 +35,7 @@ Set<ComponentIdentifier> potentialIssues = Sets.newHashSet();
 final String domainRefset = Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
 
 def getApplicableConcepts = { String conceptSetExpression ->
-	def expression = Expressions.builder()
-		.filter(EclExpression.of(conceptSetExpression, Trees.INFERRED_FORM).resolveToExpression(ctx).getSync())
-		.build();
+	def expression = EclExpression.of(conceptSetExpression, Trees.INFERRED_FORM).resolveToExpression(ctx).getSync(1, TimeUnit.MINUTES);
 	
 	Query<String> conceptSetQuery = Query.select(String.class)
 		.from(SnomedConceptDocument.class)
