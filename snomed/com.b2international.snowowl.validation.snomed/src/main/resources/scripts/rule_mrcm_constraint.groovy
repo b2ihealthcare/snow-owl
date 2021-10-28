@@ -45,7 +45,7 @@ final Query<String[]> mrcmRangeMemberQuery = Query.select(String[].class)
 	.limit(Integer.MAX_VALUE)
 	.build();
 
-searcher.search(mrcmRangeMemberQuery).each {  hit ->
+searcher.search(mrcmRangeMemberQuery).each { hit ->
 	String contentType = hit[0];
 	String typeId = hit[1];
 	String rangeConstraint = hit[2];
@@ -141,15 +141,23 @@ for (String typeId : allowedRanges.keySet()) {
 	
 	Set<String> conceptIds = Sets.newHashSet();
 	Set<String> ancestorIds = Sets.newHashSet();
+	Set<String> parentIds = Sets.newHashSet();
+	Set<String> refsetIds = Sets.newHashSet();
 	
 	for (String clause : clauses) {
-		if (clause.contains("<<")) {
+		if (clause.startsWith("<<")) {
 			String ancestorId = clause.replaceAll("<<", "").strip();
 			ancestorIds.add(ancestorId);
 			conceptIds.add(ancestorId);
-		} else if (clause.contains("<")) {
+		} else if (clause.startsWith("<!")) {
+			String parentId = clause.replaceAll("<!", "").strip();
+			parentIds.add(parentId);
+		} else if (clause.startsWith("<")) {
 			String ancestorId = clause.replaceAll("<", "").strip();
 			ancestorIds.add(ancestorId);
+		} else if (clause.startsWith("^")) {
+			String refsetId = clause.replaceAll("^", "").strip();
+			refsetIds.add(refsetId);
 		} else {
 			conceptIds.add(clause.strip());
 		}
@@ -166,7 +174,15 @@ for (String typeId : allowedRanges.keySet()) {
 			.mustNot(SnomedConceptDocument.Expressions.ancestors(ancestorIds))
 			.mustNot(SnomedConceptDocument.Expressions.parents(ancestorIds));
 	}
-		
+	
+	if (!parentIds.isEmpty()) {
+		destinationQueryBuilder.mustNot(SnomedConceptDocument.Expressions.parents(parentIds));
+	}
+	
+	if (!refsetIds.isEmpty()) {
+		destinationQueryBuilder.mustNot(SnomedConceptDocument.Expressions.activeMemberOf(refsetIds));
+	}
+	
 	final Query<String> destinationQuery = Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
