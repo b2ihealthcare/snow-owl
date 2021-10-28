@@ -25,6 +25,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.google.common.collect.HashBiMap;
 
 /**
  * @since 8.0.0
@@ -254,5 +256,33 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 				.collect(Collectors.toList());
 		
 		assertThat(hits).containsExactly(conceptId3, conceptId2, conceptId1);
+	}
+	
+	@Test
+	public void searchByHierarchy() throws Exception {
+		final Map<String, String> roleToId = createConceptHierarchy(branchPath);
+		
+		assertHierarchyContains("statedParent", "parent", roleToId, Set.of("child1", "child2"));
+		assertHierarchyContains("statedAncestor", "parent", roleToId, Set.of("child1", "child2", "descendant1", "descendant2", "descendant3"));
+		assertHierarchyContains("parent", "parent", roleToId, Set.of("child1"));
+		assertHierarchyContains("ancestor", "parent", roleToId, Set.of("child1", "descendant1"));
+	}
+
+	private void assertHierarchyContains(String hierarchyField, String parentOrAncestorRole, Map<String, String> roleToId, Set<String> expectedRoles) {
+		Map<String, String> idToRole = HashBiMap.create(roleToId).inverse();
+		
+		List<String> hits = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(hierarchyField, roleToId.get(parentOrAncestorRole)))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.extract().as(SnomedConcepts.class)
+			.getItems()
+			.stream()
+			.map(concept -> idToRole.getOrDefault(concept.getId(), concept.getId()))
+			.collect(Collectors.toList());
+		
+		assertThat(hits).containsExactlyInAnyOrderElementsOf(expectedRoles);
 	}
 }
