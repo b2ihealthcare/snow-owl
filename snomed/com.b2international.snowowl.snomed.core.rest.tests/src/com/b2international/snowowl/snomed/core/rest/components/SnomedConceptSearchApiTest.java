@@ -25,6 +25,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -254,5 +255,79 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 				.collect(Collectors.toList());
 		
 		assertThat(hits).containsExactly(conceptId3, conceptId2, conceptId1);
+	}
+	
+	@Test
+	public void searchByHierarchy() throws Exception {
+		/*
+		 * SNOMED CT Concept
+		 * |
+		 * +-> parent 
+		 * |   |
+		 * |   +-> child1 -> descendant1
+		 * |   |
+		 * |   +-> child2 -> descendant2 -> descendant3
+		 * |
+		 * +-> unrelated sibling 
+		 */
+		String parentId = createNewConcept(branchPath);
+		String unrelatedSiblingId = createNewConcept(branchPath);
+		
+		String child1Id = createNewConcept(branchPath, parentId);
+		String descendant1Id = createNewConcept(branchPath, child1Id);
+		
+		// XXX: Concepts below will also have a stated IS A to root, but that does not matter
+		String child2Id = createNewConcept(branchPath, createNewConcept(branchPath));
+		createNewRefSetMember(branchPath, child2Id, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", child2Id, parentId))
+		);
+		
+		String descendant2Id = createNewConcept(branchPath, createNewConcept(branchPath));
+		createNewRefSetMember(branchPath, descendant2Id, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", descendant2Id, child2Id))
+		);
+		
+		// A descendant expressed with a stated relationship "below" some OWL axioms
+		String descendant3Id = createNewConcept(branchPath, descendant2Id);
+		
+		// Inferred relationships are added to child1 and descendant1
+		createNewRelationship(branchPath, child1Id, Concepts.IS_A, parentId, Concepts.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, descendant1Id, Concepts.IS_A, child1Id, Concepts.INFERRED_RELATIONSHIP);
+
+		final Map<String, String> idToVariable = Map.of(
+			parentId, "parent",
+			unrelatedSiblingId, "unrelatedSibling",
+			child1Id, "child1",
+			child2Id, "child2",
+			descendant1Id, "descendant1",
+			descendant2Id, "descendant2",
+			descendant3Id, "descendant3");
+		
+		assertHierarchyContains("statedParent", parentId, idToVariable, Set.of(child1Id, child2Id));
+		assertHierarchyContains("statedAncestor", parentId, idToVariable, Set.of(child1Id, child2Id, descendant1Id, descendant2Id, descendant3Id));
+		assertHierarchyContains("parent", parentId, idToVariable, Set.of(child1Id));
+		assertHierarchyContains("ancestor", parentId, idToVariable, Set.of(child1Id, descendant1Id));
+	}
+
+	private void assertHierarchyContains(String hierarchyField, String parentOrAncestorId, Map<String, String> idToVariable, 
+			Set<String> expectedIds) {
+		
+		List<String> hits = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(hierarchyField, parentOrAncestorId))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.extract().as(SnomedConcepts.class)
+			.getItems()
+			.stream()
+			.map(concept -> idToVariable.getOrDefault(concept.getId(), concept.getId()))
+			.collect(Collectors.toList());
+		
+		Set<String> expectedNames = expectedIds.stream()
+			.map(id -> idToVariable.getOrDefault(id, id))
+			.collect(Collectors.toSet());
+		
+		assertThat(hits).containsExactlyInAnyOrderElementsOf(expectedNames);
 	}
 }
