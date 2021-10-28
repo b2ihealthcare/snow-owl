@@ -36,6 +36,7 @@ import static org.junit.Assert.assertTrue;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -66,6 +67,7 @@ import com.b2international.snowowl.snomed.core.rest.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -625,7 +627,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void testConceptSearchRequestWithInboundRelationshipExpand() {
+	public void searchConceptWithInboundRelationshipExpand() {
 		final String conceptId = createNewConcept(branchPath);
 		
 		final String inboundRelationshipId = createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
@@ -646,7 +648,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void testConceptSearchRequestWithInboundRelationshipExpandWithLimit() {
+	public void searchConceptWithInboundRelationshipExpandWithLimit() {
 		final String conceptId = createNewConcept(branchPath);
 		
 		createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
@@ -666,7 +668,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void testConceptSearchRequestWithInboundRelationshipExpandWithTypeFilter() {
+	public void searchConceptWithInboundRelationshipExpandWithTypeFilter() {
 		final String conceptId = createNewConcept(branchPath);
 		
 		createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.HAS_DOSE_FORM, conceptId);
@@ -690,7 +692,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void testConceptSearchRequestWithInboundRelationshipExpandWithSourceFilter() {
+	public void searchConceptWithInboundRelationshipExpandWithSourceFilter() {
 		final String conceptId = createNewConcept(branchPath);
 		
 		createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
@@ -714,7 +716,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void testConceptGetRequestWithInboundRelationshipExpand() {
+	public void getConceptWithInboundRelationshipExpand() {
 		final String conceptId = createNewConcept(branchPath);
 		
 		final String inboundRelationshipId = createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
@@ -729,6 +731,36 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		 assertEquals(1, conceptWithInboundRelationship.getInboundRelationships().getItems().size());
 		 final SnomedRelationship expandedInboundRelationship = Iterables.getOnlyElement(conceptWithInboundRelationship.getInboundRelationships());
 		 assertEquals(inboundRelationshipId, expandedInboundRelationship.getId());
+	}
+	
+	@Test
+	public void getConceptWithHierarchyExpand() {
+		final Map<String, String> roleToId = createConceptHierarchy(branchPath);
+
+		assertExpandedHierarchyContains(SnomedConcept.Expand.STATED_DESCENDANTS, true, SnomedConcept::getStatedDescendants, "parent", roleToId, 
+			Set.of("child1", "child2"));
+		assertExpandedHierarchyContains(SnomedConcept.Expand.STATED_DESCENDANTS, false, SnomedConcept::getStatedDescendants, "parent", roleToId, 
+			Set.of("child1", "child2", "descendant1", "descendant2", "descendant3"));
+		assertExpandedHierarchyContains(SnomedConcept.Expand.DESCENDANTS, true, SnomedConcept::getDescendants, "parent", roleToId, 
+			Set.of("child1"));
+		assertExpandedHierarchyContains(SnomedConcept.Expand.DESCENDANTS, false, SnomedConcept::getDescendants, "parent", roleToId, 
+			Set.of("child1", "descendant1"));
+	}
+
+	private void assertExpandedHierarchyContains(String hierarchyField, boolean direct,
+		Function<SnomedConcept, SnomedConcepts> hierarchyExtractFunction,
+		String parentOrAncestorRole, 
+		Map<String, String> roleToId, 
+		Set<String> expectedRoles) {
+		
+		final Map<String, String> idToRole = HashBiMap.create(roleToId).inverse();
+		final SnomedConcept conceptWithHierarchy = getConcept(roleToId.get(parentOrAncestorRole), String.format("%s(direct:%s)", hierarchyField, direct));
+		final List<String> hits = hierarchyExtractFunction.apply(conceptWithHierarchy)
+			.stream()
+			.map(concept -> idToRole.getOrDefault(concept.getId(), concept.getId()))
+			.collect(Collectors.toList());
+		
+		assertThat(hits).containsExactlyInAnyOrderElementsOf(expectedRoles);
 	}
 	
 	@Test
