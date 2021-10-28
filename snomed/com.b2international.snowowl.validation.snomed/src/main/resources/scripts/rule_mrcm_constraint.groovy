@@ -146,6 +146,7 @@ for (String typeId : allowedRanges.keySet()) {
 		if (clause.contains("<<")) {
 			String ancestorId = clause.replaceAll("<<", "").strip();
 			ancestorIds.add(ancestorId);
+			conceptIds.add(ancestorId);
 		} else if (clause.contains("<")) {
 			String ancestorId = clause.replaceAll("<", "").strip();
 			ancestorIds.add(ancestorId);
@@ -153,6 +154,8 @@ for (String typeId : allowedRanges.keySet()) {
 			conceptIds.add(clause.strip());
 		}
 	}
+	
+	destinationIds.removeAll(conceptIds);
 	
 	ExpressionBuilder destinationQueryBuilder = Expressions.builder()
 		.filter(SnomedConceptDocument.Expressions.active())
@@ -163,7 +166,7 @@ for (String typeId : allowedRanges.keySet()) {
 			.mustNot(SnomedConceptDocument.Expressions.ancestors(ancestorIds))
 			.mustNot(SnomedConceptDocument.Expressions.parents(ancestorIds));
 	}
-	
+		
 	final Query<String> destinationQuery = Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
@@ -173,14 +176,12 @@ for (String typeId : allowedRanges.keySet()) {
 	
 	Set<String> incorrectDestinationIds = Sets.newHashSet();
 	searcher.stream(destinationQuery).each { hits -> hits.forEach({ String id -> incorrectDestinationIds.add(id)}) }
-	incorrectDestinationIds.removeAll(conceptIds);
-	incorrectDestinationIds.removeAll(ancestorIds);
-	
+		
 	if (incorrectDestinationIds.isEmpty()) {
 		continue;
 	}
 	
-	//Find OWL axiom members with relationships that have destinations out of the allowed range
+	//Find relationships that have destinations out of the allowed range
 	ExpressionBuilder relationshipQueryBuilder = Expressions.builder()
 		.filter(SnomedRelationshipIndexEntry.Expressions.active())
 		.filter(SnomedRelationshipIndexEntry.Expressions.typeId(typeId))
