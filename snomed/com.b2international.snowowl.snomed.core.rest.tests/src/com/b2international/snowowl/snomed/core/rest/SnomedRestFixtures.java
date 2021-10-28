@@ -733,6 +733,52 @@ public abstract class SnomedRestFixtures {
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}
 	}
+	
+	public static Map<String, String> createConceptHierarchy(IBranchPath branchPath) {
+		/*
+		 * SNOMED CT Concept
+		 * |
+		 * +-> parent 
+		 * |   |
+		 * |   +-> child1 -> descendant1
+		 * |   |
+		 * |   +-> child2 -> descendant2 -> descendant3
+		 * |
+		 * +-> unrelated sibling 
+		 */
+		String parentId = createNewConcept(branchPath);
+		String unrelatedSiblingId = createNewConcept(branchPath);
+		
+		String child1Id = createNewConcept(branchPath, parentId);
+		String descendant1Id = createNewConcept(branchPath, child1Id);
+		
+		// XXX: Concepts below will also have a stated IS A to root, but that does not matter
+		String child2Id = createNewConcept(branchPath, createNewConcept(branchPath));
+		createNewRefSetMember(branchPath, child2Id, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", child2Id, parentId))
+		);
+		
+		String descendant2Id = createNewConcept(branchPath, createNewConcept(branchPath));
+		createNewRefSetMember(branchPath, descendant2Id, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", descendant2Id, child2Id))
+		);
+		
+		// A descendant expressed with a stated relationship "below" some OWL axioms
+		String descendant3Id = createNewConcept(branchPath, descendant2Id);
+		
+		// Inferred relationships are added to child1 and descendant1
+		createNewRelationship(branchPath, child1Id, Concepts.IS_A, parentId, Concepts.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, descendant1Id, Concepts.IS_A, child1Id, Concepts.INFERRED_RELATIONSHIP);
+
+		return Map.of(
+			"parent", parentId,
+			"unrelatedSibling", unrelatedSiblingId, 
+			"child1", child1Id, 
+			"child2", child2Id, 
+			"descendant1", descendant1Id, 
+			"descendant2", descendant2Id, 
+			"descendant3", descendant3Id);		
+	}
 
 	private static SnomedCoreConfiguration getSnomedCoreConfiguration() {
 		return ApplicationContext.getServiceForClass(SnowOwlConfiguration.class).getModuleConfig(SnomedCoreConfiguration.class);
