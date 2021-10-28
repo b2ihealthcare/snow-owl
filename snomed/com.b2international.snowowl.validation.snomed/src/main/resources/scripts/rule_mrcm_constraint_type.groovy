@@ -250,9 +250,13 @@ def searchRelationshipsWithUnregulatedTypeIds =  {
 	searcher.stream(owlMemberQuery).forEach({ hits -> });
 }
 
+//On the first run find potential MRCM type violations
 searchRelationships(false);
+//Collect the relationship/owl axiom member ids of the potential violations
 reportedRelationshipIds = issues.collect{ ComponentIdentifier identifier -> identifier.getComponentId()} as Set
+//Rerun validation against these ids to double check if a different rules allows for these relationships (useful for concepts with ancestors in multiple hierarchies) 
 searchRelationships(true);
+//Find all concepts whith type ids not accounted for in MRCM rules, irrespective of what domain they are in
 searchRelationshipsWithUnregulatedTypeIds();
 
 return issues as List;
