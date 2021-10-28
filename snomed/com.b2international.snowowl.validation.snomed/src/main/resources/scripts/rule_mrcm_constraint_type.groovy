@@ -32,7 +32,6 @@ Set<ComponentIdentifier> issues = Sets.newHashSet();
 Set<ComponentIdentifier> potentialIssues = Sets.newHashSet();
 
 final String domainRefset = Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
-final String attributeRefset = Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL;
 
 def getApplicableConcepts = { String conceptSetExpression ->
 	def expression = Expressions.builder()
