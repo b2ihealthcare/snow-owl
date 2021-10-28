@@ -28,7 +28,6 @@ import com.google.common.collect.Sets
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 
-final String attributeRangeRefset = Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL;
 final String allPrecoordinatedContent = "723594008";
 
 Map<String, String> allowedRanges = Maps.newHashMap();
