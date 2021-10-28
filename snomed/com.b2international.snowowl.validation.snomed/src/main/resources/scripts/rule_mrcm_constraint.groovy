@@ -79,8 +79,8 @@ for (String typeId : allowedRanges.keySet()) {
 		try {
 			eclParser.parse(clause);
 		} catch (Exception e) {
-			ctx.log("Could not parse clause ${clause}");
-			ctx.log(e.getMessage());
+			ctx.log().warn("Could not parse clause ${clause}");
+			ctx.log().warn(e.getMessage());
 			continue;
 		}
 		
