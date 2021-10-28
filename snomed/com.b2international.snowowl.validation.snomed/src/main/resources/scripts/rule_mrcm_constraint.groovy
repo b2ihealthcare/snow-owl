@@ -31,7 +31,6 @@ Set<ComponentIdentifier> issues = Sets.newHashSet();
 final String allPrecoordinatedContent = "723594008";
 
 Map<String, String> allowedRanges = Maps.newHashMap();
-Map<String, String> contentTypes = Maps.newHashMap();
 
 final ExpressionBuilder mrcmRangeMemberQueryBuilder = Expressions.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
@@ -52,16 +51,13 @@ searcher.search(mrcmRangeMemberQuery).each {  hit ->
 	String rangeConstraint = hit[2];
 	
 	if (allowedRanges.containsKey(typeId)) {
-		final String previousContentType = contentTypes.get(typeId);
 		if (allPrecoordinatedContent.equals(contentType)) {
 			allowedRanges.put(typeId, rangeConstraint);
-			contentTypes.put(typeId, contentType);
 		} else {
 			//Do nothing, the already mapped member should be chosen over this
 		}
 	} else {
 		allowedRanges.put(typeId, rangeConstraint);
-		contentTypes.put(typeId, contentType);
 	}
 }
 
