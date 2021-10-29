@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.Assertions;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,6 +52,10 @@ import com.google.common.collect.Lists;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
+	
+	private static final String PRECOORDINATED_CONTENT = "723594008";
+	private static final String POSTCOORDINATED_CONTENT = "723595009";
+	private static final String ASSOCIATED_PROCEDURE = "363589002";
 	
 	@Test
 	public void affectedComponentURI() throws Exception {
@@ -1204,27 +1209,52 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				ComponentIdentifier.of(SnomedDescription.TYPE, pt3.getId()));
 	}
 	
-	//Test turned off until migration to new MRCM model
-	/*
 	@Test
 	public void rule_mrcm_constraint() throws Exception {
 		final String ruleId = "rule_mrcm_constraint";
 		indexRule(ruleId);
 		
-		//Create MRCM rule
-		final HierarchyDefinitionFragment conceptSetDefinition = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate = relationshipPredicate(predicateType, predicateRange);
+		//Create 1st MRCM rule
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember1 = member(Concepts.FINDING_SITE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.rangeConstraint(String.format("<<%s", Concepts.PHYSICAL_OBJECT))
+				.contentTypeId(PRECOORDINATED_CONTENT)
+				.build();
 		
-		final SnomedConstraintDocument attributeConstraint = attributeConstraint(conceptSetDefinition, conceptModelPredicate);
-		indexRevision(MAIN, attributeConstraint);
+		//Create 2nd MRCM rule (6b6e3ed0-383e-4950-b7e8-ae11277663b9)
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember2 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.rangeConstraint("<< 71388002 |Procedure (procedure)|")
+				.contentTypeId(PRECOORDINATED_CONTENT)
+				.build();
+		
+		//Create 3rd MRCM rule (ae16bb19-1389-403c-888d-ea81c9c13d4f)
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember3 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.rangeConstraint("<< 363787002 |Observable entity (observable entity)| OR << 71388002 |Procedure (procedure)|")
+				.contentTypeId(POSTCOORDINATED_CONTENT)
+				.build();
+		
+		//Create concrete value MRCM rule
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember4 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.rangeConstraint("int(>#0)")
+				.contentTypeId(POSTCOORDINATED_CONTENT)
+				.build();
 		
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
 				.relationshipGroup(1).build();
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
 				.relationshipGroup(1).build();
 		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.relationshipGroup(2).build();
+		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.ROOT_CONCEPT, ASSOCIATED_PROCEDURE, OBSERVABLE_ENTITY)
+				.relationshipGroup(2).build();
+		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.ROOT_CONCEPT, ASSOCIATED_PROCEDURE, PROCEDURE)
 				.relationshipGroup(2).build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
@@ -1245,39 +1275,46 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
-		indexRevision(MAIN, relationship1, relationship2, relationship3, axiomMember1, axiomMember2, axiomMember3);
+		indexRevision(MAIN, mrcmRangeMember1, mrcmRangeMember2, mrcmRangeMember3, mrcmRangeMember4,
+				relationship1, relationship2, relationship3, relationship4, relationship5,
+				axiomMember1, axiomMember2, axiomMember3);
 		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
-				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()));
+				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship4.getId()),
+				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()),
+				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember3.getId()));
 	}
+	
 	
 	@Test
 	public void rule_mrcm_constraint_type() throws Exception {
 		final String ruleId = "rule_mrcm_constraint_type";
 		indexRule(ruleId);
 		
-		//First mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition1 = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType1 = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange1 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate1 = relationshipPredicate(predicateType1, predicateRange1);
-		final SnomedConstraintDocument attributeConstraint1 = attributeConstraint(conceptSetDefinition1, conceptModelPredicate1);
+		//First MRCM rule
+		final SnomedRefSetMemberIndexEntry mrcmDomainMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
+				.domainConstraint(String.format("<<%s", Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.build();
 		
-		//Second mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition2 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType2 = hierarchyConceptSetDefinition(Concepts.HAS_ACTIVE_INGREDIENT, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange2 = hierarchyConceptSetDefinition(Concepts.TEXT_DEFINITION, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate2 = relationshipPredicate(predicateType2, predicateRange2);
-		final SnomedConstraintDocument attributeConstraint2 = attributeConstraint(conceptSetDefinition2, conceptModelPredicate2);
+		final SnomedRefSetMemberIndexEntry mrcmAttributeDomainMember1 = member(Concepts.FINDING_SITE, Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+				.domainId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.build();
 		
-		//Third mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition3 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateType3 = hierarchyConceptSetDefinition(Concepts.HAS_ACTIVE_INGREDIENT, HierarchyInclusionType.SELF);
-		final ConcreteDomainPredicateFragment concreteDomainPredicate3 = concreteDomainPredicate(predicateType3, DataType.INTEGER);
-		final SnomedConstraintDocument attributeConstraint3 = attributeConstraint(conceptSetDefinition3, concreteDomainPredicate3);
+		//Second MRCM rule
+		final SnomedRefSetMemberIndexEntry mrcmDomainMember2 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
+				.domainConstraint(String.format("<<%s", Concepts.PHYSICAL_OBJECT))
+				.build();
 		
+		final SnomedRefSetMemberIndexEntry mrcmAttributeDomainMember2 = member(Concepts.HAS_ACTIVE_INGREDIENT, Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+				.domainId(Concepts.PHYSICAL_OBJECT)
+				.build();
+				
 		//Relationships
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.IS_A, Concepts.CONCEPT_MODEL_ATTRIBUTE)
 				.relationshipGroup(1).build();
@@ -1285,7 +1322,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
 				.relationshipGroup(1).build();
 		
-		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.TEXT_DEFINITION, Concepts.PHYSICAL_OBJECT)
 				.relationshipGroup(2).build();
 		
 		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, Concepts.TEXT_DEFINITION)
@@ -1305,19 +1342,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		
-		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.TEXT_DEFINITION, Concepts.REFSET_OWL_AXIOM)
+		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
 				.build();
 		
-		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
+		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		
-		indexRevision(MAIN, attributeConstraint1, attributeConstraint2, attributeConstraint3,
+		indexRevision(MAIN, mrcmDomainMember1, mrcmAttributeDomainMember1, mrcmDomainMember2, mrcmAttributeDomainMember2,
 			relationship1, relationship2, relationship3, relationship4, relationship5, relationship6, relationship7, relationship8,
 			axiomMember1, axiomMember2,	axiomMember3);
 		
@@ -1339,7 +1376,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship6.getId())
 			);
 	}
-	*/
 	
 	private SnomedRefSetMemberIndexEntry createLanguageRefsetMember(SnomedDescriptionIndexEntry description) {
 		return member(description.getId(), Concepts.REFSET_LANGUAGE_TYPE_ES)
