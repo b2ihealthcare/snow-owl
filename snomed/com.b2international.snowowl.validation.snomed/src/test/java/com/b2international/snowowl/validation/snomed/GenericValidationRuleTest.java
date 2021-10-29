@@ -53,6 +53,10 @@ import com.google.common.collect.Lists;
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
+	private static final String PRECOORDINATED_CONTENT = "723594008";
+	private static final String POSTCOORDINATED_CONTENT = "723595009";
+	private static final String ASSOCIATED_PROCEDURE = "363589002";
+	
 	@Test
 	public void affectedComponentURI() throws Exception {
 		final String ruleId = "45a";
@@ -1210,19 +1214,47 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final String ruleId = "rule_mrcm_constraint";
 		indexRule(ruleId);
 		
-		//Create MRCM rule
-		final SnomedRefSetMemberIndexEntry mrcmRangeMember = member(Concepts.FINDING_SITE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+		//Create 1st MRCM rule
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember1 = member(Concepts.FINDING_SITE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
 				.rangeConstraint(String.format("<<%s", Concepts.PHYSICAL_OBJECT))
-				.contentTypeId("723594008")
+				.contentTypeId(PRECOORDINATED_CONTENT)
 				.build();
-				
+		
+		//Create 2nd MRCM rule (6b6e3ed0-383e-4950-b7e8-ae11277663b9)
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember2 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.rangeConstraint("<< 71388002 |Procedure (procedure)|")
+				.contentTypeId(PRECOORDINATED_CONTENT)
+				.build();
+		
+		//Create 3rd MRCM rule (ae16bb19-1389-403c-888d-ea81c9c13d4f)
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember3 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.rangeConstraint("<< 363787002 |Observable entity (observable entity)| OR << 71388002 |Procedure (procedure)|")
+				.contentTypeId(POSTCOORDINATED_CONTENT)
+				.build();
+		
+		//Create concrete value MRCM rule
+		final SnomedRefSetMemberIndexEntry mrcmRangeMember4 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.rangeConstraint("int(>#0)")
+				.contentTypeId(POSTCOORDINATED_CONTENT)
+				.build();
+		
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
 				.relationshipGroup(1).build();
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
 				.relationshipGroup(1).build();
 		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.relationshipGroup(2).build();
+		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.ROOT_CONCEPT, ASSOCIATED_PROCEDURE, OBSERVABLE_ENTITY)
+				.relationshipGroup(2).build();
+		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.ROOT_CONCEPT, ASSOCIATED_PROCEDURE, PROCEDURE)
 				.relationshipGroup(2).build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
@@ -1243,11 +1275,14 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
-		indexRevision(MAIN, mrcmRangeMember, relationship1, relationship2, relationship3, axiomMember1, axiomMember2, axiomMember3);
+		indexRevision(MAIN, mrcmRangeMember1, mrcmRangeMember2, mrcmRangeMember3, mrcmRangeMember4,
+				relationship1, relationship2, relationship3, relationship4, relationship5,
+				axiomMember1, axiomMember2, axiomMember3);
 		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship4.getId()),
 				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()),
 				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember3.getId()));
 	}
