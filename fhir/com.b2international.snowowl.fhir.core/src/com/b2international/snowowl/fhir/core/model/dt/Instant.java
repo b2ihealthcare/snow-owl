@@ -50,8 +50,7 @@ public class Instant extends Element {
 		this(null, null, FhirDates.parseDate(instant).toInstant());
 	}
 	
-	@SuppressWarnings("rawtypes")
-	Instant(String id, List<Extension> extensions, java.time.Instant instant) {
+	Instant(String id, List<Extension<?>> extensions, java.time.Instant instant) {
 		super(id, extensions);
 		this.instant = instant;
 	}

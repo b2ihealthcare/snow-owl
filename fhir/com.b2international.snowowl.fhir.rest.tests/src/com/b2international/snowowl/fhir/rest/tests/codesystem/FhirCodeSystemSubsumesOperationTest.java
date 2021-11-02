@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult.SubsumptionType;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * CodeSystem $subsumes operation REST end-point test cases
@@ -41,7 +40,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("codeA", ORGANISM_TOP_LEVEL)
 			.queryParam("codeB", BACTERIA)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
+			.queryParam("system", SNOMEDCT_URL)
 			.when().get(CODESYSTEM_SUBSUMES)
 			.then().assertThat()
 			.statusCode(200)
@@ -54,7 +53,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("codeA", BACTERIA)
 			.queryParam("codeB", ORGANISM_TOP_LEVEL)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
+			.queryParam("system", SNOMEDCT_URL)
 			.when().get(CODESYSTEM_SUBSUMES)
 			.then().assertThat()
 			.statusCode(200)
@@ -67,7 +66,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("codeA", BACTERIA)
 			.queryParam("codeB", PROCEDURE)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
+			.queryParam("system", SNOMEDCT_URL)
 			.when().get(CODESYSTEM_SUBSUMES)
 			.then().assertThat()
 			.statusCode(200)
@@ -80,7 +79,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("codeA", BACTERIA)
 			.queryParam("codeB", BACTERIA)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
+			.queryParam("system", SNOMEDCT_URL)
 			.when().get(CODESYSTEM_SUBSUMES)
 			.then().assertThat()
 			.statusCode(200)

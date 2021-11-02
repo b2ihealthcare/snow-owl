@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = Quantity.Builder.class)
 public class Quantity extends BaseQuantity {
 	
-	Quantity(String id, List<Extension> extensions, Double value, Code comparator, String unit, Uri system, Code code) {
+	Quantity(String id, List<Extension<?>> extensions, Double value, Code comparator, String unit, Uri system, Code code) {
 		super(id, extensions, value, comparator, unit, system, code);
 	}
 	

@@ -62,6 +62,9 @@ public class StructureDefinition extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
 	
+	@JsonProperty
+	private String copyright;
+	
 	@Valid
 	@Summary
 	@JsonProperty("keyword")
@@ -128,15 +131,32 @@ public class StructureDefinition extends MetadataResource {
 	@JsonProperty
 	private final StructureView differential;
 	
-	@SuppressWarnings("rawtypes")
-	public StructureDefinition(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			String version, String name, String title, Code status, 
-			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description, 
-			Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose, String copyright, String toolingId,
-			
+	public StructureDefinition(
+			// MetadataResource properties
+			final Id id,
+			final Meta meta,
+			final Uri implicitRules,
+			final Code language,
+			final Narrative text,
+			final Uri url,
+			final String version,
+			final String name,
+			final String title,
+			final Code status,
+			final Boolean experimental,
+			final Date date,
+			final String publisher,
+			final Collection<ContactDetail> contacts,
+			final String description,
+			final Collection<UsageContext<?>> usageContexts,
+			final Collection<CodeableConcept> jurisdictions,
+			final String purpose,
+			final String toolingId,
+
 			final String resourceType,
 			final Collection<Identifier> identifiers,
-			Collection<Coding> keywords,
+			final String copyright,
+			final Collection<Coding> keywords,
 			final Id fhirVersion,
 			final Collection<Mapping> mappings,
 			final Code kind,
@@ -149,12 +169,30 @@ public class StructureDefinition extends MetadataResource {
 			final Code derivation,
 			final StructureView snapshot,
 			final StructureView differential) {
-		
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
-		
+
+		super(id,
+			meta,
+			implicitRules,
+			language,
+			text,
+			url,
+			version,
+			name,
+			title,
+			status,
+			experimental,
+			date,
+			publisher,
+			contacts,
+			description,
+			usageContexts,
+			jurisdictions,
+			purpose,
+			toolingId);
+
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.keywords = keywords;
 		this.fhirVersion = fhirVersion;
 		this.mappings = mappings;
@@ -176,6 +214,10 @@ public class StructureDefinition extends MetadataResource {
 	
 	public Collection<Identifier> getIdentifiers() {
 		return identifiers;
+	}
+	
+	public String getCopyright() {
+		return copyright;
 	}
 	
 	public Collection<Coding> getKeywords() {
@@ -239,6 +281,7 @@ public class StructureDefinition extends MetadataResource {
 
 		private String resourceType = RESOURCE_TYPE_STRUCTURE_DEFINITION;
 		private Collection<Identifier> identifiers;
+		private String copyright;
 		private Collection<Coding> keywords;
 		private Id fhirVersion;
 		private Collection<Mapping> mappings;
@@ -280,6 +323,11 @@ public class StructureDefinition extends MetadataResource {
 				identifiers = new ArrayList<>();
 			}
 			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 		
@@ -428,25 +476,46 @@ public class StructureDefinition extends MetadataResource {
 
 		@Override
 		protected StructureDefinition doBuild() {
-			return new StructureDefinition(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId,
-					
-					resourceType,
-					identifiers,
-					keywords,
-					fhirVersion,
-					mappings,
-					kind,
-					isAbstract,
-					contextType,
-					contexts,
-					contextInvariants,
-					type,
-					baseDefinition,
-					derivation,
-					snapshot,
-					differential	
-				);
+			return new StructureDefinition(
+				// MetadataResource properties	
+				id,
+				meta,
+				implicitRules,
+				language,
+				text,
+				url,
+				version,
+				name,
+				title,
+				status,
+				experimental,
+				date,
+				publisher,
+				contacts,
+				description,
+				usageContexts,
+				jurisdictions,
+				purpose,
+				toolingId,
+
+				// StructureDefinition properties
+				resourceType,
+				identifiers,
+				copyright,
+				keywords,
+				fhirVersion,
+				mappings,
+				kind,
+				isAbstract,
+				contextType,
+				contexts,
+				contextInvariants,
+				type,
+				baseDefinition,
+				derivation,
+				snapshot,
+				differential	
+			);
 		}
 	}
 }

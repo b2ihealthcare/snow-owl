@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import com.google.common.base.MoreObjects;
 /**
  * @since 4.6
  */
-public class ConstantIdStrategy implements IdGenerationStrategy {
+public final class ConstantIdStrategy implements IdGenerationStrategy {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final String id;
 
 	public ConstantIdStrategy(final String id) {
@@ -42,4 +44,10 @@ public class ConstantIdStrategy implements IdGenerationStrategy {
 	public String toString() {
 		return MoreObjects.toStringHelper(this).add("id", id).toString();
 	}
+	
+	@Override
+	public IdGenerationStrategy toNamespaceStrategy() {
+		return new NamespaceIdStrategy(getNamespace());
+	}
+	
 }

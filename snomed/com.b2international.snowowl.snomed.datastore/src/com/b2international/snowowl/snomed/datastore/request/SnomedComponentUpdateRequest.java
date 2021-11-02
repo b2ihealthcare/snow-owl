@@ -28,7 +28,6 @@ import com.google.common.collect.Multimap;
 
 /** 
  * @since 4.5
- * @param <B>
  */
 public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdateRequestBase implements SnomedComponentRequest<Boolean> {
 

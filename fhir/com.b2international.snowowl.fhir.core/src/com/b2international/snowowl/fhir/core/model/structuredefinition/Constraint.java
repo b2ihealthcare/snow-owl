@@ -73,7 +73,7 @@ public class Constraint extends Element {
 	private final Uri source;
 	
 	Constraint(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Id key, 
 			final String requirements, 
 			final Code severity, 

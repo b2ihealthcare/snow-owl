@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
@@ -39,7 +42,17 @@ final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet
 	}
 	
 	@Override
+	protected void configureFieldsToLoad(List<String> fields) {
+		// make sure we are not trying to load unindexed fields when requested
+		fields.remove(ValueSet.Fields.COMPOSE);
+		fields.remove(ValueSet.Fields.EXPANSION);
+		fields.remove(ValueSet.Fields.IMMUTABLE);
+	}
+	
+	@Override
 	protected void expandResourceSpecificFields(RepositoryContext context, Builder entry, ResourceFragment resource) {
+		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
+		
 		FhirValueSetResourceConverter converter = context.service(RepositoryManager.class)
 				.get(resource.getToolingId())
 				.optionalService(FhirValueSetResourceConverter.class)

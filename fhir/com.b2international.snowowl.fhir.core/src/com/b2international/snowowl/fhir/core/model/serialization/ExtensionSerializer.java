@@ -21,8 +21,11 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
 
 /**
  * Custom serializer for concept properties returned.
@@ -43,16 +46,24 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class ExtensionSerializer extends JsonSerializer<Extension<?>> {
 
 	private static final String VALUE_PREFIX = "value";
-	private static final String URL = "url";
 
 	@Override
 	public void serialize(Extension<?> extension, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
 		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(extension.getExtensionType().getCodeValue());
 		jGen.writeStartObject();
-		jGen.writeStringField(URL, extension.getUrl().getUriValue());
 		jGen.writeObjectField(typeName, extension.getValue());
+		serializeFields(extension, jGen, sp);
 		jGen.writeEndObject();
 	}
+	
+	private void serializeFields(@SuppressWarnings("rawtypes") Extension bean, JsonGenerator gen, SerializerProvider provider)
+            throws IOException {
+        
+		JavaType javaType = provider.constructType(Extension.class);
+        BeanDescription beanDesc = provider.getConfig().introspect(javaType);
+        JsonSerializer<Object> serializer =  BeanSerializerFactory.instance.findBeanOrAddOnSerializer(provider, javaType, beanDesc, false);
+        serializer.unwrappingSerializer(null).serialize(bean, gen, provider);
+    }
 
 }

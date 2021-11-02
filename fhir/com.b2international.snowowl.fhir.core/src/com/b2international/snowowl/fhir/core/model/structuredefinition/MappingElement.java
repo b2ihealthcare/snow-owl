@@ -57,7 +57,7 @@ public class MappingElement extends Element {
 	private String comment;
 
 	MappingElement(final String id, 
-			@SuppressWarnings("rawtypes") final List<Extension> extensions,
+			final List<Extension<?>> extensions,
 			final Id identity, 
 			final Code language,
 			final String map,

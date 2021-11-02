@@ -63,6 +63,9 @@ public class CapabilityStatement extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
 
+	@JsonProperty
+	private String copyright;
+	
 	@Mandatory
 	@Valid
 	@NotNull
@@ -123,14 +126,32 @@ public class CapabilityStatement extends MetadataResource {
 	@JsonProperty("document")
 	private final Collection<Document> documents;
 	
-	public CapabilityStatement(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			String version, String name, String title, Code status,
-			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description,
-			@SuppressWarnings("rawtypes") Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose,
-			String copyright, String toolingId,
+	public CapabilityStatement(
+			// MetadataResource properties
+			final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url,
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status,
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description,
+			final Collection<UsageContext<?>> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose,
+			final String toolingId,
 			
+			// CapabilityStatement properties
 			final String resourceType,
 			final Collection<Identifier> identifiers,
+			final String copyright,
 			final Code kind,
 			final Collection<Uri> instantiates,
 			final Collection<Uri> imports,
@@ -144,11 +165,29 @@ public class CapabilityStatement extends MetadataResource {
 			final Collection<Messaging> messagings,
 			final Collection<Document> documents) {
 		
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date,
-				publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
+		super(id, 
+			meta, 
+			implicitRules, 
+			language, 
+			text, 
+			url, 
+			version, 
+			name, 
+			title, 
+			status, 
+			experimental, 
+			date,
+			publisher, 
+			contacts, 
+			description, 
+			usageContexts, 
+			jurisdictions, 
+			purpose, 
+			toolingId);
 	
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.kind = kind;
 		this.instantiates = instantiates;
 		this.imports = imports;
@@ -169,6 +208,10 @@ public class CapabilityStatement extends MetadataResource {
 	
 	public Collection<Identifier> getIdentifiers() {
 		return identifiers;
+	}
+	
+	public String getCopyright() {
+		return copyright;
 	}
 	
 	public Code getKind() {
@@ -223,11 +266,16 @@ public class CapabilityStatement extends MetadataResource {
 		return new Builder(id);
 	}
 	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends MetadataResource.Builder<Builder, CapabilityStatement> {
 
 		private String resourceType = RESOURCE_TYPE_CAPABILITY_STATEMENT;
 		private Collection<Identifier> identifiers;
+		private String copyright;
 		private Code kind;
 		private Collection<Uri> instantiates;
 		private Collection<Uri> imports;
@@ -268,6 +316,11 @@ public class CapabilityStatement extends MetadataResource {
 				identifiers = new ArrayList<>();
 			}
 			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 		
@@ -427,25 +480,45 @@ public class CapabilityStatement extends MetadataResource {
 
 		@Override
 		protected CapabilityStatement doBuild() {
-			return new CapabilityStatement(id, meta, implicitRules, language, text, url, version, name, title,
-					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId,
-					
-			resourceType,
-			identifiers,
-			kind,
-			instantiates,
-			imports,
-			software,
-			implementation,
-			fhirVersion,
-			formats,
-			patchFormats,
-			implementationGuides,
-			rests,
-			messagings,
-			documents);
+			return new CapabilityStatement(
+				// MetadataResource properties	
+				id,
+				meta,
+				implicitRules,
+				language,
+				text,
+				url,
+				version,
+				name,
+				title,
+
+				status,
+				experimental,
+				date,
+				publisher,
+				contacts,
+				description,
+				usageContexts,
+				jurisdictions,
+				purpose,
+				toolingId,
+
+				// CapabilityStatement properties
+				resourceType,
+				identifiers,
+				copyright,
+				kind,
+				instantiates,
+				imports,
+				software,
+				implementation,
+				fhirVersion,
+				formats,
+				patchFormats,
+				implementationGuides,
+				rests,
+				messagings,
+				documents);
 		}
 	}
-	
-	
 }

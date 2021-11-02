@@ -32,7 +32,7 @@ To apply the setting on a live system type: `sysctl -w vm.max_map_count=262144`
 {% endhint %}
 
 The following example brings up Snow Owl instance with its dedicated Elasticsearch node. 
-To bring up the cluster, use the [docker-compose.yml](https://github.com/b2ihealthcare/snow-owl/blob/7.x/docker/docker-compose.yml) and just type:
+To bring up the cluster, use the [docker-compose.yml](https://github.com/b2ihealthcare/snow-owl/blob/8.x/docker/docker-compose.yml) and just type:
 
 ```bash
 docker-compose up

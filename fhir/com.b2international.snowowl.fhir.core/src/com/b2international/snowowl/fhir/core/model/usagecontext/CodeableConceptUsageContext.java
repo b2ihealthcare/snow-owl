@@ -36,7 +36,7 @@ public class CodeableConceptUsageContext extends UsageContext<CodeableConcept> {
 
 	public static final String CONTEXT_TYPE = "CodeableConcept";
 	
-	CodeableConceptUsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions, final Coding code, final CodeableConcept value) {
+	CodeableConceptUsageContext(final String id, final List<Extension<?>> extensions, final Coding code, final CodeableConcept value) {
 		super(id, extensions, code, value);
 	}
 	

@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
+import com.b2international.snowowl.fhir.core.model.StringExtension;
 import com.b2international.snowowl.fhir.core.model.capabilitystatement.*;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.QuantityUsageContext;
@@ -82,7 +83,7 @@ public class CapabilityStatementTest extends FhirTest {
 				.copyright("copyright")
 				.date(TEST_DATE_STRING)
 				.description("description")
-				.kind("kind")
+				.kind(CapabilityStatementKind.INSTANCE.getCode())
 				.fhirVersion("fhirVersion")
 				.addFormat(new Code("format"))
 				.addPatchFormat(new Code("patchFormat"))
@@ -92,6 +93,13 @@ public class CapabilityStatementTest extends FhirTest {
 						.name("softwareName")
 						.version("softwareVersion")
 						.releaseDate(FhirDates.parseDate(TEST_DATE_STRING))
+						.addExtension(StringExtension.builder()
+								.url("topURL")
+								.addExtension(StringExtension.builder()
+									.url("subURL")
+									.value("stringValue2")
+									.build())
+								.build())
 						.build())
 				.implementation(Implementation.builder()
 						.custodian(Reference.builder().reference("reference")
@@ -195,6 +203,7 @@ public class CapabilityStatementTest extends FhirTest {
 	
 	private void validate(CapabilityStatement capabilityStatement) {
 		assertEquals("id", capabilityStatement.getId().getIdValue());
+		assertEquals(CapabilityStatementKind.INSTANCE.getCode(), capabilityStatement.getKind());
 		assertEquals("docDocumentation", capabilityStatement.getDocuments().iterator().next().getDocumentation());
 		assertEquals("softwareName", capabilityStatement.getSoftware().getName());
 		assertEquals("impDescription", capabilityStatement.getImplementation().getDescription());

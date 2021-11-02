@@ -52,7 +52,7 @@ public abstract class BaseQuantity extends Element {
 	@JsonProperty
 	private Code code;
 	
-	BaseQuantity(String id, List<Extension> extensions,
+	BaseQuantity(String id, List<Extension<?>> extensions,
 			final Double value, final Code comparator, final String unit, final Uri system, final Code code) {
 		super(id, extensions);
 		

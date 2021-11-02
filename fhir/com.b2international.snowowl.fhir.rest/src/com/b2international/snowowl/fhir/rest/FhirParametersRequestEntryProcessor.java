@@ -25,7 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.model.BatchRequest;
-import com.b2international.snowowl.fhir.core.model.ResourceRequestEntry;
+import com.b2international.snowowl.fhir.core.model.ParametersRequestEntry;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -34,14 +34,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * {@link BatchRequestProcessor} to process resource POST requests in a batch
+ * {@link FhirBatchRequestProcessor} to process parameters-based POST requests in a batch
  * @since 8.0.0
  */
-public class ResourceRequestEntryProcessor extends BatchRequestProcessor {
+public class FhirParametersRequestEntryProcessor extends FhirBatchRequestProcessor {
 
-	private ResourceRequestEntry requestEntry;
+	private ParametersRequestEntry requestEntry;
 
-	public ResourceRequestEntryProcessor(ObjectMapper objectMapper, ResourceRequestEntry requestEntry, BatchRequestController batchRequestController) {
+	public FhirParametersRequestEntryProcessor(ObjectMapper objectMapper, ParametersRequestEntry requestEntry, FhirBundleController batchRequestController) {
 		super(objectMapper, batchRequestController);
 		this.requestEntry = requestEntry;
 	}
@@ -69,6 +69,7 @@ public class ResourceRequestEntryProcessor extends BatchRequestProcessor {
 				.append(request.getRequestURI())
 				.append(batchRequest.getUrl().getUriValue());
 		
+		//TODO: change the RequestEntry to accommodate resources for non-operation bulk support
 		HttpEntity<?> httpEntity = new HttpEntity<>(requestEntry.getRequestResource(), headers);
 		ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.POST, httpEntity, String.class);
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.IndexSettings;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
@@ -116,7 +117,12 @@ public final class SnomedIdentifierPlugin extends Plugin {
 
 		switch (conf.getStrategy()) {
 		case EMBEDDED:
-			final Index index = Indexes.createIndex(SNOMED_IDS_INDEX, env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
+			final Index index = Indexes.createIndex(
+				SNOMED_IDS_INDEX, 
+				env.service(ObjectMapper.class), 
+				new Mappings(SctId.class), 
+				env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), SNOMED_IDS_INDEX)
+			);
 			index.admin().create();
 			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(reservationService); 
 			identifierService = new DefaultSnomedIdentifierService(index, generationStrategy, reservationService, conf);

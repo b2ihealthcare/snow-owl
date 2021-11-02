@@ -36,7 +36,7 @@ public class RangeUsageContext extends UsageContext<Range> {
 
 	public static final String CONTEXT_TYPE = "Range";
 	
-	RangeUsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions, final Coding code, final Range value) {
+	RangeUsageContext(final String id, final List<Extension<?>> extensions, final Coding code, final Range value) {
 		super(id, extensions, code, value);
 	}
 	

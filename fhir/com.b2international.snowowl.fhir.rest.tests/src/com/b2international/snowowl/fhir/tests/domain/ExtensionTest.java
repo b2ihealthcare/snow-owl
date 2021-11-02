@@ -18,14 +18,22 @@ package com.b2international.snowowl.fhir.tests.domain;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.IntegerExtension;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.StringExtension;
+import com.b2international.snowowl.fhir.core.model.capabilitystatement.Software;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -37,16 +45,83 @@ import io.restassured.path.json.JsonPath;
 public class ExtensionTest extends FhirTest {
 	
 	@Test
+	public void buildInvalid() {
+		
+		ValidationException exception = assertThrows(ValidationException.class, () -> {
+		
+			IntegerExtension.builder()
+					.url("ID")
+					.addExtension(IntegerExtension.builder().url("ID2").value(2).build())
+					.value(1)
+					.build();
+		
+		});
+		
+		assertEquals("1 validation error", exception.getMessage());
+		
+		Issue expectedIssue = validationErrorIssueBuilder
+				.addLocation("IntegerExtension.valid")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'valid' content is invalid [false]. "
+						+ "Violation: An extension SHALL have either a value (i.e. a value[x] element) or sub-extensions.")
+				.build();
+		
+		assertThat(exception, FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+	}
+	
+	@Test
 	public void build() throws Exception {
 		
-		Extension<Integer> extension = IntegerExtension.builder().url("ID").value(1).build();
+		Extension<Integer> extension = IntegerExtension.builder()
+				.url("ID")
+				.value(1)
+				.build();
+		
+		printPrettyJson(extension);
+		validate(extension);
+	}
+	
+	private void validate(Extension extension) {
+		assertEquals(new Uri("ID"), extension.getUrl());
+		assertEquals(Integer.valueOf(1), extension.getValue());
+		assertEquals(ExtensionType.INTEGER, extension.getExtensionType());
+	}
+	
+	@Test
+	public void buildWithSubextension() throws Exception {
+		
+		Extension<Integer> extension = IntegerExtension.builder()
+				.url("ID")
+				.addExtension(IntegerExtension.builder().url("ID2").value(2).build())
+				.build();
 		
 		printPrettyJson(extension);
 		
 		assertEquals(new Uri("ID"), extension.getUrl());
-		assertEquals(Integer.valueOf(1), extension.getValue());
 		assertEquals(ExtensionType.INTEGER, extension.getExtensionType());
+		Extension subExtension = extension.getExtensions().iterator().next();
+		assertEquals(new Uri("ID2"), subExtension.getUrl());
+		assertEquals(Integer.valueOf(2), subExtension.getValue());
+	}
+
+	@Test
+	public void buildWithStringSubextension() throws Exception {
 		
+		Extension extension = StringExtension.builder()
+			.url("topURL")
+			.addExtension(StringExtension.builder()
+					.url("subURL")
+					.value("stringValue")
+					.build())
+			.build();
+		
+		printPrettyJson(extension);
+		
+		assertEquals(new Uri("topURL"), extension.getUrl());
+		assertEquals(ExtensionType.STRING, extension.getExtensionType());
+		Extension subExtension = extension.getExtensions().iterator().next();
+		assertEquals(new Uri("subURL"), subExtension.getUrl());
+		assertEquals("stringValue", subExtension.getValue());
 	}
 	
 	@Test
@@ -71,6 +146,7 @@ public class ExtensionTest extends FhirTest {
 		Extension<?> readExtension = objectMapper.readValue(objectMapper.writeValueAsString(extension), Extension.class);
 		
 		assertTrue(readExtension instanceof IntegerExtension);
+		validate(readExtension);
 		
 	}
 

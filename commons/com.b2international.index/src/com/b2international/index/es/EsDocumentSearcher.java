@@ -141,6 +141,9 @@ public class EsDocumentSearcher implements Searcher {
 		
 		final SearchRequest req = new SearchRequest(admin.getTypeIndexes(mappings).toArray(length -> new String[length]));
 		
+		// configure caching
+		req.requestCache(query.isCached());
+		
 		final SearchSourceBuilder reqSource = req.source()
 			.size(toRead)
 			.query(esQuery)

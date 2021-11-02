@@ -58,7 +58,7 @@ public abstract class UsageContext<T> extends Element {
 	 * @param id
 	 * @param extensions
 	 */
-	UsageContext(final String id, @SuppressWarnings("rawtypes") final List<Extension> extensions,
+	UsageContext(final String id, final List<Extension<?>> extensions,
 			final Coding code, final T value) {
 		super(id, extensions);
 		this.code = code;

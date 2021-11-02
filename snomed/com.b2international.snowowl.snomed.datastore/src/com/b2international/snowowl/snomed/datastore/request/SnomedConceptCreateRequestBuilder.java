@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	
 	public SnomedConceptCreateRequestBuilder addParent(String parentId) {
 		return addRelationship(SnomedRequests.prepareNewRelationship()
-				.setIdFromNamespace(getIdGenerationStrategy().getNamespace())
+				.setId(getIdGenerationStrategy().toNamespaceStrategy())
 				.setDestinationId(parentId)
 				.setTypeId(Concepts.IS_A));
 	}

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
+
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,33 +30,35 @@ import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Code system resource REST endpoint.
- * <ul>
- * <li>Concept lookup and decomposition</li>
- * <li>Subsumption testing</li>
- * <li>Code composition based on supplied properties</li>
- * </ul>
- *  
  * @see <a href="https://www.hl7.org/fhir/codesystems.html">FHIR:CodeSystem</a>
- * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html">FHIR:CodeSystem:Operations</a>
  * 
  * @since 8.0
  */
-@Tag(description = "CodeSystem", name = "CodeSystem")
+@Tag(description = "CodeSystem", name = "CodeSystem", extensions = 
+@Extension(name = B2I_OPENAPI_X_NAME, properties = { 
+		  @ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CodeSystem")
+	}))
 @RestController
-@RequestMapping(value="/CodeSystem", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class FhirCodeSystemController extends AbstractFhirResourceController<CodeSystem> {
+@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+public class FhirCodeSystemController extends AbstractFhirController {
 	
-	@Override
-	protected Class<CodeSystem> getModelClass() {
-		return CodeSystem.class;
-	}
-	
+	@Operation(
+		summary="Create a code system",
+		description="Create a FHIR code system.", 
+		extensions = {
+			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create a code system"),
+			}),
+		}
+	)
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	//@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {
@@ -157,13 +161,19 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	}
 	
 	/**
-	 * CodeSystems
-	 * @param parameters - request parameters
+	 * HTTP GET /CodeSystem
+	 * @param params - request parameters
 	 * @return bundle of code systems
 	 */
 	@Operation(
 		summary="Retrieve all code systems",
-		description="Returns a collection of the supported code systems."
+		description="Returns a collection of the supported code systems.", 
+	
+		extensions = {
+				@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+					@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_READ, value = "Read code systems"),
+				}),
+			}
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
@@ -197,9 +207,9 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	}
 	
 	/**
-	 * HTTP Get for retrieving a code system by its code system id
+	 * HTTP GET for retrieving a code system by its logical identifier
 	 * @param id
-	 * @param parameters - request parameters
+	 * @param selectors
 	 * @return
 	 */
 	@Operation(

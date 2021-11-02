@@ -81,8 +81,7 @@ public class Signature extends Element {
 	@JsonProperty
 	private Byte[] blob;
 	
-	@SuppressWarnings("rawtypes")
-	Signature(String id, List<Extension> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
+	Signature(String id, List<Extension<?>> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
 			final Uri onBehalfOfUri, final Reference onBehalfOfReference, final Code contentType, final Byte[] blob) {
 		
 		super(id, extensions);

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.List;
+
 import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -31,8 +33,9 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(using = JsonDeserializer.None.class, builder = IntegerExtension.Builder.class)
 public class IntegerExtension extends Extension<Integer> {
 	
-	public IntegerExtension(final Uri url, final Integer value) {
-		super(url, value);
+	public IntegerExtension(final String id, final List<Extension<?>> extensions,
+			final Uri url, final Integer value) {
+		super(id, extensions, url, value);
 	}
 
 	@Override
@@ -62,7 +65,7 @@ public class IntegerExtension extends Extension<Integer> {
 		
 		@Override
 		protected IntegerExtension doBuild() {
-			return new IntegerExtension(url, value);
+			return new IntegerExtension(id, extensions, url, value);
 		}
 	}
 

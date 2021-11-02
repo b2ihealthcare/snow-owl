@@ -111,6 +111,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Filters concepts by their ancestors (direct or indirect parents).
 		 */
 		ANCESTOR, 
+		
+		/**
+		 * Set the minimum count of words that should match.
+		 */
+		MIN_OCCURENCE_COUNT, 
 	}
 
 	/**

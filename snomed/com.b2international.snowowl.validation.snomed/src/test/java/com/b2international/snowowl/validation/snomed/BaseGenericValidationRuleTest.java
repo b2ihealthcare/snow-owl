@@ -58,6 +58,9 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	protected static final String CODESYSTEM = "SNOMEDCT";
 	
+	protected static final String PROCEDURE = "71388002";
+	protected static final String OBSERVABLE_ENTITY = "363787002";
+	
 	private static final String ATTRIBUTE = "246061005";
 	private static final Long ATTRIBUTEL = Long.parseLong(ATTRIBUTE);
 	private static final Long ROOT_CONCEPTL = Long.parseLong(Concepts.ROOT_CONCEPT);
@@ -152,6 +155,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 			// Modules
 			.stageNew(concept(Concepts.MODULE_B2I_EXTENSION).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.PHYSICAL_OBJECT).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(PROCEDURE).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(OBSERVABLE_ENTITY).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(HISTORICAL_ASSOCIATION).parents(ROOT_CONCEPTL).build()) // Historical association
 			// Refsets
 			.stageNew(concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build())

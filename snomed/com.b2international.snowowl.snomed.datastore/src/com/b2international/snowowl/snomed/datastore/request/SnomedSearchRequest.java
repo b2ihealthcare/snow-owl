@@ -39,12 +39,14 @@ import com.google.common.collect.Iterables;
 /**
  * Abstract class for SNOMED CT search requests.
  * @since 4.5
- * @param R - the return type of this request
- * @param D - the document type to search for
+ * @param <R> - the return type of this request
+ * @param <D> - the document type to search for
  */
 public abstract class SnomedSearchRequest<R, D extends SnomedDocument> 
 		extends SearchIndexResourceRequest<BranchContext, R, D>
 		implements AccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	protected enum OptionKey {
 		

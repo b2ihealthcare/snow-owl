@@ -82,7 +82,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, 
 	private List<ConceptMapMapping> fetchConceptMapMappings(ServiceProvider context, ResourceURI conceptMapUri) {
 		return ConceptMapRequests.prepareSearchConceptMapMappings()
 			.filterByActive(true)
-			.filterByConceptMapUri(conceptMapUri)
+			.filterByConceptMap(conceptMapUri.toString())
 			.setLocales(locales())
 			.setPreferredDisplay(preferredDisplay)
 			.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT)

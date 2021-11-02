@@ -102,6 +102,9 @@ public class ValueSet extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
 	
+	@JsonProperty
+	private String copyright;
+	
 	@Summary
 	@JsonProperty
 	private final Boolean immutable;
@@ -114,22 +117,60 @@ public class ValueSet extends MetadataResource {
 	@JsonProperty
 	private final Expansion expansion;
 	
-	@SuppressWarnings("rawtypes")
-	public ValueSet(Id id, final Meta meta, final Uri impliciteRules, Code language, Narrative text,
-			
-			final Uri url, final String version, final String name, final String title, Code status, 
-			final Boolean experimental, final Date date, String publisher, 
-			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
+	public ValueSet(
+			// MetadataResource properties
+			final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text,
+			final Uri url, 
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status, 
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext<?>> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, 
-			final String resourceType, final Collection<Identifier> identifiers, 
-			final Boolean immutable, final String purpose, final String copyright, final String toolingId,
-			final Compose compose, final Expansion expansion) {
+			final String purpose,
+			final String toolingId,
+
+			// ValueSet properties
+			final String resourceType, 
+			final Collection<Identifier> identifiers, 
+			final String copyright, 
+			final Boolean immutable,
+			final Compose compose, 
+			final Expansion expansion) {
 		
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, 
-				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright, toolingId);
+		super(id,
+			meta,
+			implicitRules,
+			language,
+			text,
+			url,
+			version,
+			name,
+			title,
+			status,
+			experimental,
+
+			date,
+			publisher,
+			contacts,
+			description,
+			usageContexts,
+			jurisdictions,
+			purpose,
+			toolingId);
 		
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.immutable = immutable;
 		this.compose = compose;
 		this.expansion = expansion;
@@ -147,6 +188,10 @@ public class ValueSet extends MetadataResource {
 		return identifiers;
 	}
 	
+	public String getCopyright() {
+		return copyright;
+	}
+	
 	public Compose getCompose() {
 		return compose;
 	}
@@ -157,10 +202,34 @@ public class ValueSet extends MetadataResource {
 	
 	public ValueSet withExpansion(Expansion newExpansion) {
 		return new ValueSet(
-			getId(), getMeta(), getImplicitRules(), getLanguage(), getText(), getUrl(), getVersion(), getName(), getTitle(), getStatus(), getExperimental(), 
-			getDate(), getPublisher(), getContacts(), getDescription(), getUsageContexts(),	getJurisdictions(), 
-			getResourceType(), getIdentifiers(), getImmutable(), getPurpose(), getCopyright(), getToolingId(), getCompose(), newExpansion
-		);
+			// MetadataResource properties
+			getId(), 
+			getMeta(), 
+			getImplicitRules(), 
+			getLanguage(), 
+			getText(), 
+			getUrl(), 
+			getVersion(), 
+			getName(),
+			getTitle(), 
+			getStatus(), 
+			getExperimental(), 
+			getDate(), 
+			getPublisher(), 
+			getContacts(), 
+			getDescription(), 
+			getUsageContexts(),
+			getJurisdictions(), 
+			getPurpose(), 
+			getToolingId(),
+			// ValueSet properties
+			getResourceType(), 
+			getIdentifiers(), 
+			getCopyright(), 
+			getImmutable(), 
+			getCompose(), 
+			newExpansion)
+		;
 	}
 	
 	public static Builder builder() {
@@ -177,6 +246,7 @@ public class ValueSet extends MetadataResource {
 		private String resourceType = RESOURCE_TYPE_VALUE_SET;
 		
 		private Collection<Identifier> identifiers;
+		private String copyright;
 		private Boolean immutable;
 		private Compose compose;
 		private Expansion expansion;
@@ -209,6 +279,11 @@ public class ValueSet extends MetadataResource {
 			return getSelf();
 		}
 		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
+			return getSelf();
+		}
+		
 		public Builder immutable(Boolean immutable) {
 			this.immutable = immutable;
 			return getSelf();
@@ -231,11 +306,40 @@ public class ValueSet extends MetadataResource {
 		
 		@Override
 		protected ValueSet doBuild() {
+//			// cross field validation
+//			if (composeParts.isEmpty() && expansion == null) {
+//				throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
+//			}
+			
 			return new ValueSet(
-				id, meta, implicitRules, language, text, url, version, name,  title, status, experimental, 
-				date, publisher, contacts, description, usageContexts,	jurisdictions, 
-				resourceType, identifiers, immutable, purpose, copyright, toolingId, compose, expansion
-			);
+				// MetadataResource properties
+				id, 
+				meta, 
+				implicitRules, 
+				language, 
+				text, 
+				url, 
+				version, 
+				name,
+				title, 
+				status, 
+				experimental, 
+				date, 
+				publisher, 
+				contacts, 
+				description, 
+				usageContexts,
+				jurisdictions, 
+				purpose, 
+				toolingId,
+				
+				// ValueSet properties
+				resourceType, 
+				identifiers, 
+				copyright, 
+				immutable, 
+				compose, 
+				expansion);
 		}
 	}
 		

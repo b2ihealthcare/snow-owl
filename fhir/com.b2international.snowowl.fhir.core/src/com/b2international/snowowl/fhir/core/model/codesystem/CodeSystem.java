@@ -85,6 +85,8 @@ public class CodeSystem extends MetadataResource {
 		// XXX do we need compositional???
 		// XXX do we need versionNeeded???
 		// XXX do we need supplements???
+
+		public static final String COPYRIGHT = "copyright";
 		
 		// complex properties
 		public static final String IDENTIFIER = "identifier";
@@ -115,7 +117,6 @@ public class CodeSystem extends MetadataResource {
 				.add(TEXT)
 				.add(CONCEPT)
 				.build();
-		
 	}
 	
 	public static final String RESOURCE_TYPE_CODE_SYSTEM = "CodeSystem";
@@ -128,6 +129,9 @@ public class CodeSystem extends MetadataResource {
 	@JsonProperty("identifier")
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Identifier> identifiers;
+	
+	@JsonProperty
+	private String copyright;
 
 	@Summary
 	@JsonProperty
@@ -186,24 +190,67 @@ public class CodeSystem extends MetadataResource {
 	@JsonProperty(CodeSystem.Fields.CONCEPT)
 	private Collection<Concept> concepts;
 	
-	@SuppressWarnings("rawtypes")
-	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			final Narrative text, Uri url, String version, String name, String title, Code status,
-			final Boolean experimental, final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
-			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
-			
-			//CodeSystem only
+	CodeSystem(
+			// MetadataResource properties
+			final Id id, 
+			final Meta meta, 
+			final Uri implicitRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url, 
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status,
+			final Boolean experimental, 
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext<?>> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose,
+			final String toolingId,
+
+			// CodeSystem properties
 			final String resourceType,
 			final Collection<Identifier> identifiers,
-			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
-			final Code content, final Uri supplements, final Integer count, 
-			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts, final String toolingId) {
+			final String copyright,
+			final Boolean caseSensitive, 
+			final Uri valueSet, 
+			final Code hierarchyMeaning, 
+			final Boolean compositional, 
+			final Boolean versionNeeded,
+			final Code content, 
+			final Uri supplements, 
+			final Integer count, 
+			final Collection<Filter> filters, 
+			final Collection<SupportedConceptProperty> properties, 
+			final Collection<Concept> concepts) {
 
-		super(id, meta, impliciteRules, language, text, url, version, name, title, status, experimental, date, publisher, contacts, 
-				description, usageContexts, jurisdictions, purpose, copyright, toolingId);
+		super(id, 
+			meta, 
+			implicitRules, 
+			language, 
+			text, 
+			url, 
+			version, 
+			name, 
+			title, 
+			status, 
+			experimental, 
+			date, 
+			publisher, 
+			contacts, 
+			description, 
+			usageContexts, 
+			jurisdictions, 
+			purpose, 
+			toolingId);
 
 		this.resourceType = resourceType;
 		this.identifiers = identifiers;
+		this.copyright = copyright;
 		this.caseSensitive = caseSensitive;
 		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
@@ -223,6 +270,10 @@ public class CodeSystem extends MetadataResource {
 	
 	public Collection<Identifier> getIdentifiers() {
 		return identifiers;
+	}
+	
+	public String getCopyright() {
+		return copyright;
 	}
 	
 	public Boolean getCaseSensitive() {
@@ -292,29 +343,18 @@ public class CodeSystem extends MetadataResource {
 	public static final class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
 
 		private String resourceType = RESOURCE_TYPE_CODE_SYSTEM;
-		
 		private Collection<Identifier> identifiers;
-		
+		private String copyright;
 		private Boolean caseSensitive;
-		
 		private Uri valueSet;
-		
 		private Code hierarchyMeaning;
-		
 		private Boolean compositional;
-		
 		private Boolean versionNeeded;
-
 		private Code content;
-		
 		private Uri supplements;
-
 		private Integer count;
-
 		private Collection<Filter> filters;
-
 		private Collection<SupportedConceptProperty> properties;
-
 		private Collection<Concept> concepts;
 		
 		/**
@@ -349,6 +389,11 @@ public class CodeSystem extends MetadataResource {
 				identifiers = new ArrayList<>();
 			}
 			identifiers.add(identifier);
+			return getSelf();
+		}
+		
+		public Builder copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 		
@@ -450,12 +495,43 @@ public class CodeSystem extends MetadataResource {
 		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, meta, implicitRules, language, text, url, version, name, title, status, 
-				experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+			return new CodeSystem(
+				// MetadataResource properties
+				id, 
+				meta, 
+				implicitRules, 
+				language, 
+				text, 
+				url, 
+				version, 
+				name, 
+				title, 
+				status, 
+				experimental, 
+				date, 
+				publisher, 
+				contacts, 
+				description, 
+				usageContexts, 
+				jurisdictions, 
+				purpose, 
+				toolingId,
 				
-				resourceType, identifiers, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
-				content, supplements, count, filters, properties, concepts, toolingId);
+				// CodeSystem properties
+				resourceType, 
+				identifiers, 
+				copyright, 
+				caseSensitive, 
+				valueSet, 
+				hierarchyMeaning, 
+				compositional, 
+				versionNeeded, 
+				content, 
+				supplements, 
+				count, 
+				filters, 
+				properties, 
+				concepts);
 		}
 	}
-
 }

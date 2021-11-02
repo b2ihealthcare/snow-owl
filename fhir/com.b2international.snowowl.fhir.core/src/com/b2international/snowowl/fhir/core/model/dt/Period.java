@@ -43,7 +43,7 @@ public class Period extends Element {
 	@JsonProperty
 	private Date end;
 	
-	Period(final Date start, final Date end, final String id, final List<Extension> extensions) {
+	Period(final Date start, final Date end, final String id, final List<Extension<?>> extensions) {
 		super(id, extensions);
 		this.start = start;
 		this.end = end;

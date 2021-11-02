@@ -33,7 +33,6 @@ import com.google.common.collect.*;
 
 /**
  * @since 7.4
- * @param <T>
  */
 public final class InactivationPropertiesExpander {
 

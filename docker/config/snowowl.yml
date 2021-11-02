@@ -17,6 +17,11 @@ identity:
 #        userIdProperty: uid
 #        usePool: false
 
+#repository:
+#  index:
+#    snomed:
+#      number_of_shards: "3"
+
 monitoring:
   enabled: true
 

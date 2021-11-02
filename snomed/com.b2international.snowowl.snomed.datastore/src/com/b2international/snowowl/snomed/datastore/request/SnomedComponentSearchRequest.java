@@ -16,20 +16,11 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespaces;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 
 /**
@@ -37,8 +28,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentD
  */
 public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentDocument> extends SnomedSearchRequest<R, D> {
 
-	private static final Pattern NAMESPACE_PATTERN = Pattern.compile(SnomedTerminologyComponentConstants.DEFAULT_NAMESPACE_PATTERN);
-	
+	private static final long serialVersionUID = 1L;
+
 	enum OptionKey {
 		
 		/**
@@ -86,42 +77,10 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 		
 	protected final void addNamespaceConceptIdFilter(BranchContext context, ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.NAMESPACE_CONCEPT_ID)) {
-			final Set<String> namespaceConceptIds = newHashSet(getCollection(OptionKey.NAMESPACE_CONCEPT_ID, String.class));
-			final Set<String> namespaces = newHashSet();
-			
-			// Keep only valid SCTIDs passed in to the filter
-			namespaceConceptIds.removeIf(id -> !SnomedIdentifiers.isValid(id));
-			
-			/* 
-			 * The International core namespace concept will not have an FSN matching the pattern,
-			 * so remove it from the set, and convert it to the empty namespace directly. 
-			 */
-			if (namespaceConceptIds.remove(Concepts.CORE_NAMESPACE)) {
-				namespaces.add("");
-			}
-			
-			// Find the FSN of namespace SCTIDs
-			final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
-				.filterByActive(true)
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.filterByConcepts(namespaceConceptIds)
-				.setLimit(1000);
-			
-			final SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> requestIterator = new SearchResourceRequestIterator<>(
-				requestBuilder, 
-				r -> r.build().execute(context));
-
-			// Extract namespace from description terms
-			requestIterator.forEachRemaining(batch -> {
-				batch.forEach(fsn -> {
-					final Matcher matcher = NAMESPACE_PATTERN.matcher(fsn.getTerm());
-					if (matcher.matches()) {
-						namespaces.add(matcher.group(1));
-					}
-				});
-			});
-			
+			final Collection<String> namespaceConceptIds = getCollection(OptionKey.NAMESPACE_CONCEPT_ID, String.class);
+			final Collection<String> namespaces = context.service(NamespaceIdProvider.class).extractNamespaceIds(context, namespaceConceptIds, true).values();
 			queryBuilder.filter(namespaces(namespaces));
 		}
 	}
+
 }

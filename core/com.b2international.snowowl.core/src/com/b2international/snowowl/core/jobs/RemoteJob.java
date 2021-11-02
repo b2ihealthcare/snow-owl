@@ -41,7 +41,6 @@ import com.google.common.primitives.Primitives;
 
 /**
  * @since 5.7
- * @param <R>
  */
 public final class RemoteJob extends Job {
 

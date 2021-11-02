@@ -193,8 +193,7 @@ public class ElementDefinition extends Element {
 	@JsonProperty("mapping")
 	private final Collection<MappingElement> mappings;
 	
-	@SuppressWarnings("rawtypes")
-	ElementDefinition(final String id, final List<Extension> extensions,
+	ElementDefinition(final String id, final List<Extension<?>> extensions,
 			final String path,
 			final String sliceName,
 			final String label,

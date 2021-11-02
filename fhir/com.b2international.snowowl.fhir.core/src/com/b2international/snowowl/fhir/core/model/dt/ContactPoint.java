@@ -19,7 +19,6 @@ import java.util.List;
 
 import javax.validation.constraints.Min;
 
-import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.search.Summary;
@@ -81,7 +80,7 @@ public class ContactPoint extends Element {
 	 * @param id
 	 * @param extensions
 	 */
-	ContactPoint(final String id, final List<Extension> extensions, 
+	ContactPoint(final String id, final List<Extension<?>> extensions, 
 			final Code system, final String value, final Code use, final Integer rank, final Period period) {
 		super(id, extensions);
 		this.system = system;

@@ -302,7 +302,7 @@ public final class EsQueryBuilder {
 	private <T> void toTermsQuery(SetPredicate<T> predicate, final Set<T> terms, final Function<T, ?> valueConverter) {
 		final int maxTermsCount = Integer.parseInt((String) settings.get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
 		if (terms.size() > maxTermsCount) {
-			log.warn("More than currently configured max_terms_count ({}) filter values on field query: {}.{}", maxTermsCount, mapping.typeAsString(), toFieldPath(predicate));
+			log.warn("More ({}) than currently configured max_terms_count ({}) filter values on field query: {}.{}", terms.size(), maxTermsCount, mapping.typeAsString(), toFieldPath(predicate));
 			final BoolQueryBuilder bool = QueryBuilders.boolQuery().minimumShouldMatch(1);
 			Iterables.partition(terms, maxTermsCount).forEach(partition -> {
 				if (valueConverter != null) {

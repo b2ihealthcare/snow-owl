@@ -119,6 +119,41 @@ public abstract class SnomedRestFixtures {
 			)
 		);
 	}
+	
+	public static String createNewConceptWithDescription(IBranchPath conceptPath, String parentConceptId, String term) {
+		return createNewConcept(conceptPath, Json.assign(
+				createConceptRequestBody(parentConceptId, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, term, true),
+				Json.object("commitComment", "Created new concept")
+				)); 
+	}
+	
+	public static Json createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap, String term, boolean active) {
+		return Json.object(
+				"active", active,
+				"moduleId", moduleId, // module is applied to all subcomponents implicitly via the API
+				"descriptions", Json.array(
+						Json.object(
+								"typeId", Concepts.FULLY_SPECIFIED_NAME,
+								"term", term,
+								"languageCode", DEFAULT_LANGUAGE_CODE,
+								"acceptability", acceptabilityMap
+								),
+						Json.object(
+								"typeId", Concepts.SYNONYM,
+								"term", term,
+								"languageCode", DEFAULT_LANGUAGE_CODE,
+								"acceptability", acceptabilityMap
+								)
+						),
+				"relationships", Json.array(
+						Json.object(
+								"active", active,
+								"typeId", Concepts.IS_A,
+								"destinationId", parentConceptId
+								)
+						)
+				);
+	}
 
 	public static String createNewDescription(IBranchPath descriptionPath) {
 		return createNewDescription(descriptionPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
@@ -697,6 +732,52 @@ public abstract class SnomedRestFixtures {
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}
+	}
+	
+	public static Map<String, String> createConceptHierarchy(IBranchPath branchPath) {
+		/*
+		 * SNOMED CT Concept
+		 * |
+		 * +-> parent 
+		 * |   |
+		 * |   +-> child1 -> descendant1
+		 * |   |
+		 * |   +-> child2 -> descendant2 -> descendant3
+		 * |
+		 * +-> unrelated sibling 
+		 */
+		String parentId = createNewConcept(branchPath);
+		String unrelatedSiblingId = createNewConcept(branchPath);
+		
+		String child1Id = createNewConcept(branchPath, parentId);
+		String descendant1Id = createNewConcept(branchPath, child1Id);
+		
+		// XXX: Concepts below will also have a stated IS A to root, but that does not matter
+		String child2Id = createNewConcept(branchPath, createNewConcept(branchPath));
+		createNewRefSetMember(branchPath, child2Id, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", child2Id, parentId))
+		);
+		
+		String descendant2Id = createNewConcept(branchPath, createNewConcept(branchPath));
+		createNewRefSetMember(branchPath, descendant2Id, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", descendant2Id, child2Id))
+		);
+		
+		// A descendant expressed with a stated relationship "below" some OWL axioms
+		String descendant3Id = createNewConcept(branchPath, descendant2Id);
+		
+		// Inferred relationships are added to child1 and descendant1
+		createNewRelationship(branchPath, child1Id, Concepts.IS_A, parentId, Concepts.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, descendant1Id, Concepts.IS_A, child1Id, Concepts.INFERRED_RELATIONSHIP);
+
+		return Map.of(
+			"parent", parentId,
+			"unrelatedSibling", unrelatedSiblingId, 
+			"child1", child1Id, 
+			"child2", child2Id, 
+			"descendant1", descendant1Id, 
+			"descendant2", descendant2Id, 
+			"descendant3", descendant3Id);		
 	}
 
 	private static SnomedCoreConfiguration getSnomedCoreConfiguration() {

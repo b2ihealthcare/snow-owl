@@ -1,9 +1,15 @@
 #
-# Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 identity:
   providers:
     - file:
         name: users
+
+# to verify that the number_of_shards can be customized via config file
+repository:
+  index:
+    resources:
+      number_of_shards: "2"
 

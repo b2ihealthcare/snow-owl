@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = SimpleQuantity.Builder.class)
 public class SimpleQuantity extends BaseQuantity {
 	
-	SimpleQuantity(String id, List<Extension> extensions,
+	SimpleQuantity(String id, List<Extension<?>> extensions,
 			final Double value, final Code comparator, final String unit, final Uri system, final Code code) {
 		super(id, extensions, value, comparator, unit, system, code);
 	}

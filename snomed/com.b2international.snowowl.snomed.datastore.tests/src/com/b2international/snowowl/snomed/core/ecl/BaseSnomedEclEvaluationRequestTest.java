@@ -27,12 +27,16 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.Index;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -106,6 +110,11 @@ public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionInd
 		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
 		config.setConcreteDomainSupported(true);
 		
+		RepositoryConfiguration repositoryConfig = new RepositoryConfiguration();
+		IndexConfiguration indexConfiguration = new IndexConfiguration();
+		indexConfiguration.setResultWindow(IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		repositoryConfig.setIndexConfiguration(indexConfiguration);
+		
 		context = TestBranchContext.on(MAIN)
 				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
@@ -114,6 +123,8 @@ public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionInd
 				.with(SnomedCoreConfiguration.class, config)
 				.with(ObjectMapper.class, getMapper())
 				.with(TerminologyResource.class, createCodeSystem(MAIN))
+				.with(ResourceURI.class, CodeSystem.uri("SNOMEDCT"))
+				.with(RepositoryConfiguration.class, repositoryConfig)
 				.build();
 	}
 	

@@ -122,7 +122,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value="/$subsumes", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/$subsumes", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> subsumes(
 			@Parameter(description = "The lookup request parameters")
 			@RequestBody Parameters.Fhir body) {
@@ -150,7 +150,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value="{codeSystemId:**}/$subsumes", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="{codeSystemId:**}/$subsumes", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> subsumes(
 			@Parameter(description = "The id of the code system to invoke the operation on") 
 			@PathVariable("codeSystemId") 

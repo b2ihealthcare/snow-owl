@@ -38,22 +38,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * Mappings are one way - from the source to the destination.
  *  
  * @see <a href="https://www.hl7.org/fhir/conceptmap.html">ConceptMap</a>
- * @see <a href="https://www.hl7.org/fhir/conceptmap-operations.html">ConceptMap</a>
  * @since 7.0
  */
 @Tag(description = "ConceptMap", name = "ConceptMap")
 @RestController
-@RequestMapping(value="/ConceptMap", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
-public class FhirConceptMapController extends AbstractFhirResourceController<ConceptMap> {
-	
-	@Override
-	protected Class<ConceptMap> getModelClass() {
-		return ConceptMap.class;
-	}
+@RequestMapping(value="/ConceptMap", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+public class FhirConceptMapController extends AbstractFhirController {
 	
 	/**
-	 * ConceptMaps
-	 * @param parameters - request parameters
+	 * @param params - request parameters
 	 * @return bundle of concept maps
 	 */
 	@Operation(
@@ -83,10 +76,10 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	}
 	
 	/**
-	 * HTTP Get for retrieving a concept map by its concept map id
-	 * @param conceptMapId
-	 * @param parameters - request parameters
-	 * @return @link {@link ConceptMap}
+	 * HTTP GET endpoint for retrieving a concept map by its logical identifier
+	 * @param id
+	 * @param selectors - request selectors
+	 * @return {@link ConceptMap}
 	 */
 	@Operation(
 		summary="Retrieve the concept map by id",
