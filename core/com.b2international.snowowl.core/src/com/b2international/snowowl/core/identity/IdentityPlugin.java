@@ -73,11 +73,16 @@ public final class IdentityPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
-		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations());
+		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations() == null ? List.of() : conf.getProviderConfigurations());
 		
-		IdentityProvider identityProvider = null; 
+		IdentityProvider identityProvider = null;
 		if (providers.isEmpty()) {
-			identityProvider = IdentityProvider.NOOP;
+			// if there are no providers, but the issuer is external or there is signingkey (RSA) or secret (HMAC), then assume we are using access tokens and Snow Owl is a resource server
+			if (conf.isExternalIssuer() || !Strings.isNullOrEmpty(conf.getSigningKey()) || !Strings.isNullOrEmpty(conf.getSecret())) {
+				identityProvider = IdentityProvider.JWT;
+			} else {
+				identityProvider = IdentityProvider.NOOP;
+			}
 		} else if (providers.size() == 1) {
 			identityProvider = Iterables.getOnlyElement(providers);
 		} else {

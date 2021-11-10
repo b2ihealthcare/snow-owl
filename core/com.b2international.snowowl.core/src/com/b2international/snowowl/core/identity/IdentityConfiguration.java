@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.identity;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -27,14 +28,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class IdentityConfiguration {
 
+	private static final String SNOW_OWL_ISSUER = "Snow Owl";
+
 	private boolean adminParty = false;
 	
 	// JWT configuration
-	private String issuer = "Snow Owl";
+	private String issuer = SNOW_OWL_ISSUER;
 	
 	private String jws = "HS512";
 	private String jwksUrl;
-	private String secret = "secret";
+	private String secret;
 	private String signingKey;
 	private String verificationKey;
 	
@@ -103,6 +106,11 @@ public class IdentityConfiguration {
 	
 	public void setVerificationKey(String verificationKey) {
 		this.verificationKey = verificationKey;
+	}
+
+	@JsonIgnore
+	public boolean isExternalIssuer() {
+		return !SNOW_OWL_ISSUER.equals(getIssuer());
 	}
 	
 }
