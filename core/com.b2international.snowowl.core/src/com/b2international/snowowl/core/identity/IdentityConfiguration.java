@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class IdentityConfiguration {
 
 	private boolean adminParty = false;
-	private String secret = "secret";
+	
+	// JWT configuration
 	private String issuer = "Snow Owl";
+	
+	private String jws = "HS512";
+	private String jwksUrl;
+	private String secret = "secret";
+	private String signingKey;
+	private String verificationKey;
 	
 	private List<IdentityProviderConfig> providerConfigurations = Collections.emptyList();
 	
@@ -64,6 +71,38 @@ public class IdentityConfiguration {
 	
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
+	}
+	
+	public String getJws() {
+		return jws;
+	}
+	
+	public String getJwksUrl() {
+		return jwksUrl;
+	}
+	
+	public String getSigningKey() {
+		return signingKey;
+	}
+	
+	public String getVerificationKey() {
+		return verificationKey;
+	}
+	
+	public void setJws(String jws) {
+		this.jws = jws;
+	}
+	
+	public void setJwksUrl(String jwksUrl) {
+		this.jwksUrl = jwksUrl;
+	}
+	
+	public void setSigningKey(String signingKey) {
+		this.signingKey = signingKey;
+	}
+	
+	public void setVerificationKey(String verificationKey) {
+		this.verificationKey = verificationKey;
 	}
 	
 }
