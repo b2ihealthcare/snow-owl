@@ -145,7 +145,7 @@ public interface IdentityProvider {
 	static User authJWT(final String token) {
 		try {
 			final DecodedJWT jwt = ApplicationContext.getServiceForClass(JWTVerifier.class).verify(token);
-			return JWTGenerator.toUser(jwt);
+			return ApplicationContext.getServiceForClass(JWTGenerator.class).toUser(jwt);
 		} catch (JWTVerificationException e) {
 			throw new UnauthorizedException("Incorrect authorization token"); 
 		}

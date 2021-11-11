@@ -40,6 +40,8 @@ public class IdentityConfiguration {
 	private String secret;
 	private String signingKey;
 	private String verificationKey;
+	private String emailClaimProperty = "sub";
+	private String permissionsClaimProperty = "permissions";
 	
 	private List<IdentityProviderConfig> providerConfigurations = Collections.emptyList();
 	
@@ -106,6 +108,22 @@ public class IdentityConfiguration {
 	
 	public void setVerificationKey(String verificationKey) {
 		this.verificationKey = verificationKey;
+	}
+	
+	public String getEmailClaimProperty() {
+		return emailClaimProperty;
+	}
+	
+	public String getPermissionsClaimProperty() {
+		return permissionsClaimProperty;
+	}
+	
+	public void setEmailClaimProperty(String emailClaimProperty) {
+		this.emailClaimProperty = emailClaimProperty;
+	}
+	
+	public void setPermissionsClaimProperty(String permissionsClaimProperty) {
+		this.permissionsClaimProperty = permissionsClaimProperty;
 	}
 
 	@JsonIgnore

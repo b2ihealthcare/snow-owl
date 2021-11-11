@@ -99,7 +99,7 @@ public final class IdentityPlugin extends Plugin {
 		
 		RSAKeyProvider rsaKeyProvider = createRSAKeyProvider(conf);
 		Algorithm algorithm = SUPPORTED_JWS_ALGORITHMS.getOrDefault(conf.getJws(), this::throwNotSupportedJws).apply(conf, rsaKeyProvider);
-		env.services().registerService(JWTGenerator.class, new JWTGenerator(algorithm, conf.getIssuer()));
+		env.services().registerService(JWTGenerator.class, new JWTGenerator(algorithm, conf.getIssuer(), conf.getEmailClaimProperty(), conf.getPermissionsClaimProperty()));
 		env.services().registerService(JWTVerifier.class, JWT.require(algorithm)
 				.withIssuer(conf.getIssuer())
 				.acceptLeeway(3L) // 3 seconds

@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.identity;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.auth0.jwt.JWT;
@@ -26,8 +27,6 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -35,21 +34,24 @@ import com.google.common.collect.Iterables;
  */
 public final class JWTGenerator {
 
-	private static final String ROLE_PREFIX = "role_";
-	
 	private final Algorithm algorithm;
 	private final String issuer;
+	private final String emailClaimProperty;
+	private final String permissionsClaimProperty;
 
-	public JWTGenerator(final Algorithm algorithm, final String issuer) {
+	public JWTGenerator(final Algorithm algorithm, final String issuer, final String emailClaimProperty, final String permissionsClaimProperty) {
 		this.algorithm = algorithm;
 		this.issuer = issuer;
+		this.emailClaimProperty = emailClaimProperty;
+		this.permissionsClaimProperty = permissionsClaimProperty;
 	}
 	
-	public String generate(String subject, Map<String, Object> claims) {
+	public String generate(String email, Map<String, Object> claims) {
 		Builder builder = JWT.create()
 				.withIssuer(issuer)
-				.withSubject(subject)
-				.withIssuedAt(new Date());
+				.withSubject(email)
+				.withIssuedAt(new Date())
+				.withClaim(emailClaimProperty, email);
 		
 		// add claims
 		claims.forEach((key, value) -> {
@@ -76,13 +78,8 @@ public final class JWTGenerator {
 	 * @return
 	 */
 	public String generate(User user) {
-		final List<Role> currentRoles = user.getRoles();
-		final ImmutableMap.Builder<String, Object> claims = ImmutableMap.builder();
-		for (Role role : currentRoles) {
-			claims.put(String.format("%s%s", ROLE_PREFIX, role.getName()), role.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList()));
-		}
-		
-		return generate(user.getUsername(), claims.build());
+		final List<String> permissions = user.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
+		return generate(user.getUsername(), Map.of(permissionsClaimProperty, permissions));
 	}	
 	
 	/**
@@ -90,28 +87,19 @@ public final class JWTGenerator {
 	 * @param jwt - the verified token to extract information from
 	 * @return
 	 */
-	public static User toUser(DecodedJWT jwt) {
-		final String subject = jwt.getSubject();
-		if (Strings.isNullOrEmpty(subject)) {
-			throw new BadRequestException("'subject' JWT token field is required, but it was missing");
+	public User toUser(DecodedJWT jwt) {
+		final Claim emailClaim = jwt.getClaim(emailClaimProperty);
+		if (emailClaim == null || emailClaim.isNull()) {
+			throw new BadRequestException("'%s' JWT access token field is required for email access, but it was missing.", emailClaimProperty);
 		}
-		final List<Role> roles = jwt.getClaims().entrySet().stream()
-				.filter(entry -> entry.getKey().startsWith(ROLE_PREFIX))
-				.map(entry -> {
-					final String roleName = entry.getKey();
-					final Claim claim = entry.getValue();
-					
-					final List<Permission> permissions;
-					if (claim != null) {
-						permissions = claim.asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
-					} else {
-						permissions = List.of();
-					}
-					
-					return new Role(roleName.replace(ROLE_PREFIX, ""), permissions);
-				}).collect(Collectors.toList());
 		
-		return new User(subject, roles);
+		Claim permissionsClaim = jwt.getClaim(permissionsClaimProperty);
+		if (permissionsClaim == null || permissionsClaim.isNull()) {
+			throw new BadRequestException("'%s' JWT access token field is required for permissions access, but it was missing.", permissionsClaimProperty);
+		}
+		
+		final Set<Permission> permissions = jwt.getClaim(permissionsClaimProperty).asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toSet());
+		return new User(emailClaim.asString(), List.of(new Role("jwt_roles", permissions)));
 	}
 	
 }
