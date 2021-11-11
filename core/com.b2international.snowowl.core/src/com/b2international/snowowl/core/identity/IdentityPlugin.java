@@ -30,8 +30,12 @@ import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.JwkProviderBuilder;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.SignatureGenerationException;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -77,8 +81,8 @@ public final class IdentityPlugin extends Plugin {
 		
 		IdentityProvider identityProvider = null;
 		if (providers.isEmpty()) {
-			// if there are no providers, but the issuer is external or there is signingkey (RSA) or secret (HMAC), then assume we are using access tokens and Snow Owl is a resource server
-			if (conf.isExternalIssuer() || !Strings.isNullOrEmpty(conf.getSigningKey()) || !Strings.isNullOrEmpty(conf.getSecret())) {
+			// if there are no providers, but the issuer is external and there is a JWS configured, then assume we are using access tokens and Snow Owl is a resource server
+			if (conf.isExternalIssuer() || !Strings.isNullOrEmpty(conf.getJws())) {
 				identityProvider = IdentityProvider.JWT;
 			} else {
 				identityProvider = IdentityProvider.NOOP;
@@ -98,7 +102,23 @@ public final class IdentityPlugin extends Plugin {
 		env.services().registerService(IdentityProvider.class, identityProvider);
 		
 		RSAKeyProvider rsaKeyProvider = createRSAKeyProvider(conf);
-		Algorithm algorithm = SUPPORTED_JWS_ALGORITHMS.getOrDefault(conf.getJws(), this::throwNotSupportedJws).apply(conf, rsaKeyProvider);
+		Algorithm algorithm;
+		if (!Strings.isNullOrEmpty(conf.getJws())) {
+			algorithm = SUPPORTED_JWS_ALGORITHMS.getOrDefault(conf.getJws(), this::throwUnsupportedJws).apply(conf, rsaKeyProvider);
+		} else {
+			IdentityProvider.LOG.warn("'identity.jws' configuration is missing, disabling JWT authorization token signing and verification.");
+			algorithm = new Algorithm("disabled", "disabled") {
+				@Override
+				public void verify(DecodedJWT arg0) throws SignatureVerificationException {
+					throw new BadRequestException("JWT token verification is not available.");
+				}
+				
+				@Override
+				public byte[] sign(byte[] arg0) throws SignatureGenerationException {
+					throw new BadRequestException("JWT token signing is not available.");
+				}
+			};
+		}
 		env.services().registerService(JWTGenerator.class, new JWTGenerator(algorithm, conf.getIssuer(), conf.getEmailClaimProperty(), conf.getPermissionsClaimProperty()));
 		env.services().registerService(JWTVerifier.class, JWT.require(algorithm)
 				.withIssuer(conf.getIssuer())
@@ -164,7 +184,7 @@ public final class IdentityPlugin extends Plugin {
 		}
 	}
 
-	private Algorithm throwNotSupportedJws(IdentityConfiguration config, RSAKeyProvider keyProvider) {
+	private Algorithm throwUnsupportedJws(IdentityConfiguration config, RSAKeyProvider keyProvider) {
 		throw new SnowOwl.InitializationException(String.format("Unsupported JWT token signing algorithm: %s", config.getJws()));
 	}
 	

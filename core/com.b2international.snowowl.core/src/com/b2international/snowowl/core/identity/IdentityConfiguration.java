@@ -35,7 +35,7 @@ public class IdentityConfiguration {
 	// JWT configuration
 	private String issuer = SNOW_OWL_ISSUER;
 	
-	private String jws = "HS512";
+	private String jws;
 	private String jwksUrl;
 	private String secret;
 	private String signingKey;
