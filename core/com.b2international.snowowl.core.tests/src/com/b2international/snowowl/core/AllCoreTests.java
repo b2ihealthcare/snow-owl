@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
+import com.b2international.snowowl.core.identity.JWTConfigurationTest;
 import com.b2international.snowowl.core.identity.PermissionTest;
 import com.b2international.snowowl.core.jobs.JobRequestsTest;
 import com.b2international.snowowl.core.locks.DatastoreLockTests;
@@ -46,30 +47,34 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-	// unit tests
-	ConsoleProgressMonitorTest.class,
-	ResourceURITest.class,
-	ComponentURITest.class,
-	NotificationsTest.class,
-	PromiseTest.class,
-	RequestTest.class,
-	AttachmentRegistryTest.class,
-	SortParserTest.class,
-	MergeConflictSerializationTest.class,
+	// XXX this JWT configuration test manipulates the global injection context (ApplicationContext), should be executed before any other tests 
+	JWTConfigurationTest.class,
+	// identity/authorization tests
 	PermissionTest.class,
-	ImportResponseSerializationTest.class,
-	ValidationThreadPoolTest.class,
-	SearchResourceRequestTest.class,
-	CodeSystemTest.class,
-	GroovyScriptEngineTest.class,
 	
-	// medium integration tests
-	JobRequestsTest.class,
-	DatastoreLockTests.class,
-	LockIndexTests.class,
-	ValidationIssueApiTest.class,
-	ValidationRuleApiTest.class,
-	ValidationWhiteListApiTest.class,
+//	// unit tests
+//	ConsoleProgressMonitorTest.class,
+//	ResourceURITest.class,
+//	ComponentURITest.class,
+//	NotificationsTest.class,
+//	PromiseTest.class,
+//	RequestTest.class,
+//	AttachmentRegistryTest.class,
+//	SortParserTest.class,
+//	MergeConflictSerializationTest.class,
+//	ImportResponseSerializationTest.class,
+//	ValidationThreadPoolTest.class,
+//	SearchResourceRequestTest.class,
+//	CodeSystemTest.class,
+//	GroovyScriptEngineTest.class,
+//	
+//	// medium integration tests
+//	JobRequestsTest.class,
+//	DatastoreLockTests.class,
+//	LockIndexTests.class,
+//	ValidationIssueApiTest.class,
+//	ValidationRuleApiTest.class,
+//	ValidationWhiteListApiTest.class,
 })
 public class AllCoreTests {
 
