@@ -52,29 +52,29 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	// identity/authorization tests
 	PermissionTest.class,
 	
-//	// unit tests
-//	ConsoleProgressMonitorTest.class,
-//	ResourceURITest.class,
-//	ComponentURITest.class,
-//	NotificationsTest.class,
-//	PromiseTest.class,
-//	RequestTest.class,
-//	AttachmentRegistryTest.class,
-//	SortParserTest.class,
-//	MergeConflictSerializationTest.class,
-//	ImportResponseSerializationTest.class,
-//	ValidationThreadPoolTest.class,
-//	SearchResourceRequestTest.class,
-//	CodeSystemTest.class,
-//	GroovyScriptEngineTest.class,
-//	
-//	// medium integration tests
-//	JobRequestsTest.class,
-//	DatastoreLockTests.class,
-//	LockIndexTests.class,
-//	ValidationIssueApiTest.class,
-//	ValidationRuleApiTest.class,
-//	ValidationWhiteListApiTest.class,
+	// unit tests
+	ConsoleProgressMonitorTest.class,
+	ResourceURITest.class,
+	ComponentURITest.class,
+	NotificationsTest.class,
+	PromiseTest.class,
+	RequestTest.class,
+	AttachmentRegistryTest.class,
+	SortParserTest.class,
+	MergeConflictSerializationTest.class,
+	ImportResponseSerializationTest.class,
+	ValidationThreadPoolTest.class,
+	SearchResourceRequestTest.class,
+	CodeSystemTest.class,
+	GroovyScriptEngineTest.class,
+	
+	// medium integration tests
+	JobRequestsTest.class,
+	DatastoreLockTests.class,
+	LockIndexTests.class,
+	ValidationIssueApiTest.class,
+	ValidationRuleApiTest.class,
+	ValidationWhiteListApiTest.class,
 })
 public class AllCoreTests {
 
