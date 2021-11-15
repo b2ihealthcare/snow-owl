@@ -64,9 +64,7 @@ public final class IdentityPlugin extends Plugin {
 
 	private static final String PUBLIC_HEADER = "-----BEGIN PUBLIC KEY-----";
 	private static final String PUBLIC_FOOTER = "-----END PUBLIC KEY-----";
-	private static final String PKCS1_HEADER_START = "-----BEGIN RSA PRIVATE KEY-----";
 	private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
-	private static final String PKCS1_HEADER_END = "-----END RSA PRIVATE KEY-----";
 	private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
 	
 	private static final Map<String, BiFunction<IdentityConfiguration, RSAKeyProvider, Algorithm>> SUPPORTED_JWS_ALGORITHMS = Map.of(
@@ -78,10 +76,10 @@ public final class IdentityPlugin extends Plugin {
 			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'secret' is required to configure '%s' for JWT token signing/verification.", config.getJws()))),
 		"RS256", (config, keyProvider) -> Optional.ofNullable(keyProvider)
 			.map(Algorithm::RSA256)
-			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' (PKCS1, PKCS8, JWK) and optionally the 'signingKey' (PKCS1, PKCS8, JWK) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws()))),
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws()))),
 		"RS512", (config, keyProvider) -> Optional.ofNullable(keyProvider)
 			.map(Algorithm::RSA512)
-			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' (PKCS1, PKCS8, JWK) and optionally the 'signingKey' (PKCS1, PKCS8, JWK) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws())))
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws())))
 	);
 	
 	@Override
@@ -260,7 +258,7 @@ public final class IdentityPlugin extends Plugin {
 				throw new SnowOwl.InitializationException("Invalid signingKey. Only Base64 encoded PKCS#1, PKCS#8 or JWK keys are supported. Error: " + e.getMessage());
 			}			
 		} else {
-			// TODO support PKCS#1???
+			// TODO support PKCS#1
 			// TODO support JWK strings
 			throw new SnowOwl.InitializationException(String.format(""));
 		}
