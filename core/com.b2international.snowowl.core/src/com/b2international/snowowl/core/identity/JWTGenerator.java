@@ -21,11 +21,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.RSAKeyProvider;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.google.common.collect.Iterables;
 
@@ -34,19 +37,27 @@ import com.google.common.collect.Iterables;
  */
 public final class JWTGenerator {
 
+	@Nullable
 	private final Algorithm algorithm;
+	@Nullable
+	private final RSAKeyProvider keyProvider;
+	
 	private final String issuer;
 	private final String emailClaimProperty;
 	private final String permissionsClaimProperty;
 
-	public JWTGenerator(final Algorithm algorithm, final String issuer, final String emailClaimProperty, final String permissionsClaimProperty) {
+	public JWTGenerator(final Algorithm algorithm, final RSAKeyProvider keyProvider, final String issuer, final String emailClaimProperty, final String permissionsClaimProperty) {
 		this.algorithm = algorithm;
+		this.keyProvider = keyProvider;
 		this.issuer = issuer;
 		this.emailClaimProperty = emailClaimProperty;
 		this.permissionsClaimProperty = permissionsClaimProperty;
 	}
 	
 	public String generate(String email, Map<String, Object> claims) {
+		if (algorithm == null || keyProvider != null && keyProvider.getPrivateKey() == null) {
+			throw new BadRequestException("JWT token signing is not available.");
+		}
 		Builder builder = JWT.create()
 				.withIssuer(issuer)
 				.withSubject(email)

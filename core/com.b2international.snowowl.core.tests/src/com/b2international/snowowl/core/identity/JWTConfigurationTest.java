@@ -99,6 +99,58 @@ public class JWTConfigurationTest {
 		assertThat(decoded.getAlgorithm()).isEqualTo("HS512");
 	}
 	
+	@Test(expected = SnowOwl.InitializationException.class)
+	public void rs256_Nokeys() throws Exception {
+		IdentityConfiguration conf = readConfig("rs256_nokeys.yml");
+		new IdentityPlugin().configureJWT(services, conf);
+	}
+	
+	@Test
+	public void rs256() throws Exception {
+		// configure support for both signing and verifying
+		IdentityConfiguration conf = readConfig("rs256.yml");
+		new IdentityPlugin().configureJWT(services, conf);
+		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
+		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
+		assertThat(decoded.getAlgorithm()).isEqualTo("RS256");
+	}
+	
+	@Test
+	public void rs256_VerifyOnly_X509() throws Exception {
+		// configure support for both signing and verifying first
+		IdentityConfiguration conf = readConfig("rs256.yml");
+		new IdentityPlugin().configureJWT(services, conf);
+		// generate a jwt to use for verify only
+		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
+		
+		// configure the actual verify only config 
+		conf = readConfig("rs256_verify_x509.yml");
+		new IdentityPlugin().configureJWT(services, conf);
+		// signing should be disabled
+		assertThatThrownBy(() -> services.getService(JWTGenerator.class).generate("test@example.com", Map.of()))
+			.isInstanceOf(BadRequestException.class)
+			.hasMessage("JWT token signing is not available.");
+		// verify should work
+		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
+		assertThat(decoded.getAlgorithm()).isEqualTo("RS256");
+	}
+	
+	@Test(expected = SnowOwl.InitializationException.class)
+	public void rs512_Nokeys() throws Exception {
+		IdentityConfiguration conf = readConfig("rs512_nokeys.yml");
+		new IdentityPlugin().configureJWT(services, conf);
+	}
+	
+	@Test
+	public void rs512() throws Exception {
+		// configure support for both signing and verifying
+		IdentityConfiguration conf = readConfig("rs512.yml");
+		new IdentityPlugin().configureJWT(services, conf);
+		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
+		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
+		assertThat(decoded.getAlgorithm()).isEqualTo("RS512");
+	}
+	
 	private IdentityConfiguration readConfig(String configFile) throws Exception {
 		return new ConfigurationFactory<>(IdentityConfiguration.class, ApiValidation.getValidator()).build(PlatformUtil.toAbsolutePath(getClass(), configFile).toFile());
 	}
