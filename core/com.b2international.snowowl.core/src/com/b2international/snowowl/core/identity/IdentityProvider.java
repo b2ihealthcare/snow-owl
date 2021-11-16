@@ -78,7 +78,34 @@ public interface IdentityProvider {
 			// Nothing to do
 		}
 	};
-	
+
+	/**
+	 * External AccessToken based authentication/authorization instance. Always relies on the incoming access token to verify user identity and access.
+	 * 
+	 * @since 8.1
+	 */
+	IdentityProvider JWT = new IdentityProvider() {
+		
+		@Override
+		public User auth(String username, String password) {
+			throw new UnsupportedOperationException("AccessToken based authentication/authorization does not support username/password");
+		}
+		
+		@Override
+		public String getInfo() {
+			return "jwt";
+		}
+		
+		@Override
+		public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
+			throw new UnsupportedOperationException("AccessToken based authentication/authorization does not support searching users");
+		}
+		
+		@Override
+		public void validateSettings() throws Exception {
+		}
+		
+	};	
 	
 	/**
 	 * Authenticates an authorization token.
@@ -118,7 +145,7 @@ public interface IdentityProvider {
 	static User authJWT(final String token) {
 		try {
 			final DecodedJWT jwt = ApplicationContext.getServiceForClass(JWTVerifier.class).verify(token);
-			return JWTGenerator.toUser(jwt);
+			return ApplicationContext.getServiceForClass(JWTGenerator.class).toUser(jwt);
 		} catch (JWTVerificationException e) {
 			throw new UnauthorizedException("Incorrect authorization token"); 
 		}

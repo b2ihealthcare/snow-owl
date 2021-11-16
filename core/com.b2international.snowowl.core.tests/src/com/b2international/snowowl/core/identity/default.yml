@@ -1,0 +1,1 @@
+# default identity conf node is empty, this should parse without issues and should not configure any JWT generation or verification services

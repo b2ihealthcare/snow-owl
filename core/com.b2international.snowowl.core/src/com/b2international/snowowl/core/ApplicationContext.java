@@ -209,7 +209,7 @@ public class ApplicationContext {
 		if (exists.get()) {
 			LOGGER.debug(MessageFormat.format("Unregistered service for interface {0}", serviceInterface.getName()));
 		} else {
-			LOGGER.warn("Failed to unregister service for " + serviceInterface.getSimpleName() + ".");
+			LOGGER.trace("Failed to unregister service for " + serviceInterface.getSimpleName() + ".");
 		}
 		
 	}

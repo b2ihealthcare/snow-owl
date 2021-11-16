@@ -17,14 +17,31 @@ package com.b2international.snowowl.core.identity;
 
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
+import com.auth0.jwk.JwkException;
+import com.auth0.jwk.JwkProvider;
+import com.auth0.jwk.JwkProviderBuilder;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.auth0.jwt.interfaces.RSAKeyProvider;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
@@ -32,8 +49,12 @@ import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.hash.Hashing;
 
 /**
  * @since 5.11
@@ -41,6 +62,58 @@ import com.google.common.collect.Iterables;
 @Component
 public final class IdentityPlugin extends Plugin {
 
+	// known public/private RSA key pair headers (PEM file format, Base64 encoded DER keys)
+	private static final String PUBLIC_HEADER = "-----BEGIN PUBLIC KEY-----";
+	private static final String PUBLIC_FOOTER = "-----END PUBLIC KEY-----";
+	private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
+	private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
+	
+	// Configuration Map that create supported JWT token signing/verification algorithms
+	private static final Map<String, BiFunction<IdentityConfiguration, RSAKeyProvider, Algorithm>> SUPPORTED_JWS_ALGORITHMS = Map.of(
+		"HS256", (config, keyProvider) -> Optional.ofNullable(config.getSecret())
+			.map(Algorithm::HMAC256)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'secret' is required to configure '%s' for JWT token signing/verification.", config.getJws()))),
+		"HS512", (config, keyProvider) -> Optional.ofNullable(config.getSecret())
+			.map(Algorithm::HMAC512)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'secret' is required to configure '%s' for JWT token signing/verification.", config.getJws()))),
+		"RS256", (config, keyProvider) -> Optional.ofNullable(keyProvider)
+			.map(Algorithm::RSA256)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws()))),
+		"RS512", (config, keyProvider) -> Optional.ofNullable(keyProvider)
+			.map(Algorithm::RSA512)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws())))
+	);
+	
+	// Disabled JWT Verifier implementation that throws an exception if any verification related logic would be required
+	private static final JWTVerifier JWT_VERIFIER_DISABLED = new JWTVerifier() {
+		@Override
+		public DecodedJWT verify(DecodedJWT arg0) throws JWTVerificationException {
+			throw new BadRequestException("JWT token verification is not configured.");
+		}
+		
+		@Override
+		public DecodedJWT verify(String arg0) throws JWTVerificationException {
+			throw new BadRequestException("JWT token verification is not configured.");
+		}
+	};
+	// Disabled JWT Generator implementation that throws an exception if any token signing related logic would be required
+	private static final JWTGenerator JWT_GENERATOR_DISABLED = new JWTGenerator() {
+		@Override
+		public User toUser(DecodedJWT jwt) {
+			throw new BadRequestException("JWT token signing is not configured.");
+		}
+		
+		@Override
+		public String generate(User user) {
+			throw new BadRequestException("JWT token signing is not configured.");
+		}
+		
+		@Override
+		public String generate(String email, Map<String, Object> claims) {
+			throw new BadRequestException("JWT token signing is not configured.");
+		}
+	};
+	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
 		registry.add("identity", IdentityConfiguration.class);
@@ -49,11 +122,16 @@ public final class IdentityPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
-		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations());
+		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations() == null ? List.of() : conf.getProviderConfigurations());
 		
-		IdentityProvider identityProvider = null; 
+		IdentityProvider identityProvider = null;
 		if (providers.isEmpty()) {
-			identityProvider = IdentityProvider.NOOP;
+			// if there are no providers, but the issuer is external and there is a JWS configured, then assume we are using access tokens and Snow Owl is a resource server
+			if (conf.isExternalIssuer() || !Strings.isNullOrEmpty(conf.getJws())) {
+				identityProvider = IdentityProvider.JWT;
+			} else {
+				identityProvider = IdentityProvider.NOOP;
+			}
 		} else if (providers.size() == 1) {
 			identityProvider = Iterables.getOnlyElement(providers);
 		} else {
@@ -68,13 +146,113 @@ public final class IdentityPlugin extends Plugin {
 		IdentityProvider.LOG.info("Configured identity providers [{}]", identityProvider.getInfo());
 		env.services().registerService(IdentityProvider.class, identityProvider);
 		
-		// configure JWT token generation and verification
-		final Algorithm algorithm = Algorithm.HMAC512(conf.getSecret());
-		env.services().registerService(JWTGenerator.class, new JWTGenerator(algorithm, conf.getIssuer()));
-		env.services().registerService(JWTVerifier.class, JWT.require(algorithm)
+		configureJWT(env.services(), conf);
+	}
+
+	@VisibleForTesting
+	/*package*/ void configureJWT(ApplicationContext services, final IdentityConfiguration conf) throws MalformedURLException {
+		RSAKeyProvider rsaKeyProvider = createRSAKeyProvider(conf);
+		Algorithm algorithm;
+		if (!Strings.isNullOrEmpty(conf.getJws())) {
+			algorithm = SUPPORTED_JWS_ALGORITHMS.getOrDefault(conf.getJws(), this::throwUnsupportedJws).apply(conf, rsaKeyProvider);
+		} else {
+			IdentityProvider.LOG.warn("'identity.jws' configuration is missing, disabling JWT authorization token signing and verification.");
+			algorithm = null;
+		}
+		
+		if (algorithm == null) {
+			// both signing and verification is disabled
+			services.registerService(JWTGenerator.class, JWT_GENERATOR_DISABLED);
+			services.registerService(JWTVerifier.class, JWT_VERIFIER_DISABLED);
+		} else if (rsaKeyProvider != null && rsaKeyProvider.getPrivateKey() == null) {
+			services.registerService(JWTGenerator.class, JWT_GENERATOR_DISABLED);
+			services.registerService(JWTVerifier.class, createJWTVerifier(algorithm, conf));
+		} else {
+			services.registerService(JWTGenerator.class, new DefaultJWTGenerator(algorithm, conf));
+			services.registerService(JWTVerifier.class, createJWTVerifier(algorithm, conf));
+		}
+	}
+
+	private com.auth0.jwt.JWTVerifier createJWTVerifier(Algorithm algorithm, final IdentityConfiguration conf) {
+		return JWT.require(algorithm)
 				.withIssuer(conf.getIssuer())
 				.acceptLeeway(3L) // 3 seconds
-				.build());
+				.build();
+	}
+	
+	private RSAKeyProvider createRSAKeyProvider(IdentityConfiguration conf) throws MalformedURLException {
+		
+		final String privateKeyId;
+		final RSAPrivateKey privateKey;
+		
+		// read private key if provided
+		if (!Strings.isNullOrEmpty(conf.getSigningKey())) {
+			privateKeyId = Hashing.goodFastHash(16).hashString(conf.getSigningKey(), Charsets.UTF_8).toString();
+			privateKey = readPrivateKey(conf.getSigningKey());
+		} else {
+			privateKeyId = null;
+			privateKey = null;
+		}
+		
+		if (!Strings.isNullOrEmpty(conf.getJwksUrl())) {
+			// prefer JSON Web Key Set provider URLs (if set) for token verification
+			JwkProvider jwkProvider = new JwkProviderBuilder(new URL(conf.getJwksUrl()))
+					// TODO do we need configuration support for this?
+					.cached(5, 24, TimeUnit.HOURS)
+					.rateLimited(10, 1, TimeUnit.MINUTES)
+					.build();
+			
+			return new RSAKeyProvider() {
+				
+				@Override
+				public RSAPublicKey getPublicKeyById(String kid) {
+					try {
+						return (RSAPublicKey) jwkProvider.get(kid).getPublicKey();
+					} catch (JwkException e) {
+						throw new SnowowlRuntimeException(e.getMessage(), e);
+					}
+				}
+				
+				@Override
+				public String getPrivateKeyId() {
+					return privateKeyId;
+				}
+				
+				@Override
+				public RSAPrivateKey getPrivateKey() {
+					return privateKey;
+				}
+
+			};
+		} else if (!Strings.isNullOrEmpty(conf.getVerificationKey())) {
+			// if JWKS is not set, then fall back to verification key if set
+			RSAPublicKey publicKey = readPublicKey(conf.getVerificationKey());
+			return new RSAKeyProvider() {
+				
+				@Override
+				public RSAPublicKey getPublicKeyById(String kid) {
+					return publicKey;
+				}
+				
+				@Override
+				public String getPrivateKeyId() {
+					return privateKeyId;
+				}
+				
+				@Override
+				public RSAPrivateKey getPrivateKey() {
+					return privateKey;
+				}
+
+			};			
+		} else {
+			// if neither jwksUrl nor the verificationKey settings are configured then this not an RSA configuration (or an invalid configuration raised when creating the algorithm instance)
+			return null;
+		}
+	}
+
+	private Algorithm throwUnsupportedJws(IdentityConfiguration config, RSAKeyProvider keyProvider) {
+		throw new SnowOwl.InitializationException(String.format("Unsupported JWT token signing algorithm: %s", config.getJws()));
 	}
 	
 	private List<IdentityProvider> createProviders(Environment env, List<IdentityProviderConfig> providerConfigurations) {
@@ -95,6 +273,46 @@ public final class IdentityPlugin extends Plugin {
 		return providers;
 	}
 
+	private RSAPrivateKey readPrivateKey(String value) {
+		if (value.startsWith(PKCS8_HEADER)) {
+			try {
+				String extractedKey = value
+						// replace header
+						.replace(PKCS8_HEADER, "")
+						// replace any line endings if present
+						.replaceAll("\\r", "")
+						.replaceAll("\\n", "")
+						// replace footer
+						.replace(PKCS8_FOOTER, "");
+				PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(extractedKey));
+				return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+			} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+				throw new SnowOwl.InitializationException("Invalid signingKey. Only Base64 encoded PKCS#1, PKCS#8 or JWK keys are supported. Error: " + e.getMessage());
+			}			
+		} else {
+			// TODO support PKCS#1
+			// TODO support JWK strings
+			throw new SnowOwl.InitializationException(String.format(""));
+		}
+	}
+	
+	private RSAPublicKey readPublicKey(String value) {
+        try {
+        	String extractedKey = value
+					// replace header
+					.replace(PUBLIC_HEADER, "")
+					// replace any line endings if present
+					.replaceAll("\\r", "")
+					.replaceAll("\\n", "")
+					// replace footer
+					.replace(PUBLIC_FOOTER, "");
+        	X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(extractedKey));
+			return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(keySpec);
+		} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+			throw new SnowOwl.InitializationException("Invalid verificationKey. Only Base64 encoded X509 Certificate keys are supported. Error: " + e.getMessage());
+		}
+	}
+	
 	static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses(ClassPathScanner scanner) {
 		final ImmutableList.Builder<Class<? extends IdentityProviderConfig>> configs = ImmutableList.builder();
 		final Iterator<IdentityProviderFactory> it = scanner.getComponentsByInterface(IdentityProviderFactory.class).iterator();
