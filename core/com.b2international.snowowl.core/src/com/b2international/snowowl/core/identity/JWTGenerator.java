@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,102 +15,29 @@
  */
 package com.b2international.snowowl.core.identity;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTCreator.Builder;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.auth0.jwt.interfaces.RSAKeyProvider;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.google.common.collect.Iterables;
 
 /**
- * @since 7.2
+ * @since 8.1.0
  */
-public final class JWTGenerator {
+public interface JWTGenerator {
 
-	@Nullable
-	private final Algorithm algorithm;
-	@Nullable
-	private final RSAKeyProvider keyProvider;
-	
-	private final String issuer;
-	private final String emailClaimProperty;
-	private final String permissionsClaimProperty;
-
-	public JWTGenerator(final Algorithm algorithm, final RSAKeyProvider keyProvider, final String issuer, final String emailClaimProperty, final String permissionsClaimProperty) {
-		this.algorithm = algorithm;
-		this.keyProvider = keyProvider;
-		this.issuer = issuer;
-		this.emailClaimProperty = emailClaimProperty;
-		this.permissionsClaimProperty = permissionsClaimProperty;
-	}
-	
-	public String generate(String email, Map<String, Object> claims) {
-		if (algorithm == null || keyProvider != null && keyProvider.getPrivateKey() == null) {
-			throw new BadRequestException("JWT token signing is not available.");
-		}
-		Builder builder = JWT.create()
-				.withIssuer(issuer)
-				.withSubject(email)
-				.withIssuedAt(new Date())
-				.withClaim(emailClaimProperty, email);
-		
-		// add claims
-		claims.forEach((key, value) -> {
-			if (value instanceof String) {
-				builder.withClaim(key, (String) value);
-			} else if (value instanceof Iterable<?>) {
-				builder.withArrayClaim(key, Iterables.toArray((Iterable<String>) value, String.class));
-			} else if (value instanceof String[]) {
-				builder.withArrayClaim(key, (String[]) value);
-			}
-		});
-		
-		try {
-			return builder.sign(algorithm);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
+	String generate(String email, Map<String, Object> claims);
 
 	/**
 	 * Generate a JWT security token from the information available in the given {@link User} object.
 	 * @param user
 	 * @return
 	 */
-	public String generate(User user) {
-		final List<String> permissions = user.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
-		return generate(user.getUsername(), Map.of(permissionsClaimProperty, permissions));
-	}	
-	
+	String generate(User user);
+
 	/**
 	 * Extract subject and claim information to reconstruct a {@link User} object.
 	 * @param jwt - the verified token to extract information from
 	 * @return
 	 */
-	public User toUser(DecodedJWT jwt) {
-		final Claim emailClaim = jwt.getClaim(emailClaimProperty);
-		if (emailClaim == null || emailClaim.isNull()) {
-			throw new BadRequestException("'%s' JWT access token field is required for email access, but it was missing.", emailClaimProperty);
-		}
-		
-		Claim permissionsClaim = jwt.getClaim(permissionsClaimProperty);
-		if (permissionsClaim == null || permissionsClaim.isNull()) {
-			throw new BadRequestException("'%s' JWT access token field is required for permissions access, but it was missing.", permissionsClaimProperty);
-		}
-		
-		final Set<Permission> permissions = jwt.getClaim(permissionsClaimProperty).asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toSet());
-		return new User(emailClaim.asString(), List.of(new Role("jwt_roles", permissions)));
-	}
+	User toUser(DecodedJWT jwt);
 	
 }

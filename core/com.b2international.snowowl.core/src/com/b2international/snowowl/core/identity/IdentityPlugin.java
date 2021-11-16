@@ -62,11 +62,13 @@ import com.google.common.hash.Hashing;
 @Component
 public final class IdentityPlugin extends Plugin {
 
+	// known public/private RSA key pair headers (PEM file format, Base64 encoded DER keys)
 	private static final String PUBLIC_HEADER = "-----BEGIN PUBLIC KEY-----";
 	private static final String PUBLIC_FOOTER = "-----END PUBLIC KEY-----";
 	private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
 	private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
 	
+	// Configuration Map that create supported JWT token signing/verification algorithms
 	private static final Map<String, BiFunction<IdentityConfiguration, RSAKeyProvider, Algorithm>> SUPPORTED_JWS_ALGORITHMS = Map.of(
 		"HS256", (config, keyProvider) -> Optional.ofNullable(config.getSecret())
 			.map(Algorithm::HMAC256)
@@ -81,6 +83,36 @@ public final class IdentityPlugin extends Plugin {
 			.map(Algorithm::RSA512)
 			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws())))
 	);
+	
+	// Disabled JWT Verifier implementation that throws an exception if any verification related logic would be required
+	private static final JWTVerifier JWT_VERIFIER_DISABLED = new JWTVerifier() {
+		@Override
+		public DecodedJWT verify(DecodedJWT arg0) throws JWTVerificationException {
+			throw new BadRequestException("JWT token verification is not configured.");
+		}
+		
+		@Override
+		public DecodedJWT verify(String arg0) throws JWTVerificationException {
+			throw new BadRequestException("JWT token verification is not configured.");
+		}
+	};
+	// Disabled JWT Generator implementation that throws an exception if any token signing related logic would be required
+	private static final JWTGenerator JWT_GENERATOR_DISABLED = new JWTGenerator() {
+		@Override
+		public User toUser(DecodedJWT jwt) {
+			throw new BadRequestException("JWT token signing is not configured.");
+		}
+		
+		@Override
+		public String generate(User user) {
+			throw new BadRequestException("JWT token signing is not configured.");
+		}
+		
+		@Override
+		public String generate(String email, Map<String, Object> claims) {
+			throw new BadRequestException("JWT token signing is not configured.");
+		}
+	};
 	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
@@ -127,25 +159,25 @@ public final class IdentityPlugin extends Plugin {
 			IdentityProvider.LOG.warn("'identity.jws' configuration is missing, disabling JWT authorization token signing and verification.");
 			algorithm = null;
 		}
-		services.registerService(JWTGenerator.class, new JWTGenerator(algorithm, rsaKeyProvider, conf.getIssuer(), conf.getEmailClaimProperty(), conf.getPermissionsClaimProperty()));
+		
 		if (algorithm == null) {
-			services.registerService(JWTVerifier.class, new JWTVerifier() {
-				@Override
-				public DecodedJWT verify(DecodedJWT arg0) throws JWTVerificationException {
-					throw new BadRequestException("JWT token verification is not available.");
-				}
-				
-				@Override
-				public DecodedJWT verify(String arg0) throws JWTVerificationException {
-					throw new BadRequestException("JWT token verification is not available.");
-				}
-			});
+			// both signing and verification is disabled
+			services.registerService(JWTGenerator.class, JWT_GENERATOR_DISABLED);
+			services.registerService(JWTVerifier.class, JWT_VERIFIER_DISABLED);
+		} else if (rsaKeyProvider != null && rsaKeyProvider.getPrivateKey() == null) {
+			services.registerService(JWTGenerator.class, JWT_GENERATOR_DISABLED);
+			services.registerService(JWTVerifier.class, createJWTVerifier(algorithm, conf));
 		} else {
-			services.registerService(JWTVerifier.class, JWT.require(algorithm)
-					.withIssuer(conf.getIssuer())
-					.acceptLeeway(3L) // 3 seconds
-					.build());
+			services.registerService(JWTGenerator.class, new DefaultJWTGenerator(algorithm, conf));
+			services.registerService(JWTVerifier.class, createJWTVerifier(algorithm, conf));
 		}
+	}
+
+	private com.auth0.jwt.JWTVerifier createJWTVerifier(Algorithm algorithm, final IdentityConfiguration conf) {
+		return JWT.require(algorithm)
+				.withIssuer(conf.getIssuer())
+				.acceptLeeway(3L) // 3 seconds
+				.build();
 	}
 	
 	private RSAKeyProvider createRSAKeyProvider(IdentityConfiguration conf) throws MalformedURLException {
