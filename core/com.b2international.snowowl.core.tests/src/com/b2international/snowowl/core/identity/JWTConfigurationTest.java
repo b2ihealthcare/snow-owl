@@ -60,11 +60,11 @@ public class JWTConfigurationTest {
 		new IdentityPlugin().configureJWT(services, conf);
 		assertThatThrownBy(() -> services.getService(JWTGenerator.class).generate("test@example.com", Map.of()))
 			.isInstanceOf(BadRequestException.class)
-			.hasMessage("JWT token signing is not available.");
+			.hasMessage("JWT token signing is not configured.");
 		// XXX this token is random generated with dummy data
 		assertThatThrownBy(() -> services.getService(JWTVerifier.class).verify("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTbm93IE93bCIsImlhdCI6MTYzNjk5MTc2OCwiZXhwIjoxNjY4NTI3NzY4LCJhdWQiOiJ3d3cuZXhhbXBsZS5jb20iLCJzdWIiOiJleGFtcGxlQGV4YW1wbGUuY29tIn0.rwrbn_n4tFQQk_DPMetRpQEXRnIPp3OKJsmIDIVdLxE"))
 			.isInstanceOf(BadRequestException.class)
-			.hasMessage("JWT token verification is not available.");
+			.hasMessage("JWT token verification is not configured.");
 	}
 	
 	@Test(expected = SnowOwl.InitializationException.class)
@@ -129,7 +129,7 @@ public class JWTConfigurationTest {
 		// signing should be disabled
 		assertThatThrownBy(() -> services.getService(JWTGenerator.class).generate("test@example.com", Map.of()))
 			.isInstanceOf(BadRequestException.class)
-			.hasMessage("JWT token signing is not available.");
+			.hasMessage("JWT token signing is not configured.");
 		// verify should work
 		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
 		assertThat(decoded.getAlgorithm()).isEqualTo("RS256");
