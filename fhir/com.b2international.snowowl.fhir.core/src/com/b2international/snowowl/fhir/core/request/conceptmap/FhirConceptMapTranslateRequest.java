@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
@@ -38,7 +39,11 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, T
 	@Override
 	public TranslateResult execute(ServiceProvider context) {
 		ConceptMap conceptMap = FhirRequests.conceptMaps().prepareGet(request.getUrlValue()).buildAsync().execute(context);
-		return context.optionalService(FhirConceptMapTranslator.class).orElse(FhirConceptMapTranslator.NOOP).translate(context, conceptMap, request);
+		return context.service(RepositoryManager.class)
+				.get(conceptMap.getToolingId())
+				.optionalService(FhirConceptMapTranslator.class)
+				.orElse(FhirConceptMapTranslator.NOOP)
+				.translate(context, conceptMap, request);
 	}
 
 }

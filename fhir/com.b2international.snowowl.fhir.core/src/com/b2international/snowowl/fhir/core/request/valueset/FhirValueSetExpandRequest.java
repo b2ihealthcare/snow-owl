@@ -24,6 +24,7 @@ import org.elasticsearch.common.Strings;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
@@ -77,7 +78,11 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 							.build())
 					.buildAsync()
 					.execute(context);
-			return context.optionalService(FhirValueSetExpander.class).orElse(FhirValueSetExpander.NOOP).expand(context, valueSet, request);
+			return context.service(RepositoryManager.class)
+					.get(valueSet.getToolingId())
+					.optionalService(FhirValueSetExpander.class)
+					.orElse(FhirValueSetExpander.NOOP)
+					.expand(context, valueSet, request);
 		} catch (NotFoundException e) {
 			// if there is no Value Set present for the given URL, then try to parse the URL to a meaningful value if possible and evaluate it
 			if (uri.startsWith("http://")) {
