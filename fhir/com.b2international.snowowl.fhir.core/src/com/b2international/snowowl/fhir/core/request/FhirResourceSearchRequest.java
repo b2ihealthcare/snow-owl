@@ -91,7 +91,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				.filter(ResourceDocument.Expressions.resourceType(getResourceType())); 
 		
 		// resource and version doc has id field
-		addIdFilter(resourcesQuery, ResourceDocument.Expressions::ids); 
+		addIdFilter(resourcesQuery, ids -> Expressions.builder()
+				.should(ResourceDocument.Expressions.ids(ids))
+				.should(ResourceDocument.Expressions.urls(ids))
+				.build()); 
 		// apply _name filter to the id fields, we use the same value for both id and name
 		addFilter(resourcesQuery, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); 
 		addFilter(resourcesQuery, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
