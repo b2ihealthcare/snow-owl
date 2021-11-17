@@ -34,6 +34,10 @@ public abstract class IndexResourceRequestBuilder<B extends IndexResourceRequest
 
 	protected IndexResourceRequestBuilder() {}
 	
+	protected final List<String> fields() {
+		return fields;
+	}
+	
 	public final B setExpand(String...expand) {
 		if (!CompareUtils.isEmpty(expand)) {
 			return setExpand(String.join(",", expand));
