@@ -63,6 +63,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// High-level issue test cases, Java API test cases
 	IssueSO2503RemoteJobDynamicMappingFix.class,
 	Issue3019FixDeletionOfReferringMembersTest.class,
+	CISServiceIssuesTests.class,
 	EclSerializerTest.class,
 	// RESTful API test cases
 	// Branch API tests
