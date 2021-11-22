@@ -22,6 +22,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
@@ -57,10 +58,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 /**
  * @since 6.0
@@ -262,6 +260,21 @@ public final class Rf2EffectiveTimeSlice {
 				}
 				
 				tx.commit(commitMessage);
+								
+				Set<String> componentsToPublish = componentsToImport.stream()
+					.filter(SnomedCoreComponent.class::isInstance)
+					.map(SnomedCoreComponent.class::cast)
+					.filter(c -> !EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(EffectiveTimes.format(c.getEffectiveTime())))
+					.map(SnomedCoreComponent::getId)
+					.collect(Collectors.toSet());
+				
+				if (!componentsToPublish.isEmpty()) {
+					SnomedRequests.identifiers()
+						.preparePublish()
+						.setComponentIds(componentsToPublish)
+						.buildAsync()
+						.get(tx);
+				}
 			}
 			
 			// Check if any integer values should actually be decimals, indicated by the range constraint on MRCM members
