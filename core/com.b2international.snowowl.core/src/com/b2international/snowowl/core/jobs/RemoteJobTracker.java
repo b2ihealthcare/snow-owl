@@ -54,6 +54,13 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	private final class CleanUpTask extends TimerTask {
+		
+		private final long staleJobCleanUpThreshold;
+
+		public CleanUpTask(long staleJobCleanUpThreshold) {
+			this.staleJobCleanUpThreshold = staleJobCleanUpThreshold;
+		}
+
 		@Override
 		public void run() {
 			try {
@@ -63,14 +70,18 @@ public final class RemoteJobTracker implements IDisposableService {
 							.from(RemoteJobEntry.class)
 							.where(
 								Expressions.builder()
-									.filter(RemoteJobEntry.Expressions.deleted(true))
-									.filter(RemoteJobEntry.Expressions.done())
+									.must(RemoteJobEntry.Expressions.done())
+									.must(Expressions.builder()
+											.should(RemoteJobEntry.Expressions.deleted(true))
+											.should(RemoteJobEntry.Expressions.finishDate(0L, System.currentTimeMillis() - staleJobCleanUpThreshold))
+											.build()
+									)
 									.build()
 							)
 							.limit(Integer.MAX_VALUE)
 							.build());
 					if (hits.getTotal() > 0) {
-						LOG.trace("Purging job entries {}", hits.getHits());
+						LOG.trace("Purging deleted / stale job entries {}", hits.getHits());
 						writer.remove(RemoteJobEntry.class, Set.copyOf(hits.getHits()));
 						writer.commit();
 					}
@@ -89,7 +100,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	private final IEventBus events;
 	private final ObjectMapper mapper;
 
-	public RemoteJobTracker(Index index, IEventBus events, ObjectMapper mapper, final long remoteJobCleanUpInterval) {
+	public RemoteJobTracker(Index index, IEventBus events, ObjectMapper mapper, final long jobCleanUpInterval, final long staleJobCleanUpThreshold) {
 		this.index = index;
 		this.events = events;
 		this.mapper = mapper;
@@ -111,8 +122,8 @@ public final class RemoteJobTracker implements IDisposableService {
 		
 		this.listener = new RemoteJobChangeAdapter();
 		Job.getJobManager().addJobChangeListener(listener);
-		this.cleanUp = new CleanUpTask();
-		Holder.CLEANUP_TIMER.schedule(cleanUp, remoteJobCleanUpInterval, remoteJobCleanUpInterval);
+		this.cleanUp = new CleanUpTask(staleJobCleanUpThreshold);
+		Holder.CLEANUP_TIMER.schedule(cleanUp, jobCleanUpInterval, jobCleanUpInterval);
 	}
 	
 	public RemoteJobs search(Expression query, int limit) {
