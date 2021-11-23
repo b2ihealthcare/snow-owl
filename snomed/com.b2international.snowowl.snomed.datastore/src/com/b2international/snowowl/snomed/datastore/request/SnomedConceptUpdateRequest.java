@@ -319,7 +319,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.map(componentId -> {
 				if (!previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// new component
-					return currentComponentsById.get(componentId).toCreateRequest(conceptId);
+					return new IdRequest<>(currentComponentsById.get(componentId).toCreateRequest(conceptId));
 				} else if (previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// changed component
 					return currentComponentsById.get(componentId).toUpdateRequest();
