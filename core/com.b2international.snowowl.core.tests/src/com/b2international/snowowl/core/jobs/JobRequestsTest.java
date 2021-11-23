@@ -60,7 +60,7 @@ public class JobRequestsTest {
 		mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
 		this.bus = EventBusUtil.getBus();
-		this.tracker = new RemoteJobTracker(index, bus, mapper, 200);
+		this.tracker = new RemoteJobTracker(index, bus, mapper, 200, 300);
 		this.context = ServiceProvider.EMPTY.inject()
 				.bind(ObjectMapper.class, mapper)
 				.bind(RemoteJobTracker.class, tracker)
@@ -167,6 +167,26 @@ public class JobRequestsTest {
 		// 1 changed - FINISHED
 		// 1 removed
 		verifyJobEvents(jobId, 1, 2, 1);
+	}
+	
+	@Test
+	public void scheduleAndCleanupStale() throws Exception {
+		
+		final String jobId = schedule("scheduleAndCleanupStale", context -> RESULT);
+		
+		RemoteJobEntry entry = waitDone(jobId);
+		assertEquals(RemoteJobState.FINISHED, entry.getState());
+		
+		entry = null;
+		int numberOfTries = 4;
+		
+		do {
+			entry = tracker.get(jobId);
+			Thread.sleep(100);
+		} while (entry != null && --numberOfTries > 0);
+		
+		assertNull("Stale entry couldn't be removed by tracker", entry);
+		
 	}
 	
 	@Test
