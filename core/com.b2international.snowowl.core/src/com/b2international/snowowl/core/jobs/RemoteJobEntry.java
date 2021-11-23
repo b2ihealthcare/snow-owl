@@ -74,6 +74,7 @@ public final class RemoteJobEntry implements Serializable {
 		public static final String USER = "user";
 		public static final String STATE = "state";
 		public static final String START_DATE = "startDate";
+		public static final String FINISH_DATE = "finishDate";
 		public static final String SCHEDULE_DATE = "scheduleDate";
 		public static final String PARAMETERS = "parameters";
 		public static final Set<String> SORT_FIELDS = ImmutableSet.of(
@@ -82,7 +83,8 @@ public final class RemoteJobEntry implements Serializable {
 			USER,
 			STATE,
 			START_DATE,
-			SCHEDULE_DATE
+			SCHEDULE_DATE,
+			FINISH_DATE
 		);
 		public static final String DESCRIPTION = "description";
 		public static final String DESCRIPTION_TEXT = "description.text";
@@ -129,6 +131,10 @@ public final class RemoteJobEntry implements Serializable {
 		
 		public static Expression states(Iterable<RemoteJobState> states) {
 			return matchAny(Fields.STATE, FluentIterable.from(states).transform(Enum::name).toSet());
+		}
+		
+		public static Expression finishDate(long from, long to) {
+			return matchRange(Fields.FINISH_DATE, from, to);
 		}
 
 		public static Expression matchRequestType(Iterable<String> values) {

@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.repository;
 import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 
@@ -34,10 +33,7 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.client.TransportConfiguration;
-import com.b2international.snowowl.core.config.IndexConfiguration;
-import com.b2international.snowowl.core.config.IndexSettings;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.config.*;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.Request;
@@ -80,6 +76,7 @@ public final class RepositoryPlugin extends Plugin {
 	public void addConfigurations(ConfigurationRegistry registry) {
 		registry.add("repository", RepositoryConfiguration.class);
 		registry.add("transport", TransportConfiguration.class);
+		registry.add("jobs", JobConfiguration.class);
 	}
 	
 	@Override
@@ -261,15 +258,18 @@ public final class RepositoryPlugin extends Plugin {
 			new Mappings(RemoteJobEntry.class), 
 			env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), JOBS_INDEX)
 		);
-		// TODO make this configurable
-		final long defaultJobCleanUpInterval = TimeUnit.MINUTES.toMillis(1);
+		
+		final long jobCleanUpInterval = configuration.getModuleConfig(JobConfiguration.class).getJobCleanupInterval();
+		final long staleJobCleanUpThreshold = configuration.getModuleConfig(JobConfiguration.class).getStaleJobCleanupThreshold();
+		
 		env.services()
 			.registerService(RemoteJobTracker.class, 
 				new RemoteJobTracker(
 					jobsIndex, 
 					env.service(IEventBus.class), 
 					objectMapper, 
-					defaultJobCleanUpInterval)
+					jobCleanUpInterval,
+					staleJobCleanUpThreshold)
 			);
 	}
 
