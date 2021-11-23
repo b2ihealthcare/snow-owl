@@ -23,6 +23,7 @@ import java.util.*;
 import org.slf4j.Logger;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
@@ -31,7 +32,6 @@ import com.b2international.snowowl.core.codesystem.version.VersioningConfigurati
 import com.b2international.snowowl.core.codesystem.version.VersioningRequest;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -145,9 +145,9 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 	}
 	
 	private void versionComponents(TransactionContext context, Iterable<? extends SnomedDocument> componentsToVersion, Multimap<String, String> componentIdsByReferringModule) {
-		
-		try (TransactionContext ctx = new RepositoryTransactionContext(context, context.author(), "Versioning components", context.parentLock())) {
-			
+		TransactionContext ctx = null;
+		try (TransactionContext tx = context.openTransaction(context, context.author(), "Versioning components", context.parentLock())) {
+			ctx = tx;
 			final Set<String> componentIdsToPublish = newHashSet();
 			
 			for (SnomedDocument componentToVersion : componentsToVersion) {
@@ -212,8 +212,12 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 					.build()
 					.execute(ctx);
 			}
+		} catch (ApiException e) {
+			if (ctx != null) { ctx.rollback(); }
+			throw e;
 		} catch (Exception e) {
-			throw new SnowowlRuntimeException(e);
+			if (ctx != null) { ctx.rollback(); }
+			throw SnowowlRuntimeException.wrap(e);
 		}
 	}
 
