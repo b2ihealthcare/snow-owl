@@ -262,7 +262,6 @@ public final class Rf2EffectiveTimeSlice {
 				}
 				
 				tx.commit(commitMessage);
-								
 			}
 			
 			// Check if any integer values should actually be decimals, indicated by the range constraint on MRCM members
