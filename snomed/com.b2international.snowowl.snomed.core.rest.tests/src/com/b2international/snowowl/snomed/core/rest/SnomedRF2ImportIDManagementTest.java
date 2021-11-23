@@ -39,7 +39,7 @@ import com.b2international.snowowl.test.commons.Services;
 /**
  * @since 7.18.0
  */
-public class CISServiceIssuesTests extends AbstractSnomedApiTest {
+public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void publishReleasedIdOnImport() throws Exception {
