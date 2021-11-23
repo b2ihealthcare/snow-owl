@@ -230,7 +230,6 @@ public class CisBulkSctIdService extends AbstractRestService {
 				.setDescription(jobDescription)
 				.setRequest(request)
 				.setUser(User.SYSTEM.getUsername())
-				.setAutoClean(true)
 				.buildAsync()
 				.execute(bus)
 				.thenWith(id -> JobRequests.prepareGet(id).buildAsync().execute(bus))
