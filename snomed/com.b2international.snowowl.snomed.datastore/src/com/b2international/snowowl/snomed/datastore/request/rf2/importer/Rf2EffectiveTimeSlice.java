@@ -261,20 +261,6 @@ public final class Rf2EffectiveTimeSlice {
 				
 				tx.commit(commitMessage);
 								
-				Set<String> componentsToPublish = componentsToImport.stream()
-					.filter(SnomedCoreComponent.class::isInstance)
-					.map(SnomedCoreComponent.class::cast)
-					.filter(c -> !EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(EffectiveTimes.format(c.getEffectiveTime())))
-					.map(SnomedCoreComponent::getId)
-					.collect(Collectors.toSet());
-				
-				if (!componentsToPublish.isEmpty()) {
-					SnomedRequests.identifiers()
-						.preparePublish()
-						.setComponentIds(componentsToPublish)
-						.buildAsync()
-						.get(tx);
-				}
 			}
 			
 			// Check if any integer values should actually be decimals, indicated by the range constraint on MRCM members
