@@ -96,6 +96,9 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 			cis.register(idsToRegister);
 			cis.publish(idsToPublish);
 		}
+		// clear local id cache after commit
+		idsToPublish.clear();
+		idsToRegister.clear();
 		return commit;
 	}
 	
