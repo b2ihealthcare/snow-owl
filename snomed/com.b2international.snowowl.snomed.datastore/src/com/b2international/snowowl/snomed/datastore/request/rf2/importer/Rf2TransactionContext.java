@@ -188,7 +188,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					final SnomedDocument existingRow = (SnomedDocument) existingObject;
 					if (rf2Row.getEffectiveTime() == null || EffectiveTimes.getEffectiveTime(rf2Row.getEffectiveTime()) > existingRow.getEffectiveTime()) {
 						componentsToImport.add(rf2Component);
-						if (existingRow instanceof SnomedComponentDocument && rf2Row.getEffectiveTime() != null) {
+						if (existingRow instanceof SnomedComponentDocument && rf2Row.getEffectiveTime() !=null && !existingRow.isReleased()) {
 							idsToPublish.add(existingRow.getId());
 						}
 					}
