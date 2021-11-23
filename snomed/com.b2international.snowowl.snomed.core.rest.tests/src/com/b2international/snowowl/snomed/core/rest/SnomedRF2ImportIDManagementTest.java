@@ -99,6 +99,33 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 				.get();
 		
 		assertEquals("Assigned", sctId.getStatus());
+		
+		final String importJobId2 = SnomedRf2Requests.importJobKey(branch);
+		final UUID archiveId2 = UUID.randomUUID();
+		final File importArchive2 = PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, "SnomedCT_Release_INT_20150131_release_unpublished_concept.zip").toFile();
+		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId2, new FileInputStream(importArchive2));
+		
+		String jobId2 = SnomedRequests.rf2().prepareImport()
+				.setRf2ArchiveId(archiveId2)
+				.setReleaseType(Rf2ReleaseType.DELTA)
+				.setCreateVersions(false)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.runAsJobWithRestart(importJobId2, String.format("Importing SNOMED CT RF2 file '%s'", importArchive2.getName()))
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		
+		JobRequests.waitForJob(getBus(), jobId2, 50);
+		
+		SctId updatedSctId = SnomedRequests.identifiers().prepareGet()
+				.setComponentId("63961392103")
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync()
+				.first()
+				.get();
+		
+		assertEquals("Published", updatedSctId.getStatus());
+
 	}
 	
 }
