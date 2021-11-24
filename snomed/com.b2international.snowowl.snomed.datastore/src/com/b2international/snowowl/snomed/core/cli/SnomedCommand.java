@@ -16,8 +16,10 @@
 package com.b2international.snowowl.snomed.core.cli;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
@@ -40,10 +42,9 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.io.ImportResponse;
-import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.InternalSnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
-import com.b2international.snowowl.snomed.cis.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -164,24 +165,20 @@ public final class SnomedCommand extends Command {
 		
 		@Override
 		public void run(CommandLineStream out) {
-			ISnomedIdentifierService identifierService = getContext().service(ISnomedIdentifierService.class);
-			
-			if (!(identifierService instanceof DefaultSnomedIdentifierService)) {
-				out.println("Can't run command without DefaultSnomedIdentifierService");
+			InternalSnomedIdentifierService identifierService = getContext().service(InternalSnomedIdentifierService.class);
+			if (identifierService == null) {
+				out.println("The current Component Identifier Service does not support listing SNOMED CT identifiers via this command");
 				return;
 			}
-			
-			DefaultSnomedIdentifierService defaultIdentifierService = (DefaultSnomedIdentifierService) identifierService;
-			
+						
 			Set<String> statuses = Sets.newHashSet();
-			
 			if (ALL_SCTID_STATUSES.contains(status)) {
 				statuses.add(status);
 			} else {
 				statuses.addAll(ALL_SCTID_STATUSES);
 			}
 			
-			defaultIdentifierService.store.read( searcher -> {
+			identifierService.cisStore().read( searcher -> {
 				statuses.forEach( status -> {
 					Query<String> idQuery = Query.select(String.class)
 							.from(SctId.class)
@@ -190,7 +187,9 @@ public final class SnomedCommand extends Command {
 							.limit(100_000)
 							.build();
 					
-					File idReport = new File(String.format("%s/%sIds.txt", path, status));
+					String timeStamp = new SimpleDateFormat("yyyyMMdd_kkmmss").format(new Date());
+					File idReport = new File(String.format("%s/%sIds_%s.txt", path, status, timeStamp));
+					
 					try (FileOutputStream outputStream = new FileOutputStream(idReport)) {
 						try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, "UTF-8")) {
 							searcher.scroll(idQuery).forEach( hits -> {
@@ -214,7 +213,8 @@ public final class SnomedCommand extends Command {
 		
 		private void handleException(Exception e, CommandLineStream out) {
 			out.println("An error occurred while exporting SctIds.");
-			out.println(e);						
+			out.println(e);
+			return;
 		}
 		
 	}
