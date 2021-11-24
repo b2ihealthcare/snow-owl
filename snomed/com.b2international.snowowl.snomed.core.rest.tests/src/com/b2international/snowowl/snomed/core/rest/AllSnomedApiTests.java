@@ -64,7 +64,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	IssueSO2503RemoteJobDynamicMappingFix.class,
 	Issue3019FixDeletionOfReferringMembersTest.class,
 	SnomedRF2ImportIDManagementTest.class,
-	SnomedVersioningIDManagementTest.class,
 	EclSerializerTest.class,
 	// RESTful API test cases
 	// Branch API tests

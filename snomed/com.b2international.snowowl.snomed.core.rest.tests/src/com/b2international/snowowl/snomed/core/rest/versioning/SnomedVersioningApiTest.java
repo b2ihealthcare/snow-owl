@@ -19,16 +19,19 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstant
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 
 /**
  * @since 2.0
@@ -94,6 +97,25 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate, true).statusCode(201);
 		SnomedConcept afterForceVersioning = getConcept(codeSystemVersionURI, conceptId);
 		assertEquals(versionEffectiveDate, EffectiveTimes.format(afterForceVersioning.getEffectiveTime(), DateFormats.SHORT));
+	}
+	
+	@Test
+	public void publishAssignedIdsOnVersionCreate() throws Exception {
+		final String versionName = "publishAssignedIdsOnVersionCreate";
+		String conceptId = createConcept(new CodeSystemURI(INT_CODESYSTEM), SnomedRestFixtures.childUnderRootWithDefaults());
+		
+		String versionEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate).statusCode(201);
+		
+		SctId sctId = SnomedRequests.identifiers().prepareGet()
+				.setComponentId(conceptId)
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync()
+				.first()
+				.get();
+			
+		assertEquals("Published", sctId.getStatus());
 	}
 	
 }
