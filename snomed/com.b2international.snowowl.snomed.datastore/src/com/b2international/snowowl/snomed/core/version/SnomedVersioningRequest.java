@@ -26,12 +26,10 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.codesystem.version.VersioningConfiguration;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequest;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -64,6 +62,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		SnomedRelationshipIndexEntry.class
 	);
 	
+	private final Set<String> componentIdsToPublish = newHashSet();
 	private final long effectiveTime;
 	
 	public SnomedVersioningRequest(VersioningConfiguration config) {
@@ -146,75 +145,60 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 	
 	private void versionComponents(TransactionContext context, Iterable<? extends SnomedDocument> componentsToVersion, Multimap<String, String> componentIdsByReferringModule) {
 		
-		try (TransactionContext ctx = new RepositoryTransactionContext(context, context.author(), "Versioning components", context.parentLock())) {
-			
-			final Set<String> componentIdsToPublish = newHashSet();
-			
-			for (SnomedDocument componentToVersion : componentsToVersion) {
-				// register IDs for publication
-				if (componentToVersion instanceof SnomedComponentDocument) {
-					componentIdsToPublish.add(componentToVersion.getId());
-				}
-				
-				// stage update on components based on actual type
-				final SnomedDocument.Builder<?, ?> updatedComponent;
-				if (componentToVersion instanceof SnomedConceptDocument) {
-					final SnomedConceptDocument concept = (SnomedConceptDocument) componentToVersion;
-					componentIdsByReferringModule.put(concept.getModuleId(), concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
-					updatedComponent = SnomedConceptDocument.builder(concept);
-				} else if (componentToVersion instanceof SnomedDescriptionIndexEntry) {
-					final SnomedDescriptionIndexEntry description = (SnomedDescriptionIndexEntry) componentToVersion;
-					componentIdsByReferringModule.put(description.getModuleId(), description.getConceptId());
-					componentIdsByReferringModule.put(description.getModuleId(), description.getTypeId());
-					componentIdsByReferringModule.put(description.getModuleId(), description.getCaseSignificanceId());
-					updatedComponent = SnomedDescriptionIndexEntry.builder(description);
-				} else if (componentToVersion instanceof SnomedRelationshipIndexEntry) {
-					final SnomedRelationshipIndexEntry relationship = (SnomedRelationshipIndexEntry) componentToVersion;
-					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getSourceId());
-					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getTypeId());
-					if (!relationship.hasValue()) {
-						// Values do not contribute to module dependencies
-						componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getDestinationId());
-					}
-					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getModifierId());
-					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicTypeId());
-					updatedComponent = SnomedRelationshipIndexEntry.builder(relationship);
-				} else if (componentToVersion instanceof SnomedRefSetMemberIndexEntry) {
-					final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) componentToVersion;
-					componentIdsByReferringModule.put(member.getModuleId(), member.getReferenceSetId());
-					
-					registerIfConcept(componentIdsByReferringModule, member.getModuleId(), member.getReferencedComponentId());
-					
-					final Map<String, Object> additionalFields = member.getAdditionalFields();
-					SnomedRf2Headers.MEMBER_FIELDS_WITH_COMPONENT_ID.forEach(field -> {
-						registerIfConcept(componentIdsByReferringModule, member.getModuleId(), (String) additionalFields.get(field));
-					});
-					
-					updatedComponent = SnomedRefSetMemberIndexEntry.builder(member);
-				} else {
-					throw new UnsupportedOperationException("Not implemented case for: " + componentToVersion);
-				}
-				
-				ctx.update(
-					componentToVersion, 
-					updatedComponent
-						.effectiveTime(effectiveTime)
-						.released(true)
-					.build()
-				);
+		for (SnomedDocument componentToVersion : componentsToVersion) {
+			// register IDs for publication
+			if (componentToVersion instanceof SnomedComponentDocument) {
+				componentIdsToPublish.add(componentToVersion.getId());
 			}
-		
-			ctx.commit();
-		
-			if (!CompareUtils.isEmpty(componentIdsToPublish)) {
-				SnomedRequests.identifiers().preparePublish()
-					.setComponentIds(componentIdsToPublish)
-					.build()
-					.execute(ctx);
+			
+			// stage update on components based on actual type
+			final SnomedDocument.Builder<?, ?> updatedComponent;
+			if (componentToVersion instanceof SnomedConceptDocument) {
+				final SnomedConceptDocument concept = (SnomedConceptDocument) componentToVersion;
+				componentIdsByReferringModule.put(concept.getModuleId(), concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
+				updatedComponent = SnomedConceptDocument.builder(concept);
+			} else if (componentToVersion instanceof SnomedDescriptionIndexEntry) {
+				final SnomedDescriptionIndexEntry description = (SnomedDescriptionIndexEntry) componentToVersion;
+				componentIdsByReferringModule.put(description.getModuleId(), description.getConceptId());
+				componentIdsByReferringModule.put(description.getModuleId(), description.getTypeId());
+				componentIdsByReferringModule.put(description.getModuleId(), description.getCaseSignificanceId());
+				updatedComponent = SnomedDescriptionIndexEntry.builder(description);
+			} else if (componentToVersion instanceof SnomedRelationshipIndexEntry) {
+				final SnomedRelationshipIndexEntry relationship = (SnomedRelationshipIndexEntry) componentToVersion;
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getSourceId());
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getTypeId());
+				if (!relationship.hasValue()) {
+					// Values do not contribute to module dependencies
+					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getDestinationId());
+				}
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getModifierId());
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicTypeId());
+				updatedComponent = SnomedRelationshipIndexEntry.builder(relationship);
+			} else if (componentToVersion instanceof SnomedRefSetMemberIndexEntry) {
+				final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) componentToVersion;
+				componentIdsByReferringModule.put(member.getModuleId(), member.getReferenceSetId());
+				
+				registerIfConcept(componentIdsByReferringModule, member.getModuleId(), member.getReferencedComponentId());
+				
+				final Map<String, Object> additionalFields = member.getAdditionalFields();
+				SnomedRf2Headers.MEMBER_FIELDS_WITH_COMPONENT_ID.forEach(field -> {
+					registerIfConcept(componentIdsByReferringModule, member.getModuleId(), (String) additionalFields.get(field));
+				});
+				
+				updatedComponent = SnomedRefSetMemberIndexEntry.builder(member);
+			} else {
+				throw new UnsupportedOperationException("Not implemented case for: " + componentToVersion);
 			}
-		} catch (Exception e) {
-			throw new SnowowlRuntimeException(e);
+			
+			context.update(
+				componentToVersion, 
+				updatedComponent
+					.effectiveTime(effectiveTime)
+					.released(true)
+				.build()
+			);
 		}
+		
 	}
 
 	private void adjustDependencyRefSetMembers(TransactionContext context, Multimap<String, String> moduleDependencies, Map<String, Long> moduleToLatestEffectiveTime, long effectiveTime) {
