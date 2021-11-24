@@ -61,7 +61,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierService.class);
 
-	private final Index store;
+	public final Index store;
 	private final ItemIdGenerationStrategy generationStrategy;
 
 	/*

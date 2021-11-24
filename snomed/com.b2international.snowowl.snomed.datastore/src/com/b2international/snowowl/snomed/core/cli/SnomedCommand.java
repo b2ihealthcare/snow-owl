@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.cli;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.UUID;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -43,12 +40,18 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.io.ImportResponse;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.cis.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import picocli.CommandLine;
@@ -67,6 +70,7 @@ import picocli.CommandLine.Parameters;
 	subcommands = {
 		HelpCommand.class,
 		SnomedCommand.ImportCommand.class,
+		SnomedCommand.IdentifiersCommand.class,
 		SnomedCommand.RevisionCheckCommand.class
 	}
 )
@@ -140,6 +144,79 @@ public final class SnomedCommand extends Command {
 				out.println("Failed to import SNOMED CT content from file '%s'. %s", path, response.getError());
 			}
 		}
+	}
+	
+	@picocli.CommandLine.Command(
+			name = "identifiers",
+			header = "Collects SNOMED CT core component identifiers",
+			description = "Collect SNOMED CT identifiers"
+			)
+	private static final class IdentifiersCommand extends Command {
+				
+		private static final Set<String> ALL_SCTID_STATUSES = FluentIterable.from(IdentifierStatus.values()).transform(IdentifierStatus::getSerializedName).toSet();
+				
+		@Option(names = { "-s", "--status" }, description = "The SctId status to filter for. Can be Available, Reserved, Assigned, or Published.", defaultValue = "All", required = false)
+		String status="All";
+		
+		@Parameters(paramLabel = "PATH", description = "The absolute path of the output folder")
+		String path;
+		
+		
+		@Override
+		public void run(CommandLineStream out) {
+			ISnomedIdentifierService identifierService = getContext().service(ISnomedIdentifierService.class);
+			
+			if (!(identifierService instanceof DefaultSnomedIdentifierService)) {
+				out.println("Can't run command without DefaultSnomedIdentifierService");
+				return;
+			}
+			
+			DefaultSnomedIdentifierService defaultIdentifierService = (DefaultSnomedIdentifierService) identifierService;
+			
+			Set<String> statuses = Sets.newHashSet();
+			
+			if (ALL_SCTID_STATUSES.contains(status)) {
+				statuses.add(status);
+			} else {
+				statuses.addAll(ALL_SCTID_STATUSES);
+			}
+			
+			defaultIdentifierService.store.read( searcher -> {
+				statuses.forEach( status -> {
+					Query<String> idQuery = Query.select(String.class)
+							.from(SctId.class)
+							.fields("sctid")
+							.where(SctId.Expressions.status(status))
+							.limit(100_000)
+							.build();
+					
+					File idReport = new File(String.format("%s/%sIds.txt", path, status));
+					try (FileOutputStream outputStream = new FileOutputStream(idReport)) {
+						try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, "UTF-8")) {
+							searcher.scroll(idQuery).forEach( hits -> {
+								hits.forEach( id -> {
+									try {
+										outputStreamWriter.append(String.format("%s\n", id));
+									} catch (Exception e) {
+										handleException(e, out);
+									}
+								});
+							});
+						}
+					} catch (IOException e) {
+						handleException(e, out);					
+					}
+				});
+		        			    
+			    return null;
+			});			
+		}
+		
+		private void handleException(Exception e, CommandLineStream out) {
+			out.println("An error occurred while exporting SctIds.");
+			out.println(e);						
+		}
+		
 	}
 	
 	@picocli.CommandLine.Command(

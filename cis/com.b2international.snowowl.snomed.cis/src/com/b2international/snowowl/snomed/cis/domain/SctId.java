@@ -44,6 +44,7 @@ public class SctId implements Serializable {
 		public static final String SEQUENCE = "sequence";
 		public static final String NAMESPACE = "namespace";
 		public static final String PARTITION_ID = "partitionId";
+		public static final String STATUS = "status";
 	}
 	
 	public static class Expressions {
@@ -60,6 +61,10 @@ public class SctId implements Serializable {
 
 		public static Expression sequenceBetween(Long fromInclusive, Long toExclusive) {
 			return matchRange(Fields.SEQUENCE, fromInclusive, toExclusive, true, false);
+		}
+		
+		public static Expression status(String status) {
+			return exactMatch(Fields.STATUS, status);
 		}
 	}
 	
