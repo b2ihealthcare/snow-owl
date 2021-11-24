@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,13 +32,11 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -52,17 +46,15 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.*;
 import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
  */
 public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateRequest {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Set<String> FILTERED_REFSET_IDS = ImmutableSet.of(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
 			Concepts.REFSET_ALTERNATIVE_ASSOCIATION,
@@ -319,7 +311,12 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.map(componentId -> {
 				if (!previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// new component
-					return new IdRequest<>(currentComponentsById.get(componentId).toCreateRequest(conceptId));
+					U newComponent = currentComponentsById.get(componentId);
+					if (SnomedIdentifiers.isValid(newComponent.getId())) {
+						// register SCT IDs for CIS status transition
+						context.service(IdActionRecorder.class).register(Set.of(newComponent.getId()));
+					}
+					return newComponent.toCreateRequest(conceptId);
 				} else if (previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// changed component
 					return currentComponentsById.get(componentId).toUpdateRequest();
