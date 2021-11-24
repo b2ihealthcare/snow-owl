@@ -26,9 +26,11 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.asser
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -443,6 +445,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.extract().as(SnomedConcept.class);
 
 		assertEquals(3, updatedConcept.getDescriptions().getTotal());
+		
+		// assert that the new description ID got registered as Assigned
+		assertSctIdStatus(newTextDefinition.getId(), IdentifierStatus.ASSIGNED);
 	}
 
 	@Test
@@ -482,6 +487,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.extract().as(SnomedConcept.class);
 
 		assertEquals(2, updatedConcept.getRelationships().getTotal());
+		
+		// assert that the new description ID got registered as Assigned
+		assertSctIdStatus(newRelationship.getId(), IdentifierStatus.ASSIGNED);
 	}
 
 	@Test
