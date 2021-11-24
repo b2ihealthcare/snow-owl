@@ -120,13 +120,6 @@ public final class SnomedIdentifierPlugin extends Plugin {
 			index.admin().create();
 			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(reservationService); 
 			identifierService = new DefaultSnomedIdentifierService(index, generationStrategy, reservationService, conf);
-			env.services().registerService(InternalSnomedIdentifierService.class, new InternalSnomedIdentifierService() {
-				
-				@Override
-				public Index cisStore() {
-					return index;
-				}
-			});
 			break;
 		case CIS:
 			final ObjectMapper mapper = new ObjectMapper();

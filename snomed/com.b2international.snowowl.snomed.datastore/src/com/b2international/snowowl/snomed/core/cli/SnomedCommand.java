@@ -37,11 +37,13 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.io.ImportResponse;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.InternalSnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
@@ -165,8 +167,9 @@ public final class SnomedCommand extends Command {
 		
 		@Override
 		public void run(CommandLineStream out) {
-			InternalSnomedIdentifierService identifierService = getContext().service(InternalSnomedIdentifierService.class);
-			if (identifierService == null) {
+			ISnomedIdentifierService identifierService = getContext().service(ISnomedIdentifierService.class);
+			
+			if (!(identifierService instanceof InternalSnomedIdentifierService)) {
 				out.println("The current Component Identifier Service does not support listing SNOMED CT identifiers via this command");
 				return;
 			}
@@ -178,7 +181,7 @@ public final class SnomedCommand extends Command {
 				statuses.addAll(ALL_SCTID_STATUSES);
 			}
 			
-			identifierService.cisStore().read( searcher -> {
+			((InternalSnomedIdentifierService) identifierService).cisStore().read( searcher -> {
 				statuses.forEach( status -> {
 					Query<String> idQuery = Query.select(String.class)
 							.from(SctId.class)
@@ -187,8 +190,7 @@ public final class SnomedCommand extends Command {
 							.limit(100_000)
 							.build();
 					
-					String timeStamp = new SimpleDateFormat("yyyyMMdd_kkmmss").format(new Date());
-					File idReport = new File(String.format("%s/%sIds_%s.txt", path, status, timeStamp));
+					File idReport = new File(String.format("%s/%sIds_%s.txt", path, status, Dates.now("yyyyMMdd_kkmmss")));
 					
 					try (FileOutputStream outputStream = new FileOutputStream(idReport)) {
 						try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, "UTF-8")) {
