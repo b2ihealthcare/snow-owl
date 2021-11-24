@@ -41,14 +41,17 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 	@Override
 	public Request<BranchContext, CommitResult> wrap(Request<BranchContext, CommitResult> req) {
 		return new RevisionIndexReadRequest<>(
-			new ModuleRequest<>(req, defaultModuleId), 
+			new ModuleRequest<>(
+				new IdRequest<>(req), 
+				defaultModuleId
+			), 
 			snapshot()
 		);
 	}
 	
 	@Override
 	protected Request<TransactionContext, ?> getBody() {
-		return new IdRequest<>(new SnomedBulkRequest<>(super.getBody()));
+		return new SnomedBulkRequest<>(super.getBody());
 	}
 
 }
