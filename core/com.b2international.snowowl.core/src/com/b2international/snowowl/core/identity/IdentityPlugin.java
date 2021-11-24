@@ -99,11 +99,6 @@ public final class IdentityPlugin extends Plugin {
 	// Disabled JWT Generator implementation that throws an exception if any token signing related logic would be required
 	private static final JWTGenerator JWT_GENERATOR_DISABLED = new JWTGenerator() {
 		@Override
-		public User toUser(DecodedJWT jwt) {
-			throw new BadRequestException("JWT token signing is not configured.");
-		}
-		
-		@Override
 		public String generate(User user) {
 			throw new BadRequestException("JWT token signing is not configured.");
 		}
@@ -146,11 +141,11 @@ public final class IdentityPlugin extends Plugin {
 		IdentityProvider.LOG.info("Configured identity providers [{}]", identityProvider.getInfo());
 		env.services().registerService(IdentityProvider.class, identityProvider);
 		
-		configureJWT(env.services(), conf);
+		configureJWT(env.services(), identityProvider, conf);
 	}
 
 	@VisibleForTesting
-	/*package*/ void configureJWT(ApplicationContext services, final IdentityConfiguration conf) throws MalformedURLException {
+	/*package*/ void configureJWT(ApplicationContext services, final IdentityProvider identityProvider, final IdentityConfiguration conf) throws MalformedURLException {
 		RSAKeyProvider rsaKeyProvider = createRSAKeyProvider(conf);
 		Algorithm algorithm;
 		if (!Strings.isNullOrEmpty(conf.getJws())) {
@@ -160,17 +155,24 @@ public final class IdentityPlugin extends Plugin {
 			algorithm = null;
 		}
 		
+		JWTGenerator generator;
+		JWTVerifier verifier;
 		if (algorithm == null) {
 			// both signing and verification is disabled
-			services.registerService(JWTGenerator.class, JWT_GENERATOR_DISABLED);
-			services.registerService(JWTVerifier.class, JWT_VERIFIER_DISABLED);
+			generator = JWT_GENERATOR_DISABLED;
+			verifier = JWT_VERIFIER_DISABLED;
 		} else if (rsaKeyProvider != null && rsaKeyProvider.getPrivateKey() == null) {
-			services.registerService(JWTGenerator.class, JWT_GENERATOR_DISABLED);
-			services.registerService(JWTVerifier.class, createJWTVerifier(algorithm, conf));
+			generator = JWT_GENERATOR_DISABLED;
+			verifier = createJWTVerifier(algorithm, conf);
 		} else {
-			services.registerService(JWTGenerator.class, new DefaultJWTGenerator(algorithm, conf));
-			services.registerService(JWTVerifier.class, createJWTVerifier(algorithm, conf));
+			generator = new DefaultJWTGenerator(algorithm, conf);
+			verifier = createJWTVerifier(algorithm, conf);
 		}
+		
+		// always configure a JWTGenerator, a JWTVerifier and an AuthorizationHeader verifier
+		services.registerService(JWTGenerator.class, generator);
+		services.registerService(JWTVerifier.class, verifier);
+		services.registerService(AuthorizationHeaderVerifier.class, new AuthorizationHeaderVerifier(verifier, identityProvider, conf.getEmailClaimProperty(), conf.getPermissionsClaimProperty()));
 	}
 
 	private com.auth0.jwt.JWTVerifier createJWTVerifier(Algorithm algorithm, final IdentityConfiguration conf) {

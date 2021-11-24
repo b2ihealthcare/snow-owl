@@ -20,15 +20,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.Claim;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.google.common.collect.Iterables;
 
 /**
@@ -79,22 +75,6 @@ final class DefaultJWTGenerator implements JWTGenerator {
 	public String generate(User user) {
 		final List<String> permissions = user.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
 		return generate(user.getUsername(), Map.of(permissionsClaimProperty, permissions));
-	}	
-	
-	@Override
-	public User toUser(DecodedJWT jwt) {
-		final Claim emailClaim = jwt.getClaim(emailClaimProperty);
-		if (emailClaim == null || emailClaim.isNull()) {
-			throw new BadRequestException("'%s' JWT access token field is required for email access, but it was missing.", emailClaimProperty);
-		}
-		
-		Claim permissionsClaim = jwt.getClaim(permissionsClaimProperty);
-		if (permissionsClaim == null || permissionsClaim.isNull()) {
-			throw new BadRequestException("'%s' JWT access token field is required for permissions access, but it was missing.", permissionsClaimProperty);
-		}
-		
-		final Set<Permission> permissions = jwt.getClaim(permissionsClaimProperty).asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toSet());
-		return new User(emailClaim.asString(), List.of(new Role("jwt_roles", permissions)));
 	}
 	
 }

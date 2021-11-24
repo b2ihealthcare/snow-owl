@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.identity;
 
 import java.util.Map;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
-
 /**
  * @since 8.1.0
  */
@@ -33,11 +31,4 @@ public interface JWTGenerator {
 	 */
 	String generate(User user);
 
-	/**
-	 * Extract subject and claim information to reconstruct a {@link User} object.
-	 * @param jwt - the verified token to extract information from
-	 * @return
-	 */
-	User toUser(DecodedJWT jwt);
-	
 }

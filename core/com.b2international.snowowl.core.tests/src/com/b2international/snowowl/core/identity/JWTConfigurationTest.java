@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.util.PlatformUtil;
 public class JWTConfigurationTest {
 
 	private ApplicationContext services = ApplicationContext.getInstance();
+	private IdentityProvider identityProvider = IdentityProvider.NOOP;
 
 	@Before
 	public void setup() {
@@ -57,7 +58,7 @@ public class JWTConfigurationTest {
 	@Test
 	public void defaultConfig() throws Exception {
 		IdentityConfiguration conf = readConfig("default.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 		assertThatThrownBy(() -> services.getService(JWTGenerator.class).generate("test@example.com", Map.of()))
 			.isInstanceOf(BadRequestException.class)
 			.hasMessage("JWT token signing is not configured.");
@@ -70,13 +71,13 @@ public class JWTConfigurationTest {
 	@Test(expected = SnowOwl.InitializationException.class)
 	public void hs256_NoSecret() throws Exception {
 		IdentityConfiguration conf = readConfig("hs256_nosecret.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 	}
 	
 	@Test
 	public void hs256() throws Exception {
 		IdentityConfiguration conf = readConfig("hs256.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 		// generate a key then verify it without errors
 		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
 		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
@@ -86,13 +87,13 @@ public class JWTConfigurationTest {
 	@Test(expected = SnowOwl.InitializationException.class)
 	public void hs512_NoSecret() throws Exception {
 		IdentityConfiguration conf = readConfig("hs512_nosecret.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 	}
 	
 	@Test
 	public void hs512() throws Exception {
 		IdentityConfiguration conf = readConfig("hs512.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 		// generate a key then verify it without errors
 		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
 		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
@@ -102,14 +103,14 @@ public class JWTConfigurationTest {
 	@Test(expected = SnowOwl.InitializationException.class)
 	public void rs256_Nokeys() throws Exception {
 		IdentityConfiguration conf = readConfig("rs256_nokeys.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 	}
 	
 	@Test
 	public void rs256() throws Exception {
 		// configure support for both signing and verifying
 		IdentityConfiguration conf = readConfig("rs256.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
 		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
 		assertThat(decoded.getAlgorithm()).isEqualTo("RS256");
@@ -119,13 +120,13 @@ public class JWTConfigurationTest {
 	public void rs256_VerifyOnly_X509() throws Exception {
 		// configure support for both signing and verifying first
 		IdentityConfiguration conf = readConfig("rs256.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 		// generate a jwt to use for verify only
 		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
 		
 		// configure the actual verify only config 
 		conf = readConfig("rs256_verify_x509.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 		// signing should be disabled
 		assertThatThrownBy(() -> services.getService(JWTGenerator.class).generate("test@example.com", Map.of()))
 			.isInstanceOf(BadRequestException.class)
@@ -138,14 +139,14 @@ public class JWTConfigurationTest {
 	@Test(expected = SnowOwl.InitializationException.class)
 	public void rs512_Nokeys() throws Exception {
 		IdentityConfiguration conf = readConfig("rs512_nokeys.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 	}
 	
 	@Test
 	public void rs512() throws Exception {
 		// configure support for both signing and verifying
 		IdentityConfiguration conf = readConfig("rs512.yml");
-		new IdentityPlugin().configureJWT(services, conf);
+		new IdentityPlugin().configureJWT(services, identityProvider, conf);
 		String jwt = services.getService(JWTGenerator.class).generate("test@example.com", Map.of());
 		DecodedJWT decoded = services.getService(JWTVerifier.class).verify(jwt);
 		assertThat(decoded.getAlgorithm()).isEqualTo("RS512");
