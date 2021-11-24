@@ -522,6 +522,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.extract().as(SnomedConcept.class);
 
 		assertEquals(3, updatedConcept.getDescriptions().getTotal());
+		
+		// assert that the new description ID got registered as Assigned
+		assertSctIdStatus(newTextDefinition.getId(), IdentifierStatus.ASSIGNED);
 	}
 
 	@Test
@@ -561,6 +564,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.extract().as(SnomedConcept.class);
 
 		assertEquals(2, updatedConcept.getRelationships().getTotal());
+		
+		// assert that the new description ID got registered as Assigned
+		assertSctIdStatus(newRelationship.getId(), IdentifierStatus.ASSIGNED);
 	}
 
 	@Test

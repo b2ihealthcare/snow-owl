@@ -32,6 +32,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
@@ -307,7 +309,12 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.map(componentId -> {
 				if (!previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// new component
-					return currentComponentsById.get(componentId).toCreateRequest(conceptId);
+					U newComponent = currentComponentsById.get(componentId);
+					if (SnomedIdentifiers.isValid(newComponent.getId())) {
+						// register SCT IDs for CIS status transition
+						context.service(IdActionRecorder.class).register(Set.of(newComponent.getId()));
+					}
+					return newComponent.toCreateRequest(conceptId);
 				} else if (previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// changed component
 					return currentComponentsById.get(componentId).toUpdateRequest();

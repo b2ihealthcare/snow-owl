@@ -173,7 +173,8 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 				}
 			}
 
-			final R commitInfo = next(context);
+			C recordingContext = (C) context.inject().bind(IdActionRecorder.class, recorder).build();
+			final R commitInfo = next(recordingContext);
 			recorder.commit();
 			return commitInfo;
 
