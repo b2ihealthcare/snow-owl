@@ -34,6 +34,7 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.util.JsonDiff;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
@@ -205,7 +206,7 @@ public final class SnomedCommand extends Command {
 							});
 						}
 					} catch (IOException e) {
-						handleException(e, out);					
+						handleException(e, out);
 					}
 				});
 		        			    
@@ -215,8 +216,7 @@ public final class SnomedCommand extends Command {
 		
 		private void handleException(Exception e, CommandLineStream out) {
 			out.println("An error occurred while exporting SctIds.");
-			out.println(e);
-			return;
+			throw SnowowlRuntimeException.wrap(e);
 		}
 		
 	}
