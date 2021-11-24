@@ -280,6 +280,9 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				// report ID issues as warning instead of error
 				context.log().warn(e.getMessage(), e);
 			}
+			// clear IDs we have published or failed to publish 
+			// TODO a retry logic would be great here (using failsafe for example)
+			componentIdsToPublish.clear();
 		}
 	}
 
