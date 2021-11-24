@@ -64,18 +64,20 @@ public final class AuthorizationHeaderVerifier {
 	public User auth(String authorizationHeaderValue) {
 		final String[] parts = authorizationHeaderValue.trim().split(" ");
 		if (parts.length == 2) {
+			// standard two part authorization header values have a type prefix specified, use it to determine the algorithm
 			switch (parts[0].toLowerCase()) {
 			case "basic":
 				return authBase64(parts[1]);
 			case "bearer":
 				return authJWT(parts[1]);
-			// treat any other authorization token as bearer token and verify as JWT
 			default:
 				throw new UnauthorizedException("Incorrect authorization token");
 			}
 		} else if (parts.length == 1) {
+			// any other authorization token is treated and verified as a bearer JWT
 			return authJWT(parts[0]);
 		} else {
+			// empty value or more than two parts, which is an incorrect header value
 			throw new UnauthorizedException("Incorrect authorization token");
 		}
 	}
