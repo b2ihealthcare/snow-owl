@@ -25,11 +25,13 @@ import org.slf4j.Logger;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.codesystem.version.VersioningConfiguration;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequest;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.cis.AbstractSnomedIdentifierService.SctIdStatusException;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -265,22 +267,20 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 			componentIdsByReferringModule.put(moduleId, dependency);
 		}
 	}
-
-//	@Override
-//	public void postCommit() {
-//		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
-//			try {
-//				SnomedRequests.identifiers().preparePublish()
-//					.setComponentIds(componentIdsToPublish)
-//					.build(getRepositoryUuid())
-//					.execute(getEventBus())
-//					.getSync();
-//			} catch (SctIdStatusException e) {
-//				// report ID issues as warning instead of error
-//				LOGGER.warn(e.getMessage(), e);
-//			}
-//		}
-//		super.postCommit();
-//	}
 	
+	@Override
+	protected void onCommit(TransactionContext context, Commit commit) {
+		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
+			try {
+				SnomedRequests.identifiers().preparePublish()
+					.setComponentIds(componentIdsToPublish)
+					.build()
+					.execute(context);
+			} catch (SctIdStatusException e) {
+				// report ID issues as warning instead of error
+				context.log().warn(e.getMessage(), e);
+			}
+		}
+	}
+
 }
