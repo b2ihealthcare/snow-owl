@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import com.b2international.index.revision.Commit;
@@ -77,16 +78,44 @@ public final class CappedTransactionContext extends DelegatingTransactionContext
 	}
 	
 	@Override
+	public Optional<Commit> commit() {
+		Optional<Commit> result = super.commit();
+		result.ifPresent((commit) -> onCommit.accept(this, commit));
+		return result;
+	}
+	
+	@Override
+	public Optional<Commit> commit(String commitComment) {
+		Optional<Commit> result = super.commit(commitComment);
+		result.ifPresent((commit) -> onCommit.accept(this, commit));
+		return result;
+	}
+	
+	@Override
+	public Optional<Commit> commit(String commitComment, String parentContextDescription) {
+		Optional<Commit> result = super.commit(commitComment, parentContextDescription);
+		result.ifPresent((commit) -> onCommit.accept(this, commit));
+		return result;
+	}
+	
+	@Override
+	public Optional<Commit> commit(String userId, String commitComment, String parentContextDescription) {
+		Optional<Commit> result = super.commit(userId, commitComment, parentContextDescription);
+		result.ifPresent((commit) -> onCommit.accept(this, commit));
+		return result;
+	}
+	
+	@Override
 	public void close() throws Exception {
 		// if there is anything left in the staging area on close, then commit it before close (dirty check already included in commit implementation)
-		commit().ifPresent((commit) -> onCommit.accept(this, commit));
+		commit();
 		super.close();
 	}
 	
 	private void commitIfAboveThreshold() {
 		// check if staged objects collection reaches the threshold and commit if it does
 		if (commitThreshold > 0 && service(StagingArea.class).getNumberOfStagedObjects() >= commitThreshold) {
-			commit().ifPresent((commit) -> onCommit.accept(this, commit));
+			commit();
 		}
 	}
 
