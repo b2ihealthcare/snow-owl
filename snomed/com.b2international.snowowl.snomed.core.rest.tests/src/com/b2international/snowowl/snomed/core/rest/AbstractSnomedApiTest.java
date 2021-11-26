@@ -19,13 +19,18 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.asser
 
 import java.util.Map;
 
+import org.assertj.core.api.Assertions;
+
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
 
 import io.restassured.response.ValidatableResponse;
@@ -239,6 +244,17 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 				body
 			)	
 		);
+	}
+	
+	protected final void assertSctIdStatus(String sctId, IdentifierStatus expectedStatus) {
+		Assertions.assertThat(SnomedRequests.identifiers().prepareGet()
+				.setComponentId(sctId)
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync()
+				.first()
+				.get()
+				.getStatus()).isEqualTo(expectedStatus.getSerializedName());
 	}
 	
 }

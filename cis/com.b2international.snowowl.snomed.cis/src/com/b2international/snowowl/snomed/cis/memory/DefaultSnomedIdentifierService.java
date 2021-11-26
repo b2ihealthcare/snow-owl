@@ -39,6 +39,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.AbstractSnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.InternalSnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
@@ -57,7 +58,7 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierService {
+public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierService implements InternalSnomedIdentifierService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierService.class);
 
@@ -342,6 +343,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			index.commit();
 			return null;
 		});
+	}
+
+	@Override
+	public Index cisStore() {
+		return store;
 	}
 	
 }
