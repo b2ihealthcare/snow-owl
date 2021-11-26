@@ -1343,6 +1343,74 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		getComponent(extension.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 	}
 	
+	@Test
+	public void upgrade25SyncExtensionOpenedFromLatestSIVersionBranch() {
+		// Create extension with one before latest SI version
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+		String newEXTConceptId1 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		
+		// Version extension
+		String extEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(extension.getShortName(), extEffectiveDate, extEffectiveDate).statusCode(201);
+	
+		// version SI
+		String siEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, siEffectiveDate, siEffectiveDate).statusCode(201);
+		
+		// start upgrade to the new SI version
+		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, siEffectiveDate);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
+		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
+		
+		//Create new concept on the extension code system
+		String newEXTConceptId2 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		
+		//Create concept on UPL
+		String newUPLConceptId1 = createConcept(upgradeCodeSystem.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		
+		//Sync
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
+				.build(upgradeCodeSystem.getRepositoryId())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		assertTrue(result);
+	}
+	
+	@Test
+	public void upgrade26UpgradSyncOfExtOpenedFromVersionBranch() {
+		String effectiveDate1 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate1, effectiveDate1).statusCode(201);
+		
+		String effectiveDate2 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate2, effectiveDate2).statusCode(201);
+		
+		// Create extension with one before latest SI version
+		CodeSystem extension = createExtension(new CodeSystemURI(String.format("%s/%s", SNOMEDCT, effectiveDate1)), branchPath.lastSegment());
+		String newEXTConceptId1 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		
+		// Version extension
+		String effectiveDate3 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
+		
+		// start upgrade to the newer SI version
+		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate2);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
+		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
+		
+		//Create new concept on the extension code system
+		String newEXTConceptId2 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+
+		//Create concept on UPL
+		String newUPLConceptId1 = createConcept(upgradeCodeSystem.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+
+		//Sync
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
+				.build(upgradeCodeSystem.getRepositoryId())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		assertTrue(result);
+	}
+	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
 		BaseRevisionBranching branching = ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(BaseRevisionBranching.class);
 		assertEquals(expectedState, branching.getBranchState(branchPath, compareWith));
