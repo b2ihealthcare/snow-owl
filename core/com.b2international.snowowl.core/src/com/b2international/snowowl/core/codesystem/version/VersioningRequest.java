@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -69,7 +70,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		log.info("Versioning components of '{}' codesystem...", config.getCodeSystemShortName());
 		try {
 			// capped context to commit versioned components in the configured low watermark bulks
-			try (CappedTransactionContext versioningContext = new CappedTransactionContext(context, getCommitLimit(context))) {
+			try (CappedTransactionContext versioningContext = CappedTransactionContext.create(context, getCommitLimit(context)).onCommit(this::onCommit)) {
 				doVersionComponents(versioningContext);
 			}
 
@@ -98,6 +99,14 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	 * @throws Exception 
 	 */
 	protected void doVersionComponents(TransactionContext context) throws Exception {
+	}
+	
+	/**
+	 * Run additional logic when a successful versioning commit was made by this request.
+	 * @param context
+	 * @param commit
+	 */
+	protected void onCommit(TransactionContext context, Commit commit) {
 	}
 
 	@Nullable
