@@ -178,11 +178,11 @@ public class JobRequestsTest {
 		assertEquals(RemoteJobState.FINISHED, entry.getState());
 		
 		entry = null;
-		int numberOfTries = 4;
+		int numberOfTries = 20;
 		
 		do {
 			entry = tracker.get(jobId);
-			Thread.sleep(100);
+			Thread.sleep(50);
 		} while (entry != null && --numberOfTries > 0);
 		
 		assertNull("Stale entry couldn't be removed by tracker", entry);
