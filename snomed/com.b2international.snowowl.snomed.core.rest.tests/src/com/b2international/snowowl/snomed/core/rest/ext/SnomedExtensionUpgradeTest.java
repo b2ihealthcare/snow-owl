@@ -43,20 +43,21 @@ import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.json.Json;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.index.revision.RevisionSegment;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.Merge.Status;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -69,6 +70,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.7
@@ -1343,71 +1345,49 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		getComponent(extension.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 	}
 	
+	/**
+	 * This test is to detect and verify a bug in the
+	 * {@link RevisionBranch#difference(RevisionBranch)} (more precisely in the
+	 * RevisionBranchRef#difference method). The problem was that the system used
+	 * SortedSet for {@link RevisionSegment} and built on the fact that branches can
+	 * be always sortable by both time and space. This is true most of the time, but
+	 * when synchronizing old content from earlier branches this might result in
+	 * incorrect conflict reporting behavior due to incorrect branch segment
+	 * diffing. The resulting branch diff contains incorrect branch segments, thus
+	 * the branch compare algorithm fetches irrelevant, already merged commits,
+	 * which are being reported as conflicts in the system (both sides added the
+	 * same component, which is also incorrect).
+	 */
 	@Test
-	public void upgrade25SyncExtensionOpenedFromLatestSIVersionBranch() {
-		// Create extension with one before latest SI version
-		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
-		String newEXTConceptId1 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
-		
-		// Version extension
-		String extEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(extension.getShortName(), extEffectiveDate, extEffectiveDate).statusCode(201);
-	
-		// version SI
-		String siEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, siEffectiveDate, siEffectiveDate).statusCode(201);
-		
-		// start upgrade to the new SI version
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, siEffectiveDate);
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
-		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
-		
-		//Create new concept on the extension code system
-		String newEXTConceptId2 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
-		
-		//Create concept on UPL
-		String newUPLConceptId1 = createConcept(upgradeCodeSystem.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
-		
-		//Sync
-		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
-				.build(upgradeCodeSystem.getRepositoryId())
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(result);
-	}
-	
-	@Test
-	public void upgrade26UpgradSyncOfExtOpenedFromVersionBranch() {
-		String effectiveDate1 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate1, effectiveDate1).statusCode(201);
-		
-		String effectiveDate2 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate2, effectiveDate2).statusCode(201);
+	public void upgrade25UpgradeExtensionUsingExistingInternationalVersions() {
+		CodeSystemVersions allVersions = CodeSystemVersionRestRequests.getVersions(SNOMEDCT);
+		String secondLatestSIVersion = allVersions.getItems().get(allVersions.getItems().size() - 2).getVersion();
+		String latestSIVersion = Iterables.getLast(allVersions).getVersion();
 		
 		// Create extension with one before latest SI version
-		CodeSystem extension = createExtension(new CodeSystemURI(String.format("%s/%s", SNOMEDCT, effectiveDate1)), branchPath.lastSegment());
-		String newEXTConceptId1 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		CodeSystem extension = createExtension(CodeSystemURI.branch(SNOMEDCT, secondLatestSIVersion), branchPath.lastSegment());
+		String extensionModuleId = createModule(extension);
 		
 		// Version extension
-		String effectiveDate3 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
+		String firstExtensionVersion = getNextAvailableEffectiveDateAsString(extension.getShortName());
+		createVersion(extension.getShortName(), firstExtensionVersion, firstExtensionVersion).statusCode(201);
 		
 		// start upgrade to the newer SI version
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate2);
+		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, latestSIVersion);
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
 		//Create new concept on the extension code system
-		String newEXTConceptId2 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		String newEXTConceptId2 = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 
 		//Create concept on UPL
-		String newUPLConceptId1 = createConcept(upgradeCodeSystem.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		String newUPLConceptId1 = createConcept(upgradeCodeSystem.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 
 		//Sync
 		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
 				.build(upgradeCodeSystem.getRepositoryId())
 				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
+				.getSync(100, TimeUnit.MINUTES);
 		assertTrue(result);
 	}
 	
