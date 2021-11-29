@@ -18,10 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newTreeSet;
 
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
@@ -29,6 +26,8 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Reference to a set of revision branch segments to query the contents visible from the branch at a given time.
@@ -129,29 +128,25 @@ final class RevisionBranchRef {
 	public RevisionBranchRef difference(RevisionBranchRef other) {
 		final TreeSet<RevisionSegment> differenceSegments = newTreeSet();
 		
-		Iterator<RevisionSegment> segmentsIterator = segments.iterator();
-		Iterator<RevisionSegment> otherSegmentsIterator = other.segments.iterator();
+		Map<Long, RevisionSegment> segmentsById = Maps.uniqueIndex(segments, RevisionSegment::branchId);
+		Map<Long, RevisionSegment> otherSegmentsById = Maps.uniqueIndex(other.segments, RevisionSegment::branchId);
 		
-		while (segmentsIterator.hasNext() && otherSegmentsIterator.hasNext()) {
-			RevisionSegment nextSegment = segmentsIterator.next();
-			RevisionSegment otherSegment = otherSegmentsIterator.next();
-			if (nextSegment.branchId() != otherSegment.branchId()) {
-				differenceSegments.add(nextSegment);
-				break;
-			}
-			RevisionSegment difference = nextSegment.difference(otherSegment);
+		// compute segment diff for intersecting branch segments
+		for (Long branchId : Sets.intersection(segmentsById.keySet(), otherSegmentsById.keySet())) {
+			RevisionSegment difference = segmentsById.get(branchId).difference(otherSegmentsById.get(branchId));
 			if (!difference.isEmpty()) {
 				differenceSegments.add(difference);
 			}
 		}
 		
-		while (segmentsIterator.hasNext()) {
-			RevisionSegment nextSegment = segmentsIterator.next();
-			if (!nextSegment.isEmpty()) {
-				differenceSegments.add(nextSegment);
+		// add any remaining segments if they are not empty
+		for (Long branchId : Sets.difference(segmentsById.keySet(), otherSegmentsById.keySet())) {
+			RevisionSegment remainingSegment = segmentsById.get(branchId);
+			if (!remainingSegment.isEmpty()) {
+				differenceSegments.add(remainingSegment);
 			}
 		}
-		
+
 		return new RevisionBranchRef(branchId, branchPath, differenceSegments);
 	}
 
