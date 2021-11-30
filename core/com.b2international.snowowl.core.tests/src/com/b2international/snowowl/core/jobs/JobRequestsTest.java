@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.core.jobs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -34,6 +32,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.SystemNotification;
@@ -48,6 +47,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JobRequestsTest {
 
+	private static final int DEFAULT_STALE_JOB_AGE = 200;
+	private static final int DEFAULT_PURGE_THRESHOLD = 2;
+	
 	private static final String USER = "test@b2i.sg";
 	private static final String RESULT = "result";
 	private ServiceProvider context;
@@ -56,18 +58,23 @@ public class JobRequestsTest {
 	private ObjectMapper mapper;
 	
 	private final BlockingQueue<RemoteJobNotification> notifications = new ArrayBlockingQueue<>(100);
+	private Index index;
 
 	@Before
 	public void setup() {
-		mapper = JsonSupport.getDefaultObjectMapper();
-		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
+		
+		this.mapper = JsonSupport.getDefaultObjectMapper();
 		this.bus = EventBusUtil.getBus();
-		this.tracker = new RemoteJobTracker(index, bus, mapper, 200, 300);
+		
+		index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
+
+		this.tracker = new RemoteJobTracker(index, bus, mapper, DEFAULT_PURGE_THRESHOLD, DEFAULT_STALE_JOB_AGE);
 		this.context = ServiceProvider.EMPTY.inject()
 				.bind(ObjectMapper.class, mapper)
 				.bind(RemoteJobTracker.class, tracker)
 				.bind(IdentityProvider.class, IdentityProvider.NOOP)
 				.build();
+		
 		this.bus.registerHandler(SystemNotification.ADDRESS, message -> {
 			try {
 				notifications.offer(message.body(RemoteJobNotification.class), 1, TimeUnit.MINUTES);
@@ -75,11 +82,16 @@ public class JobRequestsTest {
 				throw new RuntimeException();
 			}
 		});
+		
 	}
 	
 	@After
 	public void after() {
+		this.index.admin().delete();
 		this.tracker.dispose();
+		if (context instanceof IDisposableService) {
+			((IDisposableService) context).dispose();
+		}
 	}
 	
 	@Test
@@ -129,8 +141,12 @@ public class JobRequestsTest {
 	
 	@Test
 	public void scheduleAndDelete() throws Exception {
-		final String jobId = schedule("scheduleAndDelete", context -> {
-			// wait 100 ms, then return the result, so the main thread have time to actually initiate the delete request
+		
+		// there are no completed jobs at startup 
+		assertEquals(0, tracker.getCompletedJobCounter());
+		
+		final String deletedJobId = schedule("scheduleAndDelete", context -> {
+			// wait 100 ms to mark this job for deletion but do not delete it immediately
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -138,48 +154,143 @@ public class JobRequestsTest {
 			}
 			return RESULT;
 		});
-		// delete should immediately mark the object deleted, but wait until the job actually completes then delete the entry
-		delete(jobId);
-		// get throws NotFoundException
+		
+		// the job should still be running at this point so delete should just mark it for removal
+		delete(deletedJobId);
+		
+		// regular get must throw NotFoundException
 		try {
-			get(jobId);
+			get(deletedJobId);
 			fail("Expected " + NotFoundException.class.getName() + " to be thrown after deleting job");
 		} catch (NotFoundException e) {
 			// expected exception
 		}
-		// assert that the tracker will eventually delete the job entry
-		RemoteJobEntry entry = null;
-		int numberOfTries = 10; 
-		do {
-			entry = tracker.get(jobId);
-			Thread.sleep(50);
-		} while (entry != null && --numberOfTries > 0);
-		assertNull("Entry couldn't be removed by tracker after marked for deletion", entry);
+		
+		// the job document should still exist, being marked as deletable
+		RemoteJobEntry entry = tracker.get(deletedJobId);
+		assertNotNull(entry);
+		assertTrue(entry.isDeleted());
+		
 		// verify job events
 		// 1 added
 		// 1 changed - RUNNING
 		// 1 changed - FINISHED
 		// 1 removed
-		verifyJobEvents(jobId, 1, 2, 1);
+		verifyJobEvents(deletedJobId, 1, 2, 1);
+		
+		// ensure that the job is finished
+		waitDoneByTracker(deletedJobId);
+		
+		// assert counter is increased properly
+		assertEquals(1, tracker.getCompletedJobCounter());
+		
+		// schedule another job
+		final String anotherJobId = schedule("anotherjob", context -> RESULT);
+		waitDone(anotherJobId);
+		
+		// assert counter is increased properly
+		assertEquals(2, tracker.getCompletedJobCounter());
+		
+		// schedule another job to trigger the purge (purge threshold is 2) 
+		final String anotherJobId2 = schedule("anotherjob2", context -> {
+			try {
+				// delay job execution to assert that purge is triggered by new schedules (not finishes)
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			return RESULT;
+		});
+		
+		// assert first job is properly deleted
+		assertNull(tracker.get(deletedJobId));
+		
+		// ensure all other jobs are finished
+		waitDone(anotherJobId2);
+		
+		// assert that nothing was removed beside the job that was marked for deletion
+		try {
+			get(anotherJobId);
+			get(anotherJobId2);
+		} catch (NotFoundException e) {
+			fail();
+		}
+		
+		// assert completed job counter is 2 again
+		assertEquals(2, tracker.getCompletedJobCounter());
+		
 	}
 	
 	@Test
 	public void scheduleAndCleanupStale() throws Exception {
 		
+		// there are no completed jobs at startup 
+		assertEquals(0, tracker.getCompletedJobCounter());
+		
+		// this is a regular job, not marked for auto clean up
 		final String jobId = schedule("scheduleAndCleanupStale", context -> RESULT);
+		waitDone(jobId);
 		
-		RemoteJobEntry entry = waitDone(jobId);
-		assertEquals(RemoteJobState.FINISHED, entry.getState());
+		Thread.sleep(DEFAULT_STALE_JOB_AGE + 1); // make sure the job becomes stale
 		
-		entry = null;
-		int numberOfTries = 20;
+		// assert the job still exist
+		try {
+			get(jobId);
+		} catch (NotFoundException e) {
+			fail();
+		}
 		
-		do {
-			entry = tracker.get(jobId);
-			Thread.sleep(50);
-		} while (entry != null && --numberOfTries > 0);
+		// assert completed job counter is 1
+		assertEquals(1, tracker.getCompletedJobCounter());
 		
-		assertNull("Stale entry couldn't be removed by tracker", entry);
+		// schedule another job
+		final String anotherJobId = schedule("anotherjob", context -> RESULT);
+		waitDone(anotherJobId);
+		
+		// original job still exists
+		try {
+			get(jobId);
+		} catch (NotFoundException e) {
+			fail();
+		}
+		
+		// another job still exists
+		try {
+			get(anotherJobId);
+		} catch (NotFoundException e) {
+			fail();
+		}
+		
+		// assert completed job counter is 2
+		assertEquals(2, tracker.getCompletedJobCounter());
+		
+		// schedule another job to trigger the purge
+		String anotherJobId2 = schedule("anotherjob2", context -> {
+			try {
+				// delay job execution to assert that purge is triggered by new schedules (not finishes)
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			return RESULT;
+		});
+		
+		// assert first job is gone because it was stale
+		assertNull(tracker.get(jobId));
+
+		// assert that nothing was removed beside the stale job
+		try {
+			get(anotherJobId);
+			get(anotherJobId2);
+		} catch (NotFoundException e) {
+			fail();
+		}
+		
+		// ensure all other jobs are finished
+		waitDone(anotherJobId2);
+		
+		// assert completed job counter is 2 again
+		assertEquals(2, tracker.getCompletedJobCounter());
 		
 	}
 	
@@ -241,6 +352,19 @@ public class JobRequestsTest {
 		assertEquals(String.format("Expecting '%s' REMOVED notifications to arrive", expectedRemoved), 0, expectedRemoved);
 	}
 
+	private RemoteJobEntry waitDoneByTracker(final String jobId) {
+		RemoteJobEntry entry = null;
+		do {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			entry = tracker.get(jobId);
+		} while (!entry.isDone());
+		return entry;
+	}
+	
 	private RemoteJobEntry waitDone(final String jobId) {
 		RemoteJobEntry entry = null;
 		do {

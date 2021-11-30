@@ -199,16 +199,16 @@ public final class RepositoryPlugin extends Plugin {
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
 		final ObjectMapper objectMapper = env.service(ObjectMapper.class);
 		final Index jobsIndex = Indexes.createIndex("jobs", objectMapper, new Mappings(RemoteJobEntry.class), env.service(IndexSettings.class));
-		final long jobCleanUpInterval = configuration.getModuleConfig(JobConfiguration.class).getJobCleanupInterval();
-		final long staleJobCleanUpThreshold = configuration.getModuleConfig(JobConfiguration.class).getStaleJobCleanupThreshold();
+		final int purgeThreshold = configuration.getModuleConfig(JobConfiguration.class).getPurgeThreshold();
+		final long staleJobAge = configuration.getModuleConfig(JobConfiguration.class).getStaleJobAge();
 		env.services()
 			.registerService(RemoteJobTracker.class, 
 				new RemoteJobTracker(
 					jobsIndex, 
 					env.service(IEventBus.class), 
 					objectMapper, 
-					jobCleanUpInterval,
-					staleJobCleanUpThreshold)
+					purgeThreshold,
+					staleJobAge)
 			);
 	}
 
