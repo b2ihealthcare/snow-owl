@@ -347,7 +347,9 @@ public final class RemoteJobTracker implements IDisposableService {
 				
 				update(jobId, RemoteJobEntry.WITH_DONE, params.build());
 				
-				LOG.trace("Incrementing completed job counter to {}", completedJobCounter.incrementAndGet());
+				int completedJobs = completedJobCounter.incrementAndGet();
+				
+				LOG.trace("Incrementing completed job counter to {}", completedJobs);
 				
 			}
 		}
