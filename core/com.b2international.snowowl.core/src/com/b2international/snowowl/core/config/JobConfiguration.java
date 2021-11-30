@@ -24,35 +24,35 @@ import javax.validation.constraints.Min;
  */
 public class JobConfiguration {
 
-	private static final long DEFAULT_JOB_CLEANUP_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
-	private static final long DEFAULT_STALE_JOB_CLEANUP_THRESHOLD = TimeUnit.DAYS.toMillis(30L);
+	private static final int DEFAULT_PURGE_THRESHOLD = 10;
+	private static final long DEFAULT_STALE_JOB_AGE = TimeUnit.DAYS.toMillis(30L);
+
+	@Min(1)
+	private int purgeThreshold = DEFAULT_PURGE_THRESHOLD;
 
 	@Min(0)
-	private long jobCleanupInterval = DEFAULT_JOB_CLEANUP_INTERVAL;
-
-	@Min(0)
-	private long staleJobCleanupThreshold = DEFAULT_STALE_JOB_CLEANUP_THRESHOLD;
+	private long staleJobAge = DEFAULT_STALE_JOB_AGE;
 
 	/**
-	 * The interval for executing a remote job cleanup task in milliseconds, defaults to 1 minute
+	 * The number of completed (FINISHED, FAILED, CANCELED) jobs which triggers a purge in the job index
 	 */
-	public long getJobCleanupInterval() {
-		return jobCleanupInterval;
+	public int getPurgeThreshold() {
+		return purgeThreshold;
 	}
 
 	/**
-	 * The threshold to identify finished, failed or canceled jobs older than this value to use during clean up, defaults to 30 days
+	 * The duration to determine if a job can be considered stale. Used in relation with the finish date of a given job.
 	 */
-	public long getStaleJobCleanupThreshold() {
-		return staleJobCleanupThreshold;
+	public long getStaleJobAge() {
+		return staleJobAge;
 	}
 
-	public void setJobCleanupInterval(final long jobCleanupInterval) {
-		this.jobCleanupInterval = jobCleanupInterval;
+	public void setPurgeThreshold(final int purgeThreshold) {
+		this.purgeThreshold = purgeThreshold;
 	}
 
-	public void setStaleJobCleanupThreshold(final long staleJobCleanupThreshold) {
-		this.staleJobCleanupThreshold = staleJobCleanupThreshold;
+	public void setStaleJobAge(final long staleJobAge) {
+		this.staleJobAge = staleJobAge;
 	}
 
 }

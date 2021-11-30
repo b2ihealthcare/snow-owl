@@ -259,8 +259,8 @@ public final class RepositoryPlugin extends Plugin {
 			env.service(IndexSettings.class).forIndex(env.service(RepositoryConfiguration.class).getIndexConfiguration(), JOBS_INDEX)
 		);
 		
-		final long jobCleanUpInterval = configuration.getModuleConfig(JobConfiguration.class).getJobCleanupInterval();
-		final long staleJobCleanUpThreshold = configuration.getModuleConfig(JobConfiguration.class).getStaleJobCleanupThreshold();
+		final int purgeThreshold = configuration.getModuleConfig(JobConfiguration.class).getPurgeThreshold();
+		final long staleJobAge = configuration.getModuleConfig(JobConfiguration.class).getStaleJobAge();
 		
 		env.services()
 			.registerService(RemoteJobTracker.class, 
@@ -268,8 +268,8 @@ public final class RepositoryPlugin extends Plugin {
 					jobsIndex, 
 					env.service(IEventBus.class), 
 					objectMapper, 
-					jobCleanUpInterval,
-					staleJobCleanUpThreshold)
+					purgeThreshold,
+					staleJobAge)
 			);
 	}
 
