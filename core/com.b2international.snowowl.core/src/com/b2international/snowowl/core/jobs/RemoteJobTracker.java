@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.jobs;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,7 +61,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	private final int purgeThreshold;
 	private final long staleJobAge;
 	
-	private final AtomicInteger completedJobCounter;
+	private final AtomicInteger jobCounter;
 
 	public RemoteJobTracker(Index index, IEventBus events, ObjectMapper mapper, final int purgeThreshold, final long staleJobAge) {
 		
@@ -76,9 +78,9 @@ public final class RemoteJobTracker implements IDisposableService {
 		convertSuspendedJobStatuses();
 		
 		// get the number of completed jobs to be able to determine when purge is necessary
-		completedJobCounter = new AtomicInteger(getNumberOfCompletedJobs());
+		jobCounter = new AtomicInteger(getNumberOfCompletedJobs());
 		
-		LOG.trace("Initialized remote job tracker{}", completedJobCounter.get() > 0 ? " with " + completedJobCounter.get() + " jobs in 'DONE' state" : "");
+		LOG.trace("Initialized remote job tracker{}", jobCounter.get() > 0 ? " with " + jobCounter.get() + " jobs in 'DONE' state" : "");
 		
 		this.listener = new RemoteJobChangeAdapter();
 		Job.getJobManager().addJobChangeListener(listener);
@@ -209,16 +211,16 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 
 	@VisibleForTesting
-	public int getCompletedJobCounter() {
-		return completedJobCounter.get();
+	public int getJobCounter() {
+		return jobCounter.get();
 	}
 
 	private void purge() {
 		
 		index.write(writer -> {
-			final Hits<String> hits = writer.searcher().search(Query.select(String.class)
-					.fields(RemoteJobEntry.Fields.ID)
-					.from(RemoteJobEntry.class)
+			
+			final Hits<RemoteJobEntry> hits = writer.searcher().search(Query.select(RemoteJobEntry.class)
+					.fields(RemoteJobEntry.Fields.ID, RemoteJobEntry.Fields.DELETED)
 					.where(
 						Expressions.builder()
 							.must(RemoteJobEntry.Expressions.done())
@@ -231,15 +233,35 @@ public final class RemoteJobTracker implements IDisposableService {
 					)
 					.limit(Integer.MAX_VALUE)
 					.build());
+			
 			if (hits.getTotal() > 0) {
-				LOG.trace("Purging deleted / stale job entries {}", hits.getHits());
-				writer.remove(RemoteJobEntry.class, Set.copyOf(hits.getHits()));
-				writer.commit();
+				
+				Set<String> idsToRemove = hits.stream().map(RemoteJobEntry::getId).collect(toSet());
+				
+				if (!idsToRemove.isEmpty()) {
+					
+					Set<String> staleEntries = hits.stream()
+							.filter(entry -> !entry.isDeleted())
+							.map(RemoteJobEntry::getId)
+							.collect(toSet());
+			
+					LOG.trace("Purging {} deleted and {} stale jobs", Sets.difference(idsToRemove, staleEntries).size(), staleEntries.size());
+					
+					writer.remove(RemoteJobEntry.class, idsToRemove);
+					writer.commit();
+					
+					// send notification for stale entry removal
+					notifyRemoved(staleEntries);
+					
+				}
+				
 			}
+			
 			return null;
 		});
 		
-		completedJobCounter.set(getNumberOfCompletedJobs());
+		// reset job counter upon successful purge
+		jobCounter.set(0);
 		
 	}
 
@@ -295,11 +317,6 @@ public final class RemoteJobTracker implements IDisposableService {
 						.scheduleDate(new Date())
 						.build());
 				
-				if (completedJobCounter.get() >= purgeThreshold) {
-					LOG.trace("Triggering remote job purge ({})", completedJobCounter);
-					purge();
-				}
-				
 			}
 		}
 		
@@ -347,9 +364,13 @@ public final class RemoteJobTracker implements IDisposableService {
 				
 				update(jobId, RemoteJobEntry.WITH_DONE, params.build());
 				
-				int completedJobs = completedJobCounter.incrementAndGet();
+				int numberOfJobs = jobCounter.incrementAndGet();
+				LOG.trace("Incrementing job counter to {}", numberOfJobs);
 				
-				LOG.trace("Incrementing completed job counter to {}", completedJobs);
+				if (numberOfJobs >= purgeThreshold) {
+					LOG.trace("Triggering remote job purge ({})", numberOfJobs);
+					purge();
+				}
 				
 			}
 		}
