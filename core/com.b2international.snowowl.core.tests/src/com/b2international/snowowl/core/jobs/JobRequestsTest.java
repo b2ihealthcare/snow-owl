@@ -21,6 +21,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -142,8 +143,8 @@ public class JobRequestsTest {
 	@Test
 	public void scheduleAndDelete() throws Exception {
 		
-		// there are no completed jobs at startup 
-		assertEquals(0, tracker.getCompletedJobCounter());
+		// job counter is 0 at startup 
+		assertEquals(0, tracker.getJobCounter());
 		
 		final String deletedJobId = schedule("scheduleAndDelete", context -> {
 			// wait 100 ms to mark this job for deletion but do not delete it immediately
@@ -182,56 +183,39 @@ public class JobRequestsTest {
 		waitDoneByTracker(deletedJobId);
 		
 		// assert counter is increased properly
-		assertEquals(1, tracker.getCompletedJobCounter());
+		assertEquals(1, tracker.getJobCounter());
 		
-		// schedule another job
+		// schedule another job to trigger the purge (purge threshold is 2) 
 		final String anotherJobId = schedule("anotherjob", context -> RESULT);
 		waitDone(anotherJobId);
 		
-		// assert counter is increased properly
-		assertEquals(2, tracker.getCompletedJobCounter());
-		
-		// schedule another job to trigger the purge (purge threshold is 2) 
-		final String anotherJobId2 = schedule("anotherjob2", context -> {
-			try {
-				// delay job execution to assert that purge is triggered by new schedules (not finishes)
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			return RESULT;
-		});
-		
-		// assert first job is properly deleted
-		assertNull(tracker.get(deletedJobId));
-		
-		// ensure all other jobs are finished
-		waitDone(anotherJobId2);
+		// we need to wait for the purge to finish and there is no real notification for it :(
+		Thread.sleep(100);
 		
 		// assert that nothing was removed beside the job that was marked for deletion
 		try {
 			get(anotherJobId);
-			get(anotherJobId2);
 		} catch (NotFoundException e) {
 			fail();
 		}
 		
-		// assert completed job counter is 2 again
-		assertEquals(2, tracker.getCompletedJobCounter());
+		// assert first job is properly deleted
+		assertNull(tracker.get(deletedJobId));
+
+		// assert job counter is 0 again
+		assertEquals(0, tracker.getJobCounter());
 		
 	}
 	
 	@Test
 	public void scheduleAndCleanupStale() throws Exception {
 		
-		// there are no completed jobs at startup 
-		assertEquals(0, tracker.getCompletedJobCounter());
+		// job counter is 0 at startup 
+		assertEquals(0, tracker.getJobCounter());
 		
 		// this is a regular job, not marked for auto clean up
 		final String jobId = schedule("scheduleAndCleanupStale", context -> RESULT);
 		waitDone(jobId);
-		
-		Thread.sleep(DEFAULT_STALE_JOB_AGE + 1); // make sure the job becomes stale
 		
 		// assert the job still exist
 		try {
@@ -240,60 +224,57 @@ public class JobRequestsTest {
 			fail();
 		}
 		
-		// assert completed job counter is 1
-		assertEquals(1, tracker.getCompletedJobCounter());
 		
-		// schedule another job
-		final String anotherJobId = schedule("anotherjob", context -> RESULT);
-		waitDone(anotherJobId);
+		// assert job counter is 1
+		assertEquals(1, tracker.getJobCounter());
 		
-		// original job still exists
+		Thread.sleep(DEFAULT_STALE_JOB_AGE + 1); // make sure the job becomes stale
+		
+		// schedule second job
+		final String secondJobId = schedule("secondjob", context -> RESULT);
+		waitDone(secondJobId);
+		
+		// need to wait for the remove notification because the second job becomes 'done' before the purge finishes 
+		waitForNotification(jobId, notification -> RemoteJobNotification.isRemoved(notification));
+		
+		// second job exists
 		try {
-			get(jobId);
+			get(secondJobId);
 		} catch (NotFoundException e) {
 			fail();
 		}
-		
-		// another job still exists
-		try {
-			get(anotherJobId);
-		} catch (NotFoundException e) {
-			fail();
-		}
-		
-		// assert completed job counter is 2
-		assertEquals(2, tracker.getCompletedJobCounter());
-		
-		// schedule another job to trigger the purge
-		String anotherJobId2 = schedule("anotherjob2", context -> {
-			try {
-				// delay job execution to assert that purge is triggered by new schedules (not finishes)
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			return RESULT;
-		});
 		
 		// assert first job is gone because it was stale
 		assertNull(tracker.get(jobId));
 
 		// assert that nothing was removed beside the stale job
 		try {
-			get(anotherJobId);
-			get(anotherJobId2);
+			get(secondJobId);
 		} catch (NotFoundException e) {
 			fail();
 		}
 		
-		// ensure all other jobs are finished
-		waitDone(anotherJobId2);
-		
-		// assert completed job counter is 2 again
-		assertEquals(2, tracker.getCompletedJobCounter());
+		// assert job counter is 0 again
+		assertEquals(0, tracker.getJobCounter());
 		
 	}
-	
+
+	private void waitForNotification(String jobId, Predicate<RemoteJobNotification> predicate) throws Exception {
+		
+		RemoteJobNotification notification;
+		
+		do {
+			
+			notification = notifications.poll(5, TimeUnit.SECONDS);
+			
+			if (predicate.test(notification) && notification.getJobIds().contains(jobId)) {
+				break;
+			}
+			
+		} while (notification != null);
+		
+	}
+
 	@Test
 	public void scheduleAndMonitor() throws Exception {
 		final String jobId = schedule("scheduleAndMonitor", context -> {
@@ -324,7 +305,7 @@ public class JobRequestsTest {
 		final String jobId = schedule("scheduleAndClean", true, context -> RESULT);
 		waitDone(jobId);
 	}
-
+	
 	private void verifyJobEvents(String jobId, int expectedAdded, int expectedChanged, int expectedRemoved) {
 		int numberOfNotificationsToExpect = expectedAdded + expectedChanged + expectedRemoved;
 		
@@ -335,12 +316,12 @@ public class JobRequestsTest {
 					// did not receive a notification in time, fail the test
 					fail("No notification has arrived but still expecting '" + (numberOfNotificationsToExpect - i) + "' notifications.");
 				}
-				if (RemoteJobNotification.isAdded(notification)) {
+				if (RemoteJobNotification.isAdded(notification) && notification.getJobIds().contains(jobId)) {
 					expectedAdded--;
-				} else if (RemoteJobNotification.isChanged(notification)) {
+				} else if (RemoteJobNotification.isChanged(notification) && notification.getJobIds().contains(jobId)) {
 					expectedChanged--;
-				} else if (RemoteJobNotification.isRemoved(notification)) {
-					expectedRemoved--;;
+				} else if (RemoteJobNotification.isRemoved(notification) && notification.getJobIds().contains(jobId)) {
+					expectedRemoved--;
 				}
 			} catch (InterruptedException e) {
 				throw new RuntimeException();
