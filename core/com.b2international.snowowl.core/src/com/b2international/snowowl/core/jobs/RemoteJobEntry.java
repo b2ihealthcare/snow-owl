@@ -15,28 +15,15 @@
  */
 package com.b2international.snowowl.core.jobs;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.nestedMatch;
-import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.*;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.time.TimeUtil;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.ID;
-import com.b2international.index.Keyword;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -81,6 +68,7 @@ public final class RemoteJobEntry implements Serializable {
 		public static final String USER = "user";
 		public static final String STATE = "state";
 		public static final String START_DATE = "startDate";
+		public static final String FINISH_DATE = "finishDate";
 		public static final String SCHEDULE_DATE = "scheduleDate";
 		public static final String PARAMETERS = "parameters";
 		public static final Set<String> SORT_FIELDS = ImmutableSet.of(
@@ -89,7 +77,8 @@ public final class RemoteJobEntry implements Serializable {
 			USER,
 			STATE,
 			START_DATE,
-			SCHEDULE_DATE
+			SCHEDULE_DATE,
+			FINISH_DATE
 		);
 		public static final String DESCRIPTION = "description";
 	}
@@ -134,6 +123,10 @@ public final class RemoteJobEntry implements Serializable {
 		
 		public static Expression states(Iterable<RemoteJobState> states) {
 			return matchAny(Fields.STATE, FluentIterable.from(states).transform(Enum::name).toSet());
+		}
+		
+		public static Expression finishDate(long from, long to) {
+			return matchRange(Fields.FINISH_DATE, from, to);
 		}
 
 		public static Expression matchRequestType(Iterable<String> values) {
