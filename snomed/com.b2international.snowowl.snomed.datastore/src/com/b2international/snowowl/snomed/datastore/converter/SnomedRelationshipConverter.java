@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.converter;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -25,14 +24,12 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptRequestCache;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Maps;
 
 public final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<SnomedRelationshipIndexEntry, SnomedRelationship, SnomedRelationships> {
 
@@ -95,61 +92,49 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 	private void expandCharacteristicType(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.CHARACTERISTIC_TYPE)) {
 			final Options characteristicTypeOptions = expand().get(SnomedRelationship.Expand.CHARACTERISTIC_TYPE, Options.class);
-			final Set<String> characteristicTypeConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getCharacteristicTypeId).toSet();
-			final SnomedConcepts typeConcepts = SnomedRequests
-				.prepareSearchConcept()
-				.filterByIds(characteristicTypeConceptIds)
-				.setLimit(characteristicTypeConceptIds.size())
-				.setExpand(characteristicTypeOptions.get("expand", Options.class))
-				.setLocales(locales())
-				.build()
-				.execute(context());
-			final Map<String, SnomedConcept> characteristicTypesById = Maps.uniqueIndex(typeConcepts, SnomedConcept::getId);
-			for (SnomedRelationship relationship : results) {
-				((SnomedRelationship) relationship).setCharacteristicType(characteristicTypesById.get(relationship.getCharacteristicTypeId()));
-			}
+			final Iterable<String> characteristicTypeConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getCharacteristicTypeId);
+			
+			context().service(SnomedConceptRequestCache.class)
+				.request(characteristicTypeConceptIds, characteristicTypeOptions.getOptions("expand"), locales(), characteristicTypesById -> {
+					for (SnomedRelationship relationship : results) {
+						((SnomedRelationship) relationship).setCharacteristicType(characteristicTypesById.get(relationship.getCharacteristicTypeId()));
+					}
+				});
+			
 		}
 	}
 	
 	private void expandModifier(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.MODIFIER)) {
 			final Options modifierOptions = expand().get(SnomedRelationship.Expand.MODIFIER, Options.class);
-			final Set<String> modifierIds = FluentIterable.from(results).transform(SnomedRelationship::getModifierId).toSet();
-			final SnomedConcepts typeConcepts = SnomedRequests
-				.prepareSearchConcept()
-				.filterByIds(modifierIds)
-				.setLimit(modifierIds.size())
-				.setExpand(modifierOptions.get("expand", Options.class))
-				.setLocales(locales())
-				.build()
-				.execute(context());
-			final Map<String, SnomedConcept> modifiersById = Maps.uniqueIndex(typeConcepts, SnomedConcept::getId);
-			for (SnomedRelationship relationship : results) {
-				((SnomedRelationship) relationship).setModifier(modifiersById.get(relationship.getModifierId()));
-			}
+			final Iterable<String> modifierIds = FluentIterable.from(results).transform(SnomedRelationship::getModifierId);
+			
+			context().service(SnomedConceptRequestCache.class)
+				.request(modifierIds, modifierOptions.getOptions("expand"), locales(), modifiersById -> {
+					for (SnomedRelationship relationship : results) {
+						((SnomedRelationship) relationship).setModifier(modifiersById.get(relationship.getModifierId()));
+					}
+				});
+			
 		}
 	}
 	
 	private void expandType(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.TYPE)) {
 			final Options typeOptions = expand().get(SnomedRelationship.Expand.TYPE, Options.class);
-			final Set<String> typeConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getTypeId).toSet();
-			final SnomedConcepts typeConcepts = SnomedRequests
-				.prepareSearchConcept()
-				.filterByIds(typeConceptIds)
-				.setLimit(typeConceptIds.size())
-				.setExpand(typeOptions.get("expand", Options.class))
-				.setLocales(locales())
-				.build()
-				.execute(context());
-			final Map<String, SnomedConcept> typeConceptsById = Maps.uniqueIndex(typeConcepts, SnomedConcept::getId);
-			for (SnomedRelationship relationship : results) {
-				final String typeId = relationship.getTypeId();
-				if (typeConceptsById.containsKey(typeId)) {
-					final SnomedConcept typeConcept = typeConceptsById.get(typeId);
-					((SnomedRelationship) relationship).setType(typeConcept);
-				}
-			}
+			final Iterable<String> typeConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getTypeId);
+			
+			context().service(SnomedConceptRequestCache.class)
+				.request(typeConceptIds, typeOptions.getOptions("expand"), locales(), typeConceptsById -> {
+					for (SnomedRelationship relationship : results) {
+						final String typeId = relationship.getTypeId();
+						if (typeConceptsById.containsKey(typeId)) {
+							final SnomedConcept typeConcept = typeConceptsById.get(typeId);
+							((SnomedRelationship) relationship).setType(typeConcept);
+						}
+					}
+				});
+
 		}
 	}
 
@@ -161,24 +146,18 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 				.transform(SnomedRelationship::getDestinationId)
 				.toSet();
 			
-			final SnomedConcepts destinationConcepts = SnomedRequests
-				.prepareSearchConcept()
-				.filterByIds(destinationConceptIds)
-				.setLimit(destinationConceptIds.size())
-				.setExpand(destinationOptions.get("expand", Options.class))
-				.setLocales(locales())
-				.build()
-				.execute(context());
+			context().service(SnomedConceptRequestCache.class)
+				.request(destinationConceptIds, destinationOptions.getOptions("expand"), locales(), destinationConceptsById -> {
+					for (SnomedRelationship relationship : results) {
+						final String destinationId = relationship.getDestinationId();
+						// containsKey handles any null values here
+						if (destinationConceptsById.containsKey(destinationId)) {
+							final SnomedConcept destinationConcept = destinationConceptsById.get(destinationId);
+							((SnomedRelationship) relationship).setDestination(destinationConcept);
+						}
+					}
+				});
 			
-			final Map<String, SnomedConcept> destinationConceptsById = Maps.uniqueIndex(destinationConcepts, SnomedConcept::getId);
-			for (SnomedRelationship relationship : results) {
-				final String destinationId = relationship.getDestinationId();
-				// containsKey handles any null values here
-				if (destinationConceptsById.containsKey(destinationId)) {
-					final SnomedConcept destinationConcept = destinationConceptsById.get(destinationId);
-					((SnomedRelationship) relationship).setDestination(destinationConcept);
-				}
-			}
 		}
 	}
 
@@ -186,22 +165,18 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 		if (expand().containsKey(SnomedRelationship.Expand.SOURCE)) {
 			final Options sourceOptions = expand().get(SnomedRelationship.Expand.SOURCE, Options.class);
 			final Set<String> sourceConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getSourceId).toSet();
-			final SnomedConcepts sourceConcepts = SnomedRequests
-				.prepareSearchConcept()
-				.filterByIds(sourceConceptIds)
-				.setLimit(sourceConceptIds.size())
-				.setExpand(sourceOptions.get("expand", Options.class))
-				.setLocales(locales())
-				.build()
-				.execute(context());
-			final Map<String, SnomedConcept> sourceConceptsById = Maps.uniqueIndex(sourceConcepts, SnomedConcept::getId);
-			for (SnomedRelationship relationship : results) {
-				final String sourceId = relationship.getSourceId();
-				if (sourceConceptsById.containsKey(sourceId)) {
-					final SnomedConcept sourceConcept = sourceConceptsById.get(sourceId);
-					((SnomedRelationship) relationship).setSource(sourceConcept);
-				}
-			}
+
+			context().service(SnomedConceptRequestCache.class)
+				.request(sourceConceptIds, sourceOptions.getOptions("expand"), locales(), sourceConceptsById -> {
+					for (SnomedRelationship relationship : results) {
+						final String sourceId = relationship.getSourceId();
+						if (sourceConceptsById.containsKey(sourceId)) {
+							final SnomedConcept sourceConcept = sourceConceptsById.get(sourceId);
+							((SnomedRelationship) relationship).setSource(sourceConcept);
+						}
+					}
+				});
+			
 		}
 	}
 	

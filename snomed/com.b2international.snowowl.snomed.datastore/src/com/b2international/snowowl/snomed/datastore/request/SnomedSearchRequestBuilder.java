@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 
@@ -134,6 +135,11 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 */
 	public final B setEclExpressionForm(String expressionForm) {
 		return addOption(OptionKey.ECL_EXPRESSION_FORM, expressionForm);
+	}
+	
+	@Override
+	public Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return SnomedContentRequestBuilder.super.wrap(new SnomedConceptCachingRequest<>(req));
 	}
 
 }
