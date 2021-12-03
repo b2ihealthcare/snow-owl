@@ -1,6 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.18.0
+
+### Core
+- Automatically remove stale and deleted jobs (#943)
+  * New configuration key `jobs.purgeThreshold`. Default value is `10`.
+  * New configuration key `jobs.staleJobAge`. Default value is `30days`.
+
+### SNOMED CT
+- Publish SCT IDs to connected CIS instance upon versioning (#944)
+- Add a new console command to extract SCT IDs from the current ID service (#946)
+
+### Bugs/Improvements
+- [index]: fixed a branch merge issue where incorrect branch segment diff calculation caused false positive conflicts to appear instead of successful merge (#947)
+- [snomed]: do not convert OWL expressions to relationships where the referenced component was selected against the rules of the OWL Editorial Guide (#923) 
+- [snomed]: register published SCT IDs to connected CIS instance properly when import RF2 data (#941)
+- [snomed]: properly register SCT IDs when using nested component updates in the SNOMED CT Concept Update API (#945)
+
 ## 7.17.6
 
 ### Bugs/Improvements
