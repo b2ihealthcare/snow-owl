@@ -141,10 +141,9 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 	private void expandDestination(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.DESTINATION)) {
 			final Options destinationOptions = expand().get(SnomedRelationship.Expand.DESTINATION, Options.class);
-			final Set<String> destinationConceptIds = FluentIterable.from(results)
+			final Iterable<String> destinationConceptIds = FluentIterable.from(results)
 				.filter(r -> !r.hasValue()) // skip expand on relationships with value
-				.transform(SnomedRelationship::getDestinationId)
-				.toSet();
+				.transform(SnomedRelationship::getDestinationId);
 			
 			context().service(SnomedConceptRequestCache.class)
 				.request(destinationConceptIds, destinationOptions.getOptions("expand"), locales(), destinationConceptsById -> {
@@ -164,7 +163,7 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 	private void expandSource(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.SOURCE)) {
 			final Options sourceOptions = expand().get(SnomedRelationship.Expand.SOURCE, Options.class);
-			final Set<String> sourceConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getSourceId).toSet();
+			final Iterable<String> sourceConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getSourceId);
 
 			context().service(SnomedConceptRequestCache.class)
 				.request(sourceConceptIds, sourceOptions.getOptions("expand"), locales(), sourceConceptsById -> {

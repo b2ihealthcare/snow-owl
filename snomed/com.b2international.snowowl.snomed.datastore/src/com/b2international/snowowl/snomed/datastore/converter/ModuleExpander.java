@@ -16,14 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.converter;
 
 import java.util.List;
-import java.util.SortedSet;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptRequestCache;
-import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 7.4
@@ -44,7 +42,7 @@ final class ModuleExpander {
 		if (expand.containsKey(SnomedComponent.Expand.MODULE)) {
 			final Options moduleOptions = expand.get(SnomedComponent.Expand.MODULE, Options.class);
 
-			final SortedSet<String> moduleIds = results.stream().map(SnomedComponent::getModuleId).collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
+			final Iterable<String> moduleIds = results.stream().map(SnomedComponent::getModuleId)::iterator;
 			
 			context.service(SnomedConceptRequestCache.class)
 				.request(moduleIds, moduleOptions.getOptions("expand"), locales, modulesById -> {
