@@ -45,7 +45,7 @@ public class SnomedConceptRequestCache {
 			return cache.get(config);
 		} else {
 			requestedFetches.add(config);
-			compute(context);
+			compute(context, config);
 			return cache.get(config);
 		}
 	}
@@ -53,40 +53,48 @@ public class SnomedConceptRequestCache {
 	public void compute(BranchContext context) {
 		// run until all requested fetches are resolved
 		while (!requestedFetches.isEmpty()) {
-			// using the currently first requestedFetch config
-			// check if there are similar fetchConfigs requested earlier, and if yes, try to fetch them now, so they can be referenced later from the cache, and immediately get populated via the callback
-			FetchConfig config = requestedFetches.getFirst();
-			final Set<FetchConfig> configsToFetch = requestedFetches.stream()
-					.filter(cfg -> Objects.equals(config.expand, cfg.expand) && Objects.equals(config.locales, cfg.locales))
-					.collect(Collectors.toSet());
-			// remove them from the requested fetches
-			requestedFetches.removeAll(configsToFetch);
-
-			// search for configs using the same expand and locales, merge the IDs and fetch all of them together
-			final Set<String> ids = configsToFetch.stream().flatMap(cfg -> cfg.ids.stream()).collect(Collectors.toSet());
-			
-			context.log().info("Fetching concepts: ids={}, expand={}, locales={}", ids, config.expand, config.locales);
-			Map<String, SnomedConcept> fetchedConcepts = SnomedRequests.prepareSearchConcept()
-					.setLimit(ids.size())
-					.filterByIds(ids)
-					.setExpand(config.expand)
-					.setLocales(config.locales)
-					.build()
-					.execute(context)
-					.stream()
-					.collect(Collectors.toMap(IComponent::getId, c -> c));
-			
-			// populate the cache for each fetch config and call the callback
-			configsToFetch.forEach(cfg -> {
-				ImmutableMap.Builder<String, SnomedConcept> configConcepts = ImmutableMap.builder();
-				cfg.ids.forEach(idToCache -> {
-					configConcepts.put(idToCache, fetchedConcepts.get(idToCache));
-				});
-				ImmutableMap<String, SnomedConcept> concepts = configConcepts.build();
-				cache.put(cfg, concepts);
-				cfg.onConceptsReady.accept(concepts);
-			});
+			// compute all similar requests using the currently first requestedFetch config
+			compute(context, requestedFetches.getFirst());
 		}
+	}
+	
+	public void compute(BranchContext context, FetchConfig toEvaluate) {
+		if (requestedFetches.isEmpty()) {
+			return;
+		}
+
+		// evaluate all similar requests using the toEvaluate param
+		// check if there are similar fetchConfigs requested earlier, and if yes, try to fetch them now, so they can be referenced later from the cache, and immediately get populated via the callback
+		final Set<FetchConfig> configsToFetch = requestedFetches.stream()
+				.filter(cfg -> Objects.equals(toEvaluate.expand, cfg.expand) && Objects.equals(toEvaluate.locales, cfg.locales))
+				.collect(Collectors.toSet());
+		// remove them from the requested fetches
+		requestedFetches.removeAll(configsToFetch);
+
+		// search for configs using the same expand and locales, merge the IDs and fetch all of them together
+		final Set<String> ids = configsToFetch.stream().flatMap(cfg -> cfg.ids.stream()).collect(Collectors.toSet());
+		
+		context.log().trace("Fetching concepts: ids={}, expand={}, locales={}", ids, toEvaluate.expand, toEvaluate.locales);
+		Map<String, SnomedConcept> fetchedConcepts = SnomedRequests.prepareSearchConcept()
+				.setLimit(ids.size())
+				.filterByIds(ids)
+				.setExpand(toEvaluate.expand)
+				.setLocales(toEvaluate.locales)
+				.build()
+				.execute(context)
+				.stream()
+				.collect(Collectors.toMap(IComponent::getId, c -> c));
+		
+		// populate the cache for each fetch config and call the callback
+		configsToFetch.forEach(cfg -> {
+			ImmutableMap.Builder<String, SnomedConcept> configConcepts = ImmutableMap.builder();
+			cfg.ids.forEach(idToCache -> {
+				configConcepts.put(idToCache, fetchedConcepts.get(idToCache));
+			});
+			ImmutableMap<String, SnomedConcept> concepts = configConcepts.build();
+			cache.put(cfg, concepts);
+			cfg.onConceptsReady.accept(concepts);
+		});
 	}
 	
 	private static final class FetchConfig {
