@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs/Improvements
 - [index]: fixed a branch merge issue where incorrect branch segment diff calculation caused false positive conflicts to appear instead of successful merge (#947)
-- [snomed]: do not convert OWL expressions to relationships where the referenced component was selected against the rules of the OWL Editorial Guide (#923) 
+- [snomed]: do not convert OWL expressions to relationships when the referenced component violates the rules of the SNOMED CT OWL Guide (#923) 
 - [snomed]: register published SCT IDs to connected CIS instance properly when import RF2 data (#941)
 - [snomed]: properly register SCT IDs when using nested component updates in the SNOMED CT Concept Update API (#945)
 
