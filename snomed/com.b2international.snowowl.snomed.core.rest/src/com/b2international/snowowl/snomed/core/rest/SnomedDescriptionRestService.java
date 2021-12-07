@@ -196,11 +196,16 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			final String descriptionId,
 			
 			@ParameterObject
-			final ResourceSelectors selectors) {
+			final ResourceSelectors selectors,
+			
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 		
 		return SnomedRequests.prepareGetDescription(descriptionId)
 					.setExpand(selectors.getExpand())
 					.setFields(selectors.getField())
+					.setLocales(acceptLanguage)
 					.build(path)
 					.execute(getBus());
 	}

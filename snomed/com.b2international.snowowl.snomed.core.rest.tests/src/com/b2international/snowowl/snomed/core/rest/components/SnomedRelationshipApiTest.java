@@ -34,6 +34,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -152,13 +153,27 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createRelationshipInferred() {
+		
 		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP)
 				.with("commitComment", "Created new relationship with inferred characteristic type");
 
 		String relationshipId = assertCreated(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody));
 
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("characteristicTypeId", equalTo(Concepts.INFERRED_RELATIONSHIP));
+		SnomedRelationship relationship = getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "source()", "type()", "destination()", "characteristicType()", "modifier()")
+			.statusCode(200)
+			.extract().as(SnomedRelationship.class);
+		
+		assertNotNull(relationship.getCharacteristicType());
+		assertEquals(Concepts.INFERRED_RELATIONSHIP, relationship.getCharacteristicType().getId());
+		assertNotNull(relationship.getSource());
+		assertEquals(Concepts.ROOT_CONCEPT, relationship.getSource().getId());
+		assertNotNull(relationship.getType());
+		assertEquals(Concepts.PART_OF, relationship.getType().getId());
+		assertNotNull(relationship.getDestination());
+		assertEquals(Concepts.NAMESPACE_ROOT, relationship.getDestination().getId());
+		assertNotNull(relationship.getModifier());
+		assertEquals(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, relationship.getModifier().getId());
+		
 	}
 
 	@Test
