@@ -1,11 +1,10 @@
 #
-# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
-# necessary to connect one user to the system otherwise Snow Owl startup fails
-systemUser: true
-
 identity:
+#  jws: HS256
+#  secret: <your-secret>
   providers:
     - file:
         name: users
@@ -16,11 +15,6 @@ identity:
 #        rootDnPassword: <adminpwd>
 #        userIdProperty: uid
 #        usePool: false
-
-#repository:
-#  index:
-#    snomed:
-#      number_of_shards: "3"
 
 monitoring:
   enabled: true

@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
+import com.b2international.snowowl.core.identity.JWTConfigurationTest;
 import com.b2international.snowowl.core.identity.PermissionTest;
 import com.b2international.snowowl.core.jobs.JobRequestsTest;
 import com.b2international.snowowl.core.locks.DatastoreLockTests;
@@ -46,6 +47,11 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+	// XXX this JWT configuration test manipulates the global injection context (ApplicationContext), should be executed before any other tests 
+	JWTConfigurationTest.class,
+	// identity/authorization tests
+	PermissionTest.class,
+	
 	// unit tests
 	ConsoleProgressMonitorTest.class,
 	ResourceURITest.class,
@@ -56,7 +62,6 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	AttachmentRegistryTest.class,
 	SortParserTest.class,
 	MergeConflictSerializationTest.class,
-	PermissionTest.class,
 	ImportResponseSerializationTest.class,
 	ValidationThreadPoolTest.class,
 	SearchResourceRequestTest.class,

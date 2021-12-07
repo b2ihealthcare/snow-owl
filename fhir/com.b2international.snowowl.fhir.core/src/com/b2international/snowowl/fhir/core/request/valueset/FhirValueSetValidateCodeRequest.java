@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
@@ -38,7 +39,11 @@ final class FhirValueSetValidateCodeRequest implements Request<ServiceProvider, 
 	@Override
 	public ValidateCodeResult execute(ServiceProvider context) {
 		final ValueSet valueSet = FhirRequests.valueSets().prepareGet(request.getUrl().getUriValue()).buildAsync().execute(context);
-		return context.optionalService(FhirValueSetCodeValidator.class).orElse(FhirValueSetCodeValidator.NOOP).validateCode(context, valueSet, request);
+		return context.service(RepositoryManager.class)
+				.get(valueSet.getToolingId())
+				.optionalService(FhirValueSetCodeValidator.class)
+				.orElse(FhirValueSetCodeValidator.NOOP)
+				.validateCode(context, valueSet, request);
 	}
 
 }

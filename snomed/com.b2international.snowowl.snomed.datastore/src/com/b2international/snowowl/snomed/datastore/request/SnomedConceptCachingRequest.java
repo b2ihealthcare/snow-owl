@@ -15,25 +15,29 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
- * @since 8.0
+ * @since 8.1
  * @param <R>
  */
-public interface SnomedContentRequestBuilder<R> extends TerminologyResourceContentRequestBuilder<R> {
+public final class SnomedConceptCachingRequest<R> extends DelegatingRequest<BranchContext, BranchContext, R> {
+
+	private static final long serialVersionUID = 1L;
+	
+	public SnomedConceptCachingRequest(Request<BranchContext, R> next) {
+		super(next);
+	}
 
 	@Override
-	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
-		return TerminologyResourceContentRequestBuilder.super.wrap(new SnomedConceptCachingRequest<>(req));
+	public R execute(BranchContext context) {
+		SnomedConceptRequestCache cache = new SnomedConceptRequestCache();
+		R response = next(context.inject().bind(SnomedConceptRequestCache.class, cache).build());
+		// compute the cache if the next callback returns successfully
+		cache.compute(context);
+		return response; 
 	}
-	
-	@Override
-	default String getToolingId() {
-		return SnomedTerminologyComponentConstants.TOOLING_ID;
-	}
-	
+
 }

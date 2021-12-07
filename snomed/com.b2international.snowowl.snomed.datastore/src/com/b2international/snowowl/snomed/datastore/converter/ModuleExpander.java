@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.converter;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptRequestCache;
 
 /**
  * @since 7.4
@@ -46,21 +42,15 @@ final class ModuleExpander {
 		if (expand.containsKey(SnomedComponent.Expand.MODULE)) {
 			final Options moduleOptions = expand.get(SnomedComponent.Expand.MODULE, Options.class);
 
-			final Set<String> moduleIds = results.stream().map(SnomedComponent::getModuleId).collect(Collectors.toSet());
+			final Iterable<String> moduleIds = results.stream().map(SnomedComponent::getModuleId)::iterator;
 			
-			final Map<String, SnomedConcept> modulesById = SnomedRequests.prepareSearchConcept()
-				.all()
-				.filterByIds(moduleIds)
-				.setExpand(moduleOptions.getOptions("expand"))
-				.setLocales(locales)
-				.build()
-				.execute(context)
-				.stream()
-				.collect(Collectors.toMap(SnomedConcept::getId, c -> c));
+			context.service(SnomedConceptRequestCache.class)
+				.request(moduleIds, moduleOptions.getOptions("expand"), locales, modulesById -> {
+					for (SnomedComponent component : results) {
+						component.setModule(modulesById.get(component.getModuleId()));
+					}
+				});
 			
-			for (SnomedComponent component : results) {
-				component.setModule(modulesById.get(component.getModuleId()));
-			}
 		}
 	}
 	

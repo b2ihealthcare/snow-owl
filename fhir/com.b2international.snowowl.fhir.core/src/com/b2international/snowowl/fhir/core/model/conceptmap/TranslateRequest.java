@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -222,19 +222,6 @@ public class TranslateRequest {
 			numberOfSourceParams++;
 		}
 		if (numberOfSourceParams != 1) {
-			return false;
-		}
-		return true;
-	}
-	
-	@AssertTrue(message = "Target or target system needs to be provided")
-	private boolean isTargetValid() {
-
-		if (target == null && targetsystem == null) {
-			return false;
-		}
-
-		if (target != null && targetsystem != null) {
 			return false;
 		}
 		return true;

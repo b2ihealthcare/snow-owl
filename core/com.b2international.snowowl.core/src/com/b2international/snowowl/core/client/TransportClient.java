@@ -41,7 +41,7 @@ import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
 import com.b2international.snowowl.core.identity.Token;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
@@ -165,7 +165,7 @@ public final class TransportClient {
 			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", token.getToken())));
 			env.services().registerService(TransportClient.class, this);
 			
-			return IdentityProvider.authJWT(token.getToken());
+			return env.service(AuthorizationHeaderVerifier.class).toUser(token.getToken());
 		} catch (UnauthorizedException e) {
 			throw new SnowowlServiceException(e.getMessage());
 		} catch (final Throwable t) {

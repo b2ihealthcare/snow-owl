@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
@@ -74,8 +75,8 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				throw new UnauthorizedException("Missing authorization token");
 			}
 		} else {
-			// authenticate security token
-			user = identityProvider.auth(authorizationToken);
+			// verify authorization header value
+			user = context.service(AuthorizationHeaderVerifier.class).auth(authorizationToken);
 			if (user == null) {
 				throw new UnauthorizedException("Incorrect authorization token");
 			}

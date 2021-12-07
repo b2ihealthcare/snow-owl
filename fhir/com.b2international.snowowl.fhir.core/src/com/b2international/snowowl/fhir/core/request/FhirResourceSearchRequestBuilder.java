@@ -106,7 +106,7 @@ public abstract class FhirResourceSearchRequestBuilder<B extends FhirResourceSea
 		if (elements == null) {
 			return getSelf();
 		} else {
-			final Set<String> fields = new LinkedHashSet<>();
+			final Set<String> fields = new LinkedHashSet<>(fields()); // always get the already configured field values 
 			// when called with a non-null value, make sure mandatory fields are implicitly included
 			fields.addAll(getMandatoryFields());
 			// add all other fields

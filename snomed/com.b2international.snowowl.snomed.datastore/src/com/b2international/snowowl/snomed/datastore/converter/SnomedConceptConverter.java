@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptRequestCache;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Functions;
 import com.google.common.collect.*;
@@ -170,24 +171,14 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 		}
 		
 		final Options definitionStatusExpand = expand().getOptions(SnomedConcept.Expand.DEFINITION_STATUS).getOptions("expand");
-		
-		Set<String> definitionStatusIds = results.stream()
-				.map(SnomedConcept::getDefinitionStatusId)
-				.collect(Collectors.toSet());
-		
-		Map<String, SnomedConcept> definitionStatusesById = SnomedRequests.prepareSearchConcept()
-			.filterByIds(definitionStatusIds)
-			.setLimit(definitionStatusIds.size())
-			.setExpand(definitionStatusExpand)
-			.setLocales(locales())
-			.build()
-			.execute(context())
-			.stream()
-			.collect(Collectors.toMap(SnomedConcept::getId, c -> c));
-		
-		for (SnomedConcept result : results) {
-			result.setDefinitionStatus(definitionStatusesById.get(result.getDefinitionStatusId()));
-		}
+		final Iterable<String> definitionStatusIds = results.stream().map(SnomedConcept::getDefinitionStatusId)::iterator;
+
+		context().service(SnomedConceptRequestCache.class)
+			.request(definitionStatusIds, definitionStatusExpand, locales(), definitionStatusesById -> {
+				for (SnomedConcept result : results) {
+					result.setDefinitionStatus(definitionStatusesById.get(result.getDefinitionStatusId()));
+				}
+			});
 	}
 
 	private void expandReferenceSet(List<SnomedConcept> results) {

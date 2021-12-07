@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,8 @@ import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Dependency;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Parameter;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
@@ -115,29 +110,6 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 		
 		TranslateRequest.builder()
 			.target("target")
-			.build();
-		
-	}
-	
-	@Test
-	public void missingTargetTest() {
-		
-		Issue expectedIssue = Issue.builder()
-			.code(IssueType.INVALID)
-			.severity(IssueSeverity.ERROR)
-			.diagnostics("1 validation error")
-			.addLocation("TranslateRequest.targetValid")
-			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'targetValid' content is invalid [false]. "
-				+ "Violation: Target or target system needs to be provided.")
-			.build();
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
-		
-		TranslateRequest.builder()
-			.code("fatal")
-			.system("http://hl7.org/fhir/issue-severity")
 			.build();
 		
 	}
