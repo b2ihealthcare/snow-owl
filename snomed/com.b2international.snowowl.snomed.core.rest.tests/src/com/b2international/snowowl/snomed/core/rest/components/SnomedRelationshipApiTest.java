@@ -163,15 +163,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.extract().as(SnomedRelationship.class);
 		
-		assertNotNull(relationship.getCharacteristicType());
 		assertEquals(Concepts.INFERRED_RELATIONSHIP, relationship.getCharacteristicType().getId());
-		assertNotNull(relationship.getSource());
 		assertEquals(Concepts.ROOT_CONCEPT, relationship.getSource().getId());
-		assertNotNull(relationship.getType());
 		assertEquals(Concepts.PART_OF, relationship.getType().getId());
-		assertNotNull(relationship.getDestination());
 		assertEquals(Concepts.NAMESPACE_ROOT, relationship.getDestination().getId());
-		assertNotNull(relationship.getModifier());
 		assertEquals(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, relationship.getModifier().getId());
 		
 	}
