@@ -16,19 +16,14 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.ResourceAuthorization;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 8.0
@@ -105,55 +100,9 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		return queryBuilder.build();
 	}
 	
-	/**
-	 * Configures security filters to allow access to certain resources only. This method is no-op if the given {@link ServiceProvider context}'s {@link User} is an administrator or has read access to everything. 
-	 * 
-	 * @param context - the context where user information will be extracted
-	 * @param queryBuilder - the query builder to append the clauses to
-	 */
 	protected final void addSecurityFilter(ServiceProvider context, ExpressionBuilder queryBuilder) {
-		final User user = context.service(User.class);
-		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
-			return;
-		}
-		
-		// extract read permissions
-		final List<Permission> readPermissions = user.getPermissions().stream()
-				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
-				.collect(Collectors.toList());
-		
-		final Set<String> exactResourceIds = readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
-				.filter(resource -> !resource.endsWith("*"))
-				.collect(Collectors.toSet());
-		final Set<String> resourceIdPrefixes = readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
-				.filter(resource -> resource.endsWith("*"))
-				.map(resource -> resource.substring(0, resource.length() - 1))
-				.collect(Collectors.toSet());
-		
-		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
-			context.log().info("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), ImmutableSortedSet.copyOf(exactResourceIds), ImmutableSortedSet.copyOf(resourceIdPrefixes));
-			ExpressionBuilder bool = Expressions.builder();
-			// the permissions give access to either
-			if (!exactResourceIds.isEmpty()) {
-				// explicit IDs
-				bool.should(ResourceDocument.Expressions.ids(exactResourceIds));
-				// or the permitted resources are bundles which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
-			}
-			
-			if (!resourceIdPrefixes.isEmpty()) {
-				// partial IDs, prefixes
-				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
-				// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
-			}
-			
-			queryBuilder.filter(bool.build());
-		}
+		final ResourceAuthorization resourceAuthorization = context.service(ResourceAuthorization.class);
+		resourceAuthorization.addSecurityFilter(context, queryBuilder);
 	}
 
 	/**

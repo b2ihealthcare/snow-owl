@@ -28,6 +28,9 @@ import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.authorization.AnyResourceAuthorization;
+import com.b2international.snowowl.core.authorization.PermissionResourceAuthorization;
+import com.b2international.snowowl.core.authorization.ResourceAuthorization;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -98,6 +101,10 @@ public final class SnowOwlPlugin extends Plugin {
 			
 			final RevisionIndex revisionIndex = new DefaultRevisionIndex(resourceIndex, env.service(TimestampProvider.class), mapper);
 			env.services().registerService(ResourceRepository.class, new ResourceRepository(revisionIndex));
+			
+			// The default resource authorization filtering chain; can be customized or replaced entirely in other plugins at startup
+			final ResourceAuthorization resourceAuthorization = new AnyResourceAuthorization(new PermissionResourceAuthorization());
+			env.services().registerService(ResourceAuthorization.class, resourceAuthorization);
 		}
 	}
 
