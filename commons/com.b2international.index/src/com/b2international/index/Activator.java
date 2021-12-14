@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.codecs.Codec;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.xcontent.json.JsonXContent;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -58,6 +58,8 @@ public class Activator implements BundleActivator {
 		// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
 		System.setProperty("log4j.shutdownHookEnabled", "false");
 		System.setProperty("log4j2.disable.jmx", "true");
+		// Disable log4j2 formatMsgNoLookups to mitigate CVE-2021-44228 security vulnerability, see more info at: https://logging.apache.org/log4j/2.x/security.html
+		System.setProperty("log4j2.formatMsgNoLookups", "true");
 		
 		System.setProperty("io.netty.noUnsafe", "true");
 		System.setProperty("io.netty.noKeySetOptimization", "true");
