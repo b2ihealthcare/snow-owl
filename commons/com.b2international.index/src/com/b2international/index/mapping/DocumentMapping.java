@@ -58,7 +58,7 @@ public final class DocumentMapping {
 	 * @deprecated - use an explicit {@link ID} field instead of relying on the default _id metadata field
 	 */
 	public static final String _ID = "_id";
-
+	
 	private final Class<?> type;
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;

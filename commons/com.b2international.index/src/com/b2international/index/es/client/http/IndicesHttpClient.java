@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,7 @@ package com.b2international.index.es.client.http;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
@@ -33,6 +27,7 @@ import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.*;
 
 import com.b2international.index.IndexException;
 import com.b2international.index.es.client.IndicesClient;
@@ -56,7 +51,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().create(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to create index '%s' for type '%s'", req.index(), req.mappings().entrySet().iterator().next().getKey()), e);
+			throw new IndexException(String.format("Failed to create index '%s'", req.index()), e);
 		}
 	}
 	
@@ -64,7 +59,7 @@ public final class IndicesHttpClient implements IndicesClient {
 	public boolean exists(String... indices) {
 		client.checkAvailable();
 		try {
-			return esClient.indices().exists(new GetIndexRequest().indices(indices), RequestOptions.DEFAULT);
+			return esClient.indices().exists(new GetIndexRequest(indices), RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException("Couldn't check the existence of ES indices " + Arrays.toString(indices), e);
 		}
@@ -96,7 +91,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().getMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to get mapping '%s' of types %s.", Arrays.toString(req.indices()), Arrays.toString(req.types())), e);
+			throw new IndexException(String.format("Failed to get mapping '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	
@@ -106,7 +101,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().putMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to put mapping '%s' of types %s.", Arrays.toString(req.indices()), req.type()), e);
+			throw new IndexException(String.format("Failed to put mapping '%s'.", Arrays.toString(req.indices()), req), e);
 		}
 	}
 	

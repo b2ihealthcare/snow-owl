@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
-import org.elasticsearch.common.collect.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -48,6 +48,7 @@ Export-Package: com.b2international.index,
  org.elasticsearch.cluster.health,
  org.elasticsearch.common,
  org.elasticsearch.common.unit,
+ org.elasticsearch.core,
  org.tartarus.snowball,
  org.tartarus.snowball.ext
 Import-Package: javax.management,
