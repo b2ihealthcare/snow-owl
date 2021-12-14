@@ -101,7 +101,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().putMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to put mapping '%s'.", Arrays.toString(req.indices()), req), e);
+			throw new IndexException(String.format("Failed to put mapping '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	
