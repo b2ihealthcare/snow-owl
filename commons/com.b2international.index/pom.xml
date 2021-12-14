@@ -48,12 +48,6 @@
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
-            <artifactId>analysis-common</artifactId>
-            <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>lang-painless</artifactId>
             <version>${elasticsearch.version}</version>
             <scope>provided</scope>
