@@ -3,3 +3,4 @@
 *
 # Except this file
 !.gitignore
+!elasticsearch-log4j-*.jar
