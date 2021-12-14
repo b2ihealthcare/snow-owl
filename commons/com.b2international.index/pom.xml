@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.10.2</elasticsearch.version>
+		<elasticsearch.version>7.16.1</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -48,6 +48,12 @@
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
+            <artifactId>analysis-common</artifactId>
+            <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>lang-painless</artifactId>
             <version>${elasticsearch.version}</version>
             <scope>provided</scope>
@@ -63,6 +69,18 @@
             <artifactId>transport-netty4</artifactId>
             <version>${elasticsearch.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codelibs.elasticsearch.module</groupId>
+            <artifactId>scripting-painless-spi</artifactId>
+            <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+        	<groupId>org.lz4</groupId>
+        	<artifactId>lz4-java</artifactId>
+        	<version>1.8.0</version>
+        	<scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -128,6 +146,7 @@
 								lucene-spatial-extras,
 								lucene-spatial3d,
 								lucene-suggest,
+								lz4-java,
 								mapper-extras-client,
 								parent-join-client,
 								percolator-client,
