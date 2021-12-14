@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.15.0</elasticsearch.version>
+		<elasticsearch.version>7.16.1</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -71,10 +71,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-            <scope>provided</scope>
+        	<groupId>org.lz4</groupId>
+        	<artifactId>lz4-java</artifactId>
+        	<version>1.8.0</version>
+        	<scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -128,7 +128,6 @@
 								lang-mustache-client,
 								lang-painless,
 								log4j-api,
-								log4j-core,
 								lucene-analyzers-common,
 								lucene-backward-codecs,
 								lucene-core,
@@ -143,6 +142,7 @@
 								lucene-spatial-extras,
 								lucene-spatial3d,
 								lucene-suggest,
+								lz4-java,
 								mapper-extras-client,
 								parent-join-client,
 								percolator-client,
