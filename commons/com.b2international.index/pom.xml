@@ -10,8 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>6.5.0</elasticsearch.version>
-		<log4j2.version>2.11.1</log4j2.version>
+		<elasticsearch.version>6.8.21</elasticsearch.version>
     </properties>
     
     <!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
@@ -20,46 +19,55 @@
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>transport</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>analysis-common</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>lang-painless</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>reindex</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>transport-netty4</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
+            <groupId>org.codelibs.elasticsearch.module</groupId>
+            <artifactId>scripting-painless-spi</artifactId>
+            <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     
@@ -90,6 +98,7 @@
 								elasticsearch-rest-client,
 								elasticsearch-rest-high-level-client,
 								elasticsearch-secure-sm,
+								elasticsearch-ssl-config,
 								elasticsearch-x-content,
 								hppc,
 								jna,
@@ -98,7 +107,6 @@
 								lang-mustache-client,
 								lang-painless,
 								log4j-api,
-								log4j-core,
 								lucene-analyzers-common,
 								lucene-backward-codecs,
 								lucene-core,
@@ -120,6 +128,7 @@
 								reindex,
 								reindex-client,
 								scripting-painless-spi,
+								ssl-config,
 								t-digest,
 								transport,
 								transport-netty4,
