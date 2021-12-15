@@ -28,8 +28,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-ssl-config-7.16.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-7.16.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc-0.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jna-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.10.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jna-5.10.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.10.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jopt-simple-5.0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client-7.16.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lang-painless-7.16.1.jar"/>
