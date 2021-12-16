@@ -7,7 +7,7 @@ try {
 
 	slack.notifyBuild()
 
-	node('build') {
+	node('build-jdk8') {
 
 		stage('Checkout repository') {
 
