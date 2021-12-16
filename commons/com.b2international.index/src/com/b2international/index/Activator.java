@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,9 @@ public class Activator implements BundleActivator {
 		
 		// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
 		System.setProperty("log4j.shutdownHookEnabled", "false");
+ 		System.setProperty("log4j2.disable.jmx", "true");
+		// Disable log4j2 formatMsgNoLookups to mitigate CVE-2021-44228 security vulnerability, see more info at: https://logging.apache.org/log4j/2.x/security.html
+		System.setProperty("log4j2.formatMsgNoLookups", "true");
 		
 		withTccl(() -> {
 			// Initialize Log4j2
