@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.16.1</elasticsearch.version>
+		<elasticsearch.version>7.16.2</elasticsearch.version>
     </properties>
     
     <!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
