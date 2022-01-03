@@ -114,7 +114,7 @@
       <requirement
           name="org.codehaus.groovy.m2eclipse.feature.feature.group"/>
       <repository
-          url="https://dist.springsource.org/release/GRECLIPSE/4.3.0/e4.21/"/>
+          url="https://dist.springsource.org/release/GRECLIPSE/4.4.0/e4.22"/>
     </setupTask>
     <setupTask
         xsi:type="setup.p2:P2Task"
