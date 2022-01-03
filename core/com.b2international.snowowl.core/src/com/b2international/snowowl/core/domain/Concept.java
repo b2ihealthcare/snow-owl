@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.util.List;
 import java.util.SortedSet;
 
 import com.b2international.snowowl.core.ResourceURI;
@@ -36,6 +37,9 @@ public final class Concept extends BaseComponent {
 	private String term;
 	private String iconId;
 	private SortedSet<String> alternativeTerms;
+	
+	private List<String> parentIds;
+	private List<String> ancestorIds;
 	
 	private Float score;
 	
@@ -80,6 +84,22 @@ public final class Concept extends BaseComponent {
 	
 	public Float getScore() {
 		return score;
+	}
+	
+	public List<String> getParentIds() {
+		return parentIds;
+	}
+	
+	public void setParentIds(List<String> parentIds) {
+		this.parentIds = parentIds;
+	}
+	
+	public List<String> getAncestorIds() {
+		return ancestorIds;
+	}
+	
+	public void setAncestorIds(List<String> ancestorIds) {
+		this.ancestorIds = ancestorIds;
 	}
 
 	@JsonIgnore
