@@ -6,13 +6,10 @@
     xmlns:git="http://www.eclipse.org/oomph/setup/git/1.0"
     xmlns:jdt="http://www.eclipse.org/oomph/setup/jdt/1.0"
     xmlns:pde="http://www.eclipse.org/oomph/setup/pde/1.0"
-    xmlns:predicates="http://www.eclipse.org/oomph/predicates/1.0"
     xmlns:projects="http://www.eclipse.org/oomph/setup/projects/1.0"
     xmlns:setup="http://www.eclipse.org/oomph/setup/1.0"
     xmlns:setup.p2="http://www.eclipse.org/oomph/setup/p2/1.0"
-    xmlns:setup.workingsets="http://www.eclipse.org/oomph/setup/workingsets/1.0"
-    xmlns:workingsets="http://www.eclipse.org/oomph/workingsets/1.0"
-    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/pde/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/PDE.ecore http://www.eclipse.org/oomph/predicates/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Predicates.ecore http://www.eclipse.org/oomph/setup/projects/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Projects.ecore http://www.eclipse.org/oomph/setup/workingsets/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/SetupWorkingSets.ecore http://www.eclipse.org/oomph/workingsets/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/WorkingSets.ecore"
+    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/pde/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/PDE.ecore http://www.eclipse.org/oomph/setup/projects/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Projects.ecore"
     name="b2ihealthcare.snowowl"
     label="Snow Owl Server">
   <setupTask
@@ -65,9 +62,9 @@
       name="Compiler settings">
     <setupTask
         xsi:type="jdt:JRETask"
-        version="JavaSE-11"
-        location="${jre.location-11}"
-        name="JRE for JavaSE-11">
+        version="JavaSE-17"
+        location="${jre.location-17}"
+        name="JRE for JavaSE-17">
       <description>Define the JRE needed to compile and run the Java projects of ${scope.project.label}</description>
     </setupTask>
   </setupTask>
@@ -241,74 +238,6 @@
     <setupTask
         xsi:type="pde:TargetPlatformTask"
         name="Snow Owl Target Platform Definition"/>
-  </setupTask>
-  <setupTask
-      xsi:type="setup:CompoundTask"
-      name="Configure working sets">
-    <setupTask
-        xsi:type="setup.workingsets:WorkingSetTask">
-      <workingSet
-          name="snow-owl">
-        <predicate
-            xsi:type="predicates:AndPredicate">
-          <operand
-              xsi:type="workingsets:ExclusionPredicate"
-              excludedWorkingSet="//@setupTasks.7/@setupTasks.0/@workingSets[name='cis'] //@setupTasks.7/@setupTasks.0/@workingSets[name='commons'] //@setupTasks.7/@setupTasks.0/@workingSets[name='core'] //@setupTasks.7/@setupTasks.0/@workingSets[name='fhir'] //@setupTasks.7/@setupTasks.0/@workingSets[name='net4j'] //@setupTasks.7/@setupTasks.0/@workingSets[name='releng'] //@setupTasks.7/@setupTasks.0/@workingSets[name='snomed'] //@setupTasks.7/@setupTasks.0/@workingSets[name='tests']"/>
-          <operand
-              xsi:type="predicates:RepositoryPredicate"
-              project="snow-owl"/>
-        </predicate>
-      </workingSet>
-      <workingSet
-          name="cis">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/cis/.*"/>
-      </workingSet>
-      <workingSet
-          name="commons">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/commons/.*"/>
-      </workingSet>
-      <workingSet
-          name="core">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/core/.*"/>
-      </workingSet>
-      <workingSet
-          name="fhir">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/fhir/.*"/>
-      </workingSet>
-      <workingSet
-          name="net4j">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/net4j/.*"/>
-      </workingSet>
-      <workingSet
-          name="releng">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/releng/.*"/>
-      </workingSet>
-      <workingSet
-          name="snomed">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/snomed/.*"/>
-      </workingSet>
-      <workingSet
-          name="tests">
-        <predicate
-            xsi:type="predicates:LocationPredicate"
-            pattern=".*/tests/.*"/>
-      </workingSet>
-      <description>The dynamic working sets for ${scope.project.label}</description>
-    </setupTask>
   </setupTask>
   <stream name="8.x"
       label="8.x"/>
