@@ -35,6 +35,7 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.cluster.metadata.Metadata;
 import org.elasticsearch.rest.RestStatus;
@@ -137,6 +138,10 @@ public abstract class EsClientBase implements EsClient {
 			log.info("Checking cluster health at '{}'...", host.toURI());
 			ClusterHealthRequest req = new ClusterHealthRequest();
 			req.level(Level.INDICES);
+			// The default indices options (IndicesOptions.lenientExpandHidden()) returns all indices including system or hidden.
+			// It is not possible to determine if a hidden index is read only or not.
+			// This leads to the isIndexReadOnly() method waiting 60 seconds for each hidden index, eventually causing requests to be stalled.
+			req.indicesOptions(IndicesOptions.lenientExpand());
 			return cluster().health(req);
 		} catch (IOException e) {
 			throw new IndexException("Failed to get cluster health", e);
