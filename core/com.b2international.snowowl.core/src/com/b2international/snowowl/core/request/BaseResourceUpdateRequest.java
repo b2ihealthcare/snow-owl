@@ -209,7 +209,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		}
 		
 		// Update both bundle ID and ancestor IDs on the resource
-		updated.bundleAncestorIds(parentBundle.getBundleAncestorIdsForChild());
+		updated.bundleAncestorIds(parentBundle.getResourcePathSegments());
 		updated.bundleId(parentBundle.getId());
 		
 		// Update bundle ancestor IDs on the descendants of the resource (their bundle ID does not change)
@@ -224,7 +224,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		
 		// Calculate new ancestor ID list for direct children of the resource. Their bundleId remains "resourceId".
 		final Map<String, List<String>> newAncestorIdsByParentId = newHashMap(Map.of(resourceId, ImmutableList.<String>builder()
-			.addAll(parentBundle.getBundleAncestorIdsForChild())
+			.addAll(parentBundle.getResourcePathSegments())
 			.add(parentBundle.getId())
 			.build()));
 		
