@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Maven Dependency Versions -->
+		<!-- Dependency versions for Tycho's target platform filter -->
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		<groovy.version>2.5.15</groovy.version>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
