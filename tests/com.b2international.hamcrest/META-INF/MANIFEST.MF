@@ -16,4 +16,4 @@ Export-Package: org.hamcrest;version="2.2.0",
  org.hamcrest.object;version="2.2.0",
  org.hamcrest.text;version="2.2.0",
  org.hamcrest.xml;version="2.2.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
