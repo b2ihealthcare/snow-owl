@@ -79,8 +79,12 @@
         label="M2e">
       <requirement
           name="org.eclipse.m2e.feature.feature.group"/>
+      <requirement
+          name="org.eclipse.m2e.pde.feature.feature.group"/>
+      <requirement
+          name="org.eclipse.m2e.lemminx.feature.feature.group"/>
       <repository
-          url="https://download.eclipse.org/technology/m2e/releases/1.18.2/"/>
+          url="https://download.eclipse.org/technology/m2e/releases/1.19.0/"/>
     </setupTask>
     <setupTask
         xsi:type="setup.p2:P2Task"
@@ -182,10 +186,6 @@
           xsi:type="setup:PreferenceTask"
           key="/instance/org.eclipse.ui.ide/SHOW_WORKSPACE_SELECTION_DIALOG"
           value="false"/>
-      <setupTask
-          xsi:type="setup:PreferenceTask"
-          key="/instance/org.eclipse.ui.ide/WORKSPACE_NAME"
-          value="Snow Owl 8.x - Java 17"/>
     </setupTask>
     <description>Sets properties in Eclipse Preferences according to the instructions outlined in the README document</description>
   </setupTask>
@@ -232,7 +232,18 @@
         name="Snow Owl Target Platform Definition"/>
   </setupTask>
   <stream name="8.x"
-      label="8.x"/>
+      label="8.x">
+    <setupTask
+        xsi:type="setup:CompoundTask"
+        name="IDE Preferences">
+      <annotation
+          source="http://www.eclipse.org/oomph/setup/UserPreferences"/>
+      <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.ui.ide/WORKSPACE_NAME"
+          value="Snow Owl 8.x"/>
+    </setupTask>
+  </stream>
   <logicalProjectContainer
       xsi:type="setup:ProjectCatalog"
       href="index:/org.eclipse.setup#//@projectCatalogs[name='com.github']"/>
