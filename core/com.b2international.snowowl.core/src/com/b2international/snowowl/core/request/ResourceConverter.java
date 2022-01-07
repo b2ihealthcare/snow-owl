@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -23,6 +26,7 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.version.Versions;
@@ -32,6 +36,10 @@ import com.b2international.snowowl.core.version.Versions;
  */
 public final class ResourceConverter extends BaseResourceConverter<ResourceDocument, Resource, Resources> {
 
+	public static final String ROOT_LABEL = "Root";
+	
+	private static final String MISSING_BUNDLE_TEMPLATE = "<bundle %s>";
+	
 	private final ResourceTypeConverter.Registry converters;
 
 	public ResourceConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
@@ -60,7 +68,39 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 			return;
 		}
 
+		expandResourcePathLabels(results);
 		expandVersions(results);
+	}
+
+	private void expandResourcePathLabels(List<Resource> results) {
+		if (expand().containsKey(Resource.Expand.RESOURCE_PATH_LABELS)) {
+			
+			final Set<String> bundleIds = results.stream()
+				.map(Resource::getResourcePathSegments)
+				.<String>flatMap(List::stream)
+				.collect(Collectors.toSet());
+			
+			bundleIds.remove(IComponent.ROOT_ID);
+			
+			final Map<String, String> bundleLabelsById = ResourceRequests.bundles()
+				.prepareSearch()
+				.filterByIds(bundleIds)
+				.setFields(Resource.Fields.ID, Resource.Fields.TITLE)
+				.setLimit(bundleIds.size())
+				.build()
+				.execute(context())
+				.stream()
+				.collect(Collectors.toMap(b -> b.getId(), b -> b.getTitle()));
+			
+			bundleLabelsById.put(IComponent.ROOT_ID, ROOT_LABEL);
+			
+			results.forEach(r -> {
+				r.setResourcePathLabels(r.getResourcePathSegments()
+					.stream()
+					.map(id -> bundleLabelsById.computeIfAbsent(id, key -> String.format(MISSING_BUNDLE_TEMPLATE, key)))
+					.collect(Collectors.toList()));
+			});
+		}
 	}
 
 	private void expandVersions(List<Resource> results) {
