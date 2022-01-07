@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.Every.everyItem;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
 
 import java.util.List;
 import java.util.Map;
@@ -266,6 +268,82 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		assertHierarchyContains("statedAncestor", "parent", roleToId, Set.of("child1", "child2", "descendant1", "descendant2", "descendant3"));
 		assertHierarchyContains("parent", "parent", roleToId, Set.of("child1"));
 		assertHierarchyContains("ancestor", "parent", roleToId, Set.of("child1", "descendant1"));
+	}
+	
+	/**
+	 * Verify https://snowowl.atlassian.net/browse/SNRAY-482
+	 * 
+	 * Single nested module expand of definitionStatus results in status 500
+	 */
+	@Test
+	public void epxandNestedModuleOnly() {
+		final String conceptExpand = "definitionStatus(expand(module()))";
+		
+		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(
+					"id", conceptId,
+					"expand", conceptExpand))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.body("total", equalTo(1))
+			.body("items[0].definitionStatus.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_MODEL_COMPONENT)));
+	}
+	
+	/**
+	 * Verify https://snowowl.atlassian.net/browse/SNRAY-482
+	 * 
+	 * Definitions status module expand fail.
+	 */
+	@Test
+	public void epxandNestedModule() {
+		final String conceptExpand = "definitionStatus(expand(pt(),fsn())),module(expand(pt(),fsn()))";
+		
+		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(
+					"id", conceptId,
+					"expand", conceptExpand))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.body("total", equalTo(1))
+			.body("items[0].definitionStatus.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_MODEL_COMPONENT)));
+	}
+	
+	/**
+	 * Verify https://snowowl.atlassian.net/browse/SNRAY-482
+	 * 
+	 * Multiple nested module expansion results in evaluating only the first.
+	 */
+	@Test
+	public void multipleNestedModuleExpand() {
+		final String descriptionExpand = "descriptions(expand(module()))";
+		final String relationshipExpand = "relationships(expand(module()))";
+		
+		final String expand = String.format("%s,%s", descriptionExpand, relationshipExpand);
+		
+		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(
+					"id", conceptId,
+					"expand", expand))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.body("total", equalTo(1))
+			.body("items[0].descriptions.items.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_CORE)))
+			.body("items[0].relationships.items.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_CORE)));
 	}
 
 	private void assertHierarchyContains(String hierarchyField, String parentOrAncestorRole, Map<String, String> roleToId, Set<String> expectedRoles) {
