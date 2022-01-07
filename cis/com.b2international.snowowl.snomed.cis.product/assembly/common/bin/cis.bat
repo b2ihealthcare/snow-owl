@@ -11,6 +11,12 @@ rem Derive KERNEL_HOME full path from script's parent (no backslash)
 
 set CONFIG_AREA=%KERNEL_HOME%/work
 
+IF DEFINED JAVA_HOME (
+	set JAVA_EXECUTABLE=%JAVA_HOME%/bin/java.exe
+) else (
+	set JAVA_EXECUTABLE=%KERNEL_HOME%/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.1.v20211116-1657/jre/bin/java.exe
+)
+
 REM Heap settings
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Xms2g
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Xmx2g
@@ -37,16 +43,17 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.etc.config.urls=jetty.xml,jetty-http.xml
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog
 
 REM GC configuration
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+UseConcMarkSweepGC
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:CMSInitiatingOccupancyFraction=75
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+UseCMSInitiatingOccupancyOnly
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
 
 REM Misc configuration
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.lang=ALL-UNNAMED
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.util=ALL-UNNAMED
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.time=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dlogback.configurationFile="%KERNEL_HOME%/configuration/serviceability.xml"
 
 REM Run Snow Owl
 PUSHD %KERNEL_HOME%
-"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.700.v20200207-2156.jar  -console 2501 
+"%JAVA_EXECUTABLE%" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.800.v20200727-1323.jar  -console 2501 
 POPD
