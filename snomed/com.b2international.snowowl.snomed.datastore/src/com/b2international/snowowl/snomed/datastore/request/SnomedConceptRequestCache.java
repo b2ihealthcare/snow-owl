@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,8 +68,6 @@ public class SnomedConceptRequestCache {
 		final Set<FetchConfig> configsToFetch = requestedFetches.stream()
 				.filter(cfg -> Objects.equals(toEvaluate.expand, cfg.expand) && Objects.equals(toEvaluate.locales, cfg.locales))
 				.collect(Collectors.toSet());
-		// remove them from the requested fetches
-		requestedFetches.removeAll(configsToFetch);
 
 		// search for configs using the same expand and locales, merge the IDs and fetch all of them together
 		final Set<String> ids = configsToFetch.stream().flatMap(cfg -> cfg.ids.stream()).collect(Collectors.toSet());
@@ -85,16 +83,21 @@ public class SnomedConceptRequestCache {
 				.stream()
 				.collect(Collectors.toMap(IComponent::getId, c -> c));
 		
-		// populate the cache for each fetch config and call the callback
-		configsToFetch.forEach(cfg -> {
-			ImmutableMap.Builder<String, SnomedConcept> configConcepts = ImmutableMap.builder();
-			cfg.ids.forEach(idToCache -> {
-				configConcepts.put(idToCache, fetchedConcepts.get(idToCache));
+		// populate the cache for each similar fetch config and call the callback
+		requestedFetches.stream()
+			.filter(cfg -> configsToFetch.contains(cfg))
+			.forEach(cfg -> {
+				ImmutableMap.Builder<String, SnomedConcept> configConcepts = ImmutableMap.builder();
+				cfg.ids.forEach(idToCache -> {
+					configConcepts.put(idToCache, fetchedConcepts.get(idToCache));
+				});
+				ImmutableMap<String, SnomedConcept> concepts = configConcepts.build();
+				cache.put(cfg, concepts);
+				cfg.onConceptsReady.accept(concepts);
 			});
-			ImmutableMap<String, SnomedConcept> concepts = configConcepts.build();
-			cache.put(cfg, concepts);
-			cfg.onConceptsReady.accept(concepts);
-		});
+		
+		// remove them from the requested fetches
+		requestedFetches.removeAll(configsToFetch);
 	}
 	
 	private static final class FetchConfig {
