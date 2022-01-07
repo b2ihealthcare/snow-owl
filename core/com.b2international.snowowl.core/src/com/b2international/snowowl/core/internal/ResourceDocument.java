@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -466,6 +466,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	// Ordered ancestor bundle IDs, sorted by depth
 	private final List<String> bundleAncestorIds;
 	private final String bundleId;
 	
@@ -616,5 +617,4 @@ public final class ResourceDocument extends RevisionDocument {
 				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
 				.orElse(null);
 	}
-	
 }
