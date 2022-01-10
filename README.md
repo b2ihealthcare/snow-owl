@@ -105,8 +105,9 @@ Required Eclipse plug-ins (install the listed features via `Help` &rarr; `Instal
   * Xtend IDE 2.23.0 (Xtext)
   * Xtext Complete SDK 2.23.0 (Xtext)
 * Groovy Development Tools (https://dist.springsource.org/release/GRECLIPSE/4.4.0/e4.22)
-  * Eclipse Groovy Development Tools 4.4.0 (in category "Main Package")
-  * Groovy-Eclipse M2E integration 4.4.0 (in category "Maven Support")
+  * Eclipse Groovy Development Tools - 4.4.0 (in category "Main Package")
+  * Groovy-Eclipse M2E integration - 4.4.0 (in category "Maven Support")
+  * Groovy Compiler 3.0 - 4.4.0 (in category "More Compilers")
 * M2Eclipse (https://download.eclipse.org/technology/m2e/releases/1.19.0/)
   * M2E - Maven Integration for Eclipse (includes Incubating components) 1.19.0
   * M2E - PDE Integration 1.18.3

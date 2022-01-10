@@ -13,7 +13,7 @@
 		<unit id="org.codehaus.groovy.eclipse.feature.feature.group" version="4.3.0.v202109301800-e2009-RELEASE"/>
 		<unit id="org.codehaus.groovy.headless.feature.feature.group" version="4.3.0.v202109301800-e2009-RELEASE"/>
 		<unit id="org.codehaus.groovy.jdt.patch.feature.group" version="4.3.0.v202109301800-e2009-RELEASE"/>
-		<unit id="org.codehaus.groovy25.feature.feature.group" version="4.3.0.v202109301800-e2009-RELEASE"/>
+		<unit id="org.codehaus.groovy30.feature.feature.group" version="4.3.0.v202109301800-e2009-RELEASE"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.net4j.feature.group" version="4.9.0.v20200311-1912"/>
@@ -369,19 +369,19 @@
 			<dependency>
 				<groupId>org.codehaus.groovy</groupId>
 				<artifactId>groovy-json</artifactId>
-				<version>2.5.15</version>
+				<version>3.0.9</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.groovy</groupId>
 				<artifactId>groovy-xml</artifactId>
-				<version>2.5.15</version>
+				<version>3.0.9</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.groovy</groupId>
 				<artifactId>groovy</artifactId>
-				<version>2.5.15</version>
+				<version>3.0.9</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>

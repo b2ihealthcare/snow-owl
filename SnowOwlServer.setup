@@ -109,6 +109,8 @@
           name="org.codehaus.groovy.eclipse.feature.feature.group"/>
       <requirement
           name="org.codehaus.groovy.m2eclipse.feature.feature.group"/>
+      <requirement
+          name="org.codehaus.groovy30.feature.feature.group"/>
       <repository
           url="https://dist.springsource.org/release/GRECLIPSE/4.4.0/e4.22"/>
     </setupTask>
