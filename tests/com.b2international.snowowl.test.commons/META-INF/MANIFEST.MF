@@ -17,10 +17,10 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.snomed.datastore,
  org.eclipse.xtext.xbase.lib;bundle-version="[2.23.0,2.24.0)",
  assertj-core;bundle-version="3.16.1";visibility:=reexport,
- io.rest-assured.common;bundle-version="4.0.0";visibility:=reexport,
- io.rest-assured;bundle-version="4.0.0";visibility:=reexport,
- io.rest-assured.json-path;bundle-version="4.0.0";visibility:=reexport,
- io.rest-assured.xml-path;bundle-version="4.0.0";visibility:=reexport,
+ io.rest-assured.common;bundle-version="4.3.0";visibility:=reexport,
+ io.rest-assured;bundle-version="4.3.0";visibility:=reexport,
+ io.rest-assured.json-path;bundle-version="4.3.0";visibility:=reexport,
+ io.rest-assured.xml-path;bundle-version="4.3.0";visibility:=reexport,
  groovy;bundle-version="2.5.15"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy

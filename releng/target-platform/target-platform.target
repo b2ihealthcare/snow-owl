@@ -260,25 +260,25 @@
 			<dependency>
 				<groupId>io.rest-assured</groupId>
 				<artifactId>json-path</artifactId>
-				<version>4.0.0</version>
+				<version>4.3.0</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.rest-assured</groupId>
 				<artifactId>rest-assured-common</artifactId>
-				<version>4.0.0</version>
+				<version>4.3.0</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.rest-assured</groupId>
 				<artifactId>rest-assured</artifactId>
-				<version>4.0.0</version>
+				<version>4.3.0</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.rest-assured</groupId>
 				<artifactId>xml-path</artifactId>
-				<version>4.0.0</version>
+				<version>4.3.0</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
