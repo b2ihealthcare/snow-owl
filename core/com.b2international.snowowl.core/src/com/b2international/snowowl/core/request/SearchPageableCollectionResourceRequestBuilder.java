@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,15 +41,19 @@ public abstract class SearchPageableCollectionResourceRequestBuilder<B extends S
 	public final Stream<R> stream(C context) {
 		return Streams.stream(new SearchResourceRequestIterator<B, R>(getSelf(), (builder) -> builder.build().execute(context)));
 	}
-	
+
+	public final Stream<R> stream(ServiceProvider context, Function<B, AsyncRequest<R>> build) {
+		return Streams.stream(new SearchResourceRequestIterator<B, R>(getSelf(), (builder) -> build.apply(builder).getRequest().execute(context)));
+	}
+
 	public final Stream<R> streamAsync(ServiceProvider context, Function<B, AsyncRequest<R>> build) {
 		return streamAsync(context.service(IEventBus.class), build);
 	}
-	
+
 	public final Stream<R> streamAsync(IEventBus bus, Function<B, AsyncRequest<R>> build) {
 		return Streams.stream(new SearchResourceRequestIterator<B, R>(getSelf(), (builder) -> build.apply(builder).execute(bus).getSync(3, TimeUnit.MINUTES)));
 	}
-	
+
 	public final <T> Promise<Collection<T>> transformAsync(ServiceProvider context, Function<B, AsyncRequest<R>> build, Function<R, Stream<T>> transform) {
 		return transformAsync(context.service(IEventBus.class), build, transform);
 	}
@@ -62,5 +66,4 @@ public abstract class SearchPageableCollectionResourceRequestBuilder<B extends S
 					.collect(Collectors.toList());
 		});
 	}
-
 }
