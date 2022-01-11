@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceGet;
 import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceSearch;
+import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCES_API;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.Matchers.equalTo;
@@ -33,7 +37,9 @@ import org.junit.Test;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
+import com.b2international.snowowl.core.request.ResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -214,5 +220,23 @@ public class ResourceApiTest {
 		.statusCode(200)
 		.body("items.id", Matchers.contains(id1, id2, id3, id4));
 	}
+	
+	@Test
+	public void expandPathLabels() {
+		final String rootBundleId = "rootBundleId";
+		final String subBundleId = "subBundleId";
+		
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(rootBundleId));
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(subBundleId, rootBundleId));
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", subBundleId));
 
+		givenAuthenticatedRequest(RESOURCES_API)
+			.when()
+			.get("/cs1?expand=resourcePathLabels()")
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.body("resourcePathSegments", Matchers.contains(IComponent.ROOT_ID, rootBundleId, subBundleId)) 
+			.body("resourcePathLabels", Matchers.contains(ResourceConverter.ROOT_LABEL, "Bundle " + rootBundleId, "Bundle " + subBundleId));		
+	}
 }

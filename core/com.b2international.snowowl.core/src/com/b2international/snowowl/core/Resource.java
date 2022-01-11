@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 8.0
@@ -58,6 +60,13 @@ public abstract class Resource implements Serializable {
 			RESOURCE_TYPE,
 			TYPE_RANK
 		);
+	}
+	
+	/**
+	 * @since 8.0.1
+	 */
+	public static final class Expand {
+		public static final String RESOURCE_PATH_LABELS = "resourcePathLabels";
 	}
 	
 	// unique identifier for each resource, can be auto-generated or manually specified
@@ -99,6 +108,9 @@ public abstract class Resource implements Serializable {
 	// The ID of the bundle this resource is directly contained by
 	private String bundleId;
 
+	// The label of all bundles leading to this resource (expandable property)
+	private List<String> resourcePathLabels;
+	
 	/**
 	 * @return the type of the resource
 	 */
@@ -241,6 +253,36 @@ public abstract class Resource implements Serializable {
 	
 	public void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
+	}
+	
+	/**
+	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root)
+	 */
+	public List<String> getResourcePathSegments() {
+		final List<String> ancestorIds = getBundleAncestorIds();
+		final String parentId = getBundleId();
+		
+		if (IComponent.ROOT_ID.equals(parentId)) {
+			return ancestorIds;
+		}
+		
+		// Append our _parent ID_ to our ancestor ID array
+		return ImmutableList.<String>builder()
+			.addAll(ancestorIds)
+			.add(parentId)
+			.build();
+	}
+	
+	// XXX empty setter to make Jackson happy when deserializing
+	@JsonSetter
+	/*package*/ final void setResourcePathSegments(List<String> resourcePathSegments) {}
+	
+	public List<String> getResourcePathLabels() {
+		return resourcePathLabels;
+	}
+	
+	public void setResourcePathLabels(final List<String> resourcePathLabels) {
+		this.resourcePathLabels = resourcePathLabels;
 	}
 
 	/**
