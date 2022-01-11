@@ -363,6 +363,30 @@
 		</pluginManagement>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>b2i-releases</id>
+			<url>https://nexus.b2i.sg/repository/maven-releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>b2i-snapshots</id>
+			<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+			
 	<distributionManagement>
 		<repository>
 			<id>${maven.repository.id}</id>
