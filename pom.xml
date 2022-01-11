@@ -17,9 +17,9 @@
 		<jackson.version>2.10.5</jackson.version>
 		<jackson.databind.version>2.10.5.1</jackson.databind.version>
 		<netty.version>4.1.59.Final</netty.version>
-		<slf4j.version>1.7.30</slf4j.version>
-		<logback.version>1.2.3</logback.version>
-		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
+		<slf4j.version>1.7.32</slf4j.version>
+		<logback.version>1.2.10</logback.version>
+		<logback.versionRange>[1.2.10,1.2.11)</logback.versionRange>
 		<guava.version>27.1-jre</guava.version>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
 		<groovy.version>2.4.20</groovy.version>
