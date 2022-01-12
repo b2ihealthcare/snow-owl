@@ -54,7 +54,7 @@ Not the version you're looking for? View [past releases](https://github.com/b2ih
 
 ### Install and Run
 
-NOTE: You need to have version 11 of Java installed for running the development environment. Java 17 is used for the runtime, which is included in built packages, but if you would also like to run the product or tests directly from the IDE, it also needs to be present on the host system.
+NOTE: You need to have version 17 of the JDK installed for local builds and running the development environment. Official releases include the runtime.
 
 Once you have downloaded the appropriate package:
 
