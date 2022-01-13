@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
-import com.google.common.collect.ImmutableMap;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
@@ -44,28 +44,37 @@ public abstract class CodeSystemRestRequests {
 	}
 	
 	private static ValidatableResponse createCodeSystem(CodeSystemURI extensionOf, IBranchPath branchPath, String shortName) {
-		ImmutableMap.Builder<String, Object> requestBody = ImmutableMap.<String, Object>builder()
-				.put("name", shortName)
-				.put("shortName", shortName)
-				.put("citation", "citation")
-				.put("iconPath", "iconPath")
-				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
-				.put("terminologyId", SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
-				.put("oid", "oid_" + shortName)
-				.put("primaryLanguage", "primaryLanguage")
-				.put("organizationLink", "organizationLink");
-		
-		if (extensionOf != null) {
-			requestBody.put("extensionOf", extensionOf);
-		} else if (branchPath != null) {
-			requestBody.put("branchPath", branchPath.getPath());
-		}
-		
+		return createCodeSystem(createCodeSystemBody(extensionOf, branchPath, shortName));
+	}
+
+	public static ValidatableResponse createCodeSystem(Json requestBody) {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
-				.body(requestBody.build())
+				.body(requestBody)
 				.post("/codesystems")
 				.then();
+	}
+
+	public static Json createCodeSystemBody(CodeSystemURI extensionOf, IBranchPath branchPath, String shortName) {
+		Json requestBody = Json.object(
+			"name", shortName,
+			"shortName", shortName,
+			"citation", "citation",
+			"iconPath", "iconPath",
+			"repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID,
+			"terminologyId", SnomedTerminologyComponentConstants.TERMINOLOGY_ID,
+			"oid", "oid_" + shortName,
+			"primaryLanguage", "primaryLanguage",
+			"organizationLink", "organizationLink"
+		);
+		
+		if (extensionOf != null) {
+			requestBody = requestBody.with("extensionOf", extensionOf);
+		} else if (branchPath != null) {
+			requestBody = requestBody.with("branchPath", branchPath.getPath());
+		}
+		
+		return requestBody;
 	}
 
 	public static ValidatableResponse getCodeSystem(String id) {
