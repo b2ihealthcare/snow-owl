@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -450,7 +450,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 			.getSync(1, TimeUnit.MINUTES);
 		
 		final Resources descendants = ResourceRequests.prepareSearch()
-			.all()
+			.setLimit(3)
 			.filterByBundleAncestorId(otherParentBundleId)
 			.buildAsync()
 			.execute(Services.bus())
@@ -458,5 +458,13 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		assertEquals(3, descendants.getTotal());
 		assertThat(descendants).extracting(Resource::getId).containsOnly(parentBundleId, middleBundleId, childBundleId);
+		
+		// Check that bundle paths are incremental
+		assertThat(getBundle(parentBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, otherParentBundleId);
+		assertThat(getBundle(middleBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, otherParentBundleId, parentBundleId);
+		assertThat(getBundle(childBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, otherParentBundleId, parentBundleId, middleBundleId);
 	}
 }

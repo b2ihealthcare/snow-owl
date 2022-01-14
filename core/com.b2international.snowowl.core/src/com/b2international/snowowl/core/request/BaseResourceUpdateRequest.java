@@ -249,8 +249,10 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 				final ResourceDocument resource = context.lookup(id, ResourceDocument.class);
 				final ResourceDocument.Builder resourceBuilder = ResourceDocument.builder(resource);
 				
-				resourceBuilder.bundleAncestorIds(newAncestorIds);
-				context.add(resourceBuilder.build());
+				if (!Objects.equals(resource.getBundleAncestorIds(), newAncestorIds)) {
+					resourceBuilder.bundleAncestorIds(newAncestorIds);
+					context.update(resource, resourceBuilder.build());
+				}
 			
 				final Collection<Resource> next = resourcesByParentId.get(id);
 				if (!next.isEmpty()) {
