@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Map;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.codesystem.UpgradeInfo;
+import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.version.Versions;
@@ -38,11 +39,12 @@ public abstract class TerminologyResource extends Resource {
 	/**
 	 * @since 8.0
 	 */
-	public static final class Expand {
+	public static abstract class Expand extends Resource.Expand {
 		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
 		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
 		public static final String UPGRADE_INFO = "upgradeInfo";
 		public static final String VERSIONS = "versions";
+		public static final String COMMITS = "commits";
 	}
 	
 	// standard oid
@@ -71,6 +73,7 @@ public abstract class TerminologyResource extends Resource {
 	private List<ResourceURI> availableUpgrades;
 	
 	private Versions versions;
+	private CommitInfos commits;
 
 	/**
 	 * @return the assigned object identifier (OID) of this code system, eg. "{@code 3.4.5.6.10000}" (can be {@code null})
@@ -166,6 +169,14 @@ public abstract class TerminologyResource extends Resource {
 	
 	public void setVersions(Versions versions) {
 		this.versions = versions;
+	}
+	
+	public CommitInfos getCommits() {
+		return commits;
+	}
+	
+	public void setCommits(CommitInfos commits) {
+		this.commits = commits;
 	}
 	
 	/**
