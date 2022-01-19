@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ public final class CodeSystem extends TerminologyResource {
 		codeSystem.setPurpose(doc.getPurpose());
 		codeSystem.setBundleAncestorIds(doc.getBundleAncestorIds());
 		codeSystem.setBundleId(doc.getBundleId());
+		codeSystem.setCreatedAt(doc.getCreatedAt());
 		codeSystem.setOid(doc.getOid());
 		codeSystem.setBranchPath(doc.getBranchPath());
 		codeSystem.setToolingId(doc.getToolingId());

@@ -42,9 +42,9 @@ public abstract class Resource implements Serializable {
 		public static final String OWNER = ResourceDocument.Fields.OWNER;
 		public static final String STATUS = ResourceDocument.Fields.STATUS;
 		public static final String LANGUAGE = ResourceDocument.Fields.LANGUAGE;
-		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
 		public static final String RESOURCE_TYPE = ResourceDocument.Fields.RESOURCE_TYPE;
 		public static final String TYPE_RANK = ResourceDocument.Fields.TYPE_RANK;
+		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
 		
 		// TerminologyResource subtype specific fields, but for convenience and single API access, they are defined here
 		public static final String OID = ResourceDocument.Fields.OID;
@@ -59,7 +59,8 @@ public abstract class Resource implements Serializable {
 			OID,
 			CREATED_AT,
 			RESOURCE_TYPE,
-			TYPE_RANK
+			TYPE_RANK,
+			CREATED_AT
 		);
 	}
 	
@@ -111,6 +112,9 @@ public abstract class Resource implements Serializable {
 
 	// The label of all bundles leading to this resource (expandable property)
 	private List<String> resourcePathLabels;
+	
+	// The timestamp when the resource was created originally 
+	private Long createdAt;
 	
 	/**
 	 * @return the type of the resource
@@ -254,6 +258,14 @@ public abstract class Resource implements Serializable {
 	
 	public void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
+	}
+	
+	public void setCreatedAt(Long createdAt) {
+		this.createdAt = createdAt;
+	}
+	
+	public Long getCreatedAt() {
+		return createdAt;
 	}
 	
 	/**
