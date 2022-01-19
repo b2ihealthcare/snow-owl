@@ -64,9 +64,9 @@ public abstract class Resource implements Serializable {
 	}
 	
 	/**
-	 * @since 8.0.1
+	 * @since 8.1.0
 	 */
-	public static final class Expand {
+	public static abstract class Expand {
 		public static final String RESOURCE_PATH_LABELS = "resourcePathLabels";
 	}
 	
