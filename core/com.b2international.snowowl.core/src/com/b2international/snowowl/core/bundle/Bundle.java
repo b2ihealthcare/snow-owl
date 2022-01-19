@@ -104,6 +104,7 @@ public final class Bundle extends Resource {
 		bundle.setBundleAncestorIds(doc.getBundleAncestorIds());
 		bundle.setBundleId(doc.getBundleId());
 		bundle.setCreatedAt(doc.getCreatedAt());
+		bundle.setUpdatedAt(doc.getUpdatedAt());
 		return bundle;
 	}
 }

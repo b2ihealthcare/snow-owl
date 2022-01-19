@@ -45,6 +45,7 @@ public abstract class Resource implements Serializable {
 		public static final String RESOURCE_TYPE = ResourceDocument.Fields.RESOURCE_TYPE;
 		public static final String TYPE_RANK = ResourceDocument.Fields.TYPE_RANK;
 		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
+		public static final String UPDATED_AT = ResourceDocument.Fields.UPDATED_AT;
 		
 		// TerminologyResource subtype specific fields, but for convenience and single API access, they are defined here
 		public static final String OID = ResourceDocument.Fields.OID;
@@ -58,6 +59,7 @@ public abstract class Resource implements Serializable {
 			OWNER,
 			OID,
 			CREATED_AT,
+			UPDATED_AT,
 			RESOURCE_TYPE,
 			TYPE_RANK
 		);
@@ -114,6 +116,9 @@ public abstract class Resource implements Serializable {
 	
 	// The timestamp when the resource was created originally 
 	private Long createdAt;
+	
+	// The timestamp when the resource was last modified (either its contents or its properties)
+	private Long updatedAt;
 	
 	/**
 	 * @return the type of the resource
@@ -258,13 +263,21 @@ public abstract class Resource implements Serializable {
 	public void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
 	}
+
+	public Long getCreatedAt() {
+		return createdAt;
+	}
 	
 	public void setCreatedAt(Long createdAt) {
 		this.createdAt = createdAt;
 	}
 	
-	public Long getCreatedAt() {
-		return createdAt;
+	public Long getUpdatedAt() {
+		return updatedAt;
+	}
+	
+	public void setUpdatedAt(Long updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 	
 	/**

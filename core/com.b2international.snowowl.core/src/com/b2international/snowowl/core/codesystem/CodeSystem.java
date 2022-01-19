@@ -79,6 +79,7 @@ public final class CodeSystem extends TerminologyResource {
 		codeSystem.setBundleAncestorIds(doc.getBundleAncestorIds());
 		codeSystem.setBundleId(doc.getBundleId());
 		codeSystem.setCreatedAt(doc.getCreatedAt());
+		codeSystem.setUpdatedAt(doc.getUpdatedAt());
 		codeSystem.setOid(doc.getOid());
 		codeSystem.setBranchPath(doc.getBranchPath());
 		codeSystem.setToolingId(doc.getToolingId());
