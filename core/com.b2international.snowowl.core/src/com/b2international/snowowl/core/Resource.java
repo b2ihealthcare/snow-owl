@@ -59,8 +59,7 @@ public abstract class Resource implements Serializable {
 			OID,
 			CREATED_AT,
 			RESOURCE_TYPE,
-			TYPE_RANK,
-			CREATED_AT
+			TYPE_RANK
 		);
 	}
 	
