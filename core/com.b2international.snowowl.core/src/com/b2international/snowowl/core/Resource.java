@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -256,18 +257,23 @@ public abstract class Resource implements Serializable {
 	}
 	
 	/**
-	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root)
+	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root), or <code>null</code> if ancestry information is not available
 	 */
 	public List<String> getResourcePathSegments() {
 		final List<String> ancestorIds = getBundleAncestorIds();
 		final String parentId = getBundleId();
+		
+		// if either parentId or ancestorIds list are null then skip calculating the resourcePathSegments (eg. field selection)
+		if (parentId == null | ancestorIds == null) {
+			return Collections.emptyList();
+		}
 		
 		if (IComponent.ROOT_ID.equals(parentId)) {
 			return ancestorIds;
 		}
 		
 		// Append our _parent ID_ to our ancestor ID array
-		return ImmutableList.<String>builder()
+		return ImmutableList.<String>builder() 
 			.addAll(ancestorIds)
 			.add(parentId)
 			.build();
