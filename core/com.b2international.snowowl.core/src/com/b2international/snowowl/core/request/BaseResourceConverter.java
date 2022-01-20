@@ -28,6 +28,8 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
+import com.b2international.snowowl.core.request.expand.BaseResourceExpander;
+import com.b2international.snowowl.core.request.expand.ResourceExpanderExtension;
 import com.google.common.collect.Iterables;
 
 /**
@@ -88,10 +90,10 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 
 	private final void expandViaPlugins(List<R> results) {
 		context().optionalService(ClassPathScanner.class).ifPresent(scanner -> {
-			scanner.getComponentsByInterface(ResourceExpander.class)
+			scanner.getComponentsByInterface(ResourceExpanderExtension.class)
 				.stream()
-				.filter(expander -> getType().equals(expander.getType()))
-				.forEach(expander -> ((ResourceExpander<R>) expander).expand(results));
+				.filter(expanderExtension -> expanderExtension.canExpand(getType()))
+				.forEach(expanderExtension -> expanderExtension.create(context(), expand(), locales(), getType()).expand(results));
 		});
 	}
 

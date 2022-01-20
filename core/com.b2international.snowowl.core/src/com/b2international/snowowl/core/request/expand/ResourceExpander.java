@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.request.expand;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -49,7 +49,7 @@ public interface ResourceExpander<R> {
 	default Class<R> getType() {
 		final Class<?>[] types = TypeResolver.resolveRawArguments(ResourceExpander.class, getClass());
 		checkState(TypeResolver.Unknown.class != types[0], "Couldn't resolve target type parameter for expander class %s", getClass().getSimpleName());
-		return (Class<R>) types[1];
+		return (Class<R>) types[0];
 	}
 	
 }
