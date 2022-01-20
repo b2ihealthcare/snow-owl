@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -70,6 +71,7 @@ public abstract class Resource implements Serializable {
 	 */
 	public static abstract class Expand {
 		public static final String RESOURCE_PATH_LABELS = "resourcePathLabels";
+		public static final String UPDATED_AT_COMMIT = "updatedAtCommit";
 	}
 	
 	// unique identifier for each resource, can be auto-generated or manually specified
@@ -119,6 +121,9 @@ public abstract class Resource implements Serializable {
 	
 	// The timestamp when the resource was last modified (either its contents or its properties)
 	private Long updatedAt;
+	
+	// The commit object that holds information about the last update
+	private CommitInfo updatedAtCommit;
 	
 	/**
 	 * @return the type of the resource
@@ -278,6 +283,14 @@ public abstract class Resource implements Serializable {
 	
 	public void setUpdatedAt(Long updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+	
+	public CommitInfo getUpdatedAtCommit() {
+		return updatedAtCommit;
+	}
+	
+	public void setUpdatedAtCommit(CommitInfo updatedAtCommit) {
+		this.updatedAtCommit = updatedAtCommit;
 	}
 	
 	/**
