@@ -31,6 +31,7 @@ public final class Uri {
 	
 	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
 	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
+	public static final String OID_SUBSTRING = "urn:oid:";
 	
 	@NotEmpty
 	@ValidUri
@@ -52,6 +53,14 @@ public final class Uri {
 	@JsonIgnore
 	public boolean isSnomedUri() {
 		return uriValue != null && uriValue.startsWith(SNOMED_BASE_URI_STRING);
+	}
+	
+	public boolean isOid() {
+		return uriValue != null && uriValue.startsWith(OID_SUBSTRING);
+	}
+	
+	public String getOid() {
+		return isOid() ? uriValue.replaceAll(OID_SUBSTRING, "") : "";
 	}
 
 	@Override
