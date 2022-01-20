@@ -25,7 +25,7 @@ import net.jodah.typetools.TypeResolver;
 
 /**
  * @since 8.1
- * @param R - the resource's class type who's instances need to be expanded with additional fields
+ * @param <R> - the resource's class type who's instances need to be expanded with additional fields
  */
 public interface ResourceExpander<R> {
 
