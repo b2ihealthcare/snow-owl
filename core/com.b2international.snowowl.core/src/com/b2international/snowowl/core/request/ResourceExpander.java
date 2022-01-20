@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,47 +15,41 @@
  */
 package com.b2international.snowowl.core.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collections;
 import java.util.List;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.ServiceProvider;
+
+import net.jodah.typetools.TypeResolver;
 
 /**
- * @since 7.7
+ * @since 8.1
+ * @param <R> - the resource's class type who's instances need to be expanded with additional fields
  */
-public abstract class ResourceExpander {
+public interface ResourceExpander<R> {
 
-	public static final int DEFAULT_LIMIT = 50;
+	int DEFAULT_LIMIT = 50;
 	
-	private final ServiceProvider context;
-	private final Options expand;
-	private final List<ExtendedLocale> locales;
-
-	protected ResourceExpander(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
-		this.context = checkNotNull(context, "context");
-		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
-		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
-	}
-
-	protected final Options expand() {
-		return expand;
-	}
-
-	protected ServiceProvider context() {
-		return context;
-	}
+	/**
+	 * Expands resources with additional fields.
+	 * 
+	 * @param results - the list of results to expand
+	 */
+	void expand(List<R> results);
 	
-	protected final List<ExtendedLocale> locales() {
-		return locales;
-	}
-
-	protected final int getLimit(final Options expandOptions) {
+	default int getLimit(final Options expandOptions) {
 		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : DEFAULT_LIMIT;
 	}
-
+	
+	/**
+	 * @return the class of the target type this expander can expand
+	 */
+	@SuppressWarnings("unchecked")
+	default Class<R> getType() {
+		final Class<?>[] types = TypeResolver.resolveRawArguments(ResourceExpander.class, getClass());
+		checkState(TypeResolver.Unknown.class != types[0], "Couldn't resolve target type parameter for expander class %s", getClass().getSimpleName());
+		return (Class<R>) types[1];
+	}
+	
 }
