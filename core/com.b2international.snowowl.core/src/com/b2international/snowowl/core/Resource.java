@@ -16,13 +16,14 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.collect.ImmutableList;
 
@@ -124,6 +125,9 @@ public abstract class Resource implements Serializable {
 	
 	// The commit object that holds information about the last update
 	private CommitInfo updatedAtCommit;
+	
+	// Extra data expanded through plugins
+	private Map<String, Object> properties;
 	
 	/**
 	 * @return the type of the resource
@@ -292,6 +296,26 @@ public abstract class Resource implements Serializable {
 	public void setUpdatedAtCommit(CommitInfo updatedAtCommit) {
 		this.updatedAtCommit = updatedAtCommit;
 	}
+	
+	@JsonAnyGetter
+	public Map<String, Object> getProperties() {
+		return properties;
+	}
+	
+	@JsonIgnore
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
+	}
+	
+	@JsonAnySetter
+	public void setProperties(String key, Object value) {
+		if (this.properties == null) {
+			this.properties = new HashMap<>(3);
+		}
+		this.properties.put(key, value);
+	}
+	
+	
 	
 	/**
 	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root), or <code>null</code> if ancestry information is not available
