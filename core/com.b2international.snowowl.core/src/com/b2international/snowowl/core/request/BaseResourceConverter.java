@@ -87,10 +87,12 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 	}
 
 	private final void expandViaPlugins(List<R> results) {
-		context().service(ClassPathScanner.class).getComponentsByInterface(ResourceExpander.class)
-			.stream()
-			.filter(expander -> getType().equals(expander.getType()))
-			.forEach(expander -> ((ResourceExpander<R>) expander).expand(results));
+		context().optionalService(ClassPathScanner.class).ifPresent(scanner -> {
+			scanner.getComponentsByInterface(ResourceExpander.class)
+				.stream()
+				.filter(expander -> getType().equals(expander.getType()))
+				.forEach(expander -> ((ResourceExpander<R>) expander).expand(results));
+		});
 	}
 
 	protected abstract CR createCollectionResource(List<R> results, String searchAfter, int limit, int total);
