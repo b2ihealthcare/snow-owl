@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class BundleConverter extends BaseResourceConverter<ResourceDocument, Bun
 	}
 
 	@Override
-	protected void expand(final List<Bundle> results) {
+	public void expand(final List<Bundle> results) {
 		if (expand().isEmpty() || results.isEmpty()) {
 			return;
 		}

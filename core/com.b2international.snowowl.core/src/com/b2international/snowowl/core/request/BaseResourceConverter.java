@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.b2international.index.Hits;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.google.common.collect.Iterables;
 
 /**
@@ -35,7 +36,7 @@ import com.google.common.collect.Iterables;
  * @param <R> - domain type
  * @param <CR> - collection resource type
  */
-public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> extends ResourceExpander {
+public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> extends BaseResourceExpander<R> {
 
 	protected BaseResourceConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -71,21 +72,28 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 				.collect(Collectors.toList());
 		
 		if (!results.isEmpty()) {
+			// expand using the current converter
 			expand(results);
+			// expand via plugins 
+			expandViaPlugins(results);
 		}
 		
 		return createCollectionResource(results, searchAfter, limit, total);
 	}
+	
+	@Override
+	public void expand(List<R> results) {
+		// by default no expansions are performed
+	}
+
+	private final void expandViaPlugins(List<R> results) {
+		context().service(ClassPathScanner.class).getComponentsByInterface(ResourceExpander.class)
+			.stream()
+			.filter(expander -> getType().equals(expander.getType()))
+			.forEach(expander -> ((ResourceExpander<R>) expander).expand(results));
+	}
 
 	protected abstract CR createCollectionResource(List<R> results, String searchAfter, int limit, int total);
-
-	/**
-	 * Subclasses may override to expand resources based on the {@link #expand()} list.
-	 * 
-	 * @param results
-	 */
-	protected void expand(List<R> results) {
-	}
 
 	protected abstract R toResource(T entry);
 
