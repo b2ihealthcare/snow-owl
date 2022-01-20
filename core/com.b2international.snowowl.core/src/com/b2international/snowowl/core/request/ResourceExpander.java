@@ -47,7 +47,7 @@ public interface ResourceExpander<R> {
 	 */
 	@SuppressWarnings("unchecked")
 	default Class<R> getType() {
-		final Class<?>[] types = TypeResolver.resolveRawArguments(BaseResourceConverter.class, getClass());
+		final Class<?>[] types = TypeResolver.resolveRawArguments(ResourceExpander.class, getClass());
 		checkState(TypeResolver.Unknown.class != types[0], "Couldn't resolve target type parameter for expander class %s", getClass().getSimpleName());
 		return (Class<R>) types[1];
 	}
