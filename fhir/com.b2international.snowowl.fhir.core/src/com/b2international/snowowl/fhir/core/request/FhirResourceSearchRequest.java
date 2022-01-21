@@ -16,10 +16,7 @@
 package com.b2international.snowowl.fhir.core.request;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -237,7 +234,13 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				.meta(
 					Meta.builder()
 						// updatedAt returns version creation time (createdAt and updatedAt is the same) or latest updateAt value from the resource :gold:
-						.lastUpdated(Instant.builder().instant(resource.getUpdatedAt()).build())
+						.lastUpdated(Optional.ofNullable(resource.getUpdatedAt())
+								// fall back to createdAt if updatedAt is not present
+								.or(() -> Optional.ofNullable(resource.getCreatedAt()))
+								.map(lastUpdated -> Instant.builder().instant(lastUpdated).build())
+								// or null if none of them
+								.orElse(null)
+								)
 					.build()
 				)
 				.toolingId(resource.getToolingId()); 
