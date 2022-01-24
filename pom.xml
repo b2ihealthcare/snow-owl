@@ -24,8 +24,8 @@
 		<elk.version>0.4.3</elk.version>
 		
 		<!-- Build tool/compiler versions -->
-		<tycho.version>2.6.0-SNAPSHOT</tycho.version>
-		<tycho-extras.version>2.6.0-SNAPSHOT</tycho-extras.version>
+		<tycho.version>2.6.0</tycho.version>
+		<tycho-extras.version>2.6.0</tycho-extras.version>
 		<xtend.compiler.version>2.23.0</xtend.compiler.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		
@@ -55,13 +55,6 @@
 		<module>releng</module>
 		<module>dist</module>
 	</modules>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>tycho-snapshots</id>
-			<url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<build>
 		<plugins>
