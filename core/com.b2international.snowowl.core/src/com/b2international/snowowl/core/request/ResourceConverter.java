@@ -18,18 +18,21 @@ package com.b2international.snowowl.core.request;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.Resource;
-import com.b2international.snowowl.core.ResourceTypeConverter;
-import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.*;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.version.Versions;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 8.0
@@ -63,13 +66,33 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 	}
 	
 	@Override
-	protected void expand(List<Resource> results) {
+	public void expand(List<Resource> results) {
 		if (results.isEmpty()) {
 			return;
 		}
 
+		expandCommits(results);
+		expandUpdateAtCommit(results);
 		expandResourcePathLabels(results);
 		expandVersions(results);
+	}
+
+	private void expandUpdateAtCommit(List<Resource> results) {
+		if (expand().containsKey(Resource.Expand.UPDATED_AT_COMMIT)) {
+			// expand updatedAtCommit object for each resource one-by-one
+			results.stream()
+				.forEach(res -> {
+					RepositoryRequests.commitInfos().prepareSearchCommitInfo()
+						.one()
+						.filterByBranch(Branch.MAIN_PATH) // all resource commits go to the main branch
+						.filterByAffectedComponent(res.getId())
+						.sortBy("timestamp:desc")
+						.build()
+						.execute(context())
+						.first()
+						.ifPresent(res::setUpdatedAtCommit);
+				});
+		}
 	}
 
 	private void expandResourcePathLabels(List<Resource> results) {
@@ -121,6 +144,34 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 						.execute(context());
 					res.setVersions(versions);
 				});
+		}
+	}
+	
+	private void expandCommits(List<Resource> results) {
+		if (expand().containsKey(TerminologyResource.Expand.COMMITS)) {
+			Options expandOptions = expand().getOptions(TerminologyResource.Expand.COMMITS);
+			// commit searches must be performed individually on each resource to provide correct results
+			var commitSearchRequests = results.stream()
+				.filter(TerminologyResource.class::isInstance)
+				.map(TerminologyResource.class::cast)
+				.map(res -> {
+					return RepositoryRequests.commitInfos().prepareSearchCommitInfo()
+						.filterByBranch(res.getBranchPath())
+						.setLimit(getLimit(expandOptions))
+						.setFields(expandOptions.containsKey("fields") ? expandOptions.getList("fields", String.class) : CommitInfo.Fields.DEAFULT_FIELD_SELECTION)
+						.sortBy(expandOptions.containsKey("sort") ? expandOptions.getString("sort") : null)
+						.setLocales(locales())
+						.build(res.getToolingId())
+						.execute(context().service(IEventBus.class))
+						.then(commits -> {
+							res.setCommits(commits);
+							return commits;
+						});
+				})
+				.collect(Collectors.toList());
+			
+			// wait until all search requests resolve, or timeout of 3 minutes reached
+			Promise.all(commitSearchRequests).getSync(3, TimeUnit.MINUTES);
 		}
 	}
 	

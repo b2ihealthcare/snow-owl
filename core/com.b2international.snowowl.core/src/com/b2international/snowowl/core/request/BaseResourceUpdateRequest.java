@@ -175,6 +175,8 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		changed |= updateProperty(purpose, resource::getPurpose, updated::purpose);
 
 		if (changed) {
+			// make sure we null out the updatedAt property we before update
+			updated.updatedAt(null);
 			context.update(resource, updated.build());
 		}
 
@@ -185,34 +187,12 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		if (bundleId == null || bundleId.equals(oldBundleId)) {
 			return false;
 		}
+	
+		final List<String> bundleAncestorIds = getBundleAncestorIds(context, resourceId);
+		updated.bundleId(bundleId);
+		updated.bundleAncestorIds(bundleAncestorIds);
 		
-		if (IComponent.ROOT_ID.equals(bundleId)) {
-			updated.bundleAncestorIds(List.of(bundleId));
-			updated.bundleId(bundleId);
-			return true;
-		}
-		
-		Bundles bundles = ResourceRequests.bundles()
-			.prepareSearch()
-			.filterById(bundleId)
-			.one()
-			.build()
-			.execute(context);
-				
-		if (bundles.getTotal() == 0) {
-			throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
-		}
-
-		Bundle parentBundle = bundles.first().get();
-		if (parentBundle.getBundleId().equals(resourceId) || parentBundle.getBundleAncestorIds().contains(resourceId)) {
-			throw new CycleDetectedException("Setting parent bundle ID to '" + bundleId + "' would create a loop.");
-		}
-		
-		// Update both bundle ID and ancestor IDs on the resource
-		updated.bundleAncestorIds(parentBundle.getResourcePathSegments());
-		updated.bundleId(parentBundle.getId());
-		
-		// Update bundle ancestor IDs on the descendants of the resource (their bundle ID does not change)
+		// Update bundle ancestor IDs on all descendants of the resource (their bundle ID does not change)
 		final Iterator<Resource> descendants = ResourceRequests.prepareSearch()
 			.filterByBundleAncestorId(resourceId)
 			.setLimit(5_000)
@@ -222,11 +202,13 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		
 		final Multimap<String, Resource> resourcesByParentId = Multimaps.index(descendants, Resource::getBundleId);
 		
-		// Calculate new ancestor ID list for direct children of the resource. Their bundleId remains "resourceId".
-		final Map<String, List<String>> newAncestorIdsByParentId = newHashMap(Map.of(resourceId, ImmutableList.<String>builder()
-			.addAll(parentBundle.getResourcePathSegments())
-			.add(parentBundle.getId())
-			.build()));
+		// Calculate new ancestor ID list for direct children of this resource first
+		final ImmutableList.Builder<String> ancestorIdsOfParent = ImmutableList.<String>builder().addAll(bundleAncestorIds);
+		if (!IComponent.ROOT_ID.equals(bundleId)) {
+			ancestorIdsOfParent.add(bundleId);
+		}
+				
+		final Map<String, List<String>> newAncestorIdsByParentId = newHashMap(Map.of(resourceId, ancestorIdsOfParent.build()));
 		
 		// Start processing ancestor ID lists with the direct children of the resource
 		final Deque<Map.Entry<String, Collection<Resource>>> toProcess = new ArrayDeque<>();
@@ -249,8 +231,10 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 				final ResourceDocument resource = context.lookup(id, ResourceDocument.class);
 				final ResourceDocument.Builder resourceBuilder = ResourceDocument.builder(resource);
 				
-				resourceBuilder.bundleAncestorIds(newAncestorIds);
-				context.add(resourceBuilder.build());
+				if (!Objects.equals(resource.getBundleAncestorIds(), newAncestorIds)) {
+					resourceBuilder.bundleAncestorIds(newAncestorIds);
+					context.update(resource, resourceBuilder.build());
+				}
 			
 				final Collection<Resource> next = resourcesByParentId.get(id);
 				if (!next.isEmpty()) {
@@ -271,6 +255,30 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		}
 		
 		return true;
+	}
+
+	private List<String> getBundleAncestorIds(final TransactionContext context, final String resourceId) {
+		if (IComponent.ROOT_ID.equals(bundleId)) {
+			return List.of(bundleId);
+		}
+		
+		final Bundles bundles = ResourceRequests.bundles()
+			.prepareSearch()
+			.filterById(bundleId)
+			.one()
+			.build()
+			.execute(context);
+				
+		if (bundles.getTotal() == 0) {
+			throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
+		}
+
+		final Bundle parentBundle = bundles.first().get();
+		if (parentBundle.getBundleId().equals(resourceId) || parentBundle.getBundleAncestorIds().contains(resourceId)) {
+			throw new CycleDetectedException("Setting parent bundle ID to '" + bundleId + "' would create a loop.");
+		}
+			
+		return parentBundle.getResourcePathSegments();
 	}
 
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);

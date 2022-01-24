@@ -86,6 +86,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String USAGE = "usage";
 		public static final String PURPOSE = "purpose";
 		public static final String CREATED_AT = "createdAt";
+		public static final String UPDATED_AT = "updatedAt";
 		public static final String BUNDLE_ANCESTOR_IDS = "bundleAncestorIds";
 		public static final String BUNDLE_ID = "bundleId";
 		
@@ -113,6 +114,7 @@ public final class ResourceDocument extends RevisionDocument {
 			OWNER, 
 			USAGE,
 			CREATED_AT,
+			UPDATED_AT,
 			BUNDLE_ID,
 			OID,
 			BRANCH_PATH, 
@@ -272,7 +274,9 @@ public final class ResourceDocument extends RevisionDocument {
 				.toolingId(from.getToolingId())
 				.extensionOf(from.getExtensionOf())
 				.upgradeOf(from.getUpgradeOf())
-				.settings(from.getSettings());
+				.settings(from.getSettings())
+				.createdAt(from.getCreatedAt())
+				.updatedAt(from.getUpdatedAt());
 	}
 	
 	/**
@@ -306,6 +310,7 @@ public final class ResourceDocument extends RevisionDocument {
 		
 		// derived fields, access only
 		private Long createdAt;
+		private Long updatedAt;
 		
 		@JsonCreator
 		private Builder() {
@@ -412,6 +417,11 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
+		public Builder updatedAt(Long updatedAt) {
+			this.updatedAt = updatedAt;
+			return getSelf();
+		}
+		
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -441,7 +451,8 @@ public final class ResourceDocument extends RevisionDocument {
 				extensionOf,
 				upgradeOf,
 				settings,
-				createdAt
+				createdAt,
+				updatedAt
 			);
 		}
 		
@@ -480,6 +491,7 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	// derived fields, getters only, mapping generation requires a field to be specified
 	private final Long createdAt;
+	private final Long updatedAt;
 	
 	// mapping only field, no actual purpose or use, required to support multi-index search with doc type VersionDocument
 	@SuppressWarnings("unused")
@@ -507,7 +519,8 @@ public final class ResourceDocument extends RevisionDocument {
 			final ResourceURI extensionOf,
 			final ResourceURI upgradeOf,
 			final Map<String, Object> settings,
-			final Long createdAt) {
+			final Long createdAt,
+			final Long updatedAt) {
 		super(id, iconId);
 		this.resourceType = resourceType;
 		this.url = url;
@@ -529,6 +542,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.upgradeOf = upgradeOf;
 		this.settings = settings;
 		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
 	}
 
 	@JsonIgnore
@@ -613,8 +627,17 @@ public final class ResourceDocument extends RevisionDocument {
 	}
 	
 	public Long getCreatedAt() {
+		// XXX this is to get the createdAt value from the first commit timestamp and store it here on the doc
 		return Optional.ofNullable(createdAt)
 				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
 				.orElse(null);
 	}
+	
+	public Long getUpdatedAt() {
+		// XXX same as createdAt, the first value is stored from commit timestamp and explicitly cleared on resource updates (see BaseResourceUpdateRequest.execute)
+		return Optional.ofNullable(updatedAt)
+				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
+				.orElse(null);
+	}
+	
 }

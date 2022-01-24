@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,12 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.request.expand.BaseResourceExpander;
 
 /**
  * @since 7.7
  */
-public abstract class DescendantsExpander<T extends IComponent> extends ResourceExpander {
+public abstract class DescendantsExpander<R extends IComponent> extends BaseResourceExpander<R> {
 
 	public static final String DEFAULT_DESCENDANTS_EXPAND_KEY = "descendants"; //$NON-NLS-N$
 	public static final String OPTION_DIRECT = "direct"; //$NON-NLS-N$
@@ -55,11 +56,12 @@ public abstract class DescendantsExpander<T extends IComponent> extends Resource
 		return expandOptions.getBoolean(OPTION_DIRECT);
 	}
 	
-	public final void expand(List<T> results) {
+	@Override
+	public final void expand(List<R> results) {
 		expand(results, results.stream().map(IComponent::getId).collect(Collectors.toSet()));
 	}
 	
-	public final void expand(List<T> results, Set<String> ids) {
+	public final void expand(List<R> results, Set<String> ids) {
 		if (!expand().containsKey(descendantsExpandKey)) {
 			return;
 		}
@@ -69,7 +71,7 @@ public abstract class DescendantsExpander<T extends IComponent> extends Resource
 		expand(results, ids, descendantExpandOptions, direct);
 	}
 	
-	protected abstract void expand(List<T> results, Set<String> ids, Options descendantExpandOptions, boolean direct);
+	protected abstract void expand(List<R> results, Set<String> ids, Options descendantExpandOptions, boolean direct);
 	
 	@Override
 	protected final BranchContext context() {
