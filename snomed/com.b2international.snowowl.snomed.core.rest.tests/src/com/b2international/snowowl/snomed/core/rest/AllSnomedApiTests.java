@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.branch.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.core.branch.SnomedBranchRequestTest;
@@ -59,61 +60,69 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	SnomedRf2ContentImportTest.class,
-	// High-level issue test cases, Java API test cases
-	IssueSO2503RemoteJobDynamicMappingFix.class,
-	Issue3019FixDeletionOfReferringMembersTest.class,
+//	// RF2 release handling, imported content verification
+//	SnomedRf2NextReleaseImportTest.class,
+//	SnomedRf2ContentImportTest.class,
+//	// High-level issue test cases, Java API test cases
+//	IssueSO2503RemoteJobDynamicMappingFix.class,
+//	Issue3019FixDeletionOfReferringMembersTest.class,
 	SnomedRF2ImportIDManagementTest.class,
-	EclSerializerTest.class,
-	// RESTful API test cases
-	// Branch API tests
-	SnomedBranchRequestTest.class,
-	BranchCompareRequestTest.class,
-	SnomedCompareRestRequestTest.class,
-	SnomedBranchingApiTest.class,
-	// Component API test cases
-	SnomedConceptApiTest.class,
-	SnomedConceptInactivationApiTest.class,
-	SnomedDescriptionApiTest.class,
-	SnomedRelationshipApiTest.class,
-	SnomedConcreteValueApiTest.class,
-	SnomedPartialLoadingApiTest.class,
-	SnomedComponentInactivationApiTest.class,
-	SnomedRefSetApiTest.class,
-	SnomedReferenceSetDeletionPerformanceTest.class,
-	SnomedRefSetParameterizedTest.class,
-	SnomedRefSetMemberParameterizedTest.class,
-	SnomedRefSetMemberApiTest.class,
-	SnomedRefSetBulkApiTest.class,
-	SnomedExpressionLabelTest.class,
-	// Generic API
-	ConceptSearchRequestSnomedTest.class,
-	ValueSetMemberSearchSnomedReferenceSetTest.class,
-	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
-	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
-	ConceptMapCompareDsvExportTest.class,
-	// Merge, Review test cases
-	SnomedMergeApiTest.class,
-	SnomedMergeConflictTest.class,
-	SnomedReviewApiTest.class,
-	// Import-Export-Versioning-Classification
-	SnomedClassificationApiTest.class,
-	SnomedImportApiTest.class,
-	SnomedImportRowValidatorTest.class,
-	SnomedExportApiTest.class,
-	SnomedRefSetDSVExportTest.class,
-	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
-	SnomedModuleDependencyRefsetTest.class,
-	SnomedVersioningApiTest.class,
-	// Extension test cases
-	SnomedComponentEffectiveTimeRestoreTest.class,
-	SnomedExtensionCreationTest.class,
-	SnomedExtensionUpgradeTest.class, 
-	// MRCM export/import
-	MrcmImportExportTest.class,
-	// Performance test cases, should be the last tests to perform
-	SnomedConceptCreatePerformanceTest.class,
-	SnomedMergePerformanceTest.class
+//	EclSerializerTest.class,
+//	// RESTful API test cases
+//	// Branching API
+//	SnomedBranchRequestTest.class,
+//	BranchCompareRequestTest.class,
+//	SnomedCompareRestRequestTest.class,
+//	SnomedBranchingApiTest.class,
+//	// Core Component API
+//	SnomedConceptApiTest.class,
+//	SnomedConceptInactivationApiTest.class,
+//	SnomedDescriptionApiTest.class,
+//	SnomedRelationshipApiTest.class,
+//	SnomedConcreteValueApiTest.class,
+//	SnomedPartialLoadingApiTest.class,
+//	SnomedComponentInactivationApiTest.class,
+//	// RefSet/Member API
+//	SnomedRefSetApiTest.class,
+//	SnomedOfficialRefSetTest.class,
+//	SnomedComplexMapBlockRefSetTest.class,
+//	SnomedOfficialRefSetMemberTest.class,
+//	SnomedComplexMapBlockRefSetMemberTest.class,
+//	SnomedRefSetMemberApiTest.class,
+//	SnomedRefSetBulkApiTest.class,
+//	// Expression Labeling API
+//	SnomedExpressionLabelTest.class,
+//	// Generic API
+//	ConceptSearchRequestSnomedTest.class,
+//	ValueSetMemberSearchSnomedReferenceSetTest.class,
+//	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
+//	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
+//	ConceptMapCompareDsvExportTest.class,
+//	// Merge, Review test cases
+//	SnomedMergeApiTest.class,
+//	SnomedMergeConflictTest.class,
+//	SnomedReviewApiTest.class,
+//	// Classification API
+//	SnomedClassificationApiTest.class,
+//	// Import API
+//	SnomedImportApiTest.class,
+//	SnomedImportRowValidatorTest.class,
+//	// Export API
+//	SnomedRefSetDSVExportTest.class,
+//	SnomedExportApiTest.class,
+//	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
+//	SnomedModuleDependencyRefsetTest.class,
+//	SnomedVersioningApiTest.class,
+//	// Extension test cases
+//	SnomedComponentEffectiveTimeRestoreTest.class,
+//	SnomedExtensionCreationTest.class,
+//	SnomedExtensionUpgradeTest.class, 
+//	// MRCM export/import
+//	MrcmImportExportTest.class,
+//	// Performance test cases, should be the last tests to perform
+//	SnomedReferenceSetDeletionPerformanceTest.class,
+//	SnomedConceptCreatePerformanceTest.class,
+//	SnomedMergePerformanceTest.class
 })
 public class AllSnomedApiTests {
 
@@ -122,7 +131,11 @@ public class AllSnomedApiTests {
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
+			// import the 20210731 Full Release up until 20210131, the last Delta will be imported via the SnomedRf2NextReleaseImportTest
+			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT_20210731, Rf2ReleaseType.FULL)
+					.importUntil("20210131"))
+			// create a new Extension CodeSystem that supports ComplexMapBlock reference set types by importing the relevant metadata and a few examples, based on the 20200131 release delta
+			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT_COMPLEX_MAP_BLOCK_EXT_ID, "MAIN/2020-01-31/" + SnomedContentRule.SNOMEDCT_COMPLEX_MAP_BLOCK_EXT_ID, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA)
+					.extensionOf(CodeSystemURI.branch("SNOMEDCT", "2020-01-31")));
 
 }

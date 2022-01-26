@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -38,6 +41,7 @@ public final class SnomedRf2ImportRequestBuilder
 	private boolean createVersions = true;
 	private Iterable<String> ignoreMissingReferencesIn;
 	private boolean dryRun = false;
+	private LocalDate importUntil;
 	
 	SnomedRf2ImportRequestBuilder() {
 	}
@@ -67,6 +71,15 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ImportRequestBuilder setImportUntil(String importUntil) {
+		return setImportUntil(importUntil == null ? null : EffectiveTimes.parse(importUntil, DateFormats.SHORT));
+	}
+	
+	public SnomedRf2ImportRequestBuilder setImportUntil(LocalDate importUntil) {
+		this.importUntil = importUntil;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<BranchContext, ImportResponse> doBuild() {
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
@@ -74,6 +87,7 @@ public final class SnomedRf2ImportRequestBuilder
 		req.setCreateVersions(createVersions);
 		req.setIgnoreMissingReferencesIn(Collections3.toImmutableSet(ignoreMissingReferencesIn));
 		req.setDryRun(dryRun);
+		req.setImportUntil(importUntil);
 		return req;
 	}
 

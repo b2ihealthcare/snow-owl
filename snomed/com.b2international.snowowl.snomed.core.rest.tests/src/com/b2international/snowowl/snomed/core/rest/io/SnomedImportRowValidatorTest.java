@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,19 +24,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.request.io.ImportDefect;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.core.util.PlatformUtil;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -52,19 +54,11 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	// TODO: Implement tests for every reference set type
 	
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
-	private static String codeSystemShortName;
 	private UUID archiveId;
-	
-	
-	@BeforeClass
-	public static void beforeClass() {
-		codeSystemShortName = "SNOMEDCT-TEST";
-	}
 	
 	@Before
 	public void init() {
 		archiveId = UUID.randomUUID();
-		createCodeSystemIfNotExists();
 	}
 	
 	@Test
@@ -137,34 +131,28 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		assertFalse(response.isSuccess());
 	}
 
-	private void createCodeSystemIfNotExists() {
+	private ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType) throws FileNotFoundException {
+		final String codeSystemId = branchPath.lastSegment();
+
 		try {
-			CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
+			CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
 				.build(REPOSITORY_ID)
 				.execute(getBus())
-				.getSync();
-			
+				.getSync(1L, TimeUnit.MINUTES);
+
 		} catch (NotFoundException e) {
 			CodeSystemRequests.prepareNewCodeSystem()
-				.setShortName(codeSystemShortName)
-				.setOid("oid")
-				.setName(String.format("%s - %s", codeSystemShortName, "oid"))
-				.setLanguage("en")
 				.setBranchPath(branchPath.getPath())
-				.setCitation("citation")
-				.setIconPath("snomed.png")
+				.setShortName(codeSystemId)
+				.setName(codeSystemId)
+				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.setRepositoryId(REPOSITORY_ID)
-				.setTerminologyId("concept")
-				.setLink("www.ihtsdo.org")
-				.build(REPOSITORY_ID, branchPath.getPath(), "system", String.format("New code system %s", codeSystemShortName))
+				.build(REPOSITORY_ID, Branch.MAIN_PATH, "info@b2international.com", "Created new code system " + codeSystemId)
 				.execute(getBus())
-				.getSync();
-				
+				.getSync(1L, TimeUnit.MINUTES);
 		}
 		
-	}
-	
-	private ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType) throws FileNotFoundException {
+		
 		final File importArchive = PlatformUtil.toAbsolutePath(this.getClass(), archiveFilePath).toFile();
 		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId, new FileInputStream(importArchive));
 		

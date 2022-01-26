@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequ
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.waitForMergeJob;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getLatestVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getLatestVersionId;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,7 +82,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
 	@Before
 	public void setup() {
-		latestInternationalVersion = CodeSystemURI.branch(SNOMEDCT, getLatestVersion(SNOMEDCT));
+		latestInternationalVersion = CodeSystemURI.branch(SNOMEDCT, getLatestVersionId(SNOMEDCT));
 	}
 	
 	@Test

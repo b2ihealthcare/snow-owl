@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,25 +30,31 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2ImportRequestBuilder;
 import com.google.common.collect.ImmutableMap;
 
@@ -90,6 +96,26 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void importArchive(final IBranchPath branchPath, Map<String, ?> importConfiguration, final String fileName) {
+		final String codeSystemId = branchPath.lastSegment();
+		
+		try {
+			CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+			
+		} catch (NotFoundException e) {
+			CodeSystemRequests.prepareNewCodeSystem()
+				.setBranchPath(branchPath.getPath())
+				.setShortName(codeSystemId)
+				.setName(codeSystemId)
+				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, "info@b2international.com", "Created new code system " + codeSystemId)
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+		}
+		
 		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), fileName).statusCode(201)
 				.extract().header("Location"));
 		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
@@ -546,6 +572,19 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		assertEquals("Base and head timestamp must be equal after branch creation", baseTimestamp, headTimestamp);
 
+		// always create a new code system for each test that uses this method with the test branch path as its working branch
+//				final String codeSystemId = branch.lastSegment();
+//
+//				CodeSystemRequests.prepareNewCodeSystem()
+//					.setBranchPath(branch.getPath())
+//					.setId(codeSystemId)
+//					.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+//					.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+//					.setTitle(codeSystemId)
+//					.build("info@b2international.com", "Created new code system " + codeSystemId)
+//					.execute(getBus())
+//					.getSync(1L, TimeUnit.MINUTES);
+		
 		importArchive(branch, createVersions, Rf2ReleaseType.DELTA, importArchiveFileName);
 
 		ValidatableResponse response2 = branching.getBranch(branch);

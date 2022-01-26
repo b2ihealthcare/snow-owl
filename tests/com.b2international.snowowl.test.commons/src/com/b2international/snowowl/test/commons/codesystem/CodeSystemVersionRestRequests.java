@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,13 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class CodeSystemVersionRestRequests {
 
-	public static String getLatestVersion(String codeSystemId) {
+	public static CodeSystemVersion getLatestVersion(String codeSystemId) {
 		// TODO add proper version API to control version searches
-		return Iterables.getLast(getVersions(codeSystemId)).getVersion();
+		return Iterables.getLast(getVersions(codeSystemId));
+	}
+	
+	public static String getLatestVersionId(String codeSystemId) {
+		return getLatestVersion(codeSystemId).getVersion();
 	}
 	
 	public static ValidatableResponse getVersion(String codeSystemId, String version) {

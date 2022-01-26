@@ -33,6 +33,7 @@ import org.springframework.web.context.request.async.AsyncRequestTimeoutExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import com.b2international.commons.exceptions.*;
 import com.b2international.snowowl.core.util.PlatformUtil;
@@ -240,6 +241,17 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final MethodArgumentTypeMismatchException ex) {
+		return RestApiError.of(ApiError.builder(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
+	/**
+	 * Exception handler for exceptions thrown due to missing multipart files.
+	 * @param ex
+	 * @return
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public RestApiError handle(final MissingServletRequestPartException ex) {
 		return RestApiError.of(ApiError.builder(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,10 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@RequestParam(name = "ignoreMissingReferencesIn", required = false)
 			final List<String> ignoreMissingReferencesIn,
 			
+			@ApiParam(value = "Import all component until this specified effective time value")
+			@RequestParam(name = "importUntil", required = false)
+			final String importUntil,
+			
 			@ApiParam(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
 			@RequestParam(name = "dryRun", defaultValue = "false")
 			final Boolean dryRun,
@@ -105,6 +109,7 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
 			.setIgnoreMissingReferencesIn(ignoreMissingReferencesIn)
+			.setImportUntil(importUntil)
 			.setDryRun(dryRun)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))

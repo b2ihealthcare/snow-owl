@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.AfterClass;
@@ -47,7 +38,6 @@ import com.b2international.snowowl.test.commons.Resources;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -59,21 +49,14 @@ public class SnomedRf2ContentImportTest extends AbstractSnomedApiTest {
 	private static final Splitter TAB_SPLITTER = Splitter.on('\t');
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 
-	private static final Set<String> UNSUPPORTED_FILE_TYPES = ImmutableSet.<String>builder()
-			.add("sct2_Identifier")
-			.add("der2_cciRefset")
-			.build();
+	private static final Set<String> UNSUPPORTED_FILE_TYPES = Set.of("sct2_Identifier", "der2_cciRefset", "Readme");
 
 	private static Multimap<String, String> originalLines;
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
-
-		final File miniFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_INT).toFile();
-		final File complexMapFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP).toFile();
-
+		final File miniFile = PlatformUtil.toAbsolutePathBundleEntry(Resources.class, Resources.Snomed.MINI_RF2_INT_20210731).toFile();
 		originalLines = getLines(miniFile);
-		originalLines.putAll(getLines(complexMapFile));
 
 	}
 

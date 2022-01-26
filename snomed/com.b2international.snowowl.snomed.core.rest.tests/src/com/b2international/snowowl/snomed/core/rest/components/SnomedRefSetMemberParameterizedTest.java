@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.searchComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createReferencedComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentCategory;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstMatchingComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getValidProperties;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
@@ -42,17 +33,12 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Assume;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.json.Json;
@@ -67,7 +53,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.collect.Maps;
 
 import io.restassured.response.ValidatableResponse;
@@ -75,41 +60,11 @@ import io.restassured.response.ValidatableResponse;
 /**
  * @since 5.7
  */
-@RunWith(Parameterized.class)
-@BranchBase(isolateTests = false) // run all tests on the same branch so we can reuse the same reference sets through all tests
-public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
+public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	private static final List<String> REFERENCED_COMPONENT_TYPES = List.of(CONCEPT, DESCRIPTION, RELATIONSHIP);
 	
 	private static final Map<SnomedRefSetType, String> REFSET_CACHE = Maps.newHashMap();
-
-	// Single CodeSystem for all refset member tests initialized on first access
-	private static String CODESYSTEM_SHORTNAME;
-
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-			{ 	SnomedRefSetType.ASSOCIATION  					},
-			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				},
-			//  Concrete data type reference sets are tested separately
-			{ 	SnomedRefSetType.COMPLEX_MAP					},
-			{ 	SnomedRefSetType.COMPLEX_BLOCK_MAP				},
-			{ 	SnomedRefSetType.DESCRIPTION_TYPE				},
-			{ 	SnomedRefSetType.EXTENDED_MAP					},
-			{ 	SnomedRefSetType.LANGUAGE						},
-			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
-			//  Query type reference sets are tested separately
-			{ 	SnomedRefSetType.SIMPLE							},
-			{ 	SnomedRefSetType.SIMPLE_MAP						},
-			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	},
-			{ 	SnomedRefSetType.OWL_AXIOM				},
-			{ 	SnomedRefSetType.OWL_ONTOLOGY			},
-			{ 	SnomedRefSetType.MRCM_DOMAIN			},
-			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN	},
-			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_RANGE	},
-			{ 	SnomedRefSetType.MRCM_MODULE_SCOPE		},
-		});
-	}
 
 	private final SnomedRefSetType refSetType;
 
@@ -344,15 +299,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	}
 
-	private String getOrCreateCodeSystem() {
-		if (CODESYSTEM_SHORTNAME == null) {
-			// This will create a code system on the branch MAIN/className
-			final String shortName = getClass().getSimpleName();
-			createCodeSystem(branchPath, shortName).statusCode(201);
-			CODESYSTEM_SHORTNAME = shortName;
-		}
-		return CODESYSTEM_SHORTNAME;
-	}
+	protected abstract String getOrCreateCodeSystem();
 
 	/** 
 	 * Creates a member for the first applicable matching referenced component and returns the memberId and the referencedComponentId in a Pair.

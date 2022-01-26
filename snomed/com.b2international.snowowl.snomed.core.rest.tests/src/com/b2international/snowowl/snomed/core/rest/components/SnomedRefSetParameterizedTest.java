@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,25 +22,14 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstMatchingComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getValidProperties;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -56,35 +45,9 @@ import io.restassured.response.ValidatableResponse;
 /**
  * @since 5.7
  */
-@RunWith(Parameterized.class)
-public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
+public abstract class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 
 	private static final List<String> REFERENCED_COMPONENT_TYPES = List.of(CONCEPT, DESCRIPTION, RELATIONSHIP, REFSET);
-
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-			{ 	SnomedRefSetType.ASSOCIATION					}, 
-			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				}, 
-			//  Concrete data type reference sets are tested separately 
-			{ 	SnomedRefSetType.COMPLEX_MAP					},
-			{ 	SnomedRefSetType.COMPLEX_BLOCK_MAP				},
-			{ 	SnomedRefSetType.DESCRIPTION_TYPE				}, 
-			{ 	SnomedRefSetType.EXTENDED_MAP					},
-			{ 	SnomedRefSetType.LANGUAGE						},
-			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
-			//  Query type reference sets are tested separately 
-			{ 	SnomedRefSetType.SIMPLE							}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
-			{ 	SnomedRefSetType.OWL_AXIOM						},
-			{ 	SnomedRefSetType.OWL_ONTOLOGY					},
-			{ 	SnomedRefSetType.MRCM_DOMAIN					},
-			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN			},
-			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_RANGE			},
-			{ 	SnomedRefSetType.MRCM_MODULE_SCOPE				},
-		});
-	}
 
 	private final SnomedRefSetType refSetType;
 
