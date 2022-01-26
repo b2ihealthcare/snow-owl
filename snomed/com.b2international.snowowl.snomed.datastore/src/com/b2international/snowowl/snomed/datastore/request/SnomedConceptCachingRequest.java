@@ -34,10 +34,10 @@ public final class SnomedConceptCachingRequest<R> extends DelegatingRequest<Bran
 	@Override
 	public R execute(BranchContext context) {
 		SnomedConceptRequestCache cache = new SnomedConceptRequestCache();
-		final BranchContext cacheBindedContext = context.inject().bind(SnomedConceptRequestCache.class, cache).build();
-		R response = next(cacheBindedContext);
+		final BranchContext cachingContext = context.inject().bind(SnomedConceptRequestCache.class, cache).build();
+		R response = next(cachingContext);
 		// compute the cache if the next callback returns successfully
-		cache.compute(cacheBindedContext);
+		cache.compute(cachingContext);
 		return response; 
 	}
 
