@@ -76,27 +76,40 @@ public abstract class CodeSystemRestRequests {
 		return createCodeSystem(extensionOf, null, codeSystemId, settings);
 	}
 	
-	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {
-		Json requestBody = Json.object(
-			"id", codeSystemId,
-			"title", codeSystemId,
-			"url", getCodeSystemUrl(codeSystemId),
-			"description", "<div>Markdown supported</div>",
-			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
-			"oid", "oid_" + codeSystemId,
-			"language", "ENG",
-			"extensionOf", extensionOf,
-			"branchPath", branchPath,
-			"owner", "owner",
-			"contact", "https://b2i.sg",
-			"settings", configureLanguageAndPublisher(settings)
-		);
-				
+	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {				
+		return createCodeSystem(createCodeSystemBody(extensionOf, branchPath, codeSystemId, settings));
+	}
+	
+	public static ValidatableResponse createCodeSystem(Json requestBody) {
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.post()
 				.then();
+	}
+
+	public static Json createCodeSystemBody(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {
+		Json requestBody = Json.object(
+				"id", codeSystemId,
+				"title", codeSystemId,
+				"url", getCodeSystemUrl(codeSystemId),
+				"description", "<div>Markdown supported</div>",
+				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
+				"oid", "oid_" + codeSystemId,
+				"language", "ENG",
+				"branchPath", branchPath,
+				"owner", "owner",
+				"contact", "https://b2i.sg",
+				"settings", configureLanguageAndPublisher(settings)
+			);
+
+		if (extensionOf != null) {
+			requestBody = requestBody.with("extensionOf", extensionOf);
+		} else if (branchPath != null) {
+			requestBody = requestBody.with("branchPath", branchPath);
+		}
+		
+		return requestBody;
 	}
 
 	private static Map<String, Object> configureLanguageAndPublisher(Map<String, Object> settings) {
