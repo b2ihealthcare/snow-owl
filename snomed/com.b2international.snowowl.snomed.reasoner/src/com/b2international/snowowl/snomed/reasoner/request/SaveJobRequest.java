@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -287,7 +287,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 						SnomedRelationship::getSourceId)); // values: source concept ID of the "origin" relationship
 			
 			conceptIds.removeAll(conceptIdsToSkip);
-			namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
+			namespaceAndModuleAssigner.collectRelationshipModules(conceptIds);
 
 			for (final RelationshipChange change : nextChanges) {
 				final ReasonerRelationship relationship = change.getRelationship();
@@ -375,7 +375,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
 			conceptIds.removeAll(conceptIdsToSkip);
-			namespaceAndModuleAssigner.collectConcreteDomainModules(conceptIds, context);
+			namespaceAndModuleAssigner.collectConcreteDomainModules(conceptIds);
 
 			for (final ConcreteDomainChange change : nextChanges) {
 				final ReasonerConcreteDomainMember referenceSetMember = change.getConcreteDomainMember();
@@ -501,7 +501,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			}
 		}
 		
-		assigner.collectRelationshipNamespacesAndModules(relationshipChangeConceptIds, context);
+		assigner.collectRelationshipModules(relationshipChangeConceptIds);
 		
 		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
 			
@@ -536,7 +536,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		
 		// CD members are always "outbound", however, so the concept SCTID set can be reduced
 		assigner.clear();
-		assigner.collectConcreteDomainModules(conceptIdsToKeep, context);
+		assigner.collectConcreteDomainModules(conceptIdsToKeep);
 		
 		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
 			for (final SnomedReferenceSetMember member : conceptToKeep.getMembers()) {
@@ -555,7 +555,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		
 		// Descriptions are also "outbound"
 		assigner.clear();
-		assigner.collectRelationshipNamespacesAndModules(conceptIdsToKeep, context);
+		assigner.collectRelationshipModules(conceptIdsToKeep);
 
 		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
 			for (final SnomedDescription description : conceptToKeep.getDescriptions()) {
@@ -574,7 +574,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		
 		// Inactivation of "removed" concepts also requires modules to be collected according to the assigner rules
 		assigner.clear();
-		assigner.collectRelationshipNamespacesAndModules(conceptIdsToSkip, context);
+		assigner.collectRelationshipModules(conceptIdsToSkip);
 		
 		for (final SnomedConcept conceptToRemove : equivalentConcepts.values()) {
 			// Check if the concept needs to be removed or deactivated

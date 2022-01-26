@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystemBody;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
@@ -37,10 +38,14 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.repository.JsonSupport;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -475,6 +480,105 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		assertEquivalentConceptPresent(equivalentConceptsIterable, equivalentConceptId);
 	}
 
+	@Test
+	public void issue_SO_4985_testExtensionModuleChange() throws Exception {
+		final String nationalShortName = "SNOMEDCT-NATIONAL-EXT-4985";
+		final String nationalModuleId = createNewConcept(branchPath, Concepts.MODULE_ROOT);
+		createNewRelationship(branchPath, nationalModuleId, Concepts.IS_A, Concepts.MODULE_ROOT, Concepts.INFERRED_RELATIONSHIP);
+		final String extensionModuleId = createNewConcept(branchPath, Concepts.MODULE_ROOT);
+		createNewRelationship(branchPath, extensionModuleId, Concepts.IS_A, Concepts.MODULE_ROOT, Concepts.INFERRED_RELATIONSHIP);
+		
+
+		createCodeSystem(createCodeSystemBody(null, branchPath, nationalShortName)
+			.with("additionalProperties", Json.object(
+				SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of(nationalModuleId)
+			)))
+			.statusCode(201);
+		
+		// Child concept needs to be put into the national extension's module
+		final String parentConceptId = createNewConcept(branchPath);
+		final String childConceptId = createNewConcept(branchPath, createConceptRequestBody(parentConceptId, nationalModuleId)
+			.with("commitComment", "Created new child concept"));
+		
+		// Add "regular" inferences before running the classification
+		createNewRelationship(branchPath, parentConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, parentConceptId, Concepts.INFERRED_RELATIONSHIP);
+		
+		// Add redundant information that should be removed (using the national extension's module)
+		final Json relationshipRequestBody = createRelationshipRequestBody(
+			childConceptId,                 // source
+			Concepts.IS_A,                  // type
+			Concepts.ROOT_CONCEPT,          // destination
+			nationalModuleId,               // module
+			Concepts.INFERRED_RELATIONSHIP, // characteristic type 
+			0);                             // group
+
+		final String redundantRelationshipId = assertCreated(createComponent(
+			branchPath, 
+			SnomedComponentType.RELATIONSHIP, 
+			relationshipRequestBody.with("commitComment", "Created new relationship")));
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, redundantRelationshipId)
+			.statusCode(200)
+			.body("active", equalTo(true))
+			.body("moduleId", equalTo(nationalModuleId));
+
+		// Create version on national extension
+		String effectiveDate = getNextAvailableEffectiveDateAsString(nationalShortName);
+		createVersion(nationalShortName, "v1", effectiveDate)
+			.statusCode(201);
+
+		// Create code system that is an extension of the national extension
+		createCodeSystem(createCodeSystemBody(CodeSystemURI.branch(nationalShortName, "v1"), null, "SNOMEDCT-EXT-4985")
+			.with("additionalProperties", Json.object(
+				SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of(extensionModuleId)
+			)))
+			.statusCode(201);
+
+		final IBranchPath codeSystemPath = BranchPathUtils.createPath(branchPath, "v1/SNOMEDCT-EXT-4985"); 
+		
+		// Run classification, should report a single redundant relationship
+		final String classificationId = getClassificationJobId(beginClassification(codeSystemPath));
+		waitForClassificationJob(codeSystemPath, classificationId)
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+
+		final RelationshipChanges changes = MAPPER.readValue(getRelationshipChanges(codeSystemPath, classificationId)
+			.statusCode(200)
+			.extract()
+			.asInputStream(), RelationshipChanges.class);
+
+		assertEquals(1, changes.getTotal());
+
+		final RelationshipChange relationshipChange = Iterables.getOnlyElement(changes);
+		assertEquals(ChangeNature.REDUNDANT, relationshipChange.getChangeNature());
+		assertEquals(childConceptId, relationshipChange.getRelationship().getSourceId());
+		assertEquals(Concepts.IS_A, relationshipChange.getRelationship().getTypeId());
+		assertEquals(Concepts.ROOT_CONCEPT, relationshipChange.getRelationship().getDestinationId());
+		assertEquals(redundantRelationshipId, relationshipChange.getRelationship().getOriginId());
+		
+		// Save using the extension namespace-module allocator, using the extension's moduleId
+		beginClassificationSave(classificationId, createClassificationSaveBody()
+			.with("assigner", "extension")
+			.with("module", extensionModuleId));
+		
+		waitForClassificationSaveJob(codeSystemPath, classificationId)
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.SAVED.name()));
+
+		/*
+		 * After inactivation, the relationship's module should change from the national moduleId
+		 * to the extension's moduleId 
+		 */
+		getComponent(codeSystemPath, SnomedComponentType.RELATIONSHIP, redundantRelationshipId)
+			.statusCode(200)
+			.body("active", equalTo(false))
+			.body("moduleId", equalTo(extensionModuleId));
+		
+		assertEquals(1, getPersistedInferredRelationshipCount(codeSystemPath, parentConceptId));
+		assertEquals(1, getPersistedInferredRelationshipCount(codeSystemPath, childConceptId));
+	}
+	
 	private static void assertInferredIsAExists(FluentIterable<RelationshipChange> changesIterable, String childConceptId, String parentConceptId) {
 		assertTrue("Inferred IS A between " + childConceptId + " and " + parentConceptId + " not found.", 
 				changesIterable.anyMatch(relationshipChange -> {

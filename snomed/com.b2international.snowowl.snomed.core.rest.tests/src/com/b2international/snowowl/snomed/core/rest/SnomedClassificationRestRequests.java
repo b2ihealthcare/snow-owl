@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -91,12 +92,10 @@ public abstract class SnomedClassificationRestRequests {
 	}
 
 	public static ValidatableResponse beginClassificationSave(IBranchPath branchPath, String classificationId) {
-		Map<String, Object> requestBody = ImmutableMap.<String, Object>of(
-			"status", ClassificationStatus.SAVED.toString(),
-			"module", Concepts.MODULE_SCT_CORE,
-			"namespace", ""
-		);
+		return beginClassificationSave(classificationId, createClassificationSaveBody());
+	}
 
+	public static ValidatableResponse beginClassificationSave(String classificationId, Json requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
@@ -104,6 +103,14 @@ public abstract class SnomedClassificationRestRequests {
 				.then()
 				.assertThat()
 				.statusCode(204);
+	}
+
+	public static Json createClassificationSaveBody() {
+		return Json.object(
+			"status", ClassificationStatus.SAVED.toString(),
+			"module", Concepts.MODULE_SCT_CORE,
+			"namespace", ""
+		);
 	}
 
 	public static ValidatableResponse waitForClassificationSaveJob(IBranchPath branchPath, String classificationId) throws InterruptedException {
