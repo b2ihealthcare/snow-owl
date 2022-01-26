@@ -21,9 +21,8 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.Every.everyItem;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.util.List;
 import java.util.Map;
@@ -271,8 +270,6 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	}
 	
 	/**
-	 * Verify https://snowowl.atlassian.net/browse/SNRAY-482
-	 * 
 	 * Single nested module expand of definitionStatus results in status 500
 	 */
 	@Test
@@ -291,17 +288,15 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.assertThat()
 			.body("total", equalTo(1))
-			.body("items[0].definitionStatus.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_MODEL_COMPONENT)));
+			.body("items[0].definitionStatus.module.id", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT));
 	}
 	
 	/**
-	 * Verify https://snowowl.atlassian.net/browse/SNRAY-482
-	 * 
 	 * Definitions status module expand fail.
 	 */
 	@Test
 	public void epxandNestedModule() {
-		final String conceptExpand = "definitionStatus(expand(pt(),fsn())),module(expand(pt(),fsn()))";
+		final String conceptExpand = "definitionStatus(expand(pt(),fsn(),module(expand(pt(),fsn())))),module(expand(pt(),fsn()))";
 		
 		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
 		
@@ -315,12 +310,11 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.assertThat()
 			.body("total", equalTo(1))
-			.body("items[0].definitionStatus.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_MODEL_COMPONENT)));
+			.body("items[0].definitionStatus.module.id", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT))
+			.body("items[0].module.id", equalTo(Concepts.MODULE_SCT_CORE));
 	}
 	
 	/**
-	 * Verify https://snowowl.atlassian.net/browse/SNRAY-482
-	 * 
 	 * Multiple nested module expansion results in evaluating only the first.
 	 */
 	@Test
@@ -342,8 +336,8 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.assertThat()
 			.body("total", equalTo(1))
-			.body("items[0].descriptions.items.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_CORE)))
-			.body("items[0].relationships.items.module", everyItem(hasEntry("id", Concepts.MODULE_SCT_CORE)));
+			.body("items[0].descriptions.items.module.id", everyItem(equalTo(Concepts.MODULE_SCT_CORE)))
+			.body("items[0].relationships.items.module.id", everyItem(equalTo(Concepts.MODULE_SCT_CORE)));
 	}
 
 	private void assertHierarchyContains(String hierarchyField, String parentOrAncestorRole, Map<String, String> roleToId, Set<String> expectedRoles) {
