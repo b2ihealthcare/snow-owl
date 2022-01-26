@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.AlreadyExistsException;
@@ -174,6 +175,8 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		changed |= updateProperty(purpose, resource::getPurpose, updated::purpose);
 
 		if (changed) {
+			// make sure we null out the updatedAt property we before update
+			updated.updatedAt(null);
 			context.update(resource, updated.build());
 		}
 
@@ -184,14 +187,82 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		if (bundleId == null || bundleId.equals(oldBundleId)) {
 			return false;
 		}
+	
+		final List<String> bundleAncestorIds = getBundleAncestorIds(context, resourceId);
+		updated.bundleId(bundleId);
+		updated.bundleAncestorIds(bundleAncestorIds);
 		
-		if (IComponent.ROOT_ID.equals(bundleId)) {
-			updated.bundleAncestorIds(List.of(bundleId));
-			updated.bundleId(bundleId);
-			return true;
+		// Update bundle ancestor IDs on all descendants of the resource (their bundle ID does not change)
+		final Iterator<Resource> descendants = ResourceRequests.prepareSearch()
+			.filterByBundleAncestorId(resourceId)
+			.setLimit(5_000)
+			.stream(context)
+			.flatMap(Resources::stream)
+			.iterator();
+		
+		final Multimap<String, Resource> resourcesByParentId = Multimaps.index(descendants, Resource::getBundleId);
+		
+		// Calculate new ancestor ID list for direct children of this resource first
+		final ImmutableList.Builder<String> ancestorIdsOfParent = ImmutableList.<String>builder().addAll(bundleAncestorIds);
+		if (!IComponent.ROOT_ID.equals(bundleId)) {
+			ancestorIdsOfParent.add(bundleId);
+		}
+				
+		final Map<String, List<String>> newAncestorIdsByParentId = newHashMap(Map.of(resourceId, ancestorIdsOfParent.build()));
+		
+		// Start processing ancestor ID lists with the direct children of the resource
+		final Deque<Map.Entry<String, Collection<Resource>>> toProcess = new ArrayDeque<>();
+		toProcess.addLast(new AbstractMap.SimpleImmutableEntry<>(resourceId, resourcesByParentId.get(resourceId)));
+		
+		while (!toProcess.isEmpty()) {
+			final Entry<String, Collection<Resource>> entry = toProcess.removeFirst();
+			final String parentId = entry.getKey();
+			final Collection<Resource> resources = entry.getValue();
+			
+			/*
+			 * XXX: We will use the same ancestor ID list for all sibling resources. The
+			 * call removes the entry from the map as it will never be read again after this
+			 * iteration.
+			 */
+			final List<String> newAncestorIds = newAncestorIdsByParentId.remove(parentId);
+			
+			for (final Resource current : resources) {
+				final String id = current.getId();
+				final ResourceDocument resource = context.lookup(id, ResourceDocument.class);
+				final ResourceDocument.Builder resourceBuilder = ResourceDocument.builder(resource);
+				
+				if (!Objects.equals(resource.getBundleAncestorIds(), newAncestorIds)) {
+					resourceBuilder.bundleAncestorIds(newAncestorIds);
+					context.update(resource, resourceBuilder.build());
+				}
+			
+				final Collection<Resource> next = resourcesByParentId.get(id);
+				if (!next.isEmpty()) {
+					/*
+					 * If the current resource has any children, make a note that we have to update
+					 * bundleAncestorIds for them as well. The bundleId for these resources remains
+					 * "id".
+					 */
+					final List<String> nextAncestorIds = ImmutableList.<String>builder()
+						.addAll(newAncestorIds)
+						.add(parentId)
+						.build();
+					
+					newAncestorIdsByParentId.put(id, nextAncestorIds);
+					toProcess.add(new AbstractMap.SimpleImmutableEntry<>(id, next));
+				}
+			}
 		}
 		
-		Bundles bundles = ResourceRequests.bundles()
+		return true;
+	}
+
+	private List<String> getBundleAncestorIds(final TransactionContext context, final String resourceId) {
+		if (IComponent.ROOT_ID.equals(bundleId)) {
+			return List.of(bundleId);
+		}
+		
+		final Bundles bundles = ResourceRequests.bundles()
 			.prepareSearch()
 			.filterById(bundleId)
 			.one()
@@ -202,56 +273,12 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
 		}
 
-		Bundle parentBundle = bundles.first().get();
-		if (parentBundle.getBundleId().equals(resourceId) || Collections3.toImmutableSet(parentBundle.getBundleAncestorIds()).contains(resourceId)) {
+		final Bundle parentBundle = bundles.first().get();
+		if (parentBundle.getBundleId().equals(resourceId) || parentBundle.getBundleAncestorIds().contains(resourceId)) {
 			throw new CycleDetectedException("Setting parent bundle ID to '" + bundleId + "' would create a loop.");
 		}
-		
-		// Update the "direct parent" and ancestor identifiers on the resource
-		updated.bundleAncestorIds(parentBundle.getBundleAncestorIdsForChild());
-		updated.bundleId(parentBundle.getId());
-		
-		// Update ancestors on the resource and its descendants
-		final Iterator<Resource> descendants = ResourceRequests.prepareSearch()
-			.filterByBundleAncestorId(resourceId)
-			.setLimit(5_000)
-			.stream(context)
-			.flatMap(Resources::stream)
-			.iterator();
-		
-		final Multimap<String, Resource> resourcesByParent = Multimaps.index(descendants, Resource::getBundleId);
-		final Map<String, List<String>> ancestorsForChildByParentId = newHashMap(Map.of(resourceId, ImmutableList.<String>builder()
-			.addAll(parentBundle.getBundleAncestorIdsForChild())
-			.add(parentBundle.getId())
-			.build()));
-		
-		// Start with the immediate children of the current resource
-		final Deque<Resource> toProcess = new ArrayDeque<>(resourcesByParent.get(resourceId));
-		
-		while (!toProcess.isEmpty()) {
-			final Resource current = toProcess.removeFirst();
-			final String currentId = current.getId();
-			final ResourceDocument resource = context.lookup(currentId, ResourceDocument.class);
-			final ResourceDocument.Builder currentBuilder = ResourceDocument.builder(resource);
-
-			final String parentId = current.getBundleId();
-			final List<String> ancestorIds = ancestorsForChildByParentId.get(parentId);
-			currentBuilder.bundleAncestorIds(ancestorIds);
-			context.add(currentBuilder.build());
 			
-			final Collection<Resource> children = resourcesByParent.get(currentId);
-			if (!children.isEmpty()) {
-				final List<String> nextAncestorIds = ImmutableList.<String>builder()
-					.addAll(ancestorIds)
-					.add(parentId)
-					.build();
-
-				ancestorsForChildByParentId.put(currentId, nextAncestorIds);
-				toProcess.addAll(children);
-			}
-		}
-		
-		return true;
+		return parentBundle.getResourcePathSegments();
 	}
 
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);

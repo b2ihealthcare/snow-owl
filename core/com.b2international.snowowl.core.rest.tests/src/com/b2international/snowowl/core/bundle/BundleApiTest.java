@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -400,7 +400,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	}
 	
 	@Test(expected = CycleDetectedException.class)
-	public void updateBundleBundleId_DirectCycle() {
+	public void updateBundleId_DirectCycle() {
 		final String parentBundleId = createBundle("p1", IComponent.ROOT_ID, "Parent bundle");
 		final String childBundleId = createBundle("c1", parentBundleId, "Child bundle");
 		
@@ -417,7 +417,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	}
 	
 	@Test(expected = CycleDetectedException.class)
-	public void updateBundleBundleId_IndirectCycle() {
+	public void updateBundleId_IndirectCycle() {
 		final String parentBundleId = createBundle("p2", IComponent.ROOT_ID, "Parent bundle");
 		final String middleBundleId = createBundle("m2", parentBundleId, "Middle bundle");
 		final String childBundleId = createBundle("c2", middleBundleId, "Child bundle");
@@ -435,7 +435,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	}
 	
 	@Test
-	public void updateBundleBundleId_Hierarchy() {
+	public void updateBundleId_Hierarchy() {
 		final String parentBundleId = createBundle("p3", IComponent.ROOT_ID, "Parent bundle");
 		final String middleBundleId = createBundle("m3", parentBundleId, "Middle bundle");
 		final String childBundleId = createBundle("c3", middleBundleId, "Child bundle");
@@ -450,13 +450,65 @@ public final class BundleApiTest extends BaseBundleApiTest {
 			.getSync(1, TimeUnit.MINUTES);
 		
 		final Resources descendants = ResourceRequests.prepareSearch()
-			.all()
+			.setLimit(3)
 			.filterByBundleAncestorId(otherParentBundleId)
 			.buildAsync()
 			.execute(Services.bus())
-			.getSync(100L, TimeUnit.MINUTES);
+			.getSync(1L, TimeUnit.MINUTES);
 		
 		assertEquals(3, descendants.getTotal());
 		assertThat(descendants).extracting(Resource::getId).containsOnly(parentBundleId, middleBundleId, childBundleId);
+		
+		// Check that bundle paths are incremental
+		assertThat(getBundle(parentBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, otherParentBundleId);
+		assertThat(getBundle(middleBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, otherParentBundleId, parentBundleId);
+		assertThat(getBundle(childBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, otherParentBundleId, parentBundleId, middleBundleId);
+	}
+	
+	@Test
+	public void updateBundleId_ReparentToRoot() {
+		final String parentBundleId = createBundle("p5", IComponent.ROOT_ID, "Parent bundle");
+		final String middleBundleId = createBundle("m4", parentBundleId, "Middle bundle");
+		final String childBundleId = createBundle("c4", middleBundleId, "Child bundle");
+		final String grandchildBundleId = createBundle("g1", childBundleId, "Grandchild bundle");
+		
+		ResourceRequests.bundles()
+			.prepareUpdate(middleBundleId)
+			.setBundleId(IComponent.ROOT_ID)
+			.build(USER, String.format("Update bundle: %s", middleBundleId))
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES);
+		
+		final Resources descendantsOfParent = ResourceRequests.prepareSearch()
+			.setLimit(0)
+			.filterByBundleAncestorId(parentBundleId)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(1L, TimeUnit.MINUTES);
+		
+		assertEquals(0, descendantsOfParent.getTotal());
+		
+		final Resources descendantsOfMiddle = ResourceRequests.prepareSearch()
+			.setLimit(2)
+			.filterByBundleAncestorId(middleBundleId)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(1L, TimeUnit.MINUTES);
+			
+		assertEquals(2, descendantsOfMiddle.getTotal());
+		assertThat(descendantsOfMiddle).extracting(Resource::getId).containsOnly(childBundleId, grandchildBundleId);
+		
+		// Check that bundle paths are incremental
+		assertThat(getBundle(parentBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID);
+		assertThat(getBundle(middleBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID);
+		assertThat(getBundle(childBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, middleBundleId);
+		assertThat(getBundle(grandchildBundleId).getResourcePathSegments())
+			.containsOnly(IComponent.ROOT_ID, middleBundleId, childBundleId);
 	}
 }

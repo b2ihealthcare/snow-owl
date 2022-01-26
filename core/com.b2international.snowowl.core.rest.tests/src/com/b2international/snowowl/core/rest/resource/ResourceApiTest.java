@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,17 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceGet;
 import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceSearch;
+import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCES_API;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -32,8 +37,12 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
+import com.b2international.snowowl.core.request.CommitResult;
+import com.b2international.snowowl.core.request.ResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -59,6 +68,22 @@ public class ResourceApiTest {
 	@BeforeClass
 	public static void setup() {
 		bus = Services.bus();
+	}
+	
+	@After
+	public void deleteAllResources() {
+		ResourceRequests
+			.prepareSearch()
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES)
+			.forEach(resource -> {
+				ResourceRequests
+				.prepareDelete(resource.getId())
+				.build(RestExtensions.USER, "Delete " + resource.getId())
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES); 
+			});
 	}
 
 	@Test
@@ -125,58 +150,42 @@ public class ResourceApiTest {
 		createDefaultCodeSystem(id1, oid1);
 
 		CodeSystemRequests.prepareSearchCodeSystem()
-		.filterById(id1)
-		.setSearchAfter("codesystem")
-		.buildAsync()
-		.execute(bus)
-		.getSync();
+			.filterById(id1)
+			.setSearchAfter("codesystem")
+			.buildAsync()
+			.execute(bus)
+			.getSync();
 	}
 
 	private void createCodeSystemWithStatus(final String shortName, final String status) {
-		CodeSystemRequests
-		.prepareNewCodeSystem()
-		.setId(shortName)
-		.setTitle(shortName)
-		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
-		.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
-		.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
-		.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
-		.setStatus(status)
-		.setOid("https://b2i.sg/" + shortName)
-		.build(RestExtensions.USER, String.format("New code system %s", shortName))
-		.execute(bus).getSync();
+		CodeSystemRequests.prepareNewCodeSystem()
+			.setId(shortName)
+			.setTitle(shortName)
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
+			.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
+			.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
+			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
+			.setStatus(status)
+			.setOid("https://b2i.sg/" + shortName)
+			.build(RestExtensions.USER, String.format("New code system %s", shortName))
+			.execute(bus).getSync();
 		
 	}
 	
 	private void createDefaultCodeSystem(final String shortName, final String oid) {
-		CodeSystemRequests
-		.prepareNewCodeSystem()
-		.setId(shortName)
-		.setTitle(String.format("%s - %s", shortName, oid))
-		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
-		.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
-		.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
-		.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
-		.setOid(oid).build(RestExtensions.USER, String.format("New code system %s", shortName))
-		.execute(bus).getSync();
+		CodeSystemRequests.prepareNewCodeSystem()
+			.setId(shortName)
+			.setTitle(String.format("%s - %s", shortName, oid))
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
+			.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
+			.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
+			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
+			.setOid(oid)
+			.build(RestExtensions.USER, String.format("New code system %s", shortName))
+			.execute(bus)
+			.getSync();
 	}
 
-	@After
-	public void deleteAllResources() {
-		ResourceRequests
-		.prepareSearch()
-		.buildAsync()
-		.execute(Services.bus())
-		.getSync(1, TimeUnit.MINUTES)
-		.forEach(resource -> {
-			ResourceRequests
-			.prepareDelete(resource.getId())
-			.build(RestExtensions.USER, "Delete " + resource.getId())
-			.execute(Services.bus())
-			.getSync(1, TimeUnit.MINUTES); 
-		});
-	}
-	
 	@Test
 	public void sortByResourceTypeAsc() {
 		final String id1 = "A";
@@ -211,8 +220,54 @@ public class ResourceApiTest {
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
 		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
-		.statusCode(200)
-		.body("items.id", Matchers.contains(id1, id2, id3, id4));
+			.statusCode(200)
+			.body("items.id", Matchers.contains(id1, id2, id3, id4));
 	}
+	
+	@Test
+	public void expandPathLabels() {
+		final String rootBundleId = "rootBundleId";
+		final String subBundleId = "subBundleId";
+		
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(rootBundleId));
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(subBundleId, rootBundleId));
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", subBundleId));
 
+		givenAuthenticatedRequest(RESOURCES_API)
+			.when()
+			.get("/cs1?expand=resourcePathLabels()")
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.body("resourcePathSegments", Matchers.contains(IComponent.ROOT_ID, rootBundleId, subBundleId)) 
+			.body("resourcePathLabels", Matchers.contains(ResourceConverter.ROOT_LABEL, "Bundle " + rootBundleId, "Bundle " + subBundleId));		
+	}
+	
+	@Test
+	public void createdAtAndUpdatedAt() throws Exception {
+		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		
+		// assert that createdAt and updatedAt values are the same after create
+		CodeSystem createdCodeSystem = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		assertEquals(createdCodeSystem.getCreatedAt(), createdCodeSystem.getUpdatedAt());
+		
+		CommitResult updateResult = CodeSystemRequests.prepareUpdateCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME)
+			.setCopyright("Updated copyright")
+			.build(RestExtensions.USER, String.format("Updated copyright %s", DEFAULT_CODE_SYSTEM_SHORT_NAME))
+			.execute(bus)
+			.getSync();
+		
+		// assert that createdAt and updatedAt values are the same after create
+		CodeSystem updatedCodeSystem = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		// createdAt stays as is, but updatedAt got updated to a time after the marked value
+		assertEquals(createdCodeSystem.getCreatedAt(), updatedCodeSystem.getCreatedAt());
+		assertEquals((Long) updateResult.getCommitTimestamp(), updatedCodeSystem.getUpdatedAt());
+	}
+	
 }

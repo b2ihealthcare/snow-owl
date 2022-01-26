@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.request.expand;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -28,15 +28,13 @@ import com.b2international.snowowl.core.ServiceProvider;
 /**
  * @since 7.7
  */
-public abstract class ResourceExpander {
+public abstract class BaseResourceExpander<R> implements ResourceExpander<R> {
 
-	public static final int DEFAULT_LIMIT = 50;
-	
 	private final ServiceProvider context;
 	private final Options expand;
 	private final List<ExtendedLocale> locales;
 
-	protected ResourceExpander(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
+	protected BaseResourceExpander(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
 		this.context = checkNotNull(context, "context");
 		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
@@ -52,10 +50,6 @@ public abstract class ResourceExpander {
 	
 	protected final List<ExtendedLocale> locales() {
 		return locales;
-	}
-
-	protected final int getLimit(final Options expandOptions) {
-		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : DEFAULT_LIMIT;
 	}
 
 }

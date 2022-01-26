@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 package com.b2international.snowowl.fhir.core.request;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -137,8 +134,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			if (!fieldsToLoad.contains(ResourceDocument.Fields.TOOLING_ID)) {
 				fieldsToLoad.add(ResourceDocument.Fields.TOOLING_ID);
 			}
-			if (!fieldsToLoad.contains(ResourceDocument.Fields.CREATED_AT)) {
-				fieldsToLoad.add(ResourceDocument.Fields.CREATED_AT);
+			if (!fieldsToLoad.contains(ResourceDocument.Fields.UPDATED_AT)) {
+				fieldsToLoad.add(ResourceDocument.Fields.UPDATED_AT);
 			}
 		}
 		
@@ -236,8 +233,14 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				.status(PublicationStatus.getByCodeValue(resource.getStatus()))
 				.meta(
 					Meta.builder()
-						// createdAt returns version creation time or latest update of the resource :gold:
-						.lastUpdated(Instant.builder().instant(resource.getCreatedAt()).build())
+						// updatedAt returns version creation time (createdAt and updatedAt is the same) or latest updateAt value from the resource :gold:
+						.lastUpdated(Optional.ofNullable(resource.getUpdatedAt())
+								// fall back to createdAt if updatedAt is not present
+								.or(() -> Optional.ofNullable(resource.getCreatedAt()))
+								.map(lastUpdated -> Instant.builder().instant(lastUpdated).build())
+								// or null if none of them
+								.orElse(null)
+								)
 					.build()
 				)
 				.toolingId(resource.getToolingId()); 
@@ -296,6 +299,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		Long createdAt;
 		
+		Long updatedAt;
+		
 		// Resource only fields, for Versions they got their values from the corresponding Resource
 		
 		String status;
@@ -336,6 +341,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		public Long getCreatedAt() {
 			return createdAt;
+		}
+		
+		public Long getUpdatedAt() {
+			return updatedAt;
 		}
 		
 		public ResourceURI getResourceURI() {
@@ -400,6 +409,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		public void setCreatedAt(Long createdAt) {
 			this.createdAt = createdAt;
+		}
+		
+		public void setUpdatedAt(Long updatedAt) {
+			this.updatedAt = updatedAt;
 		}
 		
 		public void setStatus(String status) {
