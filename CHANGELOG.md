@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.18.1
+
+### Bugs/Improvements
+- [index]: filter out hidden indices that may cause issues during health checks (#959)
+- [classification]: update namespace and module assigner logic to prevent incorrect assignments in extensions that depend on other extensions (#965)
+- [snomed]: backport RF2 improvements regarding smart autogeneration of delta content using Full RF2 files (40832b7)
+- [security]: mitigate CVE-2021-44228, CVE-2021-44832, CVE-2021-45046, CVE-2021-45105 security vulnerabilities around log4j2 libraries (#953, #957)
+- [security]: mitigate CVE-2021-42550 security vulnerability (82e422a)
+
+### Dependencies
+- Bump transitive log4j2 dependency to `2.17.1` (#957)
+
 ## 7.18.0
 
 ### Core
