@@ -21,8 +21,11 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 
 import java.util.List;
 import java.util.Map;
@@ -319,11 +322,12 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	 */
 	@Test
 	public void multipleNestedModuleExpand() {
-		final String descriptionExpand = "descriptions(expand(module()))";
-		final String relationshipExpand = "relationships(expand(module()))";
+		final String descriptionExpand = "descriptions(expand(acceptabilities(expand(acceptability(expand(pt(),fsn())),languageRefSet(expand(pt(),fsn())))),type(expand(pt(),fsn())),module(expand(pt(),fsn())),caseSignificance(expand(pt(),fsn()))))";
+		final String relationshipExpand = "relationships(expand(type(expand(pt(),fsn())),destination(expand(pt(),fsn())),module(expand(pt(),fsn())),characteristicType(expand(pt(),fsn())),modifier(expand(pt(),fsn()))))";
+		final String conceptExpand = "definitionStatus(expand(pt(),fsn())),module(expand(pt(),fsn())),pt(),fsn()";
+		final String inactivationPropertiesExpand = "inactivationProperties(expand(associationTargets(expand(targetComponent(expand(pt(),fsn())))),inactivationIndicator(expand(pt(),fsn()))))";
 		
-		final String expand = String.format("%s,%s", descriptionExpand, relationshipExpand);
-		
+		final String expand = String.format("%s,%s,%s,%s", descriptionExpand, relationshipExpand, conceptExpand, inactivationPropertiesExpand);
 		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
 		
 		givenAuthenticatedRequest(getApiBaseUrl())
@@ -336,8 +340,8 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.assertThat()
 			.body("total", equalTo(1))
-			.body("items[0].descriptions.items.module.id", everyItem(equalTo(Concepts.MODULE_SCT_CORE)))
-			.body("items[0].relationships.items.module.id", everyItem(equalTo(Concepts.MODULE_SCT_CORE)));
+			.body("items[0].descriptions.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))))
+			.body("items[0].relationships.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))));
 	}
 
 	private void assertHierarchyContains(String hierarchyField, String parentOrAncestorRole, Map<String, String> roleToId, Set<String> expectedRoles) {
