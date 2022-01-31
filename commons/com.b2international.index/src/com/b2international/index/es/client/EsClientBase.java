@@ -97,8 +97,9 @@ public abstract class EsClientBase implements EsClient {
 	}
 
 	public final void checkAvailable() {
-		if (!Strings.isNullOrEmpty(clusterAvailable.get())) {
-			throw new BadRequestException("Cluster at '%s' is not available.", host.toURI());
+		String clusterDiagnosis = clusterAvailable.get();
+		if (!Strings.isNullOrEmpty(clusterDiagnosis)) {
+			throw new BadRequestException("Cluster at '%s' is not available. Diagnosis: '%s'", host.toURI(), clusterDiagnosis);
 		}
 	}
 	
