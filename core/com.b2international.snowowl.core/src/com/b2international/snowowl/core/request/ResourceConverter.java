@@ -23,7 +23,10 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.*;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -75,6 +78,9 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 		expandUpdateAtCommit(results);
 		expandResourcePathLabels(results);
 		expandVersions(results);
+		
+		// expand additional fields via pluggable converters
+		converters.expand(context(), expand(), locales(), results);
 	}
 
 	private void expandUpdateAtCommit(List<Resource> results) {
