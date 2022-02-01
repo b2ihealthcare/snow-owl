@@ -55,6 +55,7 @@ public final class BundleResourceTypeConverter implements ResourceTypeConverter 
 			// allow expanding content via content expansion, for now hit count only
 			results.forEach(bundle -> {
 				final Resources resources = ResourceRequests.prepareSearch()
+						.filterByBundleAncestorId(bundle.getId())
 						.setLimit(0)
 						.build()
 						.execute(context);
