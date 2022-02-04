@@ -81,6 +81,12 @@ public abstract class EsClientBase implements EsClient {
 		if (available) {
 			final List<EsIndexStatus> indexStatuses = newArrayList();
 			for (String index : indices == null || indices.length == 0 ? clusterHealth.get().getIndices().keySet() : Arrays.asList(indices)) {
+				
+				// ignore health check of system / hidden indices
+				if (index.startsWith(".")) {
+					continue;
+				}
+				
 				ClusterHealthStatus indexHealth = getIndexHealth(index);
 				String diagnosis = null;
 				// if not in red health state, check the read only flag
