@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,7 @@ public abstract class EsClientBase implements EsClient {
 	
 	private boolean isIndexReadOnly(String index) {
 		final String readOnly = this.indicesSettings.waitUntilValue(result -> result.getIndexToSettings().containsKey(index), 1 * 60L /*seconds*/).getSetting(index, READ_ONLY_SETTING);
-		return !Strings.isNullOrEmpty(readOnly) && !Boolean.valueOf(readOnly);
+		return !Strings.isNullOrEmpty(readOnly) && Boolean.valueOf(readOnly);
 	}
 	
 	/**
