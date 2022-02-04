@@ -152,7 +152,7 @@ public abstract class EsClientBase implements EsClient {
 	private GetSettingsResponse checkIndicesSettings(GetSettingsResponse previousSettings) {
 		try {
 			log.info("Checking indices settings at '{}'...", host.toURI());
-			return indices().settings(new GetSettingsRequest().indices(Metadata.ALL));
+			return indices().settings(new GetSettingsRequest().indicesOptions(IndicesOptions.lenientExpand()));
 		} catch (IOException e) {
 			throw new IndexException("Failed to get indices settings", e);
 		}
