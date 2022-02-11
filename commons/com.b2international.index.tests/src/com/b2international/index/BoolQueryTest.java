@@ -53,7 +53,7 @@ public class BoolQueryTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void mergeMultipleSingleTermShouldClauses() throws Exception {
+	public void mergeSingleTermShouldClauses() throws Exception {
 		String id1 = UUID.randomUUID().toString();
 		String id2 = UUID.randomUUID().toString();
 		String id3 = UUID.randomUUID().toString();
@@ -66,7 +66,7 @@ public class BoolQueryTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void mergeMultipleSingleAndMultiTermShouldClauses() throws Exception {
+	public void mergeSingleAndMultiTermShouldClauses() throws Exception {
 		String id1 = UUID.randomUUID().toString();
 		String id2 = UUID.randomUUID().toString();
 		String id3 = UUID.randomUUID().toString();
@@ -77,6 +77,34 @@ public class BoolQueryTest extends BaseIndexTest {
 			.should(Expressions.matchAny("id", Set.of(id3, id4)))
 			.build();
 		assertEquals(Expressions.matchAny("id", Set.of(id1, id2, id3, id4)), actual);
+	}
+	
+	@Test
+	public void mergeSingleAndMultiTermFilterClauses() throws Exception {
+		String id1 = UUID.randomUUID().toString();
+		String id2 = UUID.randomUUID().toString();
+		String id3 = UUID.randomUUID().toString();
+		String id4 = UUID.randomUUID().toString();
+		Expression actual = Expressions.bool()
+			.filter(Expressions.exactMatch("id", id1))
+			.filter(Expressions.matchAny("id", Set.of(id1, id2)))
+			.filter(Expressions.matchAny("id", Set.of(id1, id3, id4)))
+			.build();
+		assertEquals(Expressions.exactMatch("id", id1), actual);
+	}
+	
+	@Test
+	public void mergeDisjunctTermFilterClauses() throws Exception {
+		String id1 = UUID.randomUUID().toString();
+		String id2 = UUID.randomUUID().toString();
+		String id3 = UUID.randomUUID().toString();
+		String id4 = UUID.randomUUID().toString();
+		Expression actual = Expressions.bool()
+			.filter(Expressions.exactMatch("id", id1))
+			.filter(Expressions.matchAny("id", Set.of(id2, id3)))
+			.filter(Expressions.matchAny("id", Set.of(id3, id4)))
+			.build();
+		assertEquals(Expressions.matchNone(), actual);
 	}
 
 	private Expression generateDeepBooleanClause(int depth, BiFunction<ExpressionBuilder, Expression, ExpressionBuilder> boolClause) {

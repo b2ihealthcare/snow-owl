@@ -15,8 +15,7 @@
  */
 package com.b2international.index.query;
 
-import static com.google.common.collect.Lists.newArrayList;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -32,10 +31,10 @@ import com.google.common.collect.Sets;
  */
 public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuilder<B>>{
 
-	protected final List<Expression> mustClauses = newArrayList();
-	protected final List<Expression> mustNotClauses = newArrayList();
-	protected final List<Expression> shouldClauses = newArrayList();
-	protected final List<Expression> filterClauses = newArrayList();
+	protected final List<Expression> mustClauses = new ArrayList<>(1);
+	protected final List<Expression> mustNotClauses = new ArrayList<>(1);
+	protected final List<Expression> shouldClauses = new ArrayList<>(3);
+	protected final List<Expression> filterClauses = new ArrayList<>(3);
 	protected int minShouldMatch = 1;
 	
 	protected AbstractExpressionBuilder() {}
@@ -102,9 +101,15 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 				return shouldClauses.get(0);
 			}
 			
-			final BoolExpression be = new BoolExpression(mustClauses, mustNotClauses, shouldClauses, filterClauses);
-			be.setMinShouldMatch(minShouldMatch);
-			return be;
+			// if after the optimization the resulting bool clauses are empty, then return a MatchNone expression
+			if (mustClauses.isEmpty() && mustNotClauses.isEmpty() && shouldClauses.isEmpty() && filterClauses.isEmpty()) {
+				return Expressions.matchNone();
+			} else {
+				// otherwise create the bool expression as usual
+				final BoolExpression be = new BoolExpression(mustClauses, mustNotClauses, shouldClauses, filterClauses);
+				be.setMinShouldMatch(minShouldMatch);
+				return be;
+			}
 		}
 	}
 
@@ -133,11 +138,50 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 
 	protected final void mergeTermFilters() {
 		// check each mustNot and should clause list and merge term/terms queries into a single terms query, targeting the same field
-		// XXX merging must/filter queries will change the boolean logic from AND to OR which leads to incorrect results
 		mergeTermFilters(mustNotClauses);
 		mergeTermFilters(shouldClauses);
+		// XXX merging must/filter queries will change the boolean logic from AND to OR which leads to incorrect results
+		// instead calculate the intersection of the values and use that for the expressions
+		reduceTermFilters(mustClauses);
+		reduceTermFilters(filterClauses);
 	}
 	
+	private void reduceTermFilters(List<Expression> clauses) {
+		Multimap<String, Expression> termExpressionsByField = HashMultimap.create();
+		for (Expression expression : List.copyOf(clauses)) {
+			if (expression instanceof SingleArgumentPredicate<?>) {
+				termExpressionsByField.put(((SingleArgumentPredicate<?>) expression).getField(), expression);
+			} else if (expression instanceof SetPredicate<?>) {
+				termExpressionsByField.put(((SetPredicate<?>) expression).getField(), expression);
+			}
+		}
+		
+		for (String field : Set.copyOf(termExpressionsByField.keySet())) {
+			Collection<Expression> termExpressions = termExpressionsByField.removeAll(field);
+			if (termExpressions.size() > 1) {
+				Set<Object> values = null;
+				for (Expression expression : termExpressions) {
+					if (values != null && values.isEmpty()) {
+						break;
+					}
+					Set<Object> expressionValues;
+					if (expression instanceof SingleArgumentPredicate<?>) {
+						expressionValues = Set.of(((SingleArgumentPredicate<?>) expression).getArgument());
+					} else if (expression instanceof SetPredicate<?>) {
+						expressionValues = Set.copyOf(((SetPredicate<?>) expression).values());
+					} else {
+						throw new IllegalStateException("Invalid clause detected when processing term/terms clauses: " + expression);
+					}
+					values = values == null ? expressionValues : Sets.intersection(values, expressionValues);
+				}
+				// remove all matching clauses first
+				clauses.removeAll(termExpressions);
+				// add the new merged expression
+				clauses.add(Expressions.matchAnyObject(field, values));
+			}
+		}
+	}
+
 	private void mergeTermFilters(List<Expression> clauses) {
 		Multimap<String, Expression> termExpressionsByField = HashMultimap.create();
 		for (Expression expression : List.copyOf(clauses)) {
@@ -159,9 +203,10 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 						values.addAll(((SetPredicate<?>) expression).values());
 					}
 				}
-				// replace all clauses with a single expression
-				clauses.add(Expressions.matchAnyObject(field, values));
+				// remove all matching clauses first
 				clauses.removeAll(termExpressions);
+				// add the new merged expression
+				clauses.add(Expressions.matchAnyObject(field, values));
 			}
 		}
 	}
