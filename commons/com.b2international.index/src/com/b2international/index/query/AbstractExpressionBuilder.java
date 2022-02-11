@@ -151,7 +151,7 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 		for (Expression expression : List.copyOf(clauses)) {
 			if (expression instanceof SingleArgumentPredicate<?>) {
 				termExpressionsByField.put(((SingleArgumentPredicate<?>) expression).getField(), expression);
-			} else if (expression instanceof SetPredicate<?>) {
+			} else if (expression instanceof SetPredicate<?> && !(expression instanceof PrefixPredicate)) {
 				termExpressionsByField.put(((SetPredicate<?>) expression).getField(), expression);
 			}
 		}
@@ -187,7 +187,7 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 		for (Expression expression : List.copyOf(clauses)) {
 			if (expression instanceof SingleArgumentPredicate<?>) {
 				termExpressionsByField.put(((SingleArgumentPredicate<?>) expression).getField(), expression);
-			} else if (expression instanceof SetPredicate<?>) {
+			} else if (expression instanceof SetPredicate<?> && !(expression instanceof PrefixPredicate)) {
 				termExpressionsByField.put(((SetPredicate<?>) expression).getField(), expression);
 			}
 		}
