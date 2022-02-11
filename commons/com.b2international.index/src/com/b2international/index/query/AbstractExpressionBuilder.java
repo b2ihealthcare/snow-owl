@@ -121,7 +121,7 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 			if (expression instanceof BoolExpression) {
 				BoolExpression bool = (BoolExpression) expression;
 				if (bool.isShouldOnly() && bool.minShouldMatch() == 1) {
-					shouldClauses.addAll(bool.filterClauses());
+					shouldClauses.addAll(bool.shouldClauses());
 					shouldClauses.remove(bool);
 				}
 			}
@@ -129,11 +129,10 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 	}
 
 	protected final void mergeTermFilters() {
-		// check each must, mustNot, should and filter clause and merge term/terms queries into a single terms query, targeting the same field
-		mergeTermFilters(mustClauses);
+		// check each mustNot and should clause list and merge term/terms queries into a single terms query, targeting the same field
+		// XXX merging must/filter queries will change the boolean logic from AND to OR which leads to incorrect results
 		mergeTermFilters(mustNotClauses);
 		mergeTermFilters(shouldClauses);
-		mergeTermFilters(filterClauses);
 	}
 	
 	private void mergeTermFilters(List<Expression> clauses) {
