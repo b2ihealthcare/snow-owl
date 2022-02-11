@@ -172,7 +172,7 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 					} else {
 						throw new IllegalStateException("Invalid clause detected when processing term/terms clauses: " + expression);
 					}
-					values = values == null ? expressionValues : Sets.intersection(values, expressionValues);
+					values = values == null ? expressionValues : Set.copyOf(Sets.intersection(values, expressionValues));
 				}
 				// remove all matching clauses first
 				clauses.removeAll(termExpressions);
