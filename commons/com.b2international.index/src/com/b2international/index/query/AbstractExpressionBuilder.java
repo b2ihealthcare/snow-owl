@@ -81,6 +81,9 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 		} else if (isSingleFilter()) {
 			// shortcut to reduce number of nested Boolean clauses
 			return filterClauses.get(0);
+		} else if (isSingleShould()) {
+			// shortcut to reduce number of nested Boolean clauses
+			return shouldClauses.get(0);
 		} else {
 			// before creating the boolean query make sure we flatten the query as much as possible
 			
