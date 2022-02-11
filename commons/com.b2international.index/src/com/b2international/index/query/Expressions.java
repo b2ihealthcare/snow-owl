@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 package com.b2international.index.query;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -42,7 +39,18 @@ public class Expressions {
 
 	}
 	
+	/**
+	 * @return a new boolean query expression builder
+	 * @deprecated - use {@link Expressions#bool()} instead
+	 */
 	public static ExpressionBuilder builder() {
+		return bool();
+	}
+	
+	/**
+	 * @return a new boolean query expression builder
+	 */
+	public static ExpressionBuilder bool() {
 		return new ExpressionBuilder();
 	}
 	
@@ -270,6 +278,27 @@ public class Expressions {
 	
 	public static Expression scriptQuery(String script, Map<String, Object> params) {
 		return new ScriptQueryExpression(script, params);
+	}
+
+	public static Expression matchAnyObject(String field, Iterable<?> values) {
+		Object firstValue = Iterables.getFirst(values, null);
+		if (firstValue == null) {
+			return matchNone();
+		} else if (firstValue instanceof String) {
+			return matchAny(field, (Iterable<String>) values);
+		} else if (firstValue instanceof Long) {
+			return matchAnyLong(field, (Iterable<Long>) values);
+		} else if (firstValue instanceof BigDecimal) {
+			return matchAnyDecimal(field, (Iterable<BigDecimal>) values);
+		} else if (firstValue instanceof Double) {
+			return matchAnyDouble(field, (Iterable<Double>) values);
+		} else if (firstValue instanceof Enum<?>) {
+			return matchAnyEnum(field, (Iterable<Enum<?>>) values);
+		} else if (firstValue instanceof Integer) {
+			return matchAnyInt(field, (Iterable<Integer>) values);
+		} else {
+			throw new UnsupportedOperationException("Unsupported term expression value type: " + firstValue);
+		}
 	}
 
 }
