@@ -17,9 +17,9 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.Optional;
 
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 
 /**
@@ -38,14 +38,16 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 	@Override
 	public Boolean execute(RepositoryContext context) {
 		
-		Optional<FhirCodeSystemCUDSupport> cudSupport = context.service(ClassPathScanner.class)
-				.getComponentsByInterface(FhirCodeSystemCUDSupport.class)
+		Optional<FhirCodeSystemCUDSupport> cudSupport =	context.service(RepositoryManager.class)
+				.repositories()
 				.stream()
+				.filter(r -> r.optionalService(FhirCodeSystemCUDSupport.class).isPresent())
+				.map(r -> r.service(FhirCodeSystemCUDSupport.class))
 				.findFirst();
 		
 		if (cudSupport.isPresent()) {
 			cudSupport.get().updateOrCreateCodeSystem(context, codeSystem);
-			return Boolean.TRUE;			
+			return Boolean.TRUE;
 		}
 		
 		return Boolean.FALSE;
