@@ -15,13 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import java.util.Optional;
 
-import org.elasticsearch.common.Strings;
-
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 
 /**
@@ -39,14 +37,18 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		checkArgument(!Strings.isNullOrEmpty(codeSystem.getToolingId()), "Cannot create/update code system without tooling id.");
-
-		FhirCodeSystemCUDSupport cudSupport = context.service(RepositoryManager.class).get(codeSystem.getToolingId())
-				.optionalService(FhirCodeSystemCUDSupport.class)
-				.orElse(FhirCodeSystemCUDSupport.DEFAULT);
-
-		cudSupport.updateOrCreateCodeSystem(context, codeSystem);
-		return Boolean.TRUE;
+		
+		Optional<FhirCodeSystemCUDSupport> cudSupport = context.service(ClassPathScanner.class)
+				.getComponentsByInterface(FhirCodeSystemCUDSupport.class)
+				.stream()
+				.findFirst();
+		
+		if (cudSupport.isPresent()) {
+			cudSupport.get().updateOrCreateCodeSystem(context, codeSystem);
+			return Boolean.TRUE;			
+		}
+		
+		return Boolean.FALSE;
 	}
 	
 }
