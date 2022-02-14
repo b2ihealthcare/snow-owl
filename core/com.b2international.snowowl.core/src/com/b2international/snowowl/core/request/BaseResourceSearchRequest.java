@@ -105,6 +105,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		return queryBuilder.build();
 	}
 	
+	@Override
+	protected boolean trackScores() {
+		return containsKey(OptionKey.TITLE);
+	}
+	
 	/**
 	 * Configures security filters to allow access to certain resources only. This method is no-op if the given {@link ServiceProvider context}'s {@link User} is an administrator or has read access to everything. 
 	 * 
