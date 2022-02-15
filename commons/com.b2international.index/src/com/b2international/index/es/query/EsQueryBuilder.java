@@ -167,7 +167,7 @@ public final class EsQueryBuilder {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings, log);
+			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings, log, path);
 			innerQueryBuilder.visit(must);
 			if (innerQueryBuilder.needsScoring) {
 				needsScoring = innerQueryBuilder.needsScoring;
