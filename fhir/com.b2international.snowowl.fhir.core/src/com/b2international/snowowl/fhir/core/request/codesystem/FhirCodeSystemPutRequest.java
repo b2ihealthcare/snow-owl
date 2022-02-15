@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Optional;
 
 import com.b2international.snowowl.core.RepositoryManager;
@@ -28,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boolean> {
 
 	private static final long serialVersionUID = 1L;
+	private static final int CONCEPT_LIMIT = 5000;
 	
 	private final CodeSystem codeSystem;
 	
@@ -37,6 +40,7 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 
 	@Override
 	public Boolean execute(RepositoryContext context) {
+		checkArgument(codeSystem.getConcepts() == null || codeSystem.getConcepts().size() < CONCEPT_LIMIT, "Maintanence of code systems with more than %d codes is not supported.", CONCEPT_LIMIT);
 		
 		Optional<FhirCodeSystemCUDSupport> cudSupport =	context.service(RepositoryManager.class)
 				.repositories()
