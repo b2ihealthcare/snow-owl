@@ -94,6 +94,9 @@ public interface IConceptProperty extends FhirCodeSystem {
 		case STRING:
 			prop.valueString((String) value);
 			break;
+		case DATETIME:
+			prop.valueDateTime((Date) value);
+			break;
 		default:
 			throw new UnsupportedOperationException("Unsupported property type " + getConceptPropertyType());
 		}
