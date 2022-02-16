@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,18 @@
  */
 package com.b2international.snowowl.core.bundle;
 
+import java.util.Collection;
+import java.util.List;
+
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
  * @since 8.0
@@ -39,6 +47,21 @@ public final class BundleResourceTypeConverter implements ResourceTypeConverter 
 	@Override
 	public Integer getRank() {
 		return 1;
+	}
+	
+	@Override
+	public void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<Resource> results) {
+		if (expand.containsKey("content")) {
+			// allow expanding content via content expansion, for now hit count only
+			results.forEach(bundle -> {
+				final Resources resources = ResourceRequests.prepareSearch()
+						.filterByBundleAncestorId(bundle.getId())
+						.setLimit(0)
+						.build()
+						.execute(context);
+				bundle.setProperties("content", resources);
+			});
+		}
 	}
 
 }

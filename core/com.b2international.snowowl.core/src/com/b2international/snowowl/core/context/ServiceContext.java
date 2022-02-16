@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import com.google.inject.Provider;
 /**
  * @since 8.0
  */
-public class ServiceContext implements IDisposableService, ServiceProvider, Bindable {
+public abstract class ServiceContext implements IDisposableService, ServiceProvider, Bindable {
 
 	private final Map<Class<?>, Object> bindings = new MapMaker().makeMap();
 	private final Map<Class<?>, Object> readOnlyBindings = Collections.unmodifiableMap(bindings);

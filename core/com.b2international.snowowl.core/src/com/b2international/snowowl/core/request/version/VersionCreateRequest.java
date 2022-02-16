@@ -193,6 +193,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							.branchPath(resourceToVersion.getRelativeBranchPath(version))
 							.author(user)
 							.createdAt(Instant.now().toEpochMilli())
+							.updatedAt(Instant.now().toEpochMilli())
 							.toolingId(resourceToVersion.getToolingId())
 							.url(buildVersionUrl(context, resourceToVersion))
 							.build());

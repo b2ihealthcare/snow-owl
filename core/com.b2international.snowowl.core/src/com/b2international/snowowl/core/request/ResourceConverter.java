@@ -23,7 +23,11 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.*;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -65,14 +69,36 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 	}
 	
 	@Override
-	protected void expand(List<Resource> results) {
+	public void expand(List<Resource> results) {
 		if (results.isEmpty()) {
 			return;
 		}
 
 		expandCommits(results);
+		expandUpdateAtCommit(results);
 		expandResourcePathLabels(results);
 		expandVersions(results);
+		
+		// expand additional fields via pluggable converters
+		converters.expand(context(), expand(), locales(), results);
+	}
+
+	private void expandUpdateAtCommit(List<Resource> results) {
+		if (expand().containsKey(Resource.Expand.UPDATED_AT_COMMIT)) {
+			// expand updatedAtCommit object for each resource one-by-one
+			results.stream()
+				.forEach(res -> {
+					RepositoryRequests.commitInfos().prepareSearchCommitInfo()
+						.one()
+						.filterByBranch(Branch.MAIN_PATH) // all resource commits go to the main branch
+						.filterByAffectedComponent(res.getId())
+						.sortBy("timestamp:desc")
+						.build()
+						.execute(context())
+						.first()
+						.ifPresent(res::setUpdatedAtCommit);
+				});
+		}
 	}
 
 	private void expandResourcePathLabels(List<Resource> results) {

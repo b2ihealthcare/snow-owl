@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public final class RelationshipChangeConverter
 	}
 
 	@Override
-	protected void expand(final List<RelationshipChange> results) {
+	public void expand(final List<RelationshipChange> results) {
 		if (!expand().containsKey(RelationshipChange.Expand.RELATIONSHIP)) {
 			return;
 		}
