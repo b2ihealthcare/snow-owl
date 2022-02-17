@@ -26,6 +26,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.query.Expression;
@@ -152,12 +153,18 @@ public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionInd
 	}
 
 	protected final Expression eval(String expression) {
-		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
-			// use the isInferred method decide on inferred vs stated form (this will provide support for axioms as well)
-			.setExpressionForm(isInferred() ? Trees.INFERRED_FORM : Trees.STATED_FORM) 
-			.build())
-			.execute(context)
-			.getSync();
+		try {
+			return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
+					// use the isInferred method decide on inferred vs stated form (this will provide support for axioms as well)
+					.setExpressionForm(isInferred() ? Trees.INFERRED_FORM : Trees.STATED_FORM) 
+					.build())
+					.execute(context)
+					.getSync();
+		} catch (SyntaxException e) {
+			System.err.println(e.getMessage());
+			System.err.println(e.getAdditionalInfo());
+			throw e;
+		}
 	}
 	
 	protected final boolean isAxiom() {
