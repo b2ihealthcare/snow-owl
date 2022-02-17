@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -286,6 +288,10 @@ public final class RelationshipValue implements Serializable {
 			default: throw new IllegalStateException("Unexpected operator '" + operator +  "'.");
 		}
 	}
+	
+	public boolean matchesAny(Operator operator, List<RelationshipValue> values) {
+		return CompareUtils.isEmpty(values) ? false : values.stream().anyMatch(value -> matches(operator, value));
+	}
 
 	@Override
 	public boolean equals(final Object obj) {
@@ -314,4 +320,5 @@ public final class RelationshipValue implements Serializable {
 	public String toString() {
 		return toLiteral();
 	}
+
 }

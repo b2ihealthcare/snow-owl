@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -914,6 +914,18 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		final Expression expected = and(
 			descendantsOf(DRUG_ROOT), 
 			ids(Set.of(TRIPHASIL_TABLET, AMOXICILLIN_TABLET))
+		);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementStringManyValuedEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: %s = ('PANADOL' 'TRIPHASIL')", DRUG_ROOT, HAS_TRADE_NAME));
+		final Expression expected = and(
+			descendantsOf(DRUG_ROOT),
+			ids(Set.of(PANADOL_TABLET, TRIPHASIL_TABLET))
 		);
 		assertEquals(expected, actual);
 	}
