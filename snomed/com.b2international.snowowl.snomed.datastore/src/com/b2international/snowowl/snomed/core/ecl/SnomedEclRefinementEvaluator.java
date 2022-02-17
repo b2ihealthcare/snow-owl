@@ -32,7 +32,6 @@ import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -387,9 +386,9 @@ final class SnomedEclRefinementEvaluator {
 			StringValueComparison stringValueComparison = (StringValueComparison) comparison;
 			SearchTerm searchTerm = stringValueComparison.getValue();
 			if (searchTerm instanceof TypedSearchTerm) {
-				values = List.of(extractTerm(((TypedSearchTerm) searchTerm).getClause()));
+				values = List.of(SnomedEclEvaluationRequest.extractTerm(((TypedSearchTerm) searchTerm).getClause()));
 			} else if (searchTerm instanceof TypedSearchTermSet) {
-				values = ((TypedSearchTermSet) searchTerm).getClauses().stream().map(this::extractTerm).collect(Collectors.toList());
+				values = ((TypedSearchTermSet) searchTerm).getClauses().stream().map(SnomedEclEvaluationRequest::extractTerm).collect(Collectors.toList());
 			} else {
 				return SnomedEclEvaluationRequest.throwUnsupported(searchTerm);
 			}
@@ -821,14 +820,7 @@ final class SnomedEclRefinementEvaluator {
 	}
 
 	private RelationshipValue toRelationshipValue(TypedSearchTermClause clause) {
-		return new RelationshipValue(extractTerm(clause));
+		return new RelationshipValue(SnomedEclEvaluationRequest.extractTerm(clause));
 	}
 	
-	private String extractTerm(TypedSearchTermClause clause) {
-		LexicalSearchType searchType = LexicalSearchType.fromString(clause.getLexicalSearchType());
-		if (searchType != null && LexicalSearchType.EXACT != searchType) {
-			throw new NotImplementedException("Not implemented ECL feature: match, wild and regex lexical search types are not supported in concrete value string matching.");
-		}
-		return clause.getTerm();
-	}
 }

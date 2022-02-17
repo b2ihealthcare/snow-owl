@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,13 +112,17 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 	}
 
 	protected final void addEclFilter(BranchContext context, ExpressionBuilder queryBuilder, Collection<String> optionValues, Function<Collection<String>, Expression> matchingIdsToExpression) {
-		Collection<String> eclFilter = evaluateEclFilter(context, optionValues);
+		Collection<String> eclFilter = evaluateEclFilter(context, optionValues, eclExpressionForm());
 		if (eclFilter != null) {
 			queryBuilder.filter(matchingIdsToExpression.apply(eclFilter));
 		}
 	}
 
 	protected final Collection<String> evaluateEclFilter(BranchContext context, Collection<String> optionValues) {
+		return evaluateEclFilter(context, optionValues, eclExpressionForm());
+	}
+	
+	public static final Collection<String> evaluateEclFilter(BranchContext context, Collection<String> optionValues, String eclExpressionForm) {
 		if (optionValues.isEmpty()) {
 			return Collections.emptySet();
 		}
@@ -136,7 +140,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 				
 				// TODO replace sync call to concept search with async promise
 				try {
-					idFilter = EclExpression.of(expression, eclExpressionForm()).resolve(context).getSync(3, TimeUnit.MINUTES);
+					idFilter = EclExpression.of(expression, eclExpressionForm).resolve(context).getSync(3, TimeUnit.MINUTES);
 				} catch (SyntaxException e) {
 					// incase of syntax errors, report them as incorrect values instead of syntax errors
 //					throw new BadRequestException("'%s' is not a valid SNOMED CT ID or ECL Expression.", expression);

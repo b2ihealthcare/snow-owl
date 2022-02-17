@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.*;
 
@@ -780,6 +780,162 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		
 		assertEquals(expected, actual1);
 		assertEquals(expected, actual2);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_string_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.ROOT_CONCEPT)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE)
+				.build());
+		
+		Expression actual = eval("* {{ m targetComponentId = " + Concepts.ROOT_CONCEPT + " }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_string_ne() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.ROOT_CONCEPT)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE)
+				.build());
+		
+		Expression actual = eval("* {{ m targetComponentId != " + Concepts.ROOT_CONCEPT + " }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.CONCEPT_MODEL_ATTRIBUTE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_integer_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(1)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(2)
+				.build());
+		
+		Expression actual = eval("* {{ m mapGroup = #1 }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_integer_ne() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(1)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(2)
+				.build());
+		
+		Expression actual = eval("* {{ m mapGroup != #1 }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.CONCEPT_MODEL_ATTRIBUTE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_boolean_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(true)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(false)
+				.build());
+		
+		Expression actual = eval("* {{ m grouped = true }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_boolean_ne() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(true)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(false)
+				.build());
+		
+		Expression actual = eval("* {{ m grouped != true }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.CONCEPT_MODEL_ATTRIBUTE));
+		assertEquals(expected, actual);
 	}
 	
 	private void generatePreferredDescription(String conceptId) {

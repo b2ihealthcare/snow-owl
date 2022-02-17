@@ -26,6 +26,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -37,6 +38,7 @@ import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.*;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -50,6 +52,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
@@ -58,6 +61,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
@@ -868,6 +872,58 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		
 		return Promise.immediate(dialectQuery.build());
 	}
+	
+	protected Promise<Expression> eval(BranchContext context, final MemberFieldFilter memberFieldFilter) {
+		final Comparison comparison = memberFieldFilter.getComparison();
+		
+		final List<Object> values;
+		if (comparison instanceof AttributeComparison) {
+			values = List.copyOf(EclExpression.of(((AttributeComparison) comparison).getValue(), expressionForm).resolve(context).getSync(3, TimeUnit.MINUTES));
+		} else if (comparison instanceof BooleanValueComparison) {
+			values = List.of(((BooleanValueComparison) comparison).isValue());
+		} else if (comparison instanceof StringValueComparison) {
+			StringValueComparison stringValueComparison = (StringValueComparison) comparison;
+			SearchTerm searchTerm = stringValueComparison.getValue();
+			if (searchTerm instanceof TypedSearchTerm) {
+				values = List.of(extractTerm(((TypedSearchTerm) searchTerm).getClause()));
+			} else if (searchTerm instanceof TypedSearchTermSet) {
+				values = ((TypedSearchTermSet) searchTerm).getClauses().stream().map(SnomedEclEvaluationRequest::extractTerm).collect(Collectors.toList());
+			} else {
+				return SnomedEclEvaluationRequest.throwUnsupported(searchTerm);
+			}
+		} else if (comparison instanceof IntegerValueComparison) {
+			values = List.of(((IntegerValueComparison) comparison).getValue());
+		} else if (comparison instanceof DecimalValueComparison) {
+			values = List.of(((DecimalValueComparison) comparison).getValue());
+		} else {
+			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
+		}
+		
+		ExpressionBuilder queryBuilder = Expressions.bool();
+		
+		SnomedRefSetMemberSearchRequest.prepareRefsetMemberFieldQuery(context, queryBuilder, Options.builder()
+				.put(memberFieldFilter.getRefsetFieldName(), values)
+				.put(SearchResourceRequest.operator(memberFieldFilter.getRefsetFieldName()), toSearchOperator(memberFieldFilter.getComparison().getOp()))
+				.build(), expressionForm);
+		
+		return Promise.immediate(queryBuilder.build());
+	}
+
+	private SearchResourceRequest.Operator toSearchOperator(String operator) {
+		Operator op = Operator.fromString(operator);
+		if (op == null) {
+			return SearchResourceRequest.Operator.EQUALS;
+		}
+		switch (op) {
+		case EQUALS: return SearchResourceRequest.Operator.EQUALS;
+		case NOT_EQUALS: return SearchResourceRequest.Operator.NOT_EQUALS;
+		case GT: return SearchResourceRequest.Operator.GREATER_THAN;
+		case GTE: return SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
+		case LT: return SearchResourceRequest.Operator.LESS_THAN;
+		case LTE: return SearchResourceRequest.Operator.LESS_THAN_EQUALS;
+		default: throw new NotImplementedException("Unknown ECL operator '%s'", op);
+		}
+	}
 
 	private Set<String> getAcceptabilityFields(Acceptability acceptability) {
 		// in case of acceptability not defined accept any known acceptability value
@@ -1001,5 +1057,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	
 	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {
 		return ids -> ids.isEmpty() ? Expressions.matchNone() : ids(ids);
+	}
+	
+	/*package*/ static String extractTerm(TypedSearchTermClause clause) {
+		LexicalSearchType searchType = LexicalSearchType.fromString(clause.getLexicalSearchType());
+		if (searchType != null && LexicalSearchType.EXACT != searchType) {
+			throw new NotImplementedException("Not implemented ECL feature: match, wild and regex lexical search types are not supported in (concrete value, refset member field) string matching.");
+		}
+		return clause.getTerm();
 	}
 }
