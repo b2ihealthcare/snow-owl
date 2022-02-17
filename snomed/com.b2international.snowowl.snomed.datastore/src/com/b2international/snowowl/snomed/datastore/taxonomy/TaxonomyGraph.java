@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.arrays.LongBidiMapWithInternalId;
+import com.b2international.commons.collect.LongOrderedSetImpl;
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.status.Statuses;
@@ -62,7 +62,7 @@ public final class TaxonomyGraph {
 	/**
 	 * Bi-directional map for storing SNOMED CT concept IDs. 
 	 */
-	private final LongBidiMapWithInternalId nodes;
+	private final LongOrderedSetImpl nodes;
 
 	/**
 	 * Map for storing active IS_A type SNOMED CT relationship representations.
@@ -70,7 +70,7 @@ public final class TaxonomyGraph {
 	private final Map<String, Edges> edges;
 	
 	public TaxonomyGraph(int numberOfExpectedNodes, int numberOfExpectedEdges) {
-		this.nodes = new LongBidiMapWithInternalId(numberOfExpectedNodes);
+		this.nodes = new LongOrderedSetImpl(numberOfExpectedNodes);
 		this.edges = Maps.newHashMapWithExpectedSize(numberOfExpectedEdges);
 	}
 	
@@ -121,13 +121,14 @@ public final class TaxonomyGraph {
 		
 		final int[][] _conceptInternalIds  = new int[numberOfEdges][2];
 		int count = 0;
+		nodes.compact();
 		
 		// refresh all RelationshipMini concepts, since they may have been modified
 		for (final Edges statements : edges.values()) {
 
 			final long sourceId = statements.sourceId;
 			final long[] destinationIds = statements.destinationIds;
-			final int sourceConceptInternalId = nodes.getInternalId(sourceId);
+			final int sourceConceptInternalId = nodes.indexOf(sourceId);
 
 			for (long destinationId : destinationIds) {
 				boolean edgeSkipped = false;
@@ -137,7 +138,7 @@ public final class TaxonomyGraph {
 					edgeSkipped |= true;
 				}
 				
-				final int destinationConceptInternalId = nodes.getInternalId(destinationId);
+				final int destinationConceptInternalId = nodes.indexOf(destinationId);
 				if (destinationConceptInternalId < 0) {
 					invalidRelationships.add(new InvalidRelationship(sourceId, destinationId, MissingConcept.DESTINATION));
 					edgeSkipped |= true;
@@ -190,7 +191,7 @@ public final class TaxonomyGraph {
 	}
 
 	public boolean containsNode(final long nodeId) {
-		return 0 < nodes.get(nodeId);
+		return nodes.contains(nodeId);
 	}
 	
 	public void addEdge(final String edgeId, final long sourceId, final long[] destinationIds) {
@@ -203,7 +204,7 @@ public final class TaxonomyGraph {
 	}
 
 	public void addNode(final long conceptId) {
-		nodes.put(conceptId, conceptId);
+		nodes.add(conceptId);
 	}
 	
 	public void removeEdge(final String edgeId) {
@@ -339,9 +340,9 @@ public final class TaxonomyGraph {
 	
 	private int getInternalId(final long nodeId) {
 		checkState();
-		final int $ = nodes.getInternalId(nodeId);
+		final int $ = nodes.indexOf(nodeId);
 		if ($ < 0) {
-			final String msg = String.format("Concept does not exists with ID: %s", nodeId);
+			final String msg = String.format("Concept does not exist with ID: %s", nodeId);
 			LOGGER.error(msg);
 			throw new SnowowlRuntimeException(msg);
 		}
