@@ -57,6 +57,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
@@ -478,9 +479,16 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		
 		final Promise<Expression> evaluatedConstraint = evaluate(context, constraint);
 		Promise<Expression> evaluatedFilter = evaluate(context, filter);
-		if (Domain.DESCRIPTION.equals(filterDomain)) {
+		if (Domain.CONCEPT.equals(filterDomain)) {
+			// default case just return the expression as is
+		} else if (Domain.DESCRIPTION.equals(filterDomain)) {
 			// Find concepts that match the description expression, then use the resulting concept IDs as the expression
 			evaluatedFilter = evaluatedFilter.then(ex -> executeDescriptionSearch(context, ex));
+		} else if (Domain.MEMBER.equals(filterDomain)) {
+			// Find concepts that match the member expression, then use the resulting concept IDs as the expression
+			evaluatedFilter = evaluatedFilter.then(ex -> executeMemberSearch(context, ex));
+		} else {
+			throw new NotImplementedException("Not implemented ECL domain type: %s", filterDomain);
 		}
 		
 		if (isAnyExpression(constraint)) {
@@ -514,6 +522,32 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			
 			final Hits<String> descriptionHits = searcher.search(descriptionIndexQuery);
 			final Set<String> conceptIds = Set.copyOf(descriptionHits.getHits());
+			return SnomedDocument.Expressions.ids(conceptIds);
+
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
+	
+	private static Expression executeMemberSearch(BranchContext context, Expression memberExpression) {
+		if (memberExpression.isMatchAll()) {
+			return Expressions.matchAll();
+		} else if (memberExpression.isMatchNone()) {
+			return SnomedDocument.Expressions.ids(Set.of());
+		}
+		
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+		try {
+			
+			final Query<String> memberIndexQuery = Query.select(String.class)
+				.from(SnomedRefSetMemberIndexEntry.class)
+				.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+				.where(memberExpression)
+				.limit(Integer.MAX_VALUE)
+				.build();
+			
+			final Hits<String> memberHits = searcher.search(memberIndexQuery);
+			final Set<String> conceptIds = Set.copyOf(memberHits.getHits());
 			return SnomedDocument.Expressions.ids(conceptIds);
 
 		} catch (IOException e) {
