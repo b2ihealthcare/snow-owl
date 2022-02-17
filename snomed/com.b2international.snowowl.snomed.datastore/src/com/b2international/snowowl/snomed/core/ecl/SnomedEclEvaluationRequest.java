@@ -530,24 +530,39 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final ActiveFilter activeFilter) {
-		return Promise.immediate(SnomedDocument.Expressions.active(activeFilter.isActive()));
+		final Operator op = Operator.fromString(activeFilter.getOp());
+		Expression expression = SnomedDocument.Expressions.active(activeFilter.isActive());
+		if (op == Operator.NOT_EQUALS) {
+			expression = Expressions.bool()
+					.mustNot(expression)
+					.build();
+		}
+		return Promise.immediate(expression);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final ModuleFilter moduleFilter) {
+		final Operator op = Operator.fromString(moduleFilter.getOp());
 		final FilterValue moduleId = moduleFilter.getModuleId();
 		return evaluate(context, moduleId)
 			.thenWith(resolveIds(context, moduleId, expressionForm))
-			.then(SnomedDocument.Expressions::modules);
+			.then((moduleIds) -> {
+				Expression expression = SnomedDocument.Expressions.modules(moduleIds);
+				if (op == Operator.NOT_EQUALS) {
+					expression = Expressions.bool()
+							.mustNot(expression)
+							.build();
+				}
+				return expression;
+			});
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final EffectiveTimeFilter effectiveFilter) {
 		final String effectiveTimeAsString = effectiveFilter.getEffectiveTime();
 		final long effectiveTime = EffectiveTimes.getEffectiveTime(effectiveTimeAsString, DateFormats.SHORT);
-		final String op = effectiveFilter.getOp();
-		final Operator eclOperator = Operator.fromString(op);
+		final Operator op = Operator.fromString(effectiveFilter.getOp());
 		
 		final Expression expression;
-		switch (eclOperator) {
+		switch (op) {
 			case EQUALS:
 				expression = SnomedDocument.Expressions.effectiveTime(effectiveTime);
 				break;
@@ -569,7 +584,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 					.build();
 				break;
 			default:
-				throw new IllegalStateException("Unhandled ECL search operator '" + eclOperator + "'.");
+				throw new IllegalStateException("Unhandled ECL search operator '" + op + "'.");
 		}
 
 		return Promise.immediate(expression);

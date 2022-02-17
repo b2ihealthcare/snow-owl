@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,23 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	}
 	
 	@Test
+	public void active_notequals() throws Exception {
+		final Expression actual = eval("* {{ c active != false }}");
+		final Expression expected = Expressions.bool().mustNot(SnomedDocument.Expressions.active(false)).build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void moduleId() throws Exception {
 		final Expression actual = eval("* {{ c moduleId= " + Concepts.MODULE_SCT_CORE + " }}");
 		final Expression expected = SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void moduleId_notequals() throws Exception {
+		final Expression actual = eval("* {{ c moduleId != " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression expected = Expressions.bool().mustNot(SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE))).build();
 		assertEquals(expected, actual);
 	}
 	
@@ -364,12 +378,13 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 				.acceptableIn(Set.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.build());
 		
+		// XXX injecting domain before effectiveTime field randomly to test default description domain and explicit domain cases
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
 		Expression actual = eval("* {{ effectiveTime = \"20210731\" }}");
 		assertEquals(expected, actual);
 
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
-		actual = eval("* {{ effectiveTime > \"20210605\" }}");
+		actual = eval("* {{ d effectiveTime > \"20210605\" }}");
 		assertEquals(expected, actual);
 
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
@@ -377,7 +392,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ effectiveTime >= \"20020131\" }}");
+		actual = eval("* {{ d effectiveTime >= \"20020131\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
@@ -385,7 +400,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ effectiveTime <= \"20210731\" }}");
+		actual = eval("* {{ d effectiveTime <= \"20210731\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
@@ -393,7 +408,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ effectiveTime != \"20211030\" }}");
+		actual = eval("* {{ d effectiveTime != \"20211030\" }}");
 		assertEquals(expected, actual);
 	}
 	
