@@ -156,6 +156,11 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	public <K> IntValueMap<K> newObjectKeyIntOpenHashMapWithExpectedSize(int expectedSize) {
 		return ObjectKeyIntMapWrapper.createWithExpectedSize(expectedSize);
 	}
+	
+	@Override
+	public <K> IntValueMap<K> newObjectKeyIntOpenHashMap(IntValueMap<K> source) {
+		return ObjectKeyIntMapWrapper.create(source);
+	}
 
 	@Override
 	public <K> LongValueMap<K> newObjectKeyLongOpenHashMap() {

@@ -78,6 +78,8 @@ public interface PrimitiveMapFactory {
 	
 	<K> IntValueMap<K> newObjectKeyIntOpenHashMapWithExpectedSize(int expectedSize);
 	
+	<K> IntValueMap<K> newObjectKeyIntOpenHashMap(IntValueMap<K> source);
+	
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMap();
 	
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMapWithExpectedSize(int expectedSize);
