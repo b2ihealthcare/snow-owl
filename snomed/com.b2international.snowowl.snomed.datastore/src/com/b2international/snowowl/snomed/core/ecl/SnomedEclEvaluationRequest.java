@@ -173,13 +173,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final ExpressionConstraint inner = descendantOf.getConstraint();
 		// <* should eval to * MINUS parents IN (ROOT_ID)
 		if (isAnyExpression(inner)) {
-			return Promise.immediate(Expressions.builder()
+			return Promise.immediate(Expressions.bool()
 					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
 		} else {
 			return evaluate(context, inner)
 					.thenWith(resolveIds(context, inner, expressionForm))
-					.then(ids -> Expressions.builder()
+					.then(ids -> Expressions.bool()
 							.should(parentsExpression(ids))
 							.should(ancestorsExpression(ids))
 							.build());
@@ -198,7 +198,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		} else {
 			return evaluate(context, inner)
 					.thenWith(resolveIds(context, inner, expressionForm))
-					.then(ids -> Expressions.builder()
+					.then(ids -> Expressions.bool()
 							.should(ids(ids))
 							.should(parentsExpression(ids))
 							.should(ancestorsExpression(ids))
@@ -214,7 +214,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final ExpressionConstraint innerConstraint = childOf.getConstraint();
 		// <!* should eval to * MINUS parents in (ROOT_ID)
 		if (isAnyExpression(innerConstraint)) {
-			return Promise.immediate(Expressions.builder()
+			return Promise.immediate(Expressions.bool()
 					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
 		} else {
@@ -236,7 +236,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		} else {
 			return evaluate(context, innerConstraint)
 					.thenWith(resolveIds(context, innerConstraint, expressionForm))
-					.then(ids -> Expressions.builder()
+					.then(ids -> Expressions.bool()
 							.should(ids(ids))
 							.should(parentsExpression(ids))
 							.build());
@@ -355,7 +355,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				.then(innerExpressions -> {
 					final Expression left = (Expression) innerExpressions.get(0);
 					final Expression right = (Expression) innerExpressions.get(1);
-					return Expressions.builder()
+					return Expressions.bool()
 							.filter(left)
 							.filter(right)
 							.build();
@@ -396,7 +396,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				.then(innerExpressions -> {
 					final Expression left = (Expression) innerExpressions.get(0);
 					final Expression right = (Expression) innerExpressions.get(1);
-					return Expressions.builder()
+					return Expressions.bool()
 							.should(left)
 							.should(right)
 							.build();
@@ -419,7 +419,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			} else {
 				return evaluate(context, exclusion.getLeft()).then(left -> {
 					// match left hand side query and not the right hand side query
-					return Expressions.builder().filter(left).mustNot(right).build();
+					return Expressions.bool().filter(left).mustNot(right).build();
 				});
 			}
 		});
@@ -489,7 +489,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		}
 		
 		return Promise.all(evaluatedConstraint, evaluatedFilter).then(results -> {
-			final Expressions.ExpressionBuilder builder = Expressions.builder();
+			final Expressions.ExpressionBuilder builder = Expressions.bool();
 			results.forEach(f -> builder.filter((Expression) f));
 			return builder.build();
 		});
@@ -564,7 +564,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				expression = SnomedDocument.Expressions.effectiveTime(Long.MIN_VALUE, effectiveTime, true, true);
 				break;
 			case NOT_EQUALS:
-				expression = Expressions.builder()
+				expression = Expressions.bool()
 					.mustNot(SnomedDocument.Expressions.effectiveTime(effectiveTime))
 					.build();
 				break;
@@ -604,7 +604,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		return definitionStatusIds				
 			.then(SnomedConceptDocument.Expressions::definitionStatusIds)
 			.then(expression -> negate
-				? Expressions.builder().mustNot(expression).build()
+				? Expressions.bool().mustNot(expression).build()
 				: expression);
 	}
 
@@ -615,7 +615,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		// XXX: Both concept and description documents support the same field and query
 		Expression expression = SnomedDescriptionIndexEntry.Expressions.semanticTags(List.of(semanticTagFilter.getSemanticTag()));
 		if (Operator.NOT_EQUALS.equals(eclOperator)) {
-			expression = Expressions.builder()
+			expression = Expressions.bool()
 				.mustNot(expression)
 				.build();
 		}
@@ -706,7 +706,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		return evaluate(context, languageRefSetId)
 			.thenWith(resolveIds(context, languageRefSetId, expressionForm))
 			.then(languageReferenceSetIds -> {
-				return Expressions.builder()
+				return Expressions.bool()
 					.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageReferenceSetIds))
 					.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageReferenceSetIds))
 					.build();
@@ -729,7 +729,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				.then(results -> {
 					Expression left = (Expression) results.get(0);
 					Expression right = (Expression) results.get(1);
-					return Expressions.builder()
+					return Expressions.bool()
 							.filter(left)
 							.filter(right)
 							.build();
@@ -741,7 +741,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				.then(results -> {
 					Expression left = (Expression) results.get(0);
 					Expression right = (Expression) results.get(1);
-					return Expressions.builder()
+					return Expressions.bool()
 							.should(left)
 							.should(right)
 							.build();
@@ -751,7 +751,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	protected Promise<Expression> eval(BranchContext context, final DialectAliasFilter dialectAliasFilter) {
 		final ListMultimap<String, String> languageMapping = SnomedDescriptionUtils.getLanguageMapping(context);
 		final Multimap<String, String> languageRefSetsByAcceptabilityField = HashMultimap.create();
-		final ExpressionBuilder dialectQuery = Expressions.builder();
+		final ExpressionBuilder dialectQuery = Expressions.bool();
 		for (DialectAlias alias : dialectAliasFilter.getDialects()) {
 			final Set<String> acceptabilityFields = getAcceptabilityFields(alias.getAcceptability());
 			final Collection<String> languageReferenceSetIds = languageMapping.get(alias.getAlias());
@@ -785,7 +785,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	
 	protected Promise<Expression> eval(BranchContext context, final DialectIdFilter dialectIdFilter) {
 		final Multimap<String, String> languageRefSetsByAcceptability = HashMultimap.create();
-		final ExpressionBuilder dialectQuery = Expressions.builder();
+		final ExpressionBuilder dialectQuery = Expressions.bool();
 		for (Dialect dialect : dialectIdFilter.getDialects()) {
 			final ExpressionConstraint languageRefSetId = dialect.getLanguageRefSetId();
 			final Set<String> evaluatedIds = EclExpression.of(languageRefSetId, expressionForm)

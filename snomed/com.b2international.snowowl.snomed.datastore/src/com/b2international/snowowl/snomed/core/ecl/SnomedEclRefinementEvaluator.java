@@ -130,7 +130,7 @@ final class SnomedEclRefinementEvaluator {
 				.then(input -> {
 					final Expression left = (Expression) input.get(0);
 					final Expression right = (Expression) input.get(1);
-					return Expressions.builder().filter(left).filter(right).build();
+					return Expressions.bool().filter(left).filter(right).build();
 				});
 	}
 	
@@ -143,7 +143,7 @@ final class SnomedEclRefinementEvaluator {
 				.then(input -> {
 					final Expression left = (Expression) input.get(0);
 					final Expression right = (Expression) input.get(1);
-					return Expressions.builder().should(left).should(right).build();
+					return Expressions.bool().should(left).should(right).build();
 				});
 	}
 	
@@ -534,7 +534,7 @@ final class SnomedEclRefinementEvaluator {
 			default: throw new IllegalStateException("Unexpected operator '" + operator +  "'.");
 		}
 		
-		ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.builder()
+		ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.bool()
 			.filter(active())
 			.filter(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, axiomFilter.build()));
 		
@@ -707,7 +707,7 @@ final class SnomedEclRefinementEvaluator {
 	static Set<Property> evalAxiomStatements(final BranchContext context, final boolean groupedRelationshipsOnly, final Collection<String> sourceIds, final Collection<String> typeIds, final Collection<String> destinationIds) {
 		try {
 			// search existing axioms (no values!) defined for the given set of conceptIds
-			ExpressionBuilder axiomFilter = Expressions.builder()
+			ExpressionBuilder axiomFilter = Expressions.bool()
 				.filter(hasDestinationId());
 
 			if (typeIds != null) {
@@ -722,7 +722,7 @@ final class SnomedEclRefinementEvaluator {
 				axiomFilter.filter(relationshipGroup(1, Integer.MAX_VALUE));
 			}
 			
-			ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.builder()
+			ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.bool()
 					.filter(active())
 					.filter(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, axiomFilter.build()));
 			
