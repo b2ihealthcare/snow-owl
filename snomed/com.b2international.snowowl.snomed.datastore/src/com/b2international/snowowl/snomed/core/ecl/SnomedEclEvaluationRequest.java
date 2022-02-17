@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -624,22 +623,29 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		return Promise.immediate(expression);
 	}
 
-	protected Promise<Expression> eval(BranchContext context, final TypedTermFilter typedTermFilter) {
-		return eval(context, typedTermFilter.getClause());
-	}
-	
-	protected Promise<Expression> eval(BranchContext context, final TypedTermFilterSet termFilterSet) {
-		// Filters are combined with an OR ("should") operator
-		final Expressions.ExpressionBuilder builder = Expressions.builder();
+	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
+		final List<TypedSearchTermClause> clauses;
 		
-		for (final TypedTermFilterClause clause : termFilterSet.getClauses()) {
-			builder.should(eval(context, clause).getSync());
+		SearchTerm searchTerm = termFilter.getSearchTerm();
+		if (searchTerm instanceof TypedSearchTerm) {
+			clauses = List.of(((TypedSearchTerm) searchTerm).getClause());
+		} else if (searchTerm instanceof TypedSearchTermSet) {
+			clauses = ((TypedSearchTermSet) searchTerm).getClauses();
+		} else {
+			return throwUnsupported(searchTerm);
+		}
+		
+		// Filters are combined with an OR ("should") operator
+		final Expressions.ExpressionBuilder builder = Expressions.bool();
+		
+		for (final TypedSearchTermClause clause : clauses) {
+			builder.should(toExpression(clause));
 		}
 		
 		return Promise.immediate(builder.build());
 	}
-
-	protected Promise<Expression> eval(BranchContext context, final TypedTermFilterClause clause) {
+	
+	protected Expression toExpression(final TypedSearchTermClause clause) {
 		final String term = clause.getTerm();
 
 		LexicalSearchType lexicalSearchType = LexicalSearchType.fromString(clause.getLexicalSearchType());
@@ -650,14 +656,14 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		switch (lexicalSearchType) {
 			case MATCH:
 				final com.b2international.snowowl.core.request.TermFilter match = com.b2international.snowowl.core.request.TermFilter.defaultTermMatch(term);
-				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(match));
+				return SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(match);
 			case WILD:
 				final String regexTerm = term.replace("*", ".*");
-				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.matchTermRegex(regexTerm));
+				return SnomedDescriptionIndexEntry.Expressions.matchTermRegex(regexTerm);
 			case REGEX:
-				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.matchTermRegex(term));
+				return SnomedDescriptionIndexEntry.Expressions.matchTermRegex(term);
 			case EXACT:
-				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.matchTermCaseInsensitive(term));
+				return SnomedDescriptionIndexEntry.Expressions.matchTermCaseInsensitive(term);
 			default:
 				throw new UnsupportedOperationException("Not implemented lexical search type: '" + lexicalSearchType + "'.");
 		}
