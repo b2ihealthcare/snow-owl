@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.18.2
+
+### Bugs/Improvements
+- [index]: include diagnosis in cluster not available messages (1ffc3f8)
+
+### Dependencies
+- Bump snomed-owl-toolkit to 3.0.6 (#972)
+
 ## 7.18.1
 
 ### Bugs/Improvements
@@ -26,7 +34,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs/Improvements
 - [index]: fixed a branch merge issue where incorrect branch segment diff calculation caused false positive conflicts to appear instead of successful merge (#947)
-- [snomed]: do not convert OWL expressions to relationships when the referenced component violates the rules of the SNOMED CT OWL Guide (#923) 
+- [snomed]: do not convert OWL expressions to relationships when the referenced component violates the rules of the SNOMED CT OWL Guide (#923)
 - [snomed]: register published SCT IDs to connected CIS instance properly when import RF2 data (#941)
 - [snomed]: properly register SCT IDs when using nested component updates in the SNOMED CT Concept Update API (#945)
 
@@ -154,7 +162,7 @@ All notable changes to this project will be documented in this file.
 - SNOMED CT Description search now uses the new boolean prefix query type to offer better results and scores when only the last word represents a partial/prefix match (#773)  
 
 ### Bugs/Improvements
-- [snomed] fixed an issue where an unpublished description inactivation would keep the descriptions acceptabilities set incorrectly (#776) 
+- [snomed] fixed an issue where an unpublished description inactivation would keep the descriptions acceptabilities set incorrectly (#776)
 - [validation] avoid creating duplicate issues in MRCM constraint type rule (#772)
 
 ### Dependencies
@@ -172,7 +180,7 @@ All notable changes to this project will be documented in this file.
 - [core] prevent unnecessary branch delete attempt in case of regular version create requests (8a076e6)
 - [core] add comments to Concept Map Mapping (#767)
 - [core] fix lowerCase method in StringUtils (#768)
-- [core] return total added/changed/removed branch compare counters based on number of components instead of changes (#768) 
+- [core] return total added/changed/removed branch compare counters based on number of components instead of changes (#768)
 
 ## 7.15.1
 
@@ -228,7 +236,7 @@ All notable changes to this project will be documented in this file.
 - Code System Upgrade (experimental preview version) (#735)
   * Upgrades to newer Code System dependencies now can be started from the new `POST /codesystems/:id/upgrades` endpoint
   * The full upgrade flow is not available yet, it is scheduled for release 7.15.0
-  
+
 ### Bugs/Improvements
 - [core] validate LDAP settings during boot (#731)
 - [core] support truly random Base64 IDs (not just time-based random Base64 IDs) (#733)
@@ -246,14 +254,14 @@ All notable changes to this project will be documented in this file.
 ### SNOMED CT
 - New `response` property in `GET /:path/import/:id` RF2 Import API return value (#720, #699)
   * `response.success` - `true` if the import successfully completed, `false` otherwise  
-  * `response.error` - has a non-empty String value if the import can not be performed due validation errors or due to other errors 
+  * `response.error` - has a non-empty String value if the import can not be performed due validation errors or due to other errors
   * `response.defects` - lists all defects encountered during the RF2 Import Validation phase
   * `response.visitedComponents` - lists all components that have been updated during the RF2 import
 - Support `dryRun` in RF2 import API, `POST /:path/import` (8d3c9ac, #699)
-  * If set to `true` the importer validates the incoming RF2 archive against the current data and reports any defects. Default value is `false`. 
+  * If set to `true` the importer validates the incoming RF2 archive against the current data and reports any defects. Default value is `false`.
 
 ### Bugs/Improvements
-- [index] fix minor performance issue when collecting search hits to field maps (b4728f7) 
+- [index] fix minor performance issue when collecting search hits to field maps (b4728f7)
 - [core] include changed containers in changedComponents as well in branch compare (a7ea7df)
 - [core] filter out ROOT object IDs from compare result (15249f5)
 - [validation] improve unpublished performance of rule 663 (368542d)
@@ -293,7 +301,7 @@ All notable changes to this project will be documented in this file.
 - [core] Add property to ConceptMapMapping for indicating if a match is approximate (#724)
 - [validation] apply unpublished effective time filter in snomed-query validation rules only if the `isUnpublishedOnly` rule parameter is set to `true` (12ce787)
 - [validation] increase minimum number of validation threads to `4` (405010f)
-- [validation] remove aggregation from rule669 to improve its performance (1675105) 
+- [validation] remove aggregation from rule669 to improve its performance (1675105)
 - [api] add configuration to return all matches at once in Concept Map Search API (0cbccfc)
 - [api] support filter by description type in generic concept search API (de3777d, #714)
 - [api] support scores in generic concept search API (ee3f55c, #714)
@@ -308,7 +316,7 @@ All notable changes to this project will be documented in this file.
 ## 7.11.1
 
 ### Bugs/Improvements
-- Fix rare branch rebase conflict due to multiple changes on the same property (#706) 
+- Fix rare branch rebase conflict due to multiple changes on the same property (#706)
 
 ## 7.11.0
 
@@ -341,7 +349,7 @@ All notable changes to this project will be documented in this file.
 - [index] reduce the number of edge_ngram prefixes generated to `2-12` (#684)
 - [index] fix potential branch rebase issue when there were no actual tracked changes on both branches (#696)
 - [index] remove deprecated `_hash` field (#691)
-- [core] always render SNOMED CT Metadata concepts with their preferred synonym (PT) (#685) 
+- [core] always render SNOMED CT Metadata concepts with their preferred synonym (PT) (#685)
 - [snomed] fix RF2 FULL export issue when exporting SNOMED CT Extensions in a deep branching scenario (#689, 57f1fdf)
 - [releng] improve test code coverage numbers, clean up unused functionality, types, libraries (#694)
 
@@ -361,7 +369,7 @@ All notable changes to this project will be documented in this file.
 
 ### Validation
 - Make some SNOMED CT validation rules available in the OSS version (#666, #675)
-- Allow users to customize display labels in FSN via Validation Java API (#674) 
+- Allow users to customize display labels in FSN via Validation Java API (#674)
 
 ### Bugs/Improvements
 - [index] add the ability to change the search time analyzer to something else than the default specified on the index field mapping (#669)
@@ -370,7 +378,7 @@ All notable changes to this project will be documented in this file.
 - [core] support ID prefix and ID regexp queries (21eacab)
 - [classification] log unexpected errors during classification (#673)
 - [classification] fix registration of GCI, reflexive, transitive axioms (#673)
-- [snomed] fix `owlExpressions()` expansion issue (857db34) 
+- [snomed] fix `owlExpressions()` expansion issue (857db34)
 - [cis] port some CIS ID registration leftover fixes from 6.x (5f3f9f0, 0341b5d, 1e7e965)
 
 ## 7.9.2
@@ -384,7 +392,7 @@ All notable changes to this project will be documented in this file.
 - Support multi-valued (List, Set, Array) String properties on JSON documents in history and automatic conflict resolution (f39e115)
 - Fix branch rebase issue when there are no semantic changes between the two branches (#652, 0d9f55a)
 
-### Dependencies 
+### Dependencies
 - Upgrade Elasticsearch to 7.9.1 (#653)
 
 ## 7.9.0
@@ -411,7 +419,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs/Improvements
 - Further improvements and fixes related to rebasing/merging changes between child-parent branches
-- Make sure we only register actual changes in commits and not everything when merging from another branches 
+- Make sure we only register actual changes in commits and not everything when merging from another branches
 
 ## 7.8.3
 
@@ -440,14 +448,14 @@ All notable changes to this project will be documented in this file.
   * New `squashMerge` field has been added to Commit documents to detect squash vs. fast-forward merges (this index schema change is backward compatible in most cases, feel free to report [here](https://github.com/b2ihealthcare/snow-owl/issues/new/choose) if not in your case)
   * Properly calculate the state of a branch compared to another branch even if the branch has been synchronized with the other branch a couple of times. Take actual commits into account before deciding whether a branch is in forward or behind state.
   * Fixes #594
-- Add generic ConceptMap Mapping Java API search functionality (#610) 
+- Add generic ConceptMap Mapping Java API search functionality (#610)
 - Add generic ConceptMap Compare Java API functionality (supports SNOMED CT map type reference sets) (#610)
 
 ### SNOMED CT
 - Support for setting target code system for Map type refsets (#609)
 
 ### Validation
-- Add OWL Axiom support to the validation rules (#611) 
+- Add OWL Axiom support to the validation rules (#611)
 
 ### Bugs/Improvements
 - Fix Boolean compare in SNOMED CT component status check (#622)
@@ -456,7 +464,7 @@ All notable changes to this project will be documented in this file.
 
 ### Dependencies
 - Upgrade Elasticsearch to 7.8.0 (#615)
-- Upgrade Netty to 4.1.50.Final (#606) 
+- Upgrade Netty to 4.1.50.Final (#606)
 
 ## 7.7.0
 
@@ -471,7 +479,7 @@ All notable changes to this project will be documented in this file.
 - Generic Member Request API (#558)
 
 ### Validation
-- New Validation Rule (#580): 
+- New Validation Rule (#580):
   * Active descriptions on inactive concepts should have a single inactivation indicator member
 
 ### SNOMED CT
@@ -498,7 +506,7 @@ All notable changes to this project will be documented in this file.
 - [tests] update mini RF2 from 2018-01-31 to 2020-01-31
 
 ### Dependencies
-- Upgrade Elasticsearch to 7.7.0 
+- Upgrade Elasticsearch to 7.7.0
 - Upgrade Lucene to 8.5.1
 - Upgrade Equinox to 3.20.
 - Upgrade Eclipse Platform to 4.15.0.
@@ -595,7 +603,7 @@ All notable changes to this project will be documented in this file.
 - Allow full customization of LDAP Identity Provider (#513)
   * Support customization of user and role object classes (defaults are `inetOrgPerson` and `groupOfUniqueNames`)
   * Support customization of permission and member properties (defaults are `description` and `uniqueMember`)
-  * NOTE: The selected default values are available in both OpenLDAP and AD 
+  * NOTE: The selected default values are available in both OpenLDAP and AD
 
 ### SNOMED CT
 - New RF2 Import/Export APIs (#517)
@@ -605,7 +613,7 @@ All notable changes to this project will be documented in this file.
     * Returns the Location header of the import task with the import ID
   * `GET /:path/import/:id` - Retrieve the status of the import task using its ID
   * `DELETE /:path/import/:id` - Delete an import task using its ID (NOTE: executing on a running import will mark the task as CANCEL_REQUESTED, but cancelletation is not supported)
-  * `GET /:path/export?type=full` - single RF2 export endpoint 
+  * `GET /:path/export?type=full` - single RF2 export endpoint
   * The new APIs do not use any in-memory objects and can be safely used in scenarios when there are multiple Snow Owl instances working together on the same dataset
 - New RF2 Export REST API (#517)
 - Remove deprecated `acceptability` filter option from SNOMED CT Description API (d70f9e7)
@@ -637,7 +645,7 @@ All notable changes to this project will be documented in this file.
 All changes from the `6.x` stream (the 6.25.0 release) have been merged into the `7.4.0` release. See changelog entry `6.25.0` for details.
 
 ### Elasticsearch 7.x upgrade
-The supported Elasticsearch version has been upgraded to `7.5.2` (see #478, e19ed34). 
+The supported Elasticsearch version has been upgraded to `7.5.2` (see #478, e19ed34).
 Elasticsearch 7.5.2 is backwards compatible with Elasticsearch 6.x, so any dataset that has been created with an earlier Snow Owl 7.x release should be compatible with this release.
 
 ### New Swagger Documentation
@@ -724,7 +732,7 @@ All changes from the `6.x` stream (since 6.19.0) have been merged into the `7.2.
 
 ### Docker build
 
-Snow Owl 7.2.0 now supports Docker based deployments via the official image. See [here](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss). 
+Snow Owl 7.2.0 now supports Docker based deployments via the official image. See [here](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss).
 
 ### Known issues
 - Query parameters are not supplied to `Try it out` requests from the Swagger UI (see GH issue: #441)
@@ -762,7 +770,7 @@ Snow Owl 7.2.0 now supports Docker based deployments via the official image. See
 
 ### Scalability and reliability
 - Health check now includes ES cluster and indices health statuses (2a6628b)
-- Use retry policy to detect ES cluster outages and retry a few times before failing the request (97fc936, d5d8418) 
+- Use retry policy to detect ES cluster outages and retry a few times before failing the request (97fc936, d5d8418)
 
 ### Plug-in development
 - New easily extensible REST API modules (#403)
@@ -773,7 +781,7 @@ Snow Owl 7.2.0 now supports Docker based deployments via the official image. See
 - Fix potential NPE in case of communication failure with ES cluster (d00e56e)
 - Fix `modifiers` field access issue on Java 12 (93cb94b)
 - Fix branch counter initialization issue causing issues after restart (277bf10)
-- Do NOT index revisions when there are no changes (66c3f0e) 
+- Do NOT index revisions when there are no changes (66c3f0e)
 - Fix `namespace` field indexing issue (a09c44c)
 - Fix MRCM constraints deletion issue (88de20b)
 - Fixed reported GH issues: #422, #424, #436, #442, #444, #450
@@ -785,7 +793,7 @@ Snow Owl 7.2.0 now supports Docker based deployments via the official image. See
 - Bump Springfox to 2.9.2
 - Bump Swagger to 1.5.23
 - Bump Swagger UI to 3.24.3
-- Bump micrometer to 1.3.2 
+- Bump micrometer to 1.3.2
 - Bump Tycho to 1.5.0
 
 ## 7.1.0
@@ -816,7 +824,7 @@ This resulted in a much faster startup time and development of third party termi
 
 Important configuration changes that require attention when migrating to Snow Owl 7.1.0:
 - Configuration key `snomed.ids` has been replaced with the new `cis` root configuration node (#379)
-- `snomed.language` configuration key has been removed. APIs, commands now accept a list of `locales` in preference order to compute display names/labels/etc. (2ef2a4a) 
+- `snomed.language` configuration key has been removed. APIs, commands now accept a list of `locales` in preference order to compute display names/labels/etc. (2ef2a4a)
 
 ### CIS package and API
 - Snow Owl 7.1.0 introduces partial support for the [official CIS API](https://github.com/IHTSDO/component-identifier-service)
@@ -843,11 +851,11 @@ Important configuration changes that require attention when migrating to Snow Ow
 This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 7.0.0.
 
 #### Datasets created before 7.0.0
-Snow Owl v7.0.0 does not support indexes created by Snow Owl 6.x stream anymore. 
-Migration from Snow Owl 6.x to 7.x is still work in progress, in the meantime if you would like to try Snow Owl 7.0.0 out, we recommend starting from scratch from an RF2 export from your Snow Owl 6.x instance or by importing an official RF2 distribution. 
+Snow Owl v7.0.0 does not support indexes created by Snow Owl 6.x stream anymore.
+Migration from Snow Owl 6.x to 7.x is still work in progress, in the meantime if you would like to try Snow Owl 7.0.0 out, we recommend starting from scratch from an RF2 export from your Snow Owl 6.x instance or by importing an official RF2 distribution.
 
 #### Database
-MySQL RDBMS software requirement has been removed and Snow Owl no longer requires it for its data source. 
+MySQL RDBMS software requirement has been removed and Snow Owl no longer requires it for its data source.
 Instead, Snow Owl requires only a single Elasticsearch cluster to operate on.
 
 #### Documentation
@@ -900,7 +908,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 
 ### Removed
 - SNOMED CT
-  * XMI based MRCM import/export functionality has been removed (remaining options are `CSV` and `JSON`) 
+  * XMI based MRCM import/export functionality has been removed (remaining options are `CSV` and `JSON`)
 - Modules
   * `org.eclipse.emf.cdo.*`
   * `org.eclipse.net4j.db.mysql`
@@ -917,7 +925,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
   * `system.bundle.package.exporter`
 - Configuration
   * `yaml` and `json` file extension support for `snowowl.yml` configuration file
-  * `resources/defaults` XML configuration folder and support 
+  * `resources/defaults` XML configuration folder and support
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
@@ -925,7 +933,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 
 ### API
 - Support `definitionStatusId` in `POST /concepts` endpoint (8552b99)
-- Set definitionStatus to primitive automatically when inactivating a concept (8552b99) 
+- Set definitionStatus to primitive automatically when inactivating a concept (8552b99)
 
 ### Bugs/Improvements
 - [cis] allow ID registration of already published IDs (ccc225d)
@@ -954,7 +962,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - Support OWL Axiom (`owlRelationships()`) expansion on OWL Reference Set Members
 
 ### Validation
-- Support OWL Axiom Members in certain SNOMED CT Validation Rules (#455) 
+- Support OWL Axiom Members in certain SNOMED CT Validation Rules (#455)
 
 ### Bugs/Improvements
 - [reasoner] multiple changes to SNOMED to OWL conversion (28f6615)
@@ -1003,7 +1011,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 
 ### Validation
 - Supporting deletion of validation issues by tooling and branch (db9b492)
-- Add published/unpublished filtering to validation issues (#391) 
+- Add published/unpublished filtering to validation issues (#391)
 - Properly filter unpublished members in rule `snomed-common-4` (#394)
 - Add new description character length validation rule (#400)
 - Handle reference sets properly in validation issue detail expansion (#402)
@@ -1020,7 +1028,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - [api] inactivate all language members when inactivating a SNOMED CT Description
 - [api] allow creating inactive concepts and descriptions
 - [export] avoid issues due to duplicate data during DSV export
-- [export] compare source and target effective dates of latest module dependencies when calculating effective time for RF2 export 
+- [export] compare source and target effective dates of latest module dependencies when calculating effective time for RF2 export
 - [validation] update snomed common rule 4's description
 - [classification] track redundant relationships as well in hasInferredChanges flag
 
@@ -1038,7 +1046,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - New common validation rule to check duplicate preferred FSNs and Synonyms in any language reference set (#382)
 
 ### Configuration
-- Disable TCP transport when setting `repository.port` to `0` (740c904) 
+- Disable TCP transport when setting `repository.port` to `0` (740c904)
 - Configuration key `snomed.ids` has been replaced with the new `cis` root configuration node (#379)
 
 ### SNOMED CT
@@ -1084,7 +1092,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - [validation] Remove stated MRCM rule (2657abd)
 
 ### Dependencies
-- Bump SNOMED OWL Toolkit to 2.6.0 
+- Bump SNOMED OWL Toolkit to 2.6.0
 
 ## 6.16.0
 
@@ -1142,7 +1150,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - Fixed incorrect Location URL returned in `POST /validations` endpoint (#347)
 - Fixed incorrect (non-null) effective time value after changing `targetComponentId`/`valueId` on active reference set members (5959e88)
 - Fixed missing ECL cardinality conversion service in SNOMED CT Query Language infrastructure (706ba1c)
-- Fixed incorrect wrapping of `IdRequest` in SNOMED CT transactions (#349) 
+- Fixed incorrect wrapping of `IdRequest` in SNOMED CT transactions (#349)
 
 ### Dependencies
 - Bump OWLAPI to 4.5.10 (#342)
@@ -1167,7 +1175,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 ## 6.14.0
 
 ### Added
-- OWL Axiom support 
+- OWL Axiom support
   * Compute stated tree form based on OWL Axiom `SubClassOf` definitions
   * Query OWL Axioms when evaluating ECL expressions on stated form
   * Hybrid mode on definition status updates (either updates an existing OWL Expression member or the Concept's `definitionStatusId` property)
@@ -1197,9 +1205,9 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - Replace Swaggermvc 0.9.3 with Springfox 2.8.0
 - Upgrade rest-assured library to 3.2.0
 - Upgrade mapdb library to 3.0.7
-- Upgrade SLF4J to 1.7.25 
+- Upgrade SLF4J to 1.7.25
 - Upgrade Logback to 1.2.3
-- Upgrade Fastutil to 8.2.2 
+- Upgrade Fastutil to 8.2.2
 - Upgrade Tycho to 1.2.0
 
 ## 6.13.1
@@ -1235,7 +1243,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 
 ### Performance
 - Ignore property chain hierarchies collection if no type IDs make use of this functionality, to speed up normal form computation (a31ce0c)
-  
+
 ### Bugs
 - Replace line break and tab characters with empty spaces when exporting `query` and `term` fields in RF2 (#304, 920a0e2)
 - Fix issues with Simple type Reference Set DSV export (#309)
@@ -1257,7 +1265,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 ### Added
 - SNOMED CT Query Language feature (#298)
   * The initial version of the language supports the full `ECL v1.3` and description `term` filters
-  * `filterByQuery` method has been added to `SNOMED CT Concept Java API` 
+  * `filterByQuery` method has been added to `SNOMED CT Concept Java API`
   * `query` parameter has been added to `GET /:path/concepts` API
 - Customizable SNOMED CT RF2 export bash script has been added to automate RF2 export tasks (#299)  
 - Support RF2 packages where the OWLExpression files names are using the new file naming convention (c3de2d0)  
@@ -1277,7 +1285,7 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - Fixed hot backup file path bug (23f896a, 2fff0f6)
 - Fix relationship affected component label bug in SNOMED CT validation (d69b56f)
 - Fix a few bugs in SNOMED CT Reference Set DSV export (94ccf64)
-- Improve performance of RF2 import by reducing the amount of loaded available components during init (2772cb2) 
+- Improve performance of RF2 import by reducing the amount of loaded available components during init (2772cb2)
 
 ## 6.11.0
 
@@ -1297,11 +1305,11 @@ Property groups now can contain concrete domain properties as well, not just rel
 - Java API methods to simplify synchronous execution of requests (8d0e15d)
 - Support for `childOf` HierarchyInclusionType in MRCM rules (#287)
 - Support for `dependencies` between two code system. A Code System now declare another as a dependency (#286)
-- New Concept and Description inactivation indicators (102b127) 
+- New Concept and Description inactivation indicators (102b127)
 
 ### Changed
 - Make SNOMED CT Description `term` field mutable (#284)
-- Allow non-SNOMED CT identifier in `mapCategoryId` column (8b325be) 
+- Allow non-SNOMED CT identifier in `mapCategoryId` column (8b325be)
 - Export FSN in description term columns when exporting Mapping Reference Sets to DSV (#283)
 
 ### Dependencies
@@ -1311,7 +1319,7 @@ Property groups now can contain concrete domain properties as well, not just rel
 - Set `write.wait_for_active_shards` setting to `all` to fix inconsistencies in the underlying index when using replicas
 - Fix serialization issue when using the class `SctId` (8284600)
 - Fix missing clause for `referencedComponentType` filters (b98308a)
-- Report a conflict when an inbound relationship references detached destination concept. Fixes object not found and versioning errors (a8ce29e) 
+- Report a conflict when an inbound relationship references detached destination concept. Fixes object not found and versioning errors (a8ce29e)
 - Fix script arguments unrecognized by Elasticsearch (#289)
 
 ## 6.10.0
@@ -1320,12 +1328,12 @@ Property groups now can contain concrete domain properties as well, not just rel
 - Bump Jackson modules to 2.8.11 and Jackson Databind module to 2.8.11.2 (fixes security vulnerability issues reported by GitHub)
 
 ### Performance
-- Simplify and improve SNOMED CT Description term fuzzy matching functionality (9d7bce4) 
+- Simplify and improve SNOMED CT Description term fuzzy matching functionality (9d7bce4)
 
 ### Bugs
 - Delete all types of referring members when component is deleted (130d938)
 - Fix de/serialization of module dependency member fields (a5f4369)
-- Validate versionId before creating Code System Version entry (39efad0) 
+- Validate versionId before creating Code System Version entry (39efad0)
 - Fix reference set DSV import related issues (bb3efa0, bc8ec3b)
 - Fix potentional validation issue duplication (7956697)
 - Fix error when trying to revert effective time of an RF2 component without any released versions (7f16873)
@@ -1340,7 +1348,7 @@ Property groups now can contain concrete domain properties as well, not just rel
 
 ### Changed
 - Consider additional relationship types as well when computing MRCM rules for a concept (110f2e3)
-- `sourceEffectiveTime` and `targetEffectiveTime` reference set member properties serialized as effective time instead of dates (8e0e830) 
+- `sourceEffectiveTime` and `targetEffectiveTime` reference set member properties serialized as effective time instead of dates (8e0e830)
 
 ### Removed
 - Merged `com.b2international.snowowl.index.api`, `com.b2international.snowowl.index.es` and `com.b2international.org.apache.lucene` bundles into a single `com.b2international.snowowl.index` module (#269)
@@ -1350,7 +1358,7 @@ Property groups now can contain concrete domain properties as well, not just rel
 - Improve execution of Concept search requests with both ECL and TERM filters (530eb15)  
 
 ### Bugs
-- Fix FUZZY + TERM filter bug when the term consist only of escaped characters (0cc2c4c) 
+- Fix FUZZY + TERM filter bug when the term consist only of escaped characters (0cc2c4c)
 - Fix NSEE when attempting to export an RF2 package with no SNOMED CT versions yet in the system (c79dc21)
 - Fix server startup issue due to a bug in startup script (2530f67)
 - Ignore 404 responses thrown by Elasticsearch REST client (c6be1d2)
@@ -1361,7 +1369,7 @@ Property groups now can contain concrete domain properties as well, not just rel
 - Support SNOMED CT component effective time filter in Validation Issues Search API (#260)
 - Support affectedComponent label filter in Validation Issues Search API (20962f2)
 - Complete `searchAfter` paging API support for REST API endpoints (#261)
-- A new `Other` Validation Rule severity type (#263) 
+- A new `Other` Validation Rule severity type (#263)
 - Support basic authentication configuration values in Elasticsearch configuration in case of connecting to a remote cluster (#264)
 
 ### Changed
@@ -1377,7 +1385,7 @@ Property groups now can contain concrete domain properties as well, not just rel
 
 ### Added
 - A new `deploymentId` configuration key to specify both DB and Index name prefix to support multi-tenant deployments (#256)
-- Support MRCM reference set member properties in `SnomedRefSetMemberSearchRequest` (a14b9d9) 
+- Support MRCM reference set member properties in `SnomedRefSetMemberSearchRequest` (a14b9d9)
 
 ### Changed
 - Use the high-level Elasticsearch REST Client to communicate with either an embedded note or remote cluster (#251)  
@@ -1389,7 +1397,7 @@ Property groups now can contain concrete domain properties as well, not just rel
 
 ### Performance
 - Improve SNOMED CT RF2 export performance (#249)
-- Reduce number of documents to load when using `snomed-query` based validation rules (4f980a1) 
+- Reduce number of documents to load when using `snomed-query` based validation rules (4f980a1)
 
 ### Bugs
 - Fix cache cleanup (memory leak) in `SnomedEditingContext/SnomedRefSetEditingContext` (d97bf3e)
@@ -1405,10 +1413,10 @@ Property groups now can contain concrete domain properties as well, not just rel
 ### Changed
 - Support delimiter parameter in DSV exports (7ad7d6f)
 - Support latest specification changes in OWL Axiom and Ontology Reference Sets (#248, 72994dc)
-- Increase number of default shards for revision indexes to `6` (11ca54d) 
+- Increase number of default shards for revision indexes to `6` (11ca54d)
 
 ### Bugs
-- Use Groovy Eclipse release update site instead of snapshot (0e15090) 
+- Use Groovy Eclipse release update site instead of snapshot (0e15090)
 - Fix missing FSNs, PTs in RefSet DSV exports, change default file names to PT of the Reference Set (1bb3fe3, 3f7cd3e, af6d9d1)
 
 ### Performance
@@ -1428,7 +1436,7 @@ All datasets created before 6.5.0 require a full `reindex` due to changes in the
   * Add `iconId` property to SNOMED CT component representations on all endpoints (90ccb2e)
   * Add `limit` query parameter to `GET /branches` endpoint (e7fcaf7)
   * Support released flag filter in SNOMED CT component search API (091b8ea)
-  * Support `typeId` filter in `descriptions()` expand parameter (https://github.com/b2ihealthcare/snow-owl/pull/235) 
+  * Support `typeId` filter in `descriptions()` expand parameter (https://github.com/b2ihealthcare/snow-owl/pull/235)
   * Support support filtering members by set of referenced component IDs via `GET /:path/members`  (710c894)
 - SNOMED CT:
   * Support new MRCM reference set types (https://github.com/b2ihealthcare/snow-owl/pull/187, https://github.com/b2ihealthcare/snow-owl/pull/231)
@@ -1471,7 +1479,7 @@ All datasets created before 6.4.0 require a full `reindex` due to changes in all
 
 ### Added
 - Add inferred and stated parent ID arrays to the SNOMED CT Concept representations (a5f1f1f)
-- Support revision expression values in search requests path parameters (6e5ab16) 
+- Support revision expression values in search requests path parameters (6e5ab16)
 
 ### Changes
 - Reintroduce revision hashing to support proper calculation of change sets between two branch points (#219)
@@ -1499,7 +1507,7 @@ All datasets created before 6.4.0 require a full `reindex` due to changes in all
 This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.3.0.
 
 #### Datasets created before 6.3.0
-All datasets created before 6.3.0 require a full `reindex` due to changes in SNOMED CT index schema. 
+All datasets created before 6.3.0 require a full `reindex` due to changes in SNOMED CT index schema.
 
 ### Added
 - Support multiple language code files in RF2 import (#194)
@@ -1549,10 +1557,10 @@ All datasets created before 6.3.0 require a full `reindex` due to changes in SNO
   * Groovy implementation of the new scripting API module (com.b2international.scripting.groovy)
 - SNOMED CT Validation API
   * Add Groovy based validation rule implementation and execution
-  * Add white list support (#189) 
+  * Add white list support (#189)
 - `isActiveMemberOf` filter now supports ECL expressions in SNOMED CT Component search requests
 - Add module and namespace assigner feature from `4.x` branch ()
-- Deleted branches can be reused by creating a branch with the same path (parent + name) (dc53ade) 
+- Deleted branches can be reused by creating a branch with the same path (parent + name) (dc53ade)
 
 ### Changed
 - Dependencies:
@@ -1601,11 +1609,11 @@ This section discusses the changes that you need to be aware of when migrating y
 
 #### Datasets created before 6.0.0
 Snow Owl v6.0.0 does not support Lucene based indexes anymore. We've decided to remove that module completely in favor of the now fully supported and stable Elasticsearch based module.
-All datasets (including the ones created with the experimental Elasticsearch module) need a full `reindex`. 
+All datasets (including the ones created with the experimental Elasticsearch module) need a full `reindex`.
 See [Admin Console Reference Guide](/documentation/src/main/asciidoc/administrative_console_reference.adoc#diagnostics-and-maintenance) for details.
 
 #### API changes
-Removed `offset` properties from all collection resource representation classes. `Offset+Limit` based paging is resource-intensive, therefore it has been completely removed. 
+Removed `offset` properties from all collection resource representation classes. `Offset+Limit` based paging is resource-intensive, therefore it has been completely removed.
 Your queries should either search for the topN hits or if you need to scroll a large result set, then use the `scrollId` returned in the collection resource (alternatively you can scroll a live result set using the `searchAfter` parameter).
 Read more about scrolling here: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 
@@ -1615,7 +1623,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 ### Added
 - Generic Terminology Validation API (750806e, ed64eae, 6102b86)
 - SNOMED CT Request API based Validation Rule Support (f67aee5)
-- A new, improved, but **experimental** SNOMED CT RF2 importer implementation 
+- A new, improved, but **experimental** SNOMED CT RF2 importer implementation
 - SNOMED CT Java API:
   * Support filtering SNOMED CT Descriptions by their `semantic tag` (659234e)
   * Support filtering SNOMED CT Components by multiple `namespace` IDs (7a7a5c1)
@@ -1628,7 +1636,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
   * ECL implementation now compatible with latest v1.3 spec (https://confluence.ihtsdotools.org/display/DOCECL/Previous+Versions)
   * Support nested expressions in `memberOf` rules (v1.2 spec change)
   * Support nested expressions in attribute part of dotted expressions (v1.3 spec change)
-  * Support nested expressions in attribute part of refinement expressions (v1.3 spec change) 
+  * Support nested expressions in attribute part of refinement expressions (v1.3 spec change)
 - Low-level index API:
   * Support regular expression queries (0cb1c1c786c0fd7bcbc4c7b1e7d54c64a5c0baad)
   * Support terms aggregations with tophits (50fd7338831dea7c4f84efc7aaefb4ee38e8ecd7)
@@ -1644,14 +1652,14 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
   * `Empty`-ish values are accepted in `filterBy*` methods (empty `Collection`s and empty `String` values)
 - SNOMED CT RF2 import console command now accepts a single Code System short name instead of a descriptor file (bd7aea3d56822b405feb4adbf039cd4ce4599729)
 - SNOMED CT Identifier Generation:
-  * Improve Sequential ID generation by skipping exponentially growing chunks of reserved/assigned IDs in order to find the next available ID faster (#180) 
+  * Improve Sequential ID generation by skipping exponentially growing chunks of reserved/assigned IDs in order to find the next available ID faster (#180)
 - SNOMED CT Classification changes:
   * Enabled classification of concepts with the UK Clinical extension module
   * Improved performance of SNOMED CT Classification by keeping the initially computed taxonomy in memory until normal form generation and change (https://github.com/b2ihealthcare/snow-owl/pull/181)
   * Generate inferred relationship IDs in bulk [5.x] (#176)
 - File Attachment API now accepts any kind of file not just zip files (3b814b2)
 - Low-level Index API changes:
-  * Improved low-level, fluent index Query API (cc7b5c1) 
+  * Improved low-level, fluent index Query API (cc7b5c1)
   * Default number of index shards has been increased to 5 (Elasticsearch default value).
   * ES module now executes bulk updates in parallel (5c5159b601a47e0d0bfad10eee70745eaa9641f1)  
   * Scripting language from Groovy to Painless in index layer scripts (see https://www.elastic.co/guide/en/elasticsearch/reference/5.0/breaking_50_scripting.html)
@@ -1689,7 +1697,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 
 ### Bugs
 - Retry update-by-query requests in case of version conflicts (4a4ecf1)
-- Fix partial field loading issue in SNOMED CT Reference Set Member API (2302aa0) 
+- Fix partial field loading issue in SNOMED CT Reference Set Member API (2302aa0)
 - Fix bootstrap initialization order issue by moving ClientPreferences init to Environment constructor (1a882e0)
 
 ## 5.11.5
@@ -1793,7 +1801,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 ## 5.10.10
 
 ### Bugs
-- Fix zip decompression issue in FileUtils.decompressZipArchive method when there are no folder entries (8d144f4010e8a5c4a1735d0577a862065fe63a9b) 
+- Fix zip decompression issue in FileUtils.decompressZipArchive method when there are no folder entries (8d144f4010e8a5c4a1735d0577a862065fe63a9b)
 - Fix Java serialization issue when using DSV export via the Java API (bd96aa60993e2fbef15a12a307d0a0db51adb874)
 - Fix JSON serialization of ClassificationSettings, fixes missing remote job entries (df8c4e545d8b6b5af6d3ada90b97347a71069c58)
 
@@ -1831,8 +1839,8 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 ## 5.10.6
 
 ### Added
-- New SNOMED CT DSV export Java API is available (see `SnomedRequests.dsv().prepareExport()`) 
-- Support for SNOMED CT Reference Set Member filtering by mapTarget values (48e5179f7c70a54747177d5559bcd91c1c74bf5c) 
+- New SNOMED CT DSV export Java API is available (see `SnomedRequests.dsv().prepareExport()`)
+- Support for SNOMED CT Reference Set Member filtering by mapTarget values (48e5179f7c70a54747177d5559bcd91c1c74bf5c)
 - Support for SNOMED CT Relationship filtering by modifier values (1dcc314707286dbe650346d26724d1160668a804)
 
 ### Bugs
@@ -1850,7 +1858,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 ## 5.10.4
 
 ### Changed
-- Add versioning parameters to job params object (7ac489c6f715bb7fec791deb78bd83b681440613) 
+- Add versioning parameters to job params object (7ac489c6f715bb7fec791deb78bd83b681440613)
 - Exclude UK products by their module ID from classifications (12164c8116701f9a21bce822810c2cfb9851b310)
 - SNOMED CT Identifier service now properly moves all ASSIGNED ids to PUBLISHED and reports errors after the changes
 
@@ -1901,7 +1909,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 - Configuration options
   * Added `numberOfShards` configuration option to repository.index node in snowowl_config.yml
   * Added `commitConcurrencyLevel` configuration option to repository.index node in snowowl_config.yml
-  
+
 ### Changed
 - Low-level Index API chanages (see https://github.com/b2ihealthcare/snow-owl/pull/147 for details)
 - API changes:
@@ -1918,7 +1926,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 ## 5.9.0
 
 ### Breaking changes
-- Datasets created before 5.9.0 require a **full reindex** in case you would like to use the new branch compare API (or you are using the old review-based compare feature). 
+- Datasets created before 5.9.0 require a **full reindex** in case you would like to use the new branch compare API (or you are using the old review-based compare feature).
 
 ### Added
 - New branch compare Java API (https://github.com/b2ihealthcare/snow-owl/pull/145)
@@ -1996,13 +2004,13 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 - Console
  * `--version` command parameter has been added to `snowowl` command to retrieve the server's version
  * `snowowl repositories [id]` subcommand has been added to retrieve repository information and health status
-- Sorting support in Java API (https://github.com/b2ihealthcare/snow-owl/pull/140) 
+- Sorting support in Java API (https://github.com/b2ihealthcare/snow-owl/pull/140)
 - Low-level API changes
  * Support custom repository content initialization for empty repositories during the bootstrap process (usually primary code system entries are created here)
 
 ### Changed
 - SNOMED CT RF2 importer changes
- * Importer is no longer able to create codeSystem as part of the import process, how ever they require that the codeSystem exists before starting the import. 
+ * Importer is no longer able to create codeSystem as part of the import process, how ever they require that the codeSystem exists before starting the import.
 - SNOMED CT ECL grammar improvements (https://github.com/b2ihealthcare/snow-owl/pull/137)
  * Optional `WS` before and after the `PIPE` terminals
  * Case insensitive keyword support
@@ -2011,10 +2019,10 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
  * Pagination support has been added to `GET /snowowl/snomed-ct/v2/branches` endpoint
  * Filter by `parent` property has been added to `GET /snowowl/snomed-ct/v2/branches` endpoint
  * Filter by `name` property has been addSed to `GET /snowowl/snomed-ct/v2/branches` endpoint
-- `SnomedConcept` expansions 
+- `SnomedConcept` expansions
  * Removed `form` parameter when expanding `ancestors`/`descendants` of SNOMED CT concepts
  * Added `statedAncestors`/`statedDescendants` expand parameters to expand concepts referenced via `stated` IS_A relationships
- * `ancestors`/`descendants` expansion expands concepts referenced via `inferred` IS_A relationships 
+ * `ancestors`/`descendants` expansion expands concepts referenced via `inferred` IS_A relationships
 
 ### Removed
 - `GET /snowowl/admin/repositories/:id/versions` obsolete endpoint has been removed in favor of `GET /snowowl/admin/codesystem/:id/versions`
@@ -2023,10 +2031,10 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 ### Dependencies
 - Xtext/Xtend changed from 2.8.4 to 2.11.0 (https://github.com/b2ihealthcare/snow-owl/pull/137)
 - EMF changed from 2.11.0 to 2.12.0 (https://github.com/b2ihealthcare/snow-owl/pull/137)
-- RxJava changed from 1.0.6 to 2.0.7 (https://github.com/b2ihealthcare/snow-owl/pull/141) 
+- RxJava changed from 1.0.6 to 2.0.7 (https://github.com/b2ihealthcare/snow-owl/pull/141)
 
 ### Bugs
-- Validate SNOMED CT Text Definition files (if present) when import RF2 content 
+- Validate SNOMED CT Text Definition files (if present) when import RF2 content
 - Validate `branchPath` input parameter with given `codeSystemShortName` when running SNOMED CT RF2. It should be either full path or relative to the codesystem's main branch.
 - Fixed issue where files could not be opened after downloading them using the `FileRegistry.download(...)` api (c1088e217e1954952b57e70aec9f0d28f09083af)
 - Skip cdo repository initializer commits when reindexing a repository (b6d1e4f9e2cd170a8516bc2bcf1cda4f6ce6888c)
@@ -2085,7 +2093,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
  * `codeSystemShortName` and `extensionOnly` properties to select the right content for your RF2 package
  * Export now always creates empty description, text definition and language refset files
  * Export now creates description/text definition/lang refset files per language code
- * A new RF2 API (https://github.com/b2ihealthcare/snow-owl/pull/135) 
+ * A new RF2 API (https://github.com/b2ihealthcare/snow-owl/pull/135)
 - Index API
  * Support java.util.Date types in document mapping
 - Refactored SNOMED CT API test cases (part of https://github.com/b2ihealthcare/snow-owl/pull/131)
@@ -2107,7 +2115,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
  * GET /{path}/concepts
  * GET /{path}/descriptions
  * GET /{path}/relationships
-- ECL expression support to `GET /{path}/descriptions` endpoint's concept and type filter 
+- ECL expression support to `GET /{path}/descriptions` endpoint's concept and type filter
 - `subclassDefinitionStatus` property to `SnomedConceptSearchRequest`
 - `referenceSet` expand option to GET /{path}/concepts
 
@@ -2206,7 +2214,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
 
 ### Java 8 support
 
-Snow Owl is now using Java 8 both compile time and runtime. Make sure your execution (and development, if you are developing custom plug-ins for Snow Owl) environment supports and uses Java 8. From 5.1.0, the minimum required Java version is 1.8.0 update 102. 
+Snow Owl is now using Java 8 both compile time and runtime. Make sure your execution (and development, if you are developing custom plug-ins for Snow Owl) environment supports and uses Java 8. From 5.1.0, the minimum required Java version is 1.8.0 update 102.
 
 ## 5.0.0
 
@@ -2220,10 +2228,10 @@ Snow Owl v5.0.0 no longer supports nested index directory format. The new format
 To support migration of incompatible datasets, Snow Owl v5.0.0 comes with a `reindex` command, which can be used to create the new index for any dataset based on the contents of the relational database. See updated [Admin Console Reference Guide](/documentation/src/main/asciidoc/administrative_console_reference.adoc#diagnostics-and-maintenance) for details.
 
 #### Java API changes
-Due to index format changes, public APIs (generic and/or SNOMED CT terminology related) - that used the old format - become obsolete, and either marked with deprecated annotation or have been completely removed. See the affected public APIs in the Removed section. 
+Due to index format changes, public APIs (generic and/or SNOMED CT terminology related) - that used the old format - become obsolete, and either marked with deprecated annotation or have been completely removed. See the affected public APIs in the Removed section.
 
 #### Review API changes
-In general the `Review API` still works the same way as in the `4.x` versions, but the new, changed, deleted concept ID sets might contain non-Concept identifiers when a member of a `Relationship/Description` changes, but the corresponding `Relationship/Description` does not. It is recommended to fetch the container `SNOMED CT Concept` identifier by querying the *source* branch for the new or changed Relationship/Descriptions, and extracting the SNOMED CT Concept identifier from either the conceptId or sourceId properties. Querying deleted revisions from the tip of a branch is currently not supported, see next section. 
+In general the `Review API` still works the same way as in the `4.x` versions, but the new, changed, deleted concept ID sets might contain non-Concept identifiers when a member of a `Relationship/Description` changes, but the corresponding `Relationship/Description` does not. It is recommended to fetch the container `SNOMED CT Concept` identifier by querying the *source* branch for the new or changed Relationship/Descriptions, and extracting the SNOMED CT Concept identifier from either the conceptId or sourceId properties. Querying deleted revisions from the tip of a branch is currently not supported, see next section.
 
 With this change and limited capabilities, Snow Owl will no longer support the current version of the `Review API` starting from the next release (`5.1.0`), and it will replace it with a more generic `Branch Compare API`. This new API will return the new/changed/deleted document identifiers directly without trying to be smart and replace the document identifier with the corresponding container (root resource, like the `SNOMED CT Concept`) component identifier. API consumers will be responsible for fetching and computing the final compare result based on the actual changes between the branches, if they would like to still show the review in the scope of a `SNOMED CT Concept`. This enables `Snow Owl` to use the same `Branch Compare API` for different terminology implementations and the API will provide access points to query the proper revision of new/changed/deleted components (currently it only supports the latest revision, which returns `HTTP 404 Not Found` for deleted components).
 
@@ -2302,7 +2310,7 @@ With this change and limited capabilities, Snow Owl will no longer support the c
  * `POST` `/codesystems/:id/versions` - create a new version in a codesystem (or release in SNOMED CT)
 - SNOMED CT RF2 import
  * `POST` `/imports` - new optional property `codeSystemShortName`, identifies the target code system of the import, the default value is the short name of the SNOMED CT International Release
- * 
+ *
 - Revise handling of structural reference set members (language, inactivation and association members)
  * Try to reuse members where possible (reactivate if necessary)
  * Keep only one active language reference set member per description and do not create new ones when acceptability changes
@@ -2317,7 +2325,7 @@ With this change and limited capabilities, Snow Owl will no longer support the c
 ### New modules
 - `com.b2international.collections.api` - primitive collections API
 - `com.b2international.collections.fastutil` - [FastUtil](https://github.com/vigna/fastutil) implementation of primitive collections API
- 
+
 ### Bugs
 - Reduces thread usage of SNOMED CT change processing
 - Index initialization during SNOMED CT RF2 import now filters content based on the current latest system effective time, resulting in much more reliable imports and content when the import completes
@@ -2456,7 +2464,7 @@ With this change and limited capabilities, Snow Owl will no longer support the c
  * Classifier now deletes any unpublished redundant inferred relationships instead of inactivating them
  * /browser/concepts/{id}/children now has a new parameter `form` (allowed values are `stated` and `inferred`)
 - Reference set lucene documents fields merged into their corresponding identifier concept doc
- 
+
 ### Merged pull requests
  * https://github.com/b2ihealthcare/snow-owl/pull/20
  * https://github.com/b2ihealthcare/snow-owl/pull/19
@@ -2470,11 +2478,11 @@ With this change and limited capabilities, Snow Owl will no longer support the c
   * `GET` `/reviews/:id`
   * `GET` `/reviews/:id/concept-changes`
   * `DELETE` `/reviews/:id`
-  
+
   Changes are computed according to existing version comparison logic in Snow Owl Server; in particular, reference set identifier concepts are marked as changed if any members are added, removed or updated in the reference set. The first modification immediately after versioning triggers an update to "Module dependency", making it appear in concept change resources.
-  
+
   Inbound relationship changes do not mark the target concept as changed. Inactivating a concept marks it as changed, not deleted.
-  
+
   Concept change sets and review resources are kept for a limited time, which is configurable using the `snowowl_configuration.yml` file.
 
 ## 4.1.0
@@ -2512,9 +2520,9 @@ With this change and limited capabilities, Snow Owl will no longer support the c
 ## 2015-03-26
 ### Added
 - `WRP-89`: both `FULL` and `DELTA` imports are now separating incoming import files into "layers" based on the effective time columns, and individual layers get imported in order. This enables importing the `20150131` INT RF2 release delta, which includes components from `20140731` as well. The import process can now create versions after importing each "layer" for all import types.
-  
+
   Note that the above mentioned `20150131` release would require "re-tagging" of an already released `20140731` version, which is not supported, or placing the additional content on the existing `20140731` version branch as a patch. This, however, would make the extra `20140731` content available on that version and that version **only**; it would be visible neither from `MAIN`, nor from `20150131`.
-  
+
   The current implementation issues a warning when such cases are encountered; the extra content will become visible on `MAIN` and `20150131`, but not on version `20140731`, which is left untouched. A possible workaround is to import `20140731` from a delta with disabled version creation, then import the `20150131` delta with enabled version creation.
 
 ## 2015-03-19
@@ -2522,7 +2530,7 @@ With this change and limited capabilities, Snow Owl will no longer support the c
 - `WRP-135`: added properties `taskId` and `versionId` to the export configuration object to allow exporting content from task branches. URLs for exporting no longer include the version segment.
   * version/taskId is accepted, but not applicable (no tasks on versions)
   * when taskId left out, it means MAIN or head of a particular version
-- Added the `transientEffectiveTime` property to the export configuration object for specifying 
+- Added the `transientEffectiveTime` property to the export configuration object for specifying
 effective time values in export files, if unpublished components are present. Valid values are:
   * `""` or not setting the property: uses `Unpublished` in exported files
   * `"NOW"`: uses the current server date in exported files
@@ -2537,16 +2545,16 @@ effective time values in export files, if unpublished components are present. Va
 
 ## DEV2.1 - 2015-03-05
 ### Changed
-- Make the `Accept` header mandatory for requests to "B2i" URLs, and produce `application/json` 
-responses on "Browser" URLs. This means that the latter endpoints will be hit when entered in a 
+- Make the `Accept` header mandatory for requests to "B2i" URLs, and produce `application/json`
+responses on "Browser" URLs. This means that the latter endpoints will be hit when entered in a
 web browser's URL bar, making testing easier.
-- Increase concept children collection performance by using a combination of low-level calls. This 
+- Increase concept children collection performance by using a combination of low-level calls. This
 brings the test case of `123037004`'s children down from ~22 seconds to ~350 ms.
-- Sort description search results by relevance, and add offset and limit to fetch search results in 
+- Sort description search results by relevance, and add offset and limit to fetch search results in
 smaller segments.
-- Split the API documentation into two sets: the administrative interface with the code system 
-listing is separated from SNOMED CT services. The API viewer's own URL bar can be used to switch 
-between generated documentation endpoints; two shortcuts were also added. The default URL is changed 
+- Split the API documentation into two sets: the administrative interface with the code system
+listing is separated from SNOMED CT services. The API viewer's own URL bar can be used to switch
+between generated documentation endpoints; two shortcuts were also added. The default URL is changed
 to http://localhost:8080/snowowl/admin/api-viewer/ .
 
 ## DEV2 - 2015-02-20
@@ -2561,7 +2569,7 @@ descriptions
 ### Changed
 - `effectiveDate` and `effectiveTime` properties on SNOMED CT components and code system
 versions now universally follow the short `yyyyMMdd` format (also applies when creating new
-versions), other dates should use ISO8601 
+versions), other dates should use ISO8601
 - `Accept-Language` is required on all new endpoints which return descriptions, as Snow Owl
 Server stores descriptions with different language codes and acceptability side-by-side
 - Constants must be retrieved on a version/task basis, as the FSN of these enumeration
@@ -2576,15 +2584,15 @@ which matches the inferred view only
 - `WRP-26`: Support importing deltas without corresponding unchanged artefacts
 - `WRP-82`: Enable REST operation to support imports on branches
 - `WRP-88`: Add support for namespace to REST API
-- Added folder `delta-import-examples` which includes a set of RF2 release .zip 
-files, containing the minimally required content for each change. A separate 
-`readme.txt` file within the folder has additional instructions on how these 
+- Added folder `delta-import-examples` which includes a set of RF2 release .zip
+files, containing the minimally required content for each change. A separate
+`readme.txt` file within the folder has additional instructions on how these
 archives can be used.
 
 ### Changed
-- URLs under and including `/snomed-ct/imports` no longer require specifying the 
+- URLs under and including `/snomed-ct/imports` no longer require specifying the
 version to use as a path variable;
-- The input object for `POST` `/snomed-ct/imports` should now include both the 
+- The input object for `POST` `/snomed-ct/imports` should now include both the
 version as well as the task identifier, if applicable:
 ```
 {
@@ -2611,6 +2619,6 @@ import and the original values from the import configuration:
 }
 ```
 ### Removed
-- To keep the release file's size small, no indexes and SQL dumps have been 
+- To keep the release file's size small, no indexes and SQL dumps have been
 attached; the ones from the previous release can be used instead. A database
 reload is required.
