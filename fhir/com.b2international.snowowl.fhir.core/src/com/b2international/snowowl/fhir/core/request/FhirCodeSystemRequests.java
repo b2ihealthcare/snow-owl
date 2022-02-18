@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
 import com.b2international.snowowl.fhir.core.request.codesystem.*;
 
 /**
@@ -46,4 +48,8 @@ public final class FhirCodeSystemRequests {
 		return new FhirValidateCodeRequestBuilder();
 	}
 	
+	public ResourceDeleteRequestBuilder prepareDelete(String codeSystemId) {
+		return new ResourceDeleteRequestBuilder(codeSystemId, ResourceDocument.class);
+	}
+
 }

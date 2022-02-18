@@ -30,14 +30,6 @@ public interface FhirCodeSystemCUDSupport {
 	 * @param context - the context to use when looking for this code system
 	 * @param codeSystem 
 	 */
-	public void updateOrCreateCodeSystem(ServiceProvider context, CodeSystem codeSystem);
-	
-	/**
-	 * Implementers need to update the specified codesystem in their tooling
-	 * @param context - the context to delete this code system from
-	 * @param id
-	 */
-	public void delete(ServiceProvider context, String id);
-	
+	public void updateOrCreateCodeSystem(ServiceProvider context, CodeSystem codeSystem);	
 	
 }

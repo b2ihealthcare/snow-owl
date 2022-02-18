@@ -18,10 +18,12 @@ package com.b2international.snowowl.fhir.rest;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 
 import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
@@ -154,6 +156,47 @@ public class FhirCodeSystemController extends AbstractFhirController {
 				.setElements(selectors.get_elements())
 				.buildAsync()
 				.execute(getBus());
+	}
+	
+	/**
+	 * HTTP DELETE for deleting a code system by its logical identifier
+	 * @param id
+	 * @return
+	 */
+	@Operation(
+		summary = "Delete the code system specified by the id",
+		description = "Delete the code system specified by its logical id."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "204", description = "Deletion successful"),
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "409", description = "Code system cannot be deleted")
+	})
+	@DeleteMapping(value="/{id:**}")
+	public ResponseEntity<Void> deleteCodeSystem(
+			@Parameter(description = "The identifier of the Code System resource")
+			@PathVariable(value = "id") 
+			final String id,
+			
+			@Parameter(description = "Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+
+			@RequestHeader(value = X_AUTHOR, required = true)
+			final String author) {
+		try {
+			FhirRequests.codeSystems().prepareDelete(id)
+				.force(force)
+				.build(author, String.format("Deleting code system %s", id))
+				.execute(getBus())
+				.getSync();
+			return ResponseEntity.noContent().build();
+		} catch (NotFoundException e) {
+			return ResponseEntity.notFound().build();
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).build();
+			
+		}
 	}
 	
 }
