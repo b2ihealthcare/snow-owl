@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import com.b2international.collections.PrimitiveCollection;
+import com.b2international.commons.collections.SparseFixedBitSet;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
 
@@ -72,6 +73,10 @@ public class CompareUtils {
 		
 		if (object instanceof BitSet) {
 			return ((BitSet) object).isEmpty();
+		}
+		
+		if (object instanceof SparseFixedBitSet) {
+			return ((SparseFixedBitSet) object).isEmpty();
 		}
 		
 		if (object instanceof Pair<?, ?>) {
