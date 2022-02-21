@@ -59,6 +59,8 @@ public interface OrderedSet<E> extends Set<E> {
 	 * @param index index of the element to return
 	 * @return the element at the specified position in this set
 	 * @throws IndexOutOfBoundsException if the index is out of range
+	 * @throws IllegalArgumentException  if the index is within range, but the
+	 *         corresponding element has been removed
 	 */
     E get(int index);
     
