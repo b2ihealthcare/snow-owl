@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
@@ -190,51 +190,48 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 	
 	private void validateSubsumptionRequest(String codeSystemId, String codeA, String codeB, String system, String version, Coding codingA, Coding codingB) {
 		
-		//check the systems
+		// check the systems
 		if (StringUtils.isEmpty(system) && StringUtils.isEmpty(codeSystemId)) {
 			throw new BadRequestException("Parameter 'system' is not specified for subsumption testing.", "SubsumptionRequest.system");
 		}
 		
-		//TODO: this probably incorrect as codeSystemId is an internal id vs. system that is external
-		if (!StringUtils.isEmpty(system) && !StringUtils.isEmpty(codeSystemId)) {
-			if (!codeSystemId.equals(system)) {
-				throw new BadRequestException(String.format("Parameter 'system: %s' and path parameter 'codeSystem: %s' are not the same.", system, codeSystemId), "SubsumptionRequest.system");
+		// TODO: this probably incorrect as codeSystemId is an internal id vs. system that is external
+		if (!StringUtils.isEmpty(system) && !StringUtils.isEmpty(codeSystemId) && !codeSystemId.equals(system)) {
+			throw new BadRequestException(String.format("Parameter 'system: %s' and path parameter 'codeSystem: %s' are not the same.", system, codeSystemId), "SubsumptionRequest.system");
+		}
+		
+		if (StringUtils.isEmpty(codeA) && StringUtils.isEmpty(codeB)) {
+			// No codes and no codings
+			if (codingA == null && codingB == null) {
+				throw new BadRequestException("No codes or Codings are provided for subsumption testing.", "SubsumptionRequest");
 			}
-		}
-		
-		//all empty
-		if (StringUtils.isEmpty(codeA) && StringUtils.isEmpty(codeA) && codingA == null && codingB == null) {
-			throw new BadRequestException("No codes or Codings are provided for subsumption testing.", "SubsumptionRequest");
-		}
-		
-		//No codes
-		if (StringUtils.isEmpty(codeA) && StringUtils.isEmpty(codeA)) {
+
+			// One coding is present, but the other is missing (both can not be missing as it was handled above)
 			if (codingA == null || codingB == null) {
 				throw new BadRequestException("No Codings are provided for subsumption testing.", "SubsumptionRequest.Coding");
 			}
-		}
-		
-		//No codings
-		if (codingA == null && codingB == null) {
-			if (StringUtils.isEmpty(codeA) || StringUtils.isEmpty(codeB)) {
-				throw new BadRequestException("No codes are provided for subsumption testing.", "SubsumptionRequest.code");
-			}
-		}
-		
-		//Codes are there
-		if (!StringUtils.isEmpty(codeA) && !StringUtils.isEmpty(codeA)) {
+			
+			// Both codings are present at this point
+			
+		} else {
+
+			// Some codes were provided, but a coding is also present, ambiguous
 			if (codingA != null || codingB != null) {
 				throw new BadRequestException("Provide either codes or Codings.", "SubsumptionRequest");
 			}
-		}
-		
-		//Coding are there
-		if (codingA != null && codingB != null) {
-			if (!StringUtils.isEmpty(codeA) || !StringUtils.isEmpty(codeA)) {
-				throw new BadRequestException("Provide either codes or Codings.", "SubsumptionRequest");
+
+			// One code is present, but the other is missing (both can not be missing as it was handled in the outer "if" block above)
+			if (StringUtils.isEmpty(codeA) || StringUtils.isEmpty(codeB)) {
+				throw new BadRequestException("No codes are provided for subsumption testing.", "SubsumptionRequest.code");		
 			}
+			
+			// Both codes are present at this point
+		}
+
+		// Check system (URL) against version 
+		if (!StringUtils.isEmpty(system) && !StringUtils.isEmpty(version) && !system.endsWith("/" + version)) {
+			throw new BadRequestException(String.format("Version specified in the URI [%s] does not match the version set in the request [%s]",
+				system, version));
 		}
 	}
-
-	
 }
