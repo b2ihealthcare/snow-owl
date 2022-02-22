@@ -305,7 +305,10 @@ public class SparseFixedBitSet {
 	}
 
 	public int nextSetBit(int i) {
-		assert i < length;
+		if (i >= length) {
+			return -1;
+		}
+		
 		final int i4096 = i >>> 12;
 		final long index = indices[i4096];
 		final long[] bitArray = this.bits[i4096];
