@@ -18,14 +18,23 @@ package com.b2international.snowowl.core.commit;
 import static com.b2international.index.revision.Commit.Expressions.*;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.2
@@ -58,8 +67,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	protected Expression prepareQuery(RepositoryContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		addIdFilter(queryBuilder, Commit.Expressions::ids);
-		// TODO add a security filter to return commits from resources that can be accessed by the current user
-		addBranchClause(queryBuilder);
+		addSecurityFilter(queryBuilder, context);
 		addBranchPrefixClause(queryBuilder);
 		addUserIdClause(queryBuilder);
 		addCommentClause(queryBuilder);
@@ -88,11 +96,83 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		return new CommitInfos(limit, 0);
 	}
 	
-	private void addBranchClause(final ExpressionBuilder builder) {
-		if (containsKey(OptionKey.BRANCH)) {
-			final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
-			builder.filter(branches(branchPaths));
+	private void addSecurityFilter(final ExpressionBuilder builder, RepositoryContext context) {
+		
+		final User user = context.service(User.class);
+		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
+			return;
 		}
+		
+		final List<Permission> readPermissions = user.getPermissions().stream()
+				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
+				.collect(Collectors.toList());
+		
+		final Set<String> exactResourceIds = readPermissions.stream()
+				.flatMap(p -> p.getResources().stream())
+				.filter(resource -> !resource.endsWith("*"))
+				.collect(Collectors.toSet());
+		
+		final Set<String> resourceIdPrefixes = readPermissions.stream()
+				.flatMap(p -> p.getResources().stream())
+				.filter(resource -> resource.endsWith("*"))
+				.map(resource -> resource.substring(0, resource.length() - 1))
+				.collect(Collectors.toSet());
+		
+		if (containsKey(OptionKey.BRANCH)) {
+			addBranchClause(builder, context, exactResourceIds, resourceIdPrefixes);
+			return;
+		}
+		
+		ResourceRequests.prepareSearch()
+			.filterByIds(Sets.union(exactResourceIds, resourceIdPrefixes))
+			.setLimit(exactResourceIds.size())
+			.setFields(ResourceDocument.Fields.ID, ResourceDocument.Fields.BRANCH_PATH)
+			.build()
+			.execute(context)
+			.stream()
+			.filter(TerminologyResource.class::isInstance)
+			.map(TerminologyResource.class::cast)
+			.forEach(r -> {				
+				if (resourceIdPrefixes.contains(r.getId())) {
+					final String branchPattern = String.format("%s/[^[%s]{1,%s}(_[0-9]{1,19})?$]+", r.getBranchPath());
+					builder.should(branches(branchPattern));
+				}
+				builder.should(branches(r.getBranchPath()));
+			});
+	}
+	
+	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context, Set<String> exactResourceIds, Set<String> resourceIdPrefixes) {		
+		Set<String> permittedBranchPaths = Sets.newHashSet();
+		
+		final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
+		ResourceRequests.prepareSearch()
+			.filterByIds(Sets.union(exactResourceIds, resourceIdPrefixes))
+			.setLimit(exactResourceIds.size())
+			.setFields(ResourceDocument.Fields.ID, ResourceDocument.Fields.BRANCH_PATH)
+			.build()
+			.execute(context)
+			.stream()
+			.filter(TerminologyResource.class::isInstance)
+			.map(TerminologyResource.class::cast)
+			.forEach(r -> {
+				if (branchPaths.contains(r.getBranchPath())) {
+					builder.should(branches(r.getBranchPath()));
+				}
+				
+				for (String branchPath : branchPaths) {
+					if (branchPath.startsWith(r.getBranchPath())) {
+						int resourceBranchDepth = r.getBranchPath().split("/").length;
+						int filterBranchDepth = branchPath.split("/").length;
+						
+						if (filterBranchDepth - 1 <= resourceBranchDepth) {
+							permittedBranchPaths.add(branchPath);
+						}
+					}
+				}
+					
+			});
+		
+		builder.should(branches(permittedBranchPaths));
 	}
 
 	private void addUserIdClause(final ExpressionBuilder builder) {
