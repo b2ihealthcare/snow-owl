@@ -53,6 +53,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
@@ -183,7 +184,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 					.build());
 		} else {
 			return evaluate(context, inner)
-					.thenWith(resolveIds(context, inner, expressionForm))
+					.then(resolveIds(context))
 					.then(ids -> Expressions.bool()
 							.should(parentsExpression(ids))
 							.should(ancestorsExpression(ids))
@@ -202,7 +203,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			return evaluate(context, inner);
 		} else {
 			return evaluate(context, inner)
-					.thenWith(resolveIds(context, inner, expressionForm))
+					.then(resolveIds(context))
 					.then(ids -> Expressions.bool()
 							.should(ids(ids))
 							.should(parentsExpression(ids))
@@ -224,7 +225,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 					.build());
 		} else {
 			return evaluate(context, innerConstraint)
-					.thenWith(resolveIds(context, innerConstraint, expressionForm))
+					.then(resolveIds(context))
 					.then(ids -> parentsExpression(ids));
 		}
 	}
@@ -240,7 +241,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			return evaluate(context, innerConstraint);
 		} else {
 			return evaluate(context, innerConstraint)
-					.thenWith(resolveIds(context, innerConstraint, expressionForm))
+					.then(resolveIds(context))
 					.then(ids -> Expressions.bool()
 							.should(ids(ids))
 							.should(parentsExpression(ids))
@@ -582,7 +583,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final Operator op = Operator.fromString(moduleFilter.getOp());
 		final FilterValue moduleId = moduleFilter.getModuleId();
 		return evaluate(context, moduleId)
-			.thenWith(resolveIds(context, moduleId, expressionForm))
+			.then(resolveIds(context))
 			.then((moduleIds) -> {
 				Expression expression = SnomedDocument.Expressions.modules(moduleIds);
 				if (op == Operator.NOT_EQUALS) {
@@ -634,7 +635,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final FilterValue definitionStatus = definitionStatusIdFilter.getDefinitionStatus();
 		
 		return evalDefinitionStatus(evaluate(context, definitionStatus)
-				.thenWith(resolveIds(context, definitionStatus, expressionForm)),
+				.then(resolveIds(context)),
 				Operator.NOT_EQUALS.equals(eclOperator));
 	}
 	
@@ -736,28 +737,28 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	protected Promise<Expression> eval(BranchContext context, final TypeIdFilter typeIdFilter) {
 		final FilterValue type = typeIdFilter.getType();
 		return evaluate(context, type)
-			.thenWith(resolveIds(context, type, expressionForm))
+			.then(resolveIds(context))
 			.then(SnomedDescriptionIndexEntry.Expressions::types);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
 		final FilterValue languageRefSetId = preferredInFilter.getLanguageRefSetId();
 		return evaluate(context, languageRefSetId)
-			.thenWith(resolveIds(context, languageRefSetId, expressionForm))
+			.then(resolveIds(context))
 			.then(SnomedDescriptionIndexEntry.Expressions::preferredIn);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final AcceptableInFilter acceptableInFilter) {
 		final FilterValue languageRefSetId = acceptableInFilter.getLanguageRefSetId();
 		return evaluate(context, languageRefSetId)
-			.thenWith(resolveIds(context, languageRefSetId, expressionForm))
+			.then(resolveIds(context))
 			.then(SnomedDescriptionIndexEntry.Expressions::acceptableIn);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final LanguageRefSetFilter languageRefSetFilter) {
 		final FilterValue languageRefSetId = languageRefSetFilter.getLanguageRefSetId();
 		return evaluate(context, languageRefSetId)
-			.thenWith(resolveIds(context, languageRefSetId, expressionForm))
+			.then(resolveIds(context))
 			.then(languageReferenceSetIds -> {
 				return Expressions.bool()
 					.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageReferenceSetIds))
@@ -769,7 +770,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	protected Promise<Expression> eval(BranchContext context, final CaseSignificanceFilter caseSignificanceFilter) {
 		final FilterValue caseSignificanceId = caseSignificanceFilter.getCaseSignificanceId();
 		return evaluate(context, caseSignificanceId)
-			.thenWith(resolveIds(context, caseSignificanceId, expressionForm))
+			.then(resolveIds(context))
 			.then(SnomedDescriptionIndexEntry.Expressions::caseSignificances);
 	}
 	
@@ -908,6 +909,77 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		
 		return Promise.immediate(queryBuilder.build());
 	}
+	
+	protected Promise<Expression> eval(BranchContext context, final SupplementExpressionConstraint supplementExpression) {
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+		
+		if (supplementExpression.getSupplement() == null || supplementExpression.getSupplement() instanceof HistorySupplement) {
+			HistorySupplement historySupplement = (HistorySupplement) supplementExpression.getSupplement();
+			
+			final Set<String> refsetIds = evaluateProfile(context, historySupplement).getSync(3, TimeUnit.MINUTES);
+			
+			return evaluate(context, supplementExpression.getConstraint())
+					.then(resolveIds(context))
+					.then(focusConceptIds -> {
+						if (!focusConceptIds.isEmpty() || !refsetIds.isEmpty()) {
+							final Collection<String> historicalIds = Query.select(String.class)
+									.from(SnomedRefSetMemberIndexEntry.class)
+									.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+									.where(Expressions.bool()
+											.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+											.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(refsetIds))
+											.filter(SnomedRefSetMemberIndexEntry.Expressions.targetComponentIds(focusConceptIds))
+											.build())
+									.limit(Integer.MAX_VALUE)
+									.build()
+									.search(searcher)
+									.getHits();
+							return ImmutableSet.<String>builder()
+									.addAll(focusConceptIds)
+									.addAll(historicalIds)
+									.build();
+						} else {
+							// no focus concept set (or historical association refsets) => no historical concepts, return empty collection
+							return Collections.<String>emptySet();
+						}
+						
+					})
+					.then(matchIdsOrNone());
+		} else {
+			return throwUnsupported(supplementExpression);
+		}
+		
+	}
+
+	private Promise<Set<String>> evaluateProfile(BranchContext context, HistorySupplement historySupplement) {
+		EObject historyProfile = historySupplement.getHistory();
+		if (historyProfile == null || historyProfile instanceof HistoryProfile) {
+			HistoryProfileType historyProfileType = historyProfile == null ? null : HistoryProfileType.fromString(((HistoryProfile) historyProfile).getProfile());
+			if (historyProfileType == null) {
+				historyProfileType = HistoryProfileType.MIN;
+			}
+			
+			switch (historyProfileType) {
+			case MAX:
+				return EclExpression.of("<" + Concepts.REFSET_HISTORICAL_ASSOCIATION, expressionForm).resolve(context);
+			case MOD:
+				return Promise.immediate(Set.of(
+					Concepts.REFSET_SAME_AS_ASSOCIATION,
+					Concepts.REFSET_REPLACED_BY_ASSOCIATION,
+					Concepts.REFSET_WAS_A_ASSOCIATION,
+					Concepts.REFSET_PARTIALLY_EQUIVALENT_TO_ASSOCIATION
+				));
+			case MIN:
+				return Promise.immediate(Set.of(Concepts.REFSET_SAME_AS_ASSOCIATION));
+			default: throw new UnsupportedOperationException("Unsupported history profile: " + historyProfileType);
+			}
+		} else if (historyProfile instanceof NestedExpression) {
+			return evaluate(context, historyProfile).then(resolveIds(context));
+		} else {
+			throw new NotImplementedException("Unsupported history supplement profile: ", historyProfile);
+		}
+		
+	}
 
 	private SearchResourceRequest.Operator toSearchOperator(String operator) {
 		Operator op = Operator.fromString(operator);
@@ -982,27 +1054,33 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	/**
-	 * Extracts SNOMED CT IDs from the given expression if it is either single or multi-valued 
-	 * String predicate and the field is equal to RevisionDocument.Fields.ID. Otherwise it will 
-	 * treat the received value as an ECL expression and evaluates it  completely without using 
-	 * the returned index query expression.
-	 * 
-	 * @param filterValue
+	 * Returns a function that when an expression is received, it will either shortcut the execution and returns the IDs or evaluates the returned expression to a set of concept IDs.
+	 * @return
 	 */
-	private static Function<Expression, Promise<Set<String>>> resolveIds(BranchContext context, FilterValue filterValue, String expressionForm) {
+	public static Function<Expression, Set<String>> resolveIds(BranchContext context) {
+		RevisionSearcher searcher = context.service(RevisionSearcher.class);
+		boolean cached = context.optionalService(PathWithVersion.class).isPresent();		
 		return expression -> {
-			try {
+			// shortcut to extract IDs from the query itself if possible 
+			if (SnomedEclEvaluationRequest.canExtractIds(expression)) {
 				/* 
 				 * It should always be possible to extract identifiers from an index query expression derived from 
 				 * an EclConceptReferenceSet, and occasionally ExpressionConstraints also have this property.
 				 */
-				return Promise.immediate(extractIds(expression));
-			} catch (UnsupportedOperationException e) {
-				/* 
-				 * If ID extraction failed, the original filter value must be an ExpressionConstraint that is more
-				 * complex. Evaluate it to retrieve the SCTIDs. 
-				 */
-				return EclExpression.of((ExpressionConstraint) filterValue, expressionForm).resolve(context);
+				return extractIds(expression);
+			}
+			try {
+				return newHashSet(searcher.search(Query.select(String.class)
+						.from(SnomedConceptDocument.class)
+						.fields(SnomedConceptDocument.Fields.ID)
+						.where(expression)
+						.limit(Integer.MAX_VALUE)
+						// cache when the current context is executed against a version
+						.cached(cached)
+						.build()));
+				
+			} catch (IOException e) {
+				throw new SnowowlRuntimeException(e);
 			}
 		};
 	}

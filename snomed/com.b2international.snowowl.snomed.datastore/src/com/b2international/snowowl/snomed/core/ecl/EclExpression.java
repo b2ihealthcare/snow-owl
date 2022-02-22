@@ -16,9 +16,7 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
-import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -28,20 +26,16 @@ import javax.validation.constraints.NotNull;
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.Any;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -51,7 +45,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
@@ -105,28 +98,8 @@ public final class EclExpression {
 	
 	public Promise<Set<String>> resolve(final BranchContext context) {
 		if (promise == null) {
-			RevisionSearcher searcher = context.service(RevisionSearcher.class);
-			boolean cached = context.optionalService(PathWithVersion.class).isPresent();
 			promise = resolveToExpression(context)
-				.then(expression -> {
-					// shortcut to extract IDs from the query itself if possible 
-					if (SnomedEclEvaluationRequest.canExtractIds(expression)) {
-						return SnomedEclEvaluationRequest.extractIds(expression);
-					}
-					try {
-						return newHashSet(searcher.search(Query.select(String.class)
-								.from(SnomedConceptDocument.class)
-								.fields(SnomedConceptDocument.Fields.ID)
-								.where(expression)
-								.limit(Integer.MAX_VALUE)
-								// cache when the current context is executed against a version
-								.cached(cached)
-								.build()));
-						
-					} catch (IOException e) {
-						throw new SnowowlRuntimeException(e);
-					}
-				});
+				.then(SnomedEclEvaluationRequest.resolveIds(context));
 		}
 		return promise;
 	}
