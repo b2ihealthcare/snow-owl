@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.commit;
 import static com.b2international.index.revision.Commit.Expressions.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -100,6 +101,9 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		final User user = context.service(User.class);
 		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
+			if (containsKey(OptionKey.BRANCH)) {
+				addBranchClause(builder, context, Collections.emptySet(), Collections.emptySet(), true);			
+			}
 			return;
 		}
 		
@@ -119,9 +123,11 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 				.collect(Collectors.toSet());
 		
 		if (containsKey(OptionKey.BRANCH)) {
-			addBranchClause(builder, context, exactResourceIds, resourceIdPrefixes);
+			addBranchClause(builder, context, exactResourceIds, resourceIdPrefixes, false);
 			return;
 		}
+		
+		ExpressionBuilder branchFilter = Expressions.builder();
 		
 		ResourceRequests.prepareSearch()
 			.filterByIds(Sets.union(exactResourceIds, resourceIdPrefixes))
@@ -135,16 +141,24 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			.forEach(r -> {				
 				if (resourceIdPrefixes.contains(r.getId())) {
 					final String branchPattern = String.format("%s/[^[%s]{1,%s}(_[0-9]{1,19})?$]+", r.getBranchPath());
-					builder.should(branches(branchPattern));
+					branchFilter.should(branches(branchPattern));
 				}
-				builder.should(branches(r.getBranchPath()));
+				branchFilter.should(branches(r.getBranchPath()));
 			});
+		
+		builder.filter(branchFilter.build());
 	}
 	
-	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context, Set<String> exactResourceIds, Set<String> resourceIdPrefixes) {		
-		Set<String> permittedBranchPaths = Sets.newHashSet();
-		
+	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context, 
+			Set<String> exactResourceIds, Set<String> resourceIdPrefixes, boolean isAdmin) {		
 		final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
+		
+		if (isAdmin) {
+			builder.filter(branches(branchPaths));
+			return;
+		}
+		
+		ExpressionBuilder branchFilter = Expressions.builder();
 		ResourceRequests.prepareSearch()
 			.filterByIds(Sets.union(exactResourceIds, resourceIdPrefixes))
 			.setLimit(exactResourceIds.size())
@@ -156,7 +170,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			.map(TerminologyResource.class::cast)
 			.forEach(r -> {
 				if (branchPaths.contains(r.getBranchPath())) {
-					builder.should(branches(r.getBranchPath()));
+					branchFilter.should(branches(r.getBranchPath()));
 				}
 				
 				for (String branchPath : branchPaths) {
@@ -165,14 +179,14 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 						int filterBranchDepth = branchPath.split("/").length;
 						
 						if (filterBranchDepth - 1 <= resourceBranchDepth) {
-							permittedBranchPaths.add(branchPath);
+							branchFilter.should(branches(branchPath));
 						}
 					}
 				}
 					
 			});
 		
-		builder.should(branches(permittedBranchPaths));
+		builder.filter(branchFilter.build());
 	}
 
 	private void addUserIdClause(final ExpressionBuilder builder) {
