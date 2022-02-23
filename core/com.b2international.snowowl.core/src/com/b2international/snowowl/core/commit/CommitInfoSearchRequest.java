@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.core.commit;
 
+import static com.b2international.index.query.Expressions.regexp;
 import static com.b2international.index.revision.Commit.Expressions.*;
+import static com.b2international.index.revision.Commit.Fields.BRANCH;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +29,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
-import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -128,9 +129,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			addBranchClause(builder, context, exactResourceIds, resourceIdPrefixes, false);
 			return;
 		}
-		
-		ExpressionBuilder branchFilter = Expressions.builder();
-		
+				
 		SetView<String> resourceIds = Sets.union(exactResourceIds, resourceIdPrefixes);
 		ResourceRequests.prepareSearch()
 			.filterByIds(resourceIds)
@@ -144,16 +143,12 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
 			.map(TerminologyResource.class::cast)
-			.forEach(r -> {				
+			.forEach(r -> {
 				if (resourceIdPrefixes.contains(r.getId())) {
-					final String branchPattern = String.format("%s/[^[%s]{1,%d}(_[0-9]{1,19})?$]+", r.getBranchPath(), 
-							RevisionBranch.DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET, RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
-					branchFilter.should(branches(branchPattern));
+					final String branchPattern = String.format("%s(/[a-zA-Z0-9.~_\\-]{3,100})?", r.getBranchPath());
+					builder.filter(regexp(BRANCH, branchPattern));
 				}
-				branchFilter.should(branches(r.getBranchPath()));
-			});
-		
-		builder.filter(branchFilter.build());
+			});		
 	}
 	
 	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context, 
