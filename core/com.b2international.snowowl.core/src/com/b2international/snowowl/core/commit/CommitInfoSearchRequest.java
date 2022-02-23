@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.commit;
 import static com.b2international.index.revision.Commit.Expressions.*;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,14 +27,17 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 /**
  * @since 5.2
@@ -102,7 +104,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		final User user = context.service(User.class);
 		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
 			if (containsKey(OptionKey.BRANCH)) {
-				addBranchClause(builder, context, Collections.emptySet(), Collections.emptySet(), true);			
+				addBranchClause(builder, context, null, null, true);		
 			}
 			return;
 		}
@@ -129,18 +131,23 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		ExpressionBuilder branchFilter = Expressions.builder();
 		
+		SetView<String> resourceIds = Sets.union(exactResourceIds, resourceIdPrefixes);
 		ResourceRequests.prepareSearch()
-			.filterByIds(Sets.union(exactResourceIds, resourceIdPrefixes))
-			.setLimit(exactResourceIds.size())
-			.setFields(ResourceDocument.Fields.ID, ResourceDocument.Fields.BRANCH_PATH)
-			.build()
+			.filterByIds(resourceIds)
+			.setLimit(resourceIds.size())
+			.setFields(ResourceDocument.Fields.ID, 
+					ResourceDocument.Fields.BRANCH_PATH,
+					ResourceDocument.Fields.RESOURCE_TYPE)
+			.buildAsync()
+			.getRequest()
 			.execute(context)
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
 			.map(TerminologyResource.class::cast)
 			.forEach(r -> {				
 				if (resourceIdPrefixes.contains(r.getId())) {
-					final String branchPattern = String.format("%s/[^[%s]{1,%s}(_[0-9]{1,19})?$]+", r.getBranchPath());
+					final String branchPattern = String.format("%s/[^[%s]{1,%d}(_[0-9]{1,19})?$]+", r.getBranchPath(), 
+							RevisionBranch.DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET, RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
 					branchFilter.should(branches(branchPattern));
 				}
 				branchFilter.should(branches(r.getBranchPath()));
@@ -152,18 +159,23 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context, 
 			Set<String> exactResourceIds, Set<String> resourceIdPrefixes, boolean isAdmin) {		
 		final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
+				
+		ExpressionBuilder branchFilter = Expressions.builder();
+		ResourceSearchRequestBuilder resourceRequest = ResourceRequests.prepareSearch();
 		
 		if (isAdmin) {
-			builder.filter(branches(branchPaths));
-			return;
+			resourceRequest.setLimit(Integer.MAX_VALUE);			
+		} else {
+			SetView<String> resourceIds = Sets.union(exactResourceIds, resourceIdPrefixes);
+			resourceRequest.filterByIds(resourceIds).setLimit(resourceIds.size());
 		}
 		
-		ExpressionBuilder branchFilter = Expressions.builder();
-		ResourceRequests.prepareSearch()
-			.filterByIds(Sets.union(exactResourceIds, resourceIdPrefixes))
-			.setLimit(exactResourceIds.size())
-			.setFields(ResourceDocument.Fields.ID, ResourceDocument.Fields.BRANCH_PATH)
-			.build()
+		resourceRequest
+			.setFields(ResourceDocument.Fields.ID, 
+					ResourceDocument.Fields.BRANCH_PATH,
+					ResourceDocument.Fields.RESOURCE_TYPE)
+			.buildAsync()
+			.getRequest()
 			.execute(context)
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
