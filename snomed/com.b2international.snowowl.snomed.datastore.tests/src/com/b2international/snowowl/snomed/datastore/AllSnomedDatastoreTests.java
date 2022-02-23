@@ -58,6 +58,7 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	// ECL test cases
 	SnomedEclEvaluationRequestTest.class,
 	SnomedEclEvaluationRequestPropertyFilterTest.class,
+	SnomedEclEvaluationRequestHistorySupplementTest.class,
 	SnomedStatedEclEvaluationTest.class,
 	SnomedEclRewriterTest.class,
 	SnomedEclLabelerRequestTest.class,

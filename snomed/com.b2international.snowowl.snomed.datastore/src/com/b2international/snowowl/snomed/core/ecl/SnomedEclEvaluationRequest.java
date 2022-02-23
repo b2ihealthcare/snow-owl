@@ -956,7 +956,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		if (historyProfile == null || historyProfile instanceof HistoryProfile) {
 			HistoryProfileType historyProfileType = historyProfile == null ? null : HistoryProfileType.fromString(((HistoryProfile) historyProfile).getProfile());
 			if (historyProfileType == null) {
-				historyProfileType = HistoryProfileType.MIN;
+				historyProfileType = HistoryProfileType.MAX;
 			}
 			
 			switch (historyProfileType) {

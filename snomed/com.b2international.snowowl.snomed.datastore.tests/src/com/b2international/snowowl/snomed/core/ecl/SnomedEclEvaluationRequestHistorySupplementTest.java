@@ -36,6 +36,8 @@ import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGene
  */
 public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedEclEvaluationRequestTest {
 
+	private static final String SIMPLE_REFSET_ID = RandomSnomedIdentiferGenerator.generateConceptId();
+	
 	private static final String INACTIVE_CONCEPT_1 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INACTIVE_CONCEPT_2 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INACTIVE_CONCEPT_3 = RandomSnomedIdentiferGenerator.generateConceptId();
@@ -128,12 +130,28 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 				.refsetId(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION)
 				.targetComponentId(SUBSTANCE)
 				.build());
+		
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(INACTIVE_CONCEPT_5)
+				.referenceSetType(SnomedRefSetType.SIMPLE)
+				.refsetId(SIMPLE_REFSET_ID)
+				.build());
 	}
 	
 	@Test
 	public void profile_default() throws Exception {
-		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY }}");
-		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1));
+		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY }}"); // this equals with MAX profile
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1, INACTIVE_CONCEPT_2, INACTIVE_CONCEPT_3, INACTIVE_CONCEPT_4, INACTIVE_CONCEPT_5));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void profile_all_association_refsets() throws Exception {
+		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY (*) }}"); // this equals with MAX profile
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1, INACTIVE_CONCEPT_2, INACTIVE_CONCEPT_3, INACTIVE_CONCEPT_4, INACTIVE_CONCEPT_5));
 		assertEquals(expected, actual);
 	}
 	
