@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.io.commit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.elasticsearch.core.Map;
@@ -26,6 +27,8 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -34,12 +37,17 @@ import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.Role;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -74,17 +82,42 @@ public class CommitInfoRequestTest {
 		final String shortName = "Resource6";
 		final String comment = "Code system for commit info 6";
 		final String branchName = "Test6";
+		final String term = "Test Description 6";
 				
 		createCodeSystem(shortName, oid, comment);
 		
-		final String branchPath = RepositoryRequests.branching()
-				.prepareCreate()
-				.setParent(String.format("%s/%s", BRANCH, shortName))
-				.setName(branchName)
-				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+		final String branchPath = createBranch(String.format("%s/%s", BRANCH, shortName), branchName);
+		createDescription(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, shortName, branchName), term, comment);
+				
+		//Search as admin
+		assertEquals(1, RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByBranch(branchPath)
+				.build(REPOSITORY_ID)
 				.execute(bus)
-				.getSync();
+				.getSync().getTotal());
 		
+		final Permission userPermission = Permission.requireAll(Permission.OPERATION_BROWSE, String.format("%s*", shortName));
+		final List<Role> roles = List.of(new Role("Editor", List.of(userPermission)));
+		final String userName = "User6";
+		final User user =  new User(userName, roles);
+		final IEventBus authorizedBus = new AuthorizedEventBus(bus,
+				ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, Services.service(JWTGenerator.class).generate(user))
+			);
+		
+		//Search as user with limited permissions
+		assertEquals(1, RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByBranch(branchPath)
+				.build(REPOSITORY_ID)
+				.execute(authorizedBus)
+				.getSync()
+				.getTotal());
+	}
+	
+	private void createDescription(final ResourceURI uri, final String term, final String commitComment) {
 		SnomedRequests.prepareNewDescription()
 			.setAcceptability(Map.of())
 			.setActive(true)
@@ -93,19 +126,73 @@ public class CommitInfoRequestTest {
 			.setIdFromNamespace("")
 			.setLanguageCode("en-US")
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.setTerm("Test Description 6")
+			.setTerm(term)
 			.setTypeId(Concepts.SYNONYM)
-			.build(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, shortName, branchName), USER_ID, "Create Description 6")
+			.build(uri, USER_ID, commitComment)
 			.execute(bus)
 			.getSync();
+	}
+	
+	private String createBranch(final String parent, final String name) {
+		return RepositoryRequests.branching()
+				.prepareCreate()
+				.setParent(parent)
+				.setName(name)
+				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.execute(bus)
+				.getSync();
+	}
+	
+	@Test
+	public void searchCommitOnSubBranch() {
+		//Search with no branch filter, to test security filter for user with limited resources
+		final String oid = UUID.randomUUID().toString();
+		final String shortName = "Resource7";
+		final String comment = "Code system for commit info 7";
+		final String branchName = "Test7";
+		final String commitComment = "Create Description 7";
+		final String term = "Test Description 7";
 		
-		assertEquals(1, RepositoryRequests
+		//Commit on resource branch
+		createCodeSystem(shortName, oid, comment);	
+		createDescription(ResourceURI.of(CodeSystem.RESOURCE_TYPE, shortName), term, commitComment);
+		
+		//Commit on version branch
+		final String branchPath = createBranch(String.format("%s/%s", BRANCH, shortName), branchName);
+		createDescription(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, shortName, branchName), term, commitComment);
+		
+		//Commit on deeper branch
+		final String newBranchName = String.format("%s/%s", branchName, branchName);
+		createBranch(branchPath, branchName);
+		createDescription(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, shortName, newBranchName), term, commitComment);
+				
+		final Permission userPermission = Permission.requireAll(Permission.OPERATION_BROWSE, String.format("%s*", shortName));
+		final List<Role> roles = List.of(new Role("Editor", List.of(userPermission)));
+		final String userName = "User7";
+		final User user =  new User(userName, roles);
+		final IEventBus authorizedBus = new AuthorizedEventBus(bus,
+				ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, Services.service(JWTGenerator.class).generate(user))
+			);
+		
+		//Search as user with permission only to access the resource and one sub branch
+		assertEquals(2, RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()
-				.filterByBranch(branchPath)
+				.filterByComment(commitComment)
+				.build(REPOSITORY_ID)
+				.execute(authorizedBus)
+				.getSync()
+				.getTotal());
+		
+		//Search as admin user with permission to access all
+		assertEquals(3, RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByComment(commitComment)
 				.build(REPOSITORY_ID)
 				.execute(bus)
-				.getSync().getTotal());
+				.getSync()
+				.getTotal());
 	}
 	
 	@Test
