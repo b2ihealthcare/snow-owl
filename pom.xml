@@ -317,9 +317,7 @@
 					</dependencies>
 					<configuration>
 						<timestampProvider>jgit</timestampProvider>
-						<jgit.ignore>
-							pom.xml
-						</jgit.ignore>
+						<jgit.ignore>pom.xml</jgit.ignore>
 					</configuration>
 				</plugin>
 				<plugin>
