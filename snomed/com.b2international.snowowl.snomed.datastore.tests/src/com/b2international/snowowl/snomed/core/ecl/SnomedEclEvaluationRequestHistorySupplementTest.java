@@ -38,11 +38,11 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 
 	private static final String SIMPLE_REFSET_ID = RandomSnomedIdentiferGenerator.generateConceptId();
 	
-	private static final String INACTIVE_CONCEPT_1 = RandomSnomedIdentiferGenerator.generateConceptId();
-	private static final String INACTIVE_CONCEPT_2 = RandomSnomedIdentiferGenerator.generateConceptId();
-	private static final String INACTIVE_CONCEPT_3 = RandomSnomedIdentiferGenerator.generateConceptId();
-	private static final String INACTIVE_CONCEPT_4 = RandomSnomedIdentiferGenerator.generateConceptId();
-	private static final String INACTIVE_CONCEPT_5 = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INACTIVE_CONCEPT_SAME_AS = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INACTIVE_CONCEPT_WAS_A = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INACTIVE_CONCEPT_REPLACED_BY = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INACTIVE_CONCEPT_PARTIALLY_EQUIVALENT_TO = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INACTIVE_CONCEPT_POSSIBLY_EQUIVALENT_TO = RandomSnomedIdentiferGenerator.generateConceptId();
 	
 	private static final String SUBSTANCE = Concepts.SUBSTANCE;
 	private static final Long SUBSTANCE_L = Long.parseLong(SUBSTANCE);
@@ -85,7 +85,7 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 				.id(UUID.randomUUID().toString())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(INACTIVE_CONCEPT_1)
+				.referencedComponentId(INACTIVE_CONCEPT_SAME_AS)
 				.referenceSetType(SnomedRefSetType.ASSOCIATION)
 				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
 				.targetComponentId(SUBSTANCE)
@@ -95,7 +95,7 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 				.id(UUID.randomUUID().toString())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(INACTIVE_CONCEPT_2)
+				.referencedComponentId(INACTIVE_CONCEPT_WAS_A)
 				.referenceSetType(SnomedRefSetType.ASSOCIATION)
 				.refsetId(Concepts.REFSET_WAS_A_ASSOCIATION)
 				.targetComponentId(SUBSTANCE_CHILD_CONCEPT)
@@ -105,7 +105,7 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 				.id(UUID.randomUUID().toString())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(INACTIVE_CONCEPT_3)
+				.referencedComponentId(INACTIVE_CONCEPT_REPLACED_BY)
 				.referenceSetType(SnomedRefSetType.ASSOCIATION)
 				.refsetId(Concepts.REFSET_REPLACED_BY_ASSOCIATION)
 				.targetComponentId(SUBSTANCE)
@@ -115,7 +115,7 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 				.id(UUID.randomUUID().toString())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(INACTIVE_CONCEPT_4)
+				.referencedComponentId(INACTIVE_CONCEPT_PARTIALLY_EQUIVALENT_TO)
 				.referenceSetType(SnomedRefSetType.ASSOCIATION)
 				.refsetId(Concepts.REFSET_PARTIALLY_EQUIVALENT_TO_ASSOCIATION)
 				.targetComponentId(SUBSTANCE_CHILD_CONCEPT)
@@ -125,7 +125,7 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 				.id(UUID.randomUUID().toString())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(INACTIVE_CONCEPT_5)
+				.referencedComponentId(INACTIVE_CONCEPT_POSSIBLY_EQUIVALENT_TO)
 				.referenceSetType(SnomedRefSetType.ASSOCIATION)
 				.refsetId(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION)
 				.targetComponentId(SUBSTANCE)
@@ -135,7 +135,7 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 				.id(UUID.randomUUID().toString())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(INACTIVE_CONCEPT_5)
+				.referencedComponentId(INACTIVE_CONCEPT_POSSIBLY_EQUIVALENT_TO)
 				.referenceSetType(SnomedRefSetType.SIMPLE)
 				.refsetId(SIMPLE_REFSET_ID)
 				.build());
@@ -143,44 +143,44 @@ public class SnomedEclEvaluationRequestHistorySupplementTest extends BaseSnomedE
 	
 	@Test
 	public void profile_default() throws Exception {
-		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY }}"); // this equals with MAX profile
-		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1, INACTIVE_CONCEPT_2, INACTIVE_CONCEPT_3, INACTIVE_CONCEPT_4, INACTIVE_CONCEPT_5));
-		assertEquals(expected, actual);
+		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_SAME_AS, INACTIVE_CONCEPT_WAS_A, INACTIVE_CONCEPT_REPLACED_BY, INACTIVE_CONCEPT_PARTIALLY_EQUIVALENT_TO, INACTIVE_CONCEPT_POSSIBLY_EQUIVALENT_TO));
+		assertEquals("Default profile should return all historical associations", expected, actual);
 	}
 	
 	@Test
 	public void profile_all_association_refsets() throws Exception {
 		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY (*) }}"); // this equals with MAX profile
-		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1, INACTIVE_CONCEPT_2, INACTIVE_CONCEPT_3, INACTIVE_CONCEPT_4, INACTIVE_CONCEPT_5));
-		assertEquals(expected, actual);
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_SAME_AS, INACTIVE_CONCEPT_WAS_A, INACTIVE_CONCEPT_REPLACED_BY, INACTIVE_CONCEPT_PARTIALLY_EQUIVALENT_TO, INACTIVE_CONCEPT_POSSIBLY_EQUIVALENT_TO));
+		assertEquals("Explicitly selecting all historical associations should return all", expected, actual);
 	}
 	
 	@Test
 	public void profile_min() throws Exception {
 		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY-MIN }}");
-		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1));
-		assertEquals(expected, actual);
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_SAME_AS));
+		assertEquals("Minimum profile should only return Same As associations", expected, actual);
 	}
 	
 	@Test
 	public void profile_mod() throws Exception {
 		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY-MOD }}");
-		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1, INACTIVE_CONCEPT_2, INACTIVE_CONCEPT_3, INACTIVE_CONCEPT_4));
-		assertEquals(expected, actual);
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_SAME_AS, INACTIVE_CONCEPT_WAS_A, INACTIVE_CONCEPT_REPLACED_BY, INACTIVE_CONCEPT_PARTIALLY_EQUIVALENT_TO));
+		assertEquals("Moderate profile should return Same As, Was A, Replaced By and Partially Replaced By associations", expected, actual);
 	}
 	
 	@Test
 	public void profile_max() throws Exception {
 		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY-MAX }}");
-		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_1, INACTIVE_CONCEPT_2, INACTIVE_CONCEPT_3, INACTIVE_CONCEPT_4, INACTIVE_CONCEPT_5));
-		assertEquals(expected, actual);
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_SAME_AS, INACTIVE_CONCEPT_WAS_A, INACTIVE_CONCEPT_REPLACED_BY, INACTIVE_CONCEPT_PARTIALLY_EQUIVALENT_TO, INACTIVE_CONCEPT_POSSIBLY_EQUIVALENT_TO));
+		assertEquals("Maximum profile should return all historical associations", expected, actual);
 	}
 	
 	@Test
 	public void profile_explicit_refsets() throws Exception {
 		Expression actual = eval("<< " + SUBSTANCE + "  {{ + HISTORY ( " + Concepts.REFSET_REPLACED_BY_ASSOCIATION + " OR " + Concepts.REFSET_PARTIALLY_EQUIVALENT_TO_ASSOCIATION + ") }}");
-		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_3, INACTIVE_CONCEPT_4));
-		assertEquals(expected, actual);
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(SUBSTANCE, SUBSTANCE_CHILD_CONCEPT, INACTIVE_CONCEPT_REPLACED_BY, INACTIVE_CONCEPT_PARTIALLY_EQUIVALENT_TO));
+		assertEquals("Explicitly selecting certain historical association reference sets should return associations from those only", expected, actual);
 	}
 	
 }
