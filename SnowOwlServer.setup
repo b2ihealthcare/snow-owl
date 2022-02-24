@@ -60,7 +60,7 @@
       <requirement
           name="org.eclipse.emf.mwe2.language.sdk.feature.group"/>
       <repository
-          url="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/"/>
+          url="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.12.1/"/>
       <description></description>
     </setupTask>
     <setupTask
@@ -71,7 +71,7 @@
       <requirement
           name="org.eclipse.xtext.sdk.feature.group"/>
       <repository
-          url="https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.23.0/"/>
+          url="https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.25.0/"/>
       <description></description>
     </setupTask>
     <setupTask
