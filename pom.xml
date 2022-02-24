@@ -352,6 +352,11 @@
 	</build>
 
 	<repositories>
+		<!-- 
+			Repositories defined here should allow resolving zipped update sites with an mvn: URL in the
+			target platform definition, ie. the ECL, ETL and SCG features. All other sources are now 
+			referenced directly in the TP file. 
+		-->
 		<repository>
 			<id>b2i-releases</id>
 			<url>https://nexus.b2i.sg/repository/maven-releases</url>
