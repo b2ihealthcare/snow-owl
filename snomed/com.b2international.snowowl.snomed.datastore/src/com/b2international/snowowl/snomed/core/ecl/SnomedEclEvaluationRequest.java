@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -46,7 +45,6 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -523,22 +521,17 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		}
 		
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
-		try {
 			
-			final Query<String> descriptionIndexQuery = Query.select(String.class)
-				.from(SnomedDescriptionIndexEntry.class)
-				.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
-				.where(descriptionExpression)
-				.limit(Integer.MAX_VALUE)
-				.build();
-			
-			final Hits<String> descriptionHits = searcher.search(descriptionIndexQuery);
-			final Set<String> conceptIds = Set.copyOf(descriptionHits.getHits());
-			return SnomedDocument.Expressions.ids(conceptIds);
-
-		} catch (IOException e) {
-			throw new SnowowlRuntimeException(e);
-		}
+		final Hits<String> descriptionHits = Query.select(String.class)
+			.from(SnomedDescriptionIndexEntry.class)
+			.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
+			.where(descriptionExpression)
+			.limit(Integer.MAX_VALUE)
+			.build()
+			.search(searcher);
+		
+		final Set<String> conceptIds = Set.copyOf(descriptionHits.getHits());
+		return SnomedDocument.Expressions.ids(conceptIds);
 	}
 	
 	private static Expression executeMemberSearch(BranchContext context, Expression memberExpression) {
@@ -549,22 +542,16 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		}
 		
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
-		try {
-			
-			final Query<String> memberIndexQuery = Query.select(String.class)
-				.from(SnomedRefSetMemberIndexEntry.class)
-				.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
-				.where(memberExpression)
-				.limit(Integer.MAX_VALUE)
-				.build();
-			
-			final Hits<String> memberHits = searcher.search(memberIndexQuery);
-			final Set<String> conceptIds = Set.copyOf(memberHits.getHits());
-			return SnomedDocument.Expressions.ids(conceptIds);
-
-		} catch (IOException e) {
-			throw new SnowowlRuntimeException(e);
-		}
+		final Hits<String> memberHits = Query.select(String.class)
+			.from(SnomedRefSetMemberIndexEntry.class)
+			.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+			.where(memberExpression)
+			.limit(Integer.MAX_VALUE)
+			.build()
+			.search(searcher);
+		
+		final Set<String> conceptIds = Set.copyOf(memberHits.getHits());
+		return SnomedDocument.Expressions.ids(conceptIds);
 	}
 
 	protected Promise<Expression> eval(BranchContext context, final PropertyFilter nestedFilter) {
@@ -1080,19 +1067,16 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				 */
 				return extractIds(expression);
 			}
-			try {
-				return newHashSet(searcher.search(Query.select(String.class)
-						.from(SnomedConceptDocument.class)
-						.fields(SnomedConceptDocument.Fields.ID)
-						.where(expression)
-						.limit(Integer.MAX_VALUE)
-						// cache when the current context is executed against a version
-						.cached(cached)
-						.build()));
-				
-			} catch (IOException e) {
-				throw new SnowowlRuntimeException(e);
-			}
+			
+			return newHashSet(Query.select(String.class)
+					.from(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID)
+					.where(expression)
+					.limit(Integer.MAX_VALUE)
+					// cache when the current context is executed against a version
+					.cached(cached)
+					.build()
+					.search(searcher));
 		};
 	}
 	
