@@ -37,6 +37,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
@@ -55,6 +56,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
@@ -156,6 +158,11 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, MemberOf memberOf) {
+		List<String> refsetFields = Collections3.toImmutableList(memberOf.getRefsetFields());
+		if (refsetFields.size() > 1 || (!refsetFields.isEmpty() && !refsetFields.contains(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID))) {
+			return throwUnsupported(memberOf, "Unsupported refsetFieldName selection: " + refsetFields);
+		}
+		
 		final ExpressionConstraint inner = memberOf.getConstraint();
 		if (inner instanceof EclConceptReference) {
 			final EclConceptReference concept = (EclConceptReference) inner;
@@ -1034,7 +1041,11 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	/*package*/ static <T> Promise<T> throwUnsupported(EObject eObject) {
-		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
+		return throwUnsupported(eObject, "");
+	}
+	
+	/*package*/ static <T> Promise<T> throwUnsupported(EObject eObject, String additionalInfo) {
+		throw new NotImplementedException("Not implemented ECL feature: %s%s", eObject.eClass().getName(), CompareUtils.isEmpty(additionalInfo) ? "" : ". ".concat(additionalInfo));
 	}
 	
 	static boolean canExtractIds(Expression expression) {
