@@ -14,14 +14,15 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Dependency versions for Tycho's target platform filter -->
-		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
+		<elk.version>0.4.3</elk.version>
 		<groovy.version>3.0.9</groovy.version>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
-		<slf4j.version>1.7.32</slf4j.version>
-		<logback.versionRange>[1.2.10,1.2.11)</logback.versionRange>
-		<jackson.version>2.10.5</jackson.version>
 		<jackson.databind.version>2.10.5.1</jackson.databind.version>
-		<elk.version>0.4.3</elk.version>
+		<jackson.version>2.10.5</jackson.version>
+		<logback.versionRange>[1.2.10,1.2.11)</logback.versionRange>
+		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
+		<slf4j.version>1.7.32</slf4j.version>
+		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>2.6.0</tycho.version>
 		<tycho-extras.version>2.6.0</tycho-extras.version>
