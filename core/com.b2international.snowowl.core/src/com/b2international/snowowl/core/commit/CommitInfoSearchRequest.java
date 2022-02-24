@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.commit;
 import static com.b2international.index.query.Expressions.regexp;
 import static com.b2international.index.revision.Commit.Expressions.*;
 import static com.b2international.index.revision.Commit.Fields.BRANCH;
+import static com.b2international.index.revision.RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH;
 import static com.b2international.snowowl.core.identity.Permission.isWildCardResource;
 
 import java.util.Collection;
@@ -140,7 +141,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			.map(TerminologyResource.class::cast)
 			.forEach(r -> {
 				if (resourceIdPrefixes.contains(r.getId())) {
-					final String branchPattern = String.format("%s(/[a-zA-Z0-9.~_\\-]{3,100})?", r.getBranchPath());
+					final String branchPattern = String.format("%s(/[a-zA-Z0-9.~_\\-]{1,%d})?", r.getBranchPath(), DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
 					branchFilter.should(regexp(BRANCH, branchPattern));
 				}
 			});
