@@ -37,7 +37,7 @@
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.emf.base.feature.group" version="2.23.0.v20200822-0801"/>
 		<unit id="org.eclipse.emf.ecore.feature.group" version="2.23.0.v20200630-0516"/>
-		<repository location="http://download.eclipse.org/modeling/emf/emf/builds/release/2.23"/>
+		<repository location="https://download.eclipse.org/modeling/emf/emf/builds/release/2.23"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.xpand.feature.group" version="2.2.0.v201605260315"/>
