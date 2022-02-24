@@ -149,9 +149,9 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 	private void reduceTermFilters(List<Expression> clauses) {
 		Multimap<String, Expression> termExpressionsByField = HashMultimap.create();
 		for (Expression expression : List.copyOf(clauses)) {
-			if (expression instanceof SingleArgumentPredicate<?>) {
+			if (shouldMergeSingleArgumentPredicate(expression)) {
 				termExpressionsByField.put(((SingleArgumentPredicate<?>) expression).getField(), expression);
-			} else if (expression instanceof SetPredicate<?> && !(expression instanceof PrefixPredicate)) {
+			} else if (shouldMergeSetPredicate(expression)) {
 				termExpressionsByField.put(((SetPredicate<?>) expression).getField(), expression);
 			}
 		}
@@ -185,9 +185,9 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 	private void mergeTermFilters(List<Expression> clauses) {
 		Multimap<String, Expression> termExpressionsByField = HashMultimap.create();
 		for (Expression expression : List.copyOf(clauses)) {
-			if (expression instanceof SingleArgumentPredicate<?>) {
+			if (shouldMergeSingleArgumentPredicate(expression)) {
 				termExpressionsByField.put(((SingleArgumentPredicate<?>) expression).getField(), expression);
-			} else if (expression instanceof SetPredicate<?> && !(expression instanceof PrefixPredicate)) {
+			} else if (shouldMergeSetPredicate(expression)) {
 				termExpressionsByField.put(((SetPredicate<?>) expression).getField(), expression);
 			}
 		}
@@ -209,6 +209,14 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 				clauses.add(Expressions.matchAnyObject(field, values));
 			}
 		}
+	}
+	
+	private boolean shouldMergeSingleArgumentPredicate(Expression expression) {
+		return expression instanceof SingleArgumentPredicate<?> && !(expression instanceof RegexpPredicate);
+	}
+
+	private boolean shouldMergeSetPredicate(Expression expression) {
+		return expression instanceof SetPredicate<?> && !(expression instanceof PrefixPredicate);
 	}
 	
 }

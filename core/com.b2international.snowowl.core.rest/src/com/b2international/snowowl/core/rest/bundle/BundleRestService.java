@@ -198,7 +198,7 @@ public class BundleRestService extends AbstractRestService {
 		ResourceRequests.bundles().prepareDelete(bundleId)
 				.commit()
 				.setAuthor(author)
-				.setCommitComment(String.format("Delete bundle %s", bundleId))
+				.setCommitComment(String.format("Deleted Bundle %s", bundleId))
 				.buildAsync()
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
