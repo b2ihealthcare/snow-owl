@@ -744,12 +744,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.codehaus.groovy"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
          id="com.sun.el"
          download-size="0"
          install-size="0"
@@ -821,6 +815,29 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.diffplug.osgi.extension.sun.misc"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="groovy"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="groovy-json"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="groovy-xml"
          download-size="0"
          install-size="0"
          version="0.0.0"
