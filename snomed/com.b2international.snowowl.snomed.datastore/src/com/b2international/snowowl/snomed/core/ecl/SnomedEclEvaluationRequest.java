@@ -976,7 +976,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		} else if (historyProfile instanceof NestedExpression) {
 			return evaluate(context, historyProfile).then(resolveIds(context));
 		} else {
-			throw new NotImplementedException("Unsupported history supplement profile: ", historyProfile);
+			throw new NotImplementedException("Unsupported history supplement profile: %s", historyProfile);
 		}
 		
 	}
