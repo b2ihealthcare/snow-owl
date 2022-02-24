@@ -252,6 +252,7 @@ public abstract class SnomedConstants {
 		public static final String REFSET_WAS_A_ASSOCIATION = "900000000000528000";
 		// introduced in 2022-01-31
 		public static final String REFSET_PARTIALLY_EQUIVALENT_TO_ASSOCIATION = "1186924009";
+		public static final String REFSET_POSSIBLY_REPLACED_BY_ASSOCIATION = "1186921001";
 		
 		public static final Set<String> HISTORICAL_ASSOCIATION_REFSETS = ImmutableSet.of(
 				REFSET_HISTORICAL_ASSOCIATION, 
