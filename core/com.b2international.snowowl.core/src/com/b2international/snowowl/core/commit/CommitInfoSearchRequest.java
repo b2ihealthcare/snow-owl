@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.commit;
 import static com.b2international.index.query.Expressions.regexp;
 import static com.b2international.index.revision.Commit.Expressions.*;
 import static com.b2international.index.revision.Commit.Fields.BRANCH;
+import static com.b2international.snowowl.core.identity.Permission.isWildCardResource;
 
 import java.util.Collection;
 import java.util.List;
@@ -118,7 +119,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		final Set<String> resourceIdPrefixes = readPermissions.stream()
 				.flatMap(p -> p.getResources().stream())
-				.filter(resource -> resource.endsWith("*"))
+				.filter(resource -> isWildCardResource(resource))
 				.map(resource -> resource.substring(0, resource.length() - 1))
 				.collect(Collectors.toSet());
 						
