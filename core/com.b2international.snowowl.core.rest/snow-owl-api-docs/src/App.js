@@ -3,6 +3,7 @@ import 'rapidoc';
 
 import React from 'react';
 import { BackTop } from 'antd';
+import { parse } from 'qs';
 
 class App extends React.Component {
 
@@ -15,7 +16,13 @@ class App extends React.Component {
   componentDidMount() {
     fetch(`${this.state.serverUrl}/apis`)
       .then(response => response.json())
-      .then(data => this.setState({ apis: data.items }));
+      .then(data => {
+	    const queryParams = parse(window.location.search, { ignoreQueryPrefix: true, parameterLimit: 1 })
+        this.setState({ 
+          apis: data.items,
+          selectedKey: queryParams?.api || 'core' 
+        })
+      })
   }
 
   onMenuSelect = (e) => {
@@ -34,6 +41,7 @@ class App extends React.Component {
           theme = "light"
           spec-url = {`${serverUrl}/api-docs/${this.state.selectedKey}`}
           server-url = {`${serverUrl}`}
+          route-prefix = {`?api=${this.state.selectedKey}#`}
           render-style = "focused"
           use-path-in-nav-bar = "true"
           default-schema-tab = "example"

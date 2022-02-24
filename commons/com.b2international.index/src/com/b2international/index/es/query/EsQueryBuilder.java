@@ -77,17 +77,9 @@ public final class EsQueryBuilder {
 	
 	public QueryBuilder build(Expression expression) {
 		checkNotNull(expression, "expression");
-		// always filter by type
 		visit(expression);
 		if (deque.size() == 1) {
-			QueryBuilder queryBuilder = deque.pop();
-			if (needsScoring) {
-				return queryBuilder;
-			} else {
-				return QueryBuilders.boolQuery()
-					.must(QueryBuilders.matchAllQuery())
-					.filter(queryBuilder);
-			}
+			return deque.pop();
 		} else {
 			throw newIllegalStateException();
 		}
@@ -175,7 +167,7 @@ public final class EsQueryBuilder {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings, log);
+			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings, log, path);
 			innerQueryBuilder.visit(must);
 			if (innerQueryBuilder.needsScoring) {
 				needsScoring = innerQueryBuilder.needsScoring;

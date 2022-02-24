@@ -318,6 +318,18 @@
 				<type>jar</type>
 			</dependency>
 			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy-agent</artifactId>
+				<version>1.11.3</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy</artifactId>
+				<version>1.11.3</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
 				<groupId>net.jodah</groupId>
 				<artifactId>failsafe</artifactId>
 				<version>2.3.1</version>
@@ -480,6 +492,18 @@
 				<type>jar</type>
 			</dependency>
 			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>3.11.2</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.objenesis</groupId>
+				<artifactId>objenesis</artifactId>
+				<version>3.1</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-analysis</artifactId>
 				<version>8.0.1</version>
@@ -537,30 +561,6 @@
 				<groupId>org.yaml</groupId>
 				<artifactId>snakeyaml</artifactId>
 				<version>1.26</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-core</artifactId>
-				<version>3.11.2</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.objenesis</groupId>
-				<artifactId>objenesis</artifactId>
-				<version>3.1</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>net.bytebuddy</groupId>
-				<artifactId>byte-buddy</artifactId>
-				<version>1.11.3</version>
-      			<type>jar</type>
-			</dependency>			
-			<dependency>
-				<groupId>net.bytebuddy</groupId>
-				<artifactId>byte-buddy-agent</artifactId>
-				<version>1.11.3</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
@@ -624,7 +624,7 @@
 			<dependency>
 				<groupId>org.snomed.otf</groupId>
 				<artifactId>snomed-owl-toolkit</artifactId>
-				<version>3.0.2</version>
+				<version>3.0.6</version>
 				<type>jar</type>
 				<classifier>bundle</classifier>
 			</dependency>

@@ -34,6 +34,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 	
 	private static final String PROCEDURE = "71388002";
 	private static final String ORGANISM_TOP_LEVEL = "410607006";
+	private static final Object MICROORGANISM = "264395009";
 
 	@Test
 	public void GET_CodeSystem_$subsumes_Subsumes() throws Exception {
@@ -87,39 +88,35 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 			.body("parameter[0].valueCode", equalTo(SubsumptionType.EQUIVALENT.name()));
 	}
 	
-//	@Test
-//	public void subsumedByWithVersionTest() throws Exception {
-//		
-//		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-//			.queryParam("codeA", BACTERIA) //Bacteria
-//			.queryParam("codeB", MICROORGANISM) //Microorganism (parent)
-//			.queryParam("system", "http://snomed.info/sct/900000000000207008/version/20180131")
-//			.when().get(CODESYSTEM_SUBSUMES)
-//			.then().assertThat()
-//			.statusCode(200)
-//			.extract().asString();
-//		
-//		SubsumptionResult result = convertToSubsumptionResult(responseString);
-//		Assert.assertEquals(SubsumptionType.SUBSUMED_BY, result.getOutcome());
-//	}
-//	
-//	//invalid
-//	@Test
-//	public void twoVersionsTest() throws Exception {
-//		
-//		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-//			.queryParam("codeA", BACTERIA) //Bacteria
-//			.queryParam("codeB", MICROORGANISM) //Microorganism (parent)
-//			.queryParam("system", "http://snomed.info/sct/900000000000207008/version/20170131")
-//			.queryParam("version", "2018-01-31")
-//			.when().get(CODESYSTEM_SUBSUMES)
-//			.then()
-//			.body("resourceType", equalTo("OperationOutcome"))
-//			.body("issue.severity", hasItem("error"))
-//			.body("issue.code", hasItem("invalid"))
-//			.body("issue.diagnostics", hasItem("Version specified in the URI [http://snomed.info/sct/900000000000207008/version/20170131] "
-//					+ "does not match the version set in the request [2018-01-31]"))
-//			.statusCode(400);
-//	}
+	@Test
+	public void GET_CodeSystem_$subsumes_SubsumedBy_WithVersion() throws Exception {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("codeA", BACTERIA) //Bacteria
+			.queryParam("codeB", MICROORGANISM) //Microorganism (parent)
+			.queryParam("system", "http://snomed.info/sct/900000000000207008/version/20180131")
+			.when().get(CODESYSTEM_SUBSUMES)
+			.then().assertThat()
+			.statusCode(200)
+			.body("parameter[0].name", equalTo("outcome"))
+			.body("parameter[0].valueCode", equalTo(SubsumptionType.SUBSUMED_BY.name()));
+	}
 	
+	@Test
+	public void GET_CodeSystem_$subsumes_SubsumedBy_WithAmbiguousVersions() throws Exception {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("codeA", BACTERIA) //Bacteria
+			.queryParam("codeB", MICROORGANISM) //Microorganism (parent)
+			.queryParam("system", "http://snomed.info/sct/900000000000207008/version/20170131")
+			.queryParam("version", "2018-01-31")
+			.when().get(CODESYSTEM_SUBSUMES)
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue[0].severity", equalTo("error"))
+			.body("issue[0].code", equalTo("invalid"))
+			.body("issue[0].diagnostics", equalTo("Version specified in the URI [http://snomed.info/sct/900000000000207008/version/20170131] "
+					+ "does not match the version set in the request [2018-01-31]"))
+			.statusCode(400);
+	}
 }

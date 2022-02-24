@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,23 +87,11 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 		if (query.isRevisionQuery()) {
 			if (query.getSelection().getParentScope() == null) {
 				// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
-				query = query.withWhere(
-							Expressions.builder()
-								.must(query.getWhere())
-								.filter(branch.toRevisionFilter())
-							.build()
-						)
-						.build();				
+				query = query.withFilter(branch.toRevisionFilter()).build();
 			} else {
 				checkArgument(Revision.class.isAssignableFrom(query.getSelection().getParentScope()), "Searching non-revision documents require a revision parent type: %s", query);
 				// run a query on the parent documents with nested match on the children
-				query = query.withWhere(
-							Expressions.builder()
-								.must(query.getWhere())
-								.filter(Expressions.hasParent(query.getSelection().getParentScope(), branch.toRevisionFilter()))
-							.build()
-						)
-						.build();
+				query = query.withFilter(Expressions.hasParent(query.getSelection().getParentScope(), branch.toRevisionFilter())).build();
 			}
 		}
 		return searcher.search(query);
@@ -111,8 +99,8 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	
 	@Override
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
-		aggregation.query(Expressions.builder()
-				.must(aggregation.getQuery())
+		aggregation.query(Expressions.bool()
+				.filter(aggregation.getQuery())
 				.filter(branch.toRevisionFilter())
 			.build());
 		return searcher.aggregate(aggregation);

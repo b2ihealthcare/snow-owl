@@ -65,9 +65,9 @@ public class SnomedConceptRequestCache {
 
 		// evaluate all similar requests using the toEvaluate param
 		// check if there are similar fetchConfigs requested earlier, and if yes, try to fetch them now, so they can be referenced later from the cache, and immediately get populated via the callback
-		final Set<FetchConfig> configsToFetch = requestedFetches.stream()
+		final List<FetchConfig> configsToFetch = requestedFetches.stream()
 				.filter(cfg -> Objects.equals(toEvaluate.expand, cfg.expand) && Objects.equals(toEvaluate.locales, cfg.locales))
-				.collect(Collectors.toSet());
+				.collect(Collectors.toList());
 		// remove them from the requested fetches
 		requestedFetches.removeAll(configsToFetch);
 

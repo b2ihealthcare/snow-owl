@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,19 @@ package com.b2international.snowowl.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 8.0
@@ -47,6 +54,14 @@ public interface ResourceTypeConverter {
 		public Map<String, ResourceTypeConverter> getResourceTypeConverters() {
 			return ImmutableMap.copyOf(resourceTypeConverters);
 		}
+
+		public void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, List<Resource> results) {
+			Multimap<String, Resource> resourcesByIndex = Multimaps.index(results, Resource::getResourceType);
+			for (String resourceTypeToExpand : resourcesByIndex.keySet()) {
+				checkArgument(resourceTypeConverters.containsKey(resourceTypeToExpand), "ResourceTypeConverter implementation is missing for type: %s", resourceTypeToExpand);
+				resourceTypeConverters.get(resourceTypeToExpand).expand(context, expand, locales, resourcesByIndex.get(resourceTypeToExpand));
+			}
+		}
 	}
 	
 	String getResourceType();
@@ -54,5 +69,8 @@ public interface ResourceTypeConverter {
 	Integer getRank();
 	
 	Resource toResource(ResourceDocument doc);
+	
+	default void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<Resource> results) {
+	}
 	
 }

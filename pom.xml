@@ -22,7 +22,6 @@
 		<jackson.version>2.10.5</jackson.version>
 		<jackson.databind.version>2.10.5.1</jackson.databind.version>
 		<elk.version>0.4.3</elk.version>
-		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>2.6.0</tycho.version>
 		<tycho-extras.version>2.6.0</tycho-extras.version>
@@ -351,6 +350,20 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>3.0.0-M1</version>
+					<configuration>
+						<installAtEnd>true</installAtEnd>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>3.0.0-M2</version>
+					<configuration>
+						<deployAtEnd>true</deployAtEnd>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
