@@ -72,6 +72,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		addIdFilter(queryBuilder, Commit.Expressions::ids);
 		addSecurityFilter(queryBuilder, context);
+		addBranchClause(queryBuilder, context);
 		addBranchPrefixClause(queryBuilder);
 		addUserIdClause(queryBuilder);
 		addCommentClause(queryBuilder);
@@ -104,9 +105,6 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		final User user = context.service(User.class);
 		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
-			if (containsKey(OptionKey.BRANCH)) {
-				addBranchClause(builder, context, null, null, true);		
-			}
 			return;
 		}
 		
@@ -124,13 +122,10 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 				.filter(resource -> resource.endsWith("*"))
 				.map(resource -> resource.substring(0, resource.length() - 1))
 				.collect(Collectors.toSet());
-		
-		if (containsKey(OptionKey.BRANCH)) {
-			addBranchClause(builder, context, exactResourceIds, resourceIdPrefixes, false);
-			return;
-		}
-				
+						
 		SetView<String> resourceIds = Sets.union(exactResourceIds, resourceIdPrefixes);
+		
+		ExpressionBuilder branchFilter = Expressions.builder();
 		ResourceRequests.prepareSearch()
 			.filterByIds(resourceIds)
 			.setLimit(resourceIds.size())
@@ -146,56 +141,20 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			.forEach(r -> {
 				if (resourceIdPrefixes.contains(r.getId())) {
 					final String branchPattern = String.format("%s(/[a-zA-Z0-9.~_\\-]{3,100})?", r.getBranchPath());
-					builder.filter(regexp(BRANCH, branchPattern));
+					branchFilter.should(regexp(BRANCH, branchPattern));
 				}
-			});		
-	}
-	
-	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context, 
-			Set<String> exactResourceIds, Set<String> resourceIdPrefixes, boolean isAdmin) {		
-		final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
-				
-		ExpressionBuilder branchFilter = Expressions.builder();
-		ResourceSearchRequestBuilder resourceRequest = ResourceRequests.prepareSearch();
-		
-		if (isAdmin) {
-			resourceRequest.setLimit(Integer.MAX_VALUE);			
-		} else {
-			SetView<String> resourceIds = Sets.union(exactResourceIds, resourceIdPrefixes);
-			resourceRequest.filterByIds(resourceIds).setLimit(resourceIds.size());
-		}
-		
-		resourceRequest
-			.setFields(ResourceDocument.Fields.ID, 
-					ResourceDocument.Fields.BRANCH_PATH,
-					ResourceDocument.Fields.RESOURCE_TYPE)
-			.buildAsync()
-			.getRequest()
-			.execute(context)
-			.stream()
-			.filter(TerminologyResource.class::isInstance)
-			.map(TerminologyResource.class::cast)
-			.forEach(r -> {
-				if (branchPaths.contains(r.getBranchPath())) {
-					branchFilter.should(branches(r.getBranchPath()));
-				}
-				
-				for (String branchPath : branchPaths) {
-					if (branchPath.startsWith(r.getBranchPath())) {
-						int resourceBranchDepth = r.getBranchPath().split("/").length;
-						int filterBranchDepth = branchPath.split("/").length;
-						
-						if (filterBranchDepth - 1 <= resourceBranchDepth) {
-							branchFilter.should(branches(branchPath));
-						}
-					}
-				}
-					
 			});
 		
 		builder.filter(branchFilter.build());
 	}
-
+	
+	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context) {
+		if (containsKey(OptionKey.BRANCH)) {
+			final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
+			builder.filter(branches(branchPaths));
+		}
+	}
+	
 	private void addUserIdClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.AUTHOR)) {
 			final String userId = getString(OptionKey.AUTHOR);
