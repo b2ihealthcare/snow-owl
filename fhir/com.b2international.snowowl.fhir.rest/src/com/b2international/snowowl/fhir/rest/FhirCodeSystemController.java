@@ -70,7 +70,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
-	@PutMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
 	public ResponseEntity<Void> put(@RequestBody final ResourceRequest<CodeSystem> codeSystem) {
 		FhirRequests.codeSystems().preparePut()
 			.setCodeSystem(codeSystem.getChange())
