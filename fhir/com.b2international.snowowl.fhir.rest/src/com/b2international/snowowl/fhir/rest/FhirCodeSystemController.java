@@ -55,7 +55,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 	
 	/**
 	 * HTTP PUT /CodeSystem
-	 * @param codesystem - the new or updated code system to add
+	 * @param codeSystem - the new or updated code system to add
 	 */
 	@Operation(
 		summary="Create/Update a code system",
