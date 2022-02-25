@@ -60,7 +60,7 @@ public final class Uri {
 	}
 	
 	public String getOid() {
-		return isOid() ? uriValue.replaceAll(OID_SUBSTRING, "") : "";
+		return isOid() ? uriValue.substring(OID_SUBSTRING.length()) : "";
 	}
 
 	@Override
