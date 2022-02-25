@@ -40,7 +40,7 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		checkArgument(codeSystem.getConcepts() == null || codeSystem.getConcepts().size() < CONCEPT_LIMIT, "Maintanence of code systems with more than %d codes is not supported.", CONCEPT_LIMIT);
+		checkArgument(codeSystem.getConcepts() == null || codeSystem.getConcepts().size() < CONCEPT_LIMIT, "Maintenance of code systems with more than %d codes is not supported.", CONCEPT_LIMIT);
 		
 		FhirCodeSystemCUDSupport cudSupport =	context.service(RepositoryManager.class)
 				.repositories()
