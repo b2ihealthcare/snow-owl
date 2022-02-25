@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ public final class Uri {
 	
 	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
 	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
+	public static final String OID_SUBSTRING = "urn:oid:";
 	
 	@NotEmpty
 	@ValidUri
@@ -52,6 +53,14 @@ public final class Uri {
 	@JsonIgnore
 	public boolean isSnomedUri() {
 		return uriValue != null && uriValue.startsWith(SNOMED_BASE_URI_STRING);
+	}
+	
+	public boolean isOid() {
+		return uriValue != null && uriValue.startsWith(OID_SUBSTRING);
+	}
+	
+	public String getOid() {
+		return isOid() ? uriValue.substring(OID_SUBSTRING.length()) : "";
 	}
 
 	@Override

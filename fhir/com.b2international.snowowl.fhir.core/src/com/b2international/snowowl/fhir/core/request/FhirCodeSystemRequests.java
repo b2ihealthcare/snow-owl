@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
 import com.b2international.snowowl.fhir.core.request.codesystem.*;
 
 /**
@@ -22,6 +24,10 @@ import com.b2international.snowowl.fhir.core.request.codesystem.*;
  */
 public final class FhirCodeSystemRequests {
 
+	public FhirCodeSystemPutRequestBuilder preparePut() {
+		return new FhirCodeSystemPutRequestBuilder();
+	}
+	
 	public FhirCodeSystemSearchRequestBuilder prepareSearch() {
 		return new FhirCodeSystemSearchRequestBuilder();
 	}
@@ -42,4 +48,8 @@ public final class FhirCodeSystemRequests {
 		return new FhirValidateCodeRequestBuilder();
 	}
 	
+	public ResourceDeleteRequestBuilder prepareDelete(String codeSystemId) {
+		return new ResourceDeleteRequestBuilder(codeSystemId, ResourceDocument.class);
+	}
+
 }
