@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.Fixtures.DataWithMap;
+import com.b2international.index.Fixtures.DataWithUpdateScript;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableList;
@@ -44,7 +47,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class, DataWithMap.class);
+		return ImmutableList.<Class<?>>of(Data.class, DataWithMap.class, DataWithUpdateScript.class);
 	}
 	
 	@Test
@@ -167,5 +170,37 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
 	}
+
+	@Test
+	public void updateImmediately() throws Exception {
+		final DataWithUpdateScript data = new DataWithUpdateScript(KEY1, "hello");
+		indexDocument(data);
+		
+		final DataWithUpdateScript updatedData = index().write(writer -> {
+			return writer.updateImmediately(new Update<>(DataWithUpdateScript.class, KEY1, "append", Map.of("value", " world")));
+		});
+		
+		assertThat(updatedData.getValue()).isEqualTo("hello world");
+	}
 	
+	@Test
+	public void updateParallel() throws Exception {
+		final DataWithUpdateScript data = new DataWithUpdateScript(KEY1, "hello");
+		indexDocument(data);
+		
+		final ForkJoinPool commonPool = ForkJoinPool.commonPool();
+		final ForkJoinTask<Object> t1 = commonPool.submit(() -> index().write(writer -> {
+			return writer.updateImmediately(new Update<>(DataWithUpdateScript.class, KEY1, "append", Map.of("value", " world")));
+		}));
+		
+		final ForkJoinTask<Object> t2 = commonPool.submit(() -> index().write(writer -> {
+			return writer.updateImmediately(new Update<>(DataWithUpdateScript.class, KEY1, "append", Map.of("value", " sea")));
+		}));
+		
+		t1.quietlyJoin();
+		t2.quietlyJoin();
+		
+		final DataWithUpdateScript updatedData = getDocument(DataWithUpdateScript.class, KEY1);
+		assertThat(updatedData.getValue()).contains("hello", "sea", "world");
+	}
 }
