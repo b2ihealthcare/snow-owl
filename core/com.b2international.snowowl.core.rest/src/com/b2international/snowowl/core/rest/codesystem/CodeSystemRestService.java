@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -188,10 +189,19 @@ public class CodeSystemRestService extends AbstractRestService {
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		ResourceRequests.prepareDelete(codeSystemId)
-			.build(author, "Deleted ".concat(codeSystemId))
-			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+		try {
+			final CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+					.buildAsync()
+					.execute(getBus())
+					.getSync(1, TimeUnit.MINUTES);
+			
+			ResourceRequests.prepareDelete(codeSystemId)
+				.build(author, String.format("Deleted Code System %s", codeSystem.getTitle()))
+				.execute(getBus())
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+		} catch(NotFoundException e) {
+			// already deleted, ignore error
+		}
 	}
 	
 }
