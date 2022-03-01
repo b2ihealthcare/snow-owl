@@ -15,17 +15,14 @@
  */
 package com.b2international.snowowl.core.commit;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 
 /**
  * @since 5.7
  */
 final class CommitInfoGetRequest 
-		extends GetResourceRequest<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfos, CommitInfo>
-		implements AccessControl {
+		extends GetResourceRequest<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfos, CommitInfo> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,10 +34,5 @@ final class CommitInfoGetRequest
 	protected CommitInfoSearchRequestBuilder createSearchRequestBuilder() {
 		return new CommitInfoSearchRequestBuilder();
 	}
-
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
-	}
-
+	
 }

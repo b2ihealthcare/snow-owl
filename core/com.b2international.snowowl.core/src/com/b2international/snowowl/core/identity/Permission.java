@@ -134,4 +134,8 @@ public interface Permission extends Serializable {
 		}
 	}
 	
+	static boolean isWildCardResource(String resource) {
+		return resource.endsWith("*");
+	}
+	
 }
