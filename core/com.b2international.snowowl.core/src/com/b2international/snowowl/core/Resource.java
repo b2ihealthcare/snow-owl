@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.b2international.snowowl.core.commit.CommitInfo;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 8.0
@@ -39,9 +44,10 @@ public abstract class Resource implements Serializable {
 		public static final String OWNER = ResourceDocument.Fields.OWNER;
 		public static final String STATUS = ResourceDocument.Fields.STATUS;
 		public static final String LANGUAGE = ResourceDocument.Fields.LANGUAGE;
-		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
 		public static final String RESOURCE_TYPE = ResourceDocument.Fields.RESOURCE_TYPE;
 		public static final String TYPE_RANK = ResourceDocument.Fields.TYPE_RANK;
+		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
+		public static final String UPDATED_AT = ResourceDocument.Fields.UPDATED_AT;
 		
 		// TerminologyResource subtype specific fields, but for convenience and single API access, they are defined here
 		public static final String OID = ResourceDocument.Fields.OID;
@@ -55,9 +61,18 @@ public abstract class Resource implements Serializable {
 			OWNER,
 			OID,
 			CREATED_AT,
+			UPDATED_AT,
 			RESOURCE_TYPE,
 			TYPE_RANK
 		);
+	}
+	
+	/**
+	 * @since 8.1.0
+	 */
+	public static abstract class Expand {
+		public static final String RESOURCE_PATH_LABELS = "resourcePathLabels";
+		public static final String UPDATED_AT_COMMIT = "updatedAtCommit";
 	}
 	
 	// unique identifier for each resource, can be auto-generated or manually specified
@@ -99,6 +114,21 @@ public abstract class Resource implements Serializable {
 	// The ID of the bundle this resource is directly contained by
 	private String bundleId;
 
+	// The label of all bundles leading to this resource (expandable property)
+	private List<String> resourcePathLabels;
+	
+	// The timestamp when the resource was created originally 
+	private Long createdAt;
+	
+	// The timestamp when the resource was last modified (either its contents or its properties)
+	private Long updatedAt;
+	
+	// The commit object that holds information about the last update
+	private CommitInfo updatedAtCommit;
+	
+	// Extra data expanded through plugins
+	private Map<String, Object> properties;
+	
 	/**
 	 * @return the type of the resource
 	 */
@@ -241,6 +271,85 @@ public abstract class Resource implements Serializable {
 	
 	public void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
+	}
+
+	public Long getCreatedAt() {
+		return createdAt;
+	}
+	
+	public void setCreatedAt(Long createdAt) {
+		this.createdAt = createdAt;
+	}
+	
+	public Long getUpdatedAt() {
+		return updatedAt;
+	}
+	
+	public void setUpdatedAt(Long updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+	
+	public CommitInfo getUpdatedAtCommit() {
+		return updatedAtCommit;
+	}
+	
+	public void setUpdatedAtCommit(CommitInfo updatedAtCommit) {
+		this.updatedAtCommit = updatedAtCommit;
+	}
+	
+	@JsonAnyGetter
+	public Map<String, Object> getProperties() {
+		return properties;
+	}
+	
+	@JsonIgnore
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
+	}
+	
+	@JsonAnySetter
+	public void setProperties(String key, Object value) {
+		if (this.properties == null) {
+			this.properties = new HashMap<>(3);
+		}
+		this.properties.put(key, value);
+	}
+	
+	
+	
+	/**
+	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root), or <code>null</code> if ancestry information is not available
+	 */
+	public List<String> getResourcePathSegments() {
+		final List<String> ancestorIds = getBundleAncestorIds();
+		final String parentId = getBundleId();
+		
+		// if either parentId or ancestorIds list are null then skip calculating the resourcePathSegments (eg. field selection)
+		if (parentId == null | ancestorIds == null) {
+			return Collections.emptyList();
+		}
+		
+		if (IComponent.ROOT_ID.equals(parentId)) {
+			return ancestorIds;
+		}
+		
+		// Append our _parent ID_ to our ancestor ID array
+		return ImmutableList.<String>builder() 
+			.addAll(ancestorIds)
+			.add(parentId)
+			.build();
+	}
+	
+	// XXX empty setter to make Jackson happy when deserializing
+	@JsonSetter
+	/*package*/ final void setResourcePathSegments(List<String> resourcePathSegments) {}
+	
+	public List<String> getResourcePathLabels() {
+		return resourcePathLabels;
+	}
+	
+	public void setResourcePathLabels(final List<String> resourcePathLabels) {
+		this.resourcePathLabels = resourcePathLabels;
 	}
 
 	/**

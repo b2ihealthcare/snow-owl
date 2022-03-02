@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +26,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 
@@ -44,7 +40,7 @@ public interface NamespaceIdProvider {
 
 	default Map<String, String> extractNamespaceIds(BranchContext context, final Collection<String> namespaceConceptIds, boolean ignoreInvalidValues) {
 		final Set<String> mutableNamespaceConceptIds = Sets.newHashSet(namespaceConceptIds);
-		final ImmutableMap.Builder<String, String> namespacesByNamespaceConceptId = ImmutableMap.builderWithExpectedSize(mutableNamespaceConceptIds.size());  
+		final Map<String, String> namespacesByNamespaceConceptId = new HashMap<>(mutableNamespaceConceptIds.size());  
 				
 		// Keep only valid SCTIDs passed in to the filter
 		if (ignoreInvalidValues) {
@@ -81,7 +77,7 @@ public interface NamespaceIdProvider {
 				}
 			});
 		
-		return namespacesByNamespaceConceptId.build();
+		return Map.copyOf(namespacesByNamespaceConceptId);
 	}
 	
 }

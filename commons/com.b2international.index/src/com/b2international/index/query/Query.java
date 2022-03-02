@@ -16,11 +16,13 @@
 package com.b2international.index.query;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Revision;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -265,6 +267,14 @@ public final class Query<T> {
 	 */
 	public final Stream<Hits<T>> stream(Searcher searcher) {
 		return searcher.stream(this);
+	}
+
+	public AfterWhereBuilder<T> withFilter(Expression additionalFilter) {
+		final BiFunction<ExpressionBuilder, Expression, ExpressionBuilder> boolClause = isWithScores() ? ExpressionBuilder::must : ExpressionBuilder::filter;
+		ExpressionBuilder altered = Expressions.bool();
+		boolClause.apply(altered, getWhere());
+		altered.filter(additionalFilter);
+		return withWhere(altered.build());
 	}
 
 }

@@ -4,14 +4,13 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>8.0.0-SNAPSHOT</version>
+		<version>8.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.index</artifactId>
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.15.0</elasticsearch.version>
-		<log4j2.version>2.11.1</log4j2.version>
+		<elasticsearch.version>7.16.3</elasticsearch.version>
     </properties>
     
     <!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
@@ -71,22 +70,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-            <scope>provided</scope>
+        	<groupId>org.lz4</groupId>
+        	<artifactId>lz4-java</artifactId>
+        	<version>1.8.0</version>
+        	<scope>provided</scope>
         </dependency>
     </dependencies>
 
-	<repositories>
-		<repository>
-			<id>codelibs</id>
-			<url>https://maven.codelibs.org/</url>
-			<releases><enabled>true</enabled></releases>
-			<snapshots><enabled>false</enabled></snapshots>
-		</repository>
-	</repositories>
-    
     <build>
 		<plugins>
 			<plugin>
@@ -128,7 +118,6 @@
 								lang-mustache-client,
 								lang-painless,
 								log4j-api,
-								log4j-core,
 								lucene-analyzers-common,
 								lucene-backward-codecs,
 								lucene-core,
@@ -143,6 +132,7 @@
 								lucene-spatial-extras,
 								lucene-spatial3d,
 								lucene-suggest,
+								lz4-java,
 								mapper-extras-client,
 								parent-join-client,
 								percolator-client,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,13 @@ import java.util.*;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
 import org.apache.solr.common.util.JavaBinCodec;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -183,6 +185,9 @@ public class EsDocumentSearcher implements Searcher {
 		try {
 			response = client.search(req);
 		} catch (Exception e) {
+			if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.BAD_REQUEST) {
+				throw new IllegalArgumentException(e.getMessage(), e);
+			}
 			admin.log().error("Couldn't execute query", e);
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 		}

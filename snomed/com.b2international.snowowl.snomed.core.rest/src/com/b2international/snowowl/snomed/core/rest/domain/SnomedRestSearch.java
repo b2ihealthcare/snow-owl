@@ -29,10 +29,10 @@ public class SnomedRestSearch extends ObjectRestSearch {
 	@Parameter(description = "The effective time value to match (yyyyMMdd or Unpublished)")
 	private String effectiveTime;
 
-	@Parameter(description = "The concept status to match")
+	@Parameter(description = "The component status to match")
 	private Boolean active = null;
 	
-	@Parameter(description = "The concept module identifier(s) or ECL expression to match")
+	@Parameter(description = "The component module identifier(s) or ECL expression to match")
 	private List<String> module;
 	
 	public Boolean getActive() {

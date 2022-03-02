@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -194,13 +195,21 @@ public class BundleRestService extends AbstractRestService {
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		
-		ResourceRequests.bundles().prepareDelete(bundleId)
+		try {
+			final Bundle bundle = ResourceRequests.bundles().prepareGet(bundleId)
+					.buildAsync()
+					.execute(getBus())
+					.getSync(1, TimeUnit.MINUTES);
+			
+			ResourceRequests.bundles().prepareDelete(bundleId)
 				.commit()
 				.setAuthor(author)
-				.setCommitComment(String.format("Delete bundle %s", bundleId))
+				.setCommitComment(String.format("Deleted Bundle %s", bundle.getTitle()))
 				.buildAsync()
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+		} catch(NotFoundException e) {
+			// already deleted, ignore error
+		}
 	}
 }

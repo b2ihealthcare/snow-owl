@@ -82,7 +82,7 @@ public final class SnomedConceptRestSearch extends SnomedComponentRestSearch {
 		return statedParent;
 	}
 
-	public void setStatedParents(List<String> statedParent) {
+	public void setStatedParent(List<String> statedParent) {
 		this.statedParent = statedParent;
 	}
 
@@ -106,7 +106,7 @@ public final class SnomedConceptRestSearch extends SnomedComponentRestSearch {
 		return statedEcl;
 	}
 	
-		public void setStatedEcl(String statedEcl) {
+	public void setStatedEcl(String statedEcl) {
 		this.statedEcl = statedEcl;
 	}
 
@@ -141,5 +141,4 @@ public final class SnomedConceptRestSearch extends SnomedComponentRestSearch {
 	public void setDoi(Boolean doi) {
 		this.doi = doi;
 	}
-	
 }

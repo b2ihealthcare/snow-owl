@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import static com.b2international.index.query.Expressions.matchRange;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
@@ -139,6 +142,7 @@ public final class VersionDocument implements Serializable {
 		private ResourceURI resource;
 		private String branchPath;
 		private Long createdAt;
+		private Long updatedAt;
 		private String toolingId;
 		private String url;
 		private String author;
@@ -175,6 +179,11 @@ public final class VersionDocument implements Serializable {
 		
 		public Builder createdAt(Long createdAt) {
 			this.createdAt = createdAt;
+			return this;
+		}
+		
+		public Builder updatedAt(Long updatedAt) {
+			this.updatedAt = updatedAt;
 			return this;
 		}
 		
@@ -229,6 +238,7 @@ public final class VersionDocument implements Serializable {
 				resource,
 				branchPath,
 				createdAt,
+				updatedAt,
 				toolingId,
 				url,
 				author
@@ -245,6 +255,8 @@ public final class VersionDocument implements Serializable {
 	private final ResourceURI resource;
 	private final String branchPath;
 	private final Long createdAt;
+	// XXX updates are not supported, this value is always the same as createdAt, but in order to be searchable, we need a field
+	private final Long updatedAt;
 	private final String toolingId;
 	private final String url;
 	private final String author;
@@ -271,6 +283,7 @@ public final class VersionDocument implements Serializable {
 			final ResourceURI resource,
 			final String branchPath,
 			final Long createdAt,
+			final Long updatedAt,
 			final String toolingId,
 			final String url,
 			final String author) {
@@ -283,6 +296,7 @@ public final class VersionDocument implements Serializable {
 		this.resourceType = resource != null ? resource.getResourceType() : null;
 		this.branchPath = branchPath;
 		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
 		this.toolingId = toolingId;
 		this.url = url;
 		this.author = author;
@@ -327,6 +341,10 @@ public final class VersionDocument implements Serializable {
 	
 	public Long getCreatedAt() {
 		return createdAt;
+	}
+
+	public Long getUpdatedAt() {
+		return updatedAt;
 	}
 	
 	public String getToolingId() {
@@ -384,6 +402,7 @@ public final class VersionDocument implements Serializable {
 				.add("branchPath", branchPath)
 				.add("toolingId", toolingId)
 				.add("createdAt", createdAt)
+				.add("updatedAt", updatedAt)
 				.add("url", url)
 				.add("author", author)
 				.toString();

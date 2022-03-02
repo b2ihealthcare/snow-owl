@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
-import org.elasticsearch.cluster.metadata.Metadata;
 import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +80,12 @@ public abstract class EsClientBase implements EsClient {
 		if (available) {
 			final List<EsIndexStatus> indexStatuses = newArrayList();
 			for (String index : indices == null || indices.length == 0 ? clusterHealth.get().getIndices().keySet() : Arrays.asList(indices)) {
+				
+				// ignore health check of system / hidden indices
+				if (index.startsWith(".")) {
+					continue;
+				}
+				
 				ClusterHealthStatus indexHealth = getIndexHealth(index);
 				String diagnosis = null;
 				// if not in red health state, check the read only flag
@@ -96,8 +102,9 @@ public abstract class EsClientBase implements EsClient {
 	}
 
 	public final void checkAvailable() {
-		if (!Strings.isNullOrEmpty(clusterAvailable.get())) {
-			throw new BadRequestException("Cluster at '%s' is not available.", host.toURI());
+		String clusterDiagnosis = clusterAvailable.get();
+		if (!Strings.isNullOrEmpty(clusterDiagnosis)) {
+			throw new BadRequestException("Cluster at '%s' is not available. Diagnosis: '%s'", host.toURI(), clusterDiagnosis);
 		}
 	}
 	
@@ -137,6 +144,10 @@ public abstract class EsClientBase implements EsClient {
 			log.info("Checking cluster health at '{}'...", host.toURI());
 			ClusterHealthRequest req = new ClusterHealthRequest();
 			req.level(Level.INDICES);
+			// The default indices options (IndicesOptions.lenientExpandHidden()) returns all indices including system or hidden.
+			// It is not possible to determine if a hidden index is read only or not.
+			// This leads to the isIndexReadOnly() method waiting 60 seconds for each hidden index, eventually causing requests to be stalled.
+			req.indicesOptions(IndicesOptions.lenientExpand());
 			return cluster().health(req);
 		} catch (IOException e) {
 			throw new IndexException("Failed to get cluster health", e);
@@ -146,7 +157,7 @@ public abstract class EsClientBase implements EsClient {
 	private GetSettingsResponse checkIndicesSettings(GetSettingsResponse previousSettings) {
 		try {
 			log.info("Checking indices settings at '{}'...", host.toURI());
-			return indices().settings(new GetSettingsRequest().indices(Metadata.ALL));
+			return indices().settings(new GetSettingsRequest().indicesOptions(IndicesOptions.lenientExpand()));
 		} catch (IOException e) {
 			throw new IndexException("Failed to get indices settings", e);
 		}
@@ -158,7 +169,7 @@ public abstract class EsClientBase implements EsClient {
 	
 	private boolean isIndexReadOnly(String index) {
 		final String readOnly = this.indicesSettings.waitUntilValue(result -> result.getIndexToSettings().containsKey(index), 1 * 60L /*seconds*/).getSetting(index, READ_ONLY_SETTING);
-		return !Strings.isNullOrEmpty(readOnly) && !Boolean.valueOf(readOnly);
+		return !Strings.isNullOrEmpty(readOnly) && Boolean.valueOf(readOnly);
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,15 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
+import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -36,6 +41,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.google.common.collect.HashBiMap;
 
 /**
  * @since 8.0.0
@@ -254,5 +260,105 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 				.collect(Collectors.toList());
 		
 		assertThat(hits).containsExactly(conceptId3, conceptId2, conceptId1);
+	}
+	
+	@Test
+	public void searchByHierarchy() throws Exception {
+		final Map<String, String> roleToId = createConceptHierarchy(branchPath);
+		
+		assertHierarchyContains("statedParent", "parent", roleToId, Set.of("child1", "child2"));
+		assertHierarchyContains("statedAncestor", "parent", roleToId, Set.of("child1", "child2", "descendant1", "descendant2", "descendant3"));
+		assertHierarchyContains("parent", "parent", roleToId, Set.of("child1"));
+		assertHierarchyContains("ancestor", "parent", roleToId, Set.of("child1", "descendant1"));
+	}
+	
+	/**
+	 * Single nested module expand of definitionStatus results in status 500
+	 */
+	@Test
+	public void epxandNestedModuleOnly() {
+		final String conceptExpand = "definitionStatus(expand(module()))";
+		
+		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(
+					"id", conceptId,
+					"expand", conceptExpand))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.body("total", equalTo(1))
+			.body("items[0].definitionStatus.module.id", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT));
+	}
+	
+	/**
+	 * Definitions status module expand fail.
+	 */
+	@Test
+	public void epxandNestedModule() {
+		final String conceptExpand = "definitionStatus(expand(pt(),fsn(),module(expand(pt(),fsn())))),module(expand(pt(),fsn()))";
+		
+		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(
+					"id", conceptId,
+					"expand", conceptExpand))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.body("total", equalTo(1))
+			.body("items[0].definitionStatus.module.id", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT))
+			.body("items[0].module.id", equalTo(Concepts.MODULE_SCT_CORE));
+	}
+	
+	/**
+	 * Multiple nested module expansion results in evaluating only the first.
+	 */
+	@Test
+	public void multipleNestedModuleExpand() {
+		final String descriptionExpand = "descriptions(expand(acceptabilities(expand(acceptability(expand(pt(),fsn())),languageRefSet(expand(pt(),fsn())))),type(expand(pt(),fsn())),module(expand(pt(),fsn())),caseSignificance(expand(pt(),fsn()))))";
+		final String relationshipExpand = "relationships(expand(type(expand(pt(),fsn())),destination(expand(pt(),fsn())),module(expand(pt(),fsn())),characteristicType(expand(pt(),fsn())),modifier(expand(pt(),fsn()))))";
+		final String conceptExpand = "definitionStatus(expand(pt(),fsn())),module(expand(pt(),fsn())),pt(),fsn()";
+		final String inactivationPropertiesExpand = "inactivationProperties(expand(associationTargets(expand(targetComponent(expand(pt(),fsn())))),inactivationIndicator(expand(pt(),fsn()))))";
+		
+		final String expand = String.format("%s,%s,%s,%s", descriptionExpand, relationshipExpand, conceptExpand, inactivationPropertiesExpand);
+		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(
+					"id", conceptId,
+					"expand", expand))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.body("total", equalTo(1))
+			.body("items[0].descriptions.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))))
+			.body("items[0].relationships.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))));
+	}
+
+	private void assertHierarchyContains(String hierarchyField, String parentOrAncestorRole, Map<String, String> roleToId, Set<String> expectedRoles) {
+		Map<String, String> idToRole = HashBiMap.create(roleToId).inverse();
+		
+		List<String> hits = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of(hierarchyField, roleToId.get(parentOrAncestorRole)))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.extract().as(SnomedConcepts.class)
+			.getItems()
+			.stream()
+			.map(concept -> idToRole.getOrDefault(concept.getId(), concept.getId()))
+			.collect(Collectors.toList());
+		
+		assertThat(hits).containsExactlyInAnyOrderElementsOf(expectedRoles);
 	}
 }

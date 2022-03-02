@@ -7,13 +7,14 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>8.0.0-SNAPSHOT</version>
+		<version>8.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.snowowl.core</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
 	<properties>
-		<java.jwt.version>3.8.1</java.jwt.version>
+		<java.jwt.version>3.18.1</java.jwt.version>
+		<jwks.rsa.version>0.20.0</jwks.rsa.version>
 	</properties>
 
 	<dependencies>
@@ -22,6 +23,12 @@
 			<artifactId>java-jwt</artifactId>
 			<version>${java.jwt.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>com.auth0</groupId>
+    		<artifactId>jwks-rsa</artifactId>
+    		<version>${jwks.rsa.version}</version>
+    		<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -41,7 +48,8 @@
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
-								java-jwt
+								java-jwt,
+								jwks-rsa
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
 						</configuration>

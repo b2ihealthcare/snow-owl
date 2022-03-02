@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptRequestCache;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Functions;
 import com.google.common.collect.*;
@@ -129,7 +130,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 	}
 	
 	@Override
-	protected void expand(List<SnomedConcept> results) {
+	public void expand(List<SnomedConcept> results) {
 		if (expand().isEmpty()) {
 			return;
 		}
@@ -170,24 +171,14 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 		}
 		
 		final Options definitionStatusExpand = expand().getOptions(SnomedConcept.Expand.DEFINITION_STATUS).getOptions("expand");
-		
-		Set<String> definitionStatusIds = results.stream()
-				.map(SnomedConcept::getDefinitionStatusId)
-				.collect(Collectors.toSet());
-		
-		Map<String, SnomedConcept> definitionStatusesById = SnomedRequests.prepareSearchConcept()
-			.filterByIds(definitionStatusIds)
-			.setLimit(definitionStatusIds.size())
-			.setExpand(definitionStatusExpand)
-			.setLocales(locales())
-			.build()
-			.execute(context())
-			.stream()
-			.collect(Collectors.toMap(SnomedConcept::getId, c -> c));
-		
-		for (SnomedConcept result : results) {
-			result.setDefinitionStatus(definitionStatusesById.get(result.getDefinitionStatusId()));
-		}
+		final Iterable<String> definitionStatusIds = results.stream().map(SnomedConcept::getDefinitionStatusId)::iterator;
+
+		context().service(SnomedConceptRequestCache.class)
+			.request(definitionStatusIds, definitionStatusExpand, locales(), definitionStatusesById -> {
+				for (SnomedConcept result : results) {
+					result.setDefinitionStatus(definitionStatusesById.get(result.getDefinitionStatusId()));
+				}
+			});
 	}
 
 	private void expandReferenceSet(List<SnomedConcept> results) {

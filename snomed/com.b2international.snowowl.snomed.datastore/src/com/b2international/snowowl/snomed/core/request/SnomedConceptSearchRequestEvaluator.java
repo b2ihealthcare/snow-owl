@@ -46,6 +46,8 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		concept.setAlternativeTerms(FluentIterable.from(snomedConcept.getPreferredDescriptions())
 				.transform(pd -> pd.getTerm())
 				.toSortedSet(Comparator.naturalOrder()));
+		concept.setParentIds(snomedConcept.getParentIdsAsString());
+		concept.setAncestorIds(snomedConcept.getAncestorIdsAsString());
 		if (requestedExpand) {
 			concept.setInternalConcept(snomedConcept);
 		}

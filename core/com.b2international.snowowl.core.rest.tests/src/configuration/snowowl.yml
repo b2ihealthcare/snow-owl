@@ -3,6 +3,9 @@
 #
 
 identity:
+  # configure JWS and secret for JWT authorization
+  jws: HS256
+  secret: secret
   providers:
     - file:
         name: users

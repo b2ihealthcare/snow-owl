@@ -135,5 +135,5 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	public final B setEclExpressionForm(String expressionForm) {
 		return addOption(OptionKey.ECL_EXPRESSION_FORM, expressionForm);
 	}
-
+	
 }

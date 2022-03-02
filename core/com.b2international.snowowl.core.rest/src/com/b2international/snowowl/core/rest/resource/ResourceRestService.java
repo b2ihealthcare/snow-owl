@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,11 +22,8 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortScript;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
-import com.google.common.collect.Lists;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.UUIDs;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.xcontent.XContentType;
 
 import com.b2international.index.*;
 import com.b2international.index.es.admin.EsIndexAdmin;
@@ -89,6 +89,11 @@ public class EsDocumentWriter implements Writer {
 	@Override
 	public <T> void bulkDelete(BulkDelete<T> delete) {
 		bulkDeleteOperations.add(delete);
+	}
+	
+	@Override
+	public <T> T updateImmediately(Update<T> update) {
+		return admin.updateImmediately(update, mapper);
 	}
 
 	@Override

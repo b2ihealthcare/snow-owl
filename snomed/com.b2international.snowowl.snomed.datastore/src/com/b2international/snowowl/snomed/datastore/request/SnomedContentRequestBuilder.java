@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
@@ -24,6 +26,11 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
  */
 public interface SnomedContentRequestBuilder<R> extends TerminologyResourceContentRequestBuilder<R> {
 
+	@Override
+	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return TerminologyResourceContentRequestBuilder.super.wrap(new SnomedConceptCachingRequest<>(req));
+	}
+	
 	@Override
 	default String getToolingId() {
 		return SnomedTerminologyComponentConstants.TOOLING_ID;

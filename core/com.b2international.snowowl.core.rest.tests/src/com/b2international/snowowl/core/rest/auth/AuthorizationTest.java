@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,6 +123,16 @@ public class AuthorizationTest {
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES); 
 			});
+	}
+	
+	@Test
+	public void emptyPermissionsNoAccess() throws Exception {
+		String token = RestExtensions.generateToken();
+		RestExtensions.givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
+			.get()
+			.then()
+			.assertThat().statusCode(200)
+			.and().body("total", equalTo(0));
 	}
 	
 	@Test

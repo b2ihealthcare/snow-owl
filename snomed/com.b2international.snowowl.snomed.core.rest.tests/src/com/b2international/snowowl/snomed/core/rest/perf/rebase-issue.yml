@@ -8,9 +8,6 @@ configurationDirectory: testing/rest/configuration
 # Redirectes resources directory to have a clean H2 content
 resourceDirectory: testing/rest/resources
 
-# necessary to connect one user to the system otherwise Snow Owl startup fails
-systemUser: true
-
 repository:
   database:
     type: b2i_mysql

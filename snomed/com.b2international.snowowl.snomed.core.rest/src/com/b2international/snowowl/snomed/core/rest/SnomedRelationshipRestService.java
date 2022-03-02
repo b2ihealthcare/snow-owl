@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -175,6 +176,13 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 	@Operation(
 		summary="Retrieve Relationship properties", 
 		description="Returns all properties of the specified Relationship, including the associated refinability value."
+				+ "<p>The following properties can be expanded:"
+				+ "<p>"
+				+ "&bull; type() &ndash; the relationship's type concept<br>"
+				+ "&bull; source() &ndash; the relationship's source concept<br>"
+				+ "&bull; destination() &ndash; the relationship's destination concept<br>"
+				+ "&bull; characteristicType() &ndash; the relationship's characteristic type concept<br>"
+				+ "&bull; modifier() &ndash; the relationship's modifier concept<br>"
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
@@ -188,9 +196,19 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			
 			@Parameter(description = "The Relationship identifier")
 			@PathVariable("relationshipId") 
-			final String relationshipId) {
+			final String relationshipId,
+			
+			@ParameterObject
+			final ResourceSelectors selectors,
+			
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 
 		return SnomedRequests.prepareGetRelationship(relationshipId)
+					.setExpand(selectors.getExpand())
+					.setFields(selectors.getField())
+					.setLocales(acceptLanguage)
 					.build(path)
 					.execute(getBus());
 	}

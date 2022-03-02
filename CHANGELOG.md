@@ -1,6 +1,144 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.0.0
+
+Snow Owl's biggest release yet comes with fully customizable resource model and complete resource management functionality; the fastest RF2 importer and exporter in the world; externally configurable per resource access management; latest Expression Constraint Language 1.6 features and many many more.
+
+### Breaking changes
+
+The following changes in Snow Owl 8.0 might affect your applications and prevent them from operating normally. Before upgrading to 8.0, review these changes and take the described steps to mitigate the impact.
+
+#### RF2 index format changes
+
+To support sorting, filtering and field selection on the official SNOMED CT RF2 property names, Snow Owl 8 comes with an updated index representation where each and every SNOMED CT component index has correct, officially supported RF2 column names. Migrating from Snow Owl 7.x to 8.0 requires a full re-import of all terminology resource content.
+
+#### API routing changes
+
+Snow Owl 8 changes the old `/admin` and `/snomed-ct/v3` Core and SNOMED CT REST API base path segments to `/core` and `/snomedct`, respectively. Make sure you update your REST API clients when you start your migration process to the new version. See PR #893 for more details.
+
+#### Update endpoint changes
+
+Some of the old SNOMED CT Component endpoints were using a `POST /:componentType/updates` style instead of `PUT /componentType`. Snow Owl 8 migrated all API endpoints using the former pattern to the new one. Make sure you update your REST API clients to the new pattern, if you have used any of the SNOMED CT component update API endpoints. For more details, please see PR #866.
+
+#### Configuration changes
+- Snow Owl does not support node-level configuration of certain SNOMED CT specific settings. These all have been moved to Code System resource specific configuration keys and can be configured for each SNOMED CT specific Code System separately (eg. for each Extension). The affected configuration settings are:
+  * RF2 Export API configuration settings (#842)
+  * Language alias configuration (`snomed.languages`) (#869)
+  * Other options, such as `defaultReasonerId`, `defaultQueryTypeRefsetId`, etc.
+
+#### Removed custom MRCM model
+
+To support variety of use cases and easier adoption of SNOMED CT MRCM constraints, Snow Owl from version 8 fully supports not just MRCM member access and authoring, but evaluation of official and custom (maintained by NRCs and Extensions) MRCM constraints in the fastest way possible. The old custom MRCM model and all related API functionality has been removed in favor of the official MRCM tooling. See PRs #917 and #930 for more details.
+
+#### Removed scroll based paging
+
+Scroll API in Elasticsearch has been marked as deprecated until complete removal in the upcoming Elasticsearch 8.0 release. Thus, Snow Owl is no longer offering low-level Java and index APIs to access the terminology content via scroll contexts. For more information see PR #903.
+
+### Core
+- Introducing Resource Management (#821, #886)
+  * Any type of resources (when the appropriate model and API is available, plug-ins can provide their own specific models if they so desire)
+  * Supported resources are `Code System`, `Bundle` (and other resources such as `Value Set`s and `Concept Map`s are available in pro versions)
+  * Full REST API support to access (get, search), author (create, update, delete) and maintain (versioning, configuration, history) resources
+- New Core API features:
+  * New concept suggest API (#878, #882, #884, #921)
+  * Field selection support (#858)
+    * Restricting the number of returned fields of a representation to a set of properties is now possible on read endpoints (e.g `GET /snomedct/SNOMEDCT-UK-CL/concepts?field=id`)
+    * By default the system will always return all properties with a non-null value, but this can be altered using the `field` query parameter.
+  * Support `includeNull` query parameter to allow API consumers to select whether they would like to get all properties (with any value, including `null`) or just the non-null ones (default setting) (#857)
+  * Support `pretty` query parameter to pretty print the JSON output to make it human-readable (#857)
+  * Support multi-value expand parameters on all search/get endpoints (#855, fixes #659)
+  * Support filtering versions by `createdAt` and `version` (#874, cdae9acbcc8d3fb)
+  * Support Forwarded headers on incoming HTTP requests when needed (cc7c5446b321546)
+  * Support deletion of Code Systems via `DELETE /codesystems/:id` (d416c1e2a4354d3)
+  * Use `yyyy-MM-dd` effective time format when creating new versions (27e34abb29c9583)
+  * Increase branch path segment max length to `100` characters from the previous `50` characters (2fe892eccc8d6a4)
+- New Index features:
+  * Reduce the default `number_of_shards` to one as Elasticsearch offers the same default, `number_of_replicas` still defaults to 0 to support initial loading scenarios better (fdd10ce75127e51, 6b1d4622d9c5845)
+  * Allow fully customizable indices settings in `snowowl.yml` configuration file via `repository.index.[indexName]` configuration objects (#929)
+  * Customizable word equivalence (aka synonym) filtering (#863)
+    * An `SO_HOME/configuration/analysis/synonym.txt` file can be configured to allow Snow Owl to use the defined set of synonym rules when performing full-text searches. In case of remote Elasticsearch cluster, it is required to deploy the `synonyms.txt` on all cluster nodes
+  * Support index-level search request caching (#931)
+     * Any kind of search can be cached and retrieved faster than ever before. Plug-in maintainers and new tool developers can configure their preference of how and when they'd like to cache the results of a search request. By default Snow Owl will cache all search requests that are executed on versioned state.
+  * Support numeric script sorting in index searches (8e51c6b8a51aabb)
+- Deprecated branch review API endpoints and services have been removed (b79c8e11e90fc37)
+  
+### SNOMED CT
+- New SNOMED CT API features:
+  * Support dedicated `isActiveMemberOf` filter which is a short cut to `active=true&ecl=^<refsetId>` search (#879)
+  * Support searching SNOMED CT components by `namespaceConceptId` not just `namespace` (#881, #920)
+  * Support exporting Snapshot RF2 content at specific times via `resourceId@timestamp` format, `Full` and `Delta` are not supported (#887)
+  * Support exporting RF2 content between specific branch path range, like comparing branches (#907)
+  * Support nested expansion of `inactivationIndicator()` properties, like `associationTarget()`, `referenceSet()` (#914)
+  * Support sorting when expanding `descriptions()`, `relationships()`, `inboundRelationships()` on Concept API (7e2516a7502670e)
+  * Expose `memberOf` and `activeMemberOf` components document fields on component domain representations (592846253fff6ad)
+  * Support component type (`concept`, `description`, `relationships`, `member`) based filtering on RF2 export endpoint (c8662e48180b51d)
+  * Support multi-value query parameters on a lot of filter query parameters (5e5fc2a90e913e6)
+  * Support `module`, `active` and `effectiveTime` filters on `GET /refsets` endpoint (5e5fc2a90e913e6) 
+- RF2 import improvements (#918)
+  * Support smart auto-generation of delta content when importing Full releases (the existing component-based effective time based filtering is still there, but this makes the import much faster and easier to understand)
+  * Support `importUntil` effective time property to import only a portion from an RF2 release
+  * Disallow importing RF2 releases with `createVersions` enabled when the target branch is a CodeSystem's main development branch and it has unpublished changes
+  * Automatically configure known language dialect aliases after successful RF2 import (#876)
+- Consolidate RF2 property names on index documents to allow sorting, filtering on them using official RF2 column names (#856)
+- Update ECL to 1.6 features (#837, #915)
+  * The Query Language Draft implementation has been removed and extra unofficial features of it have been merged entirely into the ECL syntax. The SNOMED CT Concept search REST API endpoint's `query` parameter has also been removed. If you had any query language specific expressions, you might need to migrate them to the new ECL 1.6 syntax which includes all previously supported QL features.
+- Deprecated SNOMED CT `/imports` and `/exports` endpoints have been removed (82938f69082f702)
+
+### Security
+- Improved authorization options to allow/restrict access to server resources. Access tokens describe the necessary scopes to give access to certain resources, either by:
+  * directly denoting the resource ID in the scope
+  * denoting the containing bundle ID in the scope (supports direct and indirect parent bundles)
+  * or by allowing access to all resources (*)
+- `rootDn` and `rootDnPassword` support from ldap security realm configuration have been removed (648387077694ba3)
+
+### FHIR
+- Support `CodeSystem`, `ValueSet` and `ConceptMap` filtering by `_id`, `name`, `title`, `system`, `_url`, `version` and other useful FHIR properties that are supported in the underlying resource representation (#909)
+- Support for CapabilityStatement and OperationDefinition resources (#899)
+- Read-only Bundle API support (#867)
+- Experimental Batch API support (#867)
+- Revised and improved all existing FHIR API endpoints to resolve all outstanding issues, such as (#416, #426, #435, #494, #561)
+- Support `after` cursor based paging when expanding Value Sets (e9431f97ee48326)
+
+### Documentation
+- Update REST API documentation with generic and SNOMED CT concept specific information (#906) (more will come in future 8.x releases)
+- Upgrade REST API documentation to Springdoc and OAS3 (#845)
+- Use [rapidoc](https://mrin9.github.io/RapiDoc/) instead of Swagger UI (0948ef4cfb8c3fc, b78b71d1969bd0f, fixes #656)
+
+### Bugs/Improvements
+- [core] add case sensitivity flag to term filtering (#827)
+- [api] fix incorrect representation of source/target values in merge conflicts (#916)
+- [api] make sure invalid searchAfter values are reported properly as HTTP 400 (#846)
+- [api] server will respond with `WWW-Authenticate` header when the request is Unauthorized 401 (40d1a69c7edba91)
+- [api] respond with HTTP 400 if multipart file is missing (a1ba4332f79f675)
+- [api] return HTTP 400 if external JWT does not have `sub` claim (881317990f998db)
+- [api] fix(api): invalid format argument error when using percent (`%`) as version (80914234f8a0dae)
+- [snomed] improve RF2 export performance even further by loading only the necessary data from index (#900)
+- [snomed] skip converting malformed OWL expressions to avoid failed RF2 imports (#922)
+- [snomed] make sure ECL evaluation honors the current `max_terms_count` and `result_window` index configuration values (1e71aa08643bd57)
+- [snomed] add missing path method argument to import API endpoints (73ccc891e0e0a45)
+- [snomed] improve performance of the `descendants(limit:0)` expansion (c6ef07ccec64c8d)
+- [snomed] index concept semanticTags in dedicated array to resolve possibly incorrect search results when both `term` and `semanticTag` filter is applied to the search request. All FSN semantic tags are indexed during change processing regardless of acceptability (645f6a8d82ebdb1, resolves #737)
+- [fhir] fix handling of Unauthorized exception in the FHIR API module (5b2d544de52ca52)
+
+### Dependencies
+- Bump Elasticsearch to 7.15.0 (#848, #928)
+- Bump netty-codec from 4.1.59.Final to 4.1.68.Final (#904)
+
+## 7.17.6
+
+### Bugs/Improvements
+- [core] fix incorrectly backported duplicate revision fix (#913, f6e3c31)
+- [cli] add duplicate revision checker cli tool, see `snowowl snomed revision` command for details (8d9d1e5)
+
+## 7.17.5
+
+### Bugs/Improvements
+- [core] backport fix for duplicate revision after synchronization (#913)
+- [snomed] allow only snapshot RF2 export for point-in-time branches (#907)
+- [snomed] add support for delta RF2 exports with branch path ranges (#907)
+- [mrcm] make MRCM csv/json export format ordered, fix missing columns in CSV export (#910)
+
 ## 7.17.4
 
 ### Bugs/Improvements

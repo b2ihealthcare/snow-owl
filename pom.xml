@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>8.0.0-SNAPSHOT</version>
+	<version>8.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -17,9 +17,9 @@
 		<jackson.version>2.10.5</jackson.version>
 		<jackson.databind.version>2.10.5.1</jackson.databind.version>
 		<netty.version>4.1.68.Final</netty.version>
-		<slf4j.version>1.7.30</slf4j.version>
-		<logback.version>1.2.3</logback.version>
-		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
+		<slf4j.version>1.7.32</slf4j.version>
+		<logback.version>1.2.10</logback.version>
+		<logback.versionRange>[1.2.10,1.2.11)</logback.versionRange>
 		<guava.version>27.1-jre</guava.version>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
 		<groovy.version>2.4.20</groovy.version>
@@ -35,7 +35,7 @@
 		<fastutil.version>8.3.1</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
-		<snomed.owl.toolkit.version>3.0.2</snomed.owl.toolkit.version>
+		<snomed.owl.toolkit.version>3.0.6</snomed.owl.toolkit.version>
 		<failsafe.version>2.3.1</failsafe.version>
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		
@@ -952,6 +952,20 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>3.0.0-M1</version>
+					<configuration>
+						<installAtEnd>true</installAtEnd>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>3.0.0-M2</version>
+					<configuration>
+						<deployAtEnd>true</deployAtEnd>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
