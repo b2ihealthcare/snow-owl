@@ -23,14 +23,17 @@ import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCE
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -157,8 +160,8 @@ public class ResourceApiTest {
 			.getSync();
 	}
 
-	private void createCodeSystemWithStatus(final String shortName, final String status) {
-		CodeSystemRequests.prepareNewCodeSystem()
+	private CommitResult createCodeSystemWithStatus(final String shortName, final String status) {
+		return CodeSystemRequests.prepareNewCodeSystem()
 			.setId(shortName)
 			.setTitle(shortName)
 			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
@@ -168,8 +171,8 @@ public class ResourceApiTest {
 			.setStatus(status)
 			.setOid("https://b2i.sg/" + shortName)
 			.build(RestExtensions.USER, String.format("New code system %s", shortName))
-			.execute(bus).getSync();
-		
+			.execute(bus)
+			.getSync();
 	}
 	
 	private void createDefaultCodeSystem(final String shortName, final String oid) {
@@ -202,7 +205,7 @@ public class ResourceApiTest {
 		
 		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:asc", "title:asc")))
 			.statusCode(200)
-			.body("items.id", Matchers.contains(id3, id4, id1, id2));
+			.body("items.id", contains(id3, id4, id1, id2));
 	}
 	
 	@Test
@@ -221,7 +224,7 @@ public class ResourceApiTest {
 		
 		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
 			.statusCode(200)
-			.body("items.id", Matchers.contains(id1, id2, id3, id4));
+			.body("items.id", contains(id1, id2, id3, id4));
 	}
 	
 	@Test
@@ -239,8 +242,8 @@ public class ResourceApiTest {
 			.then()
 			.assertThat()
 			.statusCode(200)
-			.body("resourcePathSegments", Matchers.contains(IComponent.ROOT_ID, rootBundleId, subBundleId)) 
-			.body("resourcePathLabels", Matchers.contains(ResourceConverter.ROOT_LABEL, "Bundle " + rootBundleId, "Bundle " + subBundleId));		
+			.body("resourcePathSegments", contains(IComponent.ROOT_ID, rootBundleId, subBundleId)) 
+			.body("resourcePathLabels", contains(ResourceConverter.ROOT_LABEL, "Bundle " + rootBundleId, "Bundle " + subBundleId));		
 	}
 	
 	@Test
@@ -270,4 +273,62 @@ public class ResourceApiTest {
 		assertEquals((Long) updateResult.getCommitTimestamp(), updatedCodeSystem.getUpdatedAt());
 	}
 	
+	@Test
+	public void getWithTimestamp() throws Exception {
+		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		
+		CodeSystem createdCodeSystem = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		CommitResult updateResult = CodeSystemRequests.prepareUpdateCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME)
+			.setCopyright("Updated copyright")
+			.build(RestExtensions.USER, String.format("Updated copyright %s", DEFAULT_CODE_SYSTEM_SHORT_NAME))
+			.execute(bus)
+			.getSync();
+		
+		// try to retrieve code system state before it was created
+		assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME, createdCodeSystem.getCreatedAt() - 1L)
+			.statusCode(404);
+		
+		// retrieve the state at creation time
+		CodeSystem codeSystem1 = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME, createdCodeSystem.getCreatedAt())
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		assertEquals(createdCodeSystem.getCopyright(), codeSystem1.getCopyright());
+		
+		// retrieve the state at the point in time when the update happened
+		CodeSystem codeSystem2 = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME, updateResult.getCommitTimestamp())
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		assertEquals("Updated copyright", codeSystem2.getCopyright());
+		
+		// look into the future a small amount as well
+		CodeSystem codeSystem3 = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME, updateResult.getCommitTimestamp() + 1L)
+				.statusCode(200)
+				.extract()
+				.as(CodeSystem.class);
+		
+		assertEquals("Updated copyright", codeSystem3.getCopyright());		
+	}
+	
+	@Test
+	public void searchWithTimestamp() throws Exception {
+		final long timestamp1 = createCodeSystemWithStatus("cs1", "draft").getCommitTimestamp();
+		final long timestamp2 = createCodeSystemWithStatus("cs2", "draft").getCommitTimestamp();
+		final long timestamp3 = createCodeSystemWithStatus("cs3", "draft").getCommitTimestamp();
+		
+		assertResourceSearch(Map.of("timestamp", timestamp1 - 1L)).statusCode(200).body("items", empty());
+		assertResourceSearch(Map.of("timestamp", timestamp1)).statusCode(200).body("items.id", containsInAnyOrder("cs1"));
+		assertResourceSearch(Map.of("timestamp", timestamp2 - 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs1"));
+		assertResourceSearch(Map.of("timestamp", timestamp2)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2"));
+		assertResourceSearch(Map.of("timestamp", timestamp3 - 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2"));
+		assertResourceSearch(Map.of("timestamp", timestamp3)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2", "cs3"));
+		assertResourceSearch(Map.of("timestamp", timestamp3 + 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2", "cs3"));
+	}
 }
