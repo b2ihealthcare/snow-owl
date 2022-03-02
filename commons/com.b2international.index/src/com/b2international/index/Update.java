@@ -18,7 +18,7 @@ package com.b2international.index;
 import java.util.Map;
 
 /**
- * @since 8.0.1
+ * @since 8.1.0
  * 
  * @param <T>
  */
