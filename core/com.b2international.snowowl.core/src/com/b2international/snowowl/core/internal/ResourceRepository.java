@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,10 @@ public final class ResourceRepository implements RevisionIndex {
 
 	public <T> T read(RevisionIndexRead<T> read) {
 		return index.read(Branch.MAIN_PATH, read);
+	}
+	
+	public <T> T read(long timestamp, RevisionIndexRead<T> read) {
+		return index.read(RevisionIndex.toBranchAtPath(Branch.MAIN_PATH, timestamp), read);
 	}
 	
 	@Override

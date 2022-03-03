@@ -44,7 +44,7 @@ public class ResourceRestService extends AbstractRestService {
 	}
 
 	@Operation(
-		summary = "Retrive Resources", 
+		summary = "Retrieve Resources", 
 		description = "Returns a collection resource containing all/filtered registered Resources."
 			+ "<p>Results are by default sorted by ID.")
 	@ApiResponses({ 
@@ -68,12 +68,12 @@ public class ResourceRestService extends AbstractRestService {
 			.setFields(params.getField())
 			.setSearchAfter(params.getSearchAfter())
 			.sortBy(extractSortFields(params.getSort()))
-			.buildAsync()
+			.buildAsync(params.getTimestamp())
 			.execute(getBus());
 	}
 	
 	@Operation(
-		summary = "Retrive Resources", 
+		summary = "Retrieve Resources", 
 		description = "Returns a collection resource containing all/filtered registered Resources."
 			+ "<p>Results are by default sorted by ID.")
 	@ApiResponses({ 
@@ -81,12 +81,12 @@ public class ResourceRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(value = "/search", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Resources> searchByPost(@RequestBody final ResourceRestSearch params) {
+	public Promise<Resources> searchByPost(@RequestBody(required = false) final ResourceRestSearch params) {
 		return searchByGet(params);
 	}
 
 	@Operation(
-		summary = "Retrieve resource by it's unique identifier", 
+		summary = "Retrieve resource by its unique identifier", 
 		description = "Returns generic information about a single resource associated to the given unique identifier."
 	)
 	@ApiResponses({ 
@@ -96,18 +96,21 @@ public class ResourceRestService extends AbstractRestService {
 	})
 	@GetMapping("/{resourceId}")
 	public Promise<Resource> get(
-			@Parameter(description = "The resource identifier") 
-			@PathVariable(value = "resourceId") 
-			final String resourceId,
-			
-			@ParameterObject
-			final ResourceSelectors selectors) {
+		@Parameter(description = "The resource identifier") 
+		@PathVariable(value = "resourceId") 
+		final String resourceId,
+		
+		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		final Long timestamp,
+		
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
 		return ResourceRequests
-				.prepareGet(resourceId)
-				.setExpand(selectors.getExpand())
-				.setFields(selectors.getField())
-				.buildAsync()
-				.execute(getBus());
+			.prepareGet(resourceId)
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.buildAsync(timestamp)
+			.execute(getBus());
 	}
-
 }

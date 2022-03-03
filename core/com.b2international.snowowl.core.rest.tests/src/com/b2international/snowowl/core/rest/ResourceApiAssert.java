@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,21 @@ public class ResourceApiAssert {
 	
 	public static ValidatableResponse assertResourceSearch(final Map<String, Object> filters) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-				.when().queryParams(filters).get()
-				.then().assertThat();
+			.queryParams(filters)
+			.get()
+			.then();
 	}
 	
 	public static ValidatableResponse assertResourceGet(final String resourceId) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-				.when().get("/{id}", resourceId)
-				.then().assertThat();
+			.get("/{id}", resourceId)
+			.then();
+	}
+	
+	public static ValidatableResponse assertResourceGet(final String resourceId, final long timestamp) {
+		return givenAuthenticatedRequest(RESOURCES_API)
+			.queryParam("timestamp", timestamp)
+			.get("/{id}", resourceId)
+			.then();
 	}
 }

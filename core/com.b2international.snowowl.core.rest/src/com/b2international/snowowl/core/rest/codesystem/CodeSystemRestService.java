@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.core.rest.resource.TerminologyResourceRestSearch;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,22 +62,23 @@ public class CodeSystemRestService extends AbstractRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystems> searchByGet(@ParameterObject final TerminologyResourceRestSearch params) {
+		
 		return CodeSystemRequests.prepareSearchCodeSystem()
-				.filterByIds(params.getId())
-				.filterByOids(params.getOid())
-				.filterByTitle(params.getTitle())
-				.filterByTitleExact(params.getTitleExact())
-				.filterByToolingIds(params.getToolingId())
-				.filterByBundleIds(params.getBundleId())
-				.filterByBundleAncestorIds(params.getBundleAncestorId())
-				.filterByStatus(params.getStatus())
-				.setLimit(params.getLimit())
-				.setExpand(params.getExpand())
-				.setFields(params.getField())
-				.setSearchAfter(params.getSearchAfter())
-				.sortBy(extractSortFields(params.getSort()))
-				.buildAsync()
-				.execute(getBus());
+			.filterByIds(params.getId())
+			.filterByOids(params.getOid())
+			.filterByTitle(params.getTitle())
+			.filterByTitleExact(params.getTitleExact())
+			.filterByToolingIds(params.getToolingId())
+			.filterByBundleIds(params.getBundleId())
+			.filterByBundleAncestorIds(params.getBundleAncestorId())
+			.filterByStatus(params.getStatus())
+			.setLimit(params.getLimit())
+			.setExpand(params.getExpand())
+			.setFields(params.getField())
+			.setSearchAfter(params.getSearchAfter())
+			.sortBy(extractSortFields(params.getSort()))
+			.buildAsync(params.getTimestamp())
+			.execute(getBus());
 	}
 	
 	@Operation(
@@ -93,9 +95,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "404", description = "Branch not found")
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<CodeSystems> searchByPost(
-			@RequestBody(required = false)
-			final TerminologyResourceRestSearch params) {
+	public @ResponseBody Promise<CodeSystems> searchByPost(@RequestBody(required = false) final TerminologyResourceRestSearch params) {
 		return searchByGet(params);
 	}
 
@@ -109,11 +109,20 @@ public class CodeSystemRestService extends AbstractRestService {
 	})
 	@GetMapping(value = "/{codeSystemId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystem> get(
-			@Parameter(description="The code system identifier")
-			@PathVariable(value="codeSystemId") final String codeSystemId) {
+		@Parameter(description="The code system identifier")
+		@PathVariable(value="codeSystemId") final String codeSystemId,
+		
+		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		final Long timestamp,
+		
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
 		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
-				.buildAsync()
-				.execute(getBus());
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.buildAsync(timestamp)
+			.execute(getBus());
 	}
 	
 	@Operation(
@@ -128,11 +137,11 @@ public class CodeSystemRestService extends AbstractRestService {
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@RequestBody
-			final ResourceRequest<CodeSystemCreateRestInput> body,
-			
-			@RequestHeader(value = X_AUTHOR, required = false)
-			final String author) {
+		@RequestBody
+		final ResourceRequest<CodeSystemCreateRestInput> body,
+		
+		@RequestHeader(value = X_AUTHOR, required = false)
+		final String author) {
 
 		
 		final String commitComment = Strings.isNullOrEmpty(body.getCommitComment()) ? String.format("Created new Code System %s", body.getChange().getId()) : body.getCommitComment();
