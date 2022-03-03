@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,67 +13,64 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.internal.locks;
+//package com.b2international.snowowl.core.internal.locks;
+//
+//import java.util.Map;
+//
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//
+//import com.b2international.snowowl.core.locks.IOperationLockTargetListener;
+//import com.b2international.snowowl.rpc.RpcSession;
+//import com.b2international.snowowl.rpc.RpcThreadLocal;
+//import com.google.common.collect.HashMultimap;
+//import com.google.common.collect.Maps;
+//import com.google.common.collect.Multimap;
 
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.b2international.snowowl.core.locks.IOperationLockTargetListener;
-import com.b2international.snowowl.rpc.RpcSession;
-import com.b2international.snowowl.rpc.RpcThreadLocal;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-
-/**
- * 
- */
-public class RemoteLockTargetListener implements IOperationLockTargetListener {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLockTargetListener.class);
-
-	private final Map<RpcSession, Multimap<DatastoreLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
-
-	@Override
-	public void targetAcquired(final DatastoreLockTarget target, final DatastoreLockContext context) {
-
-		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
-
-		if (null == session) {
-			return;
-		}
-
-		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession;
-
-		if (remotelyLockedContexts.containsKey(session)) {
-			targetsForSession = remotelyLockedContexts.get(session);
-		} else {
-			targetsForSession = HashMultimap.create();
-			remotelyLockedContexts.put(session, targetsForSession);
-		}
-
-		targetsForSession.put(target, context);
-	}
-
-	@Override
-	public void targetReleased(final DatastoreLockTarget target, final DatastoreLockContext context) {
-
-		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
-
-		if (null == session) {
-			return;
-		}
-
-		if (!remotelyLockedContexts.containsKey(session)) {
-			return;
-		}
-
-		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.get(session);
-		targetsForSession.remove(target, context);
-	}
-
+//public class RemoteLockTargetListener implements IOperationLockTargetListener {
+//
+//	private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLockTargetListener.class);
+//
+//	private final Map<RpcSession, Multimap<DatastoreLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
+//
+//	@Override
+//	public void targetAcquired(final DatastoreLockTarget target, final DatastoreLockContext context) {
+//
+//		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
+//
+//		if (null == session) {
+//			return;
+//		}
+//
+//		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession;
+//
+//		if (remotelyLockedContexts.containsKey(session)) {
+//			targetsForSession = remotelyLockedContexts.get(session);
+//		} else {
+//			targetsForSession = HashMultimap.create();
+//			remotelyLockedContexts.put(session, targetsForSession);
+//		}
+//
+//		targetsForSession.put(target, context);
+//	}
+//
+//	@Override
+//	public void targetReleased(final DatastoreLockTarget target, final DatastoreLockContext context) {
+//
+//		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
+//
+//		if (null == session) {
+//			return;
+//		}
+//
+//		if (!remotelyLockedContexts.containsKey(session)) {
+//			return;
+//		}
+//
+//		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.get(session);
+//		targetsForSession.remove(target, context);
+//	}
+//
 //	@Override
 //	protected void onLogout(final IApplicationSessionManager manager, final RpcSession session) {
 //
@@ -108,4 +105,4 @@ public class RemoteLockTargetListener implements IOperationLockTargetListener {
 //			}
 //		}
 //	}
-}
+//}
