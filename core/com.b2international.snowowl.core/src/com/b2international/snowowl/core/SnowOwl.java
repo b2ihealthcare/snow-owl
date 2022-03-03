@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import javax.validation.Validator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.URIUtil;
-import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -340,7 +339,6 @@ public final class SnowOwl {
 		if (isRunning()) {
 			log.info("Snow Owl is shutting down.");
 			this.environment.services().dispose();
-			LifecycleUtil.deactivate(environment.container());
 			running.set(false);
 		}
 	}
