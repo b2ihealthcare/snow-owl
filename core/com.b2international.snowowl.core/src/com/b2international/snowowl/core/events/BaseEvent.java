@@ -53,7 +53,7 @@ public abstract class BaseEvent implements Event {
 	 * @return 
 	 */
 	protected String tag() {
-		return IMessage.DEFAULT_TAG;
+		return IMessage.TAG_EVENT;
 	}
 
 	@Override
