@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>net4j-parent</artifactId>
+	<artifactId>netty-parent</artifactId>
 	<packaging>pom</packaging>
 	
 	<parent>
@@ -15,8 +15,6 @@
 	<modules>
 		<module>com.b2international.snowowl.eventbus</module>
 		<module>com.b2international.snowowl.eventbus.tests</module>
-		<module>com.b2international.snowowl.rpc</module>
-		<module>com.b2international.snowowl.rpc.test</module>
 	</modules>
 	
 </project>

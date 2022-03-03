@@ -64,7 +64,7 @@
 		<module>commons</module>
 		<module>core</module>
 		<module>fhir</module>
-		<module>net4j</module>
+		<module>netty</module>
 		<module>snomed</module>
 		<module>cis</module>
 		<module>tests</module>
