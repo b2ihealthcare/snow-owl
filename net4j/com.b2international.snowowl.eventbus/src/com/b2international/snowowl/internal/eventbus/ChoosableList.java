@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.internal.eventbus;
 import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 
 /**
  * A thread-safe list of container that accepts unique elements only, and allows
@@ -59,12 +58,12 @@ public class ChoosableList<T> implements Iterable<T> {
 		}
 	}
 
-	public boolean add(final T handler) {
+	public boolean addIfAbsent(final T handler) {
 		return list.addIfAbsent(handler);
 	}
 
-	public boolean removeIf(final Predicate<? super T> filter) {
-		return list.removeIf(filter);
+	public boolean remove(final T handler) {
+		return list.remove(handler);
 	}
 
 	@Override

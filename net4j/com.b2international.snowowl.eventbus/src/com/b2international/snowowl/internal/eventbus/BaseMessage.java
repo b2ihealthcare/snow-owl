@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.snowowl.eventbus.IMessage;
-import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -39,8 +38,6 @@ import com.google.common.collect.ImmutableMap;
 	/*package*/ boolean send;
 	/*package*/ String replyAddress;
 	/*package*/ EventBus bus;
-	// used for message reply only
-	/*package*/ IEventBusNettyHandler via;
 
 	/*package*/ BaseMessage(String address, Object body, String tag, final Map<String, String> headers) {
 		this(address, null, true, body, tag, headers);
@@ -138,7 +135,7 @@ import com.google.common.collect.ImmutableMap;
 	@Override
 	public void reply(Object message, Map<String, String> headers) {
 		if (message != null) {
-			sendReply(new BaseMessage(replyAddress, message, IMessage.REPLY_TAG, headers));
+			sendReply(new BaseMessage(replyAddress, message, IMessage.TAG_REPLY, headers));
 		}
 	}
 
@@ -158,7 +155,7 @@ import com.google.common.collect.ImmutableMap;
 
 	private void sendReply(BaseMessage reply) {
 		if (bus != null && !MessageFactory.isNullOrEmpty(reply.address)) {
-			bus.sendReply(via, reply, null);
+			bus.sendMessage(true, reply, null);
 		}
 	}
 	
