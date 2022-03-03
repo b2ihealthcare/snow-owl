@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,12 @@ public interface IMessage {
 	/**
 	 * Default tag for messages.
 	 */
-	String DEFAULT_TAG = "event";
+	String TAG_EVENT = "event";
 	
 	/**
 	 * Tag for response messages.
 	 */
-	String REPLY_TAG = "reply";
+	String TAG_REPLY = "reply";
 	
 	/**
 	 * @return the current headers {@link Map} or an empty {@link Map}.
@@ -126,5 +126,4 @@ public interface IMessage {
 	 * @see IMessage#body(Class)
 	 */
 	boolean isSucceeded();
-
 }

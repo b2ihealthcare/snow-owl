@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.internal.eventbus;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.b2international.snowowl.internal.eventbus.MessageFactory.checkAddress;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -51,6 +52,7 @@ public class EventBus implements IEventBus {
 
 	private final ConcurrentMap<String, ChoosableList<Handler>> remoteHandlerMap;
 	private final ConcurrentMap<String, ChoosableList<Handler>> localHandlerMap;
+	
 	private final ConcurrentMap<String, AtomicLong> inQueueMessages;
 	private final ConcurrentMap<String, AtomicLong> currentlyProcessingMessages;
 	private final ConcurrentMap<String, AtomicLong> succeededMessages;
@@ -70,7 +72,12 @@ public class EventBus implements IEventBus {
 		checkArgument(maxThreads >= 0, "Number of workers must be greater than zero");
 		this.description = description;
 		this.maxThreads = maxThreads;
-		this.executorServiceFactory = (maxThreads == 0) ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
+		
+		if (maxThreads == 0) {
+			this.executorServiceFactory = ExecutorServiceFactory.DIRECT;
+		} else {
+			this.executorServiceFactory = new WorkerExecutorServiceFactory();
+		}
 		
 		// init stat maps with 1-4 concurrencyLevel
 		final int concurrencyLevel = Ints.constrainToRange(maxThreads, 1, 4);
@@ -105,7 +112,7 @@ public class EventBus implements IEventBus {
 
 	@Override
 	public IEventBus send(String address, Object message, Map<String, String> headers) {
-		return send(address, message, IMessage.DEFAULT_TAG, headers);
+		return send(address, message, IMessage.TAG_EVENT, headers);
 	}
 	
 	@Override
@@ -114,104 +121,98 @@ public class EventBus implements IEventBus {
 	}
 	
 	@Override
-	public IEventBus send(String address, Object message, Map<String, String> headers, IHandler<IMessage> handler) {
-		return send(address, message, IMessage.DEFAULT_TAG, headers, handler);
+	public IEventBus send(String address, Object message, Map<String, String> headers, IHandler<IMessage> replyHandler) {
+		return send(address, message, IMessage.TAG_EVENT, headers, replyHandler);
 	}
 
 	@Override
 	public IEventBus send(String address, Object message, String tag, Map<String, String> headers, IHandler<IMessage> replyHandler) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag, headers), true, replyHandler);
+		return sendMessage(true, MessageFactory.createMessage(address, message, tag, headers), replyHandler);
 	}
 	
 	@Override
 	public IEventBus publish(String address, Object message, Map<String, String> headers) {
-		return publish(address, message, IMessage.DEFAULT_TAG, headers);
+		return publish(address, message, IMessage.TAG_EVENT, headers);
 	}
 	
 	@Override
 	public IEventBus publish(String address, Object message, String tag, Map<String, String> headers) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag, headers), false, null);
+		return sendMessage(false, MessageFactory.createMessage(address, message, tag, headers), null);
 	}
 	
-	/*package*/ IEventBus sendReply(IEventBusNettyHandler via, BaseMessage message, IHandler<IMessage> replyHandler) {
-		return sendMessageInternal(via, message, true, replyHandler);
-	}
-	
-	private IEventBus sendMessageInternal(IEventBusNettyHandler via, BaseMessage message, boolean send, IHandler<IMessage> replyHandler) {
+	/*package*/ IEventBus sendMessage(boolean send, BaseMessage message, IHandler<IMessage> replyHandler) {
 		checkActive();
+		message.bus = this;
 		message.send = send;
 		
 		// Register reply handler to a random address for non-broadcast messages only, if they have one 
 		if (replyHandler != null && send) {
 			final String replyAddress = UUID.randomUUID().toString();
 			message.replyAddress = replyAddress;
-			registerHandler(replyAddress, replyHandler, true);
+			doRegisterHandler(replyAddress, replyHandler, true);
 		}
 		
-		if (via != null) {
-			// The message is sent back through the same protocol handler it was received from 
-			via.handle(message);
-		} else {
-			final ChoosableList<Handler> handlers = remoteHandlerMap.get(message.address());
-			if (handlers != null) {
-				// Remote handlers are optional, no "dead letter" response needs to be sent if they are not present
-				receiveMessage(handlers, message);
-			}
-			receiveMessage(message);
-		}
-		
+		// Allow both local and remote handlers to process the message
+		handleMessage(message, remoteHandlerMap);
+		handleMessage(message, localHandlerMap);
 		return this;
 	}
 	
 	@Override
-	public IEventBus receive(IMessage message) {
+	public IEventBus receive(IMessage message, IHandler<IMessage> replyHandler) {
 		checkArgument(message instanceof BaseMessage, "Accepts only BaseMessage instances");
-		receiveMessage((BaseMessage) message);
+		final BaseMessage baseMessage = (BaseMessage) message;
+		
+		// Register reply handler to a random address for non-broadcast messages only, if they have one 
+		if (replyHandler != null && message.isSend()) {
+			final String replyAddress = UUID.randomUUID().toString();
+			baseMessage.replyAddress = replyAddress;
+			doRegisterHandler(replyAddress, replyHandler, true);
+		}
+		
+		// Received messages are delivered to local listeners only (see javadoc)
+		baseMessage.bus = this;
+		handleMessage(baseMessage, localHandlerMap);
 		return this;
 	}
 	
-	private void receiveMessage(BaseMessage message) {
-		message.bus = this;
-		final ChoosableList<Handler> handlers = localHandlerMap.get(message.address());
-		receiveMessage(handlers, message);
-	}
-	
-	private void receiveMessage(ChoosableList<Handler> handlers, BaseMessage message) {
+	private void handleMessage(BaseMessage message, ConcurrentMap<String, ChoosableList<Handler>> handlerMap) {
 		LOG.trace("Received message: {}", message);
-		if (handlers != null) {
-			if (message.isSend()) {
-				final Handler handler = handlers.choose();
-				if (handler != null) {
-					doReceive(message, handler);
-				}
-			} else {
-				for (final Handler holder : handlers) {
-					doReceive(message, holder);
-				}
-			}
-		} else {
+		final ChoosableList<Handler> handlers = handlerMap.get(message.address());
+		
+		if (handlers == null) {
 			// TODO send reply to indicate that there is no handler
 			LOG.trace("No event handler registered to handle message: {}", message);
+			return;
+		}
+		
+		if (message.isSend()) {
+			// Pick a single item out of all available handlers
+			final Handler handler = handlers.choose();
+			if (handler != null) {
+				handleMessage(message, handler);
+			}
+		} else {
+			// Pass the message on to all available handlers
+			for (final Handler handler : handlers) {
+				handleMessage(message, handler);
+			}
 		}
 	}
 	
-	private void doReceive(final IMessage message, final Handler holder) {
+	private void handleMessage(final IMessage message, final Handler handler) {
 		queue(message);
-		holder.context.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					process(message);
-					holder.handler.handle(message);
-				} catch (Exception e) {
-					LOG.error("Exception happened while delivering message", e);
-					message.fail(e);
-				} finally {
-					complete(message);
-					if (holder.isReplyHandler) {
-						unregisterHandler(holder.address, holder.handler, holder.isReplyHandler);
-					}
-				}
+		
+		executorService.submit(() -> {
+			try {
+				process(message);
+				handler.handleMessage(message);
+			} catch (Exception e) {
+				LOG.error("Exception happened while delivering message", e);
+				message.fail(e);
+			} finally {
+				complete(message);
+				handler.onComplete(this);
 			}
 		});
 	}
@@ -257,14 +258,14 @@ public class EventBus implements IEventBus {
 	@Override
 	public IEventBus registerHandler(String address, IHandler<IMessage> handler) {
 		if (isActive()) {
-			registerHandler(address, handler, false);
+			doRegisterHandler(address, handler, false);
 		}
 		return this;
 	}
 
-	private void registerHandler(String address, IHandler<IMessage> handler, boolean replyHandler) {
+	private void doRegisterHandler(String address, IHandler<IMessage> handler, boolean replyHandler) {
 		checkActive();
-		MessageFactory.checkAddress(address);
+		checkAddress(address);
 		if (handler == null) {
 			return;
 		}
@@ -280,16 +281,19 @@ public class EventBus implements IEventBus {
 			localHandler = true;
 		}
 		
-		final Handler h = new Handler(address, handler, executorService, replyHandler);
-		final boolean handlerAdded = handlers.add(h);
-		if (handlerAdded) {
-			LOG.trace("Registered handler {} to address {}", handler, address);
+		final Handler h = new Handler(address, handler, replyHandler);
+		final boolean handlerAdded = handlers.addIfAbsent(h);
+		if (!handlerAdded) {
+			return;
+		}
+		
+		LOG.trace("Registered handler {} to address {}", handler, address);
 			
-			if (localHandler && !replyHandler && !HANDLERS.equals(address)) {
-				final int oldCount = addressBook.add(address, 1);
-				if (oldCount == 0) {
-					publish(HANDLERS, new HandlerChangedEvent(Type.ADDED, Set.of(address)), Map.of());
-				}
+		if (localHandler && !replyHandler && !HANDLERS.equals(address)) {
+			// if this is the first local handler, broadcast registration event
+			final int oldCount = addressBook.add(address, 1);
+			if (oldCount == 0) {
+				publish(HANDLERS, new HandlerChangedEvent(Type.ADDED, Set.of(address)), Map.of());
 			}
 		}
 	}
@@ -297,14 +301,14 @@ public class EventBus implements IEventBus {
 	@Override
 	public IEventBus unregisterHandler(String address, IHandler<IMessage> handler) {
 		if (isActive()) {
-			unregisterHandler(address, handler, false);
+			doUnregisterHandler(address, handler);
 		}
 		return this;
 	}
 	
-	private void unregisterHandler(String address, IHandler<IMessage> handler, boolean replyHandler) {
+	private void doUnregisterHandler(String address, IHandler<IMessage> handler) {
 		checkActive();
-		MessageFactory.checkAddress(address);
+		checkAddress(address);
 		if (handler == null) {
 			return;
 		}
@@ -320,32 +324,30 @@ public class EventBus implements IEventBus {
 			localHandler = true;
 		}
 				
-		final ChoosableList<Handler> handlers = handlerMap.get(address);
-		if (handlers == null) {
-			return;
-		}
-			
-		final boolean handlerRemoved = handlers.removeIf(holder -> holder.handler == handler);
-		if (handlerRemoved) {
-			LOG.trace("Unregistered handler {} from address {}", handler, address);
-			
-			// Remove list atomically if empty 
-			handlerMap.computeIfPresent(address, (key, currentHandlers) -> {
-				if (currentHandlers.isEmpty()) {
-					return null;
-				} else {
-					return currentHandlers;
-				}
-			});
-			
-			if (localHandler && !replyHandler && !HANDLERS.equals(address)) {
-				// if this was the last non protocol based handler, send unregistration event
-				final int oldCount = addressBook.remove(address, 1);
-				if (oldCount == 1) {
-					publish(HANDLERS, new HandlerChangedEvent(Type.REMOVED, Set.of(address)), Map.of());
+		handlerMap.computeIfPresent(address, (key, currentHandlers) -> {
+			// The "isReplyHandler" flag is not compared in equals checks
+			final Handler h = new Handler(address, handler, false);
+			final boolean handlerRemoved = currentHandlers.remove(h);
+
+			if (handlerRemoved) {
+				LOG.trace("Unregistered handler {} from address {}", handler, address);
+				
+				if (localHandler && !HANDLERS.equals(address)) {
+					// if this was the last local handler, broadcast unregistration event
+					final int oldCount = addressBook.remove(address, 1);
+					if (oldCount == 1) {
+						publish(HANDLERS, new HandlerChangedEvent(Type.REMOVED, Set.of(address)), Map.of());
+					}
 				}
 			}
-		}
+
+			// Unregister empty handler lists
+			if (currentHandlers.isEmpty()) {
+				return null;
+			} else {
+				return currentHandlers;
+			}
+		});
 	}
 	
 	@Override
@@ -385,16 +387,24 @@ public class EventBus implements IEventBus {
 	
 	private static class Handler {
 		
-		final String address;
-		final IHandler<IMessage> handler;
-		final boolean isReplyHandler;
-		final ExecutorService context;
+		private final String address;
+		private final IHandler<IMessage> handler;
+		private final boolean isReplyHandler;
 
-		public Handler(String address, IHandler<IMessage> handler, ExecutorService context, boolean isReplyHandler) {
+		public Handler(String address, IHandler<IMessage> handler, boolean isReplyHandler) {
 			this.address = address;
 			this.handler = handler;
-			this.context = context;
 			this.isReplyHandler = isReplyHandler;
+		}
+
+		public void handleMessage(IMessage message) {
+			handler.handle(message);
+		}
+
+		public void onComplete(IEventBus eventBus) {
+			if (isReplyHandler) {
+				eventBus.unregisterHandler(address, handler);
+			}			
 		}
 
 		@Override

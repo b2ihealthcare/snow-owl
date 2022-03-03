@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.io.*;
 import java.util.Map;
 
 import com.b2international.snowowl.eventbus.IMessage;
-import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 
 /**
  * @since 3.1
@@ -45,51 +44,39 @@ public class MessageFactory {
 
 	public static IMessage writeMessage(IMessage message) throws IOException {
 		checkNotNull(message, "Message should not be null");
-		checkArgument(message.body() instanceof Serializable, String.format("Message body type should be subtype of Serializable on address: %s, but was %s", message.address(), message.body()));
-
-		/* 
-		 * Replace message body with an input stream; it is unlikely that someone would want to 
-		 * send a stream over a message.
+		
+		/*
+		 * Replace message body with an input stream, if hasn't been done already. It
+		 * would be useless to send a serialized instance of an input stream over a
+		 * message, so there is no possibility of confusion.
 		 */
-		final Object serializedBody;
-		if (message.body() instanceof ByteArrayInputStream) {
-			serializedBody = message.body();
+		final String address = message.address();
+		final Object body = message.body();
+		final ByteArrayInputStream serializableBody;
+		
+		if (body instanceof ByteArrayInputStream) {
+			serializableBody = (ByteArrayInputStream) body;
+		} else if (body instanceof Serializable) {
+			serializableBody = new ByteArrayInputStream(toByteArray((Serializable) body));
 		} else {
-			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-				try (final ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-					oos.writeObject(message.body());
-				}
-				
-				serializedBody = new ByteArrayInputStream(baos.toByteArray());
-			}
+			final String className = (body == null) ? "null" : "'" + body.getClass().getSimpleName() + "'";
+			throw new IllegalArgumentException(String.format("Message body should be a subtype of Serializable on address '%s', but was %s", address, className));
 		}
-			
-		final BaseMessage serializedMessage = createMessage(message.address(), 
-			serializedBody, 
-			message.tag(), 
-			message.headers());
-		
-		serializedMessage.replyAddress = message.replyAddress();
-		serializedMessage.send = message.isSend();
-		serializedMessage.succeeded = message.isSucceeded();
-		
-		return serializedMessage;
+
+		final BaseMessage serializableMessage = createMessage(address, serializableBody, message.tag(), message.headers());
+		serializableMessage.replyAddress = message.replyAddress();
+		serializableMessage.send = message.isSend();
+		serializableMessage.succeeded = message.isSucceeded();
+		return serializableMessage;
 	}
 	
-	public static IMessage readMessage(IMessage message, IEventBusNettyHandler via) throws IOException {
-		// Keep the message body in input stream form; it will be de-serialized on demand
-		final BaseMessage messageWithSource = createMessage(message.address(), 
-			message.body(), 
-			message.tag(), 
-			message.headers());
-		
-		messageWithSource.replyAddress = message.replyAddress();
-		messageWithSource.send = message.isSend();
-		messageWithSource.succeeded = message.isSucceeded();
-
-		// Indicate that the message came from a bridge, which should be used when replying
-		messageWithSource.via = via;
-		
-		return messageWithSource;
+	private static byte[] toByteArray(Serializable body) throws IOException {
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			try (final ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+				oos.writeObject(body);
+			}
+			
+			return baos.toByteArray();
+		}
 	}
 }

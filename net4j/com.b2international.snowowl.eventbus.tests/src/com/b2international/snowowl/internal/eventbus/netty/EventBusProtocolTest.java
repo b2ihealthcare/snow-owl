@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,28 @@
  */
 package com.b2international.snowowl.internal.eventbus.netty;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.eventbus.EventBusUtil;
+import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 import com.b2international.snowowl.internal.eventbus.EventBus;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
@@ -47,56 +47,38 @@ public class EventBusProtocolTest {
 
 	private static final String ADDRESS = "address";
 
-	private EventLoopGroup bossGroup;
-	private EventLoopGroup workerGroup;
 	private EventBus serverBus;
 	private EventBus clientBus;
+
+	private EventLoopGroup bossGroup;
+	private EventLoopGroup workerGroup;
 	private Channel clientChannel;
 	private Channel serverChannel;
 
 	@Before
 	public void setup() throws InterruptedException {
+		serverBus = (EventBus) EventBusUtil.getBus();
+		clientBus = (EventBus) EventBusUtil.getBus("client", 4);
+		
 		bossGroup = new NioEventLoopGroup(1);
 		workerGroup = new NioEventLoopGroup();
 
-		serverBus = (EventBus) EventBusUtil.getBus();
-
-		ServerBootstrap b = new ServerBootstrap()
+		final ServerBootstrap serverBootstrap = new ServerBootstrap()
 			.group(bossGroup, workerGroup)
-			.handler(new LoggingHandler(LogLevel.INFO))
+			.handler(new LoggingHandler(LogLevel.WARN))
 			.channel(LocalServerChannel.class)
-			.childHandler(new ChannelInitializer<LocalChannel>() {
-				@Override
-				public void initChannel(LocalChannel ch) throws Exception {
-					ChannelPipeline p = ch.pipeline();
-					p.addLast(
-						new ObjectEncoder(),
-						new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-						new EventBusNettyHandler(false, serverBus));
-				}
-			});
+			.childHandler(EventBusNettyUtil.createChannelHandler(false, true, serverBus, null));
 		
-		serverChannel = b.bind(new LocalAddress("eb"))
+		serverChannel = serverBootstrap.bind(new LocalAddress("eventbus-local"))
 			.sync()
 			.channel();
 
-		clientBus = (EventBus) EventBusUtil.getBus("client", 4);
-
-		Bootstrap cb = new Bootstrap()
+		final Bootstrap clientBootstrap = new Bootstrap()
 			.group(workerGroup)
 			.channel(LocalChannel.class)
-			.handler(new ChannelInitializer<LocalChannel>() {
-				@Override
-				public void initChannel(LocalChannel ch) throws Exception {
-					ChannelPipeline p = ch.pipeline();
-					p.addLast(
-						new ObjectEncoder(),
-						new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-						new EventBusNettyHandler(true, clientBus));
-				}
-			});
+			.handler(EventBusNettyUtil.createChannelHandler(false, false, clientBus, null));
 		
-		clientChannel = cb.connect(new LocalAddress("eb"))
+		clientChannel = clientBootstrap.connect(new LocalAddress("eventbus-local"))
 			.sync()
 			.channel();
 	}
@@ -104,21 +86,32 @@ public class EventBusProtocolTest {
 	@After
 	public void teardown() throws InterruptedException {
 		clientChannel.close().sync();
-		clientBus.deactivate();
-		
 		serverChannel.close().sync();
-		serverBus.deactivate();
 		
 		workerGroup.shutdownGracefully();
 		bossGroup.shutdownGracefully();
+		
+		clientBus.deactivate();
+		serverBus.deactivate();
 	}
 	
 	@Test
 	public void testRemoteSend() throws InterruptedException {
-		serverBus.registerHandler(ADDRESS, message -> System.out.println(message.body(String.class)));
-		Thread.sleep(100L);
-		serverBus.send(ADDRESS, "server", Map.of());
-		clientBus.send(ADDRESS, "client", Map.of());
-		Thread.sleep(100L);
+		serverBus.registerHandler(ADDRESS, message -> {
+			final String ping = message.body(String.class);
+			System.out.println("Server got: " + ping);
+			message.reply(ping + " world");
+		});
+
+		assertTrue("Address book could not be synchronized.", EventBusNettyUtil.awaitAddressBookSynchronized(clientChannel));
+
+		final CountDownLatch latch = new CountDownLatch(1);
+
+		clientBus.send(ADDRESS, "hello", Map.of(), message -> { 
+			System.out.println("Client got: " + message.body(String.class));
+			latch.countDown();
+		});
+		
+		assertTrue("Response not received from server bus within 1 second.", latch.await(1L, TimeUnit.SECONDS));
 	}
 }
