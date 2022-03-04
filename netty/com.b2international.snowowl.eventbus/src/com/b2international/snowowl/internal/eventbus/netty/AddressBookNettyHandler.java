@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import com.google.common.collect.Sets;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
@@ -62,7 +64,42 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 
 	// Handler is stateful, ie. a separate instance is maintained for each connection
 	private final Set<String> remoteAddresses = Sets.newConcurrentHashSet();
-	private volatile ChannelHandlerContext ctx;
+	
+	private static class ContextWithPromise {
+		private final ChannelPromise promise;
+		private final ChannelHandlerContext ctx;
+		
+		private ContextWithPromise(final ChannelHandlerContext ctx) {
+			this.ctx = ctx;
+			this.promise = (ctx == null) ? null : ctx.newPromise();
+		}
+
+		private void channelWrite(final IMessage message) {
+			if (ctx != null) {
+				ctx.writeAndFlush(message);
+			} else {
+				LOG.warn("Channel not active, message for address '{}' was dropped.", message.address());
+			}
+		}
+
+		private void setSuccess() {
+			if (promise != null) {
+				promise.setSuccess();
+			} else {
+				throw new IllegalStateException("Channel not active but address synchronization was signalled.");
+			}
+		}
+
+		private boolean awaitAddressBookSynchronized(final long time, final TimeUnit timeUnit) throws InterruptedException {
+			if (promise != null) {
+				return promise.await(time, timeUnit);
+			} else {
+				return false;
+			}
+		}
+	}
+	
+	private volatile ContextWithPromise currentContext = new ContextWithPromise(null); 
 
 	public AddressBookNettyHandler(final boolean sendInitialSync, final IEventBus eventBus, final IHandler<IMessage> messageHandler) {
 		this.sendInitialSync = sendInitialSync;
@@ -72,7 +109,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 
 	@Override
 	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-		this.ctx = ctx;
+		currentContext = new ContextWithPromise(ctx);
 		eventBus.registerHandler(IEventBus.HANDLERS, this);
 
 		if (sendInitialSync) {
@@ -86,7 +123,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 	
 	@Override
 	public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
-		this.ctx = null;
+		currentContext = new ContextWithPromise(null);
 		eventBus.unregisterHandler(IEventBus.HANDLERS, this);
 		
 		// Unregister handler that does the actual exchange of messages from all subscribed addresses
@@ -130,8 +167,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 				}
 
 				// Signal that the channel can now exchange regular messages
-				ctx.channel().attr(KEY_ADDRESS_BOOK_SYNCHRONIZED).set(Boolean.TRUE);
-				ctx.fireUserEventTriggered(KEY_ADDRESS_BOOK_SYNCHRONIZED);
+				currentContext.setSuccess();
 				break;
 			case ADDED:
 				registerAddresses(addresses);
@@ -143,6 +179,10 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 				LOG.warn("Unexpected handler change request type '{}', ignoring.");
 				break;
 		}
+	}
+	
+	public boolean awaitAddressBookSynchronized(final long time, final TimeUnit timeUnit) throws InterruptedException {
+		return currentContext.awaitAddressBookSynchronized(time, timeUnit);
 	}
 	
 	private ChannelFuture channelWrite(final ChannelHandlerContext ctx, final IMessage message) {
@@ -160,12 +200,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 
 	@Override
 	public void handle(final IMessage message) {
-		final ChannelHandlerContext localCtx = ctx;
-		if (localCtx != null) {
-			channelWrite(localCtx, message);
-		} else {
-			LOG.warn("Channel not active, message for address '{}' was dropped.", message.address());
-		}
+		currentContext.channelWrite(message);
 	}
 
 	private void registerAddresses(final Set<String> addresses) {
