@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.eventbus.netty;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -24,14 +23,15 @@ import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.internal.eventbus.netty.AddressBookNettyHandler;
 import com.b2international.snowowl.internal.eventbus.netty.EventBusNettyHandler;
 
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.compression.JdkZlibDecoder;
 import io.netty.handler.codec.compression.JdkZlibEncoder;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 
 /**
  * @since 8.1.0
@@ -39,30 +39,8 @@ import io.netty.util.AttributeKey;
 public final class EventBusNettyUtil {
 
 	public static boolean awaitAddressBookSynchronized(final Channel channel) throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
-		final SimpleUserEventChannelHandler<AttributeKey<?>> handler = new SimpleUserEventChannelHandler<AttributeKey<?>>() {
-			@Override
-			protected void eventReceived(final ChannelHandlerContext ctx, final AttributeKey<?> key) throws Exception {
-				if (IEventBusNettyHandler.KEY_ADDRESS_BOOK_SYNCHRONIZED == key) {
-					latch.countDown();
-				}
-			}
-		};
-		
-		try {
-			
-			channel.pipeline().addLast(handler);
-		
-			final Attribute<Boolean> attribute = channel.attr(IEventBusNettyHandler.KEY_ADDRESS_BOOK_SYNCHRONIZED);
-			if (attribute != null && Boolean.TRUE.equals(attribute.get())) {
-				latch.countDown();
-			}
-			
-			return latch.await(3L, TimeUnit.SECONDS);
-			
-		} finally {
-			channel.pipeline().remove(handler);
-		}
+		final AddressBookNettyHandler addressBookHandler = channel.pipeline().get(AddressBookNettyHandler.class);
+		return addressBookHandler.awaitAddressBookSynchronized(3L, TimeUnit.SECONDS);
 	}
 	
 	/**

@@ -19,15 +19,10 @@ import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
 import io.netty.channel.ChannelInboundHandler;
-import io.netty.util.AttributeKey;
 
 /**
  * @since 8.1.0
  */
 public interface IEventBusNettyHandler extends ChannelInboundHandler, IHandler<IMessage> {
-	
-	/**
-	 * Channel attribute and user event key to indicate that the address book exchange was completed.
-	 */
-	public static final AttributeKey<Boolean> KEY_ADDRESS_BOOK_SYNCHRONIZED = AttributeKey.valueOf("addressBookSynchronized");
+	// Empty interface body
 }
