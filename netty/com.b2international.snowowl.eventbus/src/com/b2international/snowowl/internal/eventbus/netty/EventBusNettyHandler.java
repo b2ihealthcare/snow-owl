@@ -26,7 +26,6 @@ import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 import com.b2international.snowowl.internal.eventbus.MessageFactory;
 
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -83,16 +82,14 @@ public class EventBusNettyHandler extends SimpleChannelInboundHandler<IMessage> 
 		eventBus.receive(message, replyHandler);
 	}
 	
-	private ChannelFuture channelWrite(final ChannelHandlerContext ctx, final IMessage message) {
-		/* 
-		 * Forward the message to the client through the channel, serializing the message 
-		 * body to a byte array input stream first.
-		 */
+	private void channelWrite(final ChannelHandlerContext ctx, final IMessage message) {
 		try {
-			return ctx.writeAndFlush(MessageFactory.writeMessage(message));
+			ctx.writeAndFlush(MessageFactory.writeMessage(message))
+				.addListener(f -> { if (!f.isSuccess()) {
+					LOG.error("Exception happened when sending message", f.cause());
+				}});
 		} catch (final IOException e) {
-			LOG.error("Exception happened while sending async request", e);
-			return ctx.newSucceededFuture();
+			LOG.error("Exception happened trying to send message", e);
 		}
 	}
 	

@@ -17,9 +17,13 @@ package com.b2international.snowowl.internal.eventbus.netty;
 
 import static org.junit.Assert.assertTrue;
 
+import java.net.InetSocketAddress;
+import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,13 +36,14 @@ import com.b2international.snowowl.internal.eventbus.EventBus;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.local.LocalAddress;
-import io.netty.channel.local.LocalChannel;
-import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 /**
  * @since 3.1
@@ -56,29 +61,41 @@ public class EventBusProtocolTest {
 	private Channel serverChannel;
 
 	@Before
-	public void setup() throws InterruptedException {
-		serverBus = (EventBus) EventBusUtil.getBus();
+	public void setup() throws InterruptedException, SSLException, CertificateException {
+		serverBus = (EventBus) EventBusUtil.getBus("server", 4);
 		clientBus = (EventBus) EventBusUtil.getBus("client", 4);
 		
 		bossGroup = new NioEventLoopGroup(1);
-		workerGroup = new NioEventLoopGroup();
+		workerGroup = new NioEventLoopGroup(1);
+		
+		final ClassLoader classLoader = getClass().getClassLoader();
 
+		final SelfSignedCertificate ssc = new SelfSignedCertificate();
+		final SslContext sslServerCtx = SslContextBuilder
+			.forServer(ssc.certificate(), ssc.privateKey())
+			.build();
+		
 		final ServerBootstrap serverBootstrap = new ServerBootstrap()
 			.group(bossGroup, workerGroup)
-			.handler(new LoggingHandler(LogLevel.WARN))
-			.channel(LocalServerChannel.class)
-			.childHandler(EventBusNettyUtil.createChannelHandler(false, true, serverBus, null));
+//			.handler(new LoggingHandler(LogLevel.INFO))
+			.channel(NioServerSocketChannel.class)
+			.childHandler(EventBusNettyUtil.createChannelHandler(sslServerCtx, false, true, serverBus, classLoader))
+			.childOption(ChannelOption.SO_KEEPALIVE, true);
 		
-		serverChannel = serverBootstrap.bind(new LocalAddress("eventbus-local"))
+		serverChannel = serverBootstrap.bind(new InetSocketAddress("127.0.0.1", 10001))
 			.sync()
 			.channel();
 
+		final SslContext sslClientCtx = SslContextBuilder.forClient()
+			.trustManager(ssc.certificate())
+			.build();
+
 		final Bootstrap clientBootstrap = new Bootstrap()
 			.group(workerGroup)
-			.channel(LocalChannel.class)
-			.handler(EventBusNettyUtil.createChannelHandler(false, false, clientBus, null));
+			.channel(NioSocketChannel.class)
+			.handler(EventBusNettyUtil.createChannelHandler(sslClientCtx, false, false, clientBus, classLoader));
 		
-		clientChannel = clientBootstrap.connect(new LocalAddress("eventbus-local"))
+		clientChannel = clientBootstrap.connect(new InetSocketAddress("127.0.0.1", 10001))
 			.sync()
 			.channel();
 	}
@@ -112,6 +129,6 @@ public class EventBusProtocolTest {
 			latch.countDown();
 		});
 		
-		assertTrue("Response not received from server bus within 1 second.", latch.await(1L, TimeUnit.SECONDS));
+		assertTrue("Response not received from server bus within 1 second.", latch.await(3L, TimeUnit.SECONDS));
 	}
 }

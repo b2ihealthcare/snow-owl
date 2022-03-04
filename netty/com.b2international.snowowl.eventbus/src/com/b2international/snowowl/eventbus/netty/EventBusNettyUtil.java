@@ -32,6 +32,7 @@ import io.netty.handler.codec.compression.JdkZlibEncoder;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.ssl.SslContext;
 
 /**
  * @since 8.1.0
@@ -40,29 +41,37 @@ public final class EventBusNettyUtil {
 
 	public static boolean awaitAddressBookSynchronized(final Channel channel) throws InterruptedException {
 		final AddressBookNettyHandler addressBookHandler = channel.pipeline().get(AddressBookNettyHandler.class);
-		return addressBookHandler.awaitAddressBookSynchronized(3L, TimeUnit.SECONDS);
+		return addressBookHandler.awaitAddressBookSynchronized(channel, 3L, TimeUnit.SECONDS);
 	}
 	
 	/**
+	 * @param sslCtx 
 	 * @param gzip
 	 * @param sendInitialSync
 	 * @param eventBus
 	 * @param classLoader
 	 * @return
 	 */
-	public static ChannelHandler createChannelHandler(boolean gzip, boolean sendInitialSync, IEventBus eventBus, ClassLoader classLoader) {
+	public static ChannelHandler createChannelHandler(SslContext sslCtx, boolean gzip, boolean sendInitialSync, IEventBus eventBus, ClassLoader classLoader) {
+		
 		return new ChannelInitializer<Channel>() {
 			@Override
 			public void initChannel(final Channel channel) throws Exception {
-				final IEventBusNettyHandler messageHandler = EventBusNettyUtil.createMessageHandler(eventBus);
-				final IEventBusNettyHandler addressBookHandler = EventBusNettyUtil.createAddressBookHandler(sendInitialSync, eventBus, messageHandler);
-
 				final ChannelPipeline pipeline = channel.pipeline();
-				if (gzip) {
+				
+//				pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+				
+				// SSL and compression are mutually exclusive
+				if (sslCtx != null) {
+					pipeline.addLast(sslCtx.newHandler(channel.alloc()));
+				} else if (gzip) {
 					pipeline.addLast(new JdkZlibEncoder(), new JdkZlibDecoder());
 				}
 				
 				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(ClassResolvers.cacheDisabled(classLoader)));
+
+				final IEventBusNettyHandler messageHandler = EventBusNettyUtil.createMessageHandler(eventBus);
+				final IEventBusNettyHandler addressBookHandler = EventBusNettyUtil.createAddressBookHandler(sendInitialSync, eventBus, messageHandler);
 				pipeline.addLast(addressBookHandler, messageHandler);
 			}
 		};
