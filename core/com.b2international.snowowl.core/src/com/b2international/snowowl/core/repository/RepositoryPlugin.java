@@ -15,19 +15,25 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.io.File;
+import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.StringUtils;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.client.TransportConfiguration;
 import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.IndexSettings;
@@ -54,10 +60,12 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 /**
  * @since 3.3
@@ -137,7 +145,8 @@ public final class RepositoryPlugin extends Plugin {
 			// Add event bus based request metrics
 			registerRequestMetrics(registry, eventBus);
 			
-			final HostAndPort hostAndPort = env.service(RepositoryConfiguration.class).getHostAndPort();
+			final RepositoryConfiguration repositoryConfiguration = env.service(RepositoryConfiguration.class);
+			final HostAndPort hostAndPort = repositoryConfiguration.getHostAndPort();
 			// open port in server environments
 			if (hostAndPort.getPort() > 0) {
 				final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
@@ -146,11 +155,42 @@ public final class RepositoryPlugin extends Plugin {
 				final boolean gzip = configuration.isGzip();
 				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
 				
+				final SslContext sslCtx;
+				try {
+				
+					final String certificateChainPath = repositoryConfiguration.getCertificateChainPath();
+					final String privateKeyPath = repositoryConfiguration.getPrivateKeyPath();
+					
+					if (!StringUtils.isEmpty(certificateChainPath) && !StringUtils.isEmpty(privateKeyPath)) {
+						
+						sslCtx = SslContextBuilder
+							.forServer(new File(certificateChainPath), new File(privateKeyPath))
+							.build();
+						
+					} else {
+						
+						try {
+							
+							final SelfSignedCertificate ssc = new SelfSignedCertificate();
+							sslCtx = SslContextBuilder
+								.forServer(ssc.certificate(), ssc.privateKey())
+							    .build();
+							
+						} catch (final CertificateException e) {
+							throw new SnowowlRuntimeException("Failed to generate self-signed certificate.", e);
+						}
+					}
+				
+				} catch (final SSLException e) {
+					throw new SnowowlRuntimeException("Failed to create server SSL context.", e);
+				}
+		        
 				final Channel serverChannel = new ServerBootstrap()
 					.group(bossGroup, workerGroup)
-					.handler(new LoggingHandler(LogLevel.INFO))
+//					.handler(new LoggingHandler(LogLevel.INFO))
 					.channel(NioServerSocketChannel.class)
-					.childHandler(EventBusNettyUtil.createChannelHandler(gzip, true, eventBus, compositeClassLoader))
+					.childHandler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, true, eventBus, compositeClassLoader))
+					.childOption(ChannelOption.SO_KEEPALIVE, true)
 					.bind(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
 					.syncUninterruptibly()
 					.channel();
@@ -165,7 +205,7 @@ public final class RepositoryPlugin extends Plugin {
 			env.services().registerService(RepositoryManager.class, repositoryManager);
 			env.services().registerService(RepositoryContextProvider.class, repositoryManager);
 			
-			int numberOfWorkers = env.service(RepositoryConfiguration.class).getMaxThreads();
+			int numberOfWorkers = repositoryConfiguration.getMaxThreads();
 			initializeRequestSupport(env, numberOfWorkers);
 			
 			LOG.debug("Initialized repository plugin.");
