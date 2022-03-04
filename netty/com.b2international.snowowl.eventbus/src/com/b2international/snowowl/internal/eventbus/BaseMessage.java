@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 3.1
  */
-/*package*/ class BaseMessage implements IMessage {
+/*package*/ class BaseMessage implements IMessage, Serializable {
 
 	private Map<String, String> headers;
 	private String tag;

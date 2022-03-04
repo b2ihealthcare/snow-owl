@@ -18,7 +18,8 @@ package com.b2international.snowowl.internal.eventbus;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 
 import com.b2international.snowowl.eventbus.IMessage;
@@ -42,7 +43,7 @@ public class MessageFactory {
 		return value == null || "".equals(value);
 	}
 
-	public static IMessage writeMessage(IMessage message) throws IOException {
+	public static BaseMessage writeMessage(IMessage message) throws IOException {
 		checkNotNull(message, "Message should not be null");
 		
 		/*
@@ -52,12 +53,10 @@ public class MessageFactory {
 		 */
 		final String address = message.address();
 		final Object body = message.body();
-		final ByteArrayInputStream serializableBody;
+		final Serializable serializableBody;
 		
-		if (body instanceof ByteArrayInputStream) {
-			serializableBody = (ByteArrayInputStream) body;
-		} else if (body instanceof Serializable) {
-			serializableBody = new ByteArrayInputStream(toByteArray((Serializable) body));
+		if (body instanceof Serializable) {
+			serializableBody = (Serializable) body;
 		} else {
 			final String className = (body == null) ? "null" : "'" + body.getClass().getSimpleName() + "'";
 			throw new IllegalArgumentException(String.format("Message body should be a subtype of Serializable on address '%s', but was %s", address, className));
@@ -68,15 +67,5 @@ public class MessageFactory {
 		serializableMessage.send = message.isSend();
 		serializableMessage.succeeded = message.isSucceeded();
 		return serializableMessage;
-	}
-	
-	private static byte[] toByteArray(Serializable body) throws IOException {
-		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			try (final ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-				oos.writeObject(body);
-			}
-			
-			return baos.toByteArray();
-		}
 	}
 }

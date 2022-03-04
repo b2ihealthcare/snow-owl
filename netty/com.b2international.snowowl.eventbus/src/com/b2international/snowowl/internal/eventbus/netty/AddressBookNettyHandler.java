@@ -31,9 +31,12 @@ import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 import com.b2international.snowowl.internal.eventbus.HandlerChangedEvent;
 import com.b2international.snowowl.internal.eventbus.MessageFactory;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
 
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -58,6 +61,9 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 
 	private static final Logger LOG = LoggerFactory.getLogger(AddressBookNettyHandler.class);
 	
+	private static final LoadingCache<Channel, ChannelPromise> SYNC_FUTURES = CacheBuilder.newBuilder()
+		.build(CacheLoader.from(ch -> ch.newPromise()));
+	
 	private final boolean sendInitialSync;
 	private final IEventBus eventBus;
 	private final IHandler<IMessage> messageHandler;
@@ -65,41 +71,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 	// Handler is stateful, ie. a separate instance is maintained for each connection
 	private final Set<String> remoteAddresses = Sets.newConcurrentHashSet();
 	
-	private static class ContextWithPromise {
-		private final ChannelPromise promise;
-		private final ChannelHandlerContext ctx;
-		
-		private ContextWithPromise(final ChannelHandlerContext ctx) {
-			this.ctx = ctx;
-			this.promise = (ctx == null) ? null : ctx.newPromise();
-		}
-
-		private void channelWrite(final IMessage message) {
-			if (ctx != null) {
-				ctx.writeAndFlush(message);
-			} else {
-				LOG.warn("Channel not active, message for address '{}' was dropped.", message.address());
-			}
-		}
-
-		private void setSuccess() {
-			if (promise != null) {
-				promise.setSuccess();
-			} else {
-				throw new IllegalStateException("Channel not active but address synchronization was signalled.");
-			}
-		}
-
-		private boolean awaitAddressBookSynchronized(final long time, final TimeUnit timeUnit) throws InterruptedException {
-			if (promise != null) {
-				return promise.await(time, timeUnit);
-			} else {
-				return false;
-			}
-		}
-	}
-	
-	private volatile ContextWithPromise currentContext = new ContextWithPromise(null); 
+	private volatile ChannelHandlerContext ctx; 
 
 	public AddressBookNettyHandler(final boolean sendInitialSync, final IEventBus eventBus, final IHandler<IMessage> messageHandler) {
 		this.sendInitialSync = sendInitialSync;
@@ -109,7 +81,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 
 	@Override
 	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-		currentContext = new ContextWithPromise(ctx);
+		this.ctx = ctx;
 		eventBus.registerHandler(IEventBus.HANDLERS, this);
 
 		if (sendInitialSync) {
@@ -123,7 +95,9 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 	
 	@Override
 	public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
-		currentContext = new ContextWithPromise(null);
+		this.ctx = null;
+		SYNC_FUTURES.invalidate(ctx);
+		
 		eventBus.unregisterHandler(IEventBus.HANDLERS, this);
 		
 		// Unregister handler that does the actual exchange of messages from all subscribed addresses
@@ -167,7 +141,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 				}
 
 				// Signal that the channel can now exchange regular messages
-				currentContext.setSuccess();
+				getFuture(ctx.channel()).setSuccess();
 				break;
 			case ADDED:
 				registerAddresses(addresses);
@@ -181,26 +155,28 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 		}
 	}
 	
-	public boolean awaitAddressBookSynchronized(final long time, final TimeUnit timeUnit) throws InterruptedException {
-		return currentContext.awaitAddressBookSynchronized(time, timeUnit);
+	public boolean awaitAddressBookSynchronized(final Channel ch, final long time, final TimeUnit timeUnit) throws InterruptedException {
+		return getFuture(ch).await(time, timeUnit);
+	}
+
+	private ChannelPromise getFuture(final Channel ch) {
+		return SYNC_FUTURES.getUnchecked(ch);
 	}
 	
-	private ChannelFuture channelWrite(final ChannelHandlerContext ctx, final IMessage message) {
-		/* 
-		 * Forward the message to the client through the channel, serializing the message 
-		 * body to a byte array input stream first.
-		 */
+	private void channelWrite(final ChannelHandlerContext ctx, final IMessage message) {
 		try {
-			return ctx.writeAndFlush(MessageFactory.writeMessage(message));
+			ctx.writeAndFlush(MessageFactory.writeMessage(message))
+				.addListener(f -> { if (!f.isSuccess()) {
+					LOG.error("Exception happened when sending message", f.cause());
+				}});
 		} catch (final IOException e) {
-			LOG.error("Exception happened while sending async request", e);
-			return ctx.newSucceededFuture();
+			LOG.error("Exception happened trying to send message", e);
 		}
 	}
 
 	@Override
 	public void handle(final IMessage message) {
-		currentContext.channelWrite(message);
+		channelWrite(ctx, message);
 	}
 
 	private void registerAddresses(final Set<String> addresses) {
