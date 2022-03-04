@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,12 @@ public class RepositoryConfiguration {
 	@Min(0)
 	@Max(65535)
 	private int port = 2036;
+
+	@NotNull
+	private String certificateChainPath = "";
+	
+	@NotNull
+	private String privateKeyPath = "";
 
 	@NotNull
 	private IndexConfiguration indexConfiguration = new IndexConfiguration();
@@ -96,6 +102,26 @@ public class RepositoryConfiguration {
 		return HostAndPort.fromParts(getHost(), getPort());
 	}
 
+	@JsonProperty
+	public String getCertificateChainPath() {
+		return certificateChainPath;
+	}
+	
+	@JsonProperty
+	public void setCertificateChainPath(String certificateChainPath) {
+		this.certificateChainPath = certificateChainPath;
+	}
+	
+	@JsonProperty
+	public String getPrivateKeyPath() {
+		return privateKeyPath;
+	}
+	
+	@JsonProperty
+	public void setPrivateKeyPath(String privateKeyPath) {
+		this.privateKeyPath = privateKeyPath;
+	}
+	
 	/**
 	 * @return the number of workers threads
 	 * @deprecated - use #getMaxThreads() instead, will be unsupported in 7.5
@@ -108,6 +134,7 @@ public class RepositoryConfiguration {
 	/**
 	 * @return number of maximum threads to allow in the underlying event bus instance
 	 */
+	@JsonProperty
 	public int getMaxThreads() {
 		return maxThreads;
 	}
@@ -124,6 +151,7 @@ public class RepositoryConfiguration {
 	/**
 	 * @param maxThreads - the maximum number of threads to allow in the underlying event bus instance
 	 */
+	@JsonProperty
 	public void setMaxThreads(int maxThreads) {
 		this.maxThreads = maxThreads;
 	}

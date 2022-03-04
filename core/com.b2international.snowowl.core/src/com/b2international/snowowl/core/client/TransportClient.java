@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.client;
 
+import java.io.File;
 import java.util.Locale;
+
+import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +27,12 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.Mode;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
 import com.b2international.snowowl.core.identity.Token;
 import com.b2international.snowowl.core.identity.User;
@@ -44,6 +49,9 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 /**
  * @since 7.2
@@ -125,12 +133,38 @@ public final class TransportClient implements IDisposableService {
 					hostAndPort = HostAndPort.fromString(address);
 				}
 				
+				final SslContext sslCtx;
+				try {
+				
+					final RepositoryConfiguration repositoryConfiguration = env.config().getModuleConfig(RepositoryConfiguration.class);
+					final String certificateChainPath = repositoryConfiguration.getCertificateChainPath();
+					
+					if (!StringUtils.isEmpty(certificateChainPath)) {
+						
+						sslCtx = SslContextBuilder
+							.forClient()
+							.trustManager(new File(certificateChainPath))
+							.build();
+						
+					} else {
+						
+						// FIXME: add warning that client will accept any certificate?
+						sslCtx = SslContextBuilder
+							.forClient()
+							.trustManager(InsecureTrustManagerFactory.INSTANCE)
+							.build();
+					}
+				
+				} catch (final SSLException e) {
+					throw new SnowowlRuntimeException("Failed to create client SSL context.", e);
+				}
+		        
 				channel = new Bootstrap()
 					.group(workerGroup)
 					.channel(LocalChannel.class)
-					.handler(EventBusNettyUtil.createChannelHandler(gzip, false, bus, compositeClassLoader))
+					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, bus, compositeClassLoader))
 					.connect(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
-					.await()
+					.syncUninterruptibly()
 					.channel();
 				
 				EventBusNettyUtil.awaitAddressBookSynchronized(channel);
@@ -183,7 +217,7 @@ public final class TransportClient implements IDisposableService {
 					.replace("\r", "");
 			LOG.error("Exception caught while connecting to the server.", t);
 			
-			// FIXME: "Sentiment analysis" for exception messages
+			// FIXME: "Sentiment analysis" for exception messages (might be outdated)
 			if (message.startsWith(COULD_NOT_ACTIVATE_PREFIX)) {
 				throw new SnowowlServiceException("The server could not be reached. Please verify the connection URL.");
 			} else if (message.startsWith(ALREADY_LOGGED_IN_PREFIX)) {
