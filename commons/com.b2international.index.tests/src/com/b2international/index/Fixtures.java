@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -442,4 +442,41 @@ public class Fixtures {
 		
 	}
 	
+	@Doc
+	@Script(name = "append", script = "ctx._source.value += params.value")
+	public static class DataWithUpdateScript {
+
+		@ID
+		String id;
+		String value;
+
+		@JsonCreator
+		public DataWithUpdateScript(
+			final @JsonProperty("id") String id,
+			final @JsonProperty("field2") String value) {
+			
+			this.id = id;
+			this.value = value;
+		}
+		
+		public String getValue() {
+			return value;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+		
+			final DataWithUpdateScript other = (DataWithUpdateScript) obj;
+			return Objects.equals(id, other.id) 
+				&& Objects.equals(value, other.value);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(id, value);
+		}
+	}
 }

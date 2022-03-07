@@ -3,6 +3,8 @@
 #
 
 identity:
+  jws: HS512
+  secret: secret
   providers:
     - file:
         name: users

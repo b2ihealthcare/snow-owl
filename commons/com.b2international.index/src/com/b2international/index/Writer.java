@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ public interface Writer {
 	<T> void bulkUpdate(BulkUpdate<T> update);
 	
 	<T> void bulkDelete(BulkDelete<T> delete);
+	
+	// XXX: Unlike other write operations, updates take effect at once and do not get queued
+	<T> T updateImmediately(Update<T> update);
 	
 	void remove(Class<?> type, String keyToRemove);
 	

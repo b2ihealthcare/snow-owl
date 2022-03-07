@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
+import com.b2international.index.Update;
 import com.b2international.index.Writer;
 import com.b2international.index.es.EsDocumentSearcher;
 import com.b2international.index.query.Expression;
@@ -100,6 +96,11 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	@Override
 	public <T> void bulkDelete(BulkDelete<T> delete) {
 		index.bulkDelete(delete);
+	}
+	
+	@Override
+	public <T> T updateImmediately(Update<T> update) {
+		return index.updateImmediately(update);
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@ package com.b2international.snowowl.fhir.rest;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 
 import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
@@ -50,112 +53,30 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemController extends AbstractFhirController {
 	
+	/**
+	 * HTTP PUT /CodeSystem
+	 * @param codeSystem - the new or updated code system to add
+	 */
 	@Operation(
-		summary="Create a code system",
-		description="Create a FHIR code system.", 
+		summary="Create/Update a code system",
+		description="Create new or Update existing FHIR code system.", 
 		extensions = {
 			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
-				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create a code system"),
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create/Update a code system"),
 			}),
 		}
 	)
-	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	//@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {
-		/*
-		List<LocalTerminologyConceptPropertyDefinition> propertyDefinitions = codeSystem.getProperties().stream().map(p -> {
-			LocalTerminologyConceptPropertyDefinition.Builder builder = LocalTerminologyConceptPropertyDefinition.builder(UUID.randomUUID().toString())
-					.name(p.getCodeValue())
-					.cardinality(PropertyCardinality.ZERO_TO_MANY)
-					.description(p.getDescription());
-			
-			Code type = p.getType();
-			PropertyType propertyType = PropertyType.forValue(type.getCodeValue());
-			
-			
-			switch (propertyType) {
-			case BOOLEAN:
-				builder.valueType(PropertyValueType.BOOLEAN);
-				break;
-			case INTEGER:
-				builder.valueType(PropertyValueType.INTEGER);
-				break;
-			case DECIMAL:
-				builder.valueType(PropertyValueType.DECIMAL);
-				break;
-			case STRING:
-				builder.valueType(PropertyValueType.STRING);
-				break;
-			case CODE:
-				builder.valueType(PropertyValueType.URI);
-				break;
-			case CODING:
-				builder.valueType(PropertyValueType.URI);
-				break;
-			case DATETIME:
-				builder.valueType(PropertyValueType.DATE);
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown type: " + propertyType);
-			}
-			
-			return builder.build();
-			
-		}).collect(Collectors.toList());
-		
-		for (LocalTerminologyConceptPropertyDefinition localTerminologyConceptPropertyDefinition : propertyDefinitions) {
-			System.out.println("Def: " + localTerminologyConceptPropertyDefinition);
-		}
-		
-		LcsRequests.prepareCreateTerminology()
-			.setUrl(codeSystem.getUrl().getUriValue())
-			.setId(codeSystem.getId().getIdValue())
-			.setDescription(codeSystem.getDescription())
-			.setLanguage(codeSystem.getLanguage().getCodeValue())
-			//.setCopyright(codeSystem.getCopyright())
-			//.setStatus(codeSystem.getStatus().getCodeValue())
-			//.setOwner(codeSystem.getPublisher())
-			.setPropertyDefinitions(propertyDefinitions)
-			.setTitle(codeSystem.getTitle())
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+	})
+	@PutMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	public ResponseEntity<Void> put(@RequestBody final ResourceRequest<CodeSystem> codeSystem) {
+		FhirRequests.codeSystems().preparePut()
+			.setCodeSystem(codeSystem.getChange())
 			.buildAsync()
 			.execute(getBus())
 			.getSync();
-		
-		Collection<Concept> concepts = codeSystem.getConcepts();
-		
-		for (Concept concept : concepts) {
-			
-			Collection<ConceptProperty> properties = concept.getProperties();
-			List<LocalTerminologyConceptProperty> lcsProperties = properties.stream()
-				.map(p -> {
-					LocalTerminologyConceptPropertyDefinition definition = propertyDefinitions.stream()
-							.filter(d -> d.getName().equals(p.getCodeValue()))
-							.findFirst()
-							.orElseThrow(() -> new IllegalArgumentException("Undefined property"));
-					
-					LocalTerminologyConceptProperty lcsProperty = definition.createProperty();
-					
-					if (p.getPropertyType() != PropertyType.DATETIME) {
-						lcsProperty.setValue(p.getValue());
-					}
-					return lcsProperty;
-				
-			}).collect(Collectors.toList());
-			
-			ResourceURI uri = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystem.getId().getIdValue());
-			LcsRequests.localTerminologyConcepts()
-				.prepareCreate()
-				.setActive(true)
-				.setId(concept.getCode().getCodeValue())
-				.setTerm(concept.getDisplay())
-				.setAlternativeTerms(ImmutableList.of(concept.getDefinition()))
-				.setProperties(lcsProperties)
-				.build(uri, "user", "Commit comment")
-				.execute(getBus())
-				.getSync();
-			
-		}
-		*/
 		
 		return ResponseEntity.ok().build();
 	}
@@ -235,6 +156,47 @@ public class FhirCodeSystemController extends AbstractFhirController {
 				.setElements(selectors.get_elements())
 				.buildAsync()
 				.execute(getBus());
+	}
+	
+	/**
+	 * HTTP DELETE for deleting a code system by its logical identifier
+	 * @param id
+	 * @return
+	 */
+	@Operation(
+		summary = "Delete the code system specified by the id",
+		description = "Delete the code system specified by its logical id."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "204", description = "Deletion successful"),
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "409", description = "Code system cannot be deleted")
+	})
+	@DeleteMapping(value="/{id:**}")
+	public ResponseEntity<Void> deleteCodeSystem(
+			@Parameter(description = "The identifier of the Code System resource")
+			@PathVariable(value = "id") 
+			final String id,
+			
+			@Parameter(description = "Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+
+			@RequestHeader(value = X_AUTHOR, required = true)
+			final String author) {
+		try {
+			FhirRequests.codeSystems().prepareDelete(id)
+				.force(force)
+				.build(author, String.format("Deleting code system %s", id))
+				.execute(getBus())
+				.getSync();
+			return ResponseEntity.noContent().build();
+		} catch (NotFoundException e) {
+			return ResponseEntity.notFound().build();
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).build();
+			
+		}
 	}
 	
 }

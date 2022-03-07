@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.context;
+package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 
 /**
- * @since 8.0
+ * @since 8.2.0
  */
-public interface ResourceRepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
-
-	default AsyncRequest<R> buildAsync() {
-		return buildAsync(null);
+public final class FhirCodeSystemPutRequestBuilder implements ResourceRepositoryRequestBuilder<Boolean> {
+	
+	
+	private CodeSystem codeSystem;
+	
+	public FhirCodeSystemPutRequestBuilder setCodeSystem(CodeSystem codeSystem) {
+		this.codeSystem = codeSystem;
+		return this;
 	}
 	
-	default AsyncRequest<R> buildAsync(Long timestamp) {
-		return new AsyncRequest<>(
-			new ResourceRepositoryRequest<>(timestamp, 
-				wrap(build())
-			)
-		);
+	@Override
+	public Request<RepositoryContext, Boolean> build() {
+		return new FhirCodeSystemPutRequest(codeSystem);
 	}
-
-	default Request<RepositoryContext, R> wrap(Request<RepositoryContext, R> req) {
-		return req;
-	}
+	
 }

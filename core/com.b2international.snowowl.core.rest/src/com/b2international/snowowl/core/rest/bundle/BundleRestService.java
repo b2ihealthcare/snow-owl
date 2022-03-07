@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -63,16 +64,17 @@ public class BundleRestService extends AbstractRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundles> searchByGet(@ParameterObject final BundleRestSearch params) {
+		
 		return ResourceRequests.bundles().prepareSearch()
-				.filterByIds(params.getId())
-				.filterByTitle(params.getTitle())
-				.setLimit(params.getLimit())
-				.setExpand(params.getExpand())
-				.setFields(params.getField())
-				.setSearchAfter(params.getSearchAfter())
-				.sortBy(extractSortFields(params.getSort()))
-				.buildAsync()
-				.execute(getBus());
+			.filterByIds(params.getId())
+			.filterByTitle(params.getTitle())
+			.setLimit(params.getLimit())
+			.setExpand(params.getExpand())
+			.setFields(params.getField())
+			.setSearchAfter(params.getSearchAfter())
+			.sortBy(extractSortFields(params.getSort()))
+			.buildAsync(params.getTimestamp())
+			.execute(getBus());
 	}
 	
 	@Operation(
@@ -88,9 +90,7 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Invalid search config"),
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Bundles> searchByPost(
-			@RequestBody
-			final BundleRestSearch params) {
+	public Promise<Bundles> searchByPost(@RequestBody(required = false) final BundleRestSearch params) {
 		return searchByGet(params);
 	}
 	
@@ -104,17 +104,21 @@ public class BundleRestService extends AbstractRestService {
 	})
 	@GetMapping(value = "/{bundleId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundle> get(
-			@Parameter(description="The bundle identifier")
-			@PathVariable(value="bundleId", required = true) 
-			final String bundleId,
-			
-			@ParameterObject
-			final ResourceSelectors selectors) {
+		@Parameter(description="The bundle identifier")
+		@PathVariable(value="bundleId", required = true) 
+		final String bundleId,
+
+		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		final Long timestamp,
+		
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
 		return ResourceRequests.bundles().prepareGet(bundleId)
-				.setExpand(selectors.getExpand())
-				.setFields(selectors.getField())
-				.buildAsync()
-				.execute(getBus());
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.buildAsync(timestamp)
+			.execute(getBus());
 	}
 	
 	@Operation(
@@ -194,13 +198,21 @@ public class BundleRestService extends AbstractRestService {
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		
-		ResourceRequests.bundles().prepareDelete(bundleId)
+		try {
+			final Bundle bundle = ResourceRequests.bundles().prepareGet(bundleId)
+					.buildAsync()
+					.execute(getBus())
+					.getSync(1, TimeUnit.MINUTES);
+			
+			ResourceRequests.bundles().prepareDelete(bundleId)
 				.commit()
 				.setAuthor(author)
-				.setCommitComment(String.format("Delete bundle %s", bundleId))
+				.setCommitComment(String.format("Deleted Bundle %s", bundle.getTitle()))
 				.buildAsync()
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+		} catch(NotFoundException e) {
+			// already deleted, ignore error
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,9 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 	
 	@Parameter(description = "One or more container ancestor bundles to match")
 	private List<String> bundleAncestorId;
+
+	@Parameter(description = "The timestamp to use for historical ('as of') queries")
+	private Long timestamp;
 	
 	public List<String> getTitleExact() {
 		return titleExact;
@@ -66,5 +69,13 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 	
 	public void setBundleAncestorId(List<String> bundleAncestorId) {
 		this.bundleAncestorId = bundleAncestorId;
+	}
+	
+	public Long getTimestamp() {
+		return timestamp;
+	}
+	
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
 	}
 }

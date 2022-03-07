@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -630,6 +631,37 @@ public final class EsIndexAdmin implements IndexAdmin {
 	public boolean bulkDelete(final BulkDelete<?> delete) {
 		final DocumentMapping mapping = mappings().getMapping(delete.getType());
 		return bulkIndexByScroll(client, mapping, delete.getFilter(), "delete", null, delete.toString());
+	}
+	
+	public <T> T updateImmediately(final Update<T> update, final ObjectMapper documentMapper) {
+		final DocumentMapping mapping = mappings().getMapping(update.getType());
+		final String rawScript = mapping.getScript(update.getScript()).script();
+		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, Map.copyOf(update.getParams()));
+		
+		final String typeIndex = getTypeIndex(mapping);
+		var req = new org.elasticsearch.action.update.UpdateRequest()
+			.index(typeIndex)
+			.id(update.getKey())
+			.script(script)
+			// .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
+			.retryOnConflict(5)
+			.fetchSource(true);
+		
+		try {
+			
+			final T upsert = update.getUpsert();
+			if (upsert != null) {
+				final byte[] _source = documentMapper.writeValueAsBytes(upsert);
+				req.upsert(_source, XContentType.JSON);
+			}
+		
+			var resp = client.update(req);
+			final byte[] source = resp.getGetResult().source();
+			return documentMapper.readValue(source, update.getType());
+			
+		} catch (IOException e) {
+			throw new IndexException("Could not execute immediate update.", e);
+		}
 	}
 
 	private boolean bulkIndexByScroll(final EsClient client,
