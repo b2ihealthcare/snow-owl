@@ -3,7 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>com.b2international.restassured-all</artifactId>
+	<artifactId>org.hamcrest.core</artifactId>
+	<!-- The version in the manifest should be kept at 1.99.0 -->
 	<packaging>eclipse-plugin</packaging>
 
 	<parent>
@@ -13,15 +14,14 @@
 	</parent>
 
 	<properties>
-		<restassured.version>3.2.0</restassured.version>
+		<hamcrest.version>2.2</hamcrest.version>
 	</properties>
 
-	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds as well in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
 		<dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<version>${restassured.version}</version>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
+			<version>${hamcrest.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -42,10 +42,7 @@
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
-								rest-assured,
-								rest-assured-common,
-								json-path,
-								xml-path
+								hamcrest
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>

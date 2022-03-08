@@ -54,7 +54,7 @@ Not the version you're looking for? View [past releases](https://github.com/b2ih
 
 ### Install and Run
 
-NOTE: You need to have a recent version of Java installed (Java 11+, https://adoptopenjdk.net/).
+NOTE: You need to have version 17 of the JDK installed for local builds and running the development environment. Official releases include the runtime.
 
 Once you have downloaded the appropriate package:
 
@@ -92,35 +92,42 @@ These instructions will get Snow Owl up and running on your local machine for de
 ## Prerequisites
 
 Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
-* Download Eclipse IDE for Eclipse Committers 2020-09 package from here: https://www.eclipse.org/downloads/packages/release/2020-09/r/eclipse-ide-eclipse-committers
+* Download Eclipse IDE for Eclipse Committers 2021-12 package from here: https://www.eclipse.org/downloads/packages/release/2021-12/r/eclipse-ide-eclipse-committers
 
-Required Eclipse plug-ins (install the listed features via `Help` -> `Install New Software...`):
+Required Eclipse plug-ins (install the listed features via `Help` &rarr; `Install New Software...`):
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
-* Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.23.0/)
-  * Xtend IDE 2.23.0 (Xtext)
-  * Xtext Complete SDK 2.23.0 (Xtext)
-* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/)
-  * MWE SDK	1.5.3 (MWE)
-  * MWE 2 language SDK 2.11.3 (MWE)
-* Groovy Development Tools (https://dist.springsource.org/release/GRECLIPSE/3.9.0/e4.17)
-  * Eclipse Groovy Development Tools 3.9.0 (Main Package)
-* M2Eclipse (https://download.eclipse.org/technology/m2e/releases/latest/)
-  * m2e 1.17.2
-  * m2e PDE 1.17.2
+* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.12.1/)
+  * MWE SDK 1.6.1 (MWE)
+  * MWE2 Language SDK 2.12.1 (MWE)
+* Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.25.0/)
+  * Xtend IDE 2.25.0 (Xtext)
+  * Xtext Complete SDK 2.25.0 (Xtext)
+* Groovy Development Tools (https://dist.springsource.org/release/GRECLIPSE/4.4.0/e4.22)
+  * Eclipse Groovy Development Tools - 4.4.0 (in category "Main Package")
+  * Groovy-Eclipse M2E integration - 4.4.0 (in category "Maven Support")
+  * Groovy Compiler 3.0 - 4.4.0 (in category "More Compilers")
+* M2Eclipse (https://download.eclipse.org/technology/m2e/releases/1.19.0/)
+  * M2E - Maven Integration for Eclipse (includes Incubating components) 1.19.0
+  * M2E - PDE Integration 1.18.3
+  * M2E - POM Editor using LemMinX language server (includes Incubating components) 1.18.3
+* M2E components (offered for installation after starting Eclipse)
+  * m2e connector for build-helper-maven-plugin
+  * Tycho Project Configurators
  
 ### Eclipse Preferences
 
 Make sure you have the following preferences enabled/disabled.
 * Plug-in development API baseline errors is set to Ignored (Preferences > Plug-in Development > API Baselines)
-* The *Plugin execution not covered by lifecycle configuration: org.apache.maven.plugins:maven-clean-plugin:2.5:clean* type of errors can be ignored or changed to *Warnings* in *Preferences->Maven->Errors/Warnings*.
-* Set the workspace encoding to *UTF-8* (Preferences->General->Workspace)
-* Set the line endings to *Unix* style (Preferences->General->Workspace)
+* The *Plugin execution not covered by lifecycle configuration: org.apache.maven.plugins:maven-clean-plugin:2.5:clean* type of errors can be ignored or changed to *Warnings* in *Preferences&rarr;Maven&rarr;Errors/Warnings*.
+* Set the workspace encoding to *UTF-8* (Preferences&rarr;General&rarr;Workspace)
+* Set the line endings to *Unix* style (Preferences&rarr;General&rarr;Workspace)
+* Set the number of imports and static imports wildcard limit to *5* (Preferences&rarr;Java&rarr;Code Style&rarr;Organize Imports)
 
 ### Git configuration
 
-* Make sure the Git line endings are set to *input* (Preferences->Team->Git->Configuration - add key if missing *core.autocrlf = input*)
+* Make sure the Git line endings are set to *input* (Preferences&rarr;Team&rarr;Git&rarr;Configuration - add key if missing *core.autocrlf = input*)
 
 ### Maven Settings
 

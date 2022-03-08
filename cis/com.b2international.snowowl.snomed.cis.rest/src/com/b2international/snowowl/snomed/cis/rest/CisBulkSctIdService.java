@@ -30,6 +30,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.Identifiers;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.model.*;
+import com.b2international.snowowl.snomed.cis.model.Record;
 import com.b2international.snowowl.snomed.cis.rest.model.BulkJob;
 import com.b2international.snowowl.snomed.cis.rest.model.SctIdsList;
 import com.google.common.base.Strings;

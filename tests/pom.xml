@@ -16,7 +16,7 @@
 		<module>com.b2international.snowowl.test.commons</module>
 		<module>com.b2international.snowowl.test.dependencies</module>
 		<module>com.b2international.snowowl.test.feature</module>
-		<module>com.b2international.restassured-all</module>
+		<module>com.b2international.hamcrest</module>
 	</modules>
 	
 </project>
