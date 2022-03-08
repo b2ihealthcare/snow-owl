@@ -98,12 +98,12 @@ Required Eclipse plug-ins (install the listed features via `Help` &rarr; `Instal
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
-* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/)
-  * MWE SDK 1.5.3 (MWE)
-  * MWE2 Language SDK 2.11.3 (MWE)
-* Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.23.0/)
-  * Xtend IDE 2.23.0 (Xtext)
-  * Xtext Complete SDK 2.23.0 (Xtext)
+* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.12.1/)
+  * MWE SDK 1.6.1 (MWE)
+  * MWE2 Language SDK 2.12.1 (MWE)
+* Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.25.0/)
+  * Xtend IDE 2.25.0 (Xtext)
+  * Xtext Complete SDK 2.25.0 (Xtext)
 * Groovy Development Tools (https://dist.springsource.org/release/GRECLIPSE/4.4.0/e4.22)
   * Eclipse Groovy Development Tools - 4.4.0 (in category "Main Package")
   * Groovy-Eclipse M2E integration - 4.4.0 (in category "Maven Support")
