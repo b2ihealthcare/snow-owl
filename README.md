@@ -137,7 +137,7 @@ Make sure you have the following preferences enabled/disabled.
 
 1. Import all projects into your Eclipse workspace and wait for the build to complete
 2. Select all projects and hit `Alt` + `F5` and trigger an update to all Maven projects manually (to download dependencies from Maven)
-3. Open the `target-platform/target-platform-local.target` file
+3. Open the `target-platform/target-platform.target` file
 4. Wait until Eclipse resolves the target platform (click on the `Resolve` button if it refuses to do so) and then click on `Set as Active Target platform`
 5. Wait until the build is complete and you have no compile errors
 6. Launch `snow-owl-oss` launch configuration in the Run Configurations menu
