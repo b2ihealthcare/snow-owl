@@ -147,9 +147,9 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 		
 		// Update new concepts, changed concepts (that were not deleted) and their descendants
 		conceptAndDescendants.values()
-			.forEach(concept -> updateTaxonomy(staging, taxonomy, concept));
+			.forEach(concept -> updateTaxonomy(staging, taxonomy, concept, changedConceptsById));
 		newConceptsById.values()
-			.forEach(concept -> updateTaxonomy(staging, taxonomy, concept));
+			.forEach(concept -> updateTaxonomy(staging, taxonomy, concept, changedConceptsById));
 	}
 
 	// direct
@@ -161,23 +161,26 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 	// direct and indirect
 	protected abstract Map<String, D> getConceptAndDescendants(final Set<String> ancestorIds, final RevisionSearcher searcher) throws IOException;
 
-	private void updateTaxonomy(final StagingArea staging, final SimpleTaxonomyGraph taxonomy, final D concept) {
+	private void updateTaxonomy(final StagingArea staging, final SimpleTaxonomyGraph taxonomy, final D concept, Map<String, D> changedConceptsById) {
 		if (staging.isRemoved(concept)) {
 			return;
 		}
 		
-		Set<String> parentIds = taxonomy.getParentIds(concept.getId());
+		String id = concept.getId();
+		D conceptToUpdate = changedConceptsById.getOrDefault(id, concept); 
+		
+		Set<String> parentIds = taxonomy.getParentIds(id);
 		if (parentIds.isEmpty()) {
 			parentIds = Set.of(IComponent.ROOT_ID);
 		}
 		
-		Set<String> ancestorIds = taxonomy.getIndirectAncestorIds(concept.getId());
+		Set<String> ancestorIds = taxonomy.getIndirectAncestorIds(id);
 		if (ancestorIds.isEmpty()) {
 			ancestorIds = Set.of(IComponent.ROOT_ID);
 		}
 		
 		// stageChange should handle new revisions seamlessly as well
-		staging.stageChange(concept, updateTaxonomy(concept, parentIds, ancestorIds));
+		staging.stageChange(conceptToUpdate, updateTaxonomy(conceptToUpdate, parentIds, ancestorIds));
 	}
 
 	protected abstract D updateTaxonomy(final D concept, final Set<String> parentIds, final Set<String> ancestorIds);
