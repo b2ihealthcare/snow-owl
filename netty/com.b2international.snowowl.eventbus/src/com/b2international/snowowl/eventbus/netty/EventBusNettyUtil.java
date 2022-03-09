@@ -39,7 +39,7 @@ import io.netty.handler.ssl.SslContext;
  */
 public final class EventBusNettyUtil {
 
-	public static boolean awaitAddressBookSynchronized(final Channel channel) throws InterruptedException {
+	public static boolean awaitAddressBookSynchronized(Channel channel) throws InterruptedException {
 		final AddressBookNettyHandler addressBookHandler = channel.pipeline().get(AddressBookNettyHandler.class);
 		return addressBookHandler.awaitAddressBookSynchronized(channel, 3L, TimeUnit.SECONDS);
 	}
@@ -69,7 +69,7 @@ public final class EventBusNettyUtil {
 				}
 				
 				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(ClassResolvers.cacheDisabled(classLoader)));
-
+				
 				final IEventBusNettyHandler messageHandler = EventBusNettyUtil.createMessageHandler(eventBus);
 				final IEventBusNettyHandler addressBookHandler = EventBusNettyUtil.createAddressBookHandler(sendInitialSync, eventBus, messageHandler);
 				pipeline.addLast(addressBookHandler, messageHandler);

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
+import com.b2international.snowowl.eventbus.events.ClientConnectionNotification;
 import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 import com.b2international.snowowl.internal.eventbus.HandlerChangedEvent;
 import com.b2international.snowowl.internal.eventbus.MessageFactory;
@@ -78,7 +79,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 		this.eventBus = eventBus;
 		this.messageHandler = messageHandler;
 	}
-
+	
 	@Override
 	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
 		this.ctx = ctx;
@@ -103,6 +104,10 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 		// Unregister handler that does the actual exchange of messages from all subscribed addresses
 		remoteAddresses.forEach(address -> eventBus.unregisterHandler(address, messageHandler));
 		remoteAddresses.clear();
+		
+		if (sendInitialSync) {
+			new ClientConnectionNotification(false, getChannelId(ctx)).publish(eventBus);
+		}
 		
 		super.channelInactive(ctx);
 	}
@@ -142,6 +147,10 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 
 				// Signal that the channel can now exchange regular messages
 				getFuture(ctx.channel()).setSuccess();
+				
+				if (sendInitialSync) {
+					new ClientConnectionNotification(true, getChannelId(ctx)).publish(eventBus);
+				}
 				break;
 			case ADDED:
 				registerAddresses(addresses);
@@ -155,6 +164,10 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 		}
 	}
 	
+	private String getChannelId(final ChannelHandlerContext ctx) {
+		return ctx.channel().id().asShortText();
+	}
+
 	public boolean awaitAddressBookSynchronized(final Channel ch, final long time, final TimeUnit timeUnit) throws InterruptedException {
 		return getFuture(ch).await(time, timeUnit);
 	}
@@ -176,7 +189,10 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 
 	@Override
 	public void handle(final IMessage message) {
-		channelWrite(ctx, message);
+		final ChannelHandlerContext localCtx = ctx;
+		if (localCtx != null) {
+			channelWrite(localCtx, message);
+		}
 	}
 
 	private void registerAddresses(final Set<String> addresses) {
