@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.internal.eventbus.netty;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.IOException;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,10 +79,29 @@ public class EventBusNettyHandler extends SimpleChannelInboundHandler<IMessage> 
 			replyHandler = null;
 		} else {
 			// Send reply back to the remote using a local reply handler
-			replyHandler = reply -> handle(MessageFactory.createMessage(remoteReplyAddress, reply.body(), reply.tag(), reply.headers()));
+			replyHandler = reply -> handle(MessageFactory.createMessage(remoteReplyAddress, 
+				reply.body(), 
+				reply.tag(), 
+				reply.headers(),
+				reply.isSend(),
+				reply.isSucceeded()));
 		}
 		
-		eventBus.receive(message, replyHandler);
+		final Map<String, String> headers = newHashMap(message.headers());
+		headers.put("channelId", getChannelId(ctx));
+		
+		final IMessage messageWithHeader = MessageFactory.createMessage(message.address(), 
+			message.body(), 
+			message.tag(), 
+			headers, 
+			message.isSend(), 
+			message.isSucceeded());
+		
+		eventBus.receive(messageWithHeader, replyHandler);
+	}
+	
+	private String getChannelId(final ChannelHandlerContext ctx) {
+		return ctx.channel().id().asShortText();
 	}
 	
 	private void channelWrite(final ChannelHandlerContext ctx, final IMessage message) {
