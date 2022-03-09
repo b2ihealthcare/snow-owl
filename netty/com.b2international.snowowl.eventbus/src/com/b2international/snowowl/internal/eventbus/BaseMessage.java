@@ -84,47 +84,13 @@ import com.google.common.collect.ImmutableMap;
 
 	@Override
 	public <T> T body(Class<T> type) {
-		return body(type, type.getClassLoader());
-	}
-
-	@Override
-	public <T> T body(Class<T> type, final ClassLoader classLoader) {
 		checkNotNull(body, "Body should not be null.");
-		if (body instanceof ByteArrayInputStream) {
-			synchronized (this) {
-				if (body instanceof ByteArrayInputStream) {
-					try (final ByteArrayInputStream bais = (ByteArrayInputStream) body) {
-						try (final ObjectInputStream ois = createObjectInputStream(bais, classLoader)) {
-							body = ois.readObject();
-						}
-					} catch (IOException | ClassNotFoundException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
+		
 		if (type.isInstance(body)) {
 			return type.cast(body);
 		}
-		throw new IllegalArgumentException("Could not resolve message body with class: " + type + " body: " + body);
-	}
-
-	private ObjectInputStream createObjectInputStream(InputStream in, ClassLoader classLoader) throws IOException {
-		if (classLoader == null) {
-			return new ObjectInputStream(in);
-		}
 		
-		return new ObjectInputStream(in) {
-			@Override
-			protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-				String name = desc.getName();
-		        try {
-		            return Class.forName(name, false, classLoader);
-		        } catch (ClassNotFoundException ex) {
-		        	return super.resolveClass(desc);
-		        }
-			}
-		};
+		throw new IllegalArgumentException("Could not resolve message body with class: " + type + " body: " + body);
 	}
 
 	@Override
