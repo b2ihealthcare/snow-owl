@@ -95,7 +95,7 @@ public final class RepositoryPlugin extends Plugin {
 		mapper.registerModule(new PrimitiveCollectionModule());
 		env.services().registerService(ObjectMapper.class, mapper);
 		// initialize Notification support
-		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), env.plugins().getCompositeClassLoader()));
+		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class)));
 		env.services().registerService(RepositoryCommitNotificationSender.class, new RepositoryCommitNotificationSender());
 		// initialize Index Settings
 		final IndexSettings indexSettings = new IndexSettings();
@@ -119,15 +119,21 @@ public final class RepositoryPlugin extends Plugin {
 
 	private static final class ServerChannelService implements IDisposableService {
 
+		private final NioEventLoopGroup bossGroup;
+		private final NioEventLoopGroup workerGroup;
 		private final Channel serverChannel;
 		
-		public ServerChannelService(final Channel serverChannel) {
+		public ServerChannelService(NioEventLoopGroup bossGroup, NioEventLoopGroup workerGroup, final Channel serverChannel) {
+			this.bossGroup = bossGroup;
+			this.workerGroup = workerGroup;
 			this.serverChannel = serverChannel;
 		}
 
 		@Override
 		public void dispose() {
 			serverChannel.close().awaitUninterruptibly();
+			workerGroup.shutdownGracefully();
+			bossGroup.shutdownGracefully();
 		}
 
 		@Override
@@ -145,7 +151,7 @@ public final class RepositoryPlugin extends Plugin {
 			// Add event bus based request metrics
 			registerRequestMetrics(registry, eventBus);
 			
-			final RepositoryConfiguration repositoryConfiguration = env.service(RepositoryConfiguration.class);
+			final RepositoryConfiguration repositoryConfiguration = configuration.getModuleConfig(RepositoryConfiguration.class);
 			final HostAndPort hostAndPort = repositoryConfiguration.getHostAndPort();
 			// open port in server environments
 			if (hostAndPort.getPort() > 0) {
@@ -196,7 +202,7 @@ public final class RepositoryPlugin extends Plugin {
 					.channel();
 
 				// Register channel as a service so it will be shut down when services are disposed
-				env.services().registerService(ServerChannelService.class, new ServerChannelService(serverChannel));
+				env.services().registerService(ServerChannelService.class, new ServerChannelService(bossGroup, workerGroup, serverChannel));
 				
 				LOG.info("Listening on {} for connections", hostAndPort);
 			}
@@ -266,9 +272,8 @@ public final class RepositoryPlugin extends Plugin {
 
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
 		final IEventBus events = env.service(IEventBus.class);
-		final ClassLoader classLoader = env.plugins().getCompositeClassLoader();
 		for (int i = 0; i < numberOfWorkers; i++) {
-			events.registerHandler(Request.ADDRESS, new ApiRequestHandler(env, classLoader));
+			events.registerHandler(Request.ADDRESS, new ApiRequestHandler(env));
 		}
 	}
 }
