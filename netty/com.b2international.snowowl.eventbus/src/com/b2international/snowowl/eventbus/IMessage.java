@@ -50,23 +50,12 @@ public interface IMessage {
 	Object body();
 
 	/**
-	 * Returns the body of this message. If the body was not resolved already
-	 * then resolves it using the {@link ClassLoader} of the given {@link Class}
-	 * , after resolution the method always return the resolved object with the
-	 * given type.
+	 * Returns the body of this message. The method always return the resolved
+	 * object with the given type.
 	 *
 	 * @return
 	 */
 	<T> T body(Class<T> type);
-
-	/**
-	 *
-	 * @param type
-	 * @param classLoader
-	 * @return
-	 * @since 3.2
-	 */
-	<T> T body(Class<T> type, ClassLoader classLoader);
 
 	/**
 	 * Returns the replyAddress for this message.
