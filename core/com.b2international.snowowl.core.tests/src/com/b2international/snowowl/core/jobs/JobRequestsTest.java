@@ -36,11 +36,11 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.SystemNotification;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.eventbus.events.SystemNotification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events;
+package com.b2international.snowowl.eventbus.events;
 
 import java.util.Collections;
 import java.util.Map;
 
-import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -54,26 +53,6 @@ public abstract class BaseEvent implements Event {
 	 */
 	protected String tag() {
 		return IMessage.TAG_EVENT;
-	}
-
-	@Override
-	public final <T> Promise<T> send(final IEventBus bus, final Class<T> returnType) {
-		final Promise<T> promise = new Promise<>();
-		send(bus, new IHandler<IMessage>() {
-			@Override
-			public void handle(IMessage message) {
-				try {
-					if (message.isSucceeded()) {
-						promise.resolve(message.body(returnType));
-					} else {
-						promise.reject(message.body(Throwable.class, BaseEvent.class.getClassLoader()));
-					}
-				} catch (Throwable e) {
-					promise.reject(e);
-				}
-			}
-		});
-		return promise;
 	}
 
 	/**
