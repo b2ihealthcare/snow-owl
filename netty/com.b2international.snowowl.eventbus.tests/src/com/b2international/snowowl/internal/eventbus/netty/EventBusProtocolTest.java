@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.eventbus.EventBusUtil;
+import com.b2international.snowowl.eventbus.events.SystemNotification;
 import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 import com.b2international.snowowl.internal.eventbus.EventBus;
 
@@ -105,8 +106,8 @@ public class EventBusProtocolTest {
 		clientChannel.close().sync();
 		serverChannel.close().sync();
 		
-		workerGroup.shutdownGracefully();
-		bossGroup.shutdownGracefully();
+		workerGroup.shutdownGracefully().sync();
+		bossGroup.shutdownGracefully().sync();
 		
 		clientBus.deactivate();
 		serverBus.deactivate();
@@ -114,6 +115,10 @@ public class EventBusProtocolTest {
 	
 	@Test
 	public void testRemoteSend() throws InterruptedException {
+		serverBus.registerHandler(SystemNotification.ADDRESS, message -> {
+			System.out.println("Server got: " + message.body());
+		});
+		
 		serverBus.registerHandler(ADDRESS, message -> {
 			final String ping = message.body(String.class);
 			System.out.println("Server got: " + ping);
