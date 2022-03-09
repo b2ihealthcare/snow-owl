@@ -30,10 +30,9 @@ import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.identity.IdentityProvider;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
 import com.b2international.snowowl.core.identity.Token;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
@@ -47,8 +46,8 @@ import com.google.common.net.HostAndPort;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.local.LocalChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -123,7 +122,8 @@ public final class TransportClient implements IDisposableService {
 			if (!Strings.isNullOrEmpty(address)) {
 				final NioEventLoopGroup workerGroup = new NioEventLoopGroup();
 
-				final boolean gzip = env.config().isGzip();
+				final SnowOwlConfiguration configuration = env.service(SnowOwlConfiguration.class);
+				final boolean gzip = configuration.isGzip();
 				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
 				
 				final HostAndPort hostAndPort;
@@ -136,7 +136,7 @@ public final class TransportClient implements IDisposableService {
 				final SslContext sslCtx;
 				try {
 				
-					final RepositoryConfiguration repositoryConfiguration = env.config().getModuleConfig(RepositoryConfiguration.class);
+					final RepositoryConfiguration repositoryConfiguration = configuration.getModuleConfig(RepositoryConfiguration.class);
 					final String certificateChainPath = repositoryConfiguration.getCertificateChainPath();
 					
 					if (!StringUtils.isEmpty(certificateChainPath)) {
@@ -161,7 +161,7 @@ public final class TransportClient implements IDisposableService {
 		        
 				channel = new Bootstrap()
 					.group(workerGroup)
-					.channel(LocalChannel.class)
+					.channel(NioSocketChannel.class)
 					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, bus, compositeClassLoader))
 					.connect(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
 					.syncUninterruptibly()
