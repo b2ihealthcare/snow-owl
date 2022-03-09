@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequestTest;
 import com.b2international.snowowl.core.request.SortParserTest;
 import com.b2international.snowowl.core.request.io.ImportResponseSerializationTest;
 import com.b2international.snowowl.core.scripts.GroovyScriptEngineTest;
+import com.b2international.snowowl.core.taxonomy.SimpleTaxonomyGraphTest;
 import com.b2international.snowowl.core.uri.ComponentURITest;
 import com.b2international.snowowl.core.uri.ResourceURITest;
 import com.b2international.snowowl.core.validation.ValidationRuleApiTest;
@@ -67,6 +68,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	SearchResourceRequestTest.class,
 	CodeSystemTest.class,
 	GroovyScriptEngineTest.class,
+	SimpleTaxonomyGraphTest.class,
 	
 	// medium integration tests
 	JobRequestsTest.class,

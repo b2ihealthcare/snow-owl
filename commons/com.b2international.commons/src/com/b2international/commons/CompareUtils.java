@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import com.b2international.collections.PrimitiveCollection;
+import com.b2international.commons.collections.SparseFixedBitSet;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
 
@@ -72,6 +73,10 @@ public class CompareUtils {
 		
 		if (object instanceof BitSet) {
 			return ((BitSet) object).isEmpty();
+		}
+		
+		if (object instanceof SparseFixedBitSet) {
+			return ((SparseFixedBitSet) object).isEmpty();
 		}
 		
 		if (object instanceof Pair<?, ?>) {
