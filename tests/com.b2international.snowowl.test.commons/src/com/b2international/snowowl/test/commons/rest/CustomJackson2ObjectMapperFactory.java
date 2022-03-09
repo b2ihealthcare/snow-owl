@@ -25,7 +25,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.restassured.path.json.mapper.factory.Jackson2ObjectMapperFactory;
 
 /**
- * @since 8.0.1
+ * @since 8.1.0
  */
 public class CustomJackson2ObjectMapperFactory implements Jackson2ObjectMapperFactory {
 	
