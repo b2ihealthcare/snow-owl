@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.locks.request;
 
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -25,18 +25,18 @@ import com.b2international.snowowl.core.locks.Locks;
 /**
  * @since 7.5.1
  */
-public abstract class LockRequest<C extends RepositoryContext, R> implements Request<C, R> {
+public abstract class AbstractLockRequest<C extends RepositoryContext, R> implements Request<C, R> {
 
 	private static final long serialVersionUID = 1L;
 	
 	private final String lockContext;
 	private final String parentLockContext;
 	
-	protected LockRequest(final String lockContext) {
+	protected AbstractLockRequest(final String lockContext) {
 	    this(lockContext, DatastoreLockContextDescriptions.ROOT);
 	}
 	
-	protected LockRequest(final String lockContext, final String parentLockContext) {
+	protected AbstractLockRequest(final String lockContext, final String parentLockContext) {
 	    this.lockContext = lockContext;
 	    this.parentLockContext = parentLockContext;
 	}

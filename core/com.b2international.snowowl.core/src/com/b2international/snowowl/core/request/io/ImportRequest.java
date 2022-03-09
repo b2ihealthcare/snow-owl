@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,14 @@ import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.request.LockRequest;
+import com.b2international.snowowl.core.locks.request.AbstractLockRequest;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.collect.Sets;
 
 /**
  * @since 7.12
  */
-public abstract class ImportRequest extends LockRequest<TransactionContext, ImportResponse> implements AccessControl {
+public abstract class ImportRequest extends AbstractLockRequest<TransactionContext, ImportResponse> implements AccessControl {
 	
 	private static final long serialVersionUID = 1L;
 	
