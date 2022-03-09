@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -38,11 +39,14 @@ public final class LockPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer()) {
 			final Index locksIndex = Indexes.createIndex("locks", env.service(ObjectMapper.class), new Mappings(DatastoreLockIndexEntry.class), env.service(IndexSettings.class));
+			
 			final DefaultOperationLockManager lockManager = new DefaultOperationLockManager(locksIndex);
 			lockManager.addLockTargetListener(new Slf4jOperationLockTargetListener());
-//			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
-//			lockManager.addLockTargetListener(remoteLockTargetListener);
 			env.services().registerService(IOperationLockManager.class, lockManager);
+			
+			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
+			env.services().registerService(RemoteLockTargetListener.class, remoteLockTargetListener);
+			remoteLockTargetListener.register(env.service(IEventBus.class));
 		}
 	}
 }

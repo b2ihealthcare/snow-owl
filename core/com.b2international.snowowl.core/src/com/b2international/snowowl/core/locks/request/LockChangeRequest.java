@@ -27,7 +27,9 @@ import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
+import com.b2international.snowowl.core.internal.locks.RemoteLockTargetListener;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 
 /**
  * @since 8.1.0
@@ -80,7 +82,17 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 		}
 		
 		final RequestHeaders headers = context.service(RequestHeaders.class);
-
+		final String clientId = headers.header(EventBusNettyUtil.HEADER_CLIENT_ID);
+		if (!StringUtils.isEmpty(clientId)) {
+			final RemoteLockTargetListener listener = context.service(RemoteLockTargetListener.class);
+			
+			if (lock) {
+				listener.targetAcquired(clientId, targets, lockContext);
+			} else {
+				listener.targetRemoved(clientId, targets, lockContext);
+			}
+		}
+		
 		return Boolean.TRUE;
 	}
 }

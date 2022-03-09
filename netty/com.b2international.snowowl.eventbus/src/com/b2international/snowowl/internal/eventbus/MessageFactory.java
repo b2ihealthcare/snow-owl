@@ -71,10 +71,8 @@ public class MessageFactory {
 			throw new IllegalArgumentException(String.format("Message body should be a subtype of Serializable on address '%s', but was %s", address, className));
 		}
 
-		final BaseMessage serializableMessage = createMessage(address, serializableBody, message.tag(), message.headers());
+		final BaseMessage serializableMessage = createMessage(address, serializableBody, message.tag(), message.headers(), message.isSend(), message.isSucceeded());
 		serializableMessage.replyAddress = message.replyAddress();
-		serializableMessage.send = message.isSend();
-		serializableMessage.succeeded = message.isSucceeded();
 		return serializableMessage;
 	}
 }

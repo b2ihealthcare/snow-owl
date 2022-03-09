@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
+import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 import com.b2international.snowowl.internal.eventbus.MessageFactory;
 
@@ -88,7 +89,7 @@ public class EventBusNettyHandler extends SimpleChannelInboundHandler<IMessage> 
 		}
 		
 		final Map<String, String> headers = newHashMap(message.headers());
-		headers.put("channelId", getChannelId(ctx));
+		headers.put(EventBusNettyUtil.HEADER_CLIENT_ID, getChannelId(ctx));
 		
 		final IMessage messageWithHeader = MessageFactory.createMessage(message.address(), 
 			message.body(), 

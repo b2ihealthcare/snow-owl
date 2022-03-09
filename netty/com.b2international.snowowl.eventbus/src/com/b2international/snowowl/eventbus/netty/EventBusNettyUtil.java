@@ -39,6 +39,8 @@ import io.netty.handler.ssl.SslContext;
  */
 public final class EventBusNettyUtil {
 
+	public static final String HEADER_CLIENT_ID = "clientId";
+
 	public static boolean awaitAddressBookSynchronized(Channel channel) throws InterruptedException {
 		final AddressBookNettyHandler addressBookHandler = channel.pipeline().get(AddressBookNettyHandler.class);
 		return addressBookHandler.awaitAddressBookSynchronized(channel, 3L, TimeUnit.SECONDS);
