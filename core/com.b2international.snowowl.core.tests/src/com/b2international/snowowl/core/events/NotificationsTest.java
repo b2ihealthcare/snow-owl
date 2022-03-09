@@ -44,7 +44,7 @@ public class NotificationsTest {
 	@Before
 	public void givenNotificationStream() {
 		this.bus = EventBusUtil.getBus();
-		this.notifications = new Notifications(bus, getClass().getClassLoader());
+		this.notifications = new Notifications(bus);
 	}
 	
 	@Test
