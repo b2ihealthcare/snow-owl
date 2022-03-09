@@ -14,7 +14,7 @@ set CONFIG_AREA=%KERNEL_HOME%/work
 IF DEFINED JAVA_HOME (
 	set JAVA_EXECUTABLE=%JAVA_HOME%/bin/java.exe
 ) else (
-	set JAVA_EXECUTABLE=%KERNEL_HOME%/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.1.v20211116-1657/jre/bin/java.exe
+	set JAVA_EXECUTABLE=%KERNEL_HOME%/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.*/jre/bin/java.exe
 )
 
 REM Heap settings

@@ -37,7 +37,7 @@ fi
 
 if [ -z "$JAVA_HOME" ]
 then
-        JAVA_EXECUTABLE=$KERNEL_HOME/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.linux.x86_64_17.0.1.v20211116-1657/jre/bin/java
+        JAVA_EXECUTABLE=$KERNEL_HOME/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.linux.x86_64_17.*/jre/bin/java
 else
         JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 fi
