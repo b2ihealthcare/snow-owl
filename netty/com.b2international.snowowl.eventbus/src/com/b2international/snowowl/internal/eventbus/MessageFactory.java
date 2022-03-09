@@ -30,11 +30,20 @@ import com.b2international.snowowl.eventbus.IMessage;
 public class MessageFactory {
 
 	public static final BaseMessage createMessage(String address, Object message, String tag, final Map<String, String> headers) {
-		checkAddress(address);
-		checkArgument(message != null, "Message should be specified, null messages are not allowed");
-		return new BaseMessage(address, message, tag, headers);
+		return createMessage(address, message, tag, headers, true, true);
 	}
 	
+	public static final BaseMessage createMessage(String address, Object message, String tag, Map<String, String> headers, boolean send, boolean succeeded) {
+		checkAddress(address);
+		checkArgument(message != null, "Message should be specified, null messages are not allowed");
+		
+		final BaseMessage baseMessage = new BaseMessage(address, message, tag, headers);
+		baseMessage.send = send;
+		baseMessage.succeeded = succeeded;
+		
+		return baseMessage;
+	}
+
 	public static final void checkAddress(String address) {
 		checkArgument(!isNullOrEmpty(address), "Address cannot be null or empty");		
 	}
