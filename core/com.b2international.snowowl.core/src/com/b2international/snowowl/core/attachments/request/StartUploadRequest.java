@@ -39,7 +39,7 @@ import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 	public UUID execute(final ServiceProvider context) {
 		final InternalAttachmentRegistry service = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
-		final String clientId = requestHeaders.header(EventBusNettyUtil.HEADER_CLIENT_ID);
+		final String clientId = requestHeaders.header(EventBusNettyUtil.HEADER_CLIENT_ID, "<local>");
 		
 		return service.startUpload(clientId, id);
 	}
