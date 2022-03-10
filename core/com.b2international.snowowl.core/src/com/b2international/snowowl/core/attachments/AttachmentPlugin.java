@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.core.attachments;
 
+import java.nio.file.Path;
+
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 7.0
@@ -30,8 +33,16 @@ public final class AttachmentPlugin extends Plugin {
 
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		final IEventBus bus = env.service(IEventBus.class);
+		
 		if (env.isServer()) {
-			env.services().registerService(AttachmentRegistry.class, new DefaultAttachmentRegistry(env.getDataPath().resolve(ATTACHMENTS_FOLDER)));
+			final Path attachmentsPath = env.getDataPath().resolve(ATTACHMENTS_FOLDER);
+			final DefaultAttachmentRegistry attachmentRegistry = new DefaultAttachmentRegistry(attachmentsPath);
+			attachmentRegistry.register(bus);
+			env.services().registerService(AttachmentRegistry.class, attachmentRegistry);
+		} else {
+			final AttachmentRegistryClient attachmentRegistryClient = new AttachmentRegistryClient(bus);
+			env.services().registerService(AttachmentRegistry.class, attachmentRegistryClient);
 		}
 	}
 }
