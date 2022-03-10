@@ -222,7 +222,7 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 		
 		synchronized (partialDownloads) {
 			if (partialDownloads.contains(clientId, id)) {
-				throw new AlreadyExistsException("Download for attachment", id.toString());
+				throw new BadRequestException("Download for attachment %s has already started.", id.toString());
 			}
 
 			try {
