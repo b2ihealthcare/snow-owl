@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.UUID;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 
 /**
  * Registry that can manage file attachments uploaded by clients using this interface.
@@ -30,6 +32,11 @@ import com.b2international.commons.exceptions.NotFoundException;
  */
 public interface AttachmentRegistry {
 
+	/**
+	 * The algorithm used for checking the integrity of uploads.
+	 */
+	HashFunction HASH_ALGORITHM = Hashing.sha256();
+	
 	/**
 	 * Uploads an attachment and saves it in the server's current data directory.
 	 * 
