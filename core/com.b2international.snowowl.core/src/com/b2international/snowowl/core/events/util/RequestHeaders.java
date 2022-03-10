@@ -35,6 +35,10 @@ public final class RequestHeaders {
 		return headers.get(name);
 	}
 	
+	public String header(String name, String defaultValue) {
+		return headers.getOrDefault(name, defaultValue);
+	}
+	
 	public Map<String, String> headers() {
 		return headers;
 	}
