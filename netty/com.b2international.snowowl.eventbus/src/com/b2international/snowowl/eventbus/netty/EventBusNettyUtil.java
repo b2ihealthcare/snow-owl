@@ -40,6 +40,8 @@ import io.netty.handler.ssl.SslContext;
 public final class EventBusNettyUtil {
 
 	public static final String HEADER_CLIENT_ID = "clientId";
+	
+	public static final int MAX_OBJECT_SIZE = 16_777_216; // 16 MiB
 
 	public static boolean awaitAddressBookSynchronized(Channel channel) throws InterruptedException {
 		final AddressBookNettyHandler addressBookHandler = channel.pipeline().get(AddressBookNettyHandler.class);
@@ -70,7 +72,7 @@ public final class EventBusNettyUtil {
 					pipeline.addLast(new JdkZlibEncoder(), new JdkZlibDecoder());
 				}
 				
-				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(ClassResolvers.cacheDisabled(classLoader)));
+				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(MAX_OBJECT_SIZE, ClassResolvers.cacheDisabled(classLoader)));
 				
 				final IEventBusNettyHandler messageHandler = EventBusNettyUtil.createMessageHandler(eventBus);
 				final IEventBusNettyHandler addressBookHandler = EventBusNettyUtil.createAddressBookHandler(sendInitialSync, eventBus, messageHandler);
