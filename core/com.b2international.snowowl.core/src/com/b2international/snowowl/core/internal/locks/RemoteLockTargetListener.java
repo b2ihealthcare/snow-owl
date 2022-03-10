@@ -40,10 +40,13 @@ public class RemoteLockTargetListener implements IHandler<IMessage>, IDisposable
 	private final Map<String, Multimap<DatastoreLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
 
 	private final AtomicBoolean active = new AtomicBoolean(false);
+
+	private IEventBus bus;
 	
-	public void register(final IEventBus eventBus) {
-		if (active.compareAndExchange(false, true)) {
-			eventBus.registerHandler(SystemNotification.ADDRESS, this);
+	public void register(final IEventBus bus) {
+		if (!active.compareAndExchange(false, true)) {
+			this.bus = bus;
+			bus.registerHandler(SystemNotification.ADDRESS, this);
 		}
 	}
 	
@@ -90,12 +93,14 @@ public class RemoteLockTargetListener implements IHandler<IMessage>, IDisposable
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-		
+		if (active.compareAndExchange(true, false)) {
+			this.bus.unregisterHandler(SystemNotification.ADDRESS, this);
+			this.bus = null;
+		}
 	}
 
 	@Override
 	public boolean isDisposed() {
-		return false;
+		return active.get();
 	}
 }
