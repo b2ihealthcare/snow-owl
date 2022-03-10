@@ -54,7 +54,6 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 	
 	private final Table<String, UUID, CountingOutputStream> partialUploads = Tables.synchronizedTable(HashBasedTable.create());
 	private final Table<String, UUID, InputStream> partialDownloads = Tables.synchronizedTable(HashBasedTable.create());
-
 	private final AtomicBoolean active = new AtomicBoolean(false);
 	
 	private IEventBus bus;

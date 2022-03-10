@@ -43,7 +43,7 @@ import com.google.common.hash.HashCode;
 	public Boolean execute(final ServiceProvider context) {
 		final InternalAttachmentRegistry service = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
-		final String clientId = requestHeaders.header(EventBusNettyUtil.HEADER_CLIENT_ID);
+		final String clientId = requestHeaders.header(EventBusNettyUtil.HEADER_CLIENT_ID, "<local>");
 		
 		service.completeDownload(clientId, attachmentId, expectedHashCode);
 		return Boolean.TRUE;
