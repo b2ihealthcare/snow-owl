@@ -289,11 +289,11 @@ public class EventBus implements IEventBus {
 		
 		LOG.trace("Registered handler {} to address {}", handler, address);
 			
-		if (localHandler && !replyHandler && !HANDLERS.equals(address)) {
-			// if this is the first local handler, broadcast registration event
+		if (!replyHandler && !HANDLERS.equals(address)) {
+			// if this is the first handler, broadcast registration event
 			final int oldCount = addressBook.add(address, 1);
 			if (oldCount == 0) {
-				publish(HANDLERS, new HandlerChangedEvent(Type.ADDED, Set.of(address)), Map.of());
+				publish(HANDLERS, new HandlerChangedEvent(Type.ADDED, Set.of(address)), Map.of(LOCAL_HANDLER, Boolean.toString(localHandler)));
 			}
 		}
 	}
@@ -332,16 +332,19 @@ public class EventBus implements IEventBus {
 			if (handlerRemoved) {
 				LOG.trace("Unregistered handler {} from address {}", handler, address);
 				
-				if (localHandler && !HANDLERS.equals(address)) {
-					// if this was the last local handler, broadcast unregistration event
+				if (!HANDLERS.equals(address)) {
+					/*
+					 * If this was the last handler, broadcast unregistration event. Reply handlers
+					 * were not in the address book to begin with, so no check is needed.
+					 */
 					final int oldCount = addressBook.remove(address, 1);
 					if (oldCount == 1) {
-						publish(HANDLERS, new HandlerChangedEvent(Type.REMOVED, Set.of(address)), Map.of());
+						publish(HANDLERS, new HandlerChangedEvent(Type.REMOVED, Set.of(address)), Map.of(LOCAL_HANDLER, Boolean.toString(localHandler)));
 					}
 				}
 			}
 
-			// Unregister empty handler lists
+			// Completely remove handler list if it is empty
 			if (currentHandlers.isEmpty()) {
 				return null;
 			} else {

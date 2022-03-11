@@ -119,11 +119,8 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 		}
 		
 		/*
-		 * XXX: If the message is related to handler registrations, we handle it
-		 * out-of-band, without passing it on to the local event bus. The event bus
-		 * itself will publish ADDED and REMOVED events on the same address, however; we
-		 * send out these messages in handle(IMessage) unmodified to bridges and local
-		 * listeners.
+		 * XXX: If the message is related to handler registration on the other side, we
+		 * handle it out-of-band, without passing it on to our event bus.
 		 */
 		final IMessage message = (IMessage) msg;
 		return IEventBus.HANDLERS.equals(message.address());
@@ -191,7 +188,11 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 	public void handle(final IMessage message) {
 		final ChannelHandlerContext localCtx = ctx;
 		if (localCtx != null) {
-			channelWrite(localCtx, message);
+			// Notify our peer about local handlers only
+			final Map<String, String> headers = message.headers();
+			if ("true".equals(headers.get(IEventBus.LOCAL_HANDLER))) {
+				channelWrite(localCtx, message);
+			}
 		}
 	}
 
