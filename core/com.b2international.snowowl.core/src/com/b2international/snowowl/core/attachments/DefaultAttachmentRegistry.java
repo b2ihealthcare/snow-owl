@@ -142,7 +142,7 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 			
 			try {
 				final OutputStream os = java.nio.file.Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE_NEW);
-				final CountingOutputStream cos = new CountingOutputStream(os);
+				final CountingOutputStream cos = new CountingOutputStream(os); // lgtm[java/output-resource-leak]
 				partialUploads.put(clientId, id, cos);
 				return id;
 			} catch (IOException e) {
