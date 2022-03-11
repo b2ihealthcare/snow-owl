@@ -23,10 +23,7 @@ import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.internal.eventbus.netty.AddressBookNettyHandler;
 import com.b2international.snowowl.internal.eventbus.netty.EventBusNettyHandler;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
+import io.netty.channel.*;
 import io.netty.handler.codec.compression.JdkZlibDecoder;
 import io.netty.handler.codec.compression.JdkZlibEncoder;
 import io.netty.handler.codec.serialization.ClassResolvers;
@@ -61,8 +58,9 @@ public final class EventBusNettyUtil {
 		return new ChannelInitializer<Channel>() {
 			@Override
 			public void initChannel(final Channel channel) throws Exception {
-				final ChannelPipeline pipeline = channel.pipeline();
+				channel.config().setOption(ChannelOption.ALLOW_HALF_CLOSURE, false);
 				
+				final ChannelPipeline pipeline = channel.pipeline();
 //				pipeline.addLast(new LoggingHandler(LogLevel.INFO));
 				
 				// SSL and compression are mutually exclusive
