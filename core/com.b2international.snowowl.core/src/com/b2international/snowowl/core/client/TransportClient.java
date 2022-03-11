@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.client;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLException;
 
@@ -46,6 +48,7 @@ import com.google.common.net.HostAndPort;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslContext;
@@ -61,8 +64,6 @@ public final class TransportClient implements IDisposableService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TransportClient.class);
 	
-	public static final String NET_4_J_CONNECTOR_NAME = "SnowOwlConnector";
-	
 	private static final String COULD_NOT_ACTIVATE_PREFIX = "Could not activate TCPClientConnector";
 	private static final String ALREADY_LOGGED_IN_PREFIX = "Already logged in";
 	private static final String INCORRECT_USER_NAME_OR_PASSWORD = "Incorrect user name or password.";
@@ -70,11 +71,12 @@ public final class TransportClient implements IDisposableService {
 	private static final String LDAP_CONNECTION_REFUSED = "Connection refused: connect";
 
 	private final Environment env;
-	private final IEventBus bus;
-//	private final TransportConfiguration transportConfiguration;
 	private final String address;
+	private final IEventBus bus;
+	private final EventLoopGroup workerGroup;
+	private final AtomicReference<Channel> channel;
+//	private final TransportConfiguration transportConfiguration;
 	
-	private Channel channel;
 	private String user;
 	private String password;
 	
@@ -84,6 +86,8 @@ public final class TransportClient implements IDisposableService {
 		// override CLIENT/SERVER mode when connecting to a valid address
 		env.services().registerService(Mode.class, Strings.isNullOrEmpty(address) ? Mode.SERVER : Mode.CLIENT);
 		this.bus = env.service(IEventBus.class);
+		this.workerGroup = new NioEventLoopGroup();
+		this.channel = new AtomicReference<Channel>();
 //		this.transportConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(TransportConfiguration.class);
 	}
 	
@@ -99,17 +103,26 @@ public final class TransportClient implements IDisposableService {
 		return password;
 	}
 	
+	public Channel getChannel() {
+		return channel.get();
+	}
+	
 	@Override
 	public void dispose() {
-		final Channel localChannel = channel;
+		final Channel localChannel = channel.getAndSet(null);
 		if (localChannel != null) {
-			channel.close().awaitUninterruptibly();
+			localChannel.close().awaitUninterruptibly();
 		}
+		
+		workerGroup
+			.shutdownGracefully(500L, 3000L, TimeUnit.MILLISECONDS)
+			.awaitUninterruptibly();
 	}
 	
 	@Override
 	public boolean isDisposed() {
-		return channel == null || !channel.isActive();
+		final Channel localChannel = channel.get();
+		return localChannel == null || !localChannel.isActive();
 	}
 
 	private synchronized void initConnection() throws SnowowlServiceException {
@@ -120,8 +133,6 @@ public final class TransportClient implements IDisposableService {
 		try {
 			
 			if (!Strings.isNullOrEmpty(address)) {
-				final NioEventLoopGroup workerGroup = new NioEventLoopGroup();
-
 				final SnowOwlConfiguration configuration = env.service(SnowOwlConfiguration.class);
 				final boolean gzip = configuration.isGzip();
 				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
@@ -159,7 +170,7 @@ public final class TransportClient implements IDisposableService {
 					throw new SnowowlRuntimeException("Failed to create client SSL context.", e);
 				}
 		        
-				channel = new Bootstrap()
+				final Channel localChannel = new Bootstrap()
 					.group(workerGroup)
 					.channel(NioSocketChannel.class)
 					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, bus, compositeClassLoader))
@@ -167,7 +178,12 @@ public final class TransportClient implements IDisposableService {
 					.syncUninterruptibly()
 					.channel();
 				
-				EventBusNettyUtil.awaitAddressBookSynchronized(channel);
+				if (!channel.compareAndSet(null, localChannel)) {
+					// We lost against another thread who also called initConnection at the same time; close this channel asynchronously
+					localChannel.close();
+				} else {
+					EventBusNettyUtil.awaitAddressBookSynchronized(localChannel);
+				}
 			}
 			
 		} catch (final InterruptedException e) {
