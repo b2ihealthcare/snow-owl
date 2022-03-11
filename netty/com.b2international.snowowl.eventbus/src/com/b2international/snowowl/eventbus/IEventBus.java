@@ -27,19 +27,24 @@ import java.util.concurrent.ExecutorService;
 public interface IEventBus {
 
 	/**
-	 * Address towards which handler registration and un-registration messages are
-	 * sent by the <i>local event bus</i> itself.
+	 * The address where handler registration and un-registration messages are sent.
+	 * These messages are emitted by the event bus itself.
 	 * <p>
 	 * Handlers registered to this address can receive information about when an
-	 * address becomes "active" (by having at least one local, non-reply handler
-	 * registered to it), or when it becomes "inactive" (when the last local and
-	 * non-reply handler disappears).
+	 * address becomes "active" (by having at least one non-reply handler registered
+	 * to it), or when it becomes "inactive" (when the last non-reply handler
+	 * disappears).
 	 * <p>
-	 * (To prevent a recursive event storm, this address appears in such
-	 * notifications.)
+	 * To prevent a recursive event storm, no notification is sent out when a
+	 * handler is registered to this address.
 	 */
 	String HANDLERS = "handlers";
 	
+	/**
+	 * Message header that indicates whether the added/removed handler is/was local.
+	 */
+	String LOCAL_HANDLER = "localHandler";
+
 	/**
 	 * Sends the message over the event bus to the specified address.
 	 * 

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,9 +31,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.eventbus.EventBusUtil;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.events.SystemNotification;
 import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 import com.b2international.snowowl.internal.eventbus.EventBus;
+import com.b2international.snowowl.internal.eventbus.HandlerChangedEvent;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -106,8 +109,8 @@ public class EventBusProtocolTest {
 		clientChannel.close().sync();
 		serverChannel.close().sync();
 		
-		workerGroup.shutdownGracefully().sync();
-		bossGroup.shutdownGracefully().sync();
+		workerGroup.shutdownGracefully(500, 3000, TimeUnit.MILLISECONDS).sync();
+		bossGroup.shutdownGracefully(500, 3000, TimeUnit.MILLISECONDS).sync();
 		
 		clientBus.deactivate();
 		serverBus.deactivate();
@@ -118,7 +121,7 @@ public class EventBusProtocolTest {
 		serverBus.registerHandler(SystemNotification.ADDRESS, message -> {
 			System.out.println("Server got: " + message.body());
 		});
-		
+
 		serverBus.registerHandler(ADDRESS, message -> {
 			final String ping = message.body(String.class);
 			System.out.println("Server got: " + ping);
@@ -127,13 +130,30 @@ public class EventBusProtocolTest {
 
 		assertTrue("Address book could not be synchronized.", EventBusNettyUtil.awaitAddressBookSynchronized(clientChannel));
 
-		final CountDownLatch latch = new CountDownLatch(1);
+		final CountDownLatch addressLatch = new CountDownLatch(1);
+		final Set<String> clientAddressBook = clientBus.getAddressBook();
+		
+		if (clientAddressBook.contains(ADDRESS)) {
+			// We don't need to wait for the address to appear
+			addressLatch.countDown();
+		} else {
+			clientBus.registerHandler(IEventBus.HANDLERS, message -> {
+				final HandlerChangedEvent event = message.body(HandlerChangedEvent.class);
+				if (HandlerChangedEvent.Type.ADDED.equals(event.getType()) && event.getAddresses().contains(ADDRESS)) {
+					addressLatch.countDown();
+				}
+			});
+		}
 
+		assertTrue("Timed out while waiting for address to appear in client bus.", addressLatch.await(3L, TimeUnit.SECONDS));
+		
+		final CountDownLatch latch = new CountDownLatch(1);
+		
 		clientBus.send(ADDRESS, "hello", Map.of(), message -> { 
 			System.out.println("Client got: " + message.body(String.class));
 			latch.countDown();
 		});
 		
-		assertTrue("Response not received from server bus within 1 second.", latch.await(3L, TimeUnit.SECONDS));
+		assertTrue("Timed out while waiting for response from server bus.", latch.await(3L, TimeUnit.SECONDS));
 	}
 }
