@@ -142,7 +142,8 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 			
 			try {
 				final OutputStream os = java.nio.file.Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE_NEW);
-				partialUploads.put(clientId, id, new CountingOutputStream(os));
+				final CountingOutputStream cos = new CountingOutputStream(os);
+				partialUploads.put(clientId, id, cos);
 				return id;
 			} catch (IOException e) {
 				throw new SnowowlRuntimeException("Failed to open output stream for partial upload '" + id + "'.", e);
