@@ -156,7 +156,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 				unregisterAddresses(addresses);
 				break;
 			default:
-				LOG.warn("Unexpected handler change request type '{}', ignoring.");
+				LOG.warn("Unexpected handler change request type '{}', ignoring.", type);
 				break;
 		}
 	}
