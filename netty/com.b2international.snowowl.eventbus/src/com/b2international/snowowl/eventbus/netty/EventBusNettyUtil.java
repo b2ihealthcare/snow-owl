@@ -30,6 +30,7 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * @since 8.1.0
@@ -39,6 +40,10 @@ public final class EventBusNettyUtil {
 	public static final String HEADER_CLIENT_ID = "clientId";
 	
 	public static final int MAX_OBJECT_SIZE = 16_777_216; // 16 MiB
+
+	private static final int READ_TIMEOUT_SECONDS = 30;
+
+	private static final int WRITE_TIMEOUT_SECONDS = 15;
 
 	public static boolean awaitAddressBookSynchronized(Channel channel) throws InterruptedException {
 		final AddressBookNettyHandler addressBookHandler = channel.pipeline().get(AddressBookNettyHandler.class);
@@ -71,7 +76,10 @@ public final class EventBusNettyUtil {
 				}
 				
 				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(MAX_OBJECT_SIZE, ClassResolvers.cacheDisabled(classLoader)));
-				
+
+				// Sends user events to handlers added later in the pipeline when there is no read/write activity
+				pipeline.addLast(new IdleStateHandler(READ_TIMEOUT_SECONDS, WRITE_TIMEOUT_SECONDS, 0));
+
 				final IEventBusNettyHandler messageHandler = EventBusNettyUtil.createMessageHandler(eventBus);
 				final IEventBusNettyHandler addressBookHandler = EventBusNettyUtil.createAddressBookHandler(sendInitialSync, eventBus, messageHandler);
 				pipeline.addLast(addressBookHandler, messageHandler);

@@ -18,6 +18,7 @@ package com.b2international.snowowl.internal.eventbus.netty;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -32,6 +33,8 @@ import com.b2international.snowowl.internal.eventbus.MessageFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 
 /**
  * A message handler bridge implementation for a Netty channel and a local event
@@ -47,6 +50,12 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @since 8.1.0
  */
 public class EventBusNettyHandler extends SimpleChannelInboundHandler<IMessage> implements IEventBusNettyHandler {
+
+	private static class PingMessage implements Serializable {
+		// Empty class body 
+	}
+	
+	private static final PingMessage PING = new PingMessage();
 
 	private static final Logger LOG = LoggerFactory.getLogger(EventBusNettyHandler.class);
 	
@@ -126,6 +135,33 @@ public class EventBusNettyHandler extends SimpleChannelInboundHandler<IMessage> 
 		final ChannelHandlerContext localCtx = ctx;
 		if (localCtx != null) {
 			channelWrite(localCtx, message);
+		}
+	}
+	
+	@Override
+	public void userEventTriggered(final ChannelHandlerContext ctx, final Object event) throws Exception {
+		if (!(event instanceof IdleStateEvent)) {
+			// Propagate user events of unexpected type
+			super.userEventTriggered(ctx, event);
+			return;
+		}
+		
+		final IdleStateEvent idleEvent = (IdleStateEvent) event;
+		if (IdleState.READER_IDLE.equals(idleEvent.state())) {
+			// We haven't heard anything from the other end for a while, close the connection
+			ctx.close();
+		} else if (IdleState.WRITER_IDLE.equals(idleEvent.state())) {
+			/*
+			 * Send message which will reset the "read idle" timer on the other end, and the
+			 * "write idle" timer on our side
+			 */
+			ctx.writeAndFlush(PING);
+		} else {
+			/*
+			 * We are not interested in other (ALL_IDLE) states, but in case this changes,
+			 * propagate this event as well.
+			 */
+			super.userEventTriggered(ctx, event);
 		}
 	}
 }
