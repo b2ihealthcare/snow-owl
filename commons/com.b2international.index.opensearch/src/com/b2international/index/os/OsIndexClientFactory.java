@@ -189,7 +189,7 @@ public final class OsIndexClientFactory implements IndexClientFactory {
 			// Start an embedded OS node only if a cluster URL is not set
 			Node node = OsNode.getInstance(clusterName, configDirectory, dataDirectory, persistent);
 			// check sysprop to force HTTP client when still using embedded mode
-			if (System.getProperty("so.index.es.useHttp") != null) {
+			if (System.getProperty("so.index.os.useHttp") != null) {
 				client = OsClient.create(new OsClientConfiguration(clusterName, "http://127.0.0.1:9200", username, password, connectTimeout, socketTimeout));
 			} else {
 				// and use the local NodeClient to communicate via the embedded node
