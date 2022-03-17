@@ -17,7 +17,7 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 
-import com.b2international.index.es.client.EsClusterStatus;
+import com.b2international.index.ClusterStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -30,9 +30,9 @@ public final class ServerInfo implements Serializable {
 	private final String version;
 	private final String description;
 	private final Repositories repositories;
-	private final EsClusterStatus cluster;
+	private final ClusterStatus cluster;
 	
-	public ServerInfo(String version, String description, Repositories repositories, EsClusterStatus cluster) {
+	public ServerInfo(String version, String description, Repositories repositories, ClusterStatus cluster) {
 		this.version = version;
 		this.description = description;
 		this.repositories = repositories;
@@ -55,7 +55,7 @@ public final class ServerInfo implements Serializable {
 	}
 	
 	@JsonProperty
-	public EsClusterStatus cluster() {
+	public ClusterStatus cluster() {
 		return cluster;
 	}
 	

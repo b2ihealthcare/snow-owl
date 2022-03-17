@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.commons.options.MetadataImpl;
-import com.b2international.index.es.client.EsIndexStatus;
+import com.b2international.index.IndexStatus;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -93,7 +93,7 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 	}
 	
 	@Override
-	public List<EsIndexStatus> indices() {
+	public List<IndexStatus> indices() {
 		return Collections.emptyList();
 	}
 	

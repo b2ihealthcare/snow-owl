@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.core;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.index.es.client.EsIndexStatus;
+import com.b2international.index.IndexStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -47,7 +47,7 @@ public interface RepositoryInfo {
 	}
 	
 	@JsonProperty
-	List<EsIndexStatus> indices();
+	List<IndexStatus> indices();
 	
 	/**
 	 * @since 5.8 
@@ -66,9 +66,9 @@ public interface RepositoryInfo {
 		private final String id;
 		private final Health health;
 		private final String diagnosis;
-		private final List<EsIndexStatus> indices;
+		private final List<IndexStatus> indices;
 
-		private Default(String id, Health health, String diagnosis, List<EsIndexStatus> indices) {
+		private Default(String id, Health health, String diagnosis, List<IndexStatus> indices) {
 			this.id = id;
 			this.health = health;
 			this.diagnosis = diagnosis;
@@ -91,13 +91,13 @@ public interface RepositoryInfo {
 		}
 		
 		@Override
-		public List<EsIndexStatus> indices() {
+		public List<IndexStatus> indices() {
 			return indices;
 		}
 		
 	}
 	
-	static RepositoryInfo of(String id, Health health, String diagnosis, List<EsIndexStatus> indices) {
+	static RepositoryInfo of(String id, Health health, String diagnosis, List<IndexStatus> indices) {
 		return new Default(id, health, diagnosis, indices);
 	}
 	

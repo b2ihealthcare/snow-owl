@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,7 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.index.*;
-import com.b2international.index.es.client.EsClient;
-import com.b2international.index.es.client.EsClusterStatus;
+import com.b2international.index.ClusterStatus;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.DefaultRevisionIndex;
@@ -123,8 +122,6 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		});
 		// register IndexClient per terminology
 		bind(IndexClient.class, indexClient);
-		// but register EsClient globally
-		getDelegate().services().registerService(EsClient.class, indexClient.client());
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
@@ -144,7 +141,7 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		Health health = Health.GREEN;
 		String diagnosis = "";
 		final String[] indices = service(Index.class).admin().indices();
-		final EsClusterStatus status = service(IndexClient.class).client().status(indices);
+		final ClusterStatus status = service(IndexClient.class).status(indices);
 		if (!status.isAvailable()) {
 			// check if cluster is available or not, and report RED state if not along with index diagnosis
 			health = Health.RED;
