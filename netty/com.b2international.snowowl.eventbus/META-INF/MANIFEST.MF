@@ -4,7 +4,7 @@ Bundle-Name: Netty Eventbus
 Bundle-SymbolicName: com.b2international.snowowl.eventbus;singleton:=true
 Bundle-Version: 8.0.1.qualifier
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: com.google.guava;bundle-version="[27.1.0,28.0.0)",
  io.netty.common;visibility:=reexport,
  io.netty.handler;visibility:=reexport,
