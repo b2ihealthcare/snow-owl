@@ -194,7 +194,7 @@ public class OsDocumentWriter implements Writer {
 								.index(typeIndex)
 								.opType(OpType.INDEX)
 								.source(_source, XContentType.JSON);
-						// XXX revisions has their special local ID, but that's not needed when sending them to ES, OS will autogenerate a non-conflicting ID for them 
+						// XXX revisions have their special local ID, but that's not needed when sending them to the index, as it will auto-generate a non-conflicting ID for them 
 						if (!(obj instanceof Revision)) {
 							indexRequest.id(id);
 						}

@@ -32,11 +32,11 @@ public enum OsScriptFactory {
 	private static final String SCRIPTING_LANGUAGE = "painless";
 
 	/**
-	 * Converts the {@link #getScript()} and {@link #getParams()} to an inline Opensearch script. If the specified {@link #getScript()} is a named
+	 * Converts the {@link #getScript()} and {@link #getParams()} to an inline OpenSearch script. If the specified {@link #getScript()} is a named
 	 * script it will be converted to the actual raw script value.
 	 * 
 	 * @param mapping - the mapping to use for named scripts
-	 * @return the Opensearch script to send to with queries, update, scoring, etc.
+	 * @return the OpenSearch script to send to with queries, update, scoring, etc.
 	 */
 	public org.opensearch.script.Script toOsScript(ScriptExpression expression, DocumentMapping mapping) {
 		String script = expression.getScript();

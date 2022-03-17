@@ -43,7 +43,7 @@ public final class OsClusterStatus implements Serializable {
 	}
 	
 	/**
-	 * @return <code>true</code> if the Opensearch cluster is available, up and running, <code>false</code> otherwise.
+	 * @return <code>true</code> if the OpenSearch cluster is available, up and running, <code>false</code> otherwise.
 	 */
 	public boolean isAvailable() {
 		return available;

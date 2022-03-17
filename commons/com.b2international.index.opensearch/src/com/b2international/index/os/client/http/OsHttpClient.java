@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Includes portions of Opensearch high-level REST client classes, 
+ * Includes portions of OpenSearch high-level REST client classes, 
  * also licensed under the Apache 2.0 license:
  * 
  * - org.opensearch.client.RestHighLevelClient

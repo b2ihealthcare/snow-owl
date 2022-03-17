@@ -179,7 +179,7 @@ public abstract class OsClientBase implements OsClient {
 	}
 	
 	/**
-	 * Ping the Opensearch cluster.
+	 * Ping the OpenSearch cluster.
 	 * @return <code>true</code> if the cluster is available, up and running, <code>false</code> otherwise.
 	 * @throws IOException 
 	 */

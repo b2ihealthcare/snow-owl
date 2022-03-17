@@ -108,7 +108,7 @@ public final class OsClientConfiguration {
 	}
 
 	/**
-	 * @return <code>true</code> if both username and password is provided, meaning that the target Opensearch cluster is protected by authentication, <code>false</code> if not protected.
+	 * @return <code>true</code> if both username and password is provided, meaning that the target OpenSearch cluster is protected by authentication, <code>false</code> if not protected.
 	 */
 	public boolean isProtected() {
 		return !Strings.isNullOrEmpty(getUserName()) && !Strings.isNullOrEmpty(getPassword());

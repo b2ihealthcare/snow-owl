@@ -71,9 +71,9 @@ public final class OsNode extends Node {
 							
 							waitForPendingTasks(node.client());
 							INSTANCE = node;
-							LOG.info("Embedded Opensearch instance is up and running.");
+							LOG.info("Embedded OpenSearch instance is up and running.");
 						} catch (Exception e) {
-							throw new RuntimeException("Couldn't start embedded Opensearch instance", e);
+							throw new RuntimeException("Couldn't start embedded OpenSearch instance", e);
 						}
 					});
 				}
@@ -102,7 +102,7 @@ public final class OsNode extends Node {
 				}
 				
 			} catch (Exception e) {
-				LOG.error("Failed to stop embedded Opensearch instance.", e);
+				LOG.error("Failed to stop embedded OpenSearch instance.", e);
 			}
 		});
 	}

@@ -79,7 +79,7 @@ public class RestHighLevelClientExt {
 	}
 	
 	//
-	// Methods and inner class extracted originally from org.elasticsearch.client.Request
+	// Methods and inner class extracted originally from org.elasticsearch.client.Request / org.opensearch.client.Request
 	//
 	
     static String endpoint(String index, String endpoint) {

@@ -80,13 +80,13 @@ public final class OsIndexAdmin implements IndexAdmin {
 	private static final Pattern FIELD_ALIAS_CHANGE_PROPERTY_PATTERN = Pattern.compile("properties(/[a-zA-Z0-9_]+)+/fields(/[a-zA-Z0-9_]+)?");
 	
 	/**
-	 * List of Opensearch supported dynamic settings.
+	 * List of OpenSearch supported dynamic settings.
 	 */
 	private static final Set<String> DYNAMIC_SETTINGS = Set.of(
 		IndexClientFactory.RESULT_WINDOW_KEY
 	);
 	/**
-	 * Local Settings are Snow Owl index client only configuration, not actual Opensearch supported configuration, they are implicitly dynamic.
+	 * Local Settings are Snow Owl index client only configuration, not actual OpenSearch supported configuration, they are implicitly dynamic.
 	 */
 	private static final Set<String> LOCAL_SETTINGS = Set.of(
 		IndexClientFactory.COMMIT_WATERMARK_LOW_KEY,
@@ -286,7 +286,7 @@ public final class OsIndexAdmin implements IndexAdmin {
 	private void waitForYellowHealth(String... indices) {
 		if (!CompareUtils.isEmpty(indices)) {
 			/*
-			 * See https://www.elastic.co/guide/en/opensearch/reference/6.3/cluster-health.html 
+			 * See https://opensearch.org/docs/latest/opensearch/rest-api/cluster-health/ 
 			 * for the low-level structure of the cluster health request.
 			 */
 			final Object clusterTimeoutSetting = settings.getOrDefault(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, IndexClientFactory.DEFAULT_CLUSTER_HEALTH_TIMEOUT);

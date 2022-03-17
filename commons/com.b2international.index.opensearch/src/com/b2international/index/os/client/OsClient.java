@@ -50,7 +50,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public interface OsClient extends AutoCloseable {
 
-	Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
+	Logger LOG = LoggerFactory.getLogger("opensearch-snowowl");
 	
 	ClusterStatus status(String...indices);
 	
@@ -110,7 +110,7 @@ public interface OsClient extends AutoCloseable {
 		
 		@SuppressWarnings("resource")
 		static OsClient onAdd(final OsClientConfiguration configuration) {
-			LOG.info("Connecting to Opensearch cluster at '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
+			LOG.info("Connecting to OpenSearch cluster at '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
 					configuration.getClusterUrl(),
 					configuration.isProtected() ? " using basic authentication" : "",
 					configuration.getConnectTimeout(),

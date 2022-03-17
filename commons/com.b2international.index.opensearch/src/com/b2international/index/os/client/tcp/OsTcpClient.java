@@ -147,7 +147,7 @@ public final class OsTcpClient extends OsClientBase {
 				throw new IOException(e.getCause());
 			}
 		} catch (InterruptedException e) {
-			throw new IndexException("Interrupted execution of Opensearch request", e);
+			throw new IndexException("Interrupted execution of OpenSearch request", e);
 		}
 	}
 
