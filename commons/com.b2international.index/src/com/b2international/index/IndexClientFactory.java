@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -212,4 +212,18 @@ public interface IndexClientFactory {
 	 * @return
 	 */
 	IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings);
+	
+	/**
+	 * Initializes the current index client factory.
+	 * 
+	 * @throws Exception 
+	 */
+	void start(ClassLoader bundleClassLoader) throws Exception;
+
+	/**
+	 * Shuts down the current index client factory.
+	 * 
+	 * @throws Exception 
+	 */
+	void stop() throws Exception;
 }
