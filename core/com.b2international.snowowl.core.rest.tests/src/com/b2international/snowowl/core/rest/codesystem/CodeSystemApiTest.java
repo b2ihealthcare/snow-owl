@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,11 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
@@ -482,5 +485,78 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v2", "2020-04-14")).statusCode(400);
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v3", "2020-04-15")).statusCode(400);
 	}
+
+	@Test
+	public void codesystem27_GetWithTimestamp() {
+		final String codeSystemId = "cs27";
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
+		assertCodeSystemCreated(requestBody);
+		
+		final CodeSystem createdCodeSystem = assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		assertCodeSystemUpdated(codeSystemId, Json.object("copyright", "Updated copyright"));
+
+		final CodeSystem updatedCodeSystem = assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		// try to retrieve code system state before it was created
+		assertCodeSystemGet(codeSystemId, createdCodeSystem.getCreatedAt() - 1L)
+			.statusCode(404);
+		
+		// retrieve the state at creation time
+		final CodeSystem codeSystem1 = assertCodeSystemGet(codeSystemId, createdCodeSystem.getCreatedAt())
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		assertEquals(createdCodeSystem.getCopyright(), codeSystem1.getCopyright());
+		
+		// retrieve the state at the point in time when the update happened
+		final CodeSystem codeSystem2 = assertCodeSystemGet(codeSystemId, updatedCodeSystem.getUpdatedAt())
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		assertEquals("Updated copyright", codeSystem2.getCopyright());
+		
+		// look into the future a small amount as well
+		final CodeSystem codeSystem3 = assertCodeSystemGet(codeSystemId, updatedCodeSystem.getUpdatedAt() + 1L)
+			.statusCode(200)
+			.extract()
+			.as(CodeSystem.class);
+		
+		assertEquals("Updated copyright", codeSystem3.getCopyright());		
+	}
 	
+	@Test
+	public void codeSystem28_SearchWithTimestamp() throws Exception {
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_1"));
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_2"));
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_3"));
+
+		final long timestamp1 = getCodeSystemCreatedAt("cs28_1");
+		final long timestamp2 = getCodeSystemCreatedAt("cs28_2");
+		final long timestamp3 = getCodeSystemCreatedAt("cs28_3");
+		
+		assertCodeSystemSearch(Map.of("timestamp", timestamp1 - 1L)).statusCode(200).body("items", empty());
+		assertCodeSystemSearch(Map.of("timestamp", timestamp1)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1"));
+		assertCodeSystemSearch(Map.of("timestamp", timestamp2 - 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1"));
+		assertCodeSystemSearch(Map.of("timestamp", timestamp2)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1", "cs28_2"));
+		assertCodeSystemSearch(Map.of("timestamp", timestamp3 - 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1", "cs28_2"));
+		assertCodeSystemSearch(Map.of("timestamp", timestamp3)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1", "cs28_2", "cs28_3"));
+		assertCodeSystemSearch(Map.of("timestamp", timestamp3 + 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1", "cs28_2", "cs28_3"));
+	}
+
+	private long getCodeSystemCreatedAt(final String id) {
+		return assertCodeSystemGet(id)
+			.statusCode(200)
+			.extract()
+			.jsonPath()
+			.getLong("createdAt");
+	}	
 }

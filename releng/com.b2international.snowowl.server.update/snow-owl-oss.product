@@ -9,7 +9,7 @@
    <launcherArgs>
       <programArgs>-console -consoleLog
       </programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms6g -Xmx6g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=8080 -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms6g -Xmx6g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=8080 -Dosgi.classloader.type=nonparallel --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED -XX:+AlwaysPreTouch
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
       </vmArgsMac>
@@ -37,17 +37,18 @@
       <feature id="com.b2international.snowowl.core.rest.feature"/>
       <feature id="com.b2international.snowowl.snomed.core.rest.feature"/>
       <feature id="com.b2international.snowowl.fhir.rest.feature"/>
+      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
    </features>
 
    <configurations>
+      <plugin id="com.b2international.snowowl.core.rest" autoStart="true" startLevel="5" />
+      <plugin id="com.b2international.snowowl.server.product" autoStart="true" startLevel="4" />
       <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
-      <plugin id="com.b2international.snowowl.server.product" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.jetty.osgi.boot" autoStart="true" startLevel="5" />
-      <plugin id="com.b2international.snowowl.core.rest" autoStart="true" startLevel="5" />
    </configurations>
 
 </product>

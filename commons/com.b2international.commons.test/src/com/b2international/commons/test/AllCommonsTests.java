@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.commons.test.collect.BitSetTest;
-import com.b2international.commons.test.collect.ByteOpenHashSetTest;
-import com.b2international.commons.test.collect.EmptyLongListTest;
-import com.b2international.commons.test.collect.IntOpenHashSetTest;
-import com.b2international.commons.test.collect.LongOpenHashSetTest;
+import com.b2international.commons.test.collect.*;
 import com.b2international.commons.test.config.ConfigurationFactoryTest;
 
 /**
@@ -39,7 +35,9 @@ import com.b2international.commons.test.config.ConfigurationFactoryTest;
 	ByteOpenHashSetTest.class,
 	IntOpenHashSetTest.class,
 	LongOpenHashSetTest.class,
-	EmptyLongListTest.class
+	EmptyLongListTest.class,
+	OrderedSetTest.class,
+	LongOrderedSetTest.class,
 })
 public class AllCommonsTests {
 	// Empty class body

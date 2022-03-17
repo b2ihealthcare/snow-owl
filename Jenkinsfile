@@ -16,7 +16,7 @@ try {
 
 	slack.notifyBuild()
 
-	node('build') {
+	node('build-jdk17') {
 
 		stage('Checkout repository') {
 
@@ -35,11 +35,11 @@ try {
 		stage('Build') {
 
 			if (!custom_maven_settings.isEmpty()) {
-				withMaven(jdk: 'OpenJDK_11', maven: 'Maven_3.6.3', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
+				withMaven(jdk: 'OpenJDK_17', maven: 'Maven_3.8.4', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
 					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			} else {
-				withMaven(jdk: 'OpenJDK_11', maven: 'Maven_3.6.3', options: [artifactsPublisher(disabled: true)], publisherStrategy: 'EXPLICIT') {
+				withMaven(jdk: 'OpenJDK_17', maven: 'Maven_3.8.4', options: [artifactsPublisher(disabled: true)], publisherStrategy: 'EXPLICIT') {
 					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			}
@@ -58,7 +58,8 @@ try {
 			string(name: 'extension', value: 'tar.gz'),
 			string(name: 'imageClassifier', value: 'oss'),
 			string(name: 'gitRevision', value: revision),
-			string(name: 'gitBranch', value: branch)
+			string(name: 'gitBranch', value: branch),
+			string(name: 'baseImage', value: 'b2ihealthcare/centos-slim:7')
 		], quietPeriod: 1, wait: false
 
 	}

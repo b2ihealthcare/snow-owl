@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,30 @@ package com.b2international.snowowl.core.rest.bundle;
 import static com.b2international.snowowl.core.rest.BundleApiAssert.*;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
+import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceGet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.junit.Assert.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.bundle.Bundle;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.CommitResult;
+import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
@@ -73,7 +84,53 @@ public class BundleRestApiTest {
 	}
 	
 	@Test
-	public void searchByNotExisting() {
+	public void getBundleWithTimestamp() throws Exception {
+		final String id = "b16";
+		createBundle(prepareBundleCreateRequestBody(id));
+		
+		final Bundle createdBundle = assertResourceGet(id)
+			.statusCode(200)
+			.extract()
+			.as(Bundle.class);
+		
+		final String newDescription = "Updated description";
+		assertUpdateBundleField(id, "description", newDescription);
+		
+		final Bundle updatedBundle = assertResourceGet(id)
+			.statusCode(200)
+			.extract()
+			.as(Bundle.class);
+		
+		assertResourceGet(id, createdBundle.getCreatedAt() - 1L)
+			.statusCode(404);
+		
+		// retrieve the state at creation time
+		final Bundle bundle1 = assertResourceGet(id, createdBundle.getCreatedAt())
+			.statusCode(200)
+			.extract()
+			.as(Bundle.class);
+		
+		assertEquals(createdBundle.getDescription(), bundle1.getDescription());
+		
+		// retrieve the state at the point in time when the update happened
+		final Bundle bundle2 = assertResourceGet(id, updatedBundle.getUpdatedAt())
+			.statusCode(200)
+			.extract()
+			.as(Bundle.class);
+		
+		assertEquals(newDescription, bundle2.getDescription());
+		
+		// look into the future a small amount as well
+		final Bundle bundle3 = assertResourceGet(id, updatedBundle.getUpdatedAt() + 1L)
+			.statusCode(200)
+			.extract()
+			.as(Bundle.class);
+		
+		assertEquals(newDescription, bundle3.getDescription());		
+	}
+
+	@Test
+	public void searchBundleByNonExistentId() {
 		assertBundleSearch(Map.of("id", "not-existing"))
 			.body("total", equalTo(0))
 			.body("items", empty());
@@ -116,7 +173,7 @@ public class BundleRestApiTest {
 	}
 	
 	@Test
-	public void expandBundleResources() {
+	public void searchBundleExpandResources() {
 		final String rootBundleId = "rootBundleId";
 		final String subBundleId = "subBundleId";
 		
@@ -135,6 +192,43 @@ public class BundleRestApiTest {
 			.assertThat();
 	}
 	
+	@Test
+	public void searchBundleWithTimestamp() throws Exception {
+		final long timestamp1 = createBundleAndGetTimestamp("b17");
+		final long timestamp2 = createBundleAndGetTimestamp("b18");
+		final long timestamp3 = createBundleAndGetTimestamp("b19");
+		
+		assertBundleSearch(idsWithTimestamp(timestamp1 - 1L, "b17", "b18", "b19")).statusCode(200).body("items", empty());
+		assertBundleSearch(idsWithTimestamp(timestamp1 + 0L, "b17", "b18", "b19")).statusCode(200).body("items.id", containsInAnyOrder("b17"));
+		assertBundleSearch(idsWithTimestamp(timestamp2 - 1L, "b17", "b18", "b19")).statusCode(200).body("items.id", containsInAnyOrder("b17"));
+		assertBundleSearch(idsWithTimestamp(timestamp2 + 0L, "b17", "b18", "b19")).statusCode(200).body("items.id", containsInAnyOrder("b17", "b18"));
+		assertBundleSearch(idsWithTimestamp(timestamp3 - 1L, "b17", "b18", "b19")).statusCode(200).body("items.id", containsInAnyOrder("b17", "b18"));
+		assertBundleSearch(idsWithTimestamp(timestamp3 + 0L, "b17", "b18", "b19")).statusCode(200).body("items.id", containsInAnyOrder("b17", "b18", "b19"));
+		assertBundleSearch(idsWithTimestamp(timestamp3 + 1L, "b17", "b18", "b19")).statusCode(200).body("items.id", containsInAnyOrder("b17", "b18", "b19"));
+	}
+
+	private static long createBundleAndGetTimestamp(final String id) {
+		final CommitResult commitResult = ResourceRequests.bundles()
+			.prepareCreate()
+			.setId(id)
+			.setTitle("Bundle " + id)
+			.setDescription("description")
+			.setLanguage("en")
+			.setUrl("https://b2i.sg/" + id)
+			.setBundleId(IComponent.ROOT_ID)
+			.build(RestExtensions.USER, "Created bundle " + id)
+			.execute(Services.bus())
+			.getSync(1L, TimeUnit.MINUTES);
+			
+		return commitResult.getCommitTimestamp();
+	}
+
+	private static Map<String, Object> idsWithTimestamp(final long timestamp, final String... ids) {
+		return Map.of(
+			"timestamp", timestamp,
+			"id", List.of(ids));
+	}
+
 	@Test
 	public void updateBundleTitle() {
 		final String id = "b4";
@@ -222,5 +316,5 @@ public class BundleRestApiTest {
 		createBundle(prepareBundleCreateRequestBody(id));
 		assertUpdateBundle(id, Json.object("bundleId", "not-existing-id"))
 			.statusCode(400);
-	}
+	}	
 }

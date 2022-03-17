@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,18 @@ import com.b2international.snowowl.core.events.RequestBuilder;
 public interface ResourceRepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
 
 	default AsyncRequest<R> buildAsync() {
+		return buildAsync(null);
+	}
+	
+	default AsyncRequest<R> buildAsync(Long timestamp) {
 		return new AsyncRequest<>(
-			new ResourceRepositoryRequest<>(
+			new ResourceRepositoryRequest<>(timestamp, 
 				wrap(build())
 			)
-		); 
+		);
 	}
 
 	default Request<RepositoryContext, R> wrap(Request<RepositoryContext, R> req) {
 		return req;
 	}
-	
 }

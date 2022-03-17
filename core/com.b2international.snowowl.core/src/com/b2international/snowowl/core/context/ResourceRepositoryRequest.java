@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 import com.b2international.index.Searcher;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
@@ -39,10 +40,18 @@ import com.b2international.snowowl.core.request.RepositoryAwareRequest;
 public final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, RepositoryContext, R> implements RepositoryAwareRequest {
 
 	public static final String RESOURCE_REPOSITORY_ID = "resources";
+	
 	private static final long serialVersionUID = 1L;
+
+	private final Long timestamp;
 	
 	public ResourceRepositoryRequest(Request<RepositoryContext, R> next) {
+		this(null, next);
+	}
+	
+	public ResourceRepositoryRequest(Long timestamp, Request<RepositoryContext, R> next) {
 		super(next);
+		this.timestamp = timestamp;
 	}
 	
 	@Override
@@ -58,7 +67,7 @@ public final class ResourceRepositoryRequest<R> extends DelegatingRequest<Servic
 	@Override
 	public R execute(ServiceProvider context) {
 		ResourceRepository resourceRepository = context.service(ResourceRepository.class);
-		return resourceRepository.read(searcher -> {
+		RevisionIndexRead<R> read = searcher -> {
 			// TODO check health
 			DefaultRepositoryContext repository = new DefaultRepositoryContext(context, RepositoryInfo.of(RESOURCE_REPOSITORY_ID, Health.GREEN, null, List.of()));
 			repository.bind(RevisionIndex.class, resourceRepository);
@@ -67,7 +76,12 @@ public final class ResourceRepositoryRequest<R> extends DelegatingRequest<Servic
 			repository.bind(ContextConfigurer.class, ContextConfigurer.NOOP);
 			repository.bind(BaseRevisionBranching.class, resourceRepository.branching());
 			return next(repository);
-		});
-	}
+		};
 
+		if (timestamp == null) {
+			return resourceRepository.read(read);
+		} else {
+			return resourceRepository.read(timestamp, read);
+		}
+	}
 }
