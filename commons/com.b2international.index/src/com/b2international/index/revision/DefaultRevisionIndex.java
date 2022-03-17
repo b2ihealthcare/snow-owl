@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	
 	@Override
 	public <T> T read(final RevisionBranchRef branch, final RevisionIndexRead<T> read) {
-		return index.read(index -> read.execute(new DefaultRevisionSearcher(branch, index)));
+		return index.read(index -> read.execute(new DefaultRevisionSearcher(branch, index, admin.maxTermsCount())));
 	}
 	
 	/**
@@ -131,7 +131,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		}
 		return index.write(index -> {
 			final RevisionBranchRef branch = getBranchRef(branchPath);
-			final RevisionWriter writer = new DefaultRevisionWriter(branching, branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
+			final RevisionWriter writer = new DefaultRevisionWriter(branching, branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher(), admin.maxTermsCount()));
 			return write.execute(writer);
 		});
 	}
@@ -349,6 +349,4 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		}
 		return revisionTypes;
 	}
-
-	
 }

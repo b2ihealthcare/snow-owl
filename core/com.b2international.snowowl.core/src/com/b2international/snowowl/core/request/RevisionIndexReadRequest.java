@@ -114,6 +114,11 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 						public String branch() {
 							return branchPath;
 						}
+						
+						@Override
+						public int getMaxTermsCount() {
+							return index.admin().maxTermsCount();
+						}
 					})
 					.build());
 		}

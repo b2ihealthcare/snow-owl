@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
-import com.b2international.index.es.EsDocumentSearcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableList;
@@ -42,10 +41,10 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	private final Searcher searcher;
 	private final int maxTermsCount;
 
-	public DefaultRevisionSearcher(RevisionBranchRef branch, Searcher searcher) {
+	public DefaultRevisionSearcher(RevisionBranchRef branch, Searcher searcher, int maxTermsCount) {
 		this.branch = branch;
 		this.searcher = searcher;
-		this.maxTermsCount = ((EsDocumentSearcher) searcher).maxTermsCount();
+		this.maxTermsCount = maxTermsCount;
 	}
 	
 	@Override
@@ -148,4 +147,8 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 		return branch.path();
 	}
 
+	@Override
+	public int getMaxTermsCount() {
+		return maxTermsCount;
+	}
 }

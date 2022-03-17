@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 
@@ -36,11 +35,6 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	public RevisionIndexAdmin(RevisionIndex index, IndexAdmin rawIndexAdmin) {
 		this.index = index;
 		this.rawIndexAdmin = rawIndexAdmin;
-	}
-	
-	@Override
-	public EsClient client() {
-		return rawIndexAdmin.client();
 	}
 	
 	@Override
@@ -108,5 +102,9 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	public void optimize(int maxSegments) {
 		rawIndexAdmin.optimize(maxSegments);
 	}
-	
+
+	@Override
+	public int maxTermsCount() {
+		return rawIndexAdmin.maxTermsCount();
+	}
 }

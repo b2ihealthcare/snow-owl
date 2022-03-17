@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.UUID;
 import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Writer;
-import com.b2international.index.es.EsDocumentSearcher;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.google.common.collect.ImmutableMap;
@@ -131,7 +130,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		if (Revision.class.isAssignableFrom(type)) {
 			if (!keysToUpdate.isEmpty()) {
 				final Map<String, Object> updateRevised = ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised);
-				for (List<String> keys : Lists.partition(List.copyOf(keysToUpdate), ((EsDocumentSearcher) index.searcher()).maxTermsCount())) {
+				for (List<String> keys : Lists.partition(List.copyOf(keysToUpdate), searcher.getMaxTermsCount())) {
 					final Expression filter = Expressions.builder()
 							.filter(Expressions.matchAny(Revision.Fields.ID, keys))
 							.filter(branchToUpdate.toRevisionFilter())
@@ -171,5 +170,4 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	private String generateRevisionId() {
 		return UUID.randomUUID().toString();
 	}
-
 }
