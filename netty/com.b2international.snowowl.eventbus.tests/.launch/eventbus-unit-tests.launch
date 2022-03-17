@@ -32,7 +32,7 @@
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.b2international.snowowl.eventbus.tests"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea --add-opens java.base/sun.security.x509=ALL-UNNAMED"/>
     <stringAttribute key="pde.version" value="3.3"/>
     <stringAttribute key="product" value="com.b2international.snowowl.server.product.product"/>
     <booleanAttribute key="run_in_ui_thread" value="true"/>
@@ -64,7 +64,6 @@
         <setEntry value="org.eclipse.osgi@-1:true"/>
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.junit@default:default"/>
-        <setEntry value="org.mockito@default:default"/>
         <setEntry value="org.objenesis@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
     </setAttribute>
