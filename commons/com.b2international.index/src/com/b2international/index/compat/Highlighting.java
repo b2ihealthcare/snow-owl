@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,17 @@
  */
 package com.b2international.index.compat;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-
+import com.b2international.commons.StringUtils;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 /**
  * @since 4.7
@@ -44,55 +39,23 @@ public class Highlighting {
 	 * @param s the string to split
 	 * @return a list of tokens, or an empty list if {@code s} is {@code null} or empty
 	 */
-	public static List<String> split(Analyzer analyzer, final String s) {
-		
-		checkNotNull(analyzer, "analyzer");
-		
+	public static List<String> split(final String s) {
 		if (Strings.isNullOrEmpty(s)) {
 			return ImmutableList.of();
 		}
-		
-		final List<String> tokens = Lists.newArrayList();
-		TokenStream stream = null;
-		
-		try {
-			
-			stream = analyzer.tokenStream(null, new StringReader(s));
-			stream.reset();
-			
-			while (stream.incrementToken()) {
-				tokens.add(stream.getAttribute(CharTermAttribute.class).toString());
-			}
-			
-		} catch (final IOException ignored) {
-			// Should not be thrown when using a string reader
-		} finally {
-			endAndCloseQuietly(stream);
-		}
-		
-		return tokens;
-	}
-	
-	private static void endAndCloseQuietly(final TokenStream stream) {
-		if (stream != null) {
-			try (final TokenStream tokenStream = stream; ) {
-				tokenStream.end();
-			} catch (final IOException e) {
-				// Should not be thrown when using a string reader
-			}
-		}
-		
-		
+
+		// XXX: A Java approximation of the previous Lucene analyzer behavior
+		return Streams.stream(TextConstants.WHITESPACE_OR_DELIMITER_SPLITTER.split(s))
+			.map(StringUtils::removeDiacriticals)
+			.collect(Collectors.toList());
 	}
 	
 	public static int[][] getMatchRegions(final String queryExpression, final String sortKeyLabel) {
 		final String lcQuery = queryExpression.toLowerCase();
 		final String lcLabel = sortKeyLabel.toLowerCase();
 		
-		final Analyzer analyzer = new ComponentTermAnalyzer();
-		
-		final List<String> filterTokens = split(analyzer, lcQuery);
-		final List<String> labelTokens = split(analyzer, lcLabel);
+		final List<String> filterTokens = split(lcQuery);
+		final List<String> labelTokens = split(lcLabel);
 		final List<int[]> elementMatchRegions = Lists.newArrayList();
 		
 		int startIndex = 0;
@@ -155,5 +118,4 @@ public class Highlighting {
 		
 		return true;
 	}
-	
 }
