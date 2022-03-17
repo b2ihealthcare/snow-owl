@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.elasticsearch.common.Strings;
-
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -56,7 +55,7 @@ public final class CodeSystemURI implements Serializable {
 	
 	@JsonCreator
 	public CodeSystemURI(String uri) throws BadRequestException {
-		if (Strings.isNullOrEmpty(uri)) {
+		if (StringUtils.isEmpty(uri)) {
 			throw new BadRequestException("Malformed CodeSystem URI value: '%s' is empty.", uri);
 		}
 
@@ -116,7 +115,7 @@ public final class CodeSystemURI implements Serializable {
 	public static CodeSystemURI branch(String codeSystem, String path) {
 		Preconditions.checkArgument(!codeSystem.contains(Branch.SEPARATOR), "CodeSystem ID should not be an URI already. Got: %s", codeSystem);
 		StringBuilder uri = new StringBuilder(codeSystem);
-		if (!Strings.isNullOrEmpty(path)) {
+		if (!StringUtils.isEmpty(path)) {
 			uri.append(Branch.SEPARATOR);
 			uri.append(path);
 		}
