@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-scripting-painless-spi-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-core-2.17.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/analysis-common-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-analysis-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-commons-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-tree-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-util-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/compiler-0.9.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hppc-0.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jna-5.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.10.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jopt-simple-5.0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lang-painless-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-api-2.17.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-backward-codecs-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-core-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-grouping-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-highlighter-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-join-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-memory-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-misc-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-queries-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-queryparser-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-sandbox-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial3d-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-extras-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest-8.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lz4-java-1.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mapper-extras-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-cli-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-core-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-geo-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-rest-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-rest-high-level-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-secure-sm-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-ssl-config-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensearch-x-content-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/parent-join-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/percolator-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/rank-eval-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/reindex-client-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/t-digest-3.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/transport-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-client-1.2.4.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
