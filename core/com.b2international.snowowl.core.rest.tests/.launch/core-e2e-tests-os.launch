@@ -16,7 +16,7 @@
     <booleanAttribute key="includeOptional" value="false"/>
     <stringAttribute key="location" value="${workspace_loc}/../junit-workspace"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/com.b2international.snowowl.snomed.core.rest.tests/src/com/b2international/snowowl/snomed/core/rest/AllSnomedApiTests.java"/>
+        <listEntry value="/com.b2international.snowowl.core.rest.tests/src/com/b2international/snowowl/core/rest/AllSnowOwlApiTests.java"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="1"/>
@@ -26,11 +26,11 @@
     <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
     <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
     <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
-    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.b2international.snowowl.snomed.core.rest.AllSnomedApiTests"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.b2international.snowowl.core.rest.AllSnowOwlApiTests"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog -console"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.b2international.snowowl.snomed.core.rest.tests"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.b2international.snowowl.core.rest.tests"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2g -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=8080 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms1g -Xmx1g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=8080 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch"/>
     <stringAttribute key="pde.version" value="3.3"/>
     <stringAttribute key="product" value="org.eclipse.platform.ide"/>
     <booleanAttribute key="run_in_ui_thread" value="false"/>
@@ -78,9 +78,8 @@
         <setEntry value="javax.el@default:default"/>
         <setEntry value="javax.inject@default:default"/>
         <setEntry value="javax.servlet-api@default:default"/>
+        <setEntry value="javax.servlet@default:default"/>
         <setEntry value="jaxb-api@default:default"/>
-        <setEntry value="jcl.over.slf4j@default:default"/>
-        <setEntry value="jul.to.slf4j@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy-agent@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy@default:default"/>
@@ -88,7 +87,6 @@
         <setEntry value="net.jodah.typetools@default:default"/>
         <setEntry value="org.antlr.runtime@default:default"/>
         <setEntry value="org.apache.ant@default:default"/>
-        <setEntry value="org.apache.commons.cli@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.lang3@default:default"/>
@@ -101,6 +99,8 @@
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
+        <setEntry value="org.apache.lucene.core@default:default"/>
+        <setEntry value="org.apache.lucene.analyzers-common@default:default"/>
         <setEntry value="org.ccil.cowan.tagsoup@default:default"/>
         <setEntry value="org.codehaus.groovy@default:default"/>
         <setEntry value="org.eclipse.ant.core@default:default"/>
@@ -117,15 +117,16 @@
         <setEntry value="org.eclipse.core.jobs@default:default"/>
         <setEntry value="org.eclipse.core.net.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.core.net@default:default"/>
+        <setEntry value="org.eclipse.core.resources.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.core.resources@default:default"/>
         <setEntry value="org.eclipse.core.runtime@default:true"/>
         <setEntry value="org.eclipse.core.variables@default:default"/>
         <setEntry value="org.eclipse.debug.core@default:default"/>
         <setEntry value="org.eclipse.emf.common@default:default"/>
+        <setEntry value="org.eclipse.emf.ecore.change@default:default"/>
         <setEntry value="org.eclipse.emf.ecore.xmi@default:default"/>
         <setEntry value="org.eclipse.emf.ecore@default:default"/>
         <setEntry value="org.eclipse.equinox.app@default:default"/>
-        <setEntry value="org.eclipse.equinox.bidi@default:default"/>
         <setEntry value="org.eclipse.equinox.common@2:true"/>
         <setEntry value="org.eclipse.equinox.console@default:default"/>
         <setEntry value="org.eclipse.equinox.ds@1:true"/>
@@ -134,10 +135,15 @@
         <setEntry value="org.eclipse.equinox.registry@default:default"/>
         <setEntry value="org.eclipse.equinox.security.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.equinox.security@default:default"/>
+        <setEntry value="org.eclipse.equinox.supplement@default:default"/>
         <setEntry value="org.eclipse.equinox.transforms.hook@default:false"/>
         <setEntry value="org.eclipse.equinox.weaving.hook@default:false"/>
-        <setEntry value="org.eclipse.help@default:default"/>
-        <setEntry value="org.eclipse.jdt.junit.runtime@default:default"/>
+        <setEntry value="org.eclipse.jdt.compiler.apt@default:false"/>
+        <setEntry value="org.eclipse.jdt.compiler.tool@default:false"/>
+        <setEntry value="org.eclipse.jdt.core.manipulation@default:default"/>
+        <setEntry value="org.eclipse.jdt.core@default:default"/>
+        <setEntry value="org.eclipse.jdt.debug@default:default"/>
+        <setEntry value="org.eclipse.jdt.launching@default:default"/>
         <setEntry value="org.eclipse.jetty.continuation@default:default"/>
         <setEntry value="org.eclipse.jetty.deploy@default:default"/>
         <setEntry value="org.eclipse.jetty.http@default:default"/>
@@ -162,7 +168,6 @@
         <setEntry value="org.eclipse.osgi.services@default:default"/>
         <setEntry value="org.eclipse.osgi.util@default:default"/>
         <setEntry value="org.eclipse.osgi@-1:true"/>
-        <setEntry value="org.eclipse.pde.junit.runtime@default:default"/>
         <setEntry value="org.eclipse.swt.win32.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.swt@default:default"/>
         <setEntry value="org.eclipse.team.core@default:default"/>
@@ -188,7 +193,6 @@
         <setEntry value="org.protege.editor.core.application@default:default"/>
         <setEntry value="org.protege.editor.owl@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
-        <setEntry value="org.semanticweb.elk@default:default"/>
         <setEntry value="org.semanticweb.owl.owlapi@default:default"/>
         <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
@@ -198,22 +202,29 @@
         <setEntry value="com.b2international.collections.api@default:default"/>
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
+        <setEntry value="com.b2international.commons.test@default:false"/>
         <setEntry value="com.b2international.commons@default:default"/>
         <setEntry value="com.b2international.index.tests.tools@default:default"/>
+        <setEntry value="com.b2international.index.tests@default:false"/>
         <setEntry value="com.b2international.index@default:default"/>
+        <setEntry value="com.b2international.index.opensearch@default:false"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.restassured-all@default:default"/>
+        <setEntry value="com.b2international.snowowl.core.rest.tests@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
+        <setEntry value="com.b2international.snowowl.core.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
+        <setEntry value="com.b2international.snowowl.eventbus.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
+        <setEntry value="com.b2international.snowowl.identity.ldap@default:false"/>
         <setEntry value="com.b2international.snowowl.logback.config@default:false"/>
         <setEntry value="com.b2international.snowowl.rpc@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.core.rest.tests@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.core.rest@default:false"/>
+        <setEntry value="com.b2international.snowowl.snomed.datastore.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
+        <setEntry value="com.b2international.snowowl.snomed.reasoner.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
         <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
