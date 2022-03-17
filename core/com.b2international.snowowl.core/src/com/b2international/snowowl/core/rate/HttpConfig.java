@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.rate;
 
-import org.elasticsearch.common.unit.ByteSizeValue;
-import org.elasticsearch.core.TimeValue;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,14 +25,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class HttpConfig {
 	
 	@NotEmpty
-	private String maxFileSize = "1gb";
+	private String maxFileSize = "1GB";
 	@NotEmpty
-	private String maxRequestSize = "1gb";
+	private String maxRequestSize = "1GB";
 	@NotEmpty
-	private String maxInMemorySize = "1mb";
+	private String maxInMemorySize = "1MB";
 	
 	@NotEmpty
-	private String requestTimeout = "300s";
+	private String requestTimeout = "300";
 	
 	public String getMaxFileSize() {
 		return maxFileSize;
@@ -70,22 +68,21 @@ public class HttpConfig {
 
 	@JsonIgnore
 	public long getMaxFileSizeBytes() {
-		return ByteSizeValue.parseBytesSizeValue(getMaxFileSize(), "api.http.maxFileSize").getBytes();
+		return DataSize.parse(getMaxFileSize()).toBytes();
 	}
 
 	@JsonIgnore
 	public long getMaxRequestSizeBytes() {
-		return ByteSizeValue.parseBytesSizeValue(getMaxRequestSize(), "api.http.maxRequestSize").getBytes();
+		return DataSize.parse(getMaxRequestSize()).toBytes();
 	}
 
 	@JsonIgnore
 	public int getMaxInMemorySizeBytes() {
-		return ByteSizeValue.parseBytesSizeValue(getMaxInMemorySize(), "api.http.maxInMemorySize").bytesAsInt();
+		return (int) DataSize.parse(getMaxInMemorySize()).toBytes();
 	}
 
 	@JsonIgnore
 	public long getRequestTimeoutInMillis() {
-		return TimeValue.parseTimeValue(getRequestTimeout(), "requestTimeout").millis();
+		return Long.parseLong(getRequestTimeout()) * 1000L;
 	}
-
 }
