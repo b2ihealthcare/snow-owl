@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.client;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
 import com.b2international.snowowl.core.identity.Token;
@@ -48,6 +47,7 @@ import com.google.common.net.HostAndPort;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -75,7 +75,6 @@ public final class TransportClient implements IDisposableService {
 	private final IEventBus bus;
 	private final EventLoopGroup workerGroup;
 	private final AtomicReference<Channel> channel;
-//	private final TransportConfiguration transportConfiguration;
 	
 	private String user;
 	private String password;
@@ -88,7 +87,6 @@ public final class TransportClient implements IDisposableService {
 		this.bus = env.service(IEventBus.class);
 		this.workerGroup = new NioEventLoopGroup();
 		this.channel = new AtomicReference<Channel>();
-//		this.transportConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(TransportConfiguration.class);
 	}
 	
 	public String getAddress() {
@@ -144,17 +142,18 @@ public final class TransportClient implements IDisposableService {
 					hostAndPort = HostAndPort.fromString(address);
 				}
 				
+				final TransportConfiguration transportConfiguration = configuration.getModuleConfig(TransportConfiguration.class);
 				final SslContext sslCtx;
 				try {
 				
-					final RepositoryConfiguration repositoryConfiguration = configuration.getModuleConfig(RepositoryConfiguration.class);
-					final String certificateChainPath = repositoryConfiguration.getCertificateChainPath();
+					final String certificatePath = transportConfiguration.getCertificatePath();
 					
-					if (!StringUtils.isEmpty(certificateChainPath)) {
-						
+					if (!StringUtils.isEmpty(certificatePath)) {
+						final Path configPath = env.getConfigPath();
+
 						sslCtx = SslContextBuilder
 							.forClient()
-							.trustManager(new File(certificateChainPath))
+							.trustManager(configPath.resolve(certificatePath).toFile())
 							.build();
 						
 					} else {
@@ -170,19 +169,34 @@ public final class TransportClient implements IDisposableService {
 					throw new SnowowlRuntimeException("Failed to create client SSL context.", e);
 				}
 		        
+				final int connectionTimeout = transportConfiguration.getConnectionTimeout();
+				final int watchdogRate = transportConfiguration.getWatchdogRate();
+				final int watchdogTimeout = transportConfiguration.getWatchdogTimeout();
+				
 				final Channel localChannel = new Bootstrap()
 					.group(workerGroup)
 					.channel(NioSocketChannel.class)
-					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, bus, compositeClassLoader))
+					.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout * 1000)
+					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, watchdogRate, watchdogTimeout, bus, compositeClassLoader))
 					.connect(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
 					.syncUninterruptibly()
 					.channel();
 				
-				if (!channel.compareAndSet(null, localChannel)) {
-					// We lost against another thread who also called initConnection at the same time; close this channel asynchronously
+				final Channel nextChannel = channel.updateAndGet(currentChannel -> {
+					if (currentChannel == null || !currentChannel.isActive()) {
+						return localChannel;
+					} else {
+						return currentChannel;
+					}
+				});
+				
+				if (nextChannel != localChannel) {
+					// Another channel was already registered, close this channel asynchronously
 					localChannel.close();
 				} else {
-					EventBusNettyUtil.awaitAddressBookSynchronized(localChannel);
+					if (!EventBusNettyUtil.awaitAddressBookSynchronized(localChannel)) {
+						throw new SnowowlRuntimeException("Timed out while connecting to the server.");	
+					}
 				}
 			}
 			
@@ -196,6 +210,11 @@ public final class TransportClient implements IDisposableService {
 			LOG.error("Invalid repository URL: " + e.getMessage(), e);
 			throw new SnowowlServiceException("Invalid repository URL: " + e.getMessage(), e);
 
+		} catch (final SnowowlRuntimeException e) {
+			
+			LOG.error("Could not connect to server.", e);
+			throw e;
+			
 		} catch (final Throwable e) {
 
 			LOG.error("Could not connect to server.", e);
@@ -217,7 +236,7 @@ public final class TransportClient implements IDisposableService {
 				.setPassword(password)
 				.buildAsync()
 				.execute(bus)
-				.getSync();
+				.getSync(3L, TimeUnit.SECONDS);
 			
 			// if successfully logged in replace the event bus with an authorized one
 			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", token.getToken())));

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -168,13 +168,15 @@ public final class RepositoryPlugin extends Plugin {
 					final String privateKeyPath = repositoryConfiguration.getPrivateKeyPath();
 					
 					if (!StringUtils.isEmpty(certificateChainPath) && !StringUtils.isEmpty(privateKeyPath)) {
+						final Path configPath = env.getConfigPath();
 						
 						sslCtx = SslContextBuilder
-							.forServer(new File(certificateChainPath), new File(privateKeyPath))
+							.forServer(
+								configPath.resolve(certificateChainPath).toFile(), 
+								configPath.resolve(privateKeyPath).toFile())
 							.build();
 						
 					} else {
-						
 						try {
 							
 							final SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -191,11 +193,15 @@ public final class RepositoryPlugin extends Plugin {
 					throw new SnowowlRuntimeException("Failed to create server SSL context.", e);
 				}
 		        
+				final TransportConfiguration transportConfiguration = configuration.getModuleConfig(TransportConfiguration.class);
+				final int watchdogRate = transportConfiguration.getWatchdogRate();
+				final int watchdogTimeout = transportConfiguration.getWatchdogTimeout();
+				
 				final Channel serverChannel = new ServerBootstrap()
 					.group(bossGroup, workerGroup)
 //					.handler(new LoggingHandler(LogLevel.INFO))
 					.channel(NioServerSocketChannel.class)
-					.childHandler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, true, eventBus, compositeClassLoader))
+					.childHandler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, true, watchdogRate, watchdogTimeout, eventBus, compositeClassLoader))
 					.childOption(ChannelOption.SO_KEEPALIVE, true)
 					.bind(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
 					.syncUninterruptibly()
