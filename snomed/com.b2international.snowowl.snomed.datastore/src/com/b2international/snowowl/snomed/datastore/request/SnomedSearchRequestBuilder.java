@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
+import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 
 /**
@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.
  * @since 4.5
  */
 public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R extends PageableCollectionResource<?>> 
-		extends SearchPageableCollectionResourceRequestBuilder<B, BranchContext, R>
+		extends AbstractComponentSearchRequestBuilder<B, BranchContext, R>
 		implements SnomedContentRequestBuilder<R> {
 
 	/**

@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.apache.commons.codec;bundle-version="1.10.0",
  org.apache.commons.io;bundle-version="2.6.0",
  io.github.classgraph.classgraph;bundle-version="4.8.90",
- groovy;bundle-version="3.0.9"
+ groovy;bundle-version="3.0.9",
+ com.b2international.snomed.ecl;bundle-version="1.6.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: com.auth0.jwt,
@@ -76,6 +77,7 @@ Export-Package: com.auth0.jwt,
  com.b2international.snowowl.core.rate,
  com.b2international.snowowl.core.repository,
  com.b2international.snowowl.core.request,
+ com.b2international.snowowl.core.request.ecl,
  com.b2international.snowowl.core.request.expand,
  com.b2international.snowowl.core.request.io,
  com.b2international.snowowl.core.request.resource,

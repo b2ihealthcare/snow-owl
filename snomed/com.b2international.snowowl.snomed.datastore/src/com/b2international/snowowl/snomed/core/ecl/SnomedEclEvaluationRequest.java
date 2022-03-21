@@ -28,12 +28,10 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
@@ -49,10 +47,10 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
+import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -77,21 +75,15 @@ import com.google.common.collect.*;
  * 
  * @since 5.4
  */
-final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
+final class SnomedEclEvaluationRequest extends EclEvaluationRequest {
 
 	private static final long serialVersionUID = 5891665196136989183L;
-	
-	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 	
 	private static final Map<String, String> ACCEPTABILITY_ID_TO_FIELD = Map.of(
 		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, "preferredIn",
 		Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, "acceptableIn"
 	);
 
-	@Nullable
-	@JsonProperty
-	private String expression;
-	
 	@NotNull
 	@JsonProperty
 	private String expressionForm = Trees.INFERRED_FORM;
@@ -99,33 +91,15 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	SnomedEclEvaluationRequest() {
 	}
 
-	void setExpression(String expression) {
-		this.expression = expression;
-	}
-	
 	void setExpressionForm(String expressionForm) {
 		this.expressionForm = expressionForm;
 	}
 
 	@Override
-	public Promise<Expression> execute(BranchContext context) {
-		final ExpressionConstraint expressionConstraint = context.service(EclParser.class).parse(expression);
-		return doEval(context, expressionConstraint);
-	}
-
-	Promise<Expression> doEval(BranchContext context, final ExpressionConstraint expressionConstraint) {
-		ExpressionConstraint rewritten = new SnomedEclRewriter().rewrite(expressionConstraint);
-		return evaluate(context, rewritten);
+	protected ExpressionConstraint rewrite(BranchContext context, ExpressionConstraint expressionConstraint) {
+		return new SnomedEclRewriter().rewrite(expressionConstraint);
 	}
 	
-	private Promise<Expression> evaluate(BranchContext context, EObject expression) {
-		return dispatcher.invoke(context, expression);
-	}
-
-	protected Promise<Expression> eval(BranchContext context, EObject eObject) {
-		return throwUnsupported(eObject);
-	}
-
 	/**
 	 * Handles ANY simple expression constraints
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints  
@@ -1025,14 +999,6 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final Void empty) {
 		return Promise.immediate(MatchNone.INSTANCE);
-	}
-	
-	/*package*/ static <T> Promise<T> throwUnsupported(EObject eObject) {
-		return throwUnsupported(eObject, "");
-	}
-	
-	/*package*/ static <T> Promise<T> throwUnsupported(EObject eObject, String additionalInfo) {
-		throw new NotImplementedException("Not implemented ECL feature: %s%s", eObject.eClass().getName(), CompareUtils.isEmpty(additionalInfo) ? "" : ". ".concat(additionalInfo));
 	}
 	
 	static boolean canExtractIds(Expression expression) {

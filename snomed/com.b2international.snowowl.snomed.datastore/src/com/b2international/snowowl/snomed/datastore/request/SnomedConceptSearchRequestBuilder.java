@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,17 +104,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 */
 	public final SnomedConceptSearchRequestBuilder filterBySemanticTags(Iterable<String> semanticTags) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.SEMANTIC_TAG, semanticTags);
-	}
-
-	/**
-	 * Filter matches by the specified Expression Constraint Language (ECL) expression. The currently supported ECL version is v1.1. See
-	 * <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
-	 * 
-	 * @param expression - the ECL expression
-	 * @return SnomedConceptSearchRequestBuilder
-	 */
-	public final SnomedConceptSearchRequestBuilder filterByEcl(String expression) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.ECL, expression);
 	}
 
 	/**

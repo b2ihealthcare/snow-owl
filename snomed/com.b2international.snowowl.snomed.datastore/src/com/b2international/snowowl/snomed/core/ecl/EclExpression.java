@@ -147,7 +147,7 @@ public final class EclExpression {
 		return resolveToExpression(context)
 				.then(it -> {
 					if (!excludedMatches.isEmpty()) {
-						return Expressions.builder().filter(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
+						return Expressions.bool().filter(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
 					} else {
 						return it;
 					}
