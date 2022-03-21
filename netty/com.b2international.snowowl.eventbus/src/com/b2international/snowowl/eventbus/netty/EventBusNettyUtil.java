@@ -47,18 +47,35 @@ public final class EventBusNettyUtil {
 
 	public static boolean awaitAddressBookSynchronized(Channel channel) throws InterruptedException {
 		final AddressBookNettyHandler addressBookHandler = channel.pipeline().get(AddressBookNettyHandler.class);
+		if (addressBookHandler == null) {
+			return false;
+		}
+		
 		return addressBookHandler.awaitAddressBookSynchronized(channel, 3L, TimeUnit.SECONDS);
+	}
+	
+	public static ChannelHandler createChannelHandler(SslContext sslCtx, boolean gzip, boolean sendInitialSync, IEventBus eventBus, ClassLoader classLoader) {
+		return createChannelHandler(sslCtx, gzip, sendInitialSync, WRITE_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS, eventBus, classLoader);
 	}
 	
 	/**
 	 * @param sslCtx 
 	 * @param gzip
 	 * @param sendInitialSync
+	 * @param watchdogTimeout 
+	 * @param watchdogRate 
 	 * @param eventBus
 	 * @param classLoader
 	 * @return
 	 */
-	public static ChannelHandler createChannelHandler(SslContext sslCtx, boolean gzip, boolean sendInitialSync, IEventBus eventBus, ClassLoader classLoader) {
+	public static ChannelHandler createChannelHandler(
+		SslContext sslCtx, 
+		boolean gzip, 
+		boolean sendInitialSync, 
+		int watchdogRate, 
+		int watchdogTimeout, 
+		IEventBus eventBus, 
+		ClassLoader classLoader) {
 		
 		return new ChannelInitializer<Channel>() {
 			@Override
@@ -78,7 +95,7 @@ public final class EventBusNettyUtil {
 				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(MAX_OBJECT_SIZE, ClassResolvers.cacheDisabled(classLoader)));
 
 				// Sends user events to handlers added later in the pipeline when there is no read/write activity
-				pipeline.addLast(new IdleStateHandler(READ_TIMEOUT_SECONDS, WRITE_TIMEOUT_SECONDS, 0));
+				pipeline.addLast(new IdleStateHandler(watchdogTimeout, watchdogRate, 0));
 
 				final IEventBusNettyHandler messageHandler = EventBusNettyUtil.createMessageHandler(eventBus);
 				final IEventBusNettyHandler addressBookHandler = EventBusNettyUtil.createAddressBookHandler(sendInitialSync, eventBus, messageHandler);
