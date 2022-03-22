@@ -8,13 +8,13 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
+import com.b2international.snowowl.core.ecl.EclParser
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.core.ecl.EclExpression
-import com.b2international.snowowl.snomed.core.ecl.EclParser
 import com.b2international.snowowl.snomed.core.tree.Trees
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument

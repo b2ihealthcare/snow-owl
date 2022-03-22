@@ -24,6 +24,7 @@ import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.fasterxml.jackson.annotation.JsonProperty;

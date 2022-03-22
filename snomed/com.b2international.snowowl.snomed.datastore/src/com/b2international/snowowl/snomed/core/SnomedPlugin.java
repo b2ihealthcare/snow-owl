@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,9 @@ package com.b2international.snowowl.snomed.core;
 
 import java.util.List;
 
-import org.eclipse.xtext.parser.IParser;
-import org.eclipse.xtext.serializer.ISerializer;
-import org.eclipse.xtext.validation.IResourceValidator;
 import org.slf4j.Logger;
 
 import com.b2international.index.revision.Hooks.PreCommitHook;
-import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -49,10 +45,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
-import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
-import com.b2international.snowowl.snomed.core.ecl.EclParser;
-import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.merge.SnomedComponentRevisionConflictProcessor;
 import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer;
@@ -65,7 +57,6 @@ import com.b2international.snowowl.snomed.datastore.request.*;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Injector;
 
 /**
  * @since 7.0
@@ -87,10 +78,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final SnomedCoreConfiguration coreConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 		env.services().registerService(SnomedCoreConfiguration.class, coreConfig);
-		
-		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
-		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
 		
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
