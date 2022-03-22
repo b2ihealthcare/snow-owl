@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.ConceptSearchRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
@@ -67,6 +70,19 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		TerminologyRegistry registry = env.service(TerminologyRegistry.class);
 		registry.register(this);
 		getAdditionalTerminologyComponents().values().forEach(additionalTerminologyComponent -> registry.register(getId(), additionalTerminologyComponent));
+		
+		List<TerminologyRepositoryConfigurer> repositoryConfigurers = env.service(ClassPathScanner.class)
+				.getComponentsByInterface(TerminologyRepositoryConfigurer.class)
+				.stream()
+				.filter(configurer -> getRepositoryId().equals(configurer.getRepositoryId()))
+				.collect(Collectors.toList());
+		
+		repositoryConfigurers.forEach( configurer -> {
+			configurer.getAdditionalTerminologyComponents().forEach( componentType -> {
+					TerminologyComponent terminologyComponent = Terminology.getAnnotation(componentType);
+					registry.register(getId(), terminologyComponent);									
+			});
+		});
 		
 		if (env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
