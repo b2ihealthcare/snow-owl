@@ -73,7 +73,7 @@ public final class TransportClient implements IDisposableService {
 	private final Environment env;
 	private final String address;
 	private final IEventBus bus;
-	private final EventLoopGroup workerGroup;
+	
 	private final AtomicReference<Channel> channel;
 	
 	private String user;
@@ -85,7 +85,6 @@ public final class TransportClient implements IDisposableService {
 		// override CLIENT/SERVER mode when connecting to a valid address
 		env.services().registerService(Mode.class, Strings.isNullOrEmpty(address) ? Mode.SERVER : Mode.CLIENT);
 		this.bus = env.service(IEventBus.class);
-		this.workerGroup = new NioEventLoopGroup();
 		this.channel = new AtomicReference<Channel>();
 	}
 	
@@ -109,12 +108,16 @@ public final class TransportClient implements IDisposableService {
 	public void dispose() {
 		final Channel localChannel = channel.getAndSet(null);
 		if (localChannel != null) {
-			localChannel.close().awaitUninterruptibly();
+			final EventLoopGroup workerGroup = localChannel.eventLoop().parent();
+			
+			localChannel
+				.close()
+				.awaitUninterruptibly();
+
+			workerGroup
+				.shutdownGracefully(500L, 3000L, TimeUnit.MILLISECONDS)
+				.awaitUninterruptibly();
 		}
-		
-		workerGroup
-			.shutdownGracefully(500L, 3000L, TimeUnit.MILLISECONDS)
-			.awaitUninterruptibly();
 	}
 	
 	@Override
@@ -174,29 +177,21 @@ public final class TransportClient implements IDisposableService {
 				final int watchdogTimeout = transportConfiguration.getWatchdogTimeout();
 				
 				final Channel localChannel = new Bootstrap()
-					.group(workerGroup)
+					.group(new NioEventLoopGroup())
 					.channel(NioSocketChannel.class)
 					.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout * 1000)
 					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, watchdogRate, watchdogTimeout, bus, compositeClassLoader))
 					.connect(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
 					.syncUninterruptibly()
 					.channel();
-				
-				final Channel nextChannel = channel.updateAndGet(currentChannel -> {
-					if (currentChannel == null || !currentChannel.isActive()) {
-						return localChannel;
-					} else {
-						return currentChannel;
-					}
-				});
-				
-				if (nextChannel != localChannel) {
-					// Another channel was already registered, close this channel asynchronously
-					localChannel.close();
-				} else {
-					if (!EventBusNettyUtil.awaitAddressBookSynchronized(localChannel)) {
-						throw new SnowowlRuntimeException("Timed out while connecting to the server.");	
-					}
+
+				channel.set(localChannel);
+			
+				// Register this client as a service (any existing instance will be disposed)
+				env.services().registerService(TransportClient.class, this);
+
+				if (!EventBusNettyUtil.awaitAddressBookSynchronized(localChannel)) {
+					throw new SnowowlRuntimeException("Timed out while connecting to the server.");	
 				}
 			}
 			
@@ -240,7 +235,6 @@ public final class TransportClient implements IDisposableService {
 			
 			// if successfully logged in replace the event bus with an authorized one
 			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", token.getToken())));
-			env.services().registerService(TransportClient.class, this);
 			
 			return env.service(AuthorizationHeaderVerifier.class).toUser(token.getToken());
 		} catch (UnauthorizedException e) {
