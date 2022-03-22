@@ -109,10 +109,8 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		// initialize MRCM Import-Export API
-		if (env.isServer()) {
-			env.services().registerService(MrcmExporter.class, new MrcmExporterImpl(env.provider(IEventBus.class)));
-			env.services().registerService(MrcmImporter.class, new MrcmJsonImporter(env.provider(IEventBus.class)));
-		}
+		env.services().registerService(MrcmExporter.class, new MrcmExporterImpl(env.provider(IEventBus.class)));
+		env.services().registerService(MrcmImporter.class, new MrcmJsonImporter(env.provider(IEventBus.class)));
 	}
 	
 	@Override
