@@ -44,6 +44,8 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.lang.reflect=ALL-UNNA
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.lang=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.util=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.time=ALL-UNNAMED
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.text=ALL-UNNAMED
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.desktop/java.awt.font=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
 
 REM Run Snow Owl
