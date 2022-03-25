@@ -255,9 +255,8 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
 		if (canRestoreEffectiveTime(context) && !staging.isMerge()) {
-			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
-			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
+			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log)), staging, index);
 		}
 	}
 	
