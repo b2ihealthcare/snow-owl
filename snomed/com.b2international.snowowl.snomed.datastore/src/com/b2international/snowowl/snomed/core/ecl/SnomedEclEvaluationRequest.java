@@ -49,8 +49,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -61,6 +61,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
@@ -75,7 +76,7 @@ import com.google.common.collect.*;
  * 
  * @since 5.4
  */
-final class SnomedEclEvaluationRequest extends EclEvaluationRequest {
+final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContext> {
 
 	private static final long serialVersionUID = 5891665196136989183L;
 	
@@ -870,10 +871,14 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest {
 		
 		ExpressionBuilder queryBuilder = Expressions.bool();
 		
-		SnomedRefSetMemberSearchRequest.prepareRefsetMemberFieldQuery(context, queryBuilder, Options.builder()
+		// FIXME it would be better to use a static method or some other class type that has the necessary logic to evaluate multivalued ECL expressions properly 
+		((SnomedRefSetMemberSearchRequest) SnomedRequests.prepareSearchMember()
+			.setEclExpressionForm(expressionForm)
+			.build())
+			.prepareRefsetMemberFieldQuery(context, queryBuilder, Options.builder()
 				.put(memberFieldFilter.getRefsetFieldName(), values)
 				.put(SearchResourceRequest.operator(memberFieldFilter.getRefsetFieldName()), toSearchOperator(memberFieldFilter.getComparison().getOp()))
-				.build(), expressionForm);
+				.build());
 		
 		return Promise.immediate(queryBuilder.build());
 	}

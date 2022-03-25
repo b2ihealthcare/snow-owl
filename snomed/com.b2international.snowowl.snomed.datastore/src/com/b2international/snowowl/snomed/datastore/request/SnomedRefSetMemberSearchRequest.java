@@ -158,12 +158,12 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 			queryBuilder.filter(refSetTypes(refSetTypes));
 		}
 		
-		prepareRefsetMemberFieldQuery(context, queryBuilder, propsFilter, eclExpressionForm());
+		prepareRefsetMemberFieldQuery(context, queryBuilder, propsFilter);
 		
 		return queryBuilder.build();
 	}
 
-	public static void prepareRefsetMemberFieldQuery(BranchContext context, ExpressionBuilder queryBuilder, Options propsFilter, String eclExpressionForm) {
+	public void prepareRefsetMemberFieldQuery(BranchContext context, ExpressionBuilder queryBuilder, Options propsFilter) {
 		if (!propsFilter.isEmpty()) {
 			final Set<String> propKeys = newHashSet(propsFilter.keySet());
 			
@@ -181,7 +181,7 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 				
 				if (propKeys.remove(refsetFieldName)) {
 					SnomedRefsetMemberFieldQueryHandler<?> handler = SUPPORTED_MEMBER_FIELDS.get(refsetFieldName);
-					handler.prepareQuery(queryBuilder, op, propsFilter.getCollection(refsetFieldName, (Class) handler.getFieldType()), values -> evaluateEclFilter(context, values, eclExpressionForm));
+					handler.prepareQuery(queryBuilder, op, propsFilter.getCollection(refsetFieldName, (Class) handler.getFieldType()), values -> evaluateEclFilter(context, values));
 				}
 			}
 			

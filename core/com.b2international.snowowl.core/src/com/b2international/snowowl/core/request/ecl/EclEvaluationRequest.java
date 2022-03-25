@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
@@ -87,7 +88,11 @@ public class EclEvaluationRequest<C extends ServiceProvider> implements Request<
 	}
 	
 	public static <T> Promise<T> throwUnsupported(EObject eObject) {
-		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
+		return throwUnsupported(eObject, "");
+	}
+	
+	public static <T> Promise<T> throwUnsupported(EObject eObject, String additionalInfo) {
+		throw new NotImplementedException("Not implemented ECL feature: %s%s", eObject.eClass().getName(), CompareUtils.isEmpty(additionalInfo) ? "" : ". ".concat(additionalInfo));
 	}
 
 }
