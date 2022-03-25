@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request.ecl;
 
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
 import org.eclipse.emf.ecore.EObject;
@@ -23,16 +25,17 @@ import org.eclipse.xtext.util.PolymorphicDispatcher;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 8.2.0
  */
-public class EclEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
+public class EclEvaluationRequest<C extends ServiceProvider> implements Request<C, Promise<Expression>> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -42,13 +45,16 @@ public class EclEvaluationRequest implements Request<BranchContext, Promise<Expr
 	@JsonProperty
 	private String expression;
 	
+	@Nullable
+	private Set<String> ignoredSyntaxErrorCodes;
+	
 	@Override
-	public final Promise<Expression> execute(BranchContext context) {
-		final ExpressionConstraint expressionConstraint = context.service(EclParser.class).parse(expression);
+	public final Promise<Expression> execute(C context) {
+		final ExpressionConstraint expressionConstraint = context.service(EclParser.class).parse(expression, ignoredSyntaxErrorCodes);
 		return doEval(context, expressionConstraint);
 	}
 
-	public final Promise<Expression> doEval(BranchContext context, final ExpressionConstraint expressionConstraint) {
+	public final Promise<Expression> doEval(C context, final ExpressionConstraint expressionConstraint) {
 		final ExpressionConstraint rewritten = rewrite(context, expressionConstraint);
 		return evaluate(context, rewritten);
 	}
@@ -60,7 +66,7 @@ public class EclEvaluationRequest implements Request<BranchContext, Promise<Expr
 	 * @param expressionConstraint
 	 * @return
 	 */
-	protected ExpressionConstraint rewrite(BranchContext context, ExpressionConstraint expressionConstraint) {
+	protected ExpressionConstraint rewrite(C context, ExpressionConstraint expressionConstraint) {
 		return expressionConstraint;
 	}
 	
@@ -68,11 +74,15 @@ public class EclEvaluationRequest implements Request<BranchContext, Promise<Expr
 		this.expression = expression;
 	}
 	
-	protected final Promise<Expression> evaluate(BranchContext context, EObject expression) {
+	public final void setIgnoredSyntaxErrorCodes(Iterable<String> ignoredSyntaxErrorCodes) {
+		this.ignoredSyntaxErrorCodes = ignoredSyntaxErrorCodes == null ? null : ImmutableSet.copyOf(ignoredSyntaxErrorCodes);
+	}
+	
+	protected final Promise<Expression> evaluate(C context, EObject expression) {
 		return dispatcher.invoke(context, expression);
 	}
 
-	protected Promise<Expression> eval(BranchContext context, EObject eObject) {
+	protected Promise<Expression> eval(C context, EObject eObject) {
 		return throwUnsupported(eObject);
 	}
 	

@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.ecl;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
+import org.elasticsearch.core.Set;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
@@ -55,6 +57,11 @@ public class DefaultEclParser implements EclParser {
 	
 	@Override
 	public ExpressionConstraint parse(String expression) {
+		return parse(expression, Set.of());
+	}
+	
+	@Override
+	public ExpressionConstraint parse(String expression, Collection<String> ignoredSyntaxErrorCodes) {
 		if (expression == null) {
 			throw new BadRequestException("Expression cannot be null.");
 		} else if (StringUtils.isEmpty(expression)) {
@@ -77,7 +84,7 @@ public class DefaultEclParser implements EclParser {
 					if (!issues.isEmpty()) {
 						final Map<Pair<Integer, Integer>, String> errors = newHashMap();
 						for (Issue issue : issues) {
-							if (issue.getSeverity() == Severity.ERROR) {
+							if (issue.getSeverity() == Severity.ERROR && !ignoredSyntaxErrorCodes.contains(issue.getCode())) {
 								errors.put(Pair.of(issue.getLineNumber(), issue.getOffset()), issue.getMessage());
 							}
 						}

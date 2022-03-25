@@ -120,12 +120,7 @@ public abstract class AbstractComponentSearchRequest<C extends ServiceProvider, 
 				try {
 					idFilter = resolve(context, expression).getSync(3, TimeUnit.MINUTES);
 				} catch (SyntaxException e) {
-					if (!isIgnoredSyntaxError(e)) {
-						// incase of syntax errors, report them as incorrect values instead of syntax errors
-						throw new SearchResourceRequest.NoResultException();
-					} else {
-						idFilter = Collections.emptySet();
-					}
+					throw new SearchResourceRequest.NoResultException();
 				}
 				
 				if (idFilter.isEmpty()) {
@@ -137,19 +132,38 @@ public abstract class AbstractComponentSearchRequest<C extends ServiceProvider, 
 	}
 
 	/**
-	 * Subclasses may optionally override this method to ignore certain syntax errors and evaluate the current expression regardless.
-	 * 
-	 * @param e - the exception to check for error status codes that can be ignored 
+	 * Resolves the given eclExpression to a set of matching component identifiers.
+	 *  
+	 * @param context
+	 * @param eclExpression
 	 * @return
 	 */
-	protected boolean isIgnoredSyntaxError(SyntaxException e) {
-		return false;
-	}
-
 	protected abstract Promise<Set<String>> resolve(C context, String eclExpression);
 	
+	/**
+	 * Resolves the given eclExpression to an expression that can be appended to a query to restrict the results to only the components that match the ecl expression.
+	 * 
+	 * @param context
+	 * @param eclExpression
+	 * @return
+	 */
 	protected abstract Promise<Expression> resolveToExpression(C context, String eclExpression);
 
-	protected abstract boolean isComponentIdentifier(String eclExpression);
+	/**
+	 * Returns <code>true</code> when the given eclExpression denotes a single
+	 * component identifier in the current tooling. This method should only return
+	 * <code>true</code> if and only if it can decide <code>true</code> value
+	 * without using any other sources of information, meaning it should detect that
+	 * the given string value is a component identifier based on its characters. If
+	 * this cannot be determined safely, or any string can be used to denote a
+	 * component ID then this method should always return <code>false</code>. By
+	 * default it returns <code>false</code>.
+	 * 
+	 * @param eclExpression - the value to check whether it is a component ID or not
+	 * @return
+	 */
+	protected boolean isComponentIdentifier(String eclExpression) {
+		return false;
+	}
 	
 }

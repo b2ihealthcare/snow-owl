@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.ecl;
 
+import java.util.Collection;
+
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
@@ -23,5 +25,7 @@ import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 public interface EclParser {
 
 	ExpressionConstraint parse(String expression);
+
+	ExpressionConstraint parse(String expression, Collection<String> ignoredSyntaxErrorCodes);
 	
 }
