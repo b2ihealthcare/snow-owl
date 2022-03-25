@@ -7,8 +7,23 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>net4j-parent</artifactId>
-		<version>8.0.1-SNAPSHOT</version>
+		<version>8.1.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.snowowl.rpc.test</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<configuration>
+					<includes>
+						<include>**/AllRpcTests.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
 </project>

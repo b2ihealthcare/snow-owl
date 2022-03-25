@@ -37,7 +37,7 @@ fi
 
 if [ -z "$JAVA_HOME" ]
 then
-        JAVA_EXECUTABLE=java
+        JAVA_EXECUTABLE=$KERNEL_HOME/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.linux.x86_64_17.*/jre/bin/java
 else
         JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 fi
@@ -62,10 +62,11 @@ SO_JAVA_OPTS="-Xms2g \
                 -Djetty.home=$KERNEL_HOME/configuration \
                 -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml \
                 -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
-                -XX:+UseConcMarkSweepGC \
-                -XX:CMSInitiatingOccupancyFraction=75 \
-                -XX:+UseCMSInitiatingOccupancyOnly \
                 -XX:+HeapDumpOnOutOfMemoryError \
+                --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+                --add-opens java.base/java.lang=ALL-UNNAMED \
+                --add-opens java.base/java.util=ALL-UNNAMED \
+                --add-opens java.base/java.time=ALL-UNNAMED \
                 -Djdk.security.defaultKeySize=DSA:1024 \
                 -Dlogback.configurationFile=$KERNEL_HOME/configuration/serviceability.xml \
                 $SO_JAVA_OPTS"
@@ -76,6 +77,6 @@ exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.5.700.v20200207-2156.jar -console 2501
+  -jar plugins/org.eclipse.equinox.launcher_1.5.800.v20200727-1323.jar -console 2501
   
 popd

@@ -17,7 +17,7 @@ import com.google.common.io.Files
 
 File resourceFile = params.resourcesDir.resolve("scripts/Non-Acceptable_Semantic_Tags.txt").toFile()
 List<String> nonAcceptableSematicTags = newArrayList()
-nonAcceptableSematicTags = Files.readLines(resourceFile, , Charsets.UTF_8)
+nonAcceptableSematicTags = Files.readLines(resourceFile, Charsets.UTF_8)
 
 List<ComponentIdentifier> issues = newArrayList()
 

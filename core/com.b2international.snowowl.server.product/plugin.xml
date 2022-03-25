@@ -12,10 +12,6 @@
                name="appName"
                value="Snow Owl Server">
          </property>
-         <property
-               name="serverMode"
-               value="true">
-         </property>
       </product>
    </extension>
    <extension

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 
 	@Parameter
-	private List<String> branch;
-	
-	@Parameter
 	private List<String> toolingId;
 	
 	@Parameter
@@ -44,14 +41,6 @@ public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 	
 	public void setOid(List<String> oid) {
 		this.oid = oid;
-	}
-	
-	public List<String> getBranch() {
-		return branch;
-	}
-
-	public void setBranch(List<String> branchPath) {
-		this.branch = branchPath;
 	}
 	
 	public List<String> getToolingId() {

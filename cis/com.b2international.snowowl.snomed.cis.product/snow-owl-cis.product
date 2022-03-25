@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Snow Owl CIS" uid="com.b2international.snowowl.snomed.cis.product" id="com.b2international.snowowl.server.product.product" application="com.b2international.snowowl.server.product.SnowOwlServer" version="8.0.1.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Snow Owl CIS" uid="com.b2international.snowowl.snomed.cis.product" id="com.b2international.snowowl.server.product.product" application="com.b2international.snowowl.server.product.SnowOwlServer" version="8.1.1.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -9,7 +9,7 @@
    <launcherArgs>
       <programArgs>-console -consoleLog
       </programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms2g -Xmx2g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=9090 -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms2g -Xmx2g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=9090 -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
       </vmArgsMac>
@@ -34,6 +34,7 @@
       <feature id="com.b2international.snowowl.core.rest.feature"/>
       <feature id="com.b2international.snowowl.server.product.feature"/>
       <feature id="com.b2international.snowowl.snomed.cis.feature"/>
+      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
    </features>
 
    <configurations>

@@ -37,7 +37,7 @@ fi
 
 if [ -z "$JAVA_HOME" ]
 then
-        JAVA_EXECUTABLE=java
+        JAVA_EXECUTABLE=$KERNEL_HOME/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.linux.x86_64_17.*/jre/bin/java
 else
         JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 fi
@@ -55,12 +55,14 @@ SO_JAVA_OPTS="-Xms6g \
                 -Dosgi.noShutdown=true \
                 -Dosgi.classloader.type=nonparallel \
                 -Dosgi.console=2501 \
-                -XX:+AlwaysLockClassLoader \
                 -Djetty.port=8080 \
-                -XX:+UseConcMarkSweepGC \
-                -XX:CMSInitiatingOccupancyFraction=75 \
-                -XX:+UseCMSInitiatingOccupancyOnly \
                 -XX:+HeapDumpOnOutOfMemoryError \
+                --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+                --add-opens java.base/java.lang=ALL-UNNAMED \
+                --add-opens java.base/java.util=ALL-UNNAMED \
+                --add-opens java.base/java.time=ALL-UNNAMED \
+                --add-opens java.base/java.text=ALL-UNNAMED \
+                --add-opens java.desktop/java.awt.font=ALL-UNNAMED \
                 -Djdk.security.defaultKeySize=DSA:1024 \
                 $SO_JAVA_OPTS"
 

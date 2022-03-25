@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 package com.b2international.snowowl.test.commons.rest;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.config.LogConfig.logConfig;
+import static io.restassured.config.ObjectMapperConfig.objectMapperConfig;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -35,18 +35,14 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.Role;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.util.PlatformUtil;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.StdDateFormat;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 
 import io.restassured.RestAssured;
-import io.restassured.config.LogConfig;
-import io.restassured.config.ObjectMapperConfig;
+import io.restassured.common.mapper.resolver.ObjectMapperResolver;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
-import io.restassured.mapper.factory.Jackson2ObjectMapperFactory;
+import io.restassured.internal.mapping.Jackson2Mapper;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
@@ -107,27 +103,23 @@ public class RestExtensions {
 			}
 			
 			RestAssured.config = RestAssuredConfig.config()
-					.objectMapperConfig(
-						ObjectMapperConfig.objectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
-							@Override
-							public com.fasterxml.jackson.databind.ObjectMapper create(Type arg0, String arg1) {
-								com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-								mapper.registerModule(new JavaTimeModule());
-								
-								//bbanfai: added date format
-								final StdDateFormat dateFormat = new StdDateFormat();
-								dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-								mapper.setDateFormat(dateFormat);
-								mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-								
-								return mapper;
-							}
-						})
-					)
-					.logConfig(
-						LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails()
-					);
+				.objectMapperConfig(objectMapperConfig().defaultObjectMapper(new Jackson2Mapper(new CustomJackson2ObjectMapperFactory())))
+				.logConfig(logConfig().enableLoggingOfRequestAndResponseIfValidationFails());
+
+			/*
+			 * XXX: ObjectMapperResolver will not detect Jackson 2 if class initialization
+			 * happens at a later time on an unsuitable class loader.
+			 */
+			final Thread thread = Thread.currentThread();
+			final ClassLoader classLoader = thread.getContextClassLoader();
+			try {
+				thread.setContextClassLoader(RestExtensions.class.getClassLoader());
+				ObjectMapperResolver.isJackson2InClassPath();
+			} finally {
+				thread.setContextClassLoader(classLoader);
+			}
 		}
+		
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'");
 		return given().port(getPort()).basePath(CONTEXT + api);
 	}

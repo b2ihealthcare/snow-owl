@@ -73,6 +73,7 @@ public class VersionRestService extends AbstractRestService {
 			@ParameterObject
 			VersionRestSearch params) {
 		return ResourceRequests.prepareSearchVersion()
+				.filterByIds(params.getId())
 				.filterByResourceTypes(params.getResourceType())
 				.filterByResources(params.getResource())
 				.filterByCreatedAt(params.getCreatedAt())

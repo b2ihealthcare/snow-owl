@@ -1,6 +1,77 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.1.0
+
+### Breaking changes
+
+The following changes in Snow Owl 8.1 might affect your applications and prevent them from operating normally. Before upgrading to 8.1, review these changes and take the described steps to mitigate the impact.
+
+#### Java 17
+
+Snow Owl 8.1 brings complete Java 17 support, both compile and runtime. This mostly affects users who manually install Snow Owl or use a development environment to develop plug-ins for it. Starting from 8.1.0, all Snow Owl release include the latest patch version of [Eclipse Temurin JDK](https://adoptium.net/), which increases the package size slightly, but installation/deployment is simpler. See PR #963 for details.
+
+### Core
+- Support retrieval of historical state for resources (#990)
+- Support `resourcePathSegments` property and `resourcePathLabels` expansion on resources. This allows clients to get information about the placement of the resource in the bundle tree. (#961)
+- Support expansion of `commits()` in Resource API (#966)
+- Improved resource history information
+  * Expose `createdAt` resource property (6a5a651)
+  * Support expansion of `updatedAtCommit` in resource objects (e6c3edf)
+  * Properly track `createdAt` and `updatedAt` values for Resource and Version documents (8d2d991)
+- Support proper API doc navigation via query parameters (#980)
+- Support pluggable resource expansion for third party plug-ins and features (#967)
+
+### SNOMED CT
+
+### Security
+- OAuth 2.0 authorization token features (#937):
+  * Support HS256, RS256 and RS512 algorithms (verification all, signing only HS256 and the existing HS512).
+  * Support external JWKS URL for token verification
+  * Support configuration of `email` and `permissions` JWT token claims to allow OIDC conformant JWT token verification. (claims have their own namespace, like `https://example.com/email`, `https://example.com/permissions`). Legacy token handling is still the default, where the email property is stored in the `sub` claim, while the permission list is stored in the `permissions` claim.
+  * Support PKCS#8 signing and verification keys
+  * Disable JWT token signing/verification if `identity.jws` is not configured.
+
+### Bugs/Improvements
+- [index] optimize bool index queries as much as possible to prevent HTTP 400 errors because of deep nested queries (configurable in Elasticsearch via `indices.query.bool.max_nested_depth`) (#976)
+- [index] filter out hidden indices to prevent issues when checking cluster health status (#958)
+- [index] fix incorrectly detected read-only state when `.index.blocks.read_only_allow_delete` setting is set (3d829aa)
+- [index] add support for immediate (partial) updates via scripts (#989)
+- [monitor] add cluster health diagnosis message to cluster health errors (f1bc20c)
+- [core] connect id filter in `GET /versions` endpoint (43c7992)
+- [core] carry over parentage data to generic Concept model (#950)
+- [core] make sure we track scores when filtering resources by title (299258a)
+- [core] filter commit messages by the current user's permission list (#984)
+- [core] include resource title in default delete commit message
+- [core] add generic taxonomy change processor that calculates a transitive closure graph on each commit based on the changes (#981)
+- [auth] prevent access to resources when permissions claim is empty for the current user or in the given JWT accessToken (#971)
+- [fhir] allow filtering fhir resources by `url` in the `id` filter (01a6885)
+- [fhir] make sure fields configured via _summary are returned even if user explicitly specifies additional fields via `_elements` (e75623e)
+- [fhir] allow returning map targets for any target code systems (e14af6f)
+- [fhir] support `datetime` type in concept properties (fd56483)
+- [fhir] validate system URL against version given in subsumption requests (#982)
+- [fhir] add abstractions that allow third party developers to implement FHIR Create/Update/Delete support (#968)
+- [snomed] fixed an issue when getting namespace from concept with at least two different FSNs (translations) (e215814)
+- [snomed] defer loading of expanded additional data to dedupe requests going to Elasticsearch and reduce load on both the ES cluster and the termserver (#948)
+- [snomed] add missing expand and field selector to relationship GET by ID endpoint (#949)
+- [security] mitigate CVE-2021-44228 vulnerability (a8127da)
+- [security] mitigate CVE-2021-42550 vulnerability (69b710d)
+
+### Packaging
+- Update bundled JDK to 17.0.2
+
+### Dependencies
+- Bump Elasticsearch to 7.17.1
+- Bump Groovy to 3.0.9
+- Bump Xtend and Xtext to 2.25.0
+- Bump MWE to 2.12.1
+- Bump rapidoc to 9.2.0
+- Bump typetools to 0.6.3
+- Bump mockito to 3.11.2
+- Bump jacoco to 0.8.7
+- Bump rest-assured to 4.3.0
+- Bump Tycho to 2.6.0
+
 ## 8.0.0
 
 Snow Owl's biggest release yet comes with fully customizable resource model and complete resource management functionality; the fastest RF2 importer and exporter in the world; externally configurable per resource access management; latest Expression Constraint Language 1.6 features and many many more.
