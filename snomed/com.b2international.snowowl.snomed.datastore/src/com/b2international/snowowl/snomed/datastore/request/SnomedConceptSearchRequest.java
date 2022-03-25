@@ -235,7 +235,7 @@ public final class SnomedConceptSearchRequest extends SnomedComponentSearchReque
 			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
 		}
 		
-		return queryBuilder.build();
+		return queryExpression;
 	}
 
 	@Override
