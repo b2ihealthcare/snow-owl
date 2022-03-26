@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.setup;
 
 import java.nio.file.Path;
 
-import org.eclipse.net4j.util.container.IManagedContainer;
-import org.eclipse.net4j.util.container.IPluginContainer;
 import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -34,7 +32,6 @@ import com.google.inject.Provider;
 public final class Environment implements ServiceProvider {
 
 	private final ApplicationContext context = ApplicationContext.getInstance();
-	private final IManagedContainer container = IPluginContainer.INSTANCE;
 	
 	private final Path homePath;
 	private final Path configPath;
@@ -62,13 +59,6 @@ public final class Environment implements ServiceProvider {
 	 */
 	public ApplicationContext services() {
 		return context;
-	}
-
-	/**
-	 * @return the {@link IManagedContainer} to register Net4J and CDO services.
-	 */
-	public IManagedContainer container() {
-		return container;
 	}
 
 	/**

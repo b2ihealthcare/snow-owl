@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,21 @@
  */
 package com.b2international.snowowl.core.client;
 
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.Path;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.net4j.Net4jUtil;
-import org.eclipse.net4j.connector.ConnectorException;
-import org.eclipse.net4j.connector.IConnector;
-import org.eclipse.net4j.jvm.JVMUtil;
-import org.eclipse.net4j.signal.ISignalProtocol;
-import org.eclipse.net4j.signal.SignalProtocol;
-import org.eclipse.net4j.signal.heartbeat.HeartBeatProtocol;
-import org.eclipse.net4j.tcp.TCPUtil;
-import org.eclipse.net4j.util.container.IPluginContainer;
-import org.eclipse.net4j.util.lifecycle.LifecycleException;
-import org.eclipse.spi.net4j.ClientProtocolFactory;
+import javax.net.ssl.SSLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.Mode;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -47,24 +39,30 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
-import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
-import com.b2international.snowowl.rpc.RpcProtocol;
-import com.b2international.snowowl.rpc.RpcUtil;
-import com.google.common.base.Preconditions;
+import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.google.common.net.HostAndPort;
+
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 /**
  * @since 7.2
  */
-public final class TransportClient {
+public final class TransportClient implements IDisposableService {
 	
+	private static final String TCP_PREFIX = "tcp://";
+
 	private static final Logger LOG = LoggerFactory.getLogger(TransportClient.class);
-	
-	public static final String NET_4_J_CONNECTOR_NAME = "SnowOwlConnector";
 	
 	private static final String COULD_NOT_ACTIVATE_PREFIX = "Could not activate TCPClientConnector";
 	private static final String ALREADY_LOGGED_IN_PREFIX = "Already logged in";
@@ -73,11 +71,11 @@ public final class TransportClient {
 	private static final String LDAP_CONNECTION_REFUSED = "Connection refused: connect";
 
 	private final Environment env;
-	private final IEventBus bus;
-	private final TransportConfiguration transportConfiguration;
 	private final String address;
+	private final IEventBus bus;
 	
-	private IConnector connector;
+	private final AtomicReference<Channel> channel;
+	
 	private String user;
 	private String password;
 	
@@ -87,7 +85,7 @@ public final class TransportClient {
 		// override CLIENT/SERVER mode when connecting to a valid address
 		env.services().registerService(Mode.class, Strings.isNullOrEmpty(address) ? Mode.SERVER : Mode.CLIENT);
 		this.bus = env.service(IEventBus.class);
-		this.transportConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(TransportConfiguration.class);
+		this.channel = new AtomicReference<Channel>();
 	}
 	
 	public String getAddress() {
@@ -101,29 +99,103 @@ public final class TransportClient {
 	public String getPassword() {
 		return password;
 	}
+	
+	public Channel getChannel() {
+		return channel.get();
+	}
+	
+	@Override
+	public void dispose() {
+		final Channel localChannel = channel.getAndSet(null);
+		if (localChannel != null) {
+			final EventLoopGroup workerGroup = localChannel.eventLoop().parent();
+			
+			localChannel
+				.close()
+				.awaitUninterruptibly();
+
+			workerGroup
+				.shutdownGracefully(500L, 3000L, TimeUnit.MILLISECONDS)
+				.awaitUninterruptibly();
+		}
+	}
+	
+	@Override
+	public boolean isDisposed() {
+		final Channel localChannel = channel.get();
+		return localChannel == null || !localChannel.isActive();
+	}
 
 	private synchronized void initConnection() throws SnowowlServiceException {
-		if (connector != null) {
+		if (!isDisposed()) {
 			return;
 		}
 		
 		try {
 			
-			if (Strings.isNullOrEmpty(address)) {
-				connector = JVMUtil.getConnector(IPluginContainer.INSTANCE, NET_4_J_CONNECTOR_NAME);
-			} else {
-				TCPUtil.prepareContainer(IPluginContainer.INSTANCE);
-				Net4jUtil.prepareContainer(IPluginContainer.INSTANCE);
-				connector = Net4jUtil.getConnector(IPluginContainer.INSTANCE, getAddress());
-				connector.waitForConnection(transportConfiguration.getConnectionTimeout());
+			if (!Strings.isNullOrEmpty(address)) {
+				final SnowOwlConfiguration configuration = env.service(SnowOwlConfiguration.class);
+				final boolean gzip = configuration.isGzip();
+				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
 				
-				final HeartBeatProtocol watchdog = new HeartBeatProtocol(connector);
-				watchdog.start(transportConfiguration.getWatchdogRate(), transportConfiguration.getWatchdogTimeout());
+				final HostAndPort hostAndPort;
+				if (address.toLowerCase(Locale.ENGLISH).startsWith(TCP_PREFIX)) {
+					hostAndPort = HostAndPort.fromString(address.substring(TCP_PREFIX.length()));
+				} else {
+					hostAndPort = HostAndPort.fromString(address);
+				}
+				
+				final TransportConfiguration transportConfiguration = configuration.getModuleConfig(TransportConfiguration.class);
+				final SslContext sslCtx;
+				try {
+				
+					final String certificatePath = transportConfiguration.getCertificatePath();
+					
+					if (!StringUtils.isEmpty(certificatePath)) {
+						final Path configPath = env.getConfigPath();
+
+						sslCtx = SslContextBuilder
+							.forClient()
+							.trustManager(configPath.resolve(certificatePath).toFile())
+							.build();
+						
+					} else {
+						
+						// FIXME: add warning that client will accept any certificate?
+						sslCtx = SslContextBuilder
+							.forClient()
+							.trustManager(InsecureTrustManagerFactory.INSTANCE)
+							.build();
+					}
+				
+				} catch (final SSLException e) {
+					throw new SnowowlRuntimeException("Failed to create client SSL context.", e);
+				}
+		        
+				final int connectionTimeout = transportConfiguration.getConnectionTimeout();
+				final int watchdogRate = transportConfiguration.getWatchdogRate();
+				final int watchdogTimeout = transportConfiguration.getWatchdogTimeout();
+				
+				final Channel localChannel = new Bootstrap()
+					.group(new NioEventLoopGroup())
+					.channel(NioSocketChannel.class)
+					.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout * 1000)
+					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, watchdogRate, watchdogTimeout, bus, compositeClassLoader))
+					.connect(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
+					.syncUninterruptibly()
+					.channel();
+
+				channel.set(localChannel);
+			
+				// Register this client as a service (any existing instance will be disposed)
+				env.services().registerService(TransportClient.class, this);
+
+				if (!EventBusNettyUtil.awaitAddressBookSynchronized(localChannel)) {
+					throw new SnowowlRuntimeException("Timed out while connecting to the server.");	
+				}
 			}
 			
-			openCustomProtocols();
-
-		} catch (final ConnectorException e) {
+		} catch (final InterruptedException e) {
 
 			LOG.error("Could not connect to server, please check your settings.", e);
 			throw new SnowowlServiceException("Could not connect to server, please check your settings.", e);
@@ -133,11 +205,11 @@ public final class TransportClient {
 			LOG.error("Invalid repository URL: " + e.getMessage(), e);
 			throw new SnowowlServiceException("Invalid repository URL: " + e.getMessage(), e);
 
-		} catch (final LifecycleException e) {
-
-			LOG.error("Could not connect to server: " + e.getMessage(), e);
-			throw new SnowowlServiceException("Could not connect to server: " + e.getMessage(), e);
-
+		} catch (final SnowowlRuntimeException e) {
+			
+			LOG.error("Could not connect to server.", e);
+			throw e;
+			
 		} catch (final Throwable e) {
 
 			LOG.error("Could not connect to server.", e);
@@ -159,11 +231,10 @@ public final class TransportClient {
 				.setPassword(password)
 				.buildAsync()
 				.execute(bus)
-				.getSync();
+				.getSync(3L, TimeUnit.SECONDS);
 			
 			// if successfully logged in replace the event bus with an authorized one
 			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", token.getToken())));
-			env.services().registerService(TransportClient.class, this);
 			
 			return IdentityProvider.authJWT(token.getToken());
 		} catch (UnauthorizedException e) {
@@ -175,7 +246,7 @@ public final class TransportClient {
 					.replace("\r", "");
 			LOG.error("Exception caught while connecting to the server.", t);
 			
-			// FIXME: "Sentiment analysis" for exception messages
+			// FIXME: "Sentiment analysis" for exception messages (might be outdated)
 			if (message.startsWith(COULD_NOT_ACTIVATE_PREFIX)) {
 				throw new SnowowlServiceException("The server could not be reached. Please verify the connection URL.");
 			} else if (message.startsWith(ALREADY_LOGGED_IN_PREFIX)) {
@@ -191,46 +262,4 @@ public final class TransportClient {
 			}
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	private void openCustomProtocols() {
-		// other client protocols
-		final List<ClientProtocolFactory> protocolFactories = getRegisteredClientProtocolFactories();
-		for (final ClientProtocolFactory clientProtocolFactory : protocolFactories) {
-			final SignalProtocol<Object> protocol = (SignalProtocol<Object>) clientProtocolFactory.create("");
-			openProtocol(protocol);
-		}
-
-		// also set up the RPC client...
-		final RpcProtocol rpcProtocol = RpcUtil.getRpcClientProtocol(IPluginContainer.INSTANCE);
-		openProtocol(rpcProtocol);
-
-		if (!env.isServer()) {
-			// ...the event bus, too.
-			final IEventBusProtocol eventBusProtocol = EventBusNet4jUtil.getClientProtocol(IPluginContainer.INSTANCE);
-			openProtocol(eventBusProtocol);
-		}
-	}
-
-	private static final String EXTENSION_POINT_ID = "com.b2international.snowowl.datastore.protocolFactory";
-	private static final String CLASS_ATTRIBUTE = "class";
-	
-	private List<ClientProtocolFactory> getRegisteredClientProtocolFactories() {
-		IConfigurationElement[] configurationElements = Platform.getExtensionRegistry().getConfigurationElementsFor(EXTENSION_POINT_ID);
-		return Lists.transform(Arrays.asList(configurationElements), (input) -> {
-			try {
-				return (ClientProtocolFactory) input.createExecutableExtension(CLASS_ATTRIBUTE);
-			} catch (final CoreException e) {
-				throw new RuntimeException("Error while creating executable extension from the passed in configuration element: " + input, e);
-			}
-		});
-	}
-
-	void openProtocol(final ISignalProtocol<?> protocol) {
-		Preconditions.checkNotNull(protocol, "Signal protocol argument cannot be null.");
-		// Open with the default signal timeout, then update it, as the opposite does not seem to work for JVMConnectors. 
-		protocol.open(connector);
-		protocol.setTimeout(transportConfiguration.getSignalTimeout());
-	}
-
 }

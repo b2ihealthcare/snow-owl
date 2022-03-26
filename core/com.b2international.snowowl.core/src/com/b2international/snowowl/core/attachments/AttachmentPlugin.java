@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.core.attachments;
 
+import java.nio.file.Path;
+
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.rpc.RpcSession;
-import com.b2international.snowowl.rpc.RpcUtil;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 7.0
@@ -32,14 +33,16 @@ public final class AttachmentPlugin extends Plugin {
 
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		final IEventBus bus = env.service(IEventBus.class);
+		
 		if (env.isServer()) {
-			env.services().registerService(AttachmentRegistry.class, new DefaultAttachmentRegistry(env.getDataPath().resolve(ATTACHMENTS_FOLDER)));
-			final RpcSession session = RpcUtil.getInitialServerSession(env.container());
-			session.registerClassLoader(AttachmentRegistry.class, DefaultAttachmentRegistry.class.getClassLoader());
+			final Path attachmentsPath = env.getDataPath().resolve(ATTACHMENTS_FOLDER);
+			final DefaultAttachmentRegistry attachmentRegistry = new DefaultAttachmentRegistry(attachmentsPath);
+			attachmentRegistry.register(bus);
+			env.services().registerService(AttachmentRegistry.class, attachmentRegistry);
 		} else {
-			// register service proxy in remote mode
-			env.services().registerService(AttachmentRegistry.class, RpcUtil.createProxy(env.container(), AttachmentRegistry.class));
+			final AttachmentRegistryClient attachmentRegistryClient = new AttachmentRegistryClient(bus);
+			env.services().registerService(AttachmentRegistry.class, attachmentRegistryClient);
 		}
 	}
-	
 }

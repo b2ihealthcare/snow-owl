@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,96 +16,91 @@
 package com.b2international.snowowl.core.internal.locks;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.locks.IOperationLockTargetListener;
-import com.b2international.snowowl.rpc.RpcSession;
-import com.b2international.snowowl.rpc.RpcThreadLocal;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.eventbus.IHandler;
+import com.b2international.snowowl.eventbus.IMessage;
+import com.b2international.snowowl.eventbus.events.ClientConnectionNotification;
+import com.b2international.snowowl.eventbus.events.SystemNotification;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
-/**
- * 
- */
-public class RemoteLockTargetListener implements IOperationLockTargetListener {
+public class RemoteLockTargetListener implements IHandler<IMessage>, IDisposableService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLockTargetListener.class);
 
-	private final Map<RpcSession, Multimap<DatastoreLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
+	private final Map<String, Multimap<DatastoreLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
 
-	@Override
-	public void targetAcquired(final DatastoreLockTarget target, final DatastoreLockContext context) {
+	private final AtomicBoolean active = new AtomicBoolean(false);
 
-		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
+	private IEventBus bus;
+	
+	public void register(final IEventBus bus) {
+		if (!active.compareAndExchange(false, true)) {
+			this.bus = bus;
+			bus.registerHandler(SystemNotification.ADDRESS, this);
+		}
+	}
+	
+	public void targetAcquired(final String clientId, final Iterable<DatastoreLockTarget> targets, final DatastoreLockContext context) {
+		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForClient = remotelyLockedContexts.computeIfAbsent(clientId, key -> HashMultimap.create());
+		targets.forEach(target -> targetsForClient.put(target, context));
+	}
 
-		if (null == session) {
+	public void targetRemoved(final String clientId, final Iterable<DatastoreLockTarget> targets, final DatastoreLockContext context) {
+		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForClient = remotelyLockedContexts.computeIfAbsent(clientId, key -> HashMultimap.create());
+		targets.forEach(target -> targetsForClient.remove(target, context));
+	}
+	
+	private void clientLogout(final String clientId) {
+		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForClient = remotelyLockedContexts.remove(clientId);
+		if (targetsForClient == null || targetsForClient.isEmpty()) {
 			return;
 		}
 
-		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession;
+		LOGGER.warn("Disconnected client had locks granted, unlocking.");
 
-		if (remotelyLockedContexts.containsKey(session)) {
-			targetsForSession = remotelyLockedContexts.get(session);
-		} else {
-			targetsForSession = HashMultimap.create();
-			remotelyLockedContexts.put(session, targetsForSession);
+		final IOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IOperationLockManager.class);
+		for (final Map.Entry<DatastoreLockTarget, DatastoreLockContext> targetContextPair : targetsForClient.entries()) {
+			try {
+				lockManager.unlock(targetContextPair.getValue(), targetContextPair.getKey());
+			} catch (final IllegalArgumentException e) {
+				LOGGER.error("Failed to unlock targets left after closed session.", e);
+			}
 		}
-
-		targetsForSession.put(target, context);
+	}
+	
+	@Override
+	public void handle(final IMessage message) {
+		final Object body = message.body();
+		if (!(body instanceof ClientConnectionNotification)) {
+			return;
+		}
+		
+		final ClientConnectionNotification notification = (ClientConnectionNotification) body;
+		if (!notification.isJoining()) {
+			clientLogout(notification.getClientId());
+		}
 	}
 
 	@Override
-	public void targetReleased(final DatastoreLockTarget target, final DatastoreLockContext context) {
-
-		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
-
-		if (null == session) {
-			return;
+	public void dispose() {
+		if (active.compareAndExchange(true, false)) {
+			this.bus.unregisterHandler(SystemNotification.ADDRESS, this);
+			this.bus = null;
 		}
-
-		if (!remotelyLockedContexts.containsKey(session)) {
-			return;
-		}
-
-		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.get(session);
-		targetsForSession.remove(target, context);
 	}
 
-//	@Override
-//	protected void onLogout(final IApplicationSessionManager manager, final RpcSession session) {
-//
-//		if (null == session) {
-//			return;
-//		}
-//
-//		if (!remotelyLockedContexts.containsKey(session)) {
-//			return;
-//		}
-//
-//		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.remove(session);
-//
-//		if (targetsForSession.isEmpty()) {
-//			return;
-//		}
-//
-//		final String disconnectedUserId = (String) session.get(IApplicationSessionManager.KEY_USER_ID);
-//		if (null == disconnectedUserId) {
-//			return;
-//		}
-//
-//		LOGGER.warn("Disconnected client had locks granted, unlocking.");
-//
-//		final IOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IOperationLockManager.class);
-//
-//		for (final Entry<DatastoreLockTarget, DatastoreLockContext> targetContextPair : targetsForSession.entries()) {
-//			try {
-//				lockManager.unlock(targetContextPair.getValue(), targetContextPair.getKey());
-//			} catch (final OperationLockException e) {
-//				LOGGER.error("Failed to unlock targets left after closed session.", e);
-//			}
-//		}
-//	}
+	@Override
+	public boolean isDisposed() {
+		return active.get();
+	}
 }
