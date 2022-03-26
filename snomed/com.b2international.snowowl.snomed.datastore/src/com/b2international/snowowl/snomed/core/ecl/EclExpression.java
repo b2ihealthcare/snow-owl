@@ -27,10 +27,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.snomed.ecl.Ecl;
-import com.b2international.snomed.ecl.ecl.Any;
-import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.ecl.EclSerializer;
@@ -94,7 +91,7 @@ public final class EclExpression {
 	}
 	
 	public boolean isAnyExpression() {
-		return Ecl.ANY.equals(ecl) || isAnyExpression(expressionConstraint);
+		return Ecl.ANY.equals(ecl) || Ecl.isAnyExpression(expressionConstraint);
 	}
 	
 	public Promise<Set<String>> resolve(final BranchContext context) {
@@ -255,12 +252,4 @@ public final class EclExpression {
 		}
 	}
 	
-	public static boolean isAnyExpression(ExpressionConstraint expression) {
-		return expression instanceof Any || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof Any;
-	}
-	
-	public static boolean isEclConceptReference(ExpressionConstraint expression) {
-		return expression instanceof EclConceptReference || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof EclConceptReference;
-	}
-
 }

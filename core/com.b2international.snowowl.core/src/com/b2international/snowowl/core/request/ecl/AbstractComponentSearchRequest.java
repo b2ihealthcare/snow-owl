@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -53,6 +55,7 @@ public abstract class AbstractComponentSearchRequest<C extends ServiceProvider, 
 	}
 	
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	protected void prepareQuery(C context, ExpressionBuilder queryBuilder) {
 		addEclFilter(context, queryBuilder);
 	}

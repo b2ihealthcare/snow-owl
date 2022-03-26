@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequestBuilder;
 
 /**
  * @since 7.5
@@ -168,6 +170,40 @@ public interface ConceptSearchRequestEvaluator {
 	default void evaluateTermFilterOptions(TermFilterSupport<?> requestBuilder, Options search) {
 		if (search.containsKey(OptionKey.TERM)) {
 			requestBuilder.filterByTerm(search.get(OptionKey.TERM, TermFilter.class));
+		}
+	}
+	
+	/**
+	 * Appends an ECL filter to the given component search request filter when either a QUERY or MUST_NOT_QUERY part is present in the given options.
+	 * 
+	 * @param req
+	 * @param search
+	 */
+	default void evaluateQueryOptions(AbstractComponentSearchRequestBuilder<?, ?, ?> req, Options search) {
+		if (search == null) {
+			return;
+		}
+		
+		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {
+			StringBuilder query = new StringBuilder();
+			
+			if (search.containsKey(OptionKey.QUERY)) {
+				query
+					.append("(")
+					.append(Ecl.or(search.getCollection(OptionKey.QUERY, String.class)))
+					.append(")");
+			} else {
+				query.append(Ecl.ANY);
+			}
+			
+			if (search.containsKey(OptionKey.MUST_NOT_QUERY)) {
+				query
+					.append(" MINUS (")
+					.append(Ecl.or(search.getCollection(OptionKey.MUST_NOT_QUERY, String.class)))
+					.append(")");
+			}
+			
+			req.filterByEcl(query.toString());
 		}
 	}
 	

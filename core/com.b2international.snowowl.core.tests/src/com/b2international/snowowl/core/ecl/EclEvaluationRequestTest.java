@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.ecl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.xtext.parser.IParser;
@@ -30,10 +31,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.revision.Revision;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.validation.EclValidator;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
 import com.google.inject.Injector;
 
@@ -46,8 +45,19 @@ public class EclEvaluationRequestTest {
 	
 	private static class IdOnlyEclEvaluationRequest extends EclEvaluationRequest<ServiceProvider> {
 
-		protected Promise<Expression> eval(ServiceProvider context, EclConceptReference eObject) {
-			return Promise.immediate(Expressions.exactMatch(Revision.Fields.ID, eObject.getId()));
+		@Override
+		protected Expression parentsExpression(Set<String> ids) {
+			return throwUnsupported("Unable to provide parentsExpression for ID Set: " + ids);
+		}
+
+		@Override
+		protected Expression ancestorsExpression(Set<String> ids) {
+			return throwUnsupported("Unable to provide ancestorsExpression for ID Set: " + ids);
+		}
+		
+		@Override
+		protected Class<?> getDocumentType() {
+			return throwUnsupported("Unable to provide document type");
 		}
 		
 	}

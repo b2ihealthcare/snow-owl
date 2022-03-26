@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.index.revision.Revision.Expressions.id;
 import static com.b2international.index.revision.Revision.Expressions.ids;
-import static com.b2international.index.revision.Revision.Fields.ID;
-import static com.b2international.snowowl.snomed.core.ecl.EclExpression.isAnyExpression;
-import static com.b2international.snowowl.snomed.core.ecl.EclExpression.isEclConceptReference;
+import static com.b2international.snomed.ecl.Ecl.isAnyExpression;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.google.common.collect.Sets.newHashSet;
@@ -30,16 +27,16 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
-import com.b2international.index.query.*;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
@@ -50,7 +47,6 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -102,31 +98,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	}
 	
 	/**
-	 * Handles ANY simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints  
-	 */
-	protected Promise<Expression> eval(BranchContext context, Any any) {
-		return Promise.immediate(Expressions.matchAll());
-	}
-	
-	/**
-	 * Handles EclConceptReference/Self simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, EclConceptReference concept) {
-		return Promise.immediate(id(concept.getId()));
-	}
-	
-	protected Promise<Expression> eval(BranchContext context, EclConceptReferenceSet conceptSet) {
-		final Set<String> conceptIds = conceptSet.getConcepts()
-			.stream()
-			.map(EclConceptReference::getId)
-			.collect(ImmutableSet.toImmutableSet());
-		
-		return Promise.immediate(ids(conceptIds));
-	}
-	
-	/**
 	 * Handles MemberOf simple expression constraints
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
@@ -148,84 +119,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 					.then(ids -> activeMemberOf(ids));
 		} else {
 			return throwUnsupported(inner);
-		}
-	}
-	
-	/**
-	 * Handles DescendantsOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final DescendantOf descendantOf) {
-		final ExpressionConstraint inner = descendantOf.getConstraint();
-		// <* should eval to * MINUS parents IN (ROOT_ID)
-		if (isAnyExpression(inner)) {
-			return Promise.immediate(Expressions.bool()
-					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
-					.build());
-		} else {
-			return evaluate(context, inner)
-					.then(resolveIds(context))
-					.then(ids -> Expressions.bool()
-							.should(parentsExpression(ids))
-							.should(ancestorsExpression(ids))
-							.build());
-		}
-	}
-	
-	/**
-	 * Handles DescendantOrSelfOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final DescendantOrSelfOf descendantOrSelfOf) {
-		final ExpressionConstraint inner = descendantOrSelfOf.getConstraint();
-		// <<* should eval to *
-		if (isAnyExpression(inner)) {
-			return evaluate(context, inner);
-		} else {
-			return evaluate(context, inner)
-					.then(resolveIds(context))
-					.then(ids -> Expressions.bool()
-							.should(ids(ids))
-							.should(parentsExpression(ids))
-							.should(ancestorsExpression(ids))
-							.build());
-		}
-	}
-	
-	/**
-	 * Handles ChildOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final ChildOf childOf) {
-		final ExpressionConstraint innerConstraint = childOf.getConstraint();
-		// <!* should eval to * MINUS parents in (ROOT_ID)
-		if (isAnyExpression(innerConstraint)) {
-			return Promise.immediate(Expressions.bool()
-					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
-					.build());
-		} else {
-			return evaluate(context, innerConstraint)
-					.then(resolveIds(context))
-					.then(ids -> parentsExpression(ids));
-		}
-	}
-	
-	/**
-	 * Handles ChildOrSelfOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final ChildOrSelfOf childOrSelfOf) {
-		final ExpressionConstraint innerConstraint = childOrSelfOf.getConstraint();
-		// <<!* should eval to * (direct child or self of all concept IDs === all concept IDs)
-		if (isAnyExpression(innerConstraint)) {
-			return evaluate(context, innerConstraint);
-		} else {
-			return evaluate(context, innerConstraint)
-					.then(resolveIds(context))
-					.then(ids -> Expressions.bool()
-							.should(ids(ids))
-							.should(parentsExpression(ids))
-							.build());
 		}
 	}
 	
@@ -308,110 +201,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	}
 	
 	/**
-	 * Handles conjunction binary operator expressions
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
-	 */
-	protected Promise<Expression> eval(BranchContext context, final AndExpressionConstraint and) {
-		if (isAnyExpression(and.getLeft())) {
-			return evaluate(context, and.getRight());
-		} else if (isAnyExpression(and.getRight())) {
-			return evaluate(context, and.getLeft());
-		} else if (isEclConceptReference(and.getRight())) {
-			// if the right hand is an ID, then iterate and check if the entire tree is ID1 AND ID2 AND IDN
-			final Set<String> ids = newHashSet();
-			TreeIterator<EObject> it = and.eAllContents();
-			while (it.hasNext()) {
-				EObject content = it.next();
-				// accept only EclConceptReference/Nested and AND expressions, anything else will break the loop
-				if (content instanceof EclConceptReference) {
-					ids.add(((EclConceptReference) content).getId());
-				} else if (content instanceof NestedExpression || content instanceof AndExpressionConstraint) {
-					// continue
-				} else {
-					// remove any IDs collected
-					ids.clear();
-					break;
-				}
-			}
-			if (!CompareUtils.isEmpty(ids)) {
-				return Promise.immediate(Expressions.matchNone());
-			}
-		}
-		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))
-				.then(innerExpressions -> {
-					final Expression left = (Expression) innerExpressions.get(0);
-					final Expression right = (Expression) innerExpressions.get(1);
-					return Expressions.bool()
-							.filter(left)
-							.filter(right)
-							.build();
-				});
-	}
-	
-	/**
-	 * Handles disjunction binary operator expressions
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
-	 */
-	protected Promise<Expression> eval(BranchContext context, final OrExpressionConstraint or) {
-		if (isAnyExpression(or.getLeft())) {
-			return evaluate(context, or.getLeft());
-		} else if (isAnyExpression(or.getRight())) {
-			return evaluate(context, or.getRight());
-		} else if (isEclConceptReference(or.getRight())) {
-			// if the right hand is an ID, then iterate and check if the entire tree is ID1 OR ID2 OR IDN
-			final Set<String> ids = newHashSet();
-			TreeIterator<EObject> it = or.eAllContents();
-			while (it.hasNext()) {
-				EObject content = it.next();
-				// accept only EclConceptReference/Nested and OR expressions, anything else will break the loop
-				if (content instanceof EclConceptReference) {
-					ids.add(((EclConceptReference) content).getId());
-				} else if (content instanceof NestedExpression || content instanceof OrExpressionConstraint) {
-					// continue
-				} else {
-					// remove any IDs collected
-					ids.clear();
-					break;
-				}
-			}
-			if (!CompareUtils.isEmpty(ids)) {
-				return Promise.immediate(ids(ids));
-			}
-		}
-		return Promise.all(evaluate(context, or.getLeft()), evaluate(context, or.getRight()))
-				.then(innerExpressions -> {
-					final Expression left = (Expression) innerExpressions.get(0);
-					final Expression right = (Expression) innerExpressions.get(1);
-					return Expressions.bool()
-							.should(left)
-							.should(right)
-							.build();
-				});
-	}
-
-	/**
-	 * Handles exclusion binary operator expressions
-	 * 
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.5+Exclusion+and+Not+Equals
-	 */
-	protected Promise<Expression> eval(BranchContext context, final ExclusionExpressionConstraint exclusion) {
-		return evaluate(context, exclusion.getRight()).thenWith(right -> {
-			if (right.isMatchAll()) {
-				// excluding everything should result in no matches
-				return Promise.immediate(Expressions.matchNone());
-			} else if (right.isMatchNone()) {
-				// excluding nothing is just the left query
-				return evaluate(context, exclusion.getLeft());
-			} else {
-				return evaluate(context, exclusion.getLeft()).then(left -> {
-					// match left hand side query and not the right hand side query
-					return Expressions.bool().filter(left).mustNot(right).build();
-				});
-			}
-		});
-	}
-	
-	/**
 	 * Delegates evaluation of Refinement expression constraints to {@link SnomedEclRefinementEvaluator}.
 	 */
 	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
@@ -438,13 +227,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 				}
 			})
 			.then(matchIdsOrNone());
-	}
-	
-	/**
-	 * Handles nested expression constraints by simple evaluation the nested expression.
-	 */
-	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
-		return evaluate(context, nested.getNested());
 	}
 	
 	/**
@@ -999,64 +781,19 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		}
 	}
 
-	/**
-	 * Handles cases when the expression constraint is not available at all. For instance, script is empty.
-	 */
-	protected Promise<Expression> eval(BranchContext context, final Void empty) {
-		return Promise.immediate(MatchNone.INSTANCE);
-	}
-	
-	static boolean canExtractIds(Expression expression) {
-		return expression instanceof Predicate && ID.equals(((Predicate) expression).getField());
-	}
-	
-	/*Extract SNOMED CT IDs from the given expression if it is either a String/Long single/multi-valued predicate and the field is equal to RevisionDocument.Fields.ID*/
-	/*package*/ static Set<String> extractIds(Expression expression) {
-		if (!canExtractIds(expression)) {
-			throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
-		}
-		if (expression instanceof StringSetPredicate) {
-			return ((StringSetPredicate) expression).values();
-		} else {
-			return Collections.singleton(((StringPredicate) expression).getArgument());
-		}
-	}
-	
-	/**
-	 * Returns a function that when an expression is received, it will either shortcut the execution and returns the IDs or evaluates the returned expression to a set of concept IDs.
-	 * @return
-	 */
-	public static Function<Expression, Set<String>> resolveIds(BranchContext context) {
-		RevisionSearcher searcher = context.service(RevisionSearcher.class);
-		boolean cached = context.optionalService(PathWithVersion.class).isPresent();		
-		return expression -> {
-			// shortcut to extract IDs from the query itself if possible 
-			if (SnomedEclEvaluationRequest.canExtractIds(expression)) {
-				/* 
-				 * It should always be possible to extract identifiers from an index query expression derived from 
-				 * an EclConceptReferenceSet, and occasionally ExpressionConstraints also have this property.
-				 */
-				return extractIds(expression);
-			}
-			
-			return newHashSet(Query.select(String.class)
-					.from(SnomedConceptDocument.class)
-					.fields(SnomedConceptDocument.Fields.ID)
-					.where(expression)
-					.limit(Integer.MAX_VALUE)
-					// cache when the current context is executed against a version
-					.cached(cached)
-					.build()
-					.search(searcher));
-		};
-	}
-	
-	private Expression parentsExpression(Set<String> ids) {
+	@Override
+	protected Expression parentsExpression(Set<String> ids) {
 		return Trees.INFERRED_FORM.equals(expressionForm) ? SnomedConceptDocument.Expressions.parents(ids) : SnomedConceptDocument.Expressions.statedParents(ids);
 	}
 
-	private Expression ancestorsExpression(Set<String> ids) {
+	@Override
+	protected Expression ancestorsExpression(Set<String> ids) {
 		return Trees.INFERRED_FORM.equals(expressionForm) ? SnomedConceptDocument.Expressions.ancestors(ids) : SnomedConceptDocument.Expressions.statedAncestors(ids);
+	}
+	
+	@Override
+	protected Class<?> getDocumentType() {
+		return SnomedConceptDocument.class;
 	}
 	
 	private void addParentIds(SnomedConcept concept, final Set<String> collection) {
