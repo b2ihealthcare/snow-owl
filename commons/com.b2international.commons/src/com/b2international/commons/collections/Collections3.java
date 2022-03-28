@@ -15,13 +15,11 @@
  */
 package com.b2international.commons.collections;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * Yet another collection utility class.
@@ -30,6 +28,10 @@ public abstract class Collections3 {
 
 	public static <T> Set<T> toImmutableSet(Iterable<T> values) {
 		return values != null ? ImmutableSet.copyOf(values) : Collections.emptySet();
+	}
+	
+	public static <T> SortedSet<T> toImmutableSortedSet(Iterable<T> values) {
+		return values != null ? ImmutableSortedSet.copyOf(values) : Collections.emptySortedSet();
 	}
 	
 	public static <T> List<T> toImmutableList(Iterable<T> values) {
