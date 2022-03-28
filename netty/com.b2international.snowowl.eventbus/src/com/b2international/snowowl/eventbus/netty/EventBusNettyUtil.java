@@ -55,7 +55,7 @@ public final class EventBusNettyUtil {
 	}
 	
 	public static ChannelHandler createChannelHandler(SslContext sslCtx, boolean gzip, boolean sendInitialSync, IEventBus eventBus, ClassLoader classLoader) {
-		return createChannelHandler(sslCtx, gzip, sendInitialSync, WRITE_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS, eventBus, classLoader);
+		return createChannelHandler(sslCtx, gzip, sendInitialSync, WRITE_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS, MAX_OBJECT_SIZE, eventBus, classLoader);
 	}
 	
 	/**
@@ -74,6 +74,7 @@ public final class EventBusNettyUtil {
 		boolean sendInitialSync, 
 		int watchdogRate, 
 		int watchdogTimeout, 
+		int maxObjectSize,
 		IEventBus eventBus, 
 		ClassLoader classLoader) {
 		
@@ -92,7 +93,7 @@ public final class EventBusNettyUtil {
 					pipeline.addLast(new JdkZlibEncoder(), new JdkZlibDecoder());
 				}
 				
-				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(MAX_OBJECT_SIZE, ClassResolvers.cacheDisabled(classLoader)));
+				pipeline.addLast(new ObjectEncoder(), new ObjectDecoder(maxObjectSize, ClassResolvers.cacheDisabled(classLoader)));
 
 				// Sends user events to handlers added later in the pipeline when there is no read/write activity
 				pipeline.addLast(new IdleStateHandler(watchdogTimeout, watchdogRate, 0));

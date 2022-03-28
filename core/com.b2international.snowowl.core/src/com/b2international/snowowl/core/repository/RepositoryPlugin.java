@@ -151,15 +151,15 @@ public final class RepositoryPlugin extends Plugin {
 			// Add event bus based request metrics
 			registerRequestMetrics(registry, eventBus);
 			
+			final boolean gzip = configuration.isGzip();
 			final RepositoryConfiguration repositoryConfiguration = configuration.getModuleConfig(RepositoryConfiguration.class);
 			final HostAndPort hostAndPort = repositoryConfiguration.getHostAndPort();
+			
 			// open port in server environments
 			if (hostAndPort.getPort() > 0) {
 				final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
 				final NioEventLoopGroup workerGroup = new NioEventLoopGroup();
 
-				final boolean gzip = configuration.isGzip();
-				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
 				
 				final SslContext sslCtx;
 				try {
@@ -196,12 +196,14 @@ public final class RepositoryPlugin extends Plugin {
 				final TransportConfiguration transportConfiguration = configuration.getModuleConfig(TransportConfiguration.class);
 				final int watchdogRate = transportConfiguration.getWatchdogRate();
 				final int watchdogTimeout = transportConfiguration.getWatchdogTimeout();
+				final int maxObjectSize = transportConfiguration.getMaxObjectSize();
+				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
 				
 				final Channel serverChannel = new ServerBootstrap()
 					.group(bossGroup, workerGroup)
 //					.handler(new LoggingHandler(LogLevel.INFO))
 					.channel(NioServerSocketChannel.class)
-					.childHandler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, true, watchdogRate, watchdogTimeout, eventBus, compositeClassLoader))
+					.childHandler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, true, watchdogRate, watchdogTimeout, maxObjectSize, eventBus, compositeClassLoader))
 					.childOption(ChannelOption.SO_KEEPALIVE, true)
 					.bind(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
 					.syncUninterruptibly()

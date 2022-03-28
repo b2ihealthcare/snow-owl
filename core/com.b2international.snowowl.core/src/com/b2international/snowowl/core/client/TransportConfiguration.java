@@ -32,6 +32,7 @@ public class TransportConfiguration {
 	private static final int DEFAULT_WATCHDOG_RATE_SECONDS = 30;
 	private static final int DEFAULT_WATCHDOG_TIMEOUT_SECONDS = 300;
 	private static final String DEFAULT_CERTIFICATE_PATH = "";
+	private static final int DEFAULT_MAX_OBJECT_SIZE = Integer.MAX_VALUE - 1024;
 	
 	@Min(0)
 	@Max(300)
@@ -45,6 +46,9 @@ public class TransportConfiguration {
 	
 	@NotNull
 	private String certificatePath = DEFAULT_CERTIFICATE_PATH;
+	
+	@Min(0)
+	private int maxObjectSize = DEFAULT_MAX_OBJECT_SIZE;
 	
 	/**
 	 * @return the number of seconds to wait before a connection attempt times out at login.
@@ -110,5 +114,21 @@ public class TransportConfiguration {
 	@JsonProperty
 	public void setCertificatePath(String certificatePath) {
 		this.certificatePath = certificatePath;
+	}
+
+	/**
+	 * @return the maximum number of bytes allowed to be serialized/deserialized as a Java object over the network
+	 */
+	@JsonProperty
+	public int getMaxObjectSize() {
+		return maxObjectSize;
+	}
+	
+	/**
+	 * @param maxObjectSize the object size limit to set
+	 */
+	@JsonProperty
+	public void setMaxObjectSize(int maxObjectSize) {
+		this.maxObjectSize = maxObjectSize;
 	}
 }
