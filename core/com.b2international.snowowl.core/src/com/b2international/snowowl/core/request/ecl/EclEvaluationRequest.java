@@ -90,7 +90,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		this.expression = expression;
 	}
 	
-	public final void setIgnoredSyntaxErrorCodes(Iterable<String> ignoredSyntaxErrorCodes) {
+	public void setIgnoredSyntaxErrorCodes(Set<String> ignoredSyntaxErrorCodes) {
 		this.ignoredSyntaxErrorCodes = ignoredSyntaxErrorCodes == null ? null : ImmutableSet.copyOf(ignoredSyntaxErrorCodes);
 	}
 	

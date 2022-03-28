@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.ecl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -78,7 +77,7 @@ public class EclEvaluationRequestTest {
 		
 		// using a UUID as ID, should parse successfully without errors when ignoring syntax errors
 		var req = new IdOnlyEclEvaluationRequest();
-		req.setIgnoredSyntaxErrorCodes(List.of(EclValidator.SCTID_ERROR_CODE));
+		req.setIgnoredSyntaxErrorCodes(Set.of(EclValidator.SCTID_ERROR_CODE));
 		req.setExpression(nonSnomedIdentifier);
 		
 		assertThat(req.execute(context).getSync()).isEqualTo(Expressions.exactMatch(Revision.Fields.ID, nonSnomedIdentifier));
