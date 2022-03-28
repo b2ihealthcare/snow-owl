@@ -127,7 +127,8 @@ public class EventBusNettyHandler extends SimpleChannelInboundHandler<IMessage> 
 	
 	@Override
 	public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-		LOG.error("Exception caught for channel:", cause);
+		LOG.error("Exception caught for channel, closing.", cause);
+		ctx.close();
 	}
 
 	@Override
