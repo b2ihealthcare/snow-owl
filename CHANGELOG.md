@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.1.1
+
+### Bugs/Improvements
+- [packaging] add missing `--add-opens` JVM options (c3e57b0)
+- [packaging] remove trailing whitespace from startup script (6a5a35a)
+- [log] append `user.sub` information in each request log entry (92ccd7f)
+
 ## 8.1.0
 
 ### Breaking changes
