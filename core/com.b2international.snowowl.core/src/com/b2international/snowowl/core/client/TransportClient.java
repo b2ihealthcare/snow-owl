@@ -136,7 +136,6 @@ public final class TransportClient implements IDisposableService {
 			if (!Strings.isNullOrEmpty(address)) {
 				final SnowOwlConfiguration configuration = env.service(SnowOwlConfiguration.class);
 				final boolean gzip = configuration.isGzip();
-				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
 				
 				final HostAndPort hostAndPort;
 				if (address.toLowerCase(Locale.ENGLISH).startsWith(TCP_PREFIX)) {
@@ -175,12 +174,14 @@ public final class TransportClient implements IDisposableService {
 				final int connectionTimeout = transportConfiguration.getConnectionTimeout();
 				final int watchdogRate = transportConfiguration.getWatchdogRate();
 				final int watchdogTimeout = transportConfiguration.getWatchdogTimeout();
+				final int maxObjectSize = transportConfiguration.getMaxObjectSize();
+				final ClassLoader compositeClassLoader = env.plugins().getCompositeClassLoader();
 				
 				final Channel localChannel = new Bootstrap()
 					.group(new NioEventLoopGroup())
 					.channel(NioSocketChannel.class)
 					.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout * 1000)
-					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, watchdogRate, watchdogTimeout, bus, compositeClassLoader))
+					.handler(EventBusNettyUtil.createChannelHandler(sslCtx, gzip, false, watchdogRate, watchdogTimeout, maxObjectSize, bus, compositeClassLoader))
 					.connect(hostAndPort.getHost(), hostAndPort.getPortOrDefault(2036))
 					.syncUninterruptibly()
 					.channel();
@@ -214,7 +215,6 @@ public final class TransportClient implements IDisposableService {
 
 			LOG.error("Could not connect to server.", e);
 			throw new SnowowlServiceException("Could not connect to server.", e);
-
 		}
 	}
 	
