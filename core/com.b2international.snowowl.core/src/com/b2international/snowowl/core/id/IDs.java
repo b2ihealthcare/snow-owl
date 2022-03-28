@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.core.id;
 
+import java.util.UUID;
+
 import org.elasticsearch.common.UUIDs;
 
+import com.github.f4b6a3.uuid.codec.base.Base62Codec;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 
@@ -27,6 +30,16 @@ import com.google.common.hash.Hashing;
  */
 public class IDs {
 
+	/**
+	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key. This methods uses Base 62 encoding of UUIDs to omit the usage of non-alpha/numeric characters entirely.
+	 * 
+	 * @return
+	 * @see Base62Codec
+	 */
+	public static final String base62UUID() {
+		return Base62Codec.INSTANCE.encode(UUID.randomUUID());
+	}
+	
 	/**
 	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key.
 	 * 
@@ -65,5 +78,5 @@ public class IDs {
 	public static String sha1(String value) {
 		return Hashing.sha1().hashString(value, Charsets.UTF_8).toString();
 	}
-
+	
 }
