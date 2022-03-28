@@ -39,7 +39,7 @@ public final class EventBusNettyUtil {
 
 	public static final String HEADER_CLIENT_ID = "clientId";
 	
-	public static final int MAX_OBJECT_SIZE = 16_777_216; // 16 MiB
+	public static final int MAX_OBJECT_SIZE = Integer.MAX_VALUE - 1024; // 2 GiB minus some spare change
 
 	private static final int READ_TIMEOUT_SECONDS = 30;
 
