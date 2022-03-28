@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.ecl.EclSerializer;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -43,6 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
@@ -97,7 +99,7 @@ public final class EclExpression {
 	public Promise<Set<String>> resolve(final BranchContext context) {
 		if (promise == null) {
 			promise = resolveToExpression(context)
-				.then(SnomedEclEvaluationRequest.resolveIds(context));
+				.then(EclEvaluationRequest.resolveIds(context, SnomedConceptDocument.class));
 		}
 		return promise;
 	}

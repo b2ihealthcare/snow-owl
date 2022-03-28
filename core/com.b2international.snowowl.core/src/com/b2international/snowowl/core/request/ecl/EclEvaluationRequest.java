@@ -356,10 +356,19 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	}
 	
 	/**
-	 * Returns a function that when an expression is received, it will either shortcut the execution and returns the IDs or evaluates the returned expression to a set of concept IDs.
-	 * @return
+	 * @param context
+	 * @return a function that when an expression is received, it will either shortcut the execution and returns the IDs or evaluates the returned expression to a set of concept IDs.
 	 */
 	public Function<Expression, Set<String>> resolveIds(ServiceProvider context) {
+		return resolveIds(context, getDocumentType());
+	}
+	
+	/**
+	 * @param context
+	 * @param documentType
+	 * @return a function that when an expression is received, it will either shortcut the execution and returns the IDs or evaluates the returned expression to a set of concept IDs.
+	 */
+	public static Function<Expression, Set<String>> resolveIds(ServiceProvider context, Class<?> documentType) {
 		RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		boolean cached = context.optionalService(PathWithVersion.class).isPresent();		
 		return expression -> {
@@ -373,7 +382,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 			}
 			
 			return newHashSet(Query.select(String.class)
-					.from(getDocumentType())
+					.from(documentType)
 					.fields(RevisionDocument.Fields.ID)
 					.where(expression)
 					.limit(Integer.MAX_VALUE)
