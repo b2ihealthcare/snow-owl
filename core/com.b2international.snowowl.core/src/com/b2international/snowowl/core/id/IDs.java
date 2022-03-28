@@ -45,6 +45,7 @@ public class IDs {
 	 * 
 	 * @return
 	 * @see UUIDs#base64UUID()
+	 * @deprecated - use {@link #base62UUID()} instead
 	 */
 	public static final String base64UUID() {
 		return UUIDs.base64UUID();
@@ -53,6 +54,7 @@ public class IDs {
 	/**
 	 * @return a Base64 encoded version of a Version 4.0 compatible UUID as defined here: http://www.ietf.org/rfc/rfc4122.txt, using a private SecureRandom instance
 	 * @see UUIDs#randomBase64UUID()
+	 * @deprecated - use {@link #base62UUID()} instead
 	 */
 	public static final String randomBase64UUID() {
 		return UUIDs.randomBase64UUID();

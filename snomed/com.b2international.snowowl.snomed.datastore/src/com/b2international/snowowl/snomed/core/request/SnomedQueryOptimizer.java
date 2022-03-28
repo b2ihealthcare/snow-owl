@@ -123,7 +123,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				
 				// The optimization is a "net win" if we can remove at least two clauses from the original
 				if (remove.size() > 1) {
-					final QueryExpression replacement = new QueryExpression(IDs.base64UUID(), String.format("<%s%s", parent.getId(), getTerm(parent)), false);
+					final QueryExpression replacement = new QueryExpression(IDs.base62UUID(), String.format("<%s%s", parent.getId(), getTerm(parent)), false);
 					final List<QueryExpression> addToInclusion = List.of(replacement);
 					final List<QueryExpression> addToExclusion = List.of();
 

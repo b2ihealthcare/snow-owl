@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.id.IDs;
 public abstract class BaseResourceRestInput {
 	
 	//Mandatory properties
-	private String id = IDs.randomBase64UUID();
+	private String id = IDs.base62UUID();
 	private String bundleId = IComponent.ROOT_ID;
 	private String url;
 	private String title;

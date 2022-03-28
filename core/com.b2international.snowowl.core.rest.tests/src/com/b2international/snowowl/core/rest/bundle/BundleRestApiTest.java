@@ -302,7 +302,7 @@ public class BundleRestApiTest {
 	@Test
 	public void updateBundleBundleId() {
 		final String id = "b14";
-		final String newBundleId = IDs.base64UUID();
+		final String newBundleId = IDs.base62UUID();
 		
 		createBundle(prepareBundleCreateRequestBody(id));
 		createBundle(prepareBundleCreateRequestBody(newBundleId));

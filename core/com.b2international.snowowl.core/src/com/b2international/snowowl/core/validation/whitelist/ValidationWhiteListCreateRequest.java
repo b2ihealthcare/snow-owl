@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ final class ValidationWhiteListCreateRequest implements Request<ValidationReposi
 	
 	@Override
 	public String execute(ValidationRepositoryContext context) {
-		final String id = IDs.randomBase64UUID();
+		final String id = IDs.base62UUID();
 		context.save(new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier, affectedComponentLabels));
 		return id;
 	}

@@ -221,7 +221,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	
 	private ValidationIssue createIssue(String componentId, Map<String, Object> details) {
 		final ValidationIssue issue = new ValidationIssue(
-			IDs.base64UUID(),
+			IDs.base62UUID(),
 			TEST_RULE_ID,
 			ComponentURI.of(SnomedContentRule.SNOMEDCT, ComponentIdentifier.of(SnomedConcept.TYPE, componentId)),
 			false
