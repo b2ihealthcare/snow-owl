@@ -54,9 +54,13 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
 /**
+ * SNOMED CT Concept search request implementation.
+ * 
+ * NOTE: Intentionally not a final class. Plug-in developers may subclass it to customize the behaviour for the own API.
+ * 
  * @since 4.5
  */
-public final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
+public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
 
 	private static final long serialVersionUID = 1L;
 	
