@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVers
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 8.2.0
@@ -238,8 +239,14 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 					break;
 				}
 			}
-			if (!CompareUtils.isEmpty(ids)) {
+			if (ids.size() == 1) {
+				// if only a single ID is part of the AND expression, then match that
+				return Promise.immediate(id(Iterables.getOnlyElement(ids)));
+			} else if (ids.size() > 1) {
+				// if 2 or more the nothing can match the query
 				return Promise.immediate(Expressions.matchNone());
+			} else {
+				// otherwise nothing to do
 			}
 		}
 		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))

@@ -24,7 +24,9 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import java.math.BigDecimal;
@@ -43,6 +45,7 @@ import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.MatchNone;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -391,6 +394,13 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	public void ancestorOrSelfOfAny() throws Exception {
 		final Expression actual = eval(">> *");
 		assertEquals(Expressions.matchAll(), actual);
+	}
+	
+	@Test
+	public void selfAndSelf() throws Exception {
+		final Expression actual = eval(ROOT_ID + " AND " + ROOT_ID);
+		final Expression expected = Expressions.exactMatch(Revision.Fields.ID, ROOT_ID);
+		assertEquals(expected, actual);
 	}
 	
 	@Test
