@@ -25,8 +25,7 @@ import com.b2international.snowowl.core.request.SearchPageableCollectionResource
 public abstract class AbstractComponentSearchRequestBuilder<B extends AbstractComponentSearchRequestBuilder<B, C, R>, C extends ServiceProvider, R extends PageableCollectionResource<?>> extends SearchPageableCollectionResourceRequestBuilder<B, C, R> {
 
 	/**
-	 * Filter matches by the specified Expression Constraint Language (ECL) expression. The currently supported ECL version is v1.1. See
-	 * <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
+	 * Filter matches by the specified Expression Constraint Language (ECL) expression. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a> for more details.
 	 * 
 	 * @param expression - the ECL expression
 	 * @return SnomedConceptSearchRequestBuilder

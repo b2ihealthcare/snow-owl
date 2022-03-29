@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
  * @since 4.5
  */
 public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts>
-		implements TermFilterSupport<SnomedConceptSearchRequestBuilder>{
+		implements TermFilterSupport<SnomedConceptSearchRequestBuilder> {
 
 	/**
 	 * Special term based sort key for
@@ -107,10 +107,11 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	}
 
 	/**
-	 * Filter matches in the stated tree by the specified Expression Constraint Language (ECL) expression. The currently supported ECL version is
-	 * v1.3. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
+	 * Filter matches in the stated tree by the specified Expression Constraint Language (ECL) expression. See <a href="http://snomed.org/ecl">ECL
+	 * Specification and Guide</a> for more details.
 	 * 
-	 * @param expression - ECL expression
+	 * @param expression
+	 *            - ECL expression
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedEcl(String expression) {
@@ -212,7 +213,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	/**
 	 * Filter matches to have the specified definition status. Supports ECL expressions.
 	 * 
-	 * @param definitionStatusId - id of the definition status concept or an ECL expression 
+	 * @param definitionStatusId
+	 *            - id of the definition status concept or an ECL expression
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByDefinitionStatus(String definitionStatusId) {
