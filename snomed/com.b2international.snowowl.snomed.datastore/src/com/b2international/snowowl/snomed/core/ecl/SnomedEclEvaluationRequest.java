@@ -756,28 +756,21 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		// in case of acceptability not defined accept any known acceptability value
 		if (acceptability == null) {
 			return Set.of("preferredIn", "acceptableIn");
-		} else if (acceptability instanceof AcceptabilityIdSet) {
-			final AcceptabilityIdSet acceptabilityIdSet = (AcceptabilityIdSet) acceptability;
-			return acceptabilityIdSet.getAcceptabilities()
+		} else {
+			return acceptability.getAcceptabilities()
 				.getConcepts()
 				.stream()
 				.map(EclConceptReference::getId)
-				.filter(ACCEPTABILITY_ID_TO_FIELD::containsKey)
-				.map(ACCEPTABILITY_ID_TO_FIELD::get)
-				.collect(Collectors.toSet());
-		} else if (acceptability instanceof AcceptabilityTokenSet) {
-			final AcceptabilityTokenSet acceptabilityTokenSet = (AcceptabilityTokenSet) acceptability;
-			return acceptabilityTokenSet.getAcceptabilities()
-				.stream()
-				.map(AcceptabilityToken::fromString)
+				.map(id -> {
+					// resolve acceptability token aliases first, then fall back to SCTIDs
+					AcceptabilityToken acceptabilityToken = AcceptabilityToken.fromString(id);
+					if (acceptabilityToken != null) {
+						id = acceptabilityToken.getConceptId();
+					}
+					return ACCEPTABILITY_ID_TO_FIELD.get(id);
+				})
 				.filter(Predicates.notNull())
-				.map(AcceptabilityToken::getConceptId)
-				.filter(ACCEPTABILITY_ID_TO_FIELD::containsKey)
-				.map(ACCEPTABILITY_ID_TO_FIELD::get)
 				.collect(Collectors.toSet());
-		} else {
-			throwUnsupported(acceptability);
-			return Set.of();
 		}
 	}
 
