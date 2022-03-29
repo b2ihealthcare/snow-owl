@@ -223,8 +223,8 @@ public class SnomedEclLabelerRequestTest extends BaseRevisionIndexTest {
 			.isExactlyInstanceOf(BadRequestException.class)
 			.hasFieldOrPropertyWithValue("additionalInfo", Map.of(
 				"erroneousExpressions", Map.of(
-					"A", List.of("Invalid character 'A' at [1:1]"),
-					"B", List.of("Invalid character 'B' at [1:1]")
+					"A", List.of("SCTID length must be between 6-18 characters. Got: A"),
+					"B", List.of("SCTID length must be between 6-18 characters. Got: B")
 				)				
 			));
 	}
