@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,10 @@ public class SnomedOptimizationApiTest {
 	private static final String FLUID_DISTURBANCE = "107666005|Fluid disturbance|";
 	private static final String EDEMA = "79654002|Edema|";
 	
-	private static final QueryExpression QUERY_LESION = new QueryExpression(IDs.base64UUID(), LESION, false);
-	private static final QueryExpression QUERY_MECHANICAL_ABNORMALITY = new QueryExpression(IDs.base64UUID(), MECHANICAL_ABNORMALITY, false);
-	private static final QueryExpression QUERY_FLUID_DISTURBANCE = new QueryExpression(IDs.base64UUID(), FLUID_DISTURBANCE, false);
-	private static final QueryExpression QUERY_EDEMA = new QueryExpression(IDs.base64UUID(), EDEMA, false);
+	private static final QueryExpression QUERY_LESION = new QueryExpression(IDs.base62UUID(), LESION, false);
+	private static final QueryExpression QUERY_MECHANICAL_ABNORMALITY = new QueryExpression(IDs.base62UUID(), MECHANICAL_ABNORMALITY, false);
+	private static final QueryExpression QUERY_FLUID_DISTURBANCE = new QueryExpression(IDs.base62UUID(), FLUID_DISTURBANCE, false);
+	private static final QueryExpression QUERY_EDEMA = new QueryExpression(IDs.base62UUID(), EDEMA, false);
 	
 	private static final List<ExtendedLocale> LOCALES = List.of(ExtendedLocale.valueOf("en-gb"), ExtendedLocale.valueOf("en-us"));
 	
@@ -146,7 +146,7 @@ public class SnomedOptimizationApiTest {
 						QUERY_FLUID_DISTURBANCE,
 						QUERY_MECHANICAL_ABNORMALITY,
 						QUERY_LESION,
-						new QueryExpression(IDs.base64UUID(), EDEMA, true)
+						new QueryExpression(IDs.base62UUID(), EDEMA, true)
 					))
 				.build(SNOMEDCT)
 				.execute(Services.bus())

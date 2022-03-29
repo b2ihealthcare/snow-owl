@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,10 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ecl.DefaultEclParser;
+import com.b2international.snowowl.core.ecl.DefaultEclSerializer;
+import com.b2international.snowowl.core.ecl.EclParser;
+import com.b2international.snowowl.core.ecl.EclSerializer;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
@@ -60,10 +64,6 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
-import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
-import com.b2international.snowowl.snomed.core.ecl.EclParser;
-import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -221,7 +221,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	
 	private ValidationIssue createIssue(String componentId, Map<String, Object> details) {
 		final ValidationIssue issue = new ValidationIssue(
-			IDs.base64UUID(),
+			IDs.base62UUID(),
 			TEST_RULE_ID,
 			ComponentURI.of(SnomedContentRule.SNOMEDCT, ComponentIdentifier.of(SnomedConcept.TYPE, componentId)),
 			false

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
@@ -38,6 +39,7 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequest;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -54,7 +56,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 /**
  * @since 4.5
  */
-public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
+public final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -78,11 +80,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 */
 		SEMANTIC_TAG,
 
-		/**
-		 * ECL expression to match on the inferred form
-		 */
-		ECL,
-		
 		/**
 		 * ECL expression to match on the state form
 		 */
@@ -147,7 +144,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	
 	@Override
 	protected Expression prepareQuery(BranchContext context) {
-		ExpressionBuilder queryBuilder = Expressions.builder();
+		ExpressionBuilder queryBuilder = Expressions.bool();
 		
 		addActiveClause(queryBuilder);
 		addReleasedClause(queryBuilder);
@@ -165,7 +162,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		
 		if (containsKey(OptionKey.ANCESTOR)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.ANCESTOR, String.class);
-			queryBuilder.filter(Expressions.builder()
+			queryBuilder.filter(Expressions.bool()
 					.should(parents(ancestorIds))
 					.should(ancestors(ancestorIds))
 					.build());
@@ -173,23 +170,17 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		
 		if (containsKey(OptionKey.STATED_ANCESTOR)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.STATED_ANCESTOR, String.class);
-			queryBuilder.filter(Expressions.builder()
+			queryBuilder.filter(Expressions.bool()
 					.should(statedParents(ancestorIds))
 					.should(statedAncestors(ancestorIds))
 					.build());
 		}
 
-		if (containsKey(OptionKey.ECL)) {
-			final String ecl = getString(OptionKey.ECL);
-			Expression eclExpression = EclExpression.of(ecl, Trees.INFERRED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES);
-			if (eclExpression.isMatchNone()) {
-				throw new NoResultException();
-			} else if (!eclExpression.isMatchAll()) {
-				queryBuilder.filter(eclExpression);
-			}
-		}
-		
 		if (containsKey(OptionKey.STATED_ECL)) {
+			if (containsKey(AbstractComponentSearchRequest.OptionKey.ECL)) {
+				throw new BadRequestException("Unable to filter concepts by both stated and inferred ECL expression. Use either one of the two, not both.");
+			}
+			
 			final String ecl = getString(OptionKey.STATED_ECL);
 			Expression statedEclExpression = EclExpression.of(ecl, Trees.STATED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES);
 			if (statedEclExpression.isMatchNone()) {
@@ -198,6 +189,8 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 				queryBuilder.filter(statedEclExpression);
 			}
 		}
+		
+		addEclFilter(context, queryBuilder);
 		
 		Expression searchProfileQuery = null;
 		
@@ -208,7 +201,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		}
 		
 		if (containsKey(OptionKey.TERM)) {
-			final ExpressionBuilder bq = Expressions.builder();
+			final ExpressionBuilder bq = Expressions.bool();
 			// nest current query
 			bq.filter(queryBuilder.build());
 			queryBuilder = bq;
@@ -287,7 +280,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		if (searchProfileQuery == null) {
 			return query;
 		} else {
-			return Expressions.builder()
+			return Expressions.bool()
 					.filter(searchProfileQuery)
 					.filter(query)
 					.build();

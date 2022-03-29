@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
@@ -89,27 +88,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			req.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
 		}
 		
-		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {
-			StringBuilder query = new StringBuilder();
-			
-			if (search.containsKey(OptionKey.QUERY)) {
-				query
-					.append("(")
-					.append(Ecl.or(search.getCollection(OptionKey.QUERY, String.class)))
-					.append(")");
-			} else {
-				query.append(Ecl.ANY);
-			}
-			
-			if (search.containsKey(OptionKey.MUST_NOT_QUERY)) {
-				query
-					.append(" MINUS (")
-					.append(Ecl.or(search.getCollection(OptionKey.MUST_NOT_QUERY, String.class)))
-					.append(")");
-			}
-			
-			req.filterByEcl(query.toString());
-		}
+		evaluateQueryOptions(req, search);
 		
 		boolean requestedExpand = search.containsKey(OptionKey.EXPAND);
 		// make sure preferredDescriptions() and displayTermType expansion data are always loaded

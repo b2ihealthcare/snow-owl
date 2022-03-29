@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
-import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequest;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Iterables;
 
 /**
  * Abstract class for SNOMED CT search requests.
@@ -43,7 +36,7 @@ import com.google.common.collect.Iterables;
  * @param <D> - the document type to search for
  */
 public abstract class SnomedSearchRequest<R, D extends SnomedDocument> 
-		extends SearchIndexResourceRequest<BranchContext, R, D>
+		extends AbstractComponentSearchRequest<BranchContext, R, D>
 		implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
@@ -103,52 +96,19 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 		}
 	}
 	
-	protected final void addEclFilter(final BranchContext context, final ExpressionBuilder queryBuilder, Enum<?> eclCapableOptionKey, Function<Collection<String>, Expression> matchingIdsToExpression) {
-		if (containsKey(eclCapableOptionKey)) {
-			// trim all input values before using them
-			final Collection<String> optionValues = getCollection(eclCapableOptionKey, String.class);
-			addEclFilter(context, queryBuilder, optionValues, matchingIdsToExpression);
-		}
+	@Override
+	protected final boolean isComponentIdentifier(String eclExpression) {
+		return SnomedIdentifiers.isConceptIdentifier(eclExpression);
 	}
-
-	protected final void addEclFilter(BranchContext context, ExpressionBuilder queryBuilder, Collection<String> optionValues, Function<Collection<String>, Expression> matchingIdsToExpression) {
-		Collection<String> eclFilter = evaluateEclFilter(context, optionValues);
-		if (eclFilter != null) {
-			queryBuilder.filter(matchingIdsToExpression.apply(eclFilter));
-		}
+	
+	@Override
+	protected Promise<Set<String>> resolve(BranchContext context, String expression) {
+		return EclExpression.of(expression, eclExpressionForm()).resolve(context);
 	}
-
-	protected final Collection<String> evaluateEclFilter(BranchContext context, Collection<String> optionValues) {
-		if (optionValues.isEmpty()) {
-			return Collections.emptySet();
-		}
-		Collection<String> idFilter = FluentIterable.from(optionValues).transform(String::trim).toSet();
-		if (idFilter.size() == 1) {
-			// if only a single item is available in the typeIdFilter
-			final String expression = Iterables.getOnlyElement(idFilter);
-			if (!SnomedIdentifiers.isConceptIdentifier(expression)) {
-				// and it's not a CONCEPT_ID, then evaluate via SnomedConceptSearchRequest
-
-				// unless it is an Any ECL expression, which allows any value
-				if (Ecl.ANY.equals(expression)) {
-					return null;
-				}
-				
-				// TODO replace sync call to concept search with async promise
-				try {
-					idFilter = EclExpression.of(expression, eclExpressionForm()).resolve(context).getSync(3, TimeUnit.MINUTES);
-				} catch (SyntaxException e) {
-					// incase of syntax errors, report them as incorrect values instead of syntax errors
-//					throw new BadRequestException("'%s' is not a valid SNOMED CT ID or ECL Expression.", expression);
-					throw new SearchResourceRequest.NoResultException();
-				}
-				
-				if (idFilter.isEmpty()) {
-					throw new SearchResourceRequest.NoResultException();
-				}
-			}
-		}
-		return idFilter;
+	
+	@Override
+	protected Promise<Expression> resolveToExpression(BranchContext context, String eclExpression) {
+		return EclExpression.of(eclExpression, eclExpressionForm()).resolveToExpression(context);
 	}
 	
 	protected final String eclExpressionForm() {

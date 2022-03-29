@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -138,8 +139,21 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	 * Prepares the search query with the clauses, filters specified in this request. 
 	 * @param context - the context that can be used to prepare the query 
 	 */
-	protected abstract Expression prepareQuery(C context);
-	
+	protected Expression prepareQuery(C context) {
+		ExpressionBuilder queryBuilder = Expressions.bool();
+		prepareQuery(context, queryBuilder);
+		return queryBuilder.build();
+	}
+
+	/**
+	 * Subclasses may override this method to provide additional query clauses based on the received search parameters.
+	 * 
+	 * @param context
+	 * @param queryBuilder
+	 */
+	protected void prepareQuery(C context, ExpressionBuilder queryBuilder) {
+	}
+
 	/**
 	 * Subclasses may override to configure scoring. By default disabled score tracking in search requests.
 	 * @return whether the search should compute scores for the prepared query or not

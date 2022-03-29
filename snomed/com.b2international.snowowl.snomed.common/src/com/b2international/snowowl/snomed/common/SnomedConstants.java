@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -250,6 +250,9 @@ public abstract class SnomedConstants {
 		public static final String REFSET_SAME_AS_ASSOCIATION = "900000000000527005";
 		public static final String REFSET_SIMILAR_TO_ASSOCIATION = "900000000000529008";
 		public static final String REFSET_WAS_A_ASSOCIATION = "900000000000528000";
+		// introduced in 2022-01-31
+		public static final String REFSET_PARTIALLY_EQUIVALENT_TO_ASSOCIATION = "1186924009";
+		public static final String REFSET_POSSIBLY_REPLACED_BY_ASSOCIATION = "1186921001";
 		
 		public static final Set<String> HISTORICAL_ASSOCIATION_REFSETS = ImmutableSet.of(
 				REFSET_HISTORICAL_ASSOCIATION, 

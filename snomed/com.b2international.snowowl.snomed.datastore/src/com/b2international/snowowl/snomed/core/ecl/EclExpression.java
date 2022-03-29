@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
-import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -28,20 +26,15 @@ import javax.validation.constraints.NotNull;
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
-import com.b2international.snomed.ecl.ecl.Any;
-import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ecl.EclSerializer;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
+import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -100,33 +93,13 @@ public final class EclExpression {
 	}
 	
 	public boolean isAnyExpression() {
-		return Ecl.ANY.equals(ecl) || isAnyExpression(expressionConstraint);
+		return Ecl.ANY.equals(ecl) || Ecl.isAnyExpression(expressionConstraint);
 	}
 	
 	public Promise<Set<String>> resolve(final BranchContext context) {
 		if (promise == null) {
-			RevisionSearcher searcher = context.service(RevisionSearcher.class);
-			boolean cached = context.optionalService(PathWithVersion.class).isPresent();
 			promise = resolveToExpression(context)
-				.then(expression -> {
-					// shortcut to extract IDs from the query itself if possible 
-					if (SnomedEclEvaluationRequest.canExtractIds(expression)) {
-						return SnomedEclEvaluationRequest.extractIds(expression);
-					}
-					try {
-						return newHashSet(searcher.search(Query.select(String.class)
-								.from(SnomedConceptDocument.class)
-								.fields(SnomedConceptDocument.Fields.ID)
-								.where(expression)
-								.limit(Integer.MAX_VALUE)
-								// cache when the current context is executed against a version
-								.cached(cached)
-								.build()));
-						
-					} catch (IOException e) {
-						throw new SnowowlRuntimeException(e);
-					}
-				});
+				.then(EclEvaluationRequest.resolveIds(context, SnomedConceptDocument.class));
 		}
 		return promise;
 	}
@@ -174,7 +147,7 @@ public final class EclExpression {
 		return resolveToExpression(context)
 				.then(it -> {
 					if (!excludedMatches.isEmpty()) {
-						return Expressions.builder().filter(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
+						return Expressions.bool().filter(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
 					} else {
 						return it;
 					}
@@ -273,7 +246,7 @@ public final class EclExpression {
 		} else {
 			return resolveToExpression(context)
 					.then(left -> {
-						return Expressions.builder()
+						return Expressions.bool()
 								.filter(left)
 								.filter(RevisionDocument.Expressions.ids(matchingIds))
 								.build();
@@ -281,12 +254,4 @@ public final class EclExpression {
 		}
 	}
 	
-	public static boolean isAnyExpression(ExpressionConstraint expression) {
-		return expression instanceof Any || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof Any;
-	}
-	
-	public static boolean isEclConceptReference(ExpressionConstraint expression) {
-		return expression instanceof EclConceptReference || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof EclConceptReference;
-	}
-
 }

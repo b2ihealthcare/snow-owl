@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package com.b2international.index.query;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
+import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Revision;
@@ -267,6 +269,19 @@ public final class Query<T> {
 	 */
 	public final Stream<Hits<T>> stream(Searcher searcher) {
 		return searcher.stream(this);
+	}
+	
+	/**
+	 * Convenience method for performing a single query search.
+	 * @param searcher the searcher to use for performing the search
+	 * @return
+	 */
+	public final Hits<T> search(Searcher searcher) {
+		try {
+			return searcher.search(this);
+		} catch (IOException e) {
+			throw new IndexException("Failed to execute query: " + this, e);
+		}
 	}
 
 	public AfterWhereBuilder<T> withFilter(Expression additionalFilter) {

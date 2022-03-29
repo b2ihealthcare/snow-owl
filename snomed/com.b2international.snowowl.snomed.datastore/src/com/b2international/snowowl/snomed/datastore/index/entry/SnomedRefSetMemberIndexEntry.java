@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -402,6 +402,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return match(Fields.RELATIONSHIP_GROUP, relationshipGroup);
 		}
 		
+		public static Expression relationshipGroups(Iterable<Integer> relationshipGroups) {
+			return matchAnyInt(Fields.RELATIONSHIP_GROUP, relationshipGroups);
+		}
+		
 		public static Expression relationshipGroup(int relationshipGroupStart, int relationshipGroupEnd) {
 			checkArgument(relationshipGroupStart <= relationshipGroupEnd, "Group end should be greater than or equal to groupStart");
 			if (relationshipGroupStart == relationshipGroupEnd) {
@@ -478,6 +482,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			query.should(nestedMatch("classAxiomRelationships", matchAny("typeId", typeIds)));
 			query.should(nestedMatch("gciAxiomRelationships", matchAny("typeId", typeIds)));
 			return query.build();
+		}
+		
+		public static Expression owlExpression(String owlExpression) {
+			return exactMatch(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlExpression);
+		}
+		
+		public static Expression owlExpressions(Iterable<String> owlExpressions) {
+			return matchAny(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlExpressions);
 		}
 		
 	}

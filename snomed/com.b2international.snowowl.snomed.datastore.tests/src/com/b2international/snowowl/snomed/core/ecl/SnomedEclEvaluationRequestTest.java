@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
-import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.ids;
+import static com.b2international.index.revision.Revision.Expressions.id;
+import static com.b2international.index.revision.Revision.Expressions.ids;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
@@ -30,29 +30,34 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.MatchNone;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 
 /**
  * @since 5.4
  */
+@RunWith(Parameterized.class)
 public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationRequestTest {
 
 	private static final long SUBSTANCEL = Long.parseLong(SUBSTANCE);
@@ -84,8 +89,43 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	private static final String DRUG_1_MG = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_1D_MG = RandomSnomedIdentiferGenerator.generateConceptId();
 
+	private final String expressionForm;
+	private final boolean statementsWithValue;
+	
 	public SnomedEclEvaluationRequestTest(String expressionForm, boolean statementsWithValue) {
-		super(expressionForm, statementsWithValue);
+		this.expressionForm = expressionForm;
+		this.statementsWithValue = statementsWithValue;
+	}
+	
+	@Parameters(name = "{0} {1}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+			// Test CD members in all three forms
+			{ Trees.INFERRED_FORM, false },
+			{ Trees.STATED_FORM,   false },
+			{ AXIOM,               false }, // special test parameter to indicate stated form on axiom members
+			
+			// New statements with value are expected to 
+			// appear in axiom and inferred form only
+			{ Trees.INFERRED_FORM, true  },
+			{ AXIOM,               true  }, 
+		});
+	}
+	
+	protected final boolean isAxiom() {
+		return AXIOM.equals(expressionForm);
+	}
+
+	protected final boolean isInferred() {
+		return Trees.INFERRED_FORM.equals(expressionForm);
+	}
+	
+	protected final String getCharacteristicType() {
+		return isInferred() ? Concepts.INFERRED_RELATIONSHIP : Concepts.STATED_RELATIONSHIP;
+	}
+	
+	protected final boolean isStatementsWithValue() {
+		return statementsWithValue;
 	}
 	
 	@Test(expected = BadRequestException.class)
@@ -158,6 +198,23 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		final Expression actual = eval("^(<" + Concepts.REFSET_DESCRIPTION_TYPE + ")");
 		final Expression expected = activeMemberOf(Collections.singleton(Concepts.SYNONYM));
 		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void memberOfSupportedRefsetField() throws Exception {
+		final Expression actual = eval("^ [referencedComponentId]"+Concepts.REFSET_DESCRIPTION_TYPE);
+		final Expression expected = activeMemberOf(Concepts.REFSET_DESCRIPTION_TYPE);
+		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = NotImplementedException.class)
+	public void memberOfUnsupportedRefsetField() throws Exception {
+		eval("^ [moduleId, mapTarget]"+Concepts.REFSET_DESCRIPTION_TYPE);
+	}
+	
+	@Test(expected = NotImplementedException.class)
+	public void memberOfUnsupportedWildcard() throws Exception {
+		eval("^ [*]"+Concepts.REFSET_DESCRIPTION_TYPE);
 	}
 	
 	@Test
@@ -337,6 +394,13 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	public void ancestorOrSelfOfAny() throws Exception {
 		final Expression actual = eval(">> *");
 		assertEquals(Expressions.matchAll(), actual);
+	}
+	
+	@Test
+	public void selfAndSelf() throws Exception {
+		final Expression actual = eval(ROOT_ID + " AND " + ROOT_ID);
+		final Expression expected = Expressions.exactMatch(Revision.Fields.ID, ROOT_ID);
+		assertEquals(expected, actual);
 	}
 	
 	@Test
@@ -914,6 +978,18 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		final Expression expected = and(
 			descendantsOf(DRUG_ROOT), 
 			ids(Set.of(TRIPHASIL_TABLET, AMOXICILLIN_TABLET))
+		);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementStringManyValuedEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: %s = ('PANADOL' 'TRIPHASIL')", DRUG_ROOT, HAS_TRADE_NAME));
+		final Expression expected = and(
+			descendantsOf(DRUG_ROOT),
+			ids(Set.of(PANADOL_TABLET, TRIPHASIL_TABLET))
 		);
 		assertEquals(expected, actual);
 	}

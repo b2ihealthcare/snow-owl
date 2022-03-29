@@ -334,7 +334,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String newContact = "newcontact@gmail.com";
 		final String newUsage = "New usage";
 		final String newPurpose = "New purpose";
-		final String newBundleId = createBundle(IDs.base64UUID());
+		final String newBundleId = createBundle(IDs.base62UUID());
 		
 		ResourceRequests.bundles().prepareUpdate(id)
 		 	.setUrl(newUrl)
