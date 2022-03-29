@@ -41,8 +41,10 @@ public final class AttachmentPlugin extends Plugin {
 			attachmentRegistry.register(bus);
 			env.services().registerService(AttachmentRegistry.class, attachmentRegistry);
 		} else {
-			final AttachmentRegistryClient attachmentRegistryClient = new AttachmentRegistryClient(bus);
-			env.services().registerService(AttachmentRegistry.class, attachmentRegistryClient);
+			env.services().addServiceListener(IEventBus.class, (oldBus, newBus) -> {
+				final AttachmentRegistryClient attachmentRegistryClient = new AttachmentRegistryClient(newBus);
+				env.services().registerService(AttachmentRegistry.class, attachmentRegistryClient);
+			});
 		}
 	}
 }
