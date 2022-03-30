@@ -783,6 +783,32 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	}
 	
 	@Test
+	public void member_referencedComponentId_filter_string_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.ROOT_CONCEPT)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE)
+				.build());
+		
+		Expression actual = eval("* {{ m referencedComponentId = " + Concepts.SUBSTANCE + " }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void member_refsetFieldName_filter_string_eq() throws Exception {
 		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
 				.id(UUID.randomUUID().toString())

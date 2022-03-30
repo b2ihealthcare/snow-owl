@@ -53,6 +53,7 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 
 	private static final SortedMap<String, SnomedRefsetMemberFieldQueryHandler<?>> SUPPORTED_MEMBER_FIELDS = ImmutableSortedMap.<String, SnomedRefsetMemberFieldQueryHandler<?>>naturalOrder()
 			// String types, ECL support
+			.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::referencedComponentIds, true))
 			.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::acceptabilityIds, true))
 			.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::characteristicTypeIds, true))
 			.put(SnomedRf2Headers.FIELD_CORRELATION_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::correlationIds, true))
