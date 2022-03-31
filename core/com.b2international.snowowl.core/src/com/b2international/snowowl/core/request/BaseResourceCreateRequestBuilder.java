@@ -29,8 +29,8 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		extends BaseRequestBuilder<RB, TransactionContext, String> 
 		implements ResourceRepositoryTransactionRequestBuilder<String> {
 	
-	private String id = IDs.base62UUID();
-	private String bundleId = IComponent.ROOT_ID;
+	private String id;
+	private String bundleId;
 	
 	private String url;
 	private String title;
@@ -109,7 +109,7 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 	protected final Request<TransactionContext, String> doBuild() {
 		final R req = createResourceRequest();
 		
-		req.setId(id);
+		req.setId(id == null ? IDs.base62UUID() : id);
 		req.setUrl(url);
 		req.setTitle(title);
 		req.setLanguage(language);
@@ -120,7 +120,7 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		req.setContact(contact);
 		req.setUsage(usage);
 		req.setPurpose(purpose);
-		req.setBundleId(bundleId);
+		req.setBundleId(bundleId == null ? IComponent.ROOT_ID : bundleId);
 		
 		return req;
 	}
