@@ -44,12 +44,14 @@ import com.google.common.base.MoreObjects;
 /**
  * @since 5.0
  */
-@Doc(type = "version")
+@Doc(type = VersionDocument.TYPE)
 @JsonDeserialize(builder = VersionDocument.Builder.class)
 public final class VersionDocument implements Serializable {
 
 	private static final long serialVersionUID = 2L;
 
+	public static final String TYPE = "version";
+	
 	/**
 	 * @since 8.0
 	 */
