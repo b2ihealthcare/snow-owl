@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.19.0
+
+### Transport
+- Secure connections are now by default enabled when using TCP connections to connect to the terminology server (#992)
+  * New configuration values are available to configure SSL certificate (or let the server use a self-signed/generated certificate by default)
+
+### Bugs/Improvements
+- [api] various minor API changes, abstraction for third party plug-in implementers (#994, #995, #996)
+
 ## 7.18.2
 
 ### Bugs/Improvements
