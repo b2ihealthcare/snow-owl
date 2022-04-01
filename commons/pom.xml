@@ -18,6 +18,7 @@
 		<module>com.b2international.collections.jackson</module>
 		<module>com.b2international.commons</module>
 		<module>com.b2international.commons.test</module>
+		<module>com.b2international.groovy</module>
 		<module>com.b2international.index</module>
 		<module>com.b2international.index.tests</module>
 		<module>com.b2international.index.test.tools</module>

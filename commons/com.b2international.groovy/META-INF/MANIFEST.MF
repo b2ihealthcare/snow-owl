@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Groovy Wrapper Bundle
+Bundle-SymbolicName: com.b2international.groovy;singleton:=true
+Bundle-Version: 3.0.9.b2i
+Bundle-Vendor: B2i Healthcare
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ClassPath: lib/groovy-3.0.9.jar,
+ lib/groovy-json-3.0.9.jar,
+ lib/groovy-templates-3.0.9.jar,
+ lib/groovy-xml-3.0.9.jar
+Export-Package: groovy,
+ groovy.io,
+ groovy.json,
+ groovy.lang,
+ groovy.lang.groovydoc,
+ groovy.namespace,
+ groovy.security,
+ groovy.text,
+ groovy.text.markup,
+ groovy.time,
+ groovy.transform,
+ groovy.transform.builder,
+ groovy.transform.options,
+ groovy.transform.stc,
+ groovy.ui,
+ groovy.util,
+ groovy.util.logging,
+ groovy.util.slurpersupport,
+ groovy.xml,
+ groovy.xml.dom,
+ groovy.xml.markupsupport,
+ groovy.xml.slurpersupport,
+ groovy.xml.streamingmarkupsupport
+Bundle-ActivationPolicy: lazy
