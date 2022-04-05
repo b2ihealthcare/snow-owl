@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.core.commit;
 
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.regexp;
 import static com.b2international.index.revision.Commit.Expressions.*;
 import static com.b2international.index.revision.Commit.Fields.BRANCH;
 import static com.b2international.index.revision.RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH;
-import static com.b2international.snowowl.core.identity.Permission.isWildCardResource;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,16 +30,20 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.MatchAll;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 
 /**
  * @since 5.2
@@ -69,8 +73,8 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	}
 	
 	@Override
-	protected Expression prepareQuery(RepositoryContext context) {
-		ExpressionBuilder queryBuilder = Expressions.builder();
+	protected void prepareQuery(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		super.prepareQuery(context, queryBuilder);
 		addIdFilter(queryBuilder, Commit.Expressions::ids);
 		addSecurityFilter(queryBuilder, context);
 		addBranchClause(queryBuilder, context);
@@ -80,7 +84,6 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		addTimeStampClause(queryBuilder);
 		addTimeStampRangeClause(queryBuilder);
 		addAffectedComponentClause(queryBuilder);
-		return queryBuilder.build();
 	}
 	
 	@Override
@@ -113,23 +116,40 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
 				.collect(Collectors.toList());
 		
-		final Set<String> exactResourceIds = readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
-				.filter(resource -> !resource.endsWith("*"))
-				.collect(Collectors.toSet());
+		final Set<String> exactResourceIds = Sets.newHashSet();
+		final Set<String> wildResourceIds = Sets.newHashSet();
+		final Multimap<String, String> branchesByResourceId = HashMultimap.create();
 		
-		final Set<String> resourceIdPrefixes = readPermissions.stream()
+		readPermissions.stream()
 				.flatMap(p -> p.getResources().stream())
-				.filter(resource -> isWildCardResource(resource))
-				.map(resource -> resource.substring(0, resource.length() - 1))
-				.collect(Collectors.toSet());
-						
-		SetView<String> resourceIds = Sets.union(exactResourceIds, resourceIdPrefixes);
+				.forEach(resource -> {
+					if (resource.endsWith("*")) {
+						if (resource.endsWith("/*")) {
+							// wild only match
+							wildResourceIds.add(resource.replace("/*", ""));
+						} else {
+							// append to both exact and wild match
+							String resourceToAdd = resource.replace("*", "");
+							wildResourceIds.add(resourceToAdd);
+							exactResourceIds.add(resourceToAdd);
+						}
+					} else if (resource.contains(Branch.SEPARATOR)) {
+						branchesByResourceId.put(resource.substring(0, resource.indexOf(Branch.SEPARATOR)), resource.substring(resource.indexOf(Branch.SEPARATOR) + 1, resource.length()));
+					} else {
+						exactResourceIds.add(resource);
+					}
+				});
 		
-		ExpressionBuilder branchFilter = Expressions.builder();
+		Set<String> resourceIdsToSearchFor = ImmutableSet.<String>builder()
+				.addAll(exactResourceIds)
+				.addAll(wildResourceIds)
+				.addAll(branchesByResourceId.keySet())
+				.build();
+		
+		ExpressionBuilder branchFilter = Expressions.bool();
 		ResourceRequests.prepareSearch()
-			.filterByIds(resourceIds)
-			.setLimit(resourceIds.size())
+			.filterByIds(resourceIdsToSearchFor)
+			.setLimit(resourceIdsToSearchFor.size())
 			.setFields(ResourceDocument.Fields.ID, 
 					ResourceDocument.Fields.BRANCH_PATH,
 					ResourceDocument.Fields.RESOURCE_TYPE)
@@ -139,14 +159,32 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
 			.map(TerminologyResource.class::cast)
-			.forEach(r -> {
-				if (resourceIdPrefixes.contains(r.getId())) {
-					final String branchPattern = String.format("%s(/[a-zA-Z0-9.~_\\-]{1,%d})?", r.getBranchPath(), DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
+			.forEach(res -> {
+				// if present as prefix query, append the branch regex filter
+				if (wildResourceIds.contains(res.getId())) {
+					final String branchPattern = String.format("%s/[a-zA-Z0-9.~_\\-]{1,%d}", res.getBranchPath(), DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
 					branchFilter.should(regexp(BRANCH, branchPattern));
+				}
+				// if present as exact query, append exact match
+				if (exactResourceIds.contains(res.getId())) {
+					branchFilter.should(exactMatch(BRANCH, res.getBranchPath()));
+				}
+				
+				// if present as exact branch match, then append a terms filter
+				final Collection<String> exactBranchesToMatch = branchesByResourceId.removeAll(res.getId());
+				if (!exactBranchesToMatch.isEmpty()) {
+					branchFilter.should(Commit.Expressions.branches(exactBranchesToMatch.stream().map(res::getRelativeBranchPath).collect(Collectors.toSet())));
 				}
 			});
 		
-		builder.filter(branchFilter.build());
+		// if the built expression does not have any clauses
+		Expression authorizationClause = branchFilter.build();
+		if (authorizationClause instanceof MatchAll) {
+			// then match no documents instead
+			throw new NoResultException();
+		}
+		
+		builder.filter(authorizationClause);
 	}
 	
 	private void addBranchClause(final ExpressionBuilder builder, RepositoryContext context) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ import com.b2international.snowowl.snomed.core.branch.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.core.branch.SnomedBranchRequestTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.io.SnomedRefSetDSVExportTest;
-import com.b2international.snowowl.snomed.core.io.commit.CommitInfoRequestTest;
+import com.b2international.snowowl.snomed.core.io.commit.SnomedCommitApiAuthorizationTest;
+import com.b2international.snowowl.snomed.core.io.commit.SnomedCommitApiTest;
 import com.b2international.snowowl.snomed.core.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.core.issue.IssueSO2503RemoteJobDynamicMappingFix;
 import com.b2international.snowowl.snomed.core.request.ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest;
@@ -65,6 +66,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	IssueSO2503RemoteJobDynamicMappingFix.class,
 	Issue3019FixDeletionOfReferringMembersTest.class,
 	EclSerializerTest.class,
+	SnomedCommitApiTest.class,
+	SnomedCommitApiAuthorizationTest.class,
 	// Optimization Java API Test
 	SnomedOptimizationApiTest.class,
 	// RESTful API test cases
@@ -121,7 +124,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedReferenceSetDeletionPerformanceTest.class,
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
-	CommitInfoRequestTest.class
 })
 public class AllSnomedApiTests {
 
