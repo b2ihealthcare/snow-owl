@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT.asLatest();
 	
 	private static final String REFERENCED_COMPONENT = Concepts.SUBSTANCE;
+	private static final String REFERENCED_COMPONENT2 = Concepts.ROOT_CONCEPT;
 	
 	private static final String ID = "105590001";
 	private static final String PT = "Substance";
@@ -72,10 +73,12 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	public void filterByReferencedComponent() {
 		final String refSetId = createSimpleMapTypeRefSet();
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, MAP_TARGET_1);
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT2, MAP_TARGET_1);
 		
 		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
 				.filterByReferencedComponentId(REFERENCED_COMPONENT)
+				.filterByConceptMap(ComponentURI.of(CODESYSTEM, SnomedConcept.REFSET_TYPE, refSetId).toString())
 				.setLocales("en")
 				.buildAsync()
 				.execute(Services.bus())

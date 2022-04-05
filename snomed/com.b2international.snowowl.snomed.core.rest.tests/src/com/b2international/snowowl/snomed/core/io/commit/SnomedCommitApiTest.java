@@ -44,7 +44,6 @@ public class SnomedCommitApiTest {
 	
 	private static final String USER_ID = "system";
 	private static final String TOOLING_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
-	private static final String MAIN_BRANCH = Branch.MAIN_PATH;
 	
 	private IEventBus bus;
 	
@@ -85,7 +84,7 @@ public class SnomedCommitApiTest {
 		
 		assertEquals(id, commitInfo.getId());
 		assertEquals(comment, commitInfo.getComment());
-		assertEquals(MAIN_BRANCH, commitInfo.getBranch());
+		assertEquals(Branch.MAIN_PATH, commitInfo.getBranch());
 		assertEquals(USER_ID, commitInfo.getAuthor());
 	}
 	

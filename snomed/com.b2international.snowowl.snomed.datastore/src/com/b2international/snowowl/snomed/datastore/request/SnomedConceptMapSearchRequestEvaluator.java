@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -74,6 +75,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
 				.setFields(ResourceDocument.Fields.RESOURCE_TYPE, ResourceDocument.Fields.ID)
+				.filterByToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 				.buildAsync()
 				.execute(context)
 				.stream()
