@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020-2021 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2020-2022 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.snomed.datastore;
 
@@ -104,11 +104,14 @@ public final class SnomedDescriptionUtils {
 	 * @return the converted language reference set identifiers or an empty {@link List}, never <code>null</code>
 	 */
 	public static List<String> getLanguageRefSetIds(final BranchContext context, final List<ExtendedLocale> locales) {
+		return getLanguageRefSetIds(getLanguageMapping(context), locales);
+	}
+
+	public static List<String> getLanguageRefSetIds(final ListMultimap<String, String> languageMap, final List<ExtendedLocale> locales) {
 		if (CompareUtils.isEmpty(locales)) {
 			return Collections.emptyList();
 		}
 		
-		final ListMultimap<String, String> languageMap = getLanguageMapping(context);
 		final List<String> languageRefSetIds = newArrayList();
 		final List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
 
@@ -140,7 +143,7 @@ public final class SnomedDescriptionUtils {
 	}
 	
 	/**
-	 * Returns the currently configured dialect aliast configuration from the given context. If there is no such setting configured it returns an empty {@link ListMultimap}.
+	 * Returns the currently configured dialect alias configuration from the given context. If there is no such setting configured it returns an empty {@link ListMultimap}.
 	 * @param context
 	 * @return a {@link ListMultimap} that has all the configured dialect aliases, never <code>null</code>
 	 */
@@ -149,7 +152,7 @@ public final class SnomedDescriptionUtils {
 	}
 
 	/**
-	 * Returns the currently configured dialect aliast configuration from the given {@link TerminologyResource}'s settings. If there is no such setting configured it returns an empty {@link ListMultimap}.
+	 * Returns the currently configured dialect alias configuration from the given {@link TerminologyResource}'s settings. If there is no such setting configured it returns an empty {@link ListMultimap}.
 	 * @param mapper
 	 * @param resource
 	 * @return a {@link ListMultimap} that has all the configured dialect aliases, never <code>null</code>
