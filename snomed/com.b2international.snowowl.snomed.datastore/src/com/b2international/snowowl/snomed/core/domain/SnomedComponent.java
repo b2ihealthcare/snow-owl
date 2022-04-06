@@ -107,7 +107,6 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * @beta - this method is subject to changes or even removal in future releases.
 	 * @return - the score associated with this component if it's a match in a query, can be <code>null</code>
 	 */
-	@JsonIgnore
 	public Float getScore() {
 		return score;
 	}
