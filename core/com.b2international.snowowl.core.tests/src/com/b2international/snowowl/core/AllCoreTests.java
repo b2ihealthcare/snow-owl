@@ -55,6 +55,8 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	PermissionTest.class,
 	
 	// unit tests
+	SimpleTaxonomyGraphTest.class,
+	EclEvaluationRequestTest.class,
 	ConsoleProgressMonitorTest.class,
 	ResourceURITest.class,
 	ComponentURITest.class,
@@ -69,8 +71,6 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	SearchResourceRequestTest.class,
 	CodeSystemTest.class,
 	GroovyScriptEngineTest.class,
-	SimpleTaxonomyGraphTest.class,
-	EclEvaluationRequestTest.class,
 	
 	// medium integration tests
 	JobRequestsTest.class,

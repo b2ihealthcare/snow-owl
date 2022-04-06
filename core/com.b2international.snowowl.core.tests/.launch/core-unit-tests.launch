@@ -40,6 +40,7 @@
         <setEntry value="assertj-core@default:default"/>
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
+        <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.diffplug.osgi.extension.sun.reflect@default:false"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
@@ -159,8 +160,8 @@
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
         <setEntry value="com.b2international.commons@default:default"/>
+        <setEntry value="com.b2international.groovy@default:default"/>
         <setEntry value="com.b2international.index@default:default"/>
-        <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.core.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>

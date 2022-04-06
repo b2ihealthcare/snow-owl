@@ -22,11 +22,13 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.google.common.collect.Sets;
 
 /**
  * @since 8.0.1
@@ -106,13 +108,22 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 
 		// Load remaining ancestors
 		conceptsAndAncestorsToLoad.removeAll(conceptsById.keySet());
-		searcher.get(documentClass, conceptsAndAncestorsToLoad)
-			.forEach(existingConcept -> conceptsById.put(existingConcept.getId(), existingConcept));
+		// make sure we remove the ROOT_ID from the search
+		conceptsAndAncestorsToLoad.remove(IComponent.ROOT_ID);
 		
-		conceptsAndAncestorsToLoad.clear();
+		searcher.get(documentClass, conceptsAndAncestorsToLoad)
+			.forEach(existingConcept -> {
+				conceptsAndAncestorsToLoad.remove(existingConcept.getId());
+				conceptsById.put(existingConcept.getId(), existingConcept);	
+			});
+		
+		if (!conceptsAndAncestorsToLoad.isEmpty()) {
+			throw new BadRequestException("Concept(s) are missing from index. '%s'", conceptsAndAncestorsToLoad);
+		}
 		
 		// Load concepts and descendants from the index (these are also the documents which need to be updated)
 		final Map<String, D> conceptAndDescendants = getConceptAndDescendants(conceptsAndDescendantsToLoad, searcher);
+		conceptsAndDescendantsToLoad.clear();
 		conceptsById.putAll(conceptAndDescendants);
 		
 		// Assume 1:1 ratio between nodes and edges
@@ -123,21 +134,28 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 		conceptsById.keySet()
 			.forEach(taxonomy::addNode);
 		conceptsById.values()
-			.forEach(concept -> taxonomy.addEdge(concept.getId(), getParentIds(concept)));
+			.forEach(concept -> {
+				var parents = getParentIdsWithExclusions(concept, deletedConceptIds);
+				taxonomy.addEdge(concept.getId(), parents);
+				// make sure we register all parents as nodes
+				parents.forEach(taxonomy::addNode);
+			});
 
 		// Add new concepts
 		newConceptsById.keySet()
 			.forEach(taxonomy::addNode);
 		newConceptsById.values()
-			.forEach(concept -> taxonomy.addEdge(concept.getId(), getParentIds(concept)));
+			.forEach(concept -> taxonomy.addEdge(concept.getId(), getParentIdsWithExclusions(concept, deletedConceptIds)));
 
 		// Update existing edges (re-register edge with the new set of parent IDs)
 		changedConceptsById.values()
-			.forEach(concept -> taxonomy.addEdge(concept.getId(), getParentIds(concept)));
+			.forEach(concept -> taxonomy.addEdge(concept.getId(), getParentIdsWithExclusions(concept, deletedConceptIds)));
 		
 		// Delete concepts and edges
 		deletedConceptIds.forEach(conceptId -> {
+			// this deletes only the edges that are outbound from the current conceptId
 			taxonomy.removeEdge(conceptId);
+			// XXX this does not automatically delete inbound edges, see getParentIdsWithExclusions for workaround
 			taxonomy.removeNode(conceptId);
 		});
 		
@@ -150,6 +168,11 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 			.forEach(concept -> updateTaxonomy(staging, taxonomy, concept, changedConceptsById));
 		newConceptsById.values()
 			.forEach(concept -> updateTaxonomy(staging, taxonomy, concept, changedConceptsById));
+	}
+
+	// this methods extract the current set of parentIds and removes any that is in the given set
+	private Set<String> getParentIdsWithExclusions(D concept, Set<String> conceptsToRemove) {
+		return Sets.difference(getParentIds(concept), conceptsToRemove);
 	}
 
 	// direct
@@ -175,7 +198,8 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 		}
 		
 		Set<String> ancestorIds = taxonomy.getIndirectAncestorIds(id);
-		if (ancestorIds.isEmpty()) {
+		// register -1 root as ancestor if it is not a direct parent
+		if (ancestorIds.isEmpty() && !parentIds.contains(IComponent.ROOT_ID)) {
 			ancestorIds = Set.of(IComponent.ROOT_ID);
 		}
 		

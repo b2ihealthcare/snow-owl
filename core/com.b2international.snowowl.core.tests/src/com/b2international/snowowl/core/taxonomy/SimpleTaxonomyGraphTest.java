@@ -16,8 +16,7 @@
 package com.b2international.snowowl.core.taxonomy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Set;
 
@@ -296,5 +295,17 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("D", "E");
 		graph.addEdge("D", "B");
 		assertTrue("Graph build should report an error.", graph.build());
+	}
+	
+	@Test
+	public void removeEdgeDoesNotRemoveInboundEdgesAutomatically() throws Exception {
+		graph.addNode("A");
+		graph.addNode("B");
+		graph.addNode("C");
+		graph.addEdge("A", Set.of("B", "C"));
+		graph.addEdge("B", "C");
+		graph.removeNode("B");
+		graph.removeEdge("B");
+		assertTrue("Graph build should not report an error.", graph.build());
 	}
 }
