@@ -106,8 +106,9 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 				conceptsAndAncestorsToLoad.addAll(getIndirectAncestorIds(existingConcept));
 			});
 
-		// Load remaining ancestors
+		// Load remaining ancestors, after removing all already known nodes
 		conceptsAndAncestorsToLoad.removeAll(conceptsById.keySet());
+		conceptsAndAncestorsToLoad.removeAll(newConceptsById.keySet());
 		// make sure we remove the ROOT_ID from the search
 		conceptsAndAncestorsToLoad.remove(IComponent.ROOT_ID);
 		
