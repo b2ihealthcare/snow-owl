@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.core.Set;
+
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.DefaultRevisionIndex;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
+import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -74,6 +79,18 @@ public final class SnowOwlPlugin extends Plugin {
 		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
 		env.services().registerService(ResourceTypeConverter.Registry.class, new ResourceTypeConverter.Registry(env.service(ClassPathScanner.class)));
 		
+		// configure global branch name validator
+		env.services().registerService(BranchNameValidator.class, new BranchNameValidator.Default(
+			RevisionBranch.DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET, 
+			RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH, 
+			Set.of(
+				RevisionBranch.MAIN_PATH,
+				ResourceURI.HEAD,
+				ResourceURI.LATEST,
+				ResourceURI.NEXT
+			)
+		));
+		
 		// configure monitoring support
 		final MonitoringConfiguration monitoringConfig = configuration.getModuleConfig(MonitoringConfiguration.class);
 		if (monitoringConfig.isEnabled()) {
@@ -88,6 +105,7 @@ public final class SnowOwlPlugin extends Plugin {
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer()) {
+			
 			final ObjectMapper mapper = env.service(ObjectMapper.class);
 			final Index resourceIndex = Indexes.createIndex(
 				RESOURCES_INDEX, 

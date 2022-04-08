@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		} else if (resourceId.isBlank()) {
 			throw new BadRequestException("'resourceId' property should not be empty, if provided");
 		} else {
-			BranchNameValidator.DEFAULT.checkName(resourceId);
+			context.service(BranchNameValidator.class).checkName(resourceId);
 			upgradeResourceId = resourceId;
 		}
 		

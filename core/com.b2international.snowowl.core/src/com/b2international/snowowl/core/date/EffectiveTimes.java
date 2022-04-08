@@ -211,4 +211,20 @@ public abstract class EffectiveTimes {
 		return false;
 	}
 
+	/**
+	 * Returns the current date using the default effective format, which is {@value DateFormats#DEFAULT}.
+	 * @return a String representation of the current date
+	 */
+	public static String today() {
+		return Dates.now(DateFormats.DEFAULT);
+	}
+	
+	/**
+	 * Returns the current date as {@link LocalDate}.
+	 * @return a {@link LocalDate} representation of the current date
+	 */
+	public static LocalDate todayAsLocalDate() {
+		return LocalDate.now();
+	}
+
 }

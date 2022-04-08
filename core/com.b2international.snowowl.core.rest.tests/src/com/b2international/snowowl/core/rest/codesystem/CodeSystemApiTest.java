@@ -40,8 +40,10 @@ import org.junit.runners.MethodSorters;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -550,6 +552,20 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemSearch(Map.of("timestamp", timestamp3 - 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1", "cs28_2"));
 		assertCodeSystemSearch(Map.of("timestamp", timestamp3)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1", "cs28_2", "cs28_3"));
 		assertCodeSystemSearch(Map.of("timestamp", timestamp3 + 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs28_1", "cs28_2", "cs28_3"));
+	}
+	
+	@Test
+	public void codeSystem29_VersionWithReservedBranchName() throws Exception {
+		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs29_1"));
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), ResourceURI.HEAD, EffectiveTimes.today()))
+			.statusCode(400)
+			.body("message", containsString("Version 'HEAD' is a reserved alias or branch name."));
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), ResourceURI.LATEST, EffectiveTimes.today()))
+			.statusCode(400)
+			.body("message", containsString("Version 'LATEST' is a reserved alias or branch name."));
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), ResourceURI.NEXT, EffectiveTimes.today()))
+			.statusCode(400)
+			.body("message", containsString("Version 'NEXT' is a reserved alias or branch name."));
 	}
 
 	private long getCodeSystemCreatedAt(final String id) {
