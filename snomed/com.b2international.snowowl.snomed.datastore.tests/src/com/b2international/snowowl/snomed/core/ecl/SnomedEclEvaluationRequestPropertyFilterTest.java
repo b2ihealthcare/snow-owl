@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,9 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.Test;
 
@@ -33,37 +30,121 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 8.0
  */
 public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclEvaluationRequestTest {
 
-	public SnomedEclEvaluationRequestPropertyFilterTest(String expressionForm, boolean statementsWithValue) {
-		super(expressionForm, statementsWithValue);
-	}
-
 	@Test
-	public void activeOnly() throws Exception {
-		final Expression actual = eval("* {{ c active=true }}");
+	public void concept_activeOnly() throws Exception {
+		final Expression actual = eval("* {{ c active = true }}");
 		final Expression expected = SnomedDocument.Expressions.active();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
-	public void inactiveOnly() throws Exception {
-		final Expression actual = eval("* {{ c active=false }}");
+	public void concept_inactiveOnly() throws Exception {
+		final Expression actual = eval("* {{ c active = false }}");
 		final Expression expected = SnomedDocument.Expressions.inactive();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
+	public void concept_active_notequals() throws Exception {
+		final Expression actual = eval("* {{ c active != false }}");
+		final Expression expected = Expressions.bool().mustNot(SnomedDocument.Expressions.active(false)).build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void description_activeOnly() throws Exception {
+		generateActiveAndInactiveDescription(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT);
+		
+		final Expression actual = eval("* {{ d active = true }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void description_inactiveOnly() throws Exception {
+		generateActiveAndInactiveDescription(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT);
+		
+		final Expression actual = eval("* {{ d active = false }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void description_active_notequals() throws Exception {
+		generateActiveAndInactiveDescription(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT);
+		
+		final Expression actual = eval("* {{ d active != false }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void member_activeOnly() throws Exception {
+		generateActiveAndInactiveSimpleTypeMember(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT);
+		
+		final Expression actual = eval("* {{ m active = true }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_inactiveOnly() throws Exception {
+		generateActiveAndInactiveSimpleTypeMember(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT);
+		
+		final Expression actual = eval("* {{ m active = false }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_active_notequals() throws Exception {
+		generateActiveAndInactiveSimpleTypeMember(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT);
+		
+		final Expression actual = eval("* {{ m active != false }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_moduleId() throws Exception {
+		generateActiveAndInactiveSimpleTypeMember(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT, Concepts.MODULE_SCT_MODEL_COMPONENT);
+		
+		final Expression actual = eval("* {{ m moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_moduleId_notequals() throws Exception {
+		generateActiveAndInactiveSimpleTypeMember(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT, Concepts.MODULE_SCT_MODEL_COMPONENT);
+		
+		final Expression actual = eval("* {{ m moduleId != " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void moduleId() throws Exception {
-		final Expression actual = eval("* {{ c moduleId= " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression actual = eval("* {{ c moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
 		final Expression expected = SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void moduleId_notequals() throws Exception {
+		final Expression actual = eval("* {{ c moduleId != " + Concepts.MODULE_SCT_CORE + " }}");
+		final Expression expected = Expressions.bool().mustNot(SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE))).build();
 		assertEquals(expected, actual);
 	}
 	
@@ -91,7 +172,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	@Test
 	public void conjunctionActiveAndModuleId() throws Exception {
 		final Expression actual = eval("* {{ c active = true, moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 			.filter(SnomedDocument.Expressions.active())
 			.filter(SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE)))
 			.build();
@@ -126,7 +207,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	@Test
 	public void disjunctionActiveAndModuleId() throws Exception {
 		final Expression actual = eval("* {{ c active = true OR moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 			.should(SnomedDocument.Expressions.active())
 			.should(SnomedDocument.Expressions.modules(List.of(Concepts.MODULE_SCT_CORE)))
 			.build();
@@ -177,7 +258,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	@Test
 	public void multiDomainQueryAnd() throws Exception {
 		Expression actual = eval("* {{ c active=false }} AND * {{ d term=\"clin find\" }}");
-		Expression expected = Expressions.builder()
+		Expression expected = Expressions.bool()
 			.filter(SnomedDocument.Expressions.inactive())
 			.filter(SnomedDocument.Expressions.ids(Collections.emptySet()))
 			.build();
@@ -187,7 +268,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	@Test
 	public void multiDomainQueryOr() throws Exception {
 		Expression actual = eval("* {{ c active=false }} OR * {{ d term=\"clin find\" }}");
-		Expression expected = Expressions.builder()
+		Expression expected = Expressions.bool()
 			.should(SnomedDocument.Expressions.inactive())
 			.should(SnomedDocument.Expressions.ids(Collections.emptySet()))
 			.build();
@@ -197,7 +278,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	@Test
 	public void multiDomainQueryExclusion() throws Exception {
 		Expression actual = eval("* {{ c active=false }} MINUS * {{ d term=\"clin find\" }}");
-		Expression expected = Expressions.builder()
+		Expression expected = Expressions.bool()
 			.filter(SnomedDocument.Expressions.inactive())
 			.mustNot(SnomedDocument.Expressions.ids(Collections.emptySet()))
 			.build();
@@ -337,6 +418,29 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	}
 	
 	@Test
+	public void conceptEffectiveTime() throws Exception {
+		indexRevision(MAIN, SnomedConceptDocument.builder()
+				.id(Concepts.FINDING_SITE)
+				.active(true)
+				.released(true)
+				.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT))
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build());
+		
+		indexRevision(MAIN, SnomedConceptDocument.builder()
+				.id(Concepts.HAS_ACTIVE_INGREDIENT)
+				.active(true)
+				.released(true)
+				.effectiveTime(EffectiveTimes.getEffectiveTime("20020131", DateFormats.SHORT))
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build());
+		
+		Expression expected = SnomedDocument.Expressions.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT));
+		Expression actual = eval("* {{ c effectiveTime = \"20210731\" }}");
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void descriptionEffectiveTime() throws Exception {
 		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
@@ -364,12 +468,13 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 				.acceptableIn(Set.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.build());
 		
+		// XXX injecting domain before effectiveTime field randomly to test default description domain and explicit domain cases
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
 		Expression actual = eval("* {{ effectiveTime = \"20210731\" }}");
 		assertEquals(expected, actual);
 
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
-		actual = eval("* {{ effectiveTime > \"20210605\" }}");
+		actual = eval("* {{ d effectiveTime > \"20210605\" }}");
 		assertEquals(expected, actual);
 
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
@@ -377,7 +482,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ effectiveTime >= \"20020131\" }}");
+		actual = eval("* {{ d effectiveTime >= \"20020131\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
@@ -385,7 +490,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ effectiveTime <= \"20210731\" }}");
+		actual = eval("* {{ d effectiveTime <= \"20210731\" }}");
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
@@ -393,30 +498,65 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 		
 		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
-		actual = eval("* {{ effectiveTime != \"20211030\" }}");
+		actual = eval("* {{ d effectiveTime != \"20211030\" }}");
 		assertEquals(expected, actual);
 	}
 	
 	@Test
-	public void conceptEffectiveTime() throws Exception {
-		indexRevision(MAIN, SnomedConceptDocument.builder()
-				.id(Concepts.FINDING_SITE)
+	public void memberEffectiveTime() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
 				.active(true)
-				.released(true)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referenceSetType(SnomedRefSetType.SIMPLE)
+				.refsetId(Concepts.REFSET_SIMPLE_TYPE)
+				.moduleId(Concepts.MODULE_SCT_CORE)
 				.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT))
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.build());
-		
-		indexRevision(MAIN, SnomedConceptDocument.builder()
-				.id(Concepts.HAS_ACTIVE_INGREDIENT)
-				.active(true)
 				.released(true)
-				.effectiveTime(EffectiveTimes.getEffectiveTime("20020131", DateFormats.SHORT))
-				.moduleId(Concepts.MODULE_SCT_CORE)
 				.build());
 		
-		Expression expected = SnomedDocument.Expressions.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT));
-		Expression actual = eval("* {{ c effectiveTime = \"20210731\" }}");
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.SIMPLE)
+				.refsetId(Concepts.REFSET_SIMPLE_TYPE)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.effectiveTime(EffectiveTimes.getEffectiveTime("20020131", DateFormats.SHORT))
+				.released(true)
+				.build());
+		
+		// XXX injecting domain before effectiveTime field randomly to test default description domain and explicit domain cases
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		Expression actual = eval("* {{ m effectiveTime = \"20210731\" }}");
+		assertEquals(expected, actual);
+
+		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT));
+		actual = eval("* {{ m effectiveTime > \"20210605\" }}");
+		assertEquals(expected, actual);
+
+		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		actual = eval("* {{ m effectiveTime < \"20020201\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ m effectiveTime >= \"20020131\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ m effectiveTime >= \"20010731\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ m effectiveTime <= \"20210731\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ m effectiveTime <= \"20211030\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ m effectiveTime != \"20211030\" }}");
 		assertEquals(expected, actual);
 	}
 	
@@ -634,12 +774,194 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	public void definitionStatusNotEquals() throws Exception {
 		Expression actual1 = eval("* {{ c definitionStatusId != 900000000000074008 }}");
 		Expression actual2 = eval("* {{ c definitionStatus != primitive }}");
-		Expression expected = Expressions.builder()
+		Expression expected = Expressions.bool()
 			.mustNot(SnomedConceptDocument.Expressions.definitionStatusIds(Set.of(Concepts.PRIMITIVE)))
 			.build();
 		
 		assertEquals(expected, actual1);
 		assertEquals(expected, actual2);
+	}
+	
+	@Test
+	public void member_referencedComponentId_filter_string_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.ROOT_CONCEPT)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE)
+				.build());
+		
+		Expression actual = eval("* {{ m referencedComponentId = " + Concepts.SUBSTANCE + " }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_string_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.ROOT_CONCEPT)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE)
+				.build());
+		
+		Expression actual = eval("* {{ m targetComponentId = " + Concepts.ROOT_CONCEPT + " }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_string_ne() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.ROOT_CONCEPT)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.targetComponentId(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE)
+				.build());
+		
+		Expression actual = eval("* {{ m targetComponentId != " + Concepts.ROOT_CONCEPT + " }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.CONCEPT_MODEL_ATTRIBUTE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_integer_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(1)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(2)
+				.build());
+		
+		Expression actual = eval("* {{ m mapGroup = #1 }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_integer_ne() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(1)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.mapGroup(2)
+				.build());
+		
+		Expression actual = eval("* {{ m mapGroup != #1 }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.CONCEPT_MODEL_ATTRIBUTE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_boolean_eq() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(true)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(false)
+				.build());
+		
+		Expression actual = eval("* {{ m grouped = true }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void member_refsetFieldName_filter_boolean_ne() throws Exception {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.SUBSTANCE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(true)
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.referenceSetType(SnomedRefSetType.ASSOCIATION)
+				.refsetId(Concepts.REFSET_SAME_AS_ASSOCIATION)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.grouped(false)
+				.build());
+		
+		Expression actual = eval("* {{ m grouped != true }}");
+		Expression expected = SnomedConceptDocument.Expressions.ids(Set.of(Concepts.CONCEPT_MODEL_ATTRIBUTE));
+		assertEquals(expected, actual);
 	}
 	
 	private void generatePreferredDescription(String conceptId) {
@@ -671,6 +993,61 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 				.acceptabilityMap(Map.of(
 					Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
 				))
+				.build());
+	}
+	
+	private void generateActiveAndInactiveDescription(String activeDescriptionConceptId, String inactiveDescriptionConceptId) {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(activeDescriptionConceptId)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.languageCode("en")
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.acceptabilityMap(Map.of(
+					Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
+				))
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(inactiveDescriptionConceptId)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.languageCode("en")
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.acceptabilityMap(Map.of(
+					Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
+				))
+				.build());
+	}
+	
+	
+	private void generateActiveAndInactiveSimpleTypeMember(String activeMemberConceptId, String inactiveMemberConceptId) {
+		generateActiveAndInactiveSimpleTypeMember(activeMemberConceptId, Concepts.MODULE_SCT_CORE, inactiveMemberConceptId, Concepts.MODULE_SCT_MODEL_COMPONENT);
+	}
+	
+	private void generateActiveAndInactiveSimpleTypeMember(String activeMemberConceptId, String activeMemberModuleId, String inactiveMemberConceptId, String inactiveMemberModuleId) {
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.referencedComponentId(activeMemberConceptId)
+				.referenceSetType(SnomedRefSetType.SIMPLE)
+				.refsetId(Concepts.REFSET_SIMPLE_TYPE)
+				.moduleId(activeMemberModuleId)
+				.build());
+		
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(false)
+				.referencedComponentId(inactiveMemberConceptId)
+				.referenceSetType(SnomedRefSetType.SIMPLE)
+				.refsetId(Concepts.REFSET_SIMPLE_TYPE)
+				.moduleId(inactiveMemberModuleId)
 				.build());
 	}
 	

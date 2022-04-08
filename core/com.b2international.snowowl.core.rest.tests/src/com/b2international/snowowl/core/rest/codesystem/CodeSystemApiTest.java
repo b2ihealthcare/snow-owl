@@ -454,7 +454,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
 		assertCodeSystemCreated(requestBody);
 		
-		final String bundleId = IDs.base64UUID();
+		final String bundleId = IDs.base62UUID();
 		BundleApiAssert.assertCreate(BundleApiAssert.prepareBundleCreateRequestBody(bundleId))
 			.statusCode(201);
 		

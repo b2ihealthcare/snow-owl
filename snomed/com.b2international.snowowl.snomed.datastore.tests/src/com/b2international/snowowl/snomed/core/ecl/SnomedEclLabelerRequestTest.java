@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,10 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ecl.DefaultEclParser;
+import com.b2international.snowowl.core.ecl.DefaultEclSerializer;
+import com.b2international.snowowl.core.ecl.EclParser;
+import com.b2international.snowowl.core.ecl.EclSerializer;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -219,8 +223,8 @@ public class SnomedEclLabelerRequestTest extends BaseRevisionIndexTest {
 			.isExactlyInstanceOf(BadRequestException.class)
 			.hasFieldOrPropertyWithValue("additionalInfo", Map.of(
 				"erroneousExpressions", Map.of(
-					"A", List.of("Invalid character 'A' at [1:1]"),
-					"B", List.of("Invalid character 'B' at [1:1]")
+					"A", List.of("SCTID length must be between 6-18 characters. Got: A"),
+					"B", List.of("SCTID length must be between 6-18 characters. Got: B")
 				)				
 			));
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 
@@ -56,7 +57,13 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			final Tags tags = Tags.of("context", getContextId());
 			tags.and("context", DEFAULT_CONTEXT_ID);
 			final long responseTime = responseTimeSample.stop(registry.timer("response_time", tags));
-			final Map<String, Object> additionalInfo = Map.of("metrics", Map.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
+			final Map<String, Object> additionalInfo = Maps.newHashMap();
+			additionalInfo.put("metrics", Map.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
+			context.optionalService(User.class).ifPresent(user -> {
+				additionalInfo.put("user", Map.of(
+					"sub", user.getUsername()
+				));
+			});
 			LOG.info(toJson(context, next(), additionalInfo));
 		}
 	}

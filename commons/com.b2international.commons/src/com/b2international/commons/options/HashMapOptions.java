@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	@SuppressWarnings("unchecked")
 	public final <T> Collection<T> getCollection(String key, Class<T> type) {
 		final Object value = get(key);
-		if (type.isInstance(value)) {
+		if (type.isInstance(value) && !Collection.class.isAssignableFrom(value.getClass())) {
 			return Collections.singleton(type.cast(value));
 		} else {
 			final Collection<Object> collection = get(key, Collection.class);
@@ -154,7 +154,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	@SuppressWarnings("unchecked")
 	public final <T> Set<T> getSet(String key, Class<T> type) {
 		final Object value = get(key);
-		if (type.isInstance(value)) {
+		if (type.isInstance(value) && !Set.class.isAssignableFrom(value.getClass())) {
 			return Collections.singleton(type.cast(value));
 		} else {
 			final Set<Object> set = get(key, Set.class);
@@ -178,7 +178,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	@SuppressWarnings("unchecked")
 	public final <T> List<T> getList(String key, Class<T> type) {
 		final Object value = get(key);
-		if (type.isInstance(value)) {
+		if (type.isInstance(value) && !List.class.isAssignableFrom(value.getClass())) {
 			return Collections.singletonList(type.cast(value));
 		} else {
 			final List<Object> list = get(key, List.class);

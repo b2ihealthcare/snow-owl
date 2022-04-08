@@ -113,9 +113,9 @@ public class ResourceApiTest {
 	
 	@Test
 	public void filterByOid() {
-		final String id1 = IDs.base64UUID();
+		final String id1 = IDs.base62UUID();
 		final String oid1 = "https://b2i.sg/" + id1;
-		final String id2 = IDs.base64UUID();
+		final String id2 = IDs.base62UUID();
 		final String oid2 = "https://b2i.sg/" + id2;
 		createDefaultCodeSystem(id1, oid1);
 		createDefaultCodeSystem(id2, oid2);
@@ -134,8 +134,8 @@ public class ResourceApiTest {
 
 	@Test
 	public void filterByStatus() {
-		final String id1 = IDs.base64UUID();
-		final String id2 = IDs.base64UUID();
+		final String id1 = IDs.base62UUID();
+		final String id2 = IDs.base62UUID();
 		createCodeSystemWithStatus(id1, "draft");
 		createCodeSystemWithStatus(id2, "active");
 		
@@ -148,7 +148,7 @@ public class ResourceApiTest {
 	
 	@Test(expected = BadRequestException.class)
 	public void searchAfter() throws Exception {
-		final String id1 = IDs.base64UUID();
+		final String id1 = IDs.base62UUID();
 		final String oid1 = "https://b2i.sg/" + id1;
 		createDefaultCodeSystem(id1, oid1);
 

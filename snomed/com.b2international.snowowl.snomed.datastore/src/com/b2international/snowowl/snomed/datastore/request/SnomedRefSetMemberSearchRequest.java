@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.IllegalQueryParameterException;
@@ -40,15 +41,54 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.converter.SnomedReferenceSetMemberConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry> {
+public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry> {
 
 	private static final long serialVersionUID = 1L;
 
+	private static final SortedMap<String, SnomedRefsetMemberFieldQueryHandler<?>> SUPPORTED_MEMBER_FIELDS = ImmutableSortedMap.<String, SnomedRefsetMemberFieldQueryHandler<?>>naturalOrder()
+			// String types, ECL support
+			.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::referencedComponentIds, true))
+			.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::acceptabilityIds, true))
+			.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::characteristicTypeIds, true))
+			.put(SnomedRf2Headers.FIELD_CORRELATION_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::correlationIds, true))
+			.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::descriptionFormats, true))
+			.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::mapCategoryIds, true))
+			.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::targetComponentIds, true))
+			.put(SnomedRf2Headers.FIELD_VALUE_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::valueIds, true))
+			.put(SnomedRf2Headers.FIELD_TYPE_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::typeIds, true))
+			.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::domainIds, true))
+			.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::contentTypeIds, true))
+			.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::ruleStrengthIds, true))
+			.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::ruleRefSetIds, true))
+			
+			// String types, ECL support, special non-RF2 index only fields
+			.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::owlExpressionConcept, true))
+			.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::owlExpressionDestination, true))
+			.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::owlExpressionType, true))
+			
+			// String types, no ECL support
+			.put(SnomedRf2Headers.FIELD_MAP_TARGET, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::mapTargets, false))
+			.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::mapTargetDescriptions, false))
+			.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, new SnomedRefsetMemberFieldQueryHandler<>(String.class, values -> SnomedRefSetMemberIndexEntry.Expressions.rangeConstraint(Iterables.getOnlyElement(values)), false))
+			.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::owlExpressions, false))
+			
+			// Integer types
+			.put(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, new SnomedRefsetMemberFieldQueryHandler<>(Integer.class, SnomedRefSetMemberIndexEntry.Expressions::relationshipGroups, false))
+			.put(SnomedRf2Headers.FIELD_MAP_GROUP, new SnomedRefsetMemberFieldQueryHandler<>(Integer.class, SnomedRefSetMemberIndexEntry.Expressions::mapGroups, false))
+			.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, new SnomedRefsetMemberFieldQueryHandler<>(Integer.class, SnomedRefSetMemberIndexEntry.Expressions::mapPriority, false))
+			.put(SnomedRf2Headers.FIELD_MAP_BLOCK, new SnomedRefsetMemberFieldQueryHandler<>(Integer.class, SnomedRefSetMemberIndexEntry.Expressions::mapBlock, false))
+			
+			// Boolean types
+			.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, new SnomedRefsetMemberFieldQueryHandler<>(Boolean.class, values -> SnomedRefSetMemberIndexEntry.Expressions.grouped(Iterables.getOnlyElement(values)), false))
+			.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI, new SnomedRefsetMemberFieldQueryHandler<>(Boolean.class, values -> SnomedRefSetMemberIndexEntry.Expressions.gciAxiom(Iterables.getOnlyElement(values)), false))
+			.build();
+	
 	/**
 	 * @since 4.5
 	 */
@@ -97,7 +137,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
 		final Options propsFilter = getOptions(OptionKey.PROPS);
 		
-		ExpressionBuilder queryBuilder = Expressions.builder();
+		ExpressionBuilder queryBuilder = Expressions.bool();
 		
 		addActiveClause(queryBuilder);
 		addReleasedClause(queryBuilder);
@@ -119,98 +159,34 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			queryBuilder.filter(refSetTypes(refSetTypes));
 		}
 		
+		prepareRefsetMemberFieldQuery(context, queryBuilder, propsFilter);
+		
+		return queryBuilder.build();
+	}
+
+	public void prepareRefsetMemberFieldQuery(BranchContext context, ExpressionBuilder queryBuilder, Options propsFilter) {
 		if (!propsFilter.isEmpty()) {
 			final Set<String> propKeys = newHashSet(propsFilter.keySet());
-			if (propKeys.remove(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)) {
-				queryBuilder.filter(acceptabilityIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, String.class)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)) {
-				final String operatorKey = SearchResourceRequest.operator(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
+			
+			for (String refsetFieldName : SUPPORTED_MEMBER_FIELDS.keySet()) {
+				final String operatorKey = SearchResourceRequest.operator(refsetFieldName);
 				SearchResourceRequest.Operator op;
+				
+				// always remove the operatorKey even if the corresponding refset key is not defined
 				if (propKeys.remove(operatorKey)) {
 					op = propsFilter.get(operatorKey, Operator.class);
 				} else {
+					// if no operator defined then fall back to equals
 					op = SearchResourceRequest.Operator.EQUALS;
 				}
-				switch (op) {
-				case EQUALS:
-					queryBuilder.filter(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
-					break;
-				case NOT_EQUALS:
-					queryBuilder.mustNot(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
-					break;
-				default: throw new NotImplementedException("Unsupported relationship group operator %s", op);
+				
+				if (propKeys.remove(refsetFieldName)) {
+					SnomedRefsetMemberFieldQueryHandler<?> handler = SUPPORTED_MEMBER_FIELDS.get(refsetFieldName);
+					handler.prepareQuery(queryBuilder, op, propsFilter.getCollection(refsetFieldName, (Class) handler.getFieldType()), values -> evaluateEclFilter(context, values));
 				}
 			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::characteristicTypeIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_CORRELATION_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_CORRELATION_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::correlationIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, String.class), SnomedRefSetMemberIndexEntry.Expressions::descriptionFormats);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::mapCategoryIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::targetComponentIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_TARGET)) {
-				queryBuilder.filter(mapTargets(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_TARGET, String.class)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)) {
-				queryBuilder.filter(mapTargetDescriptions(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, String.class)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_GROUP)) {
-				queryBuilder.filter(mapGroups(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
-				queryBuilder.filter(mapPriority(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_BLOCK)) {
-				queryBuilder.filter(mapBlock(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_BLOCK, Integer.class)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::valueIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_TYPE_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_TYPE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::typeIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::domainIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::contentTypeIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::ruleStrengthIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::ruleRefSetIds);
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_GROUPED)) {
-				queryBuilder.filter(grouped(propsFilter.getBoolean(SnomedRf2Headers.FIELD_MRCM_GROUPED)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)) {
-				queryBuilder.filter(rangeConstraint(propsFilter.getString(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)));
-			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
-				queryBuilder.filter(Expressions.exactMatch(SnomedRf2Headers.FIELD_OWL_EXPRESSION, propsFilter.getString(SnomedRf2Headers.FIELD_OWL_EXPRESSION)));
-			}
-			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, String.class), SnomedRefSetMemberIndexEntry.Expressions::owlExpressionConcept);
-			}
-			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID, String.class), SnomedRefSetMemberIndexEntry.Expressions::owlExpressionDestination);
-			}
-			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID)) {
-				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID, String.class), SnomedRefSetMemberIndexEntry.Expressions::owlExpressionType);
-			}
-			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI)) {
-				queryBuilder.filter(gciAxiom(propsFilter.getBoolean(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI)));
-			}
+			
+			// special concrete domain refset member handling, both data type and value
 			final Collection<DataType> dataTypes = propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class);
 			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {
 				queryBuilder.filter(dataTypes(dataTypes));
@@ -254,12 +230,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				default: throw new NotImplementedException("Unsupported concrete domain value operator %s", op);
 				}
 			}
+			
+			// if any property left unhandled, raise error
 			if (!propKeys.isEmpty()) {
 				throw new IllegalQueryParameterException("Unsupported property filter(s), %s", propKeys);
 			}
-		}
-		
-		return queryBuilder.build();
+		}		
 	}
 
 	@Override
@@ -281,7 +257,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		if (containsKey(OptionKey.COMPONENT)) {
 			final Collection<String> componentIds = getCollection(OptionKey.COMPONENT, String.class);
 			builder.filter(
-				Expressions.builder()
+				Expressions.bool()
 					.should(referencedComponentIds(componentIds))
 					.should(mapTargets(componentIds))
 				.build()

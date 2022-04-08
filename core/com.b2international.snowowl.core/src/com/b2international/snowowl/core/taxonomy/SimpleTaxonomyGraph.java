@@ -105,7 +105,7 @@ public final class SimpleTaxonomyGraph {
 		built = false;
 	}
 
-	public boolean containsEdget(final String edgeId) {
+	public boolean containsEdge(final String edgeId) {
 		return edges.containsKey(edgeId);
 	}
 	

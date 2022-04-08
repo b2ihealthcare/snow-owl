@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.core.dependencies.feature"
       label="Snow Owl Core Dependencies"
-      version="8.0.1.qualifier"
+      version="8.2.0"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -822,26 +822,10 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="groovy"
+         id="com.b2international.groovy"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="groovy-json"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="groovy-xml"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
 </feature>

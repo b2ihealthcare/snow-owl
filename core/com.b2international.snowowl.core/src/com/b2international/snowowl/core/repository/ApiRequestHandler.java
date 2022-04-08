@@ -53,10 +53,10 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 					.bind(ResponseHeaders.class, responseHeaders)
 					.build();
 			
-			// monitor each request execution
-			final Object body = new MonitoredRequest<>(
-				// authorize each request execution
-				new AuthorizedRequest<>(
+			// authorize each request execution
+			final Object body = new AuthorizedRequest<>(
+				// monitor each request execution
+				new MonitoredRequest<>(
 					// rate limit all requests
 					new RateLimitingRequest<>(
 						// actual request

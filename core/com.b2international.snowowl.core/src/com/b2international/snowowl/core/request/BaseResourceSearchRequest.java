@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
@@ -80,14 +80,14 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	
 	@Override
 	protected final Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		
 		addSecurityFilter(context, queryBuilder);
 		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		if (containsKey(OptionKey.BUNDLE_ANCESTOR_ID)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.BUNDLE_ANCESTOR_ID, String.class);
-			queryBuilder.filter(Expressions.builder()
+			queryBuilder.filter(Expressions.bool()
 				.should(ResourceDocument.Expressions.bundleIds(ancestorIds))
 				.should(ResourceDocument.Expressions.bundleAncestorIds(ancestorIds))
 				.build());
@@ -127,19 +127,19 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
 				.collect(Collectors.toList());
 		
-		final Set<String> exactResourceIds = readPermissions.stream()
+		final SortedSet<String> exactResourceIds = readPermissions.stream()
 				.flatMap(p -> p.getResources().stream())
 				.filter(resource -> !resource.endsWith("*"))
-				.collect(Collectors.toSet());
-		final Set<String> resourceIdPrefixes = readPermissions.stream()
+				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
+		final SortedSet<String> resourceIdPrefixes = readPermissions.stream()
 				.flatMap(p -> p.getResources().stream())
 				.filter(resource -> resource.endsWith("*"))
 				.map(resource -> resource.substring(0, resource.length() - 1))
-				.collect(Collectors.toSet());
+				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
 		
 		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
-			context.log().info("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), ImmutableSortedSet.copyOf(exactResourceIds), ImmutableSortedSet.copyOf(resourceIdPrefixes));
-			ExpressionBuilder bool = Expressions.builder();
+			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), exactResourceIds, resourceIdPrefixes);
+			ExpressionBuilder bool = Expressions.bool();
 			// the permissions give access to either
 			if (!exactResourceIds.isEmpty()) {
 				// explicit IDs
@@ -183,7 +183,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		
 		final TermFilter termFilter = get(OptionKey.TITLE, TermFilter.class);
 		
-		final ExpressionBuilder expressionBuilder = Expressions.builder();
+		final ExpressionBuilder expressionBuilder = Expressions.bool();
 		
 		if (termFilter.isFuzzy()) {
 			expressionBuilder.should(ResourceDocument.Expressions.titleFuzzy(termFilter.getTerm()));

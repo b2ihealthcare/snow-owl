@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -61,8 +62,11 @@ public final class ComponentIdentifier implements Serializable {
 	}
 	
 	/**
-	 * Returns with the unique terminology component identifier.
-	 * @return unique terminology component identifier.
+	 * The component type part of this identifier. Possible values appear as
+	 * a constant named {@code TYPE} on component <b>domain classes</b>
+	 * (descendants of {@link IComponent}).
+	 * 
+	 * @return the component type
 	 */
 	public String getComponentType() {
 		return componentType;

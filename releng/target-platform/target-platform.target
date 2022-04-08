@@ -54,9 +54,9 @@
 		<repository location="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<repository location="mvn:com.b2international:com.b2international.snomed.ecl.update:1.6.0:zip"/>
-		<unit id="com.b2international.snomed.ecl.feature.feature.group" version="1.6.0"/>
-		<unit id="com.b2international.snomed.ecl.ui.feature.feature.group" version="1.6.0"/>
+		<repository location="mvn:com.b2international:com.b2international.snomed.ecl.update:2.0.3:zip"/>
+		<unit id="com.b2international.snomed.ecl.feature.feature.group" version="2.0.3"/>
+		<unit id="com.b2international.snomed.ecl.ui.feature.feature.group" version="2.0.3"/>
 	</location>
 	<location includeSource="true" missingManifest="error" type="Maven">
 		<dependencies>
@@ -367,24 +367,6 @@
 				<type>jar</type>
 			</dependency>
 			<dependency>
-				<groupId>org.codehaus.groovy</groupId>
-				<artifactId>groovy-json</artifactId>
-				<version>3.0.9</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.groovy</groupId>
-				<artifactId>groovy-xml</artifactId>
-				<version>3.0.9</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.groovy</groupId>
-				<artifactId>groovy</artifactId>
-				<version>3.0.9</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
 				<groupId>org.codehaus.woodstox</groupId>
 				<artifactId>stax2-api</artifactId>
 				<version>4.2.1</version>
@@ -551,6 +533,12 @@
 				<artifactId>snakeyaml</artifactId>
 				<version>1.26</version>
 				<type>jar</type>
+			</dependency>
+			<dependency>
+  				<groupId>com.github.f4b6a3</groupId>
+  				<artifactId>uuid-creator</artifactId>
+  				<version>4.6.1</version>
+  				<type>jar</type>
 			</dependency>
 		</dependencies>
 		<repositories>

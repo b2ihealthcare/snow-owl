@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		extends BaseRequestBuilder<RB, TransactionContext, String> 
 		implements ResourceRepositoryTransactionRequestBuilder<String> {
 	
-	private String id = IDs.randomBase64UUID();
-	private String bundleId = IComponent.ROOT_ID;
+	private String id;
+	private String bundleId;
 	
 	private String url;
 	private String title;
@@ -109,7 +109,7 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 	protected final Request<TransactionContext, String> doBuild() {
 		final R req = createResourceRequest();
 		
-		req.setId(id);
+		req.setId(id == null ? IDs.base62UUID() : id);
 		req.setUrl(url);
 		req.setTitle(title);
 		req.setLanguage(language);
@@ -120,7 +120,7 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		req.setContact(contact);
 		req.setUsage(usage);
 		req.setPurpose(purpose);
-		req.setBundleId(bundleId);
+		req.setBundleId(bundleId == null ? IComponent.ROOT_ID : bundleId);
 		
 		return req;
 	}

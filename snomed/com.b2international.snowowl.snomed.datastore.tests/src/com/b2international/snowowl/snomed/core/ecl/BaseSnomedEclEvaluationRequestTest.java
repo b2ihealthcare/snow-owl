@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,18 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.query.Expression;
@@ -38,6 +39,10 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ecl.DefaultEclParser;
+import com.b2international.snowowl.core.ecl.DefaultEclSerializer;
+import com.b2international.snowowl.core.ecl.EclParser;
+import com.b2international.snowowl.core.ecl.EclSerializer;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -56,7 +61,6 @@ import com.google.inject.Injector;
 /**
  * @since 8.0
  */
-@RunWith(Parameterized.class)
 public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 
 	private static final Injector INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -69,29 +73,6 @@ public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionInd
 	protected static final String AXIOM = "axiom";
 	
 	private BranchContext context;
-	
-	private final String expressionForm;
-	private final boolean statementsWithValue;
-	
-	public BaseSnomedEclEvaluationRequestTest(String expressionForm, boolean statementsWithValue) {
-		this.expressionForm = expressionForm;
-		this.statementsWithValue = statementsWithValue;
-	}
-	
-	@Parameters(name = "{0} {1}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-			// Test CD members in all three forms
-			{ Trees.INFERRED_FORM, false },
-			{ Trees.STATED_FORM,   false },
-			{ AXIOM,               false }, // special test parameter to indicate stated form on axiom members
-			
-			// New statements with value are expected to 
-			// appear in axiom and inferred form only
-			{ Trees.INFERRED_FORM, true  },
-			{ AXIOM,               true  }, 
-		});
-	}
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -151,29 +132,27 @@ public abstract class BaseSnomedEclEvaluationRequestTest extends BaseRevisionInd
 		return codeSystem;
 	}
 
-	protected final Expression eval(String expression) {
-		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
-			// use the isInferred method decide on inferred vs stated form (this will provide support for axioms as well)
-			.setExpressionForm(isInferred() ? Trees.INFERRED_FORM : Trees.STATED_FORM) 
-			.build())
-			.execute(context)
-			.getSync();
-	}
-	
-	protected final boolean isAxiom() {
-		return AXIOM.equals(expressionForm);
+	protected Expression eval(String expression) {
+		try {
+			return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
+					// use the isInferred method decide on inferred vs stated form (this will provide support for axioms as well)
+					.setExpressionForm(isInferred() ? Trees.INFERRED_FORM : Trees.STATED_FORM) 
+					.build())
+					.execute(context)
+					.getSync();
+		} catch (SyntaxException e) {
+			System.err.println(e.getMessage());
+			System.err.println(e.getAdditionalInfo());
+			throw e;
+		}
 	}
 
-	protected final boolean isInferred() {
-		return Trees.INFERRED_FORM.equals(expressionForm);
-	}
-	
-	protected final String getCharacteristicType() {
-		return isInferred() ? Concepts.INFERRED_RELATIONSHIP : Concepts.STATED_RELATIONSHIP;
-	}
-	
-	protected final boolean isStatementsWithValue() {
-		return statementsWithValue;
+	/**
+	 * Subclasses may configure the expression form if required, but by default it should always execute on the inferred form
+	 * @return
+	 */
+	protected boolean isInferred() {
+		return true;
 	}
 	
 }
