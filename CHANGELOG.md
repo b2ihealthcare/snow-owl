@@ -1,6 +1,33 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.2.0
+
+### Core
+- Add new Base62 encoded UUID generator (93c1711)
+  * Replace all uses of Base64 encoded UUID with Base62 encoded UUIDs (f345312)
+
+### SNOMED CT
+- Support ECL 2.0 expressions to be parsed and evaluated, see official spec [here](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.0-en-US_INT_20220404.pdf?api=v2) (#997)
+  * Support multi-valued string evaluation in concrete values
+  * Support `!=` operator in `active` and `moduleId` property filters
+  * Support `active`/`moduleId`/`effectiveTime` property filters with member domain
+  * Support member field property filters
+  * Support history supplements
+  * Selecting refsetFieldNames in `memberOf` expression is unsupported (anything that is not the `referencedComponentId` at the moment)
+  * Support ignoring ECL specific validation warnings/errors when parsing expressions
+
+### Bugs/Improvements
+- [core] add guards to prevent wrapping single collection values again in another collection in HashMapOptions (3acf6ec)
+- [ecl] fix case when `AND` expression constraint has a single ID only (50e943d)
+- [api] add support for explicit `referencedComponentId` filtering in SNOMED CT Member API prop filter (e10fff0)
+- [api] properly set default values in resource create API even if properties exist with `null` values in the incoming JSON body (1dd0a54)
+- [scripts] wrap groovy 3.0.9 jars into a bundle to avoid dependency issues in third party plug-ins (a3a5bd6)
+
+### Dependencies
+- Bump snomed-ecl to 2.0.3
+- Add uuid-creator 4.6.1
+
 ## 8.1.1
 
 ### Bugs/Improvements
