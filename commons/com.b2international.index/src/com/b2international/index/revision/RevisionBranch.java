@@ -78,11 +78,6 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	public static final int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 100;
 
 	/**
-	 * Temporary branch name format. Values are prefix, name, current time. 
-	 */
-	public static final String TEMP_BRANCH_NAME_FORMAT = "%s%s_%s";
-	
-	/**
 	 * The path of the main branch.
 	 */
 	public static final String MAIN_PATH = "MAIN";
@@ -134,7 +129,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 				this.allowedCharacterSet = allowedCharacterSet;
 				this.maximumLength = maximumLength;
 				this.reservedBranchNames = reservedBranchNames == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(reservedBranchNames);
-				this.pattern = Pattern.compile(String.format("^[%s]{1,%s}(_[0-9]{1,19})?$", allowedCharacterSet, maximumLength));
+				this.pattern = Pattern.compile(String.format("^[%s]{1,%s}$", allowedCharacterSet, maximumLength));
 			}
 
 			@Override
