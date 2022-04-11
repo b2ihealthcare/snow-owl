@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,8 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 		this.toolingId = toolingId;
 		this.resourcePath = resourcePath;
 		if (resourcePath.startsWith(Branch.MAIN_PATH) && Strings.isNullOrEmpty(toolingId)) {
-			throw new BadRequestException("Reflective access ('repositoryId/path') to terminology resource content is not supported in this request builder.");
+			throw new BadRequestException("Reflective access ('repositoryId/path') to terminology resource content is not supported in this API.")
+				.withDeveloperMessage("No toolingId is specified on API level to ensure the correct reflective access to underlying terminology.");
 		}
 	}
 	
