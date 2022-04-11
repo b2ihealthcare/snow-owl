@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.assertj.core.api.ObjectAssert;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -61,6 +58,68 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	@Override
 	protected Collection<Class<?>> getTypes() {
 		return Collections.singleton(RevisionData.class);
+	}
+	
+	@Test
+	public void lowerCaseAlphabetical() throws Exception {
+		String branchName = "abcdefghijklmnopqrstuvwz";
+		assertBranchCreate(branchName)
+			.extracting(RevisionBranch::getName)
+			.isEqualTo(branchName);
+	}
+	
+	@Test
+	public void upperCaseAlphabetical() throws Exception {
+		String branchName = "ABCDEFGHIJKLMNOPQRSTUVWZ";
+		assertBranchCreate(branchName)
+			.extracting(RevisionBranch::getName)
+			.isEqualTo(branchName);
+	}
+	
+	@Test
+	public void digit() throws Exception {
+		String branchName = "1234567890";
+		assertBranchCreate(branchName)
+			.extracting(RevisionBranch::getName)
+			.isEqualTo(branchName);
+	}
+	
+	@Test
+	public void underscore() throws Exception {
+		String branchName = "a_b";
+		assertBranchCreate(branchName)
+			.extracting(RevisionBranch::getName)
+			.isEqualTo(branchName);
+	}
+	
+	@Test
+	public void hyphen() throws Exception {
+		String branchName = "a-b";
+		assertBranchCreate(branchName)
+			.extracting(RevisionBranch::getName)
+			.isEqualTo(branchName);
+	}
+	
+	@Test
+	public void dot() throws Exception {
+		String branchName = "v1.0";
+		assertBranchCreate(branchName)
+			.extracting(RevisionBranch::getName)
+			.isEqualTo(branchName);
+	}
+	
+	@Test
+	public void tilde() throws Exception {
+		String branchName = "~1.0";
+		assertBranchCreate(branchName)
+			.extracting(RevisionBranch::getName)
+			.isEqualTo(branchName);
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void percent() throws Exception {
+		String branchName = "%xy";
+		assertBranchCreate(branchName);
 	}
 	
 	@Test
@@ -231,6 +290,11 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		final RevisionBranch branch = getBranch("MAIN/a");
 		assertEquals(commitTimestamp, branch.getHeadTimestamp());
 		assertEquals(ImmutableMap.<String, Object>of("test", 1), branch.metadata());
+	}
+	
+	private ObjectAssert<RevisionBranch> assertBranchCreate(String branchName) {
+		final String branchPath = branching().createBranch(MAIN, branchName, null);
+		return assertThat(branching().get(branchPath));
 	}
 	
 }

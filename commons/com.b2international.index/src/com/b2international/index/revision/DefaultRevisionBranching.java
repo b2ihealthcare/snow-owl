@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import java.util.Set;
+
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
+import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -37,11 +40,21 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	private final long mainBaseTimestamp;
 	private final long mainHeadTimestamp;
 	private final long mainBranchId;
+	private final BranchNameValidator branchNameValidator;
 
 	public DefaultRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider) {
+		this(index, timestampProvider, new RevisionBranch.BranchNameValidator.Default(
+			RevisionBranch.DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET, 
+			RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH,
+			Set.of()
+		));
+	}
+	
+	public DefaultRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, BranchNameValidator branchNameValidator) {
 		super(index, timestampProvider);
 		this.mainBaseTimestamp = this.mainHeadTimestamp = currentTime();
 		this.mainBranchId = nextBranchId();
+		this.branchNameValidator = branchNameValidator;
 	}
 	
 	public long nextBranchId() {
@@ -68,6 +81,8 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 
 	@Override
 	protected RevisionBranch doReopen(RevisionBranch parentBranch, String child, Metadata metadata) {
+		this.branchNameValidator.checkName(child);
+		
 		final long currentTime = currentTime();
 		final long newBranchId = nextBranchId();
 		final RevisionSegment parentLastSegment = parentBranch.getSegments().last();

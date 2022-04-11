@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -81,11 +78,6 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	public static final int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 100;
 
 	/**
-	 * Temporary branch name format. Values are prefix, name, current time. 
-	 */
-	public static final String TEMP_BRANCH_NAME_FORMAT = "%s%s_%s";
-	
-	/**
 	 * The path of the main branch.
 	 */
 	public static final String MAIN_PATH = "MAIN";
@@ -115,8 +107,6 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
 	public static interface BranchNameValidator {
 
-		BranchNameValidator DEFAULT = new BranchNameValidatorImpl();
-
 		/**
 		 * Validates a branch name and throws {@link BadRequestException} if not valid.
 		 * 
@@ -128,20 +118,18 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		/**
 		 * @since 6.5
 		 */
-		class BranchNameValidatorImpl implements BranchNameValidator {
+		class Default implements BranchNameValidator {
 
-			private Pattern pattern;
-			private String allowedCharacterSet;
-			private int maximumLength;
+			private final Pattern pattern;
+			private final String allowedCharacterSet;
+			private final int maximumLength;
+			private final SortedSet<String> reservedBranchNames;
 
-			public BranchNameValidatorImpl() {
-				this(DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET, DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
-			}
-
-			public BranchNameValidatorImpl(String allowedCharacterSet, int maximumLength) {
+			public Default(String allowedCharacterSet, int maximumLength, Set<String> reservedBranchNames) {
 				this.allowedCharacterSet = allowedCharacterSet;
 				this.maximumLength = maximumLength;
-				pattern = Pattern.compile(String.format("^[%s]{1,%s}(_[0-9]{1,19})?$", allowedCharacterSet, maximumLength));
+				this.reservedBranchNames = reservedBranchNames == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(reservedBranchNames);
+				this.pattern = Pattern.compile(String.format("^[%s]{1,%s}$", allowedCharacterSet, maximumLength));
 			}
 
 			@Override
@@ -154,6 +142,9 @@ public final class RevisionBranch extends MetadataHolderImpl {
 				}
 				if (!pattern.matcher(name).matches()) {
 					throw new BadRequestException("Branch name '%s' contains invalid characters (only '%s' characters are allowed).", name, allowedCharacterSet);
+				}
+				if (this.reservedBranchNames.contains(name)) {
+					throw new BadRequestException("Branch name '%s' is a reserved alias or branch name. Reserved names are: %s", name, reservedBranchNames);
 				}
 			}
 
@@ -273,7 +264,6 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		SortedSet<RevisionSegment> segments, 
     		List<RevisionBranchMergeSource> mergeSources) {
     	super(metadata);
-    	BranchNameValidator.DEFAULT.checkName(name);
     	checkArgument(!CompareUtils.isEmpty(segments), "At least one segment is required to created a revision branch.");
     	this.id = id;
 		this.parentPath = parentPath;
