@@ -20,7 +20,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import org.elasticsearch.core.Set;
+import java.util.Set;
 
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.query.Expressions;
