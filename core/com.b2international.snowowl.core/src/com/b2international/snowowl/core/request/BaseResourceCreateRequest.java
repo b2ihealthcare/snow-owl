@@ -185,7 +185,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	public final String execute(TransactionContext context) {
 		// validate ID before use, IDs sometimes being used as branch paths, so must be a valid branch path
 		try {
-			BranchNameValidator.DEFAULT.checkName(id);
+			context.service(BranchNameValidator.class).checkName(id);
 		} catch (BadRequestException e) {
 			throw new BadRequestException(e.getMessage().replace("Branch name", getClass().getSimpleName().replace("CreateRequest", ".id")));
 		}
