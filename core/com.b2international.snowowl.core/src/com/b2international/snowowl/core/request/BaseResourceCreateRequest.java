@@ -21,15 +21,14 @@ import java.util.Optional;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
@@ -43,7 +42,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class BaseResourceCreateRequest implements Request<TransactionContext, String> {
 	
 	protected static final long serialVersionUID = 1L;
-
+	
 	// the new ID, if not specified, it will be auto-generated
 	@JsonProperty
 	@NotEmpty
@@ -184,12 +183,8 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	@Override
 	public final String execute(TransactionContext context) {
 		// validate ID before use, IDs sometimes being used as branch paths, so must be a valid branch path
-		try {
-			context.service(BranchNameValidator.class).checkName(id);
-		} catch (BadRequestException e) {
-			throw new BadRequestException(e.getMessage().replace("Branch name", getClass().getSimpleName().replace("CreateRequest", ".id")));
-		}
-		
+		IDs.checkBase64(id, getClass().getSimpleName().replace("CreateRequest", ".id"));
+			
 		// validate URL format
 		getResourceURLSchemaSupport(context).validate(url);
 		
