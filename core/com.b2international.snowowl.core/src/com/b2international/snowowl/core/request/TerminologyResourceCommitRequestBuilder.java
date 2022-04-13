@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Set;
+
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 8.0
@@ -24,9 +29,16 @@ public class TerminologyResourceCommitRequestBuilder
 		extends RepositoryCommitRequestBuilder<TerminologyResourceCommitRequestBuilder>
 		implements TerminologyResourceContentRequestBuilder<CommitResult> {
 	
+	public static final Set<String> READ_ONLY_STATUSES = Set.of(Resource.RETIRED_STATUS);
+
 	@Override
 	public boolean snapshot() {
 		return false;
+	}
+
+	@Override
+	public Request<BranchContext, CommitResult> wrap(Request<BranchContext, CommitResult> req) {
+		return new TerminologyResourceStatusCheckRequest<>(TerminologyResourceContentRequestBuilder.super.wrap(req), READ_ONLY_STATUSES);
 	}
 	
 }

@@ -25,8 +25,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.junit.runners.MethodSorters;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -536,7 +536,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	}
 	
 	@Test
-	public void codeSystem28_SearchWithTimestamp() throws Exception {
+	public void codesystem28_SearchWithTimestamp() throws Exception {
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_1"));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_2"));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_3"));
@@ -555,7 +555,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	}
 	
 	@Test
-	public void codeSystem29_VersionWithReservedBranchName() throws Exception {
+	public void codesystem29_VersionWithReservedBranchName() throws Exception {
 		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs29_1"));
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), ResourceURI.HEAD, EffectiveTimes.today()))
 			.statusCode(400)
@@ -567,7 +567,35 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			.statusCode(400)
 			.body("message", containsString("Version 'NEXT' is a reserved alias or branch name."));
 	}
-
+	
+	@Test
+	public void codesystem30_AllowMetadataUpdatesOnRetiredResources() throws Exception {
+		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs30"));
+		assertCodeSystemUpdated(codeSystemId, Map.of(
+			"status", Resource.RETIRED_STATUS
+		));
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.body("status", equalTo(Resource.RETIRED_STATUS));
+		assertCodeSystemUpdated(codeSystemId, Map.of(
+			"copyright", "MIT License"
+		));
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.body("copyright", equalTo("MIT License"));
+	}
+	
+	@Test
+	public void codesystem31_DisallowVersioningOfRetiredResources() throws Exception {
+		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs30"));
+		assertCodeSystemUpdated(codeSystemId, Map.of(
+			"status", Resource.RETIRED_STATUS
+		));
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", EffectiveTimes.today()))
+			.statusCode(400)
+			.body("message", containsString("Resource 'Code System cs30' cannot be versioned in its current status 'retired'."));
+	}
+	
 	private long getCodeSystemCreatedAt(final String id) {
 		return assertCodeSystemGet(id)
 			.statusCode(200)

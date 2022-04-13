@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.context;
 
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
@@ -28,6 +29,7 @@ public final class DefaultTerminologyResourceContext extends DelegatingContext i
 	public DefaultTerminologyResourceContext(final ServiceProvider delegate, ResourceURI resourceUri, TerminologyResource resource) {
 		super(delegate);
 		bind(ResourceURI.class, resourceUri);
+		bind(Resource.class, resource);
 		bind(TerminologyResource.class, resource);
 	}
 
