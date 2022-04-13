@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.core.id;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.elasticsearch.common.UUIDs;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.github.f4b6a3.uuid.codec.base.Base62Codec;
+import com.github.f4b6a3.uuid.codec.base.BaseN;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 
@@ -30,6 +33,9 @@ import com.google.common.hash.Hashing;
  */
 public class IDs {
 
+	public static final BaseN BASE64 = new BaseN("A-Za-z0-9-_");
+	public static final BaseN BASE62 = new BaseN("A-Za-z0-9");
+	
 	/**
 	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key. This methods uses Base 62 encoding of UUIDs to omit the usage of non-alpha/numeric characters entirely.
 	 * 
@@ -79,6 +85,20 @@ public class IDs {
 	 */
 	public static String sha1(String value) {
 		return Hashing.sha1().hashString(value, Charsets.UTF_8).toString();
+	}
+	
+	public static void checkBase62(String value, String property) {
+		checkBaseN(value, BASE62, value);
+	}
+	
+	public static void checkBase64(String value, String property) {
+		checkBaseN(value, BASE64, value);
+	}
+	
+	public static void checkBaseN(String value, BaseN baseN, String property) {
+		if (baseN.isValid(value)) {
+			throw new BadRequestException("%s'%s' uses an illegal character. Allowed characters are '%s'.", property == null ? "" : property.concat(" "), Arrays.toString(BASE62.getAlphabet().array()));
+		}
 	}
 	
 }

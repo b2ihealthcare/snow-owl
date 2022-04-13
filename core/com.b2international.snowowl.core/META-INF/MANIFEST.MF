@@ -29,7 +29,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  io.github.classgraph.classgraph;bundle-version="4.8.90",
  com.b2international.groovy;bundle-version="3.0.9",
  com.b2international.snomed.ecl;bundle-version="1.6.0";visibility:=reexport,
- com.github.f4b6a3.uuid;bundle-version="4.6.1"
+ com.github.f4b6a3.uuid;bundle-version="4.6.1";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: com.auth0.jwt,
