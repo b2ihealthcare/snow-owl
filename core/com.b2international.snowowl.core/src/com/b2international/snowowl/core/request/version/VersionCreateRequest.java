@@ -114,6 +114,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		context.service(BranchNameValidator.class).checkName(version);
 		
 		TerminologyResource resourceToVersion = resourcesById.get(resource);
+
+		if (TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resourceToVersion.getStatus())) {
+			throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'.", resourceToVersion.getTitle(), resourceToVersion.getStatus());
+		}
 		
 		// TODO resurrect or eliminate tooling dependencies
 		final List<TerminologyResource> resourcesToVersion = List.of(resourcesById.get(resource));
