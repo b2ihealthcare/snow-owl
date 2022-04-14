@@ -566,6 +566,9 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), ResourceURI.NEXT, EffectiveTimes.today()))
 			.statusCode(400)
 			.body("message", containsString("Version 'NEXT' is a reserved alias or branch name."));
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), ResourceURI.HEAD.toLowerCase(), EffectiveTimes.today()))
+			.statusCode(400)
+			.body("message", containsString("Version 'head' is a reserved alias or branch name."));
 	}
 	
 	@Test

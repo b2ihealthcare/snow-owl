@@ -143,7 +143,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 				if (!pattern.matcher(name).matches()) {
 					throw new BadRequestException("Branch name '%s' contains invalid characters (only '%s' characters are allowed).", name, allowedCharacterSet);
 				}
-				if (this.reservedBranchNames.contains(name)) {
+				if (this.reservedBranchNames.stream().anyMatch(name::equalsIgnoreCase)) {
 					throw new BadRequestException("Branch name '%s' is a reserved alias or branch name. Reserved names are: %s", name, reservedBranchNames);
 				}
 			}
