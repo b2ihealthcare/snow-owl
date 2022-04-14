@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.2.1
+
+### Bugs/Improvements
+- [core] reject versioning requests using reserved branch names (#1004)
+- [core] make sure retired resources cannot be versioned or changed (#1007)
+
+### Dependencies
+- Bump h2 dependency to 2.1.210
+
 ## 8.2.0
 
 ### Core
