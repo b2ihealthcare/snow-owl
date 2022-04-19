@@ -108,14 +108,6 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 			.isEqualTo(branchName);
 	}
 	
-	@Test
-	public void tilde() throws Exception {
-		String branchName = "~1.0";
-		assertBranchCreate(branchName)
-			.extracting(RevisionBranch::getName)
-			.isEqualTo(branchName);
-	}
-	
 	@Test(expected = BadRequestException.class)
 	public void percent() throws Exception {
 		String branchName = "%xy";
