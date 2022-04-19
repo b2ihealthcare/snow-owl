@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/annotations-17.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.21.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/docker-java-api-3.2.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/docker-java-transport-3.2.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/docker-java-transport-zerodep-3.2.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/duct-tape-1.0.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-1.17.1.jar" sourcepath="C:/Users/mark/.m2/repository/org/testcontainers/elasticsearch/1.17.1/elasticsearch-1.17.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jna-5.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/testcontainers-1.17.1.jar" sourcepath="C:/Users/mark/.m2/repository/org/testcontainers/testcontainers/1.17.1/testcontainers-1.17.1-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
 		<attributes>
 			<attribute name="module" value="true"/>

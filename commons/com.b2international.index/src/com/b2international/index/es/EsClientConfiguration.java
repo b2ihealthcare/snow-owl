@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 
+import javax.net.ssl.SSLContext;
+
 import org.elasticsearch.common.Strings;
 
 import com.google.common.collect.ImmutableList;
@@ -38,6 +40,7 @@ public final class EsClientConfiguration {
 	private final String password;
 	private final int connectTimeout;
 	private final int socketTimeout;
+	private final SSLContext sslContext;
 
 	public EsClientConfiguration(
 			final String clusterName,
@@ -45,13 +48,15 @@ public final class EsClientConfiguration {
 			final String username, 
 			final String password, 
 			final int connectTimeout, 
-			final int socketTimeout) {
+			final int socketTimeout, 
+			final SSLContext sslContext) {
 		this.clusterName = clusterName;
 		this.clusterUrl = clusterUrl;
 		this.username = username;
 		this.password = password;
 		this.connectTimeout = connectTimeout;
 		this.socketTimeout = socketTimeout;
+		this.sslContext = sslContext;
 		checkArgument(
 			isTcp() || isHttp(), 
 			"Unsupported networking scheme in clusterUrl: %s. Supported schemes are: %s.", clusterUrl, ImmutableList.of(TCP_SCHEME, HTTP_SCHEME, HTTPS_SCHEME)
@@ -80,6 +85,10 @@ public final class EsClientConfiguration {
 
 	public int getSocketTimeout() {
 		return socketTimeout;
+	}
+	
+	public SSLContext getSslContext() {
+		return sslContext;
 	}
 
 	@Override

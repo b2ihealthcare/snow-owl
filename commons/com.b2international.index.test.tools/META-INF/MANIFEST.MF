@@ -6,8 +6,19 @@ Bundle-Version: 8.2.2.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.index,
- org.junit;bundle-version="4.11.0",
+ org.junit;bundle-version="4.13.0",
  com.fasterxml.jackson.core.jackson-databind,
  com.fasterxml.jackson.core.jackson-annotations
 Export-Package: com.b2international.index,
  com.b2international.index.revision
+Bundle-ClassPath: .,
+ lib/annotations-17.0.0.jar,
+ lib/commons-compress-1.21.jar,
+ lib/docker-java-api-3.2.13.jar,
+ lib/docker-java-transport-3.2.13.jar,
+ lib/docker-java-transport-zerodep-3.2.13.jar,
+ lib/duct-tape-1.0.8.jar,
+ lib/elasticsearch-1.17.1.jar,
+ lib/jna-5.8.0.jar,
+ lib/testcontainers-1.17.1.jar
+Import-Package: org.slf4j;version="1.7.30"

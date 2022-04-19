@@ -91,6 +91,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 	 * Local Settings are Snow Owl index client only configuration, not actual Elasticsearch supported configuration, they are implicitly dynamic.
 	 */
 	private static final Set<String> LOCAL_SETTINGS = Set.of(
+		IndexClientFactory.CLUSTER_URL,
+		IndexClientFactory.CLUSTER_USERNAME,
+		IndexClientFactory.CLUSTER_PASSWORD,
 		IndexClientFactory.COMMIT_WATERMARK_LOW_KEY,
 		IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY
 	);

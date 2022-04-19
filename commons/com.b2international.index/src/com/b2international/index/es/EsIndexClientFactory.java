@@ -19,6 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
+
 import org.elasticsearch.node.Node;
 
 import com.b2international.index.IndexClient;
@@ -56,13 +58,14 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final EsClient client;
 		if (settings.containsKey(CLUSTER_URL)) {
 			final String clusterUrl = (String) settings.get(CLUSTER_URL);
-			client = EsClient.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout));
+			SSLContext sslContext = (SSLContext) settings.get("ssl");
+			client = EsClient.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext));
 		} else {
 			// Start an embedded ES node only if a cluster URL is not set
 			Node node = EsNode.getInstance(clusterName, configDirectory, dataDirectory, persistent);
 			// check sysprop to force HTTP client when still using embedded mode
 			if (System.getProperty("so.index.es.useHttp") != null) {
-				client = EsClient.create(new EsClientConfiguration(clusterName, "http://127.0.0.1:9200", username, password, connectTimeout, socketTimeout));
+				client = EsClient.create(new EsClientConfiguration(clusterName, "http://127.0.0.1:9200", username, password, connectTimeout, socketTimeout, null));
 			} else {
 				// and use the local NodeClient to communicate via the embedded node
 				client = new EsTcpClient(node.client());

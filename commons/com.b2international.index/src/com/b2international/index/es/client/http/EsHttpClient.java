@@ -94,14 +94,19 @@ public final class EsHttpClient extends EsClientBase {
 					final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 					credentialsProvider.setCredentials(AuthScope.ANY, 
 							new UsernamePasswordCredentials(configuration.getUserName(), configuration.getPassword()));
-					return httpClientConfigBuilder.setDefaultCredentialsProvider(credentialsProvider);
+					return httpClientConfigBuilder
+							.setDefaultCredentialsProvider(credentialsProvider)
+							.setSSLContext(configuration.getSslContext());
 				};
 				
 				restClientBuilder.setHttpClientConfigCallback(httpClientConfigCallback);
 				
 			}
 			
-			return new RestHighLevelClient(restClientBuilder);
+			return new RestHighLevelClientBuilder(restClientBuilder.build())
+					// enable API compatibility mode to run Snow Owl against Elasticsearch 8 clusters
+					.setApiCompatibilityMode(true)
+					.build();
 		});
 		
 		this.clientExt = new RestHighLevelClientExt(client);
