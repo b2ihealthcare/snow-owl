@@ -208,7 +208,6 @@
         <setEntry value="com.b2international.snowowl.fhir.rest@default:false"/>
         <setEntry value="com.b2international.snowowl.identity.ldap@default:false"/>
         <setEntry value="com.b2international.snowowl.logback.config@default:false"/>
-        <setEntry value="com.b2international.snowowl.rpc@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.core.rest@default:false"/>

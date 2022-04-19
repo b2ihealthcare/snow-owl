@@ -67,6 +67,7 @@ SO_JAVA_OPTS="-Xms2g \
                 --add-opens java.base/java.lang=ALL-UNNAMED \
                 --add-opens java.base/java.util=ALL-UNNAMED \
                 --add-opens java.base/java.time=ALL-UNNAMED \
+                --add-opens java.base/sun.security.x509=ALL-UNNAMED \
                 -Djdk.security.defaultKeySize=DSA:1024 \
                 -Dlogback.configurationFile=$KERNEL_HOME/configuration/serviceability.xml \
                 $SO_JAVA_OPTS"

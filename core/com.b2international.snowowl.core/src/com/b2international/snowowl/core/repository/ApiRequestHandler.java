@@ -37,17 +37,15 @@ import com.b2international.snowowl.eventbus.IMessage;
 public final class ApiRequestHandler implements IHandler<IMessage> {
 
 	private final ServiceProvider context;
-	private final ClassLoader classLoader;
 	
-	public ApiRequestHandler(ServiceProvider context, ClassLoader classLoader) {
+	public ApiRequestHandler(ServiceProvider context) {
 		this.context = context;
-		this.classLoader = classLoader;
 	}
 	
 	@Override
 	public final void handle(IMessage message) {
 		try {
-			final Request<ServiceProvider, ?> req = message.body(Request.class, classLoader);
+			final Request<ServiceProvider, ?> req = message.body(Request.class);
 			
 			final ResponseHeaders responseHeaders = new ResponseHeaders();
 			final ServiceProvider executionContext = context.inject()

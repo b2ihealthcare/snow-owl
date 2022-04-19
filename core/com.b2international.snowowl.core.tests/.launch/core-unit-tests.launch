@@ -166,7 +166,6 @@
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
         <setEntry value="com.b2international.snowowl.logback.config@default:false"/>
-        <setEntry value="com.b2international.snowowl.rpc@default:default"/>
         <setEntry value="com.b2international.snowowl.server.product@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
     </setAttribute>

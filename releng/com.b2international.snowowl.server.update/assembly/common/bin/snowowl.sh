@@ -61,6 +61,7 @@ SO_JAVA_OPTS="-Xms6g \
                 --add-opens java.base/java.lang=ALL-UNNAMED \
                 --add-opens java.base/java.util=ALL-UNNAMED \
                 --add-opens java.base/java.time=ALL-UNNAMED \
+                --add-opens java.base/sun.security.x509=ALL-UNNAMED \
                 --add-opens java.base/java.text=ALL-UNNAMED \
                 --add-opens java.desktop/java.awt.font=ALL-UNNAMED \
                 -Djdk.security.defaultKeySize=DSA:1024 \

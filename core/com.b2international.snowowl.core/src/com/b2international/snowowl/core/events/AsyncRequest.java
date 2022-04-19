@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.events;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.commons.CompositeClassLoader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
@@ -46,18 +45,14 @@ public final class AsyncRequest<R> {
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
-		final CompositeClassLoader classLoader = new CompositeClassLoader();
-		classLoader.add(request.getClassLoader());
-		request.getNestedRequests().stream().map(Request::getClassLoader).forEach(classLoader::add);
-		request.getNestedRequests().stream().map(r -> r.getClass().getClassLoader()).forEach(classLoader::add);
 		bus.send(Request.ADDRESS, request, Request.TAG, Collections.emptyMap(), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						promise.resolve(message.body(responseType, classLoader), message.headers());
+						promise.resolve(message.body(responseType), message.headers());
 					} else {
-						promise.reject(message.body(Throwable.class, AsyncRequest.class.getClassLoader()));
+						promise.reject(message.body(Throwable.class));
 					}
 				} catch (Throwable e) {
 					promise.reject(e);

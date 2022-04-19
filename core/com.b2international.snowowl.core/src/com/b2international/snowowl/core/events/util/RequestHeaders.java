@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,10 @@ public final class RequestHeaders {
 	
 	public String header(String name) {
 		return headers.get(name);
+	}
+	
+	public String header(String name, String defaultValue) {
+		return headers.getOrDefault(name, defaultValue);
 	}
 	
 	public Map<String, String> headers() {
