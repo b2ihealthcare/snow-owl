@@ -263,7 +263,7 @@ public class IndexConfiguration {
 				settings.put(IndexClientFactory.CLUSTER_PASSWORD, getClusterPassword());
 			}
 			if (getSslContext() != null) {
-				settings.put("ssl", getSslContext());
+				settings.put(IndexClientFactory.CLUSTER_SSL_CONTEXT, getSslContext());
 			}
 		}
 		

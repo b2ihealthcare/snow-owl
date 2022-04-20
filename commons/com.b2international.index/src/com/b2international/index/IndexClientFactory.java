@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package com.b2international.index;
 
 import java.util.Map;
+
+import javax.net.ssl.SSLContext;
 
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -90,6 +92,11 @@ public interface IndexClientFactory {
 	 * Configuration key to specify the password for authenticating with the Elasticsearch cluster.
 	 */
 	String CLUSTER_PASSWORD = "clusterPassword";
+	
+	/**
+	 * Configuration key to specify the cluster {@link SSLContext} instance to use secure connections when communicating with external Elasticsearch instances.
+	 */
+	String CLUSTER_SSL_CONTEXT = "clusterSslContext";
 	
 	/**
 	 * Configuration key to specify the string each index name should be prefixed with (used in multi-tenant deployments). 

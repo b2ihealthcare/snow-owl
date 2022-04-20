@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final EsClient client;
 		if (settings.containsKey(CLUSTER_URL)) {
 			final String clusterUrl = (String) settings.get(CLUSTER_URL);
-			SSLContext sslContext = (SSLContext) settings.get("ssl");
+			SSLContext sslContext = (SSLContext) settings.get(CLUSTER_SSL_CONTEXT);
 			client = EsClient.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext));
 		} else {
 			// Start an embedded ES node only if a cluster URL is not set

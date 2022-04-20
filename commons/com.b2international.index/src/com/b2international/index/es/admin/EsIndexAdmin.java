@@ -94,6 +94,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		IndexClientFactory.CLUSTER_URL,
 		IndexClientFactory.CLUSTER_USERNAME,
 		IndexClientFactory.CLUSTER_PASSWORD,
+		IndexClientFactory.CLUSTER_SSL_CONTEXT,
 		IndexClientFactory.COMMIT_WATERMARK_LOW_KEY,
 		IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY
 	);

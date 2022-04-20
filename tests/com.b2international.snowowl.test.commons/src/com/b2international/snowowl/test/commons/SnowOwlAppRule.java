@@ -25,6 +25,7 @@ import org.testcontainers.utility.MountableFile;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.index.IndexClientFactory;
+import com.b2international.index.IndexResource;
 import com.b2international.index.es.EsIndexClientFactory;
 import com.b2international.index.es.EsNode;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -147,9 +148,13 @@ public class SnowOwlAppRule extends ExternalResource {
 		}
 		
 		// modify the Snow Owl configuration values if useDocker is defined as JVM argument
-		if (System.getProperty("so.index.es.useDocker") != null) {
+		String testElasticsearchContainer = System.getProperty(IndexResource.ES_USE_TEST_CONTAINER_VARIABLE);
+		if (testElasticsearchContainer != null) {
+			if (testElasticsearchContainer.isEmpty()) {
+				testElasticsearchContainer = IndexResource.DEFAULT_ES_DOCKER_IMAGE;
+			}
 			// initialize an Elasticsearch test container
-			container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2");
+			container = new ElasticsearchContainer(testElasticsearchContainer);
 			container.withEnv("rest.action.multi.allow_explicit_index", "false");
 			container.withCopyFileToContainer(MountableFile.forHostPath(EsIndexClientFactory.DEFAULT_PATH.resolve(IndexClientFactory.DEFAULT_CLUSTER_NAME).resolve(EsNode.CONFIG_DIR).resolve(EsNode.SYNONYMS_FILE)), "/usr/share/elasticsearch/config/" + EsNode.SYNONYMS_FILE);
 			container.start();

@@ -44,6 +44,13 @@ import com.google.common.collect.Maps;
  */
 public final class IndexResource extends ExternalResource {
 
+	/**
+	 * Java system property to configure the use of a testcontainer Elasticsearch Docker container and optionally configure the actual image as well. By default it uses the 8.1.3 image.
+	 */
+	public static final String ES_USE_TEST_CONTAINER_VARIABLE = "so.index.es.useDocker";
+	
+	public static final String DEFAULT_ES_DOCKER_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.1.3";
+
 	private static final AtomicBoolean INIT = new AtomicBoolean(false);
 	
 	private static ObjectMapper mapper;
@@ -68,14 +75,18 @@ public final class IndexResource extends ExternalResource {
 			final Map<String, Object> settings;
 			
 			// fire up an Elasticsearch test container if requested via useDocker system prop
-			if (System.getProperty("so.index.es.useDocker") != null) {
-				container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2");
+			String testElasticsearchContainer = System.getProperty(ES_USE_TEST_CONTAINER_VARIABLE);
+			if (testElasticsearchContainer != null) {
+				if (testElasticsearchContainer.isEmpty()) {
+					testElasticsearchContainer = DEFAULT_ES_DOCKER_IMAGE;
+				}
+				container = new ElasticsearchContainer(testElasticsearchContainer);
 				container.withEnv("rest.action.multi.allow_explicit_index", "false");
 				container.start();
 				
 				settings = Maps.newHashMap(this.indexSettings.get());
 				settings.putIfAbsent(IndexClientFactory.CLUSTER_URL, "https://" + container.getHttpHostAddress());
-				settings.putIfAbsent("ssl", container.createSslContextFromCa());
+				settings.putIfAbsent(IndexClientFactory.CLUSTER_SSL_CONTEXT, container.createSslContextFromCa());
 				settings.putIfAbsent(IndexClientFactory.CLUSTER_USERNAME, "elastic");
 				settings.putIfAbsent(IndexClientFactory.CLUSTER_PASSWORD, ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD);
 			} else {
