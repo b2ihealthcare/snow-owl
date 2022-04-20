@@ -47,10 +47,11 @@ public final class EvaluateQueryRefSetRequest extends IndexResourceRequest<Branc
 	public QueryRefSetMemberEvaluations execute(final BranchContext context) {
 		final SnomedReferenceSet referenceSet = SnomedRequests.prepareGetReferenceSet(referenceSetId).build().execute(context);
 		return new QueryRefSetMemberEvaluations(
-				getQueryMembers(context, referenceSet).stream()
-				.map(input -> SnomedRequests.prepareQueryRefSetMemberEvaluation(input.getId()).setLocales(locales()).setExpand(expand()).build())
-				.map(input -> input.execute(context))
-				.toList());
+			getQueryMembers(context, referenceSet)
+				.stream()
+				.map(input -> SnomedRequests.prepareQueryRefSetMemberEvaluation(input.getId()).setLocales(locales()).setExpand(expand()).build().execute(context))
+				.toList()
+		);
 	}
 	
 	private Collection<SnomedReferenceSetMember> getQueryMembers(BranchContext context, SnomedReferenceSet referenceSet) {
