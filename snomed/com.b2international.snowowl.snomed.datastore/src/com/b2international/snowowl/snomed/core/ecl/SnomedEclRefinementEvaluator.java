@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.util.PolymorphicDispatcher;
@@ -55,7 +56,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 import com.google.common.collect.*;
 
 /**
@@ -98,7 +98,7 @@ final class SnomedEclRefinementEvaluator {
 		return evalRefinement(context, refinement, false, ANY_GROUP)
 				.thenWith(input -> {
 					final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
-					final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
+					final Set<String> matchingIds = input.stream().map(idProvider).filter(String.class::isInstance).map(String.class::cast).collect(Collectors.toSet());
 					// two cases here, one is the [1..x] the other is [0..x]
 					final Cardinality cardinality = refinement.getCardinality();
 					if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
@@ -211,7 +211,7 @@ final class SnomedEclRefinementEvaluator {
 							final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
 						
 							
-							final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
+							final Set<String> matchingIds = input.stream().map(idProvider).map(String.class::cast).collect(Collectors.toSet());
 							return focusConcepts.resolveToConceptsWithGroups(context)
 									.then(groupsById -> {
 										final Collection<Property> matchingProperties = Sets.newHashSetWithExpectedSize(groupsById.size() - matchingIds.size());
@@ -592,7 +592,7 @@ final class SnomedEclRefinementEvaluator {
 
 	/*package*/ static Function<Collection<Property>, Collection<Property>> filterByCardinality(final boolean grouped, final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<Property, Object> idProvider) {
 		return matchingProperties -> {
-			final Multimap<Object, Property> propertiesByMatchingIds = Multimaps.index(matchingProperties, idProvider);
+			final Multimap<Object, Property> propertiesByMatchingIds = Multimaps.index(matchingProperties, idProvider::apply);
 			final Collection<Property> properties = newHashSet();
 			
 			final Range<Long> allowedRelationshipCardinality;

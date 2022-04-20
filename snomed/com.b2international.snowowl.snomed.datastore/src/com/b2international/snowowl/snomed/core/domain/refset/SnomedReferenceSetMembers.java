@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,20 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 
 /**
  * @since 4.5
  */
 public final class SnomedReferenceSetMembers extends PageableCollectionResource<SnomedReferenceSetMember> {
 
-	public static final Function<SnomedReferenceSetMembers, Set<String>> GET_REFERENCED_COMPONENT_IDS = new Function<SnomedReferenceSetMembers, Set<String>>() {
-		@Override
-		public Set<String> apply(SnomedReferenceSetMembers input) {
-			return FluentIterable.from(input).transform(SnomedReferenceSetMember.GET_REFERENCED_COMPONENT_ID).toSet();
-		}
-	};
+	public static final Function<SnomedReferenceSetMembers, Set<String>> GET_REFERENCED_COMPONENT_IDS = input -> input.stream()
+			.map(SnomedReferenceSetMember.GET_REFERENCED_COMPONENT_ID).collect(Collectors.toSet());
 
 	public SnomedReferenceSetMembers(int limit, int total) {
 		super(Collections.emptyList(), null, limit, total);

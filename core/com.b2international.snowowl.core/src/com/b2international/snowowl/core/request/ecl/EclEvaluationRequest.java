@@ -24,6 +24,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -45,7 +46,6 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 

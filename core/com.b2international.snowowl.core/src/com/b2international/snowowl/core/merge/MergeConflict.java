@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -69,11 +68,7 @@ public final class MergeConflict implements Serializable {
 	}
 	
 	private static String buildAttributes(List<ConflictingAttribute> conflictingAttributes) {
-		return Joiner.on(ATTRIBUTE_SEPARATOR).join(FluentIterable.from(conflictingAttributes).transform(new Function<ConflictingAttribute, String>() {
-			@Override public String apply(ConflictingAttribute attribute) {
-				return attribute.toDisplayName();
-			}
-		}).toList());
+		return Joiner.on(ATTRIBUTE_SEPARATOR).join(FluentIterable.from(conflictingAttributes).transform(ConflictingAttribute::toDisplayName).toList());
 	}
 	
 	private final String componentId;

@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;

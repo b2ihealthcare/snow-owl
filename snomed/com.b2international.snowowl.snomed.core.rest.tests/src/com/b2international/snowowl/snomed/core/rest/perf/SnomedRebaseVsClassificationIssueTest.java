@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,11 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationR
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.merge;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.Callable;
-
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.google.common.base.Function;
 
 /**
  * use config rebase-issue.yml
@@ -44,18 +41,12 @@ public class SnomedRebaseVsClassificationIssueTest {
 	@Test
 	public void executeRebaseAndClassificationOperationParallel() throws Exception {
 		// execute branch rebase
-		Promise.wrap(new Callable<Object>() {
-			@Override
-			public Object call() throws Exception {
-				merge(TASK_BRANCH.getParent(), TASK_BRANCH, "Rebased task branch " + TASK_BRANCH.getPath() + " on project");
-				return null;
-			}
-		}).fail(new Function<Throwable, Object>() {
-			@Override
-			public Object apply(Throwable input) {
-				fail(input.getMessage());
-				return null;
-			}
+		Promise.wrap(() -> {
+			merge(TASK_BRANCH.getParent(), TASK_BRANCH, "Rebased task branch " + TASK_BRANCH.getPath() + " on project");
+			return null;
+		}).fail(input -> {
+			fail(input.getMessage());
+			return null;
 		});
 
 		// execute N classify operation on the same branch

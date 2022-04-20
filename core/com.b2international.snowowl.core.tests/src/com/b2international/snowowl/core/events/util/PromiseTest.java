@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.events.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.b2international.commons.collections.Procedure;
-import com.google.common.base.Function;
 
 /**
  * @since 4.2
@@ -53,13 +52,10 @@ public class PromiseTest {
 		final Promise<Object> p = new Promise<>();
 		p.reject(rejection);
 		final CountDownLatch latch = new CountDownLatch(1);
-		p.fail(new Function<Throwable, Object>() {
-			@Override
-			public Object apply(Throwable input) {
-				assertEquals(rejection, input);
-				latch.countDown();
-				return null;
-			}
+		p.fail(input -> {
+			assertEquals(rejection, input);
+			latch.countDown();
+			return null;
 		});
 		latch.await(100, TimeUnit.MILLISECONDS);
 	}
@@ -83,13 +79,10 @@ public class PromiseTest {
 	public void rejectAfterFailHandlerAdded() throws Exception {
 		final Promise<Object> p = new Promise<>();
 		final CountDownLatch latch = new CountDownLatch(1);
-		p.fail(new Function<Throwable, Object>() {
-			@Override
-			public Object apply(Throwable input) {
-				assertEquals(rejection, input);
-				latch.countDown();
-				return null;
-			}
+		p.fail(input -> {
+			assertEquals(rejection, input);
+			latch.countDown();
+			return null;
 		});
 		p.reject(rejection);
 		latch.await(100, TimeUnit.MILLISECONDS);
@@ -98,18 +91,8 @@ public class PromiseTest {
 	@Test
 	public void resolveWith() throws Exception {
 		final Long finalValue = Promise.immediate(1L)
-			.thenWith(new Function<Long, Promise<Long>>() {
-				@Override
-				public Promise<Long> apply(Long input) {
-					return Promise.immediate(input * 2);
-				}
-			})
-			.then(new Function<Long, Long>() {
-				@Override
-				public Long apply(Long input) {
-					return input + 2;
-				}
-			})
+			.thenWith(input -> Promise.immediate(input * 2))
+			.then(input -> input + 2)
 			.getSync();
 		assertEquals(Long.valueOf(4L), finalValue);
 	}

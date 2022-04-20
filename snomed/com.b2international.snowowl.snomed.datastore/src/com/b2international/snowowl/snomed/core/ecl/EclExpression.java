@@ -39,7 +39,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.tree.Trees;
@@ -47,7 +46,6 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
@@ -179,13 +177,10 @@ public final class EclExpression {
 				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP)
 				.build(context.service(ResourceURI.class))
 				.execute(context.service(IEventBus.class))
-				.then(new Function<SnomedRelationships, Multimap<String, Integer>>() {
-					@Override
-					public Multimap<String, Integer> apply(SnomedRelationships input) {
-						final Multimap<String, SnomedRelationship> relationshipsBySource = Multimaps.index(input, SnomedRelationship::getSourceId);
-						final Multimap<String, Integer> groupsByRelationshipId = Multimaps.transformValues(relationshipsBySource, SnomedRelationship::getRelationshipGroup);
-						return ImmutableSetMultimap.copyOf(groupsByRelationshipId);
-					}
+				.then(input -> {
+					final Multimap<String, SnomedRelationship> relationshipsBySource = Multimaps.index(input, SnomedRelationship::getSourceId);
+					final Multimap<String, Integer> groupsByRelationshipId = Multimaps.transformValues(relationshipsBySource, SnomedRelationship::getRelationshipGroup);
+					return ImmutableSetMultimap.copyOf(groupsByRelationshipId);
 				}));
 		
 		// search concrete domain members
