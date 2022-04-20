@@ -62,6 +62,16 @@
 							<argLine>${testArgLine} -Dso.index.es.useHttp</argLine>
 						</configuration>
 					</execution>
+					<execution>
+						<id>docker-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<argLine>${testArgLine} -Dso.index.es.useDocker</argLine>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
