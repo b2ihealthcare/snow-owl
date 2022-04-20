@@ -156,7 +156,9 @@ public class SnowOwlAppRule extends ExternalResource {
 			// initialize an Elasticsearch test container
 			container = new ElasticsearchContainer(testElasticsearchContainer);
 			container.withEnv("rest.action.multi.allow_explicit_index", "false");
-			container.withCopyFileToContainer(MountableFile.forHostPath(EsIndexClientFactory.DEFAULT_PATH.resolve(IndexClientFactory.DEFAULT_CLUSTER_NAME).resolve(EsNode.CONFIG_DIR).resolve(EsNode.SYNONYMS_FILE)), "/usr/share/elasticsearch/config/" + EsNode.SYNONYMS_FILE);
+			final MountableFile localSynonymsFilePath = MountableFile.forHostPath(EsIndexClientFactory.DEFAULT_PATH.resolve(IndexClientFactory.DEFAULT_CLUSTER_NAME).resolve(EsNode.CONFIG_DIR).resolve(EsNode.SYNONYMS_FILE));
+			final String containerSynonymsFilePath = "/usr/share/elasticsearch/config/" + EsNode.SYNONYMS_FILE;
+			container.withCopyFileToContainer(localSynonymsFilePath, containerSynonymsFilePath);
 			container.start();
 			
 			IndexConfiguration index = snowowl.getConfiguration().getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();

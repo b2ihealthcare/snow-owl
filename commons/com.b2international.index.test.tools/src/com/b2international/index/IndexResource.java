@@ -102,7 +102,9 @@ public final class IndexResource extends ExternalResource {
 		
 		if (container != null) {
 			// make sure we update the synonyms.txt inside the test container
-			container.copyFileToContainer(MountableFile.forHostPath(EsIndexClientFactory.DEFAULT_PATH.resolve(IndexClientFactory.DEFAULT_CLUSTER_NAME).resolve(EsNode.CONFIG_DIR).resolve(EsNode.SYNONYMS_FILE)), "/usr/share/elasticsearch/config/" + EsNode.SYNONYMS_FILE);
+			final MountableFile localSynonymFilePath = MountableFile.forHostPath(EsIndexClientFactory.DEFAULT_PATH.resolve(IndexClientFactory.DEFAULT_CLUSTER_NAME).resolve(EsNode.CONFIG_DIR).resolve(EsNode.SYNONYMS_FILE));
+			final String containerSynonymFilePath = "/usr/share/elasticsearch/config/" + EsNode.SYNONYMS_FILE;
+			container.copyFileToContainer(localSynonymFilePath, containerSynonymFilePath);
 		}
 		
 		// apply mapper changes first
