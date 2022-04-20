@@ -165,6 +165,7 @@ public final class DocumentMapping {
 				}
 			})
 			.filter(fieldType -> isNestedDoc(fieldType))
+			.distinct()
 			.collect(Collectors.toMap(k -> k, k -> new DocumentMapping(k, DocumentMapping.this.parent == null ? DocumentMapping.this : DocumentMapping.this.parent, true)));
 		
 		this.scripts = new HashMap<>();
