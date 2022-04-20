@@ -183,9 +183,11 @@ public class SnowOwlAppRule extends ExternalResource {
 		snowowl.shutdown();
 		snowowl = null;
 		
-		container.stop();
-		container.close();
-		container = null;
+		if (container != null) {
+			container.stop();
+			container.close();
+			container = null;
+		}
 	}
 
 	/**
