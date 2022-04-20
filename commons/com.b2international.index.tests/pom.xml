@@ -69,6 +69,7 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
+							<skip>true</skip>
 							<argLine>${testArgLine} -Dso.index.es.useDocker</argLine>
 						</configuration>
 					</execution>
