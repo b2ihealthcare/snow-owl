@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,18 @@ import java.io.File;
 import java.nio.file.Path;
 
 import org.junit.rules.ExternalResource;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.utility.MountableFile;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.es.EsIndexClientFactory;
+import com.b2international.index.es.EsNode;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwl;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.IdentityWriter;
@@ -69,6 +76,7 @@ public class SnowOwlAppRule extends ExternalResource {
 	private boolean clearResources = true;
 	private Plugin[] plugins;
 	private SnowOwl snowowl;
+	private ElasticsearchContainer container;
 
 	private SnowOwlAppRule() {
 //		String requestLoggerLevelProperty = System.getProperty("request.logger.level");
@@ -137,6 +145,22 @@ public class SnowOwlAppRule extends ExternalResource {
 			final File resourceDirectory = snowowl.getEnviroment().getDataPath().toFile();
 			FileUtils.cleanDirectory(resourceDirectory);
 		}
+		
+		// modify the Snow Owl configuration values if useDocker is defined as JVM argument
+		if (System.getProperty("so.index.es.useDocker") != null) {
+			// initialize an Elasticsearch test container
+			container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2");
+			container.withEnv("rest.action.multi.allow_explicit_index", "false");
+			container.withCopyFileToContainer(MountableFile.forHostPath(EsIndexClientFactory.DEFAULT_PATH.resolve(IndexClientFactory.DEFAULT_CLUSTER_NAME).resolve(EsNode.CONFIG_DIR).resolve(EsNode.SYNONYMS_FILE)), "/usr/share/elasticsearch/config/" + EsNode.SYNONYMS_FILE);
+			container.start();
+			
+			IndexConfiguration index = snowowl.getConfiguration().getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+			index.setClusterUrl("https://" + container.getHttpHostAddress());
+			index.setClusterUsername("elastic");
+			index.setClusterPassword(ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD);
+			index.setSslContext(container.createSslContextFromCa());
+		}
+		
 		snowowl.bootstrap();
 		snowowl.run();
 		// inject the test user to the current identity provider
@@ -150,7 +174,13 @@ public class SnowOwlAppRule extends ExternalResource {
 	@Override
 	protected void after() {
 		super.after();
+		
 		snowowl.shutdown();
+		snowowl = null;
+		
+		container.stop();
+		container.close();
+		container = null;
 	}
 
 	/**
