@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
@@ -157,8 +156,8 @@ public final class DocumentMapping {
 		}
 		checkRevisionType();
 				
-		this.nestedTypes = FluentIterable.from(getFields())
-			.transform(field -> {
+		this.nestedTypes = getFields().stream()
+			.map(field -> {
 				if (Reflections.isMapType(field)) {
 					return Map.class;
 				} else {
@@ -166,12 +165,8 @@ public final class DocumentMapping {
 				}
 			})
 			.filter(fieldType -> isNestedDoc(fieldType))
-			.toMap(new Function<Class<?>, DocumentMapping>() {
-				@Override
-				public DocumentMapping apply(Class<?> input) {
-					return new DocumentMapping(input, DocumentMapping.this.parent == null ? DocumentMapping.this : DocumentMapping.this.parent, true);
-				}
-			});
+			.distinct()
+			.collect(Collectors.toMap(k -> k, k -> new DocumentMapping(k, DocumentMapping.this.parent == null ? DocumentMapping.this : DocumentMapping.this.parent, true)));
 		
 		this.scripts = new HashMap<>();
 		getScripts(type).forEach(script -> this.scripts.put(script.name(), script));

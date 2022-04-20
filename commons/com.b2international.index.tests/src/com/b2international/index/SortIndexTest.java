@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
@@ -30,7 +31,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
-import com.google.common.base.Function;
 import com.google.common.collect.*;
 
 /**
@@ -336,7 +336,7 @@ public class SortIndexTest extends BaseIndexTest {
 
 	private <T> void checkDocumentOrder(Query<Data> query, Function<? super Data, T> hitFunction, Set<T> keySet, Class<T> clazz) {
 		final Hits<Data> hits = search(query);
-		final T[] actual = FluentIterable.from(hits).transform(hitFunction).toArray(clazz);
+		final T[] actual = FluentIterable.from(hits).transform(hitFunction::apply).toArray(clazz);
 		final T[] expected = Iterables.toArray(keySet, clazz);
 		assertArrayEquals(expected, actual);
 	}	

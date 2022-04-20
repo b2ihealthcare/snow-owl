@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -40,7 +41,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -337,7 +337,7 @@ public final class RelationshipChangeConverter
 
 		final Multimap<String, ReasonerRelationship> relationshipsByConceptId = FluentIterable.from(blankRelationships)
 				.filter(r -> conceptIdFunction.apply(r) != null)
-				.index(conceptIdFunction);
+				.index(conceptIdFunction::apply);
 
 		final Set<String> conceptIds = relationshipsByConceptId.keySet();
 

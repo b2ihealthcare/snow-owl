@@ -23,6 +23,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -59,9 +60,11 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Function;
 import com.google.common.base.Predicates;
-import com.google.common.collect.*;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Evaluates the given ECL expression {@link String} or parsed {@link ExpressionConstraint} to an executable {@link Expression query expression}.
@@ -220,12 +223,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 				Set<String> typeConcepts = (Set<String>) responses.get(1);
 				return SnomedEclRefinementEvaluator.evalStatements(context, focusConcepts, typeConcepts, null /* ANY */, false, expressionForm);
 			})
-			.then(new Function<Collection<SnomedEclRefinementEvaluator.Property>, Set<String>>() {
-				@Override
-				public Set<String> apply(Collection<SnomedEclRefinementEvaluator.Property> input) {
-					return FluentIterable.from(input).transform(SnomedEclRefinementEvaluator.Property::getValue).filter(String.class).toSet();
-				}
-			})
+			.then(input -> input.stream().map(SnomedEclRefinementEvaluator.Property::getValue).filter(String.class::isInstance).map(String.class::cast).collect(Collectors.toSet()))
 			.then(matchIdsOrNone());
 	}
 	

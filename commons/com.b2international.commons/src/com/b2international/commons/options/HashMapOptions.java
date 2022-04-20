@@ -18,17 +18,11 @@ package com.b2international.commons.options;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -213,12 +207,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 		if (elements == null) {
 			return Collections.emptyList();
 		}
-		return Lists.transform(ImmutableList.copyOf(elements), new Function<Object, String>() {
-			@Override
-			public String apply(final Object input) {
-				return String.valueOf(input);
-			}
-		});
+		return Lists.transform(ImmutableList.copyOf(elements), String::valueOf);
 	}
 
 }

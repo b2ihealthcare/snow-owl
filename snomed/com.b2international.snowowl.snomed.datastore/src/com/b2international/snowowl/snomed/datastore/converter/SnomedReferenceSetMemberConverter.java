@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +42,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 
@@ -84,12 +81,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 				}
 			}
 			
-			final Multimap<ComponentCategory,String> targetComponentIdsByCategory = Multimaps.index(membersByTargetComponent.keySet(), new Function<String, ComponentCategory>() {
-				@Override
-				public ComponentCategory apply(String id) {
-					return SnomedIdentifiers.getComponentCategory(id);
-				}
-			});
+			final Multimap<ComponentCategory,String> targetComponentIdsByCategory = Multimaps.index(membersByTargetComponent.keySet(), SnomedIdentifiers::getComponentCategory);
 			
 			for (ComponentCategory category : targetComponentIdsByCategory.keySet()) {
 				final Collection<String> targetComponentIds = targetComponentIdsByCategory.get(category);
@@ -98,7 +90,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 					final SnomedCoreComponent targetComponent = componentsById.get(targetComponentId);
 					if (targetComponent != null) {
 						for (SnomedReferenceSetMember member : membersByTargetComponent.get(targetComponentId)) {
-							final Map<String, Object> newProps = newHashMap(member.getProperties());
+							final Map<String, Object> newProps = Maps.newHashMap(member.getProperties());
 							newProps.put(SnomedReferenceSetMember.Expand.TARGET_COMPONENT, targetComponent);
 							((SnomedReferenceSetMember) member).setProperties(newProps);
 						}
@@ -167,26 +159,12 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		}
 	}
 
-	private ImmutableListMultimap<ComponentCategory, String> collectReferencedComponentCategories(
-			final Multimap<String, SnomedReferenceSetMember> refCompToMembers) {
-		
-		return FluentIterable.from(refCompToMembers.keySet()).index(new Function<String, ComponentCategory>() {
-			@Override
-			public ComponentCategory apply(String input) {
-				return SnomedIdentifiers.getComponentCategory(input);
-			}
-		});
+	private ListMultimap<ComponentCategory, String> collectReferencedComponentCategories(final Multimap<String, SnomedReferenceSetMember> refCompToMembers) {
+		return FluentIterable.from(refCompToMembers.keySet()).index(SnomedIdentifiers::getComponentCategory);
 	}
 
-	private ImmutableListMultimap<String, SnomedReferenceSetMember> collectReferencedComponentIds(
-			List<SnomedReferenceSetMember> results) {
-		
-		return FluentIterable.from(results).index(new Function<SnomedReferenceSetMember, String>() {
-			@Override
-			public String apply(SnomedReferenceSetMember input) {
-				return input.getReferencedComponent().getId();
-			}
-		});
+	private ListMultimap<String, SnomedReferenceSetMember> collectReferencedComponentIds(List<SnomedReferenceSetMember> results) {
+		return FluentIterable.from(results).index(input -> input.getReferencedComponent().getId());
 	}
 
 	@Override
@@ -202,7 +180,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		member.setType(entry.getReferenceSetType());
 		member.setScore(entry.getScore());
 
-		final Map<String, Object> props = newHashMap(entry.getAdditionalFields());
+		final Map<String, Object> props = Maps.newHashMap(entry.getAdditionalFields());
 
 		// convert stored long values to short date format
 		props.computeIfPresent(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, (key, currentValue) -> toEffectiveTime((long) currentValue));

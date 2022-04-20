@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,13 @@
 package com.b2international.snowowl.snomed.core.rest.services;
 
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 
 /**
  */
 public abstract class SnomedComponentOrdering {
 
-	private static final Ordering<? extends SnomedComponent> ID_ORDERING = Ordering.natural().onResultOf(new Function<SnomedComponent, String>() {
-		@Override
-		public String apply(final SnomedComponent input) {
-			return input.getId();
-		}
-	});
+	private static final Ordering<? extends SnomedComponent> ID_ORDERING = Ordering.natural().onResultOf(SnomedComponent::getId);
 	
 	@SuppressWarnings("unchecked")
 	public static <T extends SnomedComponent> Ordering<T> id() {

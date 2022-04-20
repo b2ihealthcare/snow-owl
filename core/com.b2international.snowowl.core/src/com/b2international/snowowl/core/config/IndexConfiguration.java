@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.config;
 
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
@@ -25,7 +26,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.index.IndexClientFactory;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
 
@@ -74,6 +77,9 @@ public class IndexConfiguration {
 	@Min(5_000)
 	@Max(IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE)
 	private int commitWatermarkHigh = IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE;
+
+	@JsonIgnore
+	private SSLContext sslContext;
 	
 	private Map<String, Object> customIndexConfigurations = Maps.newHashMapWithExpectedSize(1);
 	
@@ -215,6 +221,20 @@ public class IndexConfiguration {
 		this.commitWatermarkLow = commitWatermarkLow;
 	}
 	
+	@VisibleForTesting
+	public SSLContext getSslContext() {
+		return sslContext;
+	}
+	
+	/**
+	 * Not configurable via snowowl.yml directly, visible only to connect test cases to a test docker container of Elasticsearch via SSL
+	 * @param sslContext
+	 */
+	@VisibleForTesting
+	public void setSslContext(SSLContext sslContext) {
+		this.sslContext = sslContext;
+	}
+	
 	@JsonAnyGetter
 	public Map<String, Object> getCustomIndexConfigurations() {
 		return customIndexConfigurations;
@@ -241,6 +261,9 @@ public class IndexConfiguration {
 			}
 			if (getClusterPassword() != null) {
 				settings.put(IndexClientFactory.CLUSTER_PASSWORD, getClusterPassword());
+			}
+			if (getSslContext() != null) {
+				settings.put(IndexClientFactory.CLUSTER_SSL_CONTEXT, getSslContext());
 			}
 		}
 		

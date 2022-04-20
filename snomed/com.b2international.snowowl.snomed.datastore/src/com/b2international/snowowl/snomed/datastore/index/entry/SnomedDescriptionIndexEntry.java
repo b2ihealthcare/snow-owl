@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -128,15 +126,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.acceptabilityMap(doc.getAcceptabilityMap());
 	}
 	
-	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<SnomedDescription> descriptions) {
-		return FluentIterable.from(descriptions).transform(new Function<SnomedDescription, SnomedDescriptionIndexEntry>() {
-			@Override
-			public SnomedDescriptionIndexEntry apply(SnomedDescription input) {
-				return builder(input).build();
-			}
-		}).toList();
-	}
-
 	public final static class Fields extends SnomedComponentDocument.Fields {
 		public static final String CONCEPT_ID = SnomedRf2Headers.FIELD_CONCEPT_ID;
 		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
