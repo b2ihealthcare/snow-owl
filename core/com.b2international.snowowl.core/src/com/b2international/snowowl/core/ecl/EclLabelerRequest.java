@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ecl;
+package com.b2international.snowowl.core.ecl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,16 +28,12 @@ import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.tree.NoopTreeVisitor;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.ecl.EclParser;
-import com.b2international.snowowl.core.ecl.EclSerializer;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.emf.EObjectTreeNode;
 import com.b2international.snowowl.core.emf.EObjectWalker;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.ResourceRequest;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -46,16 +42,23 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.6.0
  */
-final class SnomedEclLabelerRequest extends ResourceRequest<BranchContext, LabeledEclExpressions> implements AccessControl {
+final class EclLabelerRequest extends ResourceRequest<ServiceProvider, LabeledEclExpressions> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
+	@NotEmpty
+	private String codeSystemUri;
+	
 	@NotNull
 	private List<String> expressions;
 
 	@JsonProperty
 	@NotEmpty
 	private String descriptionType;
+	
+	void setCodeSystemUri(String codeSystemUri) {
+		this.codeSystemUri = codeSystemUri;
+	}
 	
 	void setExpressions(List<String> expression) {
 		this.expressions = expression;
@@ -66,12 +69,7 @@ final class SnomedEclLabelerRequest extends ResourceRequest<BranchContext, Label
 	}
 	
 	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
-	}
-
-	@Override
-	public LabeledEclExpressions execute(BranchContext context) {
+	public LabeledEclExpressions execute(ServiceProvider context) {
 		final EclSerializer eclSerializer = context.service(EclSerializer.class);
 		final EclParser eclParser = context.service(EclParser.class);
 		final Set<String> conceptIdsToLabel = Sets.newHashSetWithExpectedSize(expressions.size());
@@ -104,15 +102,16 @@ final class SnomedEclLabelerRequest extends ResourceRequest<BranchContext, Label
 		}
 		
 		// fetch all concept labels
-		final Map<String, String> labels = SnomedRequests.prepareSearchConcept()
+		final Map<String, String> labels = CodeSystemRequests.prepareSearchConcepts()
 				.filterByIds(conceptIdsToLabel)
+				.filterByCodeSystem(codeSystemUri)
+				.setPreferredDisplay(descriptionType)
 				.setLimit(conceptIdsToLabel.size())
-				.setExpand(descriptionType.toLowerCase() + "()")
 				.setLocales(locales())
 				.build()
 				.execute(context)
 				.stream()
-				.collect(Collectors.toMap(SnomedConcept::getId, this::extractLabel));
+				.collect(Collectors.toMap(Concept::getId, Concept::getTerm));
 		
 		// expand all queries with labels
 		List<String> results = expressions.stream()
@@ -130,23 +129,6 @@ final class SnomedEclLabelerRequest extends ResourceRequest<BranchContext, Label
 		return new LabeledEclExpressions(results);
 	}
 	
-	private String extractLabel(SnomedConcept concept) {
-		switch (descriptionType) {
-		case SnomedConcept.Expand.FULLY_SPECIFIED_NAME:
-			if (concept.getFsn() != null) {
-				return concept.getFsn().getTerm();
-			}
-			break;
-		case SnomedConcept.Expand.PREFERRED_TERM:
-			if (concept.getPt() != null) {
-				return concept.getPt().getTerm();
-			}
-			break;
-		default: break;
-		}
-		return concept.getId(); 
-	}
-
 	private Set<String> collect(ExpressionConstraint constraint) {
 		final Set<String> conceptIds = Sets.newHashSet();
 		

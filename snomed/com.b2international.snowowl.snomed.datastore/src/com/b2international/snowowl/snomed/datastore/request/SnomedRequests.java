@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.List;
-
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -31,7 +29,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
-import com.b2international.snowowl.snomed.core.ecl.SnomedEclLabelerRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -272,24 +269,6 @@ public abstract class SnomedRequests {
 	 */
 	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(String expression) {
 		return new SnomedEclEvaluationRequestBuilder(expression);
-	}
-	
-	/**
-	 * Returns a SNOMED CT request builder to prepare the labeling of a SNOMED CT Expression Constraint Language (ECL) expression.
-	 * @param expression - the ECL expression to extend with labels
-	 * @return SNOMED CT ECL labeler request builder
-	 */
-	public static SnomedEclLabelerRequestBuilder prepareEclLabeler(String expression) {
-		return new SnomedEclLabelerRequestBuilder(expression);
-	}
-	
-	/**
-	 * Returns a SNOMED CT request builder to prepare the labeling of a list of SNOMED CT Expression Constraint Language (ECL) expressions.
-	 * @param expressions - a list of ECL expressions to extend with labels
-	 * @return SNOMED CT ECL labeler request builder
-	 */
-	public static SnomedEclLabelerRequestBuilder prepareEclLabeler(List<String> expressions) {
-		return new SnomedEclLabelerRequestBuilder(expressions);
 	}
 	
 	/**

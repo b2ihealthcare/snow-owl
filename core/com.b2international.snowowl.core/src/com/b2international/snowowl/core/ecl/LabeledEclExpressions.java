@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ecl;
+package com.b2international.snowowl.core.ecl;
 
 import java.util.List;
 
