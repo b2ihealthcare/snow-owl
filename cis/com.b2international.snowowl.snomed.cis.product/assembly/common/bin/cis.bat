@@ -51,8 +51,9 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.lang=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.util=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.time=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/sun.security.x509=ALL-UNNAMED
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.base/java.text=ALL-UNNAMED
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% --add-opens java.desktop/java.awt.font=ALL-UNNAMED
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dlogback.configurationFile="%KERNEL_HOME%/configuration/serviceability.xml"
 
 REM Run Snow Owl
 PUSHD %KERNEL_HOME%
