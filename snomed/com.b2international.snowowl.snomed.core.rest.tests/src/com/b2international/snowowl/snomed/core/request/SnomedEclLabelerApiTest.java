@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.request;
 
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -36,10 +39,12 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 
+import io.restassured.http.ContentType;
+
 /**
  * @since 7.6
  */
-public class SnomedEclLabelerRequestTest extends AbstractSnomedApiTest {
+public class SnomedEclLabelerApiTest extends AbstractSnomedApiTest {
 
 	private String label(String expression) {
 		return label(expression, SnomedConcept.Expand.FULLY_SPECIFIED_NAME);
@@ -226,6 +231,33 @@ public class SnomedEclLabelerRequestTest extends AbstractSnomedApiTest {
 					"B", List.of("SCTID length must be between 6-18 characters. Got: B")
 				)				
 			));
+	}
+	
+	@Test
+	public void ecl_label_api() throws Exception {
+		String conceptId = createNewConcept(branchPath);
+
+		String shortName = "SNOMEDCT-Test";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		
+		List<String> expressionLabels = givenAuthenticatedRequest("/")
+				.contentType(ContentType.JSON)
+				.body(Map.of(
+					"expressions", List.of(conceptId),
+					"descriptionType", "fsn",
+					"codeSystemUri", shortName
+				))
+				.post("/label-expressions")
+				.then()
+				.extract()
+				.jsonPath()
+				.getList("items");
+		
+		SnomedConcept concept = getConcept(conceptId, "fsn()");
+		
+		String validExpression = conceptId + " |" + concept.getFsn().getTerm() + "|";
+		
+		Assertions.assertThat(expressionLabels).containsOnly(validExpression);
 	}
 
 }

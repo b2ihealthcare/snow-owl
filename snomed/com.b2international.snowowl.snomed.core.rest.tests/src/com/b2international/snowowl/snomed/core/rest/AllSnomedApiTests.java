@@ -65,7 +65,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	EclSerializerTest.class,
 	SnomedCommitApiTest.class,
 	SnomedCommitApiAuthorizationTest.class,
-	SnomedEclLabelerRequestTest.class,
 	// Optimization Java API Test
 	SnomedOptimizationApiTest.class,
 	// RESTful API test cases
@@ -91,8 +90,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedComplexMapBlockRefSetMemberTest.class,
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
-	// Expression Labeling API
-	SnomedExpressionLabelTest.class,
+	// ECL Labeler API
+	SnomedEclLabelerApiTest.class,
 	// Generic API
 	ConceptSearchRequestSnomedTest.class,
 	ValueSetMemberSearchSnomedReferenceSetTest.class,
