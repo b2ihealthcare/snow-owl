@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
+import com.b2international.commons.json.Json;
 import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
@@ -91,6 +92,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	 * Local Settings are Snow Owl index client only configuration, not actual Elasticsearch supported configuration, they are implicitly dynamic.
 	 */
 	private static final Set<String> LOCAL_SETTINGS = Set.of(
+		IndexClientFactory.MAPPINGS,
 		IndexClientFactory.CLUSTER_URL,
 		IndexClientFactory.CLUSTER_USERNAME,
 		IndexClientFactory.CLUSTER_PASSWORD,
@@ -171,12 +173,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 		// create number of indexes based on number of types
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
-			final Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
+			Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
 					.put("date_detection", false)
 					.put("numeric_detection", false)
 					.put("dynamic_templates", List.of(stringsAsKeywords()))
 					.putAll(toProperties(mapping))
 					.build();
+			
+			// allow override of mappings via index specific custom configuration
+			Map<String, Object> mappingsOverride = (Map<String, Object>) settings.getOrDefault(IndexClientFactory.MAPPINGS, Map.of());
+			if (!mappingsOverride.isEmpty()) {
+				typeMapping = Json.merge(typeMapping, mappingsOverride);
+			}
 			
 			if (exists(mapping)) {
 				// update mapping if required
