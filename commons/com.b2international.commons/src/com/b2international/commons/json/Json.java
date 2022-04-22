@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,30 @@ public final class Json extends ForwardingMap<String, Object> {
 		return new Json(newJson);
 	}
 	
+	public Json merge(Map<String, Object> object) {
+		if (object == null) {
+			return this;
+		}
+		final Map<String, Object> newJson = deepMerge(source, object);
+		return new Json(newJson);
+	}
+	
+	private static <K, V> Map<K, V> deepMerge(Map<K, V> target, Map<K, V> source) {
+		final Map<K, V> updatedTarget = Maps.newHashMap(target);
+		source.forEach((key, value) -> {
+			updatedTarget.merge(key, value, (oldValue, newValue) -> {
+				if (oldValue instanceof Map<?, ?> && newValue instanceof Map<?, ?>) {
+					// perform deep merge on two nested value maps
+					return (V) deepMerge((Map) oldValue, (Map) newValue);
+				} else {
+					// simply override
+					return newValue;
+				}
+			});
+		});
+		return updatedTarget;
+	}
+
 	@SafeVarargs
 	public static <T> List<T> array(T...values) {
 		return ImmutableList.copyOf(values);
@@ -105,6 +129,21 @@ public final class Json extends ForwardingMap<String, Object> {
 			if (sources.length > 1) {
 				for (int i = 1; i < sources.length; i++) {
 					result = result.with(sources[i]);
+				}
+			}
+			return result;
+		}
+	}
+	
+	@SafeVarargs
+	public static Json merge(Map<String, Object>...sources) {
+		if (CompareUtils.isEmpty(sources)) {
+			return new Json(Map.of());
+		} else {
+			Json result = new Json(sources[0]);
+			if (sources.length > 1) {
+				for (int i = 1; i < sources.length; i++) {
+					result = result.merge(sources[i]);
 				}
 			}
 			return result;
