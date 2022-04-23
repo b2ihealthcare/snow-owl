@@ -122,5 +122,9 @@ public final class Mappings {
 	public Class<?> getClass(String type) {
 		return checkNotNull(docTypeCache.inverse().get(type), "Missing doc class for key '%s'. Populate the doc type cache via #getType(Class<?>) method before using this method.", type);
 	}
+
+	public Set<String> getTypeIndexNames() {
+		return Set.copyOf(docTypeCache.values());
+	}
 	
 }

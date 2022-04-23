@@ -92,7 +92,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 	 * Local Settings are Snow Owl index client only configuration, not actual Elasticsearch supported configuration, they are implicitly dynamic.
 	 */
 	private static final Set<String> LOCAL_SETTINGS = Set.of(
-		IndexClientFactory.MAPPINGS,
 		IndexClientFactory.CLUSTER_URL,
 		IndexClientFactory.CLUSTER_USERNAME,
 		IndexClientFactory.CLUSTER_PASSWORD,
@@ -181,10 +180,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 					.build();
 			
 			// allow override of mappings via index specific custom configuration
-			Map<String, Object> mappingsOverride = (Map<String, Object>) settings.getOrDefault(IndexClientFactory.MAPPINGS, Map.of());
-			if (!mappingsOverride.isEmpty()) {
-				typeMapping = Json.merge(typeMapping, mappingsOverride);
+			Map<String, Object> additionalTypeIndexConfiguration = new HashMap<>((Map<String, Object>) settings.getOrDefault(mapping.typeAsString(), Map.of()));
+			Map<String, Object> typeMappingOverrides = (Map<String, Object>) additionalTypeIndexConfiguration.getOrDefault(IndexClientFactory.MAPPINGS, Map.of());
+			if (!typeMappingOverrides.isEmpty()) {
+				typeMapping = Json.merge(typeMapping, typeMappingOverrides);
 			}
+			
+			// make sure we remove mappings when using any additional type index config
+			additionalTypeIndexConfiguration.remove(IndexClientFactory.MAPPINGS);
 			
 			if (exists(mapping)) {
 				// update mapping if required
@@ -234,7 +237,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				// create index
 				final Map<String, Object> indexSettings;
 				try {
-					indexSettings = createIndexSettings();
+					indexSettings = createIndexSettings(additionalTypeIndexConfiguration);
 					log.info("Configuring '{}' index with settings: {}", index, indexSettings);
 				} catch (IOException e) {
 					throw new IndexException("Couldn't prepare settings for index " + index, e);
@@ -277,7 +280,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		);
 	}
 
-	private Map<String, Object> createIndexSettings() throws IOException {
+	private Map<String, Object> createIndexSettings(Map<String, Object> additionalTypeIndexSettings) throws IOException {
 		InputStream analysisStream = getClass().getResourceAsStream("analysis.json");
 		Settings analysisSettings = Settings.builder()
 				.loadFromStream("analysis.json", analysisStream, true)
@@ -302,6 +305,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 				// wait all shards during writes
 				// XXX we intentionally disallow the configuration of the write.wait_for_active_shards via configuration (required for consistent writes)
 				.put("write.wait_for_active_shards", "all")
+				// while this allows external configuration, due to the way ImmutableMap builder works, this won't allow override of the above listed settings, those are required for a correctly working revision index
+				.putAll(additionalTypeIndexSettings)
 				.build();
 	}
 	
@@ -521,10 +526,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 			return;
 		}
 
-		// ignore local and/or dynamic settings
-		final Set<String> unsupportedDynamicSettings = Sets.difference(Sets.difference(newSettings.keySet(), DYNAMIC_SETTINGS), LOCAL_SETTINGS);
+		// ignore allowed dynamic settings
+		Set<String> unsupportedDynamicSettings = Sets.difference(newSettings.keySet(), DYNAMIC_SETTINGS);
+		// ignore local only settings
+		unsupportedDynamicSettings = Sets.difference(unsupportedDynamicSettings, LOCAL_SETTINGS);
+		// ignore type specific configurations
+		unsupportedDynamicSettings = Sets.difference(unsupportedDynamicSettings, mappings.getTypeIndexNames());
+		
 		if (!unsupportedDynamicSettings.isEmpty()) {
-			throw new IndexException(String.format("Settings [%s] are not dynamically updateable settings.", unsupportedDynamicSettings), null);
+			throw new IndexException(String.format("Settings [%s] are not dynamically updateable.", unsupportedDynamicSettings), null);
 		}
 		
 		boolean shouldUpdate = false;
@@ -548,9 +558,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final String index = getTypeIndex(mapping);
 			// if any index exists, then update the settings based on the new settings
 			if (exists(mapping)) {
+				
+				// construct a type specific setting based on external configuration
+				Map<String, Object> typeIndexSettings = new HashMap<>(esSettings);
+				
 				try {
 					log.info("Applying settings '{}' changes in index {}...", esSettings, index);
-					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(esSettings));
+					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(typeIndexSettings));
 					checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
 				} catch (IOException e) {
 					throw new IndexException(String.format("Couldn't update settings of index '%s'", index), e);

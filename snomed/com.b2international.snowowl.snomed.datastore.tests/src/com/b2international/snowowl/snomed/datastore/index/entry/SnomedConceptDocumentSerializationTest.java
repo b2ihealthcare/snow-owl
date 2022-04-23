@@ -54,18 +54,20 @@ public class SnomedConceptDocumentSerializationTest extends BaseRevisionIndexTes
 	
 	@Override
 	protected Map<String, Object> getIndexSettings() {
-		// change field type via external mappings configuration
-		return Map.of(IndexClientFactory.MAPPINGS, Map.of(
-			"properties", Map.of(
-				"similarity", Map.of(
-					"type", "nested",
-					"properties", Map.of(
-						"predicted_value", Map.of(
-							"type", "half_float"
+		// change field type via external mappings configuration for the SNOMED CT concept types
+		return Map.of(SnomedConcept.TYPE, Map.of(
+			IndexClientFactory.MAPPINGS, Map.of(
+				"properties", Map.of(
+					"similarity", Map.of(
+						"type", "nested",
+						"properties", Map.of(
+							"predicted_value", Map.of(
+								"type", "half_float"
+							)
 						)
-					)
-				) 
-			)
+					) 
+				)
+			) 
 		));
 	}
 	
