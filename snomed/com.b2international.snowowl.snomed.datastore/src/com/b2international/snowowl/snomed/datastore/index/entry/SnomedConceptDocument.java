@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,14 +35,13 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.similarity.Similarity;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -237,7 +236,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.doi(input.getDoi())
 				.memberOf(input.getMemberOf())
 				.activeMemberOf(input.getActiveMemberOf())
-				.semanticTags(input.getSemanticTags());
+				.semanticTags(input.getSemanticTags())
+				.similarity(input.getSimilarity());
 	}
 	
 	public static Builder builder(SnomedConcept input) {
@@ -282,6 +282,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 		private SortedSet<String> semanticTags = Collections.emptySortedSet();
 		private float doi = DEFAULT_DOI;
+		private Similarity similarity;
 
 		@JsonCreator
 		private Builder() {
@@ -401,6 +402,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
+		@JsonSetter
+		/*package*/ Builder similarity(Similarity similarity) {
+			this.similarity = similarity;
+			return getSelf();
+		}
+		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					iconId, 
@@ -440,6 +447,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				entry.semanticTags = semanticTags;
 			}
 			
+			if (similarity != null) {
+				entry.similarity = similarity;
+			}
+			
 			return entry;
 		}
 
@@ -459,6 +470,9 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private SortedSet<String> semanticTags;
 	
 	private float doi;
+	
+	// can be computed via external applications and appended into the document before indexing
+	private Similarity similarity;
 
 	private SnomedConceptDocument(final String id,
 			final String iconId,
@@ -487,6 +501,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	@Override
 	protected Revision.Builder<?, ? extends Revision> toBuilder() {
 		return builder(this);
+	}
+	
+	@JsonGetter
+	/*package*/ Similarity getSimilarity() {
+		return similarity;
 	}
 	
 	public float getDoi() {

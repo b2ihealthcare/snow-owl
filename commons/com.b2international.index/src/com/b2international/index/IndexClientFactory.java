@@ -140,6 +140,26 @@ public interface IndexClientFactory {
 	 */
 	String COMMIT_WATERMARK_HIGH_KEY = "commit.watermark.high";
 	
+	/**
+	 * Configuration key to override type mappings in an index if required for customization, external configuration, etc. It allows to partially
+	 * update (patch) the type mapping provided by Snow Owl to override certain features, experiment, etc.
+	 * 
+	 * Example via snowowl.yml:
+	 * 
+	 * repository:
+	 *   index:
+	 *     snomed:
+	 *       concept: 
+	 *         mappings:
+	 *           properties:
+	 *             similarity:
+	 *               type: object
+	 *               properties:
+	 *                 predicted_value:
+	 *                   type: half_float
+	 */
+	String MAPPINGS = "mappings";
+	
 	//
 	// Default values
 	//
