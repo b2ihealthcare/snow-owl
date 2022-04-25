@@ -30,10 +30,7 @@ import com.b2international.snowowl.snomed.core.io.commit.SnomedCommitApiAuthoriz
 import com.b2international.snowowl.snomed.core.io.commit.SnomedCommitApiTest;
 import com.b2international.snowowl.snomed.core.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.core.issue.IssueSO2503RemoteJobDynamicMappingFix;
-import com.b2international.snowowl.snomed.core.request.ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest;
-import com.b2international.snowowl.snomed.core.request.ConceptSearchRequestSnomedTest;
-import com.b2international.snowowl.snomed.core.request.SnomedOptimizationApiTest;
-import com.b2international.snowowl.snomed.core.request.ValueSetMemberSearchSnomedReferenceSetTest;
+import com.b2international.snowowl.snomed.core.request.*;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
@@ -93,8 +90,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedComplexMapBlockRefSetMemberTest.class,
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
-	// Expression Labeling API
-	SnomedExpressionLabelTest.class,
+	// ECL Labeler API
+	SnomedEclLabelerApiTest.class,
 	// Generic API
 	ConceptSearchRequestSnomedTest.class,
 	ValueSetMemberSearchSnomedReferenceSetTest.class,

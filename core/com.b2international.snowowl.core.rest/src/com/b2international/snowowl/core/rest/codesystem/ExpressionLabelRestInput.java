@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.codesystem;
 
 import java.util.List;
 
@@ -22,7 +22,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 /**
  * @since 7.17.0
  */
-public class SnomedExpressionLabelRestInput {
+public class ExpressionLabelRestInput {
+	
+	@Schema
+	private String codeSystemUri;
 	
 	@Schema
 	private List<String> expressions;
@@ -44,6 +47,14 @@ public class SnomedExpressionLabelRestInput {
 	
 	public void setDescriptionType(String descriptionType) {
 		this.descriptionType = descriptionType;
+	}
+	
+	public String getCodeSystemUri() {
+		return codeSystemUri;
+	}
+	
+	public void setCodeSystemUri(String codeSystemUri) {
+		this.codeSystemUri = codeSystemUri;
 	}
 
 }

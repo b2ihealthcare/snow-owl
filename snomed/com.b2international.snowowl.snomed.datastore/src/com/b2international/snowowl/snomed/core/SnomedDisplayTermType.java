@@ -6,6 +6,7 @@ package com.b2international.snowowl.snomed.core;
 import java.util.function.Function;
 
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.google.common.base.Strings;
 
 /**
  * @since 7.10.0
@@ -59,8 +60,8 @@ public enum SnomedDisplayTermType {
 
 	public static SnomedDisplayTermType getEnum(final String value) {
 		try {
-			return SnomedDisplayTermType.valueOf(value);
-		} catch(Exception e) {
+			return SnomedDisplayTermType.valueOf(Strings.nullToEmpty(value).toUpperCase());
+		} catch (Exception e) {
 			return ID_ONLY;
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.codesystem;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.ecl.LabeledEclExpressions;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.snomed.core.ecl.LabeledEclExpressions;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,8 +33,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description="Label ECL Expressions", name = "label-expressions")
 @RestController
-@RequestMapping(value = "/{path:**}/label-expressions") 
-public class SnomedExpressionLabelService extends AbstractRestService {
+@RequestMapping(value = "/label-expressions") 
+public class ExpressionLabelService extends AbstractRestService {
 	
 	@Operation(
 		summary="Retrieve ECL Labels", 
@@ -48,21 +48,17 @@ public class SnomedExpressionLabelService extends AbstractRestService {
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<LabeledEclExpressions> getLabel(		
 			
-			@Parameter(description = "The branch path", required = true)
-			@PathVariable(value="path")
-			final String path,
-			
 			@Parameter(description = "The request body", required = true)
 			@RequestBody
-			final SnomedExpressionLabelRestInput body,
+			final ExpressionLabelRestInput body,
 			
 			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-				return SnomedRequests.prepareEclLabeler(body.getExpressions())
+				return CodeSystemRequests.prepareEclLabeler(body.getCodeSystemUri(), body.getExpressions())
 						.setDescriptionType(body.getDescriptionType())
 						.setLocales(acceptLanguage)
-						.build(path)
+						.buildAsync()
 						.execute(getBus());
 		
 	}

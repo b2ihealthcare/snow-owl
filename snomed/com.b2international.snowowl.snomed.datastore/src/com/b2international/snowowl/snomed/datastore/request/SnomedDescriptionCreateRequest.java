@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -122,8 +123,20 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 
 	@Override
 	public String execute(TransactionContext context) {
+		
+		// manually perform argument checks for moduleId and conceptId because these often overridden by other wrapper requests, like concept create
+		if (getModuleId() == null) {
+			throw new BadRequestException("'moduleId' is required but not specified");
+		}
+		
+		if (getConceptId() == null) {
+			throw new BadRequestException("'conceptId' is required but not specified");
+		}
+		
 		try {
 			final String descriptionId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
+			
+			
 			final SnomedDescriptionIndexEntry description = SnomedComponents.newDescription()
 				.withId(descriptionId)
 				.withActive(isActive())

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,14 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.request.*;
+import com.b2international.snowowl.core.ecl.EclLabelerRequestBuilder;
+import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
+import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
+import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
+import com.b2international.snowowl.core.request.ValueSetMemberSearchRequestBuilder;
 
 /**
  * @since 4.7
@@ -82,5 +88,28 @@ public class CodeSystemRequests {
 	public static QueryOptimizeRequestBuilder prepareOptimizeQueries() {
 		return new QueryOptimizeRequestBuilder();
 	}
+	
+	/**
+	 * Returns a request builder to prepare the labeling of a ECL expressions.
+	 * 
+	 * @param codeSystemUri - the code system from where the labels should be computed
+	 * @param expression - the ECL expression to extend with labels
+	 * @return ECL labeler request builder
+	 */
+	public static EclLabelerRequestBuilder prepareEclLabeler(String codeSystemUri, String expression) {
+		return new EclLabelerRequestBuilder(codeSystemUri, expression);
+	}
+	
+	/**
+	 * Returns a request builder to prepare the labeling of a list of Expression Constraint Language (ECL) expressions.
+	 * 
+	 * @param codeSystemUri - the code system from where the labels should be computed
+	 * @param expressions - a list of ECL expressions to extend with labels
+	 * @return ECL labeler request builder
+	 */
+	public static EclLabelerRequestBuilder prepareEclLabeler(String codeSystemUri, List<String> expressions) {
+		return new EclLabelerRequestBuilder(codeSystemUri, expressions);
+	}
+	
 	
 }

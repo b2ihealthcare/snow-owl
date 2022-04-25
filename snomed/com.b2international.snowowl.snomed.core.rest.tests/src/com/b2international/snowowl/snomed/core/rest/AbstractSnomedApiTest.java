@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@ import java.util.Map;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
 
 import io.restassured.response.ValidatableResponse;
@@ -38,6 +40,10 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	@Override
 	protected String getApiBaseUrl() {
 		return SnomedApiTestConstants.SCT_API;
+	}
+	
+	protected final ResourceURI getDefaultSnomedResourceUri() {
+		return CodeSystem.uri(branchPath.getPath().replace("MAIN", SnomedContentRule.SNOMEDCT_ID));
 	}
 	
 	protected final ValidatableResponse assertGetConcept(String conceptId, String...expand) {
