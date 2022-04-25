@@ -36,7 +36,7 @@ public final class Json extends ForwardingMap<String, Object> {
 	
 	public Json(Map<String, Object> source) {
 		super();
-		this.source = source;
+		this.source = source == null ? Map.of() : source;
 	}
 	
 	@Override
