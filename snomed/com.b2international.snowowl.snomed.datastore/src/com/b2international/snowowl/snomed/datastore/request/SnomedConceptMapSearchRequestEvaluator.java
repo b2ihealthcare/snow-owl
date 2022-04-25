@@ -71,10 +71,12 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			return targetResources;
 		}
 		
-		final Collection<String> sourceToolingIds = search.getCollection(OptionKey.SOURCE_TOOLING_ID, String.class);
-		if (!sourceToolingIds.contains(SnomedTerminologyComponentConstants.TOOLING_ID)) {
-			// The request was not interested in results from this tooling at all, return early
-			return Set.of();
+		if (search.containsKey(OptionKey.SOURCE_TOOLING_ID)) {
+			final Collection<String> sourceToolingIds = search.getCollection(OptionKey.SOURCE_TOOLING_ID, String.class);
+			if (!sourceToolingIds.contains(SnomedTerminologyComponentConstants.TOOLING_ID)) {
+				// The request was not interested in results from this tooling at all, return early
+				return Set.of();
+			}
 		}
 
 		// Otherwise return all SNOMED CT code systems
