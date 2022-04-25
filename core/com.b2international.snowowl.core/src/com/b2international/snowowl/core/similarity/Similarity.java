@@ -27,29 +27,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 8.3
  */
-@Doc(nested = true)
+@Doc(nested = false)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class Similarity {
 	
-	private final String source_value;
-	private final FloatList predicted_value;
+	private final String sourceValue;
+	private final FloatList predictedValue;
 
 	@JsonCreator
 	private Similarity(@JsonProperty("source_value") String sourceValue, @JsonProperty("predicted_value") FloatList predictedValue) {
-		this.source_value = sourceValue;
-		this.predicted_value = predictedValue;
+		this.sourceValue = sourceValue;
+		this.predictedValue = predictedValue;
 	}
 	
-	public FloatList getPredicted_value() {
-		return predicted_value;
+	@JsonProperty("predicted_value")
+	public FloatList getPredictedValue() {
+		return predictedValue;
 	}
 	
-	public String getSource_value() {
-		return source_value;
+	@JsonProperty("source_value")
+	public String getSourceValue() {
+		return sourceValue;
 	}
 	
-	public static Similarity of(String sourceValue, float...predicatedValues) {
-		return of(sourceValue, PrimitiveLists.newFloatArrayList(predicatedValues));
+	public static Similarity of(String sourceValue, float...predictedValues) {
+		return of(sourceValue, PrimitiveLists.newFloatArrayList(predictedValues));
 	}
 	
 	public static Similarity of(String sourceValue, FloatList predictedValue) {
@@ -58,7 +60,7 @@ public final class Similarity {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(source_value, predicted_value);
+		return Objects.hash(sourceValue, predictedValue);
 	}
 	
 	@Override
@@ -67,8 +69,8 @@ public final class Similarity {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		Similarity other = (Similarity) obj;
-		return Objects.equals(source_value, other.source_value) 
-				&& Objects.equals(predicted_value, other.predicted_value);
+		return Objects.equals(sourceValue, other.sourceValue) 
+				&& Objects.equals(predictedValue, other.predictedValue);
 	}
 	
 }
