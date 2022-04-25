@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			@RequestParam(name = "importUntil", required = false)
 			final String importUntil,
 			
-			@Parameter(description = "Import all component until this specified effective time value", schema = @Schema(format = "date", pattern = "\\d{6}"))
+			@Parameter(description = "Configure the number of components to be imported in each effective time slice commit batch.", schema = @Schema(defaultValue = "60000"))
 			@RequestParam(name = "batchSize", required = false)
 			final Integer batchSize,
 			
