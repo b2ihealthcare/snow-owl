@@ -61,26 +61,32 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 	public Set<ResourceURI> evaluateSearchTargetResources(ServiceProvider context, Options search) {
 		if (search.containsKey(OptionKey.URI)) {
 			// TODO support proper refset SNOMED URIs as well
-			
-			Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class).stream()
-					.filter(ComponentURI::isValid)
-					.map(ComponentURI::of)
-					.map(ComponentURI::resourceUri)
-					.collect(Collectors.toSet());
+			final Set<ResourceURI> targetResources = search.getCollection(OptionKey.URI, String.class)
+				.stream()
+				.filter(ComponentURI::isValid)
+				.map(ComponentURI::of)
+				.map(ComponentURI::resourceUri)
+				.collect(Collectors.toSet());
 			
 			return targetResources;
 		}
+		
+		final Collection<String> sourceToolingIds = search.getCollection(OptionKey.SOURCE_TOOLING_ID, String.class);
+		if (!sourceToolingIds.contains(SnomedTerminologyComponentConstants.TOOLING_ID)) {
+			// The request was not interested in results from this tooling at all, return early
+			return Set.of();
+		}
 
-		// any SNOMED CT CodeSystem can be target resource, so search all by default
+		// Otherwise return all SNOMED CT code systems
 		return CodeSystemRequests.prepareSearchCodeSystem()
-				.all()
-				.setFields(ResourceDocument.Fields.RESOURCE_TYPE, ResourceDocument.Fields.ID)
-				.filterByToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
-				.buildAsync()
-				.execute(context)
-				.stream()
-				.map(CodeSystem::getResourceURI)
-				.collect(Collectors.toSet());
+			.all()
+			.setFields(ResourceDocument.Fields.RESOURCE_TYPE, ResourceDocument.Fields.ID)
+			.filterByToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.buildAsync()
+			.execute(context)
+			.stream()
+			.map(CodeSystem::getResourceURI)
+			.collect(Collectors.toSet());
 	}
 
 	@Override
