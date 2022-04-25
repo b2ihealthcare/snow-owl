@@ -27,15 +27,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.action.DocWriteRequest.OpType;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.UUIDs;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.xcontent.XContentType;
 
 import com.b2international.index.*;
@@ -179,6 +177,7 @@ public class EsDocumentWriter implements Writer {
 			.setConcurrentRequests(getConcurrencyLevel())
 			.setBulkActions((int) admin.settings().get(IndexClientFactory.BULK_ACTIONS_SIZE))
 			.setBulkSize(new ByteSizeValue((int) admin.settings().get(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB), ByteSizeUnit.MB))
+			.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(15), 4))
 			.build();
 			
 			for (Class<?> type : ImmutableSet.copyOf(indexOperations.rowKeySet())) {
