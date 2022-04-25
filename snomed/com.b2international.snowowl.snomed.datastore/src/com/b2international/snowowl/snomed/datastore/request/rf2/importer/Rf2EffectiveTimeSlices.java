@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +48,14 @@ public final class Rf2EffectiveTimeSlices {
 	private final boolean loadOnDemand;
 	private final String latestVersionEffectiveTime;
 	private final String importUntil;
+	private final int batchSize;
 
-	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand, String latestVersionEffectiveTime, String importUntil) {
+	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand, String latestVersionEffectiveTime, String importUntil, int batchSize) {
 		this.db = db;
 		this.loadOnDemand = loadOnDemand;
 		this.latestVersionEffectiveTime = latestVersionEffectiveTime;
 		this.importUntil = importUntil;
+		this.batchSize = batchSize;
 	}
 	
 	public Rf2EffectiveTimeSlice getOrCreate(String effectiveTime) {
@@ -61,7 +63,7 @@ public final class Rf2EffectiveTimeSlices {
 			// if the incoming effectiveTime value is greater than or equal to the current release, then allow reading
 			if (effectiveTime.compareTo(latestVersionEffectiveTime) > 0) {
 				if ((Strings.isNullOrEmpty(importUntil) || effectiveTime.compareTo(importUntil) <= 0)) {
-					slices.put(effectiveTime, new MapDBRf2EffectiveTimeSlice(effectiveTime, db, loadOnDemand));
+					slices.put(effectiveTime, new MapDBRf2EffectiveTimeSlice(effectiveTime, db, loadOnDemand, batchSize));
 				} else {
 					slices.put(effectiveTime, new IgnoredRf2EffectiveTimeSlice(effectiveTime, String.format("EffectiveTime '%s' is ignored by importUntil('%s') request parameter.", effectiveTime, importUntil)));
 				}

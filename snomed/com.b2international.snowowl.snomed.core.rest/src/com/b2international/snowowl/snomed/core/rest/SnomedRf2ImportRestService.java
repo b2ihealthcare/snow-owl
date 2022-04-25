@@ -95,6 +95,10 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			@RequestParam(name = "importUntil", required = false)
 			final String importUntil,
 			
+			@Parameter(description = "Import all component until this specified effective time value", schema = @Schema(format = "date", pattern = "\\d{6}"))
+			@RequestParam(name = "batchSize", required = false)
+			final Integer batchSize,
+			
 			@Parameter(description = "Enable to run the import content integrity validations without pushing any changes", schema = @Schema(defaultValue = "false"))
 			@RequestParam(name = "dryRun", defaultValue = "false")
 			final Boolean dryRun,

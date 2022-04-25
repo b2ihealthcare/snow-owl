@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ public final class SnomedRf2ImportRequestBuilder
 	private Iterable<String> ignoreMissingReferencesIn;
 	private boolean dryRun = false;
 	private LocalDate importUntil;
+	private int batchSize = 60_000;
 	
 	SnomedRf2ImportRequestBuilder() {
 	}
@@ -79,6 +80,11 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ImportRequestBuilder setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<BranchContext, ImportResponse> doBuild() {
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2Archive);
@@ -87,6 +93,7 @@ public final class SnomedRf2ImportRequestBuilder
 		req.setIgnoreMissingReferencesIn(Collections3.toImmutableSet(ignoreMissingReferencesIn));
 		req.setDryRun(dryRun);
 		req.setImportUntil(importUntil);
+		req.setBatchSize(batchSize);
 		return req;
 	}
 

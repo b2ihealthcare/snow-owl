@@ -64,7 +64,7 @@ public enum PublicationStatus implements FhirCodeSystem {
 	@JsonCreator
 	public static PublicationStatus getByCodeValue(String statusCodeValue) {
 		for (PublicationStatus status : values()) {
-			if (status.getCodeValue().equals(statusCodeValue)) {
+			if (status.getCodeValue().equalsIgnoreCase(statusCodeValue)) {
 				return status;
 			}
 		}

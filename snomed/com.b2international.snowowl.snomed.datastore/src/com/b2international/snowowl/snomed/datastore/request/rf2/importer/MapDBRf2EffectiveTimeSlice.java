@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,9 +66,11 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 	private final Map<String, String[]> tmpComponentsById;
 	private final HTreeMap<String, String[]> componentsById;
 	private final boolean loadOnDemand;
+	private final int batchSize;
 	
-	public MapDBRf2EffectiveTimeSlice(String effectiveTime, DB db, boolean loadOnDemand) {
+	public MapDBRf2EffectiveTimeSlice(String effectiveTime, DB db, boolean loadOnDemand, int batchSize) {
 		super(effectiveTime);
+		this.batchSize = batchSize;
 		this.componentsById = db.hashMap(effectiveTime, Serializer.STRING, Serializer.ELSA).create();
 		this.tmpComponentsById = newHashMapWithExpectedSize(BATCH_SIZE);
 		this.dependenciesByComponent = PrimitiveMaps.newLongKeyOpenHashMap();
@@ -164,7 +166,7 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 	}
 
 	private List<LongSet> getImportPlan() {
-		return new LongTarjan(60000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
+		return new LongTarjan(batchSize, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
 	}
 	
 	@Override

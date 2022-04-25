@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.mapdb.DB;
@@ -121,6 +123,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	@JsonProperty
 	private LocalDate importUntil;
 	
+	@Min(1000)
+	@Max(60000)
+	private int batchSize;
+	
 	@JsonProperty
 	private boolean dryRun = false;
 	
@@ -148,6 +154,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	void setImportUntil(LocalDate importUntil) {
 		this.importUntil = importUntil;
+	}
+	
+	void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
 	}
 	
 	@Override
@@ -223,7 +233,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		try (final DB db = createDb()) {
 
 			// Read effective time slices from import files
-			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled(), latestVersionEffectiveTime, importUntil == null ? null : EffectiveTimes.format(importUntil, DateFormats.SHORT));
+			String importUntilEffectiveTime = importUntil == null ? null : EffectiveTimes.format(importUntil, DateFormats.SHORT);
+			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled(), latestVersionEffectiveTime, importUntilEffectiveTime, batchSize);
 			Stopwatch w = Stopwatch.createStarted();
 			read(rf2Archive, effectiveTimeSlices, reporter);
 			log.info("Preparing RF2 import took: {}", w);
