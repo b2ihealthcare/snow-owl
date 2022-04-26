@@ -156,17 +156,17 @@ public class EsDocumentWriter implements Writer {
 			final BulkProcessor processor = client.bulk(new BulkProcessor.Listener() {
 				@Override
 				public void beforeBulk(long executionId, BulkRequest request) {
-					admin.log().debug("Sending bulk request {}", request.numberOfActions());
+					admin.log().debug("Sending bulk request '{}', batch '{}', index '{}'", request.getDescription(), request.numberOfActions(), request.getIndices());
 				}
 				
 				@Override
 				public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-					admin.log().error("Failed bulk request", failure);
+					admin.log().error("Failed bulk request '{}'", request.getDescription(), failure);
 				}
 				
 				@Override
 				public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-					admin.log().debug("Successfully processed bulk request ({}) in {}.", request.numberOfActions(), response.getTook());
+					admin.log().debug("Successfully processed bulk request '{}' ({}) in {}, index '{}'.", request.getDescription(), request.numberOfActions(), response.getTook(), request.getIndices());
 					if (response.hasFailures()) {
 						for (BulkItemResponse itemResponse : response.getItems()) {
 							checkState(!itemResponse.isFailed(), "Failed to commit bulk request in index '%s', %s", admin.name(), itemResponse.getFailureMessage());
