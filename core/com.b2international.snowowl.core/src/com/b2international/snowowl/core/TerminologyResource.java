@@ -203,9 +203,11 @@ public abstract class TerminologyResource extends Resource {
 			
 			final int idx = relativePath.indexOf(RevisionIndex.AT_CHAR);
 			if (idx < 0) {
-				return getResourceURI(relativePath);
+				return getResourceURI()
+					.withPath(relativePath);
 			} else {
-				return getResourceURI(relativePath.substring(0, idx))
+				return getResourceURI()
+					.withPath(relativePath.substring(0, idx))
 					.withTimestampPart(relativePath.substring(idx, relativePath.length()));
 			}
 
