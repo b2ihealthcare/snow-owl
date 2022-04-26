@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.attachments;
 
 import java.nio.file.Path;
 
+import com.b2international.snowowl.core.client.TransportConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
@@ -41,10 +42,14 @@ public final class AttachmentPlugin extends Plugin {
 			attachmentRegistry.register(bus);
 			env.services().registerService(AttachmentRegistry.class, attachmentRegistry);
 		} else {
+			
+			TransportConfiguration transportConfig = env.service(SnowOwlConfiguration.class).getModuleConfig(TransportConfiguration.class);
+			
 			env.services().addServiceListener(IEventBus.class, (oldBus, newBus) -> {
-				final AttachmentRegistryClient attachmentRegistryClient = new AttachmentRegistryClient(newBus);
+				final AttachmentRegistryClient attachmentRegistryClient = new AttachmentRegistryClient(newBus, transportConfig.getUploadChunkSize(), transportConfig.getDownloadChunkSize());
 				env.services().registerService(AttachmentRegistry.class, attachmentRegistryClient);
 			});
+			
 		}
 	}
 }
