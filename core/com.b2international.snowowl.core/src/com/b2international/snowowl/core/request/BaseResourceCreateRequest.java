@@ -212,8 +212,6 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 			throw new AlreadyExistsException("Resource", ResourceDocument.Fields.URL, getUrl());
 		}
 		
-		preExecute(context);
-		
 		final List<String> bundleAncestorIds;
 		if (IComponent.ROOT_ID.equals(bundleId)) {
 			// "-1" is the only key that will show up both as the parent and as an ancestor
@@ -233,6 +231,8 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 			final Bundle bundleParent = bundles.first().get();
 			bundleAncestorIds = bundleParent.getResourcePathSegments();
 		}
+		
+		preExecute(context);
 		
 		context.add(createResourceDocument(context, bundleAncestorIds));
 		return id;

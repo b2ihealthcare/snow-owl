@@ -42,6 +42,7 @@ import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -55,6 +56,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
+import com.b2international.snowowl.test.commons.rest.RepositoryBranchRestRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
@@ -590,13 +592,28 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	
 	@Test
 	public void codesystem31_DisallowVersioningOfRetiredResources() throws Exception {
-		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs30"));
+		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs31"));
 		assertCodeSystemUpdated(codeSystemId, Map.of(
 			"status", Resource.RETIRED_STATUS
 		));
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", EffectiveTimes.today()))
 			.statusCode(400)
-			.body("message", containsString("Resource 'Code System cs30' cannot be versioned in its current status 'retired'."));
+			.body("message", containsString("Resource 'Code System cs31' cannot be versioned in its current status 'retired'."));
+	}
+	
+	@Test
+	public void codesystem32_NonexistentBundleErrorShouldNotCreateUnderlyingBranchAsSideEffect() throws Exception {
+		// this should report an error
+		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody("cs32").with("bundleId", "nonexistent")).statusCode(400);
+		// corresponding tooling branch should NOT be present
+		Branches branches = RepositoryRequests.branching()
+				.prepareSearch()
+				.one()
+				.filterById("MAIN/cs32")
+				.build(TOOLING_ID)
+				.execute(Services.bus())
+				.getSync();
+		assertThat(branches).isEmpty();
 	}
 	
 	private long getCodeSystemCreatedAt(final String id) {
