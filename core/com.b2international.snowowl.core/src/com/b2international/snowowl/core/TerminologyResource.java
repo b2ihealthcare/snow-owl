@@ -18,6 +18,7 @@ package com.b2international.snowowl.core;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.codesystem.UpgradeInfo;
@@ -196,7 +197,18 @@ public abstract class TerminologyResource extends Resource {
 		if (!Strings.isNullOrEmpty(branch)) {
 			Preconditions.checkArgument(branch.startsWith(branchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
 			final String relativePath = branch.replaceFirst(branchPath, "").replaceFirst("/", "");
-			return relativePath.isEmpty() ? getResourceURI() : getResourceURI().withPath(relativePath);
+			if (relativePath.isEmpty()) {
+				return getResourceURI();
+			}
+			
+			final int idx = relativePath.indexOf(RevisionIndex.AT_CHAR);
+			if (idx < 0) {
+				return getResourceURI(relativePath);
+			} else {
+				return getResourceURI(relativePath.substring(0, idx))
+					.withTimestampPart(relativePath.substring(idx, relativePath.length()));
+			}
+
 		} else {
 			return getResourceURI();
 		}

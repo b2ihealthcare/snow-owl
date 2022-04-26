@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
@@ -51,12 +52,23 @@ public interface PathTerminologyResourceResolver {
 		
 		@Override
 		public <T extends TerminologyResource> T resolve(ServiceProvider context, String toolingId, String referenceBranch) {
-			final List<String> ancestorsAndSelf = BranchPathUtils.getAllPaths(referenceBranch);
+			Long timestamp = null;
+			
+			final String branchWithoutSuffix;
+			if (referenceBranch.contains(RevisionIndex.AT_CHAR)) {
+				String[] parts = referenceBranch.split(RevisionIndex.AT_CHAR);
+				branchWithoutSuffix = parts[0];
+				timestamp = Long.valueOf(parts[1]);
+			} else {
+				branchWithoutSuffix = referenceBranch;
+			}
+			
+			final List<String> ancestorsAndSelf = BranchPathUtils.getAllPaths(branchWithoutSuffix);
 			return ResourceRequests.prepareSearch()
 				.all()
 				.filterByToolingId(toolingId)
 				.filterByBranches(ancestorsAndSelf)
-				.buildAsync()
+				.buildAsync(timestamp)
 				.getRequest()
 				.execute(context)
 				.stream()
