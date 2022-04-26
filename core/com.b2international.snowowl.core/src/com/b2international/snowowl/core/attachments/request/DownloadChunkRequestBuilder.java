@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.attachments.request;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.client.TransportConfiguration;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
@@ -26,6 +27,8 @@ public class DownloadChunkRequestBuilder
 	implements SystemRequestBuilder<byte[]> {
 
 	private UUID attachmentId;
+	
+	private int chunkSize = TransportConfiguration.DEFAULT_DOWNLOAD_CHUNK_SIZE;
 
 	/*package*/ DownloadChunkRequestBuilder() { }
 	
@@ -34,8 +37,13 @@ public class DownloadChunkRequestBuilder
 		return getSelf();
 	}
 	
+	public DownloadChunkRequestBuilder setChunkSize(int chunkSize) {
+		this.chunkSize = chunkSize;
+		return getSelf();
+	}
+	
 	@Override
 	protected DownloadChunkRequest doBuild() {
-		return new DownloadChunkRequest(attachmentId);
+		return new DownloadChunkRequest(attachmentId, chunkSize);
 	}
 }

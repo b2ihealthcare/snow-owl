@@ -33,6 +33,8 @@ public class TransportConfiguration {
 	private static final int DEFAULT_WATCHDOG_TIMEOUT_SECONDS = 300;
 	private static final String DEFAULT_CERTIFICATE_PATH = "";
 	private static final int DEFAULT_MAX_OBJECT_SIZE = Integer.MAX_VALUE - 1024;
+	public static final int DEFAULT_UPLOAD_CHUNK_SIZE = 10_485_760; // 10 Mb
+	public static final int DEFAULT_DOWNLOAD_CHUNK_SIZE = 1_048_576; // 1 Mb 
 	
 	@Min(0)
 	@Max(300)
@@ -49,6 +51,12 @@ public class TransportConfiguration {
 	
 	@Min(0)
 	private int maxObjectSize = DEFAULT_MAX_OBJECT_SIZE;
+	
+	@Min(0)
+	private int uploadChunkSize = DEFAULT_UPLOAD_CHUNK_SIZE;
+	
+	@Min(0)
+	private int downloadChunkSize = DEFAULT_DOWNLOAD_CHUNK_SIZE;
 	
 	/**
 	 * @return the number of seconds to wait before a connection attempt times out at login.
@@ -131,4 +139,25 @@ public class TransportConfiguration {
 	public void setMaxObjectSize(int maxObjectSize) {
 		this.maxObjectSize = maxObjectSize;
 	}
+	
+	@JsonProperty
+	public int getUploadChunkSize() {
+		return uploadChunkSize;
+	}
+	
+	@JsonProperty
+	public void setUploadChunkSize(int uploadChunkSize) {
+		this.uploadChunkSize = uploadChunkSize;
+	}
+	
+	@JsonProperty
+	public int getDownloadChunkSize() {
+		return downloadChunkSize;
+	}
+	
+	@JsonProperty
+	public void setDownloadChunkSize(int downloadChunkSize) {
+		this.downloadChunkSize = downloadChunkSize;
+	}
+	
 }
