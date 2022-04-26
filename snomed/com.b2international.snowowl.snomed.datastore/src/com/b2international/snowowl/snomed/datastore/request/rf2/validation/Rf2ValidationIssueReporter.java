@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,12 +73,12 @@ public final class Rf2ValidationIssueReporter {
 		return allDefects().collect(Collectors.toUnmodifiableList());
 	}
 
-	public void logWarnings(Logger log) {
-		allWarnings().forEachOrdered(defect -> log.warn(defect.getMessage()));
+	public void logWarnings(Logger log, int numberOfIssuesToLog) {
+		allWarnings().limit(numberOfIssuesToLog).forEachOrdered(defect -> log.warn(defect.getMessage()));
 	}
 	
-	public void logErrors(Logger log) {
-		allErrors().forEachOrdered(defect -> log.error(defect.getMessage()));
+	public void logErrors(Logger log, int numberOfIssuesToLog) {
+		allErrors().limit(numberOfIssuesToLog).forEachOrdered(defect -> log.error(defect.getMessage()));
 	}
 
 	public boolean hasErrors() {

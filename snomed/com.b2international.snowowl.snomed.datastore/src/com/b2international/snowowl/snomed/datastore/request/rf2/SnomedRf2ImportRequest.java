@@ -240,8 +240,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			log.info("Preparing RF2 import took: {}", w);
 			w.reset().start();
 			
-			// Log issues with rows from the import files
-			logValidationIssues(reporter);
+			// Log issues with rows from the import files, at most 1000 warnings and 1000 errors to log into the log file, everything else should be in the response object
+			logValidationIssues(reporter, 1000);
 			if (reporter.hasErrors()) {
 				return ImportResponse.defects(reporter.getDefects());
 			}
@@ -282,9 +282,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		}
 	}
 
-	private void logValidationIssues(final Rf2ValidationIssueReporter reporter) {
-		reporter.logWarnings(log);
-		reporter.logErrors(log);
+	private void logValidationIssues(final Rf2ValidationIssueReporter reporter, int numberOfIssuesToLog) {
+		reporter.logWarnings(log, numberOfIssuesToLog);
+		reporter.logErrors(log, numberOfIssuesToLog);
 	}
 	
 	private void logValidationIssues(final ImportDefectAcceptor defectAcceptor) {
