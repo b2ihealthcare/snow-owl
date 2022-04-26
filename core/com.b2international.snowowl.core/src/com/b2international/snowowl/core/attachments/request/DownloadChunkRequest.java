@@ -22,7 +22,6 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.attachments.AttachmentRegistryClient;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
@@ -34,9 +33,12 @@ import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 	
 	@NotNull
 	private final UUID attachmentId;
+
+	private int chunkSize;
 	
-	/*package*/ DownloadChunkRequest(final UUID attachmentId) {
+	/*package*/ DownloadChunkRequest(final UUID attachmentId, int chunkSize) {
 		this.attachmentId = attachmentId;
+		this.chunkSize = chunkSize;
 	}
 
 	@Override
@@ -45,8 +47,8 @@ import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 		final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
 		final String clientId = requestHeaders.header(EventBusNettyUtil.HEADER_CLIENT_ID, "<local>");
 		
-		final byte[] buffer = new byte[AttachmentRegistryClient.BUFFER_SIZE];
-		final int bytesRead = service.downloadChunk(clientId, attachmentId, buffer, AttachmentRegistryClient.BUFFER_SIZE);
+		final byte[] buffer = new byte[chunkSize];
+		final int bytesRead = service.downloadChunk(clientId, attachmentId, buffer, chunkSize);
 		
 		if (bytesRead > 0) {
 			return Arrays.copyOf(buffer, bytesRead);

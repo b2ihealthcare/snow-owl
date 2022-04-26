@@ -35,12 +35,14 @@ import com.google.common.hash.HashingOutputStream;
  */
 public final class AttachmentRegistryClient implements AttachmentRegistry {
 	
-	public static final int BUFFER_SIZE = 131_072;
-
 	private final IEventBus bus;
+	private final int uploadChunkSize;
+	private final int downloadChunkSize;
 
-	public AttachmentRegistryClient(IEventBus bus) {
+	public AttachmentRegistryClient(IEventBus bus, int uploadChunkSize, int downloadChunkSize) {
 		this.bus = bus;
+		this.uploadChunkSize = uploadChunkSize;
+		this.downloadChunkSize = downloadChunkSize;
 	}
 
 	@Override
@@ -58,7 +60,7 @@ public final class AttachmentRegistryClient implements AttachmentRegistry {
 	private Promise<Boolean> sendNextChunk(UUID attachmentId, HashingInputStream hin) {
 		try {
 			
-			final byte[] chunk = hin.readNBytes(BUFFER_SIZE);
+			final byte[] chunk = hin.readNBytes(uploadChunkSize);
 			
 			if (chunk.length > 0) {
 				
@@ -100,6 +102,7 @@ public final class AttachmentRegistryClient implements AttachmentRegistry {
 
 		return AttachmentRequests.prepareDownloadChunk()
 			.setAttachmentId(attachmentId)
+			.setChunkSize(downloadChunkSize)
 			.buildAsync()
 			.execute(bus)
 			.thenWith(chunk -> {
@@ -122,6 +125,7 @@ public final class AttachmentRegistryClient implements AttachmentRegistry {
 						.execute(bus);
 				}
 			});
+		
 	}
 
 	@Override

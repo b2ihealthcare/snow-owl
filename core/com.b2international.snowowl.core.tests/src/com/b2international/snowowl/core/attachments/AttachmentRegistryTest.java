@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.client.TransportConfiguration;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.repository.ApiRequestHandler;
@@ -44,6 +45,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 /**
  * @since 5.7
  */
+@SuppressWarnings("restriction")
 public class AttachmentRegistryTest {
 
 	private static final Path FOLDER = Paths.get("target", AttachmentRegistry.class.getSimpleName().toLowerCase());
@@ -108,7 +110,7 @@ public class AttachmentRegistryTest {
 	
 	@Test
 	public void uploadWithClient() throws Exception {
-		final AttachmentRegistryClient client = new AttachmentRegistryClient(bus);
+		final AttachmentRegistryClient client = new AttachmentRegistryClient(bus, TransportConfiguration.DEFAULT_UPLOAD_CHUNK_SIZE, TransportConfiguration.DEFAULT_DOWNLOAD_CHUNK_SIZE);
 
 		final UUID id = UUID.randomUUID();
 		upload(client, id, "file-reg-upload.zip");
@@ -121,7 +123,7 @@ public class AttachmentRegistryTest {
 
 	@Test
 	public void deleteWithClient() throws Exception {
-		final AttachmentRegistryClient client = new AttachmentRegistryClient(bus);
+		final AttachmentRegistryClient client = new AttachmentRegistryClient(bus, TransportConfiguration.DEFAULT_UPLOAD_CHUNK_SIZE, TransportConfiguration.DEFAULT_DOWNLOAD_CHUNK_SIZE);
 		
 		final UUID id = UUID.randomUUID();
 		upload(id, "file-reg-upload.zip");
