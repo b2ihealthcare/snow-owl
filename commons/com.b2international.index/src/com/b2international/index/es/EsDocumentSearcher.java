@@ -188,8 +188,8 @@ public class EsDocumentSearcher implements Searcher {
 			if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.BAD_REQUEST) {
 				throw new IllegalArgumentException(e.getMessage(), e);
 			}
-			admin.log().error("Couldn't execute query", e);
-			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
+			admin.log().error("Couldn't execute search request '{}'", req, e);
+			throw new IndexException("Couldn't search request: " + e.getMessage(), null);
 		}
 
 		SearchHits responseHits = response.getHits();
