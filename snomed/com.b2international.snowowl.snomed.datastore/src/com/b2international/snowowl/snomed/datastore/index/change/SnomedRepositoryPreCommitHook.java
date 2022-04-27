@@ -139,7 +139,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 					// make sure we only load the necessary parent arrays, not everything
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
 					.where(SnomedConceptDocument.Expressions.ids(statedDestinationIdsPartition))
-					.limit(50_000)
+					.limit(statedDestinationIdsPartition.size())
 					.build()
 					.stream(index)
 					.flatMap(Hits::stream)
@@ -161,7 +161,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 					// make sure we only load the necessary parent arrays, not everything
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
 					.where(SnomedConceptDocument.Expressions.ids(inferredDestinationIdsPartition))
-					.limit(50_000)
+					.limit(inferredDestinationIdsPartition.size())
 					.build()
 					.stream(index)
 					.flatMap(Hits::stream)
