@@ -35,13 +35,15 @@ public final class SnomedRf2ImportRequestBuilder
 		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, ImportResponse> 
 		implements SnomedContentRequestBuilder<ImportResponse> {
 
+	private static final int DEFAULT_BATCH_SIZE = 60_000;
+	
 	private Attachment rf2Archive;
 	private Rf2ReleaseType releaseType = Rf2ReleaseType.DELTA;
 	private boolean createVersions = true;
 	private Iterable<String> ignoreMissingReferencesIn;
 	private boolean dryRun = false;
 	private LocalDate importUntil;
-	private int batchSize = 60_000;
+	private int batchSize = DEFAULT_BATCH_SIZE;
 	
 	SnomedRf2ImportRequestBuilder() {
 	}
@@ -80,8 +82,8 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
-	public SnomedRf2ImportRequestBuilder setBatchSize(int batchSize) {
-		this.batchSize = batchSize;
+	public SnomedRf2ImportRequestBuilder setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize == null ? DEFAULT_BATCH_SIZE : batchSize;
 		return getSelf();
 	}
 	
