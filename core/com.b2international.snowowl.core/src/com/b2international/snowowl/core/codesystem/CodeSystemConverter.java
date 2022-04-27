@@ -34,10 +34,7 @@ import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.*;
 
 /**
  * @since 7.6
@@ -80,8 +77,18 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		}
 		
 		// extensionOf branches are the parent branches of the CodeSystem, so simple branch state calculation is enough
-		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
+		final RepositoryManager repositoryManager = context().service(RepositoryManager.class);
+		final Set<String> toolingIds = results.stream()
+			.map(CodeSystem::getToolingId)
+			.collect(Collectors.toSet());
+		
+		final Map<String, BaseRevisionBranching> branchingMap = toolingIds.stream()
+			.collect(ImmutableMap.toImmutableMap(
+				id -> id, 
+				id -> repositoryManager.get(id).service(BaseRevisionBranching.class)));
+				
 		for (CodeSystem result : results) {
+			BaseRevisionBranching branching = branchingMap.get(result.getToolingId());
 			RevisionBranch branch = branching.getBranch(result.getBranchPath());
 			BranchState branchState = branching.getBranchState(branch);
 			result.setExtensionOfBranchInfo(new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp()));
