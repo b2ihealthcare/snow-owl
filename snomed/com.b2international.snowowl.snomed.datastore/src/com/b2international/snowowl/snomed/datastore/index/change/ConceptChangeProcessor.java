@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.b2international.commons.collect.LongSets;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.ObjectId;
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
@@ -138,7 +139,18 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConcept.TYPE, id)))
 					.collect(Collectors.toSet());
 
-			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, missingCurrentConceptIds), Revision::getId));
+			// load missing documents from index
+			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.newHashMapWithExpectedSize(missingCurrentConceptIds.size());
+			Query.select(SnomedConceptDocument.class)
+				.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
+				.limit(PAGE_SIZE)
+				.build()
+				.stream(searcher)
+				.flatMap(Hits::stream)
+				.forEach(existingConceptDocument -> {
+					currentConceptDocumentsById.put(existingConceptDocument.getId(), existingConceptDocument);
+				});
+			
 			dirtyConceptIds.stream()
 				.map(id -> ObjectId.of(SnomedConcept.TYPE, id))
 				.filter(changedRevisions::containsKey)
