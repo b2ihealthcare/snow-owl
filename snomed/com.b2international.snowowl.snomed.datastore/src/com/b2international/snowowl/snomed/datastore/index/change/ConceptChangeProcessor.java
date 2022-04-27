@@ -139,17 +139,19 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConcept.TYPE, id)))
 					.collect(Collectors.toSet());
 
-			// load missing documents from index
+			// load missing documents from index, the full document, using intentionally lower page value than maxTermsCount
 			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.newHashMapWithExpectedSize(missingCurrentConceptIds.size());
-			Query.select(SnomedConceptDocument.class)
-				.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
-				.limit(PAGE_SIZE)
-				.build()
-				.stream(searcher)
-				.flatMap(Hits::stream)
-				.forEach(existingConceptDocument -> {
-					currentConceptDocumentsById.put(existingConceptDocument.getId(), existingConceptDocument);
-				});
+			for (List<String> missingCurrentConceptIdsPartition : Iterables.partition(missingCurrentConceptIds, PAGE_SIZE)) {
+				Query.select(SnomedConceptDocument.class)
+					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIdsPartition))
+					.limit(missingCurrentConceptIdsPartition.size())
+					.build()
+					.stream(searcher)
+					.flatMap(Hits::stream)
+					.forEach(existingConceptDocument -> {
+						currentConceptDocumentsById.put(existingConceptDocument.getId(), existingConceptDocument);
+					});
+			}
 			
 			dirtyConceptIds.stream()
 				.map(id -> ObjectId.of(SnomedConcept.TYPE, id))
