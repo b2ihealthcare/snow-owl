@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import javax.validation.constraints.Min;
 
 import org.tartarus.snowball.ext.EnglishStemmer;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -37,6 +38,7 @@ import com.b2international.snowowl.core.domain.Suggestions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 
@@ -78,7 +80,6 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	@Override
 	protected Suggestions doExecute(BranchContext context) throws IOException {
 		TermFilter termFilter;
-
 		
 		if (containsKey(TERM)) {
 			if (containsKey(MIN_OCCURENCE_COUNT)) {
@@ -86,7 +87,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			} else {
 				termFilter = TermFilter.defaultTermMatch(getString(TERM)).withIgnoreStopwords();
 			}
-		} else {
+		} else if (containsKey(QUERY) || containsKey(MUST_NOT_QUERY)) {
 			// Gather tokens
 			final Multiset<String> tokenOccurrences = HashMultiset.create(); 
 			final EnglishStemmer stemmer = new EnglishStemmer();
@@ -106,12 +107,12 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			}
 			
 			baseRequestBuilder.stream(context)
-			.flatMap(Concepts::stream)
-			.flatMap(concept -> getAllTerms(concept).stream())
-			.map(term -> term.toLowerCase(Locale.US))
-			.flatMap(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm).stream())
-			.map(token -> stemToken(stemmer, token))
-			.forEach(tokenOccurrences::add);
+				.flatMap(Concepts::stream)
+				.flatMap(concept -> getAllTerms(concept).stream())
+				.map(term -> term.toLowerCase(Locale.US))
+				.flatMap(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm).stream())
+				.map(token -> stemToken(stemmer, token))
+				.forEach(tokenOccurrences::add);
 			
 			topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
 					.elementSet()
@@ -120,8 +121,15 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 					.limit(topTokenCount)
 					.collect(Collectors.toList());
 			
-			int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): DEFAULT_MIN_OCCURENCE_COUNT;
+			// if there are no tokens to search for then shortcut here
+			if (topTokens.isEmpty()) {
+				return createEmptyResult(0);
+			}
+			
+			int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): Math.min(DEFAULT_MIN_OCCURENCE_COUNT, topTokens.size());
 			termFilter = TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch);
+		} else {
+			throw new BadRequestException("Either a specific term or query/mustNotQuery must be specified for suggestion base set.");
 		}
 		
 		/* 
@@ -152,10 +160,14 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	}
 
 	private List<String> getAllTerms(Concept concept) {
-		return ImmutableList.<String>builder()
-			.add(concept.getTerm())
-			.addAll(concept.getAlternativeTerms())
-			.build();
+		Builder<String> allTerms = ImmutableList.<String>builder();
+		if (concept.getTerm() != null) {
+			allTerms.add(concept.getTerm());
+		}
+		if (concept.getAlternativeTerms() != null) {
+			allTerms.addAll(concept.getAlternativeTerms());
+		}
+		return allTerms.build();
 	}
 
 	private String stemToken(EnglishStemmer stemmer, String token) {

@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.core.request;
 
 import java.util.Comparator;
+import java.util.Objects;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -33,18 +35,25 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 7.5
  */
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
 
-	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String term, boolean requestedExpand) {
-		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), term, snomedConcept.getScore());
-		concept.setAlternativeTerms(FluentIterable.from(snomedConcept.getPreferredDescriptions())
-				.transform(pd -> pd.getTerm())
-				.toSortedSet(Comparator.naturalOrder()));
+	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String pt, boolean requestedExpand) {
+		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), pt, snomedConcept.getScore());
+		
+		SortedSet<String> alternativeTerms = snomedConcept.getPreferredDescriptions().stream()
+			.map(pd -> pd.getTerm())
+			.filter(term -> !Objects.equals(term, pt)) // leave the selected primary term out of the alternative terms list
+			.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+		
+		if (!alternativeTerms.isEmpty()) {
+			concept.setAlternativeTerms(alternativeTerms);
+		}
+		
 		concept.setParentIds(snomedConcept.getParentIdsAsString());
 		concept.setAncestorIds(snomedConcept.getAncestorIdsAsString());
 		if (requestedExpand) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,18 @@ import org.junit.Test;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests;
+import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 
 import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 8.0
  */
-public class SnomedSuggestApiTest {
+public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 
 	private static final String CODE_SYSTEM_PATH = "SNOMEDCT";
 	
@@ -46,7 +51,7 @@ public class SnomedSuggestApiTest {
 	private static final String CONCEPT_ATTRIBUTE_ID = "734866006";
 	
 	@Test
-	public void getSuggest() {
+	public void suggestTerm() {
 		getSuggest(prepareJson().with("term", "body structure"))
 			.statusCode(200)
 			.assertThat()
@@ -57,7 +62,76 @@ public class SnomedSuggestApiTest {
 	}
 	
 	@Test
-	public void postSuggest() {
+	public void suggestConceptWithoutAlternativeTerms() {
+		String descriptionToDelete = RandomSnomedIdentiferGenerator.generateDescriptionId();
+		String baseConceptId = createConcept(branchPath, Json.object(
+			"active", true,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"descriptions", Json.array(
+				Json.object(
+					"id", descriptionToDelete,
+					"typeId", Concepts.FULLY_SPECIFIED_NAME,
+					"term", "Suggest me, please (will be deleted)",
+					"languageCode", "en",
+					"acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP
+				),
+				Json.object(
+					"typeId", Concepts.SYNONYM,
+					"term", "Suggest me, please",
+					"languageCode", "en",
+					"acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP
+				)
+			),
+			"relationships", Json.array(
+				Json.object(
+					"active", true,
+					"typeId", Concepts.IS_A,
+					"destinationId", Concepts.ROOT_CONCEPT
+				)
+			)
+		));
+		
+		String expectedSuggestedConceptId = createConcept(branchPath, Json.object(
+			"active", true,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"descriptions", Json.array(
+				Json.object(
+					"typeId", Concepts.FULLY_SPECIFIED_NAME,
+					"term", "Suggest me, please (hello)",
+					"languageCode", "en",
+					"acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP
+				),
+				Json.object(
+					"typeId", Concepts.SYNONYM,
+					"term", "Suggest me, pretty please",
+					"languageCode", "en",
+					"acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP
+				)
+			),
+			"relationships", Json.array(
+				Json.object(
+					"active", true,
+					"typeId", Concepts.IS_A,
+					"destinationId", Concepts.ROOT_CONCEPT
+				)
+			)
+		));
+		
+		// delete the synonym to leave only a single active description on the concept
+		SnomedComponentRestRequests.deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionToDelete, false).statusCode(204);
+		
+		// suggest should still work without any errors
+		getSuggest(prepareJson().with("query", baseConceptId).with("codeSystemPath", getDefaultSnomedResourceUri().withoutResourceType()))
+			.statusCode(200)
+			.assertThat()
+			// Use default limit
+			.body("limit", equalTo(1))
+			.body("total", equalTo(1))
+			.body("items[0].id", equalTo(expectedSuggestedConceptId));
+	}
+	
+	@Test
+	public void suggestTerm_Post() {
 		postSuggest(prepareJson().with("term", "finding clinical"))
 			.statusCode(200)
 			.assertThat()
@@ -68,7 +142,7 @@ public class SnomedSuggestApiTest {
 	}
 	
 	@Test
-	public void emptyResultSuggest() {
+	public void suggestNoMatch() {
 		getSuggest(prepareJson().with("term", "empty result term"))
 			.statusCode(200)
 			.assertThat()
@@ -78,7 +152,7 @@ public class SnomedSuggestApiTest {
 	}
 	
 	@Test
-	public void filterByTermMinOccurrence() {
+	public void suggestTermMinOccurrence() {
 		getSuggest(prepareJson()
 				.with("term", "special concept")
 				.with("minOccurrenceCount", 1)
@@ -92,7 +166,7 @@ public class SnomedSuggestApiTest {
 	}
 	
 	@Test
-	public void filterByQueryWithMinOccurrence() {
+	public void suggestQueryMinOccurrence() {
 		getSuggest(prepareJson()
 				.with("query", String.join(" OR ", SPECIAL_CONCEPT_ID, ATTRIBUTE_ID))
 				.with("minOccurrenceCount", 2)
@@ -104,7 +178,7 @@ public class SnomedSuggestApiTest {
 	}
 	
 	@Test
-	public void filterByMustNotQueryWithMinOccurrence() {
+	public void suggestMustNotQueryMinOccurrence() {
 		getSuggest(prepareJson()
 				.with("query", String.join(" OR ", SPECIAL_CONCEPT_ID, ATTRIBUTE_ID))
 				.with("mustNotQuery", String.join("<<", Concepts.FOUNDATION_METADATA_CONCEPTS))
@@ -117,7 +191,7 @@ public class SnomedSuggestApiTest {
 	}
 	
 	@Test
-	public void bulkSuggest() {
+	public void suggestBulk() {
 		
 		final List<Json> body = List.of(
 			prepareJson()

@@ -78,6 +78,9 @@ public final class Concept extends BaseComponent {
 		this.score = score;
 	}
 	
+	/**
+	 * @return optionally set alternative terms for this concept, may be <code>null</code> if there are not alternative terms present for this code
+	 */
 	public SortedSet<String> getAlternativeTerms() {
 		return alternativeTerms;
 	}
