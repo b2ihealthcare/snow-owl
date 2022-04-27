@@ -134,26 +134,46 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final LongSet inferredConceptIds = PrimitiveSets.newLongOpenHashSet();
 		
 		if (!statedDestinationIds.isEmpty()) {
-			for (SnomedConceptDocument statedDestinationConcept : index.get(SnomedConceptDocument.class, statedDestinationIds)) {
-				statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
-				if (statedDestinationConcept.getStatedParents() != null) {
-					statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
-				}
-				if (statedDestinationConcept.getStatedAncestors() != null) {
-					statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors());
-				}
+			for (List<String> statedDestinationIdsPartition : Iterables.partition(statedDestinationIds, maxTermsCount)) {
+				Query.select(SnomedConceptDocument.class)
+					// make sure we only load the necessary parent arrays, not everything
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
+					.where(SnomedConceptDocument.Expressions.ids(statedDestinationIdsPartition))
+					.limit(50_000)
+					.build()
+					.stream(index)
+					.flatMap(Hits::stream)
+					.forEach(statedDestinationConcept -> {
+						statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
+						if (statedDestinationConcept.getStatedParents() != null) {
+							statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
+						}
+						if (statedDestinationConcept.getStatedAncestors() != null) {
+							statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors());
+						}
+					});
 			}
 		}
 		
 		if (!inferredDestinationIds.isEmpty()) {
-			for (SnomedConceptDocument inferredDestinationConcept : index.get(SnomedConceptDocument.class, inferredDestinationIds)) {
-				inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
-				if (inferredDestinationConcept.getParents() != null) {
-					inferredConceptIds.addAll(inferredDestinationConcept.getParents());
-				}
-				if (inferredDestinationConcept.getAncestors() != null) {
-					inferredConceptIds.addAll(inferredDestinationConcept.getAncestors());
-				}
+			for (List<String> inferredDestinationIdsPartition : Iterables.partition(inferredDestinationIds, maxTermsCount)) {
+				Query.select(SnomedConceptDocument.class)
+					// make sure we only load the necessary parent arrays, not everything
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
+					.where(SnomedConceptDocument.Expressions.ids(inferredDestinationIdsPartition))
+					.limit(50_000)
+					.build()
+					.stream(index)
+					.flatMap(Hits::stream)
+					.forEach(inferredDestinationConcept -> {
+						inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
+						if (inferredDestinationConcept.getParents() != null) {
+							inferredConceptIds.addAll(inferredDestinationConcept.getParents());
+						}
+						if (inferredDestinationConcept.getAncestors() != null) {
+							inferredConceptIds.addAll(inferredDestinationConcept.getAncestors());
+						}
+					});
 			}
 		}
 		
@@ -183,6 +203,8 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		if (!statedSourceIds.isEmpty()) {
 			for (List<String> statedSourceIdsPartition : Iterables.partition(statedSourceIds, maxTermsCount)) {
 				Query.select(SnomedConceptDocument.class)
+					// make sure we only load the necessary parent arrays, not everything
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
 					.where(Expressions.bool()
 							.should(SnomedConceptDocument.Expressions.ids(statedSourceIdsPartition))
 							.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIdsPartition))
@@ -207,6 +229,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		if (!inferredSourceIds.isEmpty()) {
 			for (List<String> inferredSourceIdsPartition : Iterables.partition(inferredSourceIds, maxTermsCount)) {
 				Query.select(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
 					.where(Expressions.bool()
 							.should(SnomedConceptDocument.Expressions.ids(inferredSourceIdsPartition))
 							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIdsPartition))
