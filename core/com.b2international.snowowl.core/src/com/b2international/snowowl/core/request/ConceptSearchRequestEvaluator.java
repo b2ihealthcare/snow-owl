@@ -134,6 +134,16 @@ public interface ConceptSearchRequestEvaluator {
 	 */
 	Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search);
 
+	/**
+	 * Subclasses may optionally use this method to initialize the common concept model from their tooling specific model.
+	 * 
+	 * @param codeSystem
+	 * @param concept
+	 * @param iconId
+	 * @param term
+	 * @param score
+	 * @return
+	 */
 	default Concept toConcept(ResourceURI codeSystem, IComponent concept, String iconId, String term, Float score) {
 		Concept result = new Concept(codeSystem, concept.getComponentType());
 		result.setId(concept.getId());
@@ -142,7 +152,17 @@ public interface ConceptSearchRequestEvaluator {
 		result.setTerm(term);
 		result.setScore(score);
 		result.setInternalConcept(concept);
+		mapRemainingFields(result, concept);
 		return result;
+	}
+
+	/**
+	 * Maps all remaining fields on the given result {@link Concept} model object based on the tooling specific concept received in the second argument.
+	 * 
+	 * @param result
+	 * @param concept
+	 */
+	default void mapRemainingFields(Concept result, IComponent concept) {
 	}
 
 	default void evaluateIdFilters(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
