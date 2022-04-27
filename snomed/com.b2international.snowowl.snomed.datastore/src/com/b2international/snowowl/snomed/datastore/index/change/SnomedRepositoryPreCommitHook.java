@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,14 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
@@ -53,6 +55,7 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.icons.SnomedIconProvider;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
@@ -84,6 +87,9 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	@Override
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
+		
+		final int maxTermsCount = context.service(RepositoryConfiguration.class).getIndexConfiguration().getMaxTermsCount();
+		
 		// initialize OWL Expression converter on the current branch
 		final SnomedOWLExpressionConverter expressionConverter = new BranchRequest<>(staging.getBranchPath(), branchContext -> {
 			return new SnomedOWLExpressionConverter(branchContext.inject()
@@ -175,44 +181,50 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			});
 
 		if (!statedSourceIds.isEmpty()) {
-			final Query<SnomedConceptDocument> statedSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.where(Expressions.builder()
-							.should(SnomedConceptDocument.Expressions.ids(statedSourceIds))
-							.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIds))
-							.should(SnomedConceptDocument.Expressions.statedAncestors(statedSourceIds))
+			for (List<String> statedSourceIdsPartition : Iterables.partition(statedSourceIds, maxTermsCount)) {
+				Query.select(SnomedConceptDocument.class)
+					.where(Expressions.bool()
+							.should(SnomedConceptDocument.Expressions.ids(statedSourceIdsPartition))
+							.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIdsPartition))
+							.should(SnomedConceptDocument.Expressions.statedAncestors(statedSourceIdsPartition))
 							.build())
-					.limit(Integer.MAX_VALUE)
-					.build();
-			
-			for (SnomedConceptDocument statedSourceConcept : index.search(statedSourceConceptsQuery)) {
-				statedConceptIds.add(Long.parseLong(statedSourceConcept.getId()));
-				if (statedSourceConcept.getStatedParents() != null) {
-					statedConceptIds.addAll(statedSourceConcept.getStatedParents());
-				}
-				if (statedSourceConcept.getStatedAncestors() != null) {
-					statedConceptIds.addAll(statedSourceConcept.getStatedAncestors());
-				}
+					.limit(50_000)
+					.build()
+					.stream(index)
+					.flatMap(Hits::stream)
+					.forEach(statedSourceConcept -> {
+						statedConceptIds.add(Long.parseLong(statedSourceConcept.getId()));
+						if (statedSourceConcept.getStatedParents() != null) {
+							statedConceptIds.addAll(statedSourceConcept.getStatedParents());
+						}
+						if (statedSourceConcept.getStatedAncestors() != null) {
+							statedConceptIds.addAll(statedSourceConcept.getStatedAncestors());
+						}
+					});
 			}
 		}
 		
 		if (!inferredSourceIds.isEmpty()) {
-			final Query<SnomedConceptDocument> inferredSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.where(Expressions.builder()
-							.should(SnomedConceptDocument.Expressions.ids(inferredSourceIds))
-							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIds))
-							.should(SnomedConceptDocument.Expressions.ancestors(inferredSourceIds))
+			for (List<String> inferredSourceIdsPartition : Iterables.partition(inferredSourceIds, maxTermsCount)) {
+				Query.select(SnomedConceptDocument.class)
+					.where(Expressions.bool()
+							.should(SnomedConceptDocument.Expressions.ids(inferredSourceIdsPartition))
+							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIdsPartition))
+							.should(SnomedConceptDocument.Expressions.ancestors(inferredSourceIdsPartition))
 							.build())
-					.limit(Integer.MAX_VALUE)
-					.build();
-			
-			for (SnomedConceptDocument inferredSourceConcept : index.search(inferredSourceConceptsQuery)) {
-				inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
-				if (inferredSourceConcept.getParents() != null) {
-					inferredConceptIds.addAll(inferredSourceConcept.getParents());
-				}
-				if (inferredSourceConcept.getAncestors() != null) {
-					inferredConceptIds.addAll(inferredSourceConcept.getAncestors());
-				}
+					.limit(50_000)
+					.build()
+					.stream(index)
+					.flatMap(Hits::stream)
+					.forEach(inferredSourceConcept -> {
+						inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
+						if (inferredSourceConcept.getParents() != null) {
+							inferredConceptIds.addAll(inferredSourceConcept.getParents());
+						}
+						if (inferredSourceConcept.getAncestors() != null) {
+							inferredConceptIds.addAll(inferredSourceConcept.getAncestors());
+						}
+					});
 			}
 		}
 		
