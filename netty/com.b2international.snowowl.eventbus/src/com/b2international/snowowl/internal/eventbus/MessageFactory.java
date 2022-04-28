@@ -18,11 +18,10 @@ package com.b2international.snowowl.internal.eventbus;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map;
 
 import com.b2international.snowowl.eventbus.IMessage;
+import com.google.common.base.Strings;
 
 /**
  * @since 3.1
@@ -45,14 +44,10 @@ public class MessageFactory {
 	}
 
 	public static final void checkAddress(String address) {
-		checkArgument(!isNullOrEmpty(address), "Address cannot be null or empty");		
+		checkArgument(!Strings.isNullOrEmpty(address), "Address cannot be null or empty");		
 	}
 
-	public static boolean isNullOrEmpty(String value) {
-		return value == null || "".equals(value);
-	}
-
-	public static BaseMessage writeMessage(IMessage message) throws IOException {
+	public static BaseMessage writeMessage(IMessage message) {
 		checkNotNull(message, "Message should not be null");
 		
 		/*
@@ -62,17 +57,21 @@ public class MessageFactory {
 		 */
 		final String address = message.address();
 		final Object body = message.body();
-		final Serializable serializableBody;
-		
-		if (body instanceof Serializable) {
-			serializableBody = (Serializable) body;
-		} else {
-			final String className = (body == null) ? "null" : "'" + body.getClass().getSimpleName() + "'";
-			throw new IllegalArgumentException(String.format("Message body should be a subtype of Serializable on address '%s', but was %s", address, className));
-		}
 
-		final BaseMessage serializableMessage = createMessage(address, serializableBody, message.tag(), message.headers(), message.isSend(), message.isSucceeded());
+		final BaseMessage serializableMessage = createMessage(address, body, message.tag(), message.headers(), message.isSend(), message.isSucceeded());
 		serializableMessage.replyAddress = message.replyAddress();
 		return serializableMessage;
+	}
+
+	public static BaseMessage writeFailure(IMessage message, Throwable t) {
+		checkNotNull(message, "Message should not be null");
+		checkNotNull(t, "Throwable should not be null");
+		
+		final String address = message.address();
+		final Object body = t;
+		
+		final BaseMessage failureMessage = createMessage(address, body, message.tag(), message.headers(), message.isSend(), false);
+		failureMessage.replyAddress = message.replyAddress();
+		return failureMessage;
 	}
 }

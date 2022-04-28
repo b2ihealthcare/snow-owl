@@ -17,11 +17,12 @@ package com.b2international.snowowl.internal.eventbus;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.snowowl.eventbus.IMessage;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -120,7 +121,7 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	private void sendReply(BaseMessage reply) {
-		if (bus != null && !MessageFactory.isNullOrEmpty(reply.address)) {
+		if (bus != null && !Strings.isNullOrEmpty(reply.address)) {
 			bus.sendMessage(true, reply, null);
 		}
 	}

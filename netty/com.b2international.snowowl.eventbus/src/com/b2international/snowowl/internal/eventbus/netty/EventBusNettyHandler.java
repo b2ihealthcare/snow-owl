@@ -17,7 +17,6 @@ package com.b2international.snowowl.internal.eventbus.netty;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -31,6 +30,7 @@ import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 import com.b2international.snowowl.eventbus.netty.IEventBusNettyHandler;
 import com.b2international.snowowl.internal.eventbus.MessageFactory;
 
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
@@ -116,15 +116,32 @@ public class EventBusNettyHandler extends SimpleChannelInboundHandler<IMessage> 
 	
 	private void channelWrite(final ChannelHandlerContext ctx, final IMessage message) {
 		try {
-			ctx.writeAndFlush(MessageFactory.writeMessage(message))
-				.addListener(f -> { if (!f.isSuccess()) {
-					LOG.error("Exception happened when sending message", f.cause());
-				}});
-		} catch (final IOException e) {
-			LOG.error("Exception happened trying to send message", e);
+			
+			final ChannelFuture writeFuture = ctx.writeAndFlush(MessageFactory.writeMessage(message));
+			writeFuture.addListener(f -> { if (!f.isSuccess()) {
+				LOG.error("Exception happened when sending message", f.cause());
+				channelWriteFailure(ctx, message, f.cause());
+			}});
+			
+		} catch (final Throwable t) {
+			LOG.error("Exception happened trying to send message", t);
+			channelWriteFailure(ctx, message, t);
 		}
 	}
 	
+	private void channelWriteFailure(final ChannelHandlerContext ctx, final IMessage message, final Throwable t) {
+		/*
+		 * We will try and notify the receiver that something went wrong by sending a
+		 * "did not succeed" message with the caught exception. Otherwise calls to
+		 * getSync() will hang indefinitely.
+		 */
+		try {
+			ctx.writeAndFlush(MessageFactory.writeFailure(message, t));
+		} catch (final Exception ignored) {
+			// Best effort
+		}
+	}
+
 	@Override
 	public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
 		LOG.error("Exception caught for channel, closing.", cause);

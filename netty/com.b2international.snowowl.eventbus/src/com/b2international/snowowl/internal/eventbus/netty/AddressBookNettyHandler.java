@@ -17,7 +17,6 @@ package com.b2international.snowowl.internal.eventbus.netty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -179,7 +178,7 @@ public class AddressBookNettyHandler extends SimpleChannelInboundHandler<IMessag
 				.addListener(f -> { if (!f.isSuccess()) {
 					LOG.error("Exception happened when sending message", f.cause());
 				}});
-		} catch (final IOException e) {
+		} catch (final Throwable e) {
 			LOG.error("Exception happened trying to send message", e);
 		}
 	}
