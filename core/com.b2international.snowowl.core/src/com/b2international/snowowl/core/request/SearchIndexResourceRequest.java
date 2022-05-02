@@ -187,7 +187,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	
 	/**
 	 * @return the type of documents to search for.
-	 * @deprecated - will be replaced by {@link #getSelect()} and {@link #getFrom()} in 8.0
+	 * @deprecated - will be replaced by {@link #getSelect()} and {@link #getFrom()} in 9.0
 	 */
 	protected Class<D> getDocumentType() {
 		throw new UnsupportedOperationException("No longer supported, use getSelect() and getFrom() methods instead.");

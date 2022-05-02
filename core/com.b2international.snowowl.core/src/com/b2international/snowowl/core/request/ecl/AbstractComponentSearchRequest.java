@@ -141,7 +141,10 @@ public abstract class AbstractComponentSearchRequest<C extends ServiceProvider, 
 	 * @param eclExpression
 	 * @return
 	 */
-	protected abstract Promise<Set<String>> resolve(C context, String eclExpression);
+	protected Promise<Set<String>> resolve(C context, String eclExpression) {
+		return resolveToExpression(context, eclExpression)
+				.then(EclEvaluationRequest.resolveIds(context, getFrom()));
+	}
 	
 	/**
 	 * Resolves the given eclExpression to an expression that can be appended to a query to restrict the results to only the components that match the ecl expression.
