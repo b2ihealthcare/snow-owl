@@ -25,7 +25,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -56,7 +57,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
-import com.b2international.snowowl.test.commons.rest.RepositoryBranchRestRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
@@ -582,12 +582,20 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemGet(codeSystemId)
 			.statusCode(200)
 			.body("status", equalTo(Resource.RETIRED_STATUS));
+		
+		// update copyright and add it to a bundle
+		final String bundleId = IDs.base62UUID();
+		BundleApiAssert.assertCreate(BundleApiAssert.prepareBundleCreateRequestBody(bundleId))
+			.statusCode(201);
+		
 		assertCodeSystemUpdated(codeSystemId, Map.of(
-			"copyright", "MIT License"
+			"copyright", "MIT License",
+			"bundleId", bundleId
 		));
 		assertCodeSystemGet(codeSystemId)
 			.statusCode(200)
-			.body("copyright", equalTo("MIT License"));
+			.body("copyright", equalTo("MIT License"))
+			.body("bundleId", equalTo(bundleId));
 	}
 	
 	@Test
