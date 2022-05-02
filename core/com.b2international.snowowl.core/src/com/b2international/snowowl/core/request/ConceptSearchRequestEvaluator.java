@@ -165,7 +165,25 @@ public interface ConceptSearchRequestEvaluator {
 	default void mapRemainingFields(Concept result, IComponent concept) {
 	}
 
-	default void evaluateIdFilters(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
+	/**
+	 * Prepares an ID filter from the ID option key only. Use as the default ID filter.
+	 * 
+	 * @param requestBuilder
+	 * @param search
+	 */
+	default void evaluateIdFilterOptions(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
+		if (search.containsKey(OptionKey.ID)) {
+			requestBuilder.filterByIds(search.getCollection(OptionKey.ID, String.class));
+		}
+	}
+	
+	/**
+	 * Prepares an ID filter from the ID, QUERY and MUST_NOT_QUERY option keys. Use only if the underlying tooling does not support any kind of special query parameters and you'd like to handle basic query support for enumerated list of component IDs.
+	 * 
+	 * @param requestBuilder
+	 * @param search
+	 */
+	default void evaluateIdQueryMustNotQueryOptionsAsIdFilter(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
 		if (!search.containsKey(OptionKey.ID) && !search.containsKey(OptionKey.QUERY) && !search.containsKey(OptionKey.MUST_NOT_QUERY)) {
 			return;
 		}
