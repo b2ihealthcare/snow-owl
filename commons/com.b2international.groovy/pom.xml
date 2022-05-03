@@ -39,6 +39,18 @@
 			<version>${groovy.version}</version>
   			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-jsr223</artifactId>
+			<version>${groovy.version}</version>
+  			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-dateutil</artifactId>
+			<version>${groovy.version}</version>
+  			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -60,7 +72,9 @@
 								groovy,
 								groovy-json,
 								groovy-templates,
-								groovy-xml
+								groovy-xml,
+								groovy-jsr223,
+								groovy-dateutil
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
 						</configuration>
