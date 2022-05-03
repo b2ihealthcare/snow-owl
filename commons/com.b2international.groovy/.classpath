@@ -10,6 +10,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/groovy-dateutil-3.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/groovy-json-3.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/groovy-jsr223-3.0.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/groovy-sql-3.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/groovy-templates-3.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/groovy-xml-3.0.9.jar"/>
 	<classpathentry kind="output" path="target/classes/"/>

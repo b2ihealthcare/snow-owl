@@ -51,6 +51,12 @@
 			<version>${groovy.version}</version>
   			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-sql</artifactId>
+			<version>${groovy.version}</version>
+  			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -74,7 +80,8 @@
 								groovy-templates,
 								groovy-xml,
 								groovy-jsr223,
-								groovy-dateutil
+								groovy-dateutil,
+								groovy-sql
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
 						</configuration>
