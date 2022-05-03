@@ -39,7 +39,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -227,45 +227,20 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 			.then(matchIdsOrNone());
 	}
 	
-	/**
-	 * Handles (possibly) filtered expression constraints by evaluating them along
-	 * with the primary ECL expression, and adding the resulting query expressions as
-	 * extra required clauses.
-	 * 
-	 * @param context
-	 * @param filtered
-	 * @return
-	 */
-	protected Promise<Expression> eval(BranchContext context, final FilteredExpressionConstraint filtered) {
-		final ExpressionConstraint constraint = filtered.getConstraint();
-		final FilterConstraint filterConstraint = filtered.getFilter();
-		final Domain filterDomain = Ecl.getDomain(filterConstraint);
-		final Filter filter = filterConstraint.getFilter();
-		
-		final Promise<Expression> evaluatedConstraint = evaluate(context, constraint);
-		Promise<Expression> evaluatedFilter = evaluate(context, filter);
+	@Override
+	protected Promise<Expression> evaluateFilterExpressionOnDomain(BranchContext context, Promise<Expression> filterExpression, Domain filterDomain) {
 		if (Domain.CONCEPT.equals(filterDomain)) {
 			// default case just return the expression as is
+			return filterExpression;
 		} else if (Domain.DESCRIPTION.equals(filterDomain)) {
 			// Find concepts that match the description expression, then use the resulting concept IDs as the expression
-			evaluatedFilter = evaluatedFilter.then(ex -> executeDescriptionSearch(context, ex));
+			return filterExpression.then(ex -> executeDescriptionSearch(context, ex));
 		} else if (Domain.MEMBER.equals(filterDomain)) {
 			// Find concepts that match the member expression, then use the resulting concept IDs as the expression
-			evaluatedFilter = evaluatedFilter.then(ex -> executeMemberSearch(context, ex));
+			return filterExpression.then(ex -> executeMemberSearch(context, ex));
 		} else {
-			throw new NotImplementedException("Not implemented ECL domain type: %s", filterDomain);
+			throw new NotImplementedException("Not supported ECL domain type: %s", filterDomain);
 		}
-		
-		if (isAnyExpression(constraint)) {
-			// No need to combine "match all" with the filter query expression, return it directly
-			return evaluatedFilter;
-		}
-		
-		return Promise.all(evaluatedConstraint, evaluatedFilter).then(results -> {
-			final Expressions.ExpressionBuilder builder = Expressions.bool();
-			results.forEach(f -> builder.filter((Expression) f));
-			return builder.build();
-		});
 	}
 	
 	private static Expression executeDescriptionSearch(BranchContext context, Expression descriptionExpression) {
@@ -309,14 +284,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		return SnomedDocument.Expressions.ids(conceptIds);
 	}
 
-	protected Promise<Expression> eval(BranchContext context, final PropertyFilter nestedFilter) {
-		return throwUnsupported(nestedFilter);
-	}
-	
-	protected Promise<Expression> eval(BranchContext context, final NestedFilter nestedFilter) {
-		return evaluate(context, nestedFilter.getNested());
-	}
-	
 	protected Promise<Expression> eval(BranchContext context, final ActiveFilter activeFilter) {
 		final Operator op = Operator.fromString(activeFilter.getOp());
 		Expression expression = SnomedDocument.Expressions.active(activeFilter.isActive());
@@ -424,52 +391,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		}
 		
 		return Promise.immediate(expression);
-	}
-
-	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
-		final List<TypedSearchTermClause> clauses;
-		
-		SearchTerm searchTerm = termFilter.getSearchTerm();
-		if (searchTerm instanceof TypedSearchTerm) {
-			clauses = List.of(((TypedSearchTerm) searchTerm).getClause());
-		} else if (searchTerm instanceof TypedSearchTermSet) {
-			clauses = ((TypedSearchTermSet) searchTerm).getClauses();
-		} else {
-			return throwUnsupported(searchTerm);
-		}
-		
-		// Filters are combined with an OR ("should") operator
-		final Expressions.ExpressionBuilder builder = Expressions.bool();
-		
-		for (final TypedSearchTermClause clause : clauses) {
-			builder.should(toExpression(clause));
-		}
-		
-		return Promise.immediate(builder.build());
-	}
-	
-	protected Expression toExpression(final TypedSearchTermClause clause) {
-		final String term = clause.getTerm();
-
-		LexicalSearchType lexicalSearchType = LexicalSearchType.fromString(clause.getLexicalSearchType());
-		if (lexicalSearchType == null) {
-			lexicalSearchType = LexicalSearchType.MATCH;
-		}
-
-		switch (lexicalSearchType) {
-			case MATCH:
-				final com.b2international.snowowl.core.request.TermFilter match = com.b2international.snowowl.core.request.TermFilter.defaultTermMatch(term);
-				return SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(match);
-			case WILD:
-				final String regexTerm = term.replace("*", ".*");
-				return SnomedDescriptionIndexEntry.Expressions.matchTermRegex(regexTerm);
-			case REGEX:
-				return SnomedDescriptionIndexEntry.Expressions.matchTermRegex(term);
-			case EXACT:
-				return SnomedDescriptionIndexEntry.Expressions.matchTermCaseInsensitive(term);
-			default:
-				throw new UnsupportedOperationException("Not implemented lexical search type: '" + lexicalSearchType + "'.");
-		}
 	}
 
 	protected Promise<Expression> eval(BranchContext context, final TypeTokenFilter typeTokenFilter) {
@@ -780,6 +701,21 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	@Override
 	protected Expression ancestorsExpression(Set<String> ids) {
 		return Trees.INFERRED_FORM.equals(expressionForm) ? SnomedConceptDocument.Expressions.ancestors(ids) : SnomedConceptDocument.Expressions.statedAncestors(ids);
+	}
+	
+	@Override
+	protected Expression termMatchExpression(TermFilter termFilter) {
+		return SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(termFilter);
+	}
+	
+	@Override
+	protected Expression termRegexExpression(String regex) {
+		return SnomedDescriptionIndexEntry.Expressions.matchTermRegex(regex);
+	}
+	
+	@Override
+	protected Expression termCaseInsensitiveExpression(String term) {
+		return SnomedDescriptionIndexEntry.Expressions.matchTermCaseInsensitive(term);
 	}
 	
 	@Override

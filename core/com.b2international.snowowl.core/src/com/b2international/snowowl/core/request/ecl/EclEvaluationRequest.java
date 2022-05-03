@@ -23,6 +23,7 @@ import static com.b2international.snomed.ecl.Ecl.isEclConceptReference;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -36,6 +37,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.*;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -68,6 +70,9 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	@Override
 	public final Promise<Expression> execute(C context) {
 		final ExpressionConstraint expressionConstraint = context.service(EclParser.class).parse(expression, ignoredSyntaxErrorCodes);
+		if (expressionConstraint == null) {
+			return Promise.immediate(Expressions.matchNone());
+		}
 		return doEval(context, expressionConstraint);
 	}
 
@@ -106,7 +111,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	/**
 	 * Handles cases when the expression constraint is not available at all. For instance, script is empty.
 	 */
-	protected Promise<Expression> eval(BranchContext context, final Void empty) {
+	protected Promise<Expression> eval(C context, final Void empty) {
 		return Promise.immediate(MatchNone.INSTANCE);
 	}
 	
@@ -330,6 +335,102 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		return evaluate(context, nested.getNested());
 	}
 	
+	/**
+	 * Handles (possibly) filtered expression constraints by evaluating them along
+	 * with the primary ECL expression, and adding the resulting query expressions as
+	 * extra required clauses.
+	 * 
+	 * @param context
+	 * @param filtered
+	 * @return
+	 */
+	protected Promise<Expression> eval(C context, final FilteredExpressionConstraint filtered) {
+		final ExpressionConstraint constraint = filtered.getConstraint();
+		final FilterConstraint filterConstraint = filtered.getFilter();
+		final Domain filterDomain = Ecl.getDomain(filterConstraint);
+		final Filter filter = filterConstraint.getFilter();
+		final Promise<Expression> evaluatedConstraint = evaluate(context, constraint);
+		final Promise<Expression> evaluatedFilter = evaluateFilterExpressionOnDomain(context, evaluate(context, filter), filterDomain);
+
+		if (isAnyExpression(constraint)) {
+			// No need to combine "match all" with the filter query expression, return it directly
+			return evaluatedFilter;
+		} else {
+			return Promise.all(evaluatedConstraint, evaluatedFilter).then(results -> {
+				final Expressions.ExpressionBuilder builder = Expressions.bool();
+				results.forEach(f -> builder.filter((Expression) f));
+				return builder.build();
+			});
+		}
+	}
+	
+	/**
+	 * Subclasses may optionally specify which ECL domain they'd like to use for which property filter and evaluate them if needed to attach a set of
+	 * IDs as filter to the main expression. Usually for most terminologies it is enough to just attach the already evaluated filter expression to the
+	 * main expression, but for example in SNOMED CT special treatment is required to handle description and member domains.
+	 * 
+	 * @param context
+	 * @param filterExpression
+	 * @param filterDomain
+	 * @return
+	 */
+	protected Promise<Expression> evaluateFilterExpressionOnDomain(C context, Promise<Expression> filterExpression, Domain filterDomain) {
+		return filterExpression;
+	}
+
+	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
+		final List<TypedSearchTermClause> clauses;
+		
+		SearchTerm searchTerm = termFilter.getSearchTerm();
+		if (searchTerm instanceof TypedSearchTerm) {
+			clauses = List.of(((TypedSearchTerm) searchTerm).getClause());
+		} else if (searchTerm instanceof TypedSearchTermSet) {
+			clauses = ((TypedSearchTermSet) searchTerm).getClauses();
+		} else {
+			return throwUnsupported(searchTerm);
+		}
+		
+		// Filters are combined with an OR ("should") operator
+		final Expressions.ExpressionBuilder builder = Expressions.bool();
+		
+		for (final TypedSearchTermClause clause : clauses) {
+			builder.should(toExpression(clause));
+		}
+		
+		return Promise.immediate(builder.build());
+	}
+	
+	protected Expression toExpression(final TypedSearchTermClause clause) {
+		final String term = clause.getTerm();
+
+		LexicalSearchType lexicalSearchType = LexicalSearchType.fromString(clause.getLexicalSearchType());
+		if (lexicalSearchType == null) {
+			lexicalSearchType = LexicalSearchType.MATCH;
+		}
+
+		switch (lexicalSearchType) {
+			case MATCH:
+				return termMatchExpression(com.b2international.snowowl.core.request.TermFilter.defaultTermMatch(term));
+			case WILD:
+				final String regex = term.replace("*", ".*");
+				return termRegexExpression(regex);
+			case REGEX:
+				return termRegexExpression(term);
+			case EXACT:
+				return termCaseInsensitiveExpression(term);
+			default:
+				throw new UnsupportedOperationException("Not supported lexical search type: '" + lexicalSearchType + "'.");
+		}
+	}
+	
+	protected Promise<Expression> eval(C context, final PropertyFilter nestedFilter) {
+		return throwUnsupported(nestedFilter);
+	}
+	
+	protected Promise<Expression> eval(C context, final NestedFilter nestedFilter) {
+		return evaluate(context, nestedFilter.getNested());
+	}
+	
 	public static <T> T throwUnsupported(EObject eObject) {
 		return throwUnsupported(eObject, "");
 	}
@@ -345,6 +446,18 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	protected abstract Expression parentsExpression(Set<String> ids);
 	
 	protected abstract Expression ancestorsExpression(Set<String> ids);
+	
+	protected Expression termCaseInsensitiveExpression(String term) {
+		return throwUnsupported("Unable to provide case insensitive term expression for term filter: " + term);		
+	}
+
+	protected Expression termRegexExpression(String regex) {
+		return throwUnsupported("Unable to provide regex term expression for term filter: " + regex);
+	}
+
+	protected Expression termMatchExpression(com.b2international.snowowl.core.request.TermFilter termFilter) {
+		return throwUnsupported("Unable to provide term expression for term filter: " + termFilter.getTerm());
+	}
 
 	public static boolean canExtractIds(Expression expression) {
 		return expression instanceof Predicate && ID.equals(((Predicate) expression).getField());
