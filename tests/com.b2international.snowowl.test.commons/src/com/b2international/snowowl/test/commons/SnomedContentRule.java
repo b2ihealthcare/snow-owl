@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ public class SnomedContentRule extends ExternalResource {
 	
 	private String importUntil;
 	private ResourceURI extensionOf;
+	private boolean createVersions = true;
 
 	public SnomedContentRule(final ResourceURI codeSystemId, final String importArchivePath, final Rf2ReleaseType contentType) {
 		this(codeSystemId, SnomedContentRule.class, importArchivePath, contentType);
@@ -92,6 +93,11 @@ public class SnomedContentRule extends ExternalResource {
 		this.extensionOf = extensionOf;
 		return this;
 	}
+	
+	public SnomedContentRule createVersions(boolean createVersions) {
+		this.createVersions = createVersions;
+		return this;
+	}
 
 	@Override
 	protected void before() throws Throwable {
@@ -100,7 +106,7 @@ public class SnomedContentRule extends ExternalResource {
 		String jobId = SnomedRequests.rf2().prepareImport()
 			.setRf2Archive(attachment)
 			.setReleaseType(contentType)
-			.setCreateVersions(true)
+			.setCreateVersions(createVersions)
 			.setImportUntil(importUntil)
 			.build(codeSystemId)
 			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemId), "Importing RF2 content into " + codeSystemId)
