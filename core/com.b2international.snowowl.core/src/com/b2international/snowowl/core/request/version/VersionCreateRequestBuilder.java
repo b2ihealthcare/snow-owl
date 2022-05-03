@@ -49,7 +49,7 @@ public final class VersionCreateRequestBuilder
 	}
 	
 	/**
-	 * The version effective time that the recently changed components will get during versioning. Format: yyyyMMdd.
+	 * The version effective time that the recently changed components will get during versioning. Format: yyyy-MM-dd.
 	 * @param effectiveTime
 	 * @return
 	 */
