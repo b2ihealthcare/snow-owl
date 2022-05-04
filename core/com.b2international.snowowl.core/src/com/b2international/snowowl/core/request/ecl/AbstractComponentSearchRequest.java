@@ -24,8 +24,11 @@ import java.util.function.Function;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.commons.exceptions.SyntaxException;
+import com.b2international.index.query.DisMaxPredicate;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.TextPredicate;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.ScriptScoreExpression;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -67,7 +70,11 @@ public abstract class AbstractComponentSearchRequest<C extends ServiceProvider, 
 			if (eclExpression.isMatchNone()) {
 				throw new NoResultException();
 			} else if (!eclExpression.isMatchAll()) {
-				queryBuilder.filter(eclExpression);
+				if (eclExpression instanceof TextPredicate || eclExpression instanceof DisMaxPredicate || eclExpression instanceof ScriptScoreExpression) {
+					queryBuilder.must(eclExpression);
+				} else {
+					queryBuilder.filter(eclExpression);
+				}
 			}
 		}
 	}
