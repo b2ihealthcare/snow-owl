@@ -187,26 +187,32 @@ public class EclRewriter extends EclSwitch<EObject> {
 
 	@Override
 	public EObject caseOrExpressionConstraint(OrExpressionConstraint object) {
-		object.setLeft(rewrite(object.getLeft()));
 		// Consecutive OR constraints are parsed to one side, rewrite the other
 		ExpressionConstraint left = object;
-		while (left instanceof OrExpressionConstraint) {
-			OrExpressionConstraint newLeft = (OrExpressionConstraint) left;
-			newLeft.setRight(rewrite(newLeft.getRight()));
-			left = newLeft.getLeft();
+		while (true) {
+			OrExpressionConstraint newOr = (OrExpressionConstraint) left;
+			newOr.setRight(rewrite(newOr.getRight()));
+			left = newOr.getLeft();
+			if (!(left instanceof OrExpressionConstraint)) {
+				newOr.setLeft(rewrite(left));
+				break;
+			}
 		}
 		return object;
 	}
 
 	@Override
 	public EObject caseAndExpressionConstraint(AndExpressionConstraint object) {
-		object.setLeft(rewrite(object.getLeft()));
 		// Consecutive AND constraints are parsed to one side, rewrite the other
 		ExpressionConstraint left = object;
-		while (left instanceof AndExpressionConstraint) {
+		while (true) {
 			AndExpressionConstraint newAnd = (AndExpressionConstraint) left;
 			newAnd.setRight(rewrite(newAnd.getRight()));
 			left = newAnd.getLeft();
+			if (!(left instanceof AndExpressionConstraint)) {
+				newAnd.setLeft(rewrite(left));
+				break;
+			}
 		}
 		return object;
 	}
@@ -220,6 +226,10 @@ public class EclRewriter extends EclSwitch<EObject> {
 			ExclusionExpressionConstraint newExclusion = (ExclusionExpressionConstraint) left;
 			newExclusion.setRight(rewrite(newExclusion.getRight()));
 			left = newExclusion.getLeft();
+			if (!(left instanceof ExclusionExpressionConstraint)) {
+				newExclusion.setLeft(rewrite(left));
+				break;
+			}
 		}
 		return object;
 	}
