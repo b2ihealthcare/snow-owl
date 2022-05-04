@@ -40,7 +40,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.events.Request;
@@ -89,7 +88,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	 * @return
 	 */
 	protected ExpressionConstraint rewrite(C context, ExpressionConstraint expressionConstraint) {
-		return expressionConstraint;
+		return new EclRewriter().rewrite(expressionConstraint);
 	}
 	
 	public final void setExpression(String expression) {
@@ -452,7 +451,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		return filterExpression;
 	}
 
-	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
+	protected Promise<Expression> eval(C context, final TermFilter termFilter) {
 		final List<TypedSearchTermClause> clauses;
 		
 		SearchTerm searchTerm = termFilter.getSearchTerm();

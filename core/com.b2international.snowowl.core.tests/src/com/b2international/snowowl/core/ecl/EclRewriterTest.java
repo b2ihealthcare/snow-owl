@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ecl;
+package com.b2international.snowowl.core.ecl;
 
 import static org.junit.Assert.assertEquals;
 
@@ -23,35 +23,35 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ecl.DefaultEclParser;
-import com.b2international.snowowl.core.ecl.DefaultEclSerializer;
-import com.b2international.snowowl.core.ecl.EclParser;
-import com.b2international.snowowl.core.ecl.EclSerializer;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.google.inject.Injector;
 
 /**
  * @since 5.4
  */
-public class SnomedEclRewriterTest {
+public class EclRewriterTest {
 
-	private SnomedEclRewriter rewriter;
+	public static final String ROOT_CONCEPT = "138875005";
+	public static final String HAS_ACTIVE_INGREDIENT = "127489000";
+	public static final String SUBSTANCE = "105590001";
+	
+	private EclRewriter rewriter;
 	private EclParser parser;
 	private EclSerializer serializer;
 
 	@Before
 	public void givenRewriter() {
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-		rewriter = new SnomedEclRewriter();
+		rewriter = new EclRewriter();
 		parser = new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class));
 		serializer = new DefaultEclSerializer(injector.getInstance(ISerializer.class));
 	}
 	
 	@Test
 	public void rewriteNotEqualsAttributeComparison() throws Exception {
-		final String rewritten = rewrite(String.format("<%s : %s != <%s", Concepts.ROOT_CONCEPT, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.SUBSTANCE));
-		assertEquals(String.format("<%s : %s = ( * MINUS < %s )", Concepts.ROOT_CONCEPT, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.SUBSTANCE), rewritten);
+		final String rewritten = rewrite(String.format("<%s : %s != <%s", ROOT_CONCEPT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		assertEquals(String.format("<%s : %s = ( * MINUS < %s )", ROOT_CONCEPT, HAS_ACTIVE_INGREDIENT, SUBSTANCE), rewritten);
 	}
 
 	private String rewrite(String ecl) {

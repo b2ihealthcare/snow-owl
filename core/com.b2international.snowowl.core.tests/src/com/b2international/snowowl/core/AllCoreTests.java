@@ -22,6 +22,7 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
 import com.b2international.snowowl.core.codesystem.CodeSystemTest;
 import com.b2international.snowowl.core.ecl.EclEvaluationRequestTest;
+import com.b2international.snowowl.core.ecl.EclRewriterTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
@@ -71,6 +72,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	SearchResourceRequestTest.class,
 	CodeSystemTest.class,
 	GroovyScriptEngineTest.class,
+	EclRewriterTest.class,
 	
 	// medium integration tests
 	JobRequestsTest.class,

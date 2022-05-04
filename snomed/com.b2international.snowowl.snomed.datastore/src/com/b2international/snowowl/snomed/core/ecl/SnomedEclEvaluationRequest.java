@@ -92,11 +92,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		this.expressionForm = expressionForm;
 	}
 
-	@Override
-	protected ExpressionConstraint rewrite(BranchContext context, ExpressionConstraint expressionConstraint) {
-		return new SnomedEclRewriter().rewrite(expressionConstraint);
-	}
-	
 	/**
 	 * Handles MemberOf simple expression constraints
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints

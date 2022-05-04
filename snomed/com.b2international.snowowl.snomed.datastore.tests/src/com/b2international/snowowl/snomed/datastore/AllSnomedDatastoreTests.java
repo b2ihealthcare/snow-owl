@@ -60,7 +60,6 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedEclEvaluationRequestPropertyFilterTest.class,
 	SnomedEclEvaluationRequestHistorySupplementTest.class,
 	SnomedStatedEclEvaluationTest.class,
-	SnomedEclRewriterTest.class,
 	SnomedEclShortcutTest.class,
 	SnomedDescriptionUtilsTest.class,
 	// Validate Rule Evaluators
