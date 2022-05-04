@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableMap;
  */
 /*package*/ class BaseMessage implements IMessage, Serializable {
 
-	private Map<String, String> headers;
+	/*package*/ Map<String, String> headers;
 	private String tag;
 	private Object body;
 	private String address;

@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.core.events.util.ResponseHeaders;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
 import com.b2international.snowowl.core.rate.RateLimitingRequest;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
@@ -73,6 +74,10 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 		} catch (WrappedException e) {
 			message.fail(e.getCause());
 		} catch (ApiException e) {
+			if (IEventBus.RECORD_SEND_STACK) {
+				System.err.println(message.headers().get("sendStack"));
+			}
+			
 			message.fail(e);
 		} catch (Throwable e) {
 			LoggerFactory.getLogger(ApiRequestHandler.class).error("Unexpected error when executing request:", e);

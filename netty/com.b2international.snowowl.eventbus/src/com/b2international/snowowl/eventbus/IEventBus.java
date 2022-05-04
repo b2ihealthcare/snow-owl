@@ -27,6 +27,11 @@ import java.util.concurrent.ExecutorService;
 public interface IEventBus {
 
 	/**
+	 * Feature flag for send-time stack tracing
+	 */
+	boolean RECORD_SEND_STACK = false;
+
+	/**
 	 * The address where handler registration and un-registration messages are sent.
 	 * These messages are emitted by the event bus itself.
 	 * <p>

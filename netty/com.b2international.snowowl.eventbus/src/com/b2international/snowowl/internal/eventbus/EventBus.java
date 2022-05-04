@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
+import static com.b2international.snowowl.internal.eventbus.MessageFactory.checkAddress;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.b2international.snowowl.internal.eventbus.MessageFactory.checkAddress;
+import static com.google.common.collect.Maps.newHashMap;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -150,6 +154,22 @@ public class EventBus implements IEventBus {
 			final String replyAddress = UUID.randomUUID().toString();
 			message.replyAddress = replyAddress;
 			doRegisterHandler(replyAddress, replyHandler, true);
+		}
+		
+		if (RECORD_SEND_STACK) {
+			final Throwable t = new Exception("Message was sent in this call stack").fillInStackTrace();
+			final String sendStack;
+			
+			try (StringWriter sw = new StringWriter()) {
+				t.printStackTrace(new PrintWriter(sw));
+				sendStack = sw.toString();
+			} catch (IOException unexpected) {
+				// String writer should not encounter any I/O exceptions
+			}
+			
+			Map<String, String> headersWithStack = newHashMap(message.headers());
+			headersWithStack.put("sendStack", sendStack);
+			message.headers = Map.copyOf(headersWithStack);
 		}
 		
 		// Allow both local and remote handlers to process the message
