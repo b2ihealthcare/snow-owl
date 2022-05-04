@@ -28,7 +28,6 @@ import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.ecl.LabeledEclExpressions;
@@ -217,20 +216,6 @@ public class SnomedEclLabelerApiTest extends AbstractSnomedApiTest {
 			Concepts.ROOT_CONCEPT + " |" + rootPtUs + "|",
 			Concepts.IS_A + " |" + isaPtUs + "|"
 		);
-	}
-	
-	@Test
-	public void wrongExpression() throws Exception {
-		Throwable exception = Assertions.catchThrowable(() -> bulkLabel(List.of("A", "B", Concepts.ROOT_CONCEPT), SnomedConcept.Expand.PREFERRED_TERM, List.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))));
-
-		Assertions.assertThat(exception)
-			.isExactlyInstanceOf(BadRequestException.class)
-			.hasFieldOrPropertyWithValue("additionalInfo", Map.of(
-				"erroneousExpressions", Map.of(
-					"A", List.of("SCTID length must be between 6-18 characters. Got: A"),
-					"B", List.of("SCTID length must be between 6-18 characters. Got: B")
-				)				
-			));
 	}
 	
 	@Test
