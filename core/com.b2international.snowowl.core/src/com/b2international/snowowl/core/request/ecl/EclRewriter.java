@@ -187,6 +187,7 @@ public class EclRewriter extends EclSwitch<EObject> {
 
 	@Override
 	public EObject caseOrExpressionConstraint(OrExpressionConstraint object) {
+		object.setLeft(rewrite(object.getLeft()));
 		// Consecutive OR constraints are parsed to one side, rewrite the other
 		ExpressionConstraint left = object;
 		while (left instanceof OrExpressionConstraint) {
@@ -199,6 +200,7 @@ public class EclRewriter extends EclSwitch<EObject> {
 
 	@Override
 	public EObject caseAndExpressionConstraint(AndExpressionConstraint object) {
+		object.setLeft(rewrite(object.getLeft()));
 		// Consecutive AND constraints are parsed to one side, rewrite the other
 		ExpressionConstraint left = object;
 		while (left instanceof AndExpressionConstraint) {
@@ -211,6 +213,7 @@ public class EclRewriter extends EclSwitch<EObject> {
 
 	@Override
 	public EObject caseExclusionExpressionConstraint(ExclusionExpressionConstraint object) {
+		object.setLeft(rewrite(object.getLeft()));
 		// Consecutive MINUS constraints are parsed to one side, rewrite the other
 		ExpressionConstraint left = object;
 		while (left instanceof ExclusionExpressionConstraint) {
