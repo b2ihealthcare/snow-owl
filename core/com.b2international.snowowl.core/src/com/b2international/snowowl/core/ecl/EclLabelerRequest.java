@@ -28,6 +28,7 @@ import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.tree.NoopTreeVisitor;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snomed.ecl.validation.EclValidator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
@@ -81,7 +82,8 @@ final class EclLabelerRequest extends ResourceRequest<ServiceProvider, LabeledEc
 				continue;
 			}
 			try {
-				ExpressionConstraint query = queries.computeIfAbsent(expression, (key) -> eclParser.parse(key));
+				// always ignore the SCT ID validation error, so this API can be used with any Code System 
+				ExpressionConstraint query = queries.computeIfAbsent(expression, (key) -> eclParser.parse(key, Set.of(EclValidator.SCTID_ERROR_CODE)));
 				conceptIdsToLabel.addAll(collect(query));
 			} catch (ApiException e) {
 				if (e instanceof SyntaxException) {
