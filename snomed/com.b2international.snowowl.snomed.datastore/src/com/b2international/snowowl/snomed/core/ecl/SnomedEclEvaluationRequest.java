@@ -15,15 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.index.revision.Revision.Expressions.ids;
 import static com.b2international.snomed.ecl.Ecl.isAnyExpression;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -122,84 +119,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 					.then(ids -> activeMemberOf(ids));
 		} else {
 			return throwUnsupported(inner);
-		}
-	}
-	
-	/**
-	 * Handles ParentOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final ParentOf parentOf) {
-		return EclExpression.of(parentOf.getConstraint(), expressionForm)
-				.resolveConcepts(context)
-				.then(concepts -> {
-					final Set<String> parents = newHashSet();
-					for (SnomedConcept concept : concepts) {
-						addParentIds(concept, parents);
-					}
-					return parents;
-				})
-				.then(matchIdsOrNone());
-	}
-	
-	/**
-	 * Handles ParentOrSelfOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final ParentOrSelfOf parentOrSelfOf) {
-		return EclExpression.of(parentOrSelfOf.getConstraint(), expressionForm)
-				.resolveConcepts(context)
-				.then(concepts -> {
-					final Set<String> results = newHashSet();
-					for (SnomedConcept concept : concepts) {
-						results.add(concept.getId());
-						addParentIds(concept, results);
-					}
-					return results;
-				})
-				.then(matchIdsOrNone());
-	}
-	
-	/**
-	 * Handles AncestorOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
-		return EclExpression.of(ancestorOf.getConstraint(), expressionForm)
-				.resolveConcepts(context)
-				.then(concepts -> {
-					final Set<String> ancestors = newHashSet();
-					for (SnomedConcept concept : concepts) {
-						addParentIds(concept, ancestors);
-						addAncestorIds(concept, ancestors);
-					}
-					return ancestors;
-				})
-				.then(matchIdsOrNone());
-	}
-	
-	/**
-	 * Handles AncestorOrSelfOf simple expression constraints
-	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
-	 */
-	protected Promise<Expression> eval(BranchContext context, final AncestorOrSelfOf ancestorOrSelfOf) {
-		final ExpressionConstraint innerConstraint = ancestorOrSelfOf.getConstraint();
-		// >>* should eval to *
-		if (isAnyExpression(innerConstraint)) {
-			return evaluate(context, innerConstraint);
-		} else {
-			return EclExpression.of(innerConstraint, expressionForm)
-					.resolveConcepts(context)
-					.then(concepts -> {
-						final Set<String> ancestors = newHashSet();
-						for (SnomedConcept concept : concepts) {
-							ancestors.add(concept.getId());
-							addParentIds(concept, ancestors);
-							addAncestorIds(concept, ancestors);
-						}
-						return ancestors;
-					})
-					.then(matchIdsOrNone());
 		}
 	}
 	
@@ -694,6 +613,11 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	}
 
 	@Override
+	protected Promise<? extends Iterable<? extends IComponent>> resolveConcepts(BranchContext context, ExpressionConstraint constraint) {
+		return EclExpression.of(constraint, expressionForm).resolveConcepts(context);
+	}
+	
+	@Override
 	protected Expression parentsExpression(Set<String> ids) {
 		return Trees.INFERRED_FORM.equals(expressionForm) ? SnomedConceptDocument.Expressions.parents(ids) : SnomedConceptDocument.Expressions.statedParents(ids);
 	}
@@ -722,49 +646,57 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	protected Class<?> getDocumentType() {
 		return SnomedConceptDocument.class;
 	}
-	
-	private void addParentIds(SnomedConcept concept, final Set<String> collection) {
-		if (Trees.INFERRED_FORM.equals(expressionForm)) {
-			if (concept.getParentIds() != null) {
-				for (long parent : concept.getParentIds()) {
-					if (IComponent.ROOT_IDL != parent) {
-						collection.add(Long.toString(parent));
+
+	@Override
+	protected void addParentIds(IComponent concept, Set<String> collection) {
+		if (concept instanceof SnomedConcept) {
+			SnomedConcept snomedConcept = (SnomedConcept) concept;
+			if (Trees.INFERRED_FORM.equals(expressionForm)) {
+				if (snomedConcept.getParentIds() != null) {
+					for (long parent : snomedConcept.getParentIds()) {
+						if (IComponent.ROOT_IDL != parent) {
+							collection.add(Long.toString(parent));
+						}
+					}
+				}
+			} else {
+				if (snomedConcept.getStatedParentIds() != null) {
+					for (long statedParent : snomedConcept.getStatedParentIds()) {
+						if (IComponent.ROOT_IDL != statedParent) {
+							collection.add(Long.toString(statedParent));
+						}
 					}
 				}
 			}
 		} else {
-			if (concept.getStatedParentIds() != null) {
-				for (long statedParent : concept.getStatedParentIds()) {
-					if (IComponent.ROOT_IDL != statedParent) {
-						collection.add(Long.toString(statedParent));
-					}
-				}
-			}
+			super.addParentIds(concept, collection);
 		}
 	}
 	
-	private void addAncestorIds(SnomedConcept concept, Set<String> collection) {
-		if (Trees.INFERRED_FORM.equals(expressionForm)) {
-			if (concept.getAncestorIds() != null) {
-				for (long ancestor : concept.getAncestorIds()) {
-					if (IComponent.ROOT_IDL != ancestor) {
-						collection.add(Long.toString(ancestor));
+	@Override
+	protected void addAncestorIds(IComponent concept, Set<String> collection) {
+		if (concept instanceof SnomedConcept) {
+			SnomedConcept snomedConcept = (SnomedConcept) concept;
+			if (Trees.INFERRED_FORM.equals(expressionForm)) {
+				if (snomedConcept.getAncestorIds() != null) {
+					for (long ancestor : snomedConcept.getAncestorIds()) {
+						if (IComponent.ROOT_IDL != ancestor) {
+							collection.add(Long.toString(ancestor));
+						}
+					}
+				}
+			} else {
+				if (snomedConcept.getStatedAncestorIds() != null) {
+					for (long statedAncestor : snomedConcept.getStatedAncestorIds()) {
+						if (IComponent.ROOT_IDL != statedAncestor) {
+							collection.add(Long.toString(statedAncestor));
+						}
 					}
 				}
 			}
 		} else {
-			if (concept.getStatedAncestorIds() != null) {
-				for (long statedAncestor : concept.getStatedAncestorIds()) {
-					if (IComponent.ROOT_IDL != statedAncestor) {
-						collection.add(Long.toString(statedAncestor));
-					}
-				}
-			}
-		}		
-	}
-	
-	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {
-		return ids -> ids.isEmpty() ? Expressions.matchNone() : ids(ids);
+			super.addAncestorIds(concept, collection);
+		}
 	}
 	
 	/*package*/ static String extractTerm(TypedSearchTermClause clause) {

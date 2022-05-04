@@ -219,6 +219,80 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	}
 	
 	/**
+	 * Handles ParentOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
+	protected Promise<Expression> eval(C context, final ParentOf parentOf) {
+		return resolveConcepts(context, parentOf.getConstraint())
+				.then(concepts -> {
+					final Set<String> parents = newHashSet();
+					for (IComponent concept : concepts) {
+						addParentIds(concept, parents);
+					}
+					return parents;
+				})
+				.then(matchIdsOrNone());
+	}
+	
+	/**
+	 * Handles ParentOrSelfOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
+	protected Promise<Expression> eval(C context, final ParentOrSelfOf parentOrSelfOf) {
+		return resolveConcepts(context, parentOrSelfOf.getConstraint())
+				.then(concepts -> {
+					final Set<String> results = newHashSet();
+					for (IComponent concept : concepts) {
+						results.add(concept.getId());
+						addParentIds(concept, results);
+					}
+					return results;
+				})
+				.then(matchIdsOrNone());
+	}
+	
+	/**
+	 * Handles AncestorOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
+	protected Promise<Expression> eval(C context, final AncestorOf ancestorOf) {
+		return resolveConcepts(context, ancestorOf.getConstraint())
+				.then(concepts -> {
+					final Set<String> ancestors = newHashSet();
+					for (IComponent concept : concepts) {
+						addParentIds(concept, ancestors);
+						addAncestorIds(concept, ancestors);
+					}
+					return ancestors;
+				})
+				.then(matchIdsOrNone());
+	}
+	
+	/**
+	 * Handles AncestorOrSelfOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
+	protected Promise<Expression> eval(C context, final AncestorOrSelfOf ancestorOrSelfOf) {
+		final ExpressionConstraint innerConstraint = ancestorOrSelfOf.getConstraint();
+		// >>* should eval to *
+		if (isAnyExpression(innerConstraint)) {
+			return evaluate(context, innerConstraint);
+		} else {
+			return resolveConcepts(context, innerConstraint)
+					.then(concepts -> {
+						final Set<String> ancestors = newHashSet();
+						for (IComponent concept : concepts) {
+							ancestors.add(concept.getId());
+							addParentIds(concept, ancestors);
+							addAncestorIds(concept, ancestors);
+						}
+						return ancestors;
+					})
+					.then(matchIdsOrNone());
+		}
+	}
+	
+	/**
 	 * Handles conjunction binary operator expressions
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
 	 */
@@ -458,6 +532,10 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	protected Expression termMatchExpression(com.b2international.snowowl.core.request.TermFilter termFilter) {
 		return throwUnsupported("Unable to provide term expression for term filter: " + termFilter.getTerm());
 	}
+	
+	protected Promise<? extends Iterable<? extends IComponent>> resolveConcepts(C context, ExpressionConstraint constraint) {
+		return throwUnsupported("Unable to evaluate expression "+ constraint.eClass().getName() +" to concepts.");
+	}
 
 	public static boolean canExtractIds(Expression expression) {
 		return expression instanceof Predicate && ID.equals(((Predicate) expression).getField());
@@ -512,7 +590,19 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 					.search(searcher));
 		};
 	}
+	
+	public static Function<Set<String>, Expression> matchIdsOrNone() {
+		return ids -> ids.isEmpty() ? Expressions.matchNone() : ids(ids);
+	}
 
 	protected abstract Class<?> getDocumentType();
+	
+	protected void addParentIds(IComponent concept, final Set<String> collection) {
+		throw new UnsupportedOperationException();
+	}
+	
+	protected void addAncestorIds(IComponent concept, final Set<String> collection) {
+		throw new UnsupportedOperationException();
+	}
 	
 }
