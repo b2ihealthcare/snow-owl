@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.19.1
+
+### Bugs/Improvements
+- [transport] fix minor issue related to uploading/downloading to large files with many chunks (#1011)
+- [index] ignore hidden system indices when checking health state (fa4827b)
+
+### Dependencies
+- Bump H2 to 2.1.210 (#1006)
+- Bump Spring to 5.3.19 (da9db90)
+
 ## 7.19.0
 
 ### Transport
@@ -13,7 +23,7 @@ All notable changes to this project will be documented in this file.
 ## 7.18.2
 
 ### Bugs/Improvements
-- [index]: include diagnosis in cluster not available messages (1ffc3f8)
+- [index] include diagnosis in cluster not available messages (1ffc3f8)
 
 ### Dependencies
 - Bump snomed-owl-toolkit to 3.0.6 (#972)
@@ -21,11 +31,11 @@ All notable changes to this project will be documented in this file.
 ## 7.18.1
 
 ### Bugs/Improvements
-- [index]: filter out hidden indices that may cause issues during health checks (#959)
-- [classification]: update namespace and module assigner logic to prevent incorrect assignments in extensions that depend on other extensions (#965)
-- [snomed]: backport RF2 improvements regarding smart autogeneration of delta content using Full RF2 files (40832b7)
-- [security]: mitigate CVE-2021-44228, CVE-2021-44832, CVE-2021-45046, CVE-2021-45105 security vulnerabilities around log4j2 libraries (#953, #957)
-- [security]: mitigate CVE-2021-42550 security vulnerability (82e422a)
+- [index] filter out hidden indices that may cause issues during health checks (#959)
+- [classification] update namespace and module assigner logic to prevent incorrect assignments in extensions that depend on other extensions (#965)
+- [snomed] backport RF2 improvements regarding smart autogeneration of delta content using Full RF2 files (40832b7)
+- [security] mitigate CVE-2021-44228, CVE-2021-44832, CVE-2021-45046, CVE-2021-45105 security vulnerabilities around log4j2 libraries (#953, #957)
+- [security] mitigate CVE-2021-42550 security vulnerability (82e422a)
 
 ### Dependencies
 - Bump transitive log4j2 dependency to `2.17.1` (#957)
@@ -42,10 +52,10 @@ All notable changes to this project will be documented in this file.
 - Add a new console command to extract SCT IDs from the current ID service (#946)
 
 ### Bugs/Improvements
-- [index]: fixed a branch merge issue where incorrect branch segment diff calculation caused false positive conflicts to appear instead of successful merge (#947)
-- [snomed]: do not convert OWL expressions to relationships when the referenced component violates the rules of the SNOMED CT OWL Guide (#923)
-- [snomed]: register published SCT IDs to connected CIS instance properly when import RF2 data (#941)
-- [snomed]: properly register SCT IDs when using nested component updates in the SNOMED CT Concept Update API (#945)
+- [index] fixed a branch merge issue where incorrect branch segment diff calculation caused false positive conflicts to appear instead of successful merge (#947)
+- [snomed] do not convert OWL expressions to relationships when the referenced component violates the rules of the SNOMED CT OWL Guide (#923)
+- [snomed] register published SCT IDs to connected CIS instance properly when import RF2 data (#941)
+- [snomed] properly register SCT IDs when using nested component updates in the SNOMED CT Concept Update API (#945)
 
 ## 7.17.6
 
