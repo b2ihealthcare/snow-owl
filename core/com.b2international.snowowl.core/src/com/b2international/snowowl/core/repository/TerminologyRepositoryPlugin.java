@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.request.*;
+import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.b2international.snowowl.core.request.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
@@ -75,6 +76,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
 					.bind(ResourceURLSchemaSupport.class, getTerminologyURISupport())
+					.bind(EclRewriter.class, getEclRewriter())
 					.build(env);
 			
 			RepositoryInfo status = repo.status();
@@ -88,6 +90,10 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 			env.services().registerService(EsClient.class, repo.service(IndexClient.class).client());
 		}
 		afterRun(configuration, env);
+	}
+	
+	protected EclRewriter getEclRewriter() {
+		return new EclRewriter();
 	}
 	
 	/**

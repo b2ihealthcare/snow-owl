@@ -81,14 +81,14 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	}
 	
 	/**
-	 * Subclasses may optionally override this method to rewrite the parsed ECL query before evaluation.
+	 * Subclasses may optionally override this method to rewrite the parsed ECL query before evaluation. By default it uses the EclRewriter attached to the current execution context.
 	 *  
 	 * @param context
 	 * @param expressionConstraint
 	 * @return
 	 */
 	protected ExpressionConstraint rewrite(C context, ExpressionConstraint expressionConstraint) {
-		return new EclRewriter().rewrite(expressionConstraint);
+		return context.service(EclRewriter.class).rewrite(expressionConstraint);
 	}
 	
 	public final void setExpression(String expression) {

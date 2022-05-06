@@ -29,12 +29,16 @@ import com.b2international.commons.tree.NoopTreeVisitor;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snomed.ecl.validation.EclValidator;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.emf.EObjectTreeNode;
 import com.b2international.snowowl.core.emf.EObjectWalker;
 import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -77,13 +81,27 @@ final class EclLabelerRequest extends ResourceRequest<ServiceProvider, LabeledEc
 		final Map<String, ExpressionConstraint> queries = Maps.newHashMapWithExpectedSize(expressions.size());
 		final LinkedHashMap <String, Object> errors = Maps.newLinkedHashMap();
 		
+		// retrieve Ecl Rewriter implementation for the selected CodeSystem
+		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
+			.one()
+			.filterById(new ResourceURI(codeSystemUri).getResourceId())
+			.buildAsync()
+			.execute(context)
+			.first()
+			.orElseThrow(() -> new BadRequestException("codeSystemUri '%s' cannot be resolved to an existing Code System.", codeSystemUri));
+		
+		EclRewriter rewriter = context.service(RepositoryManager.class)
+				.get(codeSystem.getToolingId())
+				.service(EclRewriter.class);
+		
 		for (String expression : expressions) {
 			if (Strings.isNullOrEmpty(expression)) {
 				continue;
 			}
 			try {
 				// always ignore the SCT ID validation error, so this API can be used with any Code System 
-				ExpressionConstraint query = queries.computeIfAbsent(expression, (key) -> eclParser.parse(key, Set.of(EclValidator.SCTID_ERROR_CODE)));
+				// also, rewrite the ECL query to properly parse certain tooling specific syntaxes
+				ExpressionConstraint query = queries.computeIfAbsent(expression, (key) -> rewriter.rewrite(eclParser.parse(key, Set.of(EclValidator.SCTID_ERROR_CODE))));
 				conceptIdsToLabel.addAll(collect(query));
 			} catch (ApiException e) {
 				if (e instanceof SyntaxException) {
