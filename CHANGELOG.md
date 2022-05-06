@@ -1,6 +1,36 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.3.0
+
+### Core
+- Secure connections are now by default enabled when using TCP connections to connect to the terminology server (#993, #1012)
+  * New configuration values are available to configure SSL certificate (or let the server use a self-signed/generated certificate by default)
+- Support Elasticsearch 8 via API compatibility mode (#1008)
+  * Support running Elasticsearch in testcontainers
+- Support externally customizable index type mappings via `repository.index.<indexName>.mappings` configuration key (#1010)
+- Move ECL labeler API to core (#1009)
+
+### SNOMED CT
+- Add `batchSize` configuration parameter to SNOMED CT RF2 import API (4109687)
+
+### Bugs/Improvements
+- [index] backoff a bit when sending too much bulk requests to the connected Elasticsearch cluster on rejection errors, eg. high queue size (be85e38)
+- [core] make `toolingId/branch` reflective access support a timestamp suffix (6df066f)
+- [core] check `bundleId` before executing resource type specific logic (like automatic branch generation) to prevent creation of the corresponding branch as a side effect of an erroneous code system create request (c191ba3)
+- [core] fetch `extensionOf` branch state from the code system's repository, not the one available from the context. The latter only stores resource metadata and no branches outside MAIN exist in it. (0d581a3) 
+- [core] add a generic implementation of ECL to use in other Code Systems and toolings when required (c5daa92, 76e353d, e6dbf9e)
+- [snomed] do not kick off a concept map search in the SNOMED CT tooling if source tooling ID filtering is enabled, and `snomed` is not within the allowed list of tooling IDs. (b30d38d)
+- [snomed] honor `index.maxTermsCount` when sending large queries to Elasticsearch during RF2 import (4a46daa)
+- [snomed] reduce load of existing data from external Elasticsearch clusters when importing RF2 releases (cca6f87)
+- [snomed] various performance optimizations when sending SNOMED CT commit requests sent to Elasticsearch (f52991a, 62101d6, 26d4a45)
+- [suggest] avoid NPE when suggestion base concept does not have alternative terms (0364e6a)
+
+### Dependencies
+- Bump Elasticsearch to 7.17.2 (87b4a22)
+- Bump Spring to 5.3.19 (bfd162b)
+- Add SQL, JSR223 (script engine) and date utility modules to Groovy wrapper (062cade, 8eb9486)
+
 ## 8.2.1
 
 ### Bugs/Improvements
