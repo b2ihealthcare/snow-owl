@@ -30,7 +30,6 @@ import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snomed.ecl.validation.EclValidator;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -84,7 +83,7 @@ final class EclLabelerRequest extends ResourceRequest<ServiceProvider, LabeledEc
 		// retrieve Ecl Rewriter implementation for the selected CodeSystem
 		CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
 			.one()
-			.filterById(new ResourceURI(codeSystemUri).getResourceId())
+			.filterById(CodeSystem.uri(codeSystemUri).getResourceId())
 			.buildAsync()
 			.execute(context)
 			.first()
