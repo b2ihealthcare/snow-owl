@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.ecl.EclSerializer;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
+import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
@@ -99,7 +100,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 		context
 			.with(TerminologyResource.class, cs)
 			.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
-			.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)));
+			.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)))
+			.with(EclRewriter.class, new EclRewriter());
 	}
 	
 	@Override
