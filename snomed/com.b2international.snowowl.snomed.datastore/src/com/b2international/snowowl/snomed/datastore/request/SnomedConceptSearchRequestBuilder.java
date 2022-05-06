@@ -36,7 +36,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		implements TermFilterSupport<SnomedConceptSearchRequestBuilder> {
 
 	/**
-	 * Special term based sort key for
+	 * Special term based sort key for sorting by preferred term based on locale and term.
 	 */
 	public static final String TERM_SORT = "term";
 
