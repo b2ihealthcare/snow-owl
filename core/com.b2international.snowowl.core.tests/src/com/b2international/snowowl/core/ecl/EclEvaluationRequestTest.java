@@ -33,6 +33,7 @@ import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snomed.ecl.validation.EclValidator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
+import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.google.inject.Injector;
 
 /**
@@ -68,6 +69,7 @@ public class EclEvaluationRequestTest {
 		this.context = ServiceProvider.EMPTY.inject()
 				.bind(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 				.bind(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
+				.bind(EclRewriter.class, new EclRewriter())
 				.build();
 	}
 	

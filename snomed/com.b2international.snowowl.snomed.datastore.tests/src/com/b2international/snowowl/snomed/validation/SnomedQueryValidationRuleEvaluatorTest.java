@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.ecl.EclSerializer;
+import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -83,7 +84,8 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		context
 			.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 			.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
-			.with(ObjectMapper.class, getMapper());
+			.with(ObjectMapper.class, getMapper())
+			.with(EclRewriter.class, new EclRewriter());
 		
 		CodeSystemResource.configureCodeSystem(context);
 	
