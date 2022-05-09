@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Groovy Wrapper Bundle
 Bundle-SymbolicName: com.b2international.groovy;singleton:=true
-Bundle-Version: 3.0.9.b2i
+Bundle-Version: 3.0.9.1-b2i
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: lib/groovy-3.0.9.jar,
