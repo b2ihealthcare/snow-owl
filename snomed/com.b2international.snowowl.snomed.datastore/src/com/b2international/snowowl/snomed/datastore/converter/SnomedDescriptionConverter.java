@@ -105,7 +105,7 @@ public final class SnomedDescriptionConverter extends BaseRevisionResourceConver
 		final Options caseSignificanceExpand = expand().get("caseSignificance", Options.class);
 		
 		context().service(SnomedConceptRequestCache.class)
-			.request(caseSignificanceIds, caseSignificanceExpand.getOptions("expand"), locales(), caseSignificancesById -> {
+			.request(context(), caseSignificanceIds, caseSignificanceExpand.getOptions("expand"), locales(), caseSignificancesById -> {
 				for (SnomedDescription result : results) {
 					result.setCaseSignificance(caseSignificancesById.get(result.getCaseSignificanceId()));
 				}
@@ -139,7 +139,7 @@ public final class SnomedDescriptionConverter extends BaseRevisionResourceConver
 			final Iterable<String> acceptabilityIds = results.stream().flatMap(d -> d.getAcceptabilities().stream().map(AcceptabilityMembership::getAcceptabilityId))::iterator;
 
 			context().service(SnomedConceptRequestCache.class)
-				.request(acceptabilityIds, acceptabilityExpand.getOptions("expand"), locales(), acceptabilitiesById -> {
+				.request(context(), acceptabilityIds, acceptabilityExpand.getOptions("expand"), locales(), acceptabilitiesById -> {
 					for (SnomedDescription result : results) {
 						result.getAcceptabilities().forEach(acceptabilityMembership -> {
 							acceptabilityMembership.setAcceptability(acceptabilitiesById.get(acceptabilityMembership.getAcceptabilityId()));
@@ -154,7 +154,7 @@ public final class SnomedDescriptionConverter extends BaseRevisionResourceConver
 			final Iterable<String> languageRefSetIds = results.stream().flatMap(d -> d.getAcceptabilities().stream().map(AcceptabilityMembership::getLanguageRefSetId))::iterator;
 			
 			context().service(SnomedConceptRequestCache.class)
-				.request(languageRefSetIds, languageRefSetExpand.getOptions("expand"), locales(), languageRefSetsById -> {
+				.request(context(), languageRefSetIds, languageRefSetExpand.getOptions("expand"), locales(), languageRefSetsById -> {
 					for (SnomedDescription result : results) {
 						result.getAcceptabilities().forEach(acceptabilityMembership -> {
 							acceptabilityMembership.setLanguageRefSet(languageRefSetsById.get(acceptabilityMembership.getLanguageRefSetId()));
@@ -172,7 +172,7 @@ public final class SnomedDescriptionConverter extends BaseRevisionResourceConver
 			final Options expandOptions = expand().get("concept", Options.class);
 			final Iterable<String> conceptIds = FluentIterable.from(results).transform(SnomedDescription::getConceptId);
 			context().service(SnomedConceptRequestCache.class)
-				.request(conceptIds, expandOptions.getOptions("expand"), locales(), conceptsById -> {
+				.request(context(), conceptIds, expandOptions.getOptions("expand"), locales(), conceptsById -> {
 					for (SnomedDescription description : results) {
 						((SnomedDescription) description).setConcept(conceptsById.get(description.getConceptId()));
 					}
@@ -187,7 +187,7 @@ public final class SnomedDescriptionConverter extends BaseRevisionResourceConver
 			final Iterable<String> typeIds = FluentIterable.from(results).transform(SnomedDescription::getTypeId);
 			
 			context().service(SnomedConceptRequestCache.class)
-				.request(typeIds, expandOptions.getOptions("expand"), locales(), typesById -> {
+				.request(context(), typeIds, expandOptions.getOptions("expand"), locales(), typesById -> {
 					for (SnomedDescription description : results) {
 						((SnomedDescription) description).setType(typesById.get(description.getTypeId()));
 					}

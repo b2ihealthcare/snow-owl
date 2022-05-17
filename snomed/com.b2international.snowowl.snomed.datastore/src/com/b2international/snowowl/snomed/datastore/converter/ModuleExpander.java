@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ final class ModuleExpander {
 			final Iterable<String> moduleIds = results.stream().map(SnomedComponent::getModuleId)::iterator;
 			
 			context.service(SnomedConceptRequestCache.class)
-				.request(moduleIds, moduleOptions.getOptions("expand"), locales, modulesById -> {
+				.request(context, moduleIds, moduleOptions.getOptions("expand"), locales, modulesById -> {
 					for (SnomedComponent component : results) {
 						component.setModule(modulesById.get(component.getModuleId()));
 					}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -34,9 +35,23 @@ public class SnomedConceptRequestCache {
 
 	private final Map<FetchConfig, Map<String, SnomedConcept>> cache = new HashMap<>(); 
 	private final Deque<FetchConfig> requestedFetches = new ArrayDeque<>();
+	private final boolean immediate;
+
+	public SnomedConceptRequestCache() {
+		this(false);
+	}
 	
-	public void request(Iterable<String> ids, Options expand, List<ExtendedLocale> locales, Consumer<Map<String, SnomedConcept>> onConceptsReady) {
-		requestedFetches.add(new FetchConfig(ids, expand, locales, onConceptsReady));
+	@VisibleForTesting
+	public SnomedConceptRequestCache(final boolean immediate) {
+		this.immediate = immediate;
+	}
+
+	public void request(BranchContext context, Iterable<String> ids, Options expand, List<ExtendedLocale> locales, Consumer<Map<String, SnomedConcept>> onConceptsReady) {
+		final FetchConfig fetchConfig = new FetchConfig(ids, expand, locales, onConceptsReady);
+		requestedFetches.add(fetchConfig);
+		if (immediate) {
+			compute(context);
+		}
 	}
 	
 	public Map<String, SnomedConcept> get(BranchContext context, Iterable<String> ids, Options expand, List<ExtendedLocale> locales) {
