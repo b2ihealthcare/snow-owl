@@ -95,7 +95,7 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 			final Iterable<String> characteristicTypeConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getCharacteristicTypeId);
 			
 			context().service(SnomedConceptRequestCache.class)
-				.request(characteristicTypeConceptIds, characteristicTypeOptions.getOptions("expand"), locales(), characteristicTypesById -> {
+				.request(context(), characteristicTypeConceptIds, characteristicTypeOptions.getOptions("expand"), locales(), characteristicTypesById -> {
 					for (SnomedRelationship relationship : results) {
 						((SnomedRelationship) relationship).setCharacteristicType(characteristicTypesById.get(relationship.getCharacteristicTypeId()));
 					}
@@ -110,7 +110,7 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 			final Iterable<String> modifierIds = FluentIterable.from(results).transform(SnomedRelationship::getModifierId);
 			
 			context().service(SnomedConceptRequestCache.class)
-				.request(modifierIds, modifierOptions.getOptions("expand"), locales(), modifiersById -> {
+				.request(context(), modifierIds, modifierOptions.getOptions("expand"), locales(), modifiersById -> {
 					for (SnomedRelationship relationship : results) {
 						((SnomedRelationship) relationship).setModifier(modifiersById.get(relationship.getModifierId()));
 					}
@@ -125,7 +125,7 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 			final Iterable<String> typeConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getTypeId);
 			
 			context().service(SnomedConceptRequestCache.class)
-				.request(typeConceptIds, typeOptions.getOptions("expand"), locales(), typeConceptsById -> {
+				.request(context(), typeConceptIds, typeOptions.getOptions("expand"), locales(), typeConceptsById -> {
 					for (SnomedRelationship relationship : results) {
 						final String typeId = relationship.getTypeId();
 						if (typeConceptsById.containsKey(typeId)) {
@@ -146,7 +146,7 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 				.transform(SnomedRelationship::getDestinationId);
 			
 			context().service(SnomedConceptRequestCache.class)
-				.request(destinationConceptIds, destinationOptions.getOptions("expand"), locales(), destinationConceptsById -> {
+				.request(context(), destinationConceptIds, destinationOptions.getOptions("expand"), locales(), destinationConceptsById -> {
 					for (SnomedRelationship relationship : results) {
 						final String destinationId = relationship.getDestinationId();
 						// containsKey handles any null values here
@@ -166,7 +166,7 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 			final Iterable<String> sourceConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getSourceId);
 
 			context().service(SnomedConceptRequestCache.class)
-				.request(sourceConceptIds, sourceOptions.getOptions("expand"), locales(), sourceConceptsById -> {
+				.request(context(), sourceConceptIds, sourceOptions.getOptions("expand"), locales(), sourceConceptsById -> {
 					for (SnomedRelationship relationship : results) {
 						final String sourceId = relationship.getSourceId();
 						if (sourceConceptsById.containsKey(sourceId)) {

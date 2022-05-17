@@ -174,7 +174,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 		final Iterable<String> definitionStatusIds = results.stream().map(SnomedConcept::getDefinitionStatusId)::iterator;
 
 		context().service(SnomedConceptRequestCache.class)
-			.request(definitionStatusIds, definitionStatusExpand, locales(), definitionStatusesById -> {
+			.request(context(), definitionStatusIds, definitionStatusExpand, locales(), definitionStatusesById -> {
 				for (SnomedConcept result : results) {
 					result.setDefinitionStatus(definitionStatusesById.get(result.getDefinitionStatusId()));
 				}
