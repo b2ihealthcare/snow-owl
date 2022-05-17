@@ -235,16 +235,21 @@ public final class EsQueryBuilder {
 				clauses.add(Expressions.matchAnyObject(field, values));
 			}
 		}
+
 	}
 	
 	private boolean shouldMergeSingleArgumentPredicate(Expression expression) {
-		// Single argument predicates should not be eliminated if the field is a collection type
-		return AbstractExpressionBuilder.shouldMergeSingleArgumentPredicate(expression) && !mapping.isCollection(((Predicate) expression).getField());
+		return AbstractExpressionBuilder.shouldMergeSingleArgumentPredicate(expression) && referencesScalarField(expression);
 	}
 	
 	private boolean shouldMergeSetPredicate(Expression expression) {
-		// Set predicates should not be eliminated if the field is a collection type
-		return AbstractExpressionBuilder.shouldMergeSetPredicate(expression) && !mapping.isCollection(((Predicate) expression).getField());
+		return AbstractExpressionBuilder.shouldMergeSetPredicate(expression) && referencesScalarField(expression);
+	}
+
+	// Predicates should not be eliminated if the field is a collection type
+	private boolean referencesScalarField(Expression expression) {
+		final String fieldName = ((Predicate) expression).getField();
+		return mapping.getSelectableFields().contains(fieldName) && !mapping.isCollection(fieldName);
 	}
 
 	private void visit(NestedPredicate predicate) {
