@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.RepositoryManager;
@@ -42,16 +43,18 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 	public Boolean execute(RepositoryContext context) {
 		checkArgument(codeSystem.getConcepts() == null || codeSystem.getConcepts().size() < CONCEPT_LIMIT, "Maintenance of code systems with more than %d codes is not supported.", CONCEPT_LIMIT);
 		
-		FhirCodeSystemCUDSupport cudSupport =	context.service(RepositoryManager.class)
-				.repositories()
-				.stream()
-				.filter(r -> r.optionalService(FhirCodeSystemCUDSupport.class).isPresent())
-				.map(r -> r.service(FhirCodeSystemCUDSupport.class))
-				.collect(Collectors.toList())
-				.get(0);
+		final List<FhirCodeSystemCUDSupport> cudSupport = context.service(RepositoryManager.class)
+			.repositories()
+			.stream()
+			.flatMap(r -> r.optionalService(FhirCodeSystemCUDSupport.class).stream())
+			.limit(1)
+			.collect(Collectors.toList());
 		
-		cudSupport.updateOrCreateCodeSystem(context, codeSystem);
+		if (cudSupport.isEmpty()) {
+			throw new IllegalStateException("FHIR CodeSystem resource creation support is missing.");
+		}
+		
+		cudSupport.get(0).updateOrCreateCodeSystem(context, codeSystem);
 		return Boolean.TRUE;			
 	}
-	
 }
