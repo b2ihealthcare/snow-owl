@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,8 @@ public class ExtensionDeserializer extends StdDeserializer<Extension<?>> {
 			return objectCodec.treeToValue(node, IntegerExtension.class);
 		case STRING:
 			return objectCodec.treeToValue(node, StringExtension.class);
+		case CODE:
+			return objectCodec.treeToValue(node, CodeExtension.class);
 		default:
 			throw new IllegalArgumentException("Unsupported extension type '" + extensionType + "'.");
 		}
