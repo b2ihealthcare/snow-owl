@@ -25,6 +25,7 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -104,6 +105,7 @@ public class Concept {
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")
+	@JsonIgnoreProperties("extension")
 	public static class Builder extends ValidatingBuilder<Concept> {
 		
 		private Code code;
