@@ -1,4 +1,4 @@
-FROM b2ihealthcare/centos:7 AS builder
+FROM b2ihealthcare/centos7:latest AS builder
 
 ARG SNOWOWL_INSTALL_PACKAGE
 
@@ -13,7 +13,7 @@ RUN chmod 0775 configuration resources serviceability
 COPY config/snowowl.yml configuration/
 RUN chmod 0660 configuration/snowowl.yml
 
-FROM b2ihealthcare/centos:7
+FROM b2ihealthcare/centos7:latest
 
 ARG BUILD_TIMESTAMP
 ARG TAG

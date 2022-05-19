@@ -58,8 +58,7 @@ try {
 			string(name: 'extension', value: 'tar.gz'),
 			string(name: 'imageClassifier', value: 'oss'),
 			string(name: 'gitRevision', value: revision),
-			string(name: 'gitBranch', value: branch),
-			string(name: 'baseImage', value: 'b2ihealthcare/centos-slim:7')
+			string(name: 'gitBranch', value: branch)
 		], quietPeriod: 1, wait: false
 
 	}
