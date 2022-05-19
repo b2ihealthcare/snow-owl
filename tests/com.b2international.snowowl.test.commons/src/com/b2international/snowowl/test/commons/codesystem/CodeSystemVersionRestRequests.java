@@ -27,8 +27,6 @@ import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
@@ -87,6 +85,20 @@ public abstract class CodeSystemVersionRestRequests {
 					"effectiveTime", effectiveTime.toString(),
 					"force", force
 				))
+				.post()
+				.then();
+	}
+	
+	public static ValidatableResponse createVersion(String codeSystemId, String version, LocalDate effectiveTime, Map<String,?> headers) {
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
+				.contentType(ContentType.JSON)
+				.headers(headers)
+				.body(Json.object(
+						"resource", CodeSystem.uri(codeSystemId).toString(),
+						"version", version,
+						"description", version,
+						"effectiveTime", effectiveTime.toString()
+						))
 				.post()
 				.then();
 	}

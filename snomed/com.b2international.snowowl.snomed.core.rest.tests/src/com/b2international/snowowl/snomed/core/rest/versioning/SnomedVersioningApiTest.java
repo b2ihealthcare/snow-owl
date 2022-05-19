@@ -22,10 +22,12 @@ import static org.junit.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
@@ -64,6 +66,13 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	public void createRegularVersion() {
 		createVersion(INT_CODESYSTEM, "regular-version", getNextAvailableEffectiveDate(INT_CODESYSTEM)).statusCode(201);
 		assertGetVersion(INT_CODESYSTEM, "regular-version").statusCode(200);
+	}
+	
+	@Test
+	public void createRegularVersionWithAuthor() {
+		Map<String, String> headers = Map.of(AbstractRestService.X_AUTHOR, "info@b2international.com");
+		createVersion(INT_CODESYSTEM, "version-with-author", getNextAvailableEffectiveDate(INT_CODESYSTEM), headers).statusCode(201);
+		assertGetVersion(INT_CODESYSTEM, "version-with-author").statusCode(200);
 	}
 
 	@Test

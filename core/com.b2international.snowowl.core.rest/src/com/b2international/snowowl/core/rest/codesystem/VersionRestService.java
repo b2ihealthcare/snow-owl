@@ -120,7 +120,10 @@ public class VersionRestService extends AbstractRestService {
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public ResponseEntity<Void> createVersion(
 			@Parameter(description="Version parameters")
-			@RequestBody final ResourceRequest<VersionRestInput> input) {
+			@RequestBody final ResourceRequest<VersionRestInput> input,
+			
+			@RequestHeader(value = X_AUTHOR, required = false)
+			final String author) {
 		final VersionRestInput change = input.getChange();
 		ApiValidation.checkInput(change);
 		
