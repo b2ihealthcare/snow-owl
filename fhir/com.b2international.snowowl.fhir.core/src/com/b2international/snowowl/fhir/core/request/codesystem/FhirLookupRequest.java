@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -103,11 +104,15 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 		final Set<String> nonLookupProperties = Sets.difference(requestedProperties, LOOKUP_REQUEST_PROPS);
 		
 		// second check if the remaining unsupported properties supported by the CodeSystem either via full URL
-		final Set<String> supportedProperties = codeSystem.getProperties().stream().map(SupportedConceptProperty::getUri).map(Uri::getUriValue).collect(Collectors.toSet());
+		final Set<String> supportedProperties = codeSystem.getProperties() == null 
+				? Collections.emptySet() 
+				: codeSystem.getProperties().stream().map(SupportedConceptProperty::getUri).map(Uri::getUriValue).collect(Collectors.toSet());
 		final Set<String> unsupportedProperties = Sets.difference(nonLookupProperties, supportedProperties);
 		
 		// or via their code only
-		final Set<String> supportedCodes = codeSystem.getProperties().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
+		final Set<String> supportedCodes = codeSystem.getProperties() == null 
+				? Collections.emptySet() 
+				: codeSystem.getProperties().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
 		final Set<String> unsupportedCodes = Sets.difference(unsupportedProperties, supportedCodes);
 		
 		if (!unsupportedCodes.isEmpty()) {
