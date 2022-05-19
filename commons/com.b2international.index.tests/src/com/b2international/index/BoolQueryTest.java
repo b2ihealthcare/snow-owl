@@ -17,14 +17,21 @@ package com.b2international.index;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.b2international.index.Fixtures.Data;
+import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.es.query.EsQueryBuilder;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.BoolExpression;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -34,6 +41,8 @@ import com.b2international.index.query.Query;
  * @since 8.1
  */
 public class BoolQueryTest extends BaseIndexTest {
+
+	private static final Logger LOG = LoggerFactory.getLogger(BoolQueryTest.class);
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -90,7 +99,15 @@ public class BoolQueryTest extends BaseIndexTest {
 			.filter(Expressions.matchAny("id", Set.of(id1, id2)))
 			.filter(Expressions.matchAny("id", Set.of(id1, id3, id4)))
 			.build();
-		assertEquals(Expressions.exactMatch("id", id1), actual);
+		
+		IndexAdmin indexAdmin = index().admin();
+		DocumentMapping mapping = indexAdmin.mappings().getMapping(Data.class);
+		Map<String, Object> settings = indexAdmin.settings();
+		
+		// Single filter matching "id1" should be preserved
+		QueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, settings, LOG).build(actual);
+		assertEquals(BoolQueryBuilder.NAME, esQueryBuilder.getName());
+		assertEquals(1, ((BoolQueryBuilder) esQueryBuilder).filter().size());
 	}
 	
 	@Test
@@ -104,7 +121,43 @@ public class BoolQueryTest extends BaseIndexTest {
 			.filter(Expressions.matchAny("id", Set.of(id2, id3)))
 			.filter(Expressions.matchAny("id", Set.of(id3, id4)))
 			.build();
-		assertEquals(Expressions.matchNone(), actual);
+		
+		IndexAdmin indexAdmin = index().admin();
+		DocumentMapping mapping = indexAdmin.mappings().getMapping(Data.class);
+		Map<String, Object> settings = indexAdmin.settings();
+		
+		QueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, settings, LOG).build(actual);
+
+		// All three clauses should be eliminated as a single field can not take up 3-4 different values required by the filter
+		assertEquals(BoolQueryBuilder.NAME, esQueryBuilder.getName());
+		assertEquals(1, ((BoolQueryBuilder) esQueryBuilder).filter().size());
+		
+		QueryBuilder firstFilter = ((BoolQueryBuilder) esQueryBuilder).filter().get(0);
+		assertEquals(TermQueryBuilder.NAME, firstFilter.getName());
+		assertEquals("match_none", ((TermQueryBuilder) firstFilter).fieldName());
+	}
+	
+	@Test
+	public void mergeDisjunctTermFilterClausesOnCollection() throws Exception {
+		String id1 = UUID.randomUUID().toString();
+		String id2 = UUID.randomUUID().toString();
+		String id3 = UUID.randomUUID().toString();
+		String id4 = UUID.randomUUID().toString();
+		BoolExpression actual = (BoolExpression) Expressions.bool()
+			.filter(Expressions.exactMatch("longSortedSet", id1))
+			.filter(Expressions.matchAny("longSortedSet", Set.of(id2, id3)))
+			.filter(Expressions.matchAny("longSortedSet", Set.of(id3, id4)))
+			.build();
+
+		IndexAdmin indexAdmin = index().admin();
+		DocumentMapping mapping = indexAdmin.mappings().getMapping(Data.class);
+		Map<String, Object> settings = indexAdmin.settings();
+		
+		QueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, settings, LOG).build(actual);
+		
+		// All three clauses should be preserved as longSortedSet might contain [id1, id2, id4] and thus satisfy all three constraints
+		assertEquals(BoolQueryBuilder.NAME, esQueryBuilder.getName());
+		assertEquals(3, ((BoolQueryBuilder) esQueryBuilder).filter().size());
 	}
 
 	private Expression generateDeepBooleanClause(int depth, BiFunction<ExpressionBuilder, Expression, ExpressionBuilder> boolClause) {

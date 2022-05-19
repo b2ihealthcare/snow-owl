@@ -17,9 +17,7 @@ package com.b2international.index.es.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Deque;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,8 +35,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.*;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Queues;
+import com.google.common.collect.*;
 
 /**
  * @since 4.7
@@ -165,6 +162,11 @@ public final class EsQueryBuilder {
 	
 	private void visit(BoolExpression bool) {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
+
+		// Assumes that BoolExpression clauses are stored in writable array lists
+		reduceTermFilters(bool.mustClauses());
+		reduceTermFilters(bool.filterClauses());
+		
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
 			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings, log, path);
@@ -186,7 +188,7 @@ public final class EsQueryBuilder {
 			visit(should);
 			query.should(deque.pop());
 		}
-		
+
 		for (Expression filter : bool.filterClauses()) {
 			visit(filter);
 			query.filter(deque.pop());
@@ -199,6 +201,57 @@ public final class EsQueryBuilder {
 		deque.push(query);
 	}
 	
+	private void reduceTermFilters(List<Expression> clauses) {
+		Multimap<String, Expression> termExpressionsByField = HashMultimap.create();
+		for (Expression expression : List.copyOf(clauses)) {
+			if (shouldMergeSingleArgumentPredicate(expression)) {
+				termExpressionsByField.put(((SingleArgumentPredicate<?>) expression).getField(), expression);
+			} else if (shouldMergeSetPredicate(expression)) {
+				termExpressionsByField.put(((SetPredicate<?>) expression).getField(), expression);
+			}
+		}
+		
+		for (String field : Set.copyOf(termExpressionsByField.keySet())) {
+			Collection<Expression> termExpressions = termExpressionsByField.removeAll(field);
+			if (termExpressions.size() > 1) {
+				Set<Object> values = null;
+				for (Expression expression : termExpressions) {
+					if (values != null && values.isEmpty()) {
+						break;
+					}
+					Set<Object> expressionValues;
+					if (expression instanceof SingleArgumentPredicate<?>) {
+						expressionValues = Set.of(((SingleArgumentPredicate<?>) expression).getArgument());
+					} else if (expression instanceof SetPredicate<?>) {
+						expressionValues = Set.copyOf(((SetPredicate<?>) expression).values());
+					} else {
+						throw new IllegalStateException("Invalid clause detected when processing term/terms clauses: " + expression);
+					}
+					values = values == null ? expressionValues : Set.copyOf(Sets.intersection(values, expressionValues));
+				}
+				// remove all matching clauses first
+				clauses.removeAll(termExpressions);
+				// add the new merged expression
+				clauses.add(Expressions.matchAnyObject(field, values));
+			}
+		}
+
+	}
+	
+	private boolean shouldMergeSingleArgumentPredicate(Expression expression) {
+		return AbstractExpressionBuilder.shouldMergeSingleArgumentPredicate(expression) && referencesScalarField(expression);
+	}
+	
+	private boolean shouldMergeSetPredicate(Expression expression) {
+		return AbstractExpressionBuilder.shouldMergeSetPredicate(expression) && referencesScalarField(expression);
+	}
+
+	// Predicates should not be eliminated if the field is a collection type
+	private boolean referencesScalarField(Expression expression) {
+		final String fieldName = ((Predicate) expression).getField();
+		return mapping.getSelectableFields().contains(fieldName) && !mapping.isCollection(fieldName);
+	}
+
 	private void visit(NestedPredicate predicate) {
 		final String nestedPath = toFieldPath(predicate);
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());

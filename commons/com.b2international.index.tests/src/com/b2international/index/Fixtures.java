@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
+import com.b2international.collections.longs.LongSortedSet;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
@@ -66,6 +67,8 @@ public class Fixtures {
 		private Integer intWrapper;
 		private short shortField;
 		private Short shortWrapper;
+		
+		private LongSortedSet longSortedSet;
 
 		@JsonCreator
 		public Data(@JsonProperty("id") String id) {
@@ -171,6 +174,14 @@ public class Fixtures {
 		public void setShortWrapper(Short shortWrapper) {
 			this.shortWrapper = shortWrapper;
 		}
+		
+		public LongSortedSet getLongSortedSet() {
+			return longSortedSet;
+		}
+		
+		public void setLongSortedSet(LongSortedSet longSortedSet) {
+			this.longSortedSet = longSortedSet;
+		}
 
 		@Override
 		public boolean equals(Object obj) {
@@ -188,6 +199,7 @@ public class Fixtures {
 					&& Objects.equals(longWrapper, other.longWrapper) 
 					&& Objects.equals(intWrapper, other.intWrapper) 
 					&& Objects.equals(shortWrapper, other.shortWrapper)
+					&& Objects.equals(longSortedSet, other.longSortedSet)
 					&& floatField == other.floatField 
 					&& longField == other.longField
 					&& intField == other.intField 
@@ -205,7 +217,8 @@ public class Fixtures {
 				floatWrapper, 
 				longWrapper, 
 				intWrapper, 
-				shortWrapper
+				shortWrapper,
+				longSortedSet
 			);
 		}
 		
@@ -225,6 +238,7 @@ public class Fixtures {
 					.add("longWrapper", longWrapper)
 					.add("shortField", shortField)
 					.add("shortWrapper", shortWrapper)
+					.add("longSortedSet", longSortedSet)
 					.toString();
 		}
 		
