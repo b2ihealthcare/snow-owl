@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ package com.b2international.snowowl.core.authorization;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
-import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
+import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
@@ -91,7 +91,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 		
 		if (!User.SYSTEM.equals(user) && !user.isAdministrator()) {
 			// authorize user whether it is permitted to execute the request(s) or not
-			requests
+			List<Permission> requiredPermissionsToExecute = requests
 				.stream()
 				.filter(AccessControl.class::isInstance)
 				.map(AccessControl.class::cast)
@@ -102,11 +102,11 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 					}
 					return permissions.stream();
 				})
-				.forEach(permissionRequirement -> {
-					if (!user.hasPermission(permissionRequirement)) {
-						throw new ForbiddenException("Operation not permitted. '%s' permission is required. User has '%s'.", permissionRequirement.getPermission(), user.getPermissions());
-					}
-				});
+				.collect(Collectors.toList());
+			// throw a Forbidden Exception if the user does not have permission to perform the request
+			context.optionalService(AuthorizationService.class)
+				.orElse(AuthorizationService.DEFAULT)
+				.checkPermission(user, requiredPermissionsToExecute);
 		}
 
 		return next(userContext);
