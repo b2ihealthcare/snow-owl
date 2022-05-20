@@ -17,10 +17,8 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -31,6 +29,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boolean> {
 
 	private static final long serialVersionUID = 1L;
+	
 	private static final int CONCEPT_LIMIT = 5000;
 	
 	private final CodeSystem codeSystem;
@@ -43,18 +42,12 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 	public Boolean execute(RepositoryContext context) {
 		checkArgument(codeSystem.getConcepts() == null || codeSystem.getConcepts().size() < CONCEPT_LIMIT, "Maintenance of code systems with more than %d codes is not supported.", CONCEPT_LIMIT);
 		
-		final List<FhirCodeSystemCUDSupport> cudSupport = context.service(RepositoryManager.class)
-			.repositories()
-			.stream()
-			.flatMap(r -> r.optionalService(FhirCodeSystemCUDSupport.class).stream())
-			.limit(1)
-			.collect(Collectors.toList());
-		
+		final Optional<FhirCodeSystemCUDSupport> cudSupport = context.optionalService(FhirCodeSystemCUDSupport.class);
 		if (cudSupport.isEmpty()) {
 			throw new IllegalStateException("FHIR CodeSystem resource creation support is missing.");
 		}
 		
-		cudSupport.get(0).updateOrCreateCodeSystem(context, codeSystem);
+		cudSupport.get().updateOrCreateCodeSystem(context, codeSystem);
 		return Boolean.TRUE;			
 	}
 }
