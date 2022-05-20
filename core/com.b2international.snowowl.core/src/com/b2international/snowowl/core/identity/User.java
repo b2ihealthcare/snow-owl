@@ -42,7 +42,7 @@ public final class User implements Serializable {
 	private final List<Role> roles;
 	
 	// derived cached value
-	private final Supplier<List<Permission>> permissions = Suppliers.memoize(() -> {
+	private transient final Supplier<List<Permission>> permissions = Suppliers.memoize(() -> {
 		return getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
 	});
 
