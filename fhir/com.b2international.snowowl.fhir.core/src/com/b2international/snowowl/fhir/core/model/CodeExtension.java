@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * FHIR Code Extension
  * 
  * @see <a href="https://www.hl7.org/fhir/extensibility.html#Extension">FHIR:Foundation:Extensibility</a>
- * @since 8.3.1
+ * @since 8.4.0
  */
 @JsonDeserialize(using = JsonDeserializer.None.class, builder = CodeExtension.Builder.class)
 public class CodeExtension extends Extension<Code> {
