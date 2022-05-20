@@ -157,19 +157,19 @@ public class EventBus implements IEventBus {
 		}
 		
 		if (RECORD_SEND_STACK) {
-			final Throwable t = new Exception("Message was sent in this call stack").fillInStackTrace();
-			final String sendStack;
+			final Throwable t = new Exception("Message was submitted from this call stack").fillInStackTrace();
 			
 			try (StringWriter sw = new StringWriter()) {
 				t.printStackTrace(new PrintWriter(sw));
-				sendStack = sw.toString();
+				
+				final String sendStack = sw.toString();
+				Map<String, String> headersWithStack = newHashMap(message.headers());
+				headersWithStack.put("sendStack", sendStack);
+				message.headers = Map.copyOf(headersWithStack);
+				
 			} catch (IOException unexpected) {
 				// String writer should not encounter any I/O exceptions
 			}
-			
-			Map<String, String> headersWithStack = newHashMap(message.headers());
-			headersWithStack.put("sendStack", sendStack);
-			message.headers = Map.copyOf(headersWithStack);
 		}
 		
 		// Allow both local and remote handlers to process the message

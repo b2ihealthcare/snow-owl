@@ -29,7 +29,7 @@ public interface IEventBus {
 	/**
 	 * Feature flag for send-time stack tracing
 	 */
-	boolean RECORD_SEND_STACK = false;
+	boolean RECORD_SEND_STACK = Boolean.getBoolean("eventbus.record.stack");
 
 	/**
 	 * The address where handler registration and un-registration messages are sent.
