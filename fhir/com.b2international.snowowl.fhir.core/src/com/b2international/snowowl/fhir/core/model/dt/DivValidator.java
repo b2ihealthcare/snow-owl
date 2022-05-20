@@ -44,8 +44,8 @@ public class DivValidator implements ConstraintValidator<ValidDiv, String> {
 			return true;
 		}
 		
-		// allow attributes eg. xmlns
-		if (!divString.toLowerCase().startsWith("<div ")) {
+		// allow attributes after the opening tag, eg. xmlns
+		if (!divString.toLowerCase().startsWith("<div ") && !divString.toLowerCase().startsWith("<div>")) {
 			return false;
 		}
 
