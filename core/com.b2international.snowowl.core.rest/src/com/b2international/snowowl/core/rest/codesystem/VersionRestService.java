@@ -136,6 +136,7 @@ public class VersionRestService extends AbstractRestService {
 				.setEffectiveTime(change.getEffectiveTime())
 				.setForce(change.isForce())
 				.setCommitComment(input.getCommitComment())
+				.setAuthor(author)
 				.buildAsync()
 				.runAsJobWithRestart(ResourceRequests.versionJobKey(change.getResource()), "Creating version " + newVersionUri)
 				.execute(getBus())
