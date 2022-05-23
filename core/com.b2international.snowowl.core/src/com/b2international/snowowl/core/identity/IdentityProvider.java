@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.management.relation.Role;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.events.util.Promise;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.11
@@ -42,7 +43,7 @@ public interface IdentityProvider {
 		
 		@Override
 		public User auth(String username, String password) {
-			return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
+			return new User(username, List.of(Permission.ADMIN));
 		}
 		
 		@Override
@@ -50,7 +51,7 @@ public interface IdentityProvider {
 			// generate fake Users for given usernames with admin permission
 			final List<User> users = usernames.stream()
 					.limit(limit)
-					.map(username -> new User(username, ImmutableList.of(Role.ADMINISTRATOR)))
+					.map(username -> new User(username, List.of(Permission.ADMIN)))
 					.collect(Collectors.toList());
 			return Promise.immediate(new Users(users, limit, usernames.size()));
 		}

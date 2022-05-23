@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,12 @@ package com.b2international.snowowl.core.identity;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
  * Represents a logged in user in the system. A logged in user has access to his own username and assigned roles (and permissions).
@@ -36,33 +33,24 @@ public final class User implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final User SYSTEM = new User("System", Collections.singletonList(Role.ADMINISTRATOR));
+	public static final User SYSTEM = new User("System", List.of(Permission.ADMIN));
 	
 	private final String username;
-	private final List<Role> roles;
+	private final List<Permission> permissions;
 	
-	// derived cached value
-	private transient final Supplier<List<Permission>> permissions = Suppliers.memoize(() -> {
-		return getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
-	});
-
-	public User(String username, List<Role> roles) {
+	public User(String username, List<Permission> permissions) {
 		checkArgument(!Strings.isNullOrEmpty(username), "Username may not be null or empty");
 		this.username = username;
-		this.roles = roles;
+		this.permissions = Collections3.toImmutableList(permissions);
 	}
 	
 	public String getUsername() {
 		return username;
 	}
 	
-	public List<Role> getRoles() {
-		return roles;
-	}
-	
 	@JsonIgnore
 	public List<Permission> getPermissions() {
-		return permissions.get();
+		return permissions;
 	}
 	
 	@Override

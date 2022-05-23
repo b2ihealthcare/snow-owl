@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,14 @@ package com.b2international.snowowl.identity.ldap;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
+import javax.naming.directory.*;
 import javax.naming.ldap.InitialLdapContext;
 
 import org.slf4j.Logger;
@@ -44,7 +34,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.identity.Role;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.Users;
 import com.google.common.base.Preconditions;
@@ -220,12 +209,13 @@ final class LdapIdentityProvider implements IdentityProvider {
 
 				if (hasAttribute(attributes, uidProp)) {
 					final String userName = (String) attributes.get(uidProp).get();
-					final List<Role> userRoles = ldapRoles.stream()
+					final List<Permission> userPermissions = ldapRoles.stream()
 							.filter(role -> role.getUniqueMembers().contains(searchResult.getNameInNamespace()))
-							.map(role -> new Role(role.getName(), role.getPermissions()))
+							.map(role -> role.getPermissions())
+							.flatMap(List::stream)
 							.collect(Collectors.toList());
 					
-					resultBuilder.add(new User(userName, userRoles));
+					resultBuilder.add(new User(userName, userPermissions));
 				}
 			}
 
