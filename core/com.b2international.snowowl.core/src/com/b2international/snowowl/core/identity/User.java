@@ -39,7 +39,7 @@ public final class User implements Serializable {
 	private final List<Permission> permissions;
 	
 	public User(String userId, List<Permission> permissions) {
-		checkArgument(!Strings.isNullOrEmpty(userId), "Username may not be null or empty");
+		checkArgument(!Strings.isNullOrEmpty(userId), "userId may not be null or empty");
 		this.userId = userId;
 		this.permissions = Collections3.toImmutableList(permissions);
 	}
