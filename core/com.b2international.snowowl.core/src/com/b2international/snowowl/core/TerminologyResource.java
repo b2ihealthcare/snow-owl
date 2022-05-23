@@ -195,8 +195,11 @@ public abstract class TerminologyResource extends Resource {
 	public ResourceURI getResourceURI(String branch) {
 		Preconditions.checkNotNull(branch, "Branch argument should not be null");
 		if (!Strings.isNullOrEmpty(branch)) {
-			Preconditions.checkArgument(branch.startsWith(branchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
-			final String relativePath = branch.replaceFirst(branchPath, "").replaceFirst("/", "");
+			String relativePath = branch;
+			if (branch.startsWith(branchPath)) {
+				relativePath = branch.replaceFirst(branchPath, "").replaceFirst("/", "");
+			}
+			
 			if (relativePath.isEmpty()) {
 				return getResourceURI();
 			}
