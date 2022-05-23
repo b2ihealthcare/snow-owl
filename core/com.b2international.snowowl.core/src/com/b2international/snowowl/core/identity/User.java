@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 
 /**
- * Represents a logged in user in the system. A logged in user has access to his own username and assigned roles (and permissions).
+ * Represents a logged in user in the system. A logged in user has access to his own userId and assigned permissions.
  * @since 5.11.0
  */
 public final class User implements Serializable {
@@ -35,17 +35,17 @@ public final class User implements Serializable {
 
 	public static final User SYSTEM = new User("System", List.of(Permission.ADMIN));
 	
-	private final String username;
+	private final String userId;
 	private final List<Permission> permissions;
 	
-	public User(String username, List<Permission> permissions) {
-		checkArgument(!Strings.isNullOrEmpty(username), "Username may not be null or empty");
-		this.username = username;
+	public User(String userId, List<Permission> permissions) {
+		checkArgument(!Strings.isNullOrEmpty(userId), "Username may not be null or empty");
+		this.userId = userId;
 		this.permissions = Collections3.toImmutableList(permissions);
 	}
 	
-	public String getUsername() {
-		return username;
+	public String getUserId() {
+		return userId;
 	}
 	
 	@JsonIgnore
@@ -55,7 +55,7 @@ public final class User implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(username);
+		return Objects.hash(userId);
 	}
 	
 	@Override
@@ -64,7 +64,7 @@ public final class User implements Serializable {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		User other = (User) obj;
-		return Objects.equals(username, other.username);
+		return Objects.equals(userId, other.userId);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public final class User implements Serializable {
 	 * @see #SYSTEM
 	 */
 	public static boolean isSystem(String userId) {
-		return SYSTEM.getUsername().equals(userId);
+		return SYSTEM.getUserId().equals(userId);
 	}
 
 }

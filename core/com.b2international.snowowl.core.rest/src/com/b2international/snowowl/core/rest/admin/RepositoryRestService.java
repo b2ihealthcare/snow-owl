@@ -103,7 +103,7 @@ public class RepositoryRestService extends AbstractRestService {
 
 		checkValidTimeout(timeoutMillis);
 
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), 
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
 		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
@@ -120,7 +120,7 @@ public class RepositoryRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/unlock")
 	public void unlockGlobal() {
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.CREATE_BACKUP);
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), DatastoreLockContextDescriptions.CREATE_BACKUP);
 		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
 		doUnlock(context, target);
 	}
@@ -149,7 +149,7 @@ public class RepositoryRestService extends AbstractRestService {
 		checkValidRepositoryUuid(id);
 		checkValidTimeout(timeoutMillis);
 
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), 
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
@@ -174,7 +174,7 @@ public class RepositoryRestService extends AbstractRestService {
 
 		checkValidRepositoryUuid(repositoryUuid);
 
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), 
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 

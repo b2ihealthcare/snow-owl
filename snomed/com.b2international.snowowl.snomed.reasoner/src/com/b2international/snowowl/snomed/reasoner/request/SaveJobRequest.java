@@ -151,7 +151,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
-		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 		
 		try (Locks locks = Locks.on(context)
 				.user(user)

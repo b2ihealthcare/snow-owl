@@ -108,7 +108,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	}
 	
 	protected final String userId(RepositoryContext context) {
-		return !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		return !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 	}
 
 	protected abstract Commit applyChanges(RepositoryContext context, Branch source, Branch target);

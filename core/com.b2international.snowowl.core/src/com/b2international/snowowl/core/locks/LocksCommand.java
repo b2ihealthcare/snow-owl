@@ -60,7 +60,7 @@ public final class LocksCommand extends Command {
 
 	private static final String COLUMN_FORMAT = "%4s | %3s | %-16s | %-50s | %-50s";
 	private static final String ALL = "ALL";
-	private static final DatastoreLockContext CONSOLE_CONTEXT = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.MAINTENANCE);
+	private static final DatastoreLockContext CONSOLE_CONTEXT = new DatastoreLockContext(User.SYSTEM.getUserId(), DatastoreLockContextDescriptions.MAINTENANCE);
 	
 	@Override
 	public void run(CommandLineStream out) {
@@ -111,7 +111,7 @@ public final class LocksCommand extends Command {
 			}
 			
 			final IOperationLockManager lockManager = getLockManager();
-			final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.MAINTENANCE);
+			final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), DatastoreLockContextDescriptions.MAINTENANCE);
 			lockManager.lock(context, 3000L, target);
 			out.println("Acquired lock for %s.", target);
 		}

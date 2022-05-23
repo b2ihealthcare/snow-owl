@@ -187,7 +187,7 @@ public class SnomedBranchRequestTest {
 		final Request<ServiceProvider, Merge> mergeRequest = merges.prepareCreate()
 				.setSource(first)
 				.setTarget(firstParentPath)
-				.setUserId(User.SYSTEM.getUsername())
+				.setUserId(User.SYSTEM.getUserId())
 				.setCommitComment("Merging changes")
 				.build(REPOSITORY_ID)
 				.getRequest();
@@ -195,7 +195,7 @@ public class SnomedBranchRequestTest {
 		final String mergeJobId = JobRequests.prepareSchedule()
 			.setDescription("Merging changes")
 			.setRequest(mergeRequest)
-			.setUser(User.SYSTEM.getUsername())
+			.setUser(User.SYSTEM.getUserId())
 			.buildAsync()
 			.execute(bus)
 			.getSync();

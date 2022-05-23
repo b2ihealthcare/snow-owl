@@ -74,7 +74,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 			.prepareCreate()
 			.setSource(sourceBranchPath) 
 			.setTarget(codeSystem.getBranchPath())
-			.setUserId(context.service(User.class).getUsername())
+			.setUserId(context.service(User.class).getUserId())
 			.setCommitComment(message)
 			.setSquash(false)
 			.build(codeSystem.getToolingId())

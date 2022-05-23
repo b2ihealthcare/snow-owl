@@ -274,7 +274,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				// resources start their lifecycle in draft mode
 				.status(status == null ? "draft" : status)
 				.copyright(copyright)
-				.owner(Optional.ofNullable(owner).orElseGet(() -> context.service(User.class).getUsername()))
+				.owner(Optional.ofNullable(owner).orElseGet(() -> context.service(User.class).getUserId()))
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)

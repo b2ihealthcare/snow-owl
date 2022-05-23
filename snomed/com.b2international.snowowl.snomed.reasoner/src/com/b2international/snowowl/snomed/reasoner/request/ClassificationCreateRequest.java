@@ -91,7 +91,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 
-		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 		
 		tracker.classificationScheduled(classificationId, reasonerId, user, branch.path());
 

@@ -82,7 +82,7 @@ public final class RemoteJob extends Job {
 			User user = context.service(User.class);
 			if (User.isSystem(this.user)) {
 				user = User.SYSTEM;
-			} else if (!user.getUsername().equals(this.user)) {
+			} else if (!user.getUserId().equals(this.user)) {
 				user = UserRequests.prepareGet(this.user).build().execute(this.context);
 			}
 			

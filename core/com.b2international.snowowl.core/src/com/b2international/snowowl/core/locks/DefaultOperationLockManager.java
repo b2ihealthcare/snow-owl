@@ -264,7 +264,7 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 				}
 			}
 		} else {
-			final DatastoreLockContext disposedContext = createLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.DISPOSE_LOCK_MANAGER, null);
+			final DatastoreLockContext disposedContext = createLockContext(User.SYSTEM.getUserId(), DatastoreLockContextDescriptions.DISPOSE_LOCK_MANAGER, null);
 			for (final DatastoreLockTarget target : targets) {
 				alreadyLockedTargets.put(target, disposedContext);
 			}

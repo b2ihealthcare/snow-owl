@@ -80,7 +80,7 @@ public class CommandLineAuthenticator {
 
 	@Override
 	public String toString() {
-		return user == null ? "N/A" : user.getUsername();
+		return user == null ? "N/A" : user.getUserId();
 	}
 
 }

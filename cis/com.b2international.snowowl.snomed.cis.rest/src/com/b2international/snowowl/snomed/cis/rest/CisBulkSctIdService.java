@@ -217,7 +217,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		return JobRequests.prepareSchedule()
 				.setDescription(jobDescription)
 				.setRequest(request)
-				.setUser(User.SYSTEM.getUsername())
+				.setUser(User.SYSTEM.getUserId())
 				.buildAsync()
 				.execute(bus)
 				.thenWith(id -> JobRequests.prepareGet(id).buildAsync().execute(bus))

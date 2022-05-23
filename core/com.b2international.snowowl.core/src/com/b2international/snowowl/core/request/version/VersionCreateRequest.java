@@ -94,7 +94,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		final String user = context.service(User.class).getUsername();
+		final String user = context.service(User.class).getUserId();
 		
 		if (!resource.isHead()) {
 			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'.", version, resource)

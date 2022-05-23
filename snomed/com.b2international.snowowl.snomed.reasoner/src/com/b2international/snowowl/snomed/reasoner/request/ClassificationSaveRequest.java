@@ -146,7 +146,7 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 					branch.headTimestamp());
 		}
 		
-		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 
 		final AsyncRequest<?> saveRequest = new SaveJobRequestBuilder()
 				.setClassificationId(classificationId)

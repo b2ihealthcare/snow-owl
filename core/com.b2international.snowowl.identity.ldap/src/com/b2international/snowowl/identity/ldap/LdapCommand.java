@@ -72,7 +72,7 @@ public class LdapCommand extends Command {
 				.getSync(5, TimeUnit.MINUTES)
 				.forEach(user -> {
 
-					out.println(user.getUsername());
+					out.println(user.getUserId());
 
 					if (extended) {
 

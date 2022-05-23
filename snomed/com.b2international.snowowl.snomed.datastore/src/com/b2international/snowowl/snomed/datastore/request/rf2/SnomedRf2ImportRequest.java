@@ -453,7 +453,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					CodeSystem.CommonSettings.LOCALES, locales,
 					SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, mergedLanguagesConfiguration.values()
 				))
-				.build(context.service(User.class).getUsername(), String.format("Update '%s' settings based on RF2 import", codeSystemUri.getResourceId()))
+				.build(context.service(User.class).getUserId(), String.format("Update '%s' settings based on RF2 import", codeSystemUri.getResourceId()))
 				.execute(context.service(IEventBus.class))
 				.getSync(2, TimeUnit.MINUTES);
 	}

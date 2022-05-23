@@ -55,7 +55,7 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 					.then(matches -> {
 						// override roles
 						return new Users(
-							matches.stream().map(user -> new User(user.getUsername(), ADMINPARTY_ROLES)).collect(Collectors.toList()), 
+							matches.stream().map(user -> new User(user.getUserId(), ADMINPARTY_ROLES)).collect(Collectors.toList()), 
 							matches.getLimit(), 
 							matches.getTotal()
 						);

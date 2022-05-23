@@ -37,7 +37,7 @@ public final class RateLimitingRequest<R> extends DelegatingRequest<ServiceProvi
 		final User user = context.service(User.class);
 		if (user != User.SYSTEM) {
 			// rate limit only non-system user requests
-			final String username = user.getUsername();
+			final String username = user.getUserId();
 			final RateLimitConsumption consumption = context.service(RateLimiter.class).consume(username);
 			if (consumption.isConsumed()) {
 				context.service(ResponseHeaders.class)

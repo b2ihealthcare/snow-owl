@@ -106,7 +106,7 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 				}
 			}
 			
-			final String userId = !Strings.isNullOrEmpty(user) ? user : context.service(User.class).getUsername();
+			final String userId = !Strings.isNullOrEmpty(user) ? user : context.service(User.class).getUserId();
 			
 			RemoteJob job = new RemoteJob(id, key, description, userId, context, request, autoClean);
 			job.setSystem(true);

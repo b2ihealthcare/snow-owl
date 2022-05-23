@@ -74,7 +74,7 @@ final class DefaultJWTGenerator implements JWTGenerator {
 	@Override
 	public String generate(User user) {
 		final List<String> permissions = user.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
-		return generate(user.getUsername(), Map.of(permissionsClaimProperty, permissions));
+		return generate(user.getUserId(), Map.of(permissionsClaimProperty, permissions));
 	}
 	
 }

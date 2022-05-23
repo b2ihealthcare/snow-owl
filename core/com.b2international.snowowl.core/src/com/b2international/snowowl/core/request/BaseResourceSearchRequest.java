@@ -138,7 +138,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
 		
 		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
-			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), exactResourceIds, resourceIdPrefixes);
+			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUserId(), exactResourceIds, resourceIdPrefixes);
 			ExpressionBuilder bool = Expressions.bool();
 			// the permissions give access to either
 			if (!exactResourceIds.isEmpty()) {
