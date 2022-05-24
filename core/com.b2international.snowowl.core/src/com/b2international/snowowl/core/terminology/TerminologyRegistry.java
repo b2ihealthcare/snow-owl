@@ -63,6 +63,10 @@ public enum TerminologyRegistry {
 		return Set.copyOf(terminologies.keySet());
 	}
 	
+	public Set<Terminology> getConfiguredTerminologies() {
+		return Set.copyOf(terminologies.values());
+	}
+	
 	public void register(Terminology terminology) {
 		Terminology prev = terminologies.put(terminology.getToolingId(), terminology);
 		if (prev != null) {
