@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.core.rest.bundle;
 
-import static com.b2international.snowowl.core.rest.BundleApiAssert.*;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
-import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceGet;
+import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.*;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
+import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceGet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.containsInAnyOrder;

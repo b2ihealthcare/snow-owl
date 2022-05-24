@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.*;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,11 +52,11 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.BaseResourceApiTest;
-import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
+import com.b2international.snowowl.test.commons.rest.BundleApiAssert;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**

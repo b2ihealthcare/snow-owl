@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.core.rest.info;
 
-import static com.b2international.snowowl.core.rest.RepositoryApiAssert.assertAllRepositoryInfo;
-import static com.b2international.snowowl.core.rest.RepositoryApiAssert.assertRepositoryInfoForExistingRepository;
-import static com.b2international.snowowl.core.rest.RepositoryApiAssert.assertRepositoryInfoForInvalidRepository;
+import static com.b2international.snowowl.test.commons.rest.RepositoryApiAssert.assertAllRepositoryInfo;
+import static com.b2international.snowowl.test.commons.rest.RepositoryApiAssert.assertRepositoryInfoForExistingRepository;
+import static com.b2international.snowowl.test.commons.rest.RepositoryApiAssert.assertRepositoryInfoForInvalidRepository;
 
 import java.util.UUID;
 
