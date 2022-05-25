@@ -16,14 +16,15 @@
 package com.b2international.snowowl.core.rest.admin;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +43,11 @@ public class ConfiguredToolingsRestService extends AbstractRestService {
 		description = "Provides a set of all available toolings ids configured on the server."
 	)
 	@RequestMapping(method = { RequestMethod.GET }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody List<Terminology> toolings() {
-		return TerminologyRegistry.INSTANCE.getConfiguredTerminologies();
+	public @ResponseBody ResponseEntity<List<String>> toolings() {
+		return ResponseEntity.ok(
+				TerminologyRegistry.INSTANCE.getTerminologies()
+					.stream()
+					.filter(t -> !TerminologyRegistry.UNSPECIFIED.equals(t))
+					.collect(Collectors.toList()));
 	}
 }

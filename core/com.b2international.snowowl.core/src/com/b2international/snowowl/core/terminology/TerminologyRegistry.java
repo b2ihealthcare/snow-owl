@@ -20,7 +20,6 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
@@ -63,11 +62,7 @@ public enum TerminologyRegistry {
 	public Set<String> getTerminologies() {
 		return Set.copyOf(terminologies.keySet());
 	}
-	
-	public List<Terminology> getConfiguredTerminologies() {
-		return terminologies.values().stream().filter(t -> !UNSPECIFIED.equals(t.getName())).collect(Collectors.toList());
-	}
-	
+		
 	public void register(Terminology terminology) {
 		Terminology prev = terminologies.put(terminology.getToolingId(), terminology);
 		if (prev != null) {
