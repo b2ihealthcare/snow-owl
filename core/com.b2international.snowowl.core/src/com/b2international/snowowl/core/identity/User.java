@@ -18,7 +18,9 @@ package com.b2international.snowowl.core.identity;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.b2international.commons.collections.Collections3;
@@ -38,6 +40,8 @@ public final class User implements Serializable {
 	private final String userId;
 	private final List<Permission> permissions;
 	
+	private Map<String, Object> authorizationContext = Collections.emptyMap(); 
+	
 	public User(String userId, List<Permission> permissions) {
 		checkArgument(!Strings.isNullOrEmpty(userId), "userId may not be null or empty");
 		this.userId = userId;
@@ -51,6 +55,14 @@ public final class User implements Serializable {
 	@JsonIgnore
 	public List<Permission> getPermissions() {
 		return permissions;
+	}
+	
+	public void setAuthorizationContext(Map<String, Object> authorizationContext) {
+		this.authorizationContext = authorizationContext == null ? Collections.emptyMap() : Map.copyOf(authorizationContext);
+	}
+	
+	public Map<String, Object> getAuthorizationContext() {
+		return authorizationContext;
 	}
 	
 	@Override
