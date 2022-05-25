@@ -51,65 +51,73 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 
 	@Override
 	public R execute(ServiceProvider context) {
-		final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
-		final String authorizationToken = requestHeaders.header(AUTHORIZATION_HEADER);
-
-		final IdentityProvider identityProvider = context.service(IdentityProvider.class);
 		final Collection<Request<?, ?>> requests = getNestedRequests();
 		
-		final User user;
-		// if there is no authentication configured
-		if (IdentityProvider.NOOP == identityProvider) {
-			// allow execution as SYSTEM user
-			user = User.SYSTEM;
-		} else if (Strings.isNullOrEmpty(authorizationToken)) {
-			// allow login requests in
-			if (requests.stream().allMatch(req -> req.getClass().isAnnotationPresent(Unprotected.class))) {
-				user = User.SYSTEM;
-			} else {
-				// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
-				if (PlatformUtil.isDevVersion()) {
-					Request<?, ?> request = Iterables.getFirst(requests, null);
-					System.err.println(request);
-				}
-				throw new UnauthorizedException("Missing authorization token");
-			}
-		} else {
-			// verify authorization header value
-			user = context.service(AuthorizationHeaderVerifier.class).auth(authorizationToken);
-			if (user == null) {
-				throw new UnauthorizedException("Incorrect authorization token");
-			}
-		}
+		// if a User object is already attached to the context, that means we have already authenticated the user, no need to do it again
+		User user = context.optionalService(User.class).orElse(null);
+		final ServiceProvider userContext;
 		
-		ServiceProvider userContext = context.inject()
-			// create a context with the User object injected
-			.bind(User.class, user)
-			// and EventBus configured with header to access token in async execution scenarios
-			.bind(IEventBus.class, new AuthorizedEventBus(context.service(IEventBus.class), requestHeaders.headers()))
-			.build();
+		if (user != null) {
+			 userContext = context;
+		} else {
+			final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
+			final String authorizationToken = requestHeaders.header(AUTHORIZATION_HEADER);
+
+			final IdentityProvider identityProvider = context.service(IdentityProvider.class);
+			// if there is no authentication configured
+			if (IdentityProvider.NOOP == identityProvider) {
+				// allow execution as SYSTEM user
+				user = User.SYSTEM;
+			} else if (Strings.isNullOrEmpty(authorizationToken)) {
+				// allow login requests in
+				if (requests.stream().allMatch(req -> req.getClass().isAnnotationPresent(Unprotected.class))) {
+					user = User.SYSTEM;
+				} else {
+					// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
+					if (PlatformUtil.isDevVersion()) {
+						Request<?, ?> request = Iterables.getFirst(requests, null);
+						System.err.println(request);
+					}
+					throw new UnauthorizedException("Missing authorization token");
+				}
+			} else {
+				// verify authorization header value
+				user = context.service(AuthorizationHeaderVerifier.class).auth(authorizationToken);
+				if (user == null) {
+					throw new UnauthorizedException("Incorrect authorization token");
+				}
+			}
+			
+			userContext = context.inject()
+					// create a context with the User object injected
+					.bind(User.class, user)
+					// and EventBus configured with header to access token in async execution scenarios
+					.bind(IEventBus.class, new AuthorizedEventBus(context.service(IEventBus.class), requestHeaders.headers()))
+					.build();
+		}
 		
 		if (!User.SYSTEM.equals(user) && !user.isAdministrator()) {
 			// authorize user whether it is permitted to execute the request(s) or not
 			List<Permission> requiredPermissionsToExecute = requests
-				.stream()
-				.filter(AccessControl.class::isInstance)
-				.map(AccessControl.class::cast)
-				.flatMap(ac -> {
-					List<Permission> permissions = ac.getPermissions(userContext, next());
-					if (permissions.isEmpty()) {
-						context.log().warn("No permissions required to execute request '{}'.", MonitoredRequest.toJson(context, next(), Map.of()));
-					}
-					return permissions.stream();
-				})
-				.collect(Collectors.toList());
+					.stream()
+					.filter(AccessControl.class::isInstance)
+					.map(AccessControl.class::cast)
+					.flatMap(ac -> {
+						List<Permission> permissions = ac.getPermissions(userContext, next());
+						if (permissions.isEmpty()) {
+							context.log().warn("No permissions required to execute request '{}'.", MonitoredRequest.toJson(context, next(), Map.of()));
+						}
+						return permissions.stream();
+					})
+					.collect(Collectors.toList());
 			// throw a Forbidden Exception if the user does not have permission to perform the request
 			context.optionalService(AuthorizationService.class)
-				.orElse(AuthorizationService.DEFAULT)
-				.checkPermission(user, requiredPermissionsToExecute);
+			.orElse(AuthorizationService.DEFAULT)
+			.checkPermission(user, requiredPermissionsToExecute);
 		}
-
+		
 		return next(userContext);
+		
 	}
 
 }
