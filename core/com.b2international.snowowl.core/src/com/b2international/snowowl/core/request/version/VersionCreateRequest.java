@@ -55,6 +55,7 @@ import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -88,13 +89,17 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	@JsonProperty
 	String commitComment;
 	
+	
+	@JsonProperty
+	public String author;
+	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	private transient Map<ResourceURI, TerminologyResource> resourcesById;
 	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		final String user = context.service(User.class).getUserId();
+		final String user = !Strings.isNullOrEmpty(author) ? author : context.service(User.class).getUserId();			
 		
 		if (!resource.isHead()) {
 			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'.", version, resource)
@@ -204,6 +209,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					return Boolean.TRUE;
 				})
 				.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
+				.setAuthor(user)
 				.build()
 			).execute(context).getResultAs(Boolean.class);
 		} finally {

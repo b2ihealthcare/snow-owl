@@ -195,12 +195,23 @@ public abstract class TerminologyResource extends Resource {
 	public ResourceURI getResourceURI(String branch) {
 		Preconditions.checkNotNull(branch, "Branch argument should not be null");
 		if (!Strings.isNullOrEmpty(branch)) {
-			Preconditions.checkArgument(branch.startsWith(branchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
-			final String relativePath = branch.replaceFirst(branchPath, "").replaceFirst("/", "");
+			
+			// if the given branch argument is an absolute branch, then it should start with this resource's current branch
+			if (branch.startsWith(Branch.MAIN_PATH)) {
+				Preconditions.checkArgument(branch.startsWith(branchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
+			}
+			
+			// strip the current working branch
+			String relativePath = branch;
+			if (branch.startsWith(branchPath)) {
+				relativePath = branch.replaceFirst(branchPath, "").replaceFirst("/", "");
+			}
+			
 			if (relativePath.isEmpty()) {
 				return getResourceURI();
 			}
 			
+			// support for timestamp based branch paths
 			final int idx = relativePath.indexOf(RevisionIndex.AT_CHAR);
 			if (idx < 0) {
 				return getResourceURI()

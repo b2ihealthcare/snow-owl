@@ -18,18 +18,25 @@ package com.b2international.snowowl.snomed.core.rest.versioning;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.assertGetVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
-import static org.junit.Assert.assertEquals;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.commit.CommitInfos;
+import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
+import com.google.common.collect.ImmutableMap;
+
+import io.restassured.http.ContentType;
 
 /**
  * @since 2.0
@@ -64,6 +71,21 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	public void createRegularVersion() {
 		createVersion(INT_CODESYSTEM, "regular-version", getNextAvailableEffectiveDate(INT_CODESYSTEM)).statusCode(201);
 		assertGetVersion(INT_CODESYSTEM, "regular-version").statusCode(200);
+	}
+	
+	@Test
+	public void createRegularVersionWithAuthor() {
+		String author = "info@b2international.com";
+		Map<String, String> headers = Map.of(AbstractRestService.X_AUTHOR, "info@b2international.com");
+		createVersion(INT_CODESYSTEM, "version-with-author", getNextAvailableEffectiveDate(INT_CODESYSTEM), headers).statusCode(201);
+		assertGetVersion(INT_CODESYSTEM, "version-with-author").statusCode(200);
+		String commitComment = "Version 'codesystems/SNOMEDCT' as of 'version-with-author'";
+		CommitInfos commits = givenAuthenticatedRequest("/resources/commits")
+			.contentType(ContentType.JSON)
+			.params(ImmutableMap.of("comment", commitComment))
+			.get()
+			.as(CommitInfos.class);
+		assertEquals(author, commits.first().get().getAuthor());
 	}
 
 	@Test

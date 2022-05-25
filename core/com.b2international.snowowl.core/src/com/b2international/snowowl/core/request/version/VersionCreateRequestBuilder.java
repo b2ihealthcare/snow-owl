@@ -37,6 +37,7 @@ public final class VersionCreateRequestBuilder
 	private ResourceURI resource;
 	private boolean force = false;
 	private String commitComment;
+	private String author;
 
 	public VersionCreateRequestBuilder setResource(ResourceURI resource) {
 		this.resource = resource;
@@ -81,6 +82,7 @@ public final class VersionCreateRequestBuilder
 		req.resource = resource;
 		req.force = force;
 		req.commitComment = commitComment;
+		req.author = author;
 		return req;
 	}
 
@@ -90,6 +92,11 @@ public final class VersionCreateRequestBuilder
 
 	public VersionCreateRequestBuilder setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
+		return getSelf();
+	}
+	
+	public VersionCreateRequestBuilder setAuthor(String author) {
+		this.author = author;
 		return getSelf();
 	}
 

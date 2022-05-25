@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,7 @@ package com.b2international.snowowl.core.console;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -30,16 +26,12 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
-import com.b2international.snowowl.core.authorization.AuthorizedRequest;
-import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
@@ -90,10 +82,9 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 			}
 			// we should get an executable Snow Owl Command, so execute it
 			BaseCommand cmd = (BaseCommand) cli.getCommand();
-			final String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(User.SYSTEM);
 			final ServiceProvider context = env
 					.inject()
-					.bind(IEventBus.class, new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken)))
+					.bind(User.class, User.SYSTEM)
 					.build();
 			cmd.setContext(context);
 			cmd.run(out);
