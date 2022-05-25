@@ -220,7 +220,11 @@ public class RestExtensions {
 	}
 	
 	public static String generateToken(Permission...permissions) {
-		return ApplicationContext.getServiceForClass(JWTGenerator.class).generate(new User(RestExtensions.USER, List.of(permissions)));
+		return generateToken(RestExtensions.USER, permissions);
+	}
+	
+	public static String generateToken(String userId, Permission...permissions) {
+		return ApplicationContext.getServiceForClass(JWTGenerator.class).generate(new User(userId, List.of(permissions)));
 	}
 
 }
