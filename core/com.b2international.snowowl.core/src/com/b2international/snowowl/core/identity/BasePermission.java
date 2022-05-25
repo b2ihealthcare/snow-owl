@@ -32,7 +32,7 @@ public abstract class BasePermission implements Permission {
 	
 	private final String operation;
 	
-	private transient final Supplier<String> permission = Suppliers.memoize(() -> {
+	private transient Supplier<String> permission = Suppliers.memoize(() -> {
 		return String.join(SEPARATOR, getOperation(), getResource());
 	});
 	
@@ -82,4 +82,10 @@ public abstract class BasePermission implements Permission {
 		return MoreObjects.toStringHelper(Permission.class).add("permission", getPermission()).toString();
 	}
 
+	protected Object readResolve() {
+		permission = Suppliers.memoize(() -> {
+			return String.join(SEPARATOR, getOperation(), getResource());
+		});
+		return this;
+	}
 }
