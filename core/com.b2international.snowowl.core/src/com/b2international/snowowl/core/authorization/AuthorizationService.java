@@ -49,10 +49,19 @@ public interface AuthorizationService {
 	default User checkPermission(User user, List<Permission> requiredPermissions) {
 		requiredPermissions.forEach(requiredPermission -> {
 			if (!user.hasPermission(requiredPermission)) {
-				throw new ForbiddenException("Operation not permitted. '%s' permission is required. User has '%s'.", requiredPermission.getPermission(), user.getPermissions());
+				throwForbiddenException(requiredPermission);
 			}
 		});
 		return user;
+	}
+
+	/**
+	 * Throws a {@link ForbiddenException} using the 
+	 * @param user
+	 * @param requiredPermission
+	 */
+	default void throwForbiddenException(Permission requiredPermission) {
+		throw new ForbiddenException("Operation not permitted. '%s' permission is required.", requiredPermission.getPermission());
 	}
 	
 	/**
