@@ -109,8 +109,8 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 		}		
 	}
 
-//	public String getResourcePath() {
-//		return resourcePath;
-//	}
+	public String getResourcePath() {
+		return resourcePath;
+	}
 
 }
