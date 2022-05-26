@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,17 +31,20 @@ import com.google.common.collect.Lists;
 @ResourceNarrative("How much of the content of the code system - the concepts and codes it defines - are represented in a code system resource.")
 public enum CodeSystemContentMode implements FhirCodeSystem {
 	
-	//None of the concepts defined by the code system are included in the code system resource.
+	// None of the concepts defined by the code system are included in the code system resource.
 	NOT_PRESENT,
 	
-	//A few representative concepts are included in the code system resource
+	// A few representative concepts are included in the code system resource
 	EXAMPLE,
 	
-	//A subset of the code system concepts are included in the code system resource
+	// A subset of the code system concepts are included in the code system resource
 	FRAGMENT,
 	
-	//All the concepts defined by the code system are included in the code system resource
-	COMPLETE;
+	// All the concepts defined by the code system are included in the code system resource
+	COMPLETE,
+	
+	// The resource doesn't define any new concepts; it just provides additional designations and properties to another code system.
+	SUPPLEMENT;
 	
 	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/codesystem-content-mode";
 

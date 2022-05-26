@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,23 +34,25 @@ public class DivValidator implements ConstraintValidator<ValidDiv, String> {
 	@Override
 	public boolean isValid(String divString, ConstraintValidatorContext constraintContext) {
 
-		//use @NotNull for null validation
+		// use @NotNull for null validation
 		if (StringUtils.isEmpty(divString)) {
 			return false;
 		}
 		
-		//empty tag is OK
-		if (divString.equalsIgnoreCase("</div>")) {
+		// empty (self-closing) tag is OK
+		if (divString.equalsIgnoreCase("<div/>")) {
 			return true;
 		}
 		
-		if (!divString.toLowerCase().startsWith("<div>")) {
+		// allow attributes after the opening tag, eg. xmlns
+		if (!divString.toLowerCase().startsWith("<div ") && !divString.toLowerCase().startsWith("<div>")) {
 			return false;
 		}
 
 		if (!divString.toLowerCase().endsWith("</div>")) {
 			return false;
 		}
+		
 		return true;
 	}
 }
