@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.core.rest.admin;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -43,8 +41,8 @@ public class ConfiguredToolingsRestService extends AbstractRestService {
 		description = "Provides a set of all available toolings ids configured on the server."
 	)
 	@RequestMapping(method = { RequestMethod.GET }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody ResponseEntity<List<String>> toolings() {
-		return ResponseEntity.ok(
+	public @ResponseBody Toolings toolings() {
+		return new Toolings(
 				TerminologyRegistry.INSTANCE.getTerminologies()
 					.stream()
 					.filter(t -> !TerminologyRegistry.UNSPECIFIED.equals(t))
