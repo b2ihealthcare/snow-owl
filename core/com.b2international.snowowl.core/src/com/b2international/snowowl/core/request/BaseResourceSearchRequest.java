@@ -76,6 +76,14 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		 * Search resources by status
 		 */
 		STATUS,
+		/**
+		 * Search resources by an available property in settings
+		 */
+		PROPERTY_NAME,
+		/**
+		 * Search resources by a concrete property and value pair in settings
+		 */
+		PROPERTIES
 	}
 	
 	@Override

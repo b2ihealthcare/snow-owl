@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -116,5 +117,21 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	public RB filterByStatus(Iterable<String> status) {
 		return addOption(OptionKey.STATUS, status);
 	}
+	
+	public RB filterByPropertyName(String propertyName) {
+		return addOption(OptionKey.PROPERTY_NAME, propertyName);
+	}
+	
+	public RB filterByPropertyNames(Iterable<String> propertyNames) {
+		return addOption(OptionKey.PROPERTY_NAME, propertyNames);
+	}
+	
+	public RB filterByProperty(Pair<String, String> setting) {
+		return addOption(OptionKey.PROPERTIES, setting);
+	}
+	
+	public RB filterByProperties(Iterable<Pair<String, String>> settings) {
+		return addOption(OptionKey.PROPERTIES, settings);
+	}	
 
 }
