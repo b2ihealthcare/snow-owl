@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Optional;
 
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -44,7 +45,7 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 		
 		final Optional<FhirCodeSystemCUDSupport> cudSupport = context.optionalService(FhirCodeSystemCUDSupport.class);
 		if (cudSupport.isEmpty()) {
-			throw new IllegalStateException("FHIR CodeSystem resource creation support is missing.");
+			throw new NotImplementedException("FHIR CodeSystem resource creation is currently unavailable.");
 		}
 		
 		cudSupport.get().updateOrCreateCodeSystem(context, codeSystem);
