@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
 /**
@@ -42,6 +43,7 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	private final String toolingId;
 	
 	@NotEmpty
+	@JsonProperty
 	private final String resourcePath;
 
 	private transient ResourceURI resourceUri;
@@ -105,6 +107,10 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 			this.branchPath = context.service(ResourceURIPathResolver.class)
 				.resolve(context, referenceResourceUri, resource);
 		}		
+	}
+
+	public String getResourcePath() {
+		return resourcePath;
 	}
 
 }
