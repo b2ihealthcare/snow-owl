@@ -35,6 +35,9 @@ public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 	@Parameter
 	private List<String> oid;
 	
+	@Parameter
+	private List<String> url;
+	
 	public List<String> getOid() {
 		return oid;
 	}
@@ -58,5 +61,12 @@ public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 	public void setStatus(List<String> status) {
 		this.status = status;
 	}
+
+	public List<String> getUrl() {
+		return url;
+	}
 	
+	public void setUrl(List<String> url) {
+		this.url = url;
+	}
 }
