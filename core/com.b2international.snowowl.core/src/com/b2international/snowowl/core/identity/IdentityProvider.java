@@ -19,8 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.management.relation.Role;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +97,7 @@ public interface IdentityProvider {
 	 * Authenticates a username and password.
 	 * @param username - a username to use for authentication
 	 * @param password - the user's password to use for authentication
-	 * @return an authenticated {@link User} and its {@link Role}s or <code>null</code> if the username or password is incorrect.
+	 * @return an authenticated {@link User} and its permissions or <code>null</code> if the username or password is incorrect.
 	 */
 	User auth(String username, String password);
 	
