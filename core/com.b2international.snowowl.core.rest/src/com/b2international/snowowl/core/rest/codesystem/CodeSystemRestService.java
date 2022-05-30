@@ -66,6 +66,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 			.filterByIds(params.getId())
 			.filterByOids(params.getOid())
+			.filterByUrls(params.getUrl())
 			.filterByTitle(params.getTitle())
 			.filterByTitleExact(params.getTitleExact())
 			.filterByToolingIds(params.getToolingId())
