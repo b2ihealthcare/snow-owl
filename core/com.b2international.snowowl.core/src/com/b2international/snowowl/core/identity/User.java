@@ -57,10 +57,12 @@ public final class User implements Serializable {
 		return permissions;
 	}
 	
+	@JsonIgnore
 	public void setAuthorizationContext(Map<String, Object> authorizationContext) {
 		this.authorizationContext = authorizationContext == null ? Collections.emptyMap() : Map.copyOf(authorizationContext);
 	}
 	
+	@JsonIgnore
 	public Map<String, Object> getAuthorizationContext() {
 		return authorizationContext;
 	}
