@@ -187,7 +187,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		 */
 		this.componentTypes = (componentTypes != null) 
 				? Set.copyOf(componentTypes) 
-				: Set.of(SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE, SnomedConcept.REFSET_TYPE); 
+				: Set.of(SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE, SnomedReferenceSetMember.TYPE); 
 	}
 
 	void setModules(final Collection<String> modules) {
@@ -735,7 +735,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 							visitedComponentEffectiveTimes);
 					break;
 	
-				case SnomedConcept.REFSET_TYPE:
+				case SnomedReferenceSetMember.TYPE:
 					if (Rf2RefSetExportLayout.COMBINED.equals(refSetExportLayout)) {
 						exportCombinedRefSets(releaseDirectory,
 								context,
