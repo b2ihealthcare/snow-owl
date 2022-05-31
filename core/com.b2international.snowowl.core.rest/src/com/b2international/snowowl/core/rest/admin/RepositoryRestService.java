@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public class RepositoryRestService extends AbstractRestService {
 
 		checkValidTimeout(timeoutMillis);
 
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), 
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
 		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
@@ -120,7 +120,7 @@ public class RepositoryRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/unlock")
 	public void unlockGlobal() {
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.CREATE_BACKUP);
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), DatastoreLockContextDescriptions.CREATE_BACKUP);
 		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
 		doUnlock(context, target);
 	}
@@ -149,7 +149,7 @@ public class RepositoryRestService extends AbstractRestService {
 		checkValidRepositoryUuid(id);
 		checkValidTimeout(timeoutMillis);
 
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), 
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
@@ -174,7 +174,7 @@ public class RepositoryRestService extends AbstractRestService {
 
 		checkValidRepositoryUuid(repositoryUuid);
 
-		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), 
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 

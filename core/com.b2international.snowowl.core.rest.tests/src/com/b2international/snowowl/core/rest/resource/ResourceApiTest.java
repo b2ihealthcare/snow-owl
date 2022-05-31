@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
-import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceGet;
-import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceSearch;
 import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCES_API;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
+import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceGet;
+import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceSearch;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -47,10 +47,10 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.ResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.BundleApiAssert;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

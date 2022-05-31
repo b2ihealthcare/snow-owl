@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.events.util.Promise;
  */
 class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 
-	private static final List<Role> ADMINPARTY_ROLES = Collections.singletonList(Role.ADMINISTRATOR);
+	private static final List<Permission> ADMINPARTY_ROLES = Collections.singletonList(Permission.ADMIN);
 
 	private final IdentityProvider delegate;
 
@@ -55,7 +55,7 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 					.then(matches -> {
 						// override roles
 						return new Users(
-							matches.stream().map(user -> new User(user.getUsername(), ADMINPARTY_ROLES)).collect(Collectors.toList()), 
+							matches.stream().map(user -> new User(user.getUserId(), ADMINPARTY_ROLES)).collect(Collectors.toList()), 
 							matches.getLimit(), 
 							matches.getTotal()
 						);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	}
 	
 	protected final String userId(RepositoryContext context) {
-		return !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		return !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 	}
 
 	protected abstract Commit applyChanges(RepositoryContext context, Branch source, Branch target);

@@ -63,9 +63,6 @@
         <setEntry value="com.sun.xml.bind.jaxb-core@default:default"/>
         <setEntry value="com.sun.xml.bind.jaxb-impl@default:default"/>
         <setEntry value="de.svenkubiak.jBCrypt@default:default"/>
-        <setEntry value="groovy-json@default:false"/>
-        <setEntry value="groovy-xml@default:false"/>
-        <setEntry value="groovy@default:default"/>
         <setEntry value="io.github.classgraph.classgraph@default:default"/>
         <setEntry value="io.github.classgraph@default:default"/>
         <setEntry value="io.netty.buffer@default:default"/>

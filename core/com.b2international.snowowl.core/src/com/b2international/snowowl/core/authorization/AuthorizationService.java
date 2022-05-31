@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.authorization;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.snowowl.core.identity.Permission;
@@ -35,16 +37,44 @@ public interface AuthorizationService {
 	 * Implementors should fall back to this algorithm to provide the default authorization checks for automated scripts and other tokens that carry
 	 * the permission information inside them.
 	 * 
-	 * @param user - the user who is currently executing a request
-	 * @param requiredPermissions - the request set of permissions the user must have in order to continue the execution of the request
-	 * @throws ForbiddenException - this method must throw a {@link ForbiddenException} in order to reject execution of the request when the user does not have sufficient privileges
+	 * @param user
+	 *            - the user who is currently executing a request
+	 * @param requiredPermissions
+	 *            - the request set of permissions the user must have in order to continue the execution of the request
+	 * @return the updated user object with cached permissions
+	 * @throws ForbiddenException
+	 *             - this method must throw a {@link ForbiddenException} in order to reject execution of the request when the user does not have
+	 *             sufficient privileges
 	 */
-	default void checkPermission(User user, List<Permission> requiredPermissions) {
+	default User checkPermission(User user, List<Permission> requiredPermissions) {
 		requiredPermissions.forEach(requiredPermission -> {
 			if (!user.hasPermission(requiredPermission)) {
-				throw new ForbiddenException("Operation not permitted. '%s' permission is required. User has '%s'.", requiredPermission.getPermission(), user.getPermissions());
+				throwForbiddenException(requiredPermission);
 			}
 		});
+		return user;
+	}
+
+	/**
+	 * Throws a {@link ForbiddenException} using the 
+	 * @param user
+	 * @param requiredPermission
+	 */
+	default void throwForbiddenException(Permission requiredPermission) {
+		throw new ForbiddenException("Operation not permitted. '%s' permission is required.", requiredPermission.getPermission());
+	}
+	
+	/**
+	 * Retrieves the list of accessible resources for the given user. By default this method returns all permission resources unfiltered, which is basically all resources the user has access to.
+	 * 
+	 * @param user - the user to return the list of authorized resources
+	 * @return a {@link Set} of authorized resource IDs for the user
+	 */
+	default Set<String> getAccessibleResources(User user) {
+		return user.getPermissions()
+				.stream()
+				.flatMap(p -> p.getResources().stream())
+				.collect(Collectors.toSet());
 	}
 	
 }

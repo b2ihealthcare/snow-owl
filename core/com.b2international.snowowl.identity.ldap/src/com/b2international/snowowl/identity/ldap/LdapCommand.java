@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2021-2022 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.identity.ldap;
 
@@ -72,16 +72,9 @@ public class LdapCommand extends Command {
 				.getSync(5, TimeUnit.MINUTES)
 				.forEach(user -> {
 
-					out.println(user.getUsername());
+					out.println(user.getUserId());
 
 					if (extended) {
-
-						out.println();
-
-						out.println("\tRoles:");
-						user.getRoles().forEach(role -> {
-							out.println("\t\t" + role.getName());
-						});
 
 						out.println();
 

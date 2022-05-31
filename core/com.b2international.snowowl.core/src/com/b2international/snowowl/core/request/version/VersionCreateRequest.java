@@ -99,7 +99,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		final String user = !Strings.isNullOrEmpty(author) ? author : context.service(User.class).getUsername();			
+		final String user = !Strings.isNullOrEmpty(author) ? author : context.service(User.class).getUserId();			
 		
 		if (!resource.isHead()) {
 			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'.", version, resource)
@@ -317,19 +317,13 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@Override
 	public List<Permission> getPermissions(ServiceProvider context, Request<ServiceProvider, ?> req) {
-		if (resourcesById == null) {
-			resourcesById = fetchResources(context);
-		}
-		List<Permission> permissions = new ArrayList<>(resourcesById.size());
-		for (ResourceURI accessedResourceURI : resourcesById.keySet()) {
-			permissions.add(Permission.requireAny(
+		return List.of(
+			Permission.requireAny(
 				getOperation(), 
-				resourcesById.get(accessedResourceURI).getToolingId(),
-				resourcesById.get(accessedResourceURI).getResourceURI().toString(),
-				resourcesById.get(accessedResourceURI).getId()
-			));
-		}
-		return permissions;
+				resource.toString(),
+				resource.withoutResourceType()
+			)
+		);
 	}
 	
 	@Override

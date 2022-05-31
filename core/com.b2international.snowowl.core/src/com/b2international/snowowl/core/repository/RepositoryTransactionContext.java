@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public String author() {
-		return !Strings.isNullOrEmpty(author) ? author : service(User.class).getUsername();
+		return !Strings.isNullOrEmpty(author) ? author : service(User.class).getUserId();
 	}
 	
 	@Override
@@ -243,7 +243,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		if (Strings.isNullOrEmpty(parentLockContext)) {
 			parentLockContext = optionalService(Locks.class).map(Locks::lockContext).orElse(DatastoreLockContextDescriptions.ROOT);
 		}
-		final DatastoreLockContext lockContext = createLockContext(service(User.class).getUsername(), parentLockContext);
+		final DatastoreLockContext lockContext = createLockContext(service(User.class).getUserId(), parentLockContext);
 		final DatastoreLockTarget lockTarget = createLockTarget(info().id(), path());
 		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;

@@ -1,14 +1,25 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test Dependencies
-Bundle-SymbolicName: com.b2international.snowowl.test.dependencies
+Bundle-SymbolicName: com.b2international.snowowl.test.dependencies;singleton:=true
 Bundle-Version: 8.3.1.qualifier
 Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .,
  lib/contiperf-2.3.2.jar,
- lib/system-rules-1.18.0.jar
-Export-Package: org.databene.contiperf,
+ lib/system-rules-1.18.0.jar,
+ lib/annotations-17.0.0.jar,
+ lib/commons-compress-1.21.jar,
+ lib/docker-java-api-3.2.13.jar,
+ lib/docker-java-transport-3.2.13.jar,
+ lib/docker-java-transport-zerodep-3.2.13.jar,
+ lib/duct-tape-1.0.8.jar,
+ lib/elasticsearch-1.17.1.jar,
+ lib/jna-5.8.0.jar,
+ lib/system-rules-1.18.0-sources.jar,
+ lib/testcontainers-1.17.1.jar
+Export-Package: com.b2international.snowowl.rules,
+ org.databene.contiperf,
  org.databene.contiperf.clock,
  org.databene.contiperf.junit,
  org.databene.contiperf.log,
@@ -18,5 +29,20 @@ Export-Package: org.databene.contiperf,
  org.databene.contiperf.util,
  org.databene.profile,
  org.databene.stat,
- org.junit.contrib.java.lang.system
-Require-Bundle: org.junit;bundle-version="4.11.0"
+ org.junit.contrib.java.lang.system,
+ org.testcontainers,
+ org.testcontainers.containers,
+ org.testcontainers.dockerclient,
+ org.testcontainers.elasticsearch,
+ org.testcontainers.images,
+ org.testcontainers.images.builder,
+ org.testcontainers.images.builder.dockerfile,
+ org.testcontainers.images.builder.dockerfile.statement,
+ org.testcontainers.images.builder.dockerfile.traits,
+ org.testcontainers.images.builder.traits,
+ org.testcontainers.lifecycle,
+ org.testcontainers.utility
+Require-Bundle: org.junit;bundle-version="4.11.0",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.10.5"
+Bundle-ActivationPolicy: lazy
+Import-Package: org.slf4j;version="1.7.30"

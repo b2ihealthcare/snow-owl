@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public final class RemoteJob extends Job {
 			User user = context.service(User.class);
 			if (User.isSystem(this.user)) {
 				user = User.SYSTEM;
-			} else if (!user.getUsername().equals(this.user)) {
+			} else if (!user.getUserId().equals(this.user)) {
 				user = UserRequests.prepareGet(this.user).build().execute(this.context);
 			}
 			

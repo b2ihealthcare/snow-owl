@@ -16,14 +16,14 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
@@ -122,23 +122,21 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			return;
 		}
 		
-		// extract read permissions
-		final List<Permission> readPermissions = user.getPermissions().stream()
-				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
-				.collect(Collectors.toList());
+		final Set<String> accessibleResources = context.optionalService(AuthorizationService.class)
+				.orElse(AuthorizationService.DEFAULT)
+				.getAccessibleResources(user);
 		
-		final SortedSet<String> exactResourceIds = readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
+		final SortedSet<String> exactResourceIds = accessibleResources.stream()
 				.filter(resource -> !resource.endsWith("*"))
 				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
-		final SortedSet<String> resourceIdPrefixes = readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
+		
+		final SortedSet<String> resourceIdPrefixes = accessibleResources.stream()
 				.filter(resource -> resource.endsWith("*"))
 				.map(resource -> resource.substring(0, resource.length() - 1))
 				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
 		
 		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
-			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), exactResourceIds, resourceIdPrefixes);
+			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUserId(), exactResourceIds, resourceIdPrefixes);
 			ExpressionBuilder bool = Expressions.bool();
 			// the permissions give access to either
 			if (!exactResourceIds.isEmpty()) {

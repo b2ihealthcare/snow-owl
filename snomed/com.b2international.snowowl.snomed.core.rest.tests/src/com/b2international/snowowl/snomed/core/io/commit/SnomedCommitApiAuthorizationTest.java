@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.identity.Role;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -163,7 +162,7 @@ public class SnomedCommitApiAuthorizationTest {
 	
 	private String generateAccessTokenForResourceAccess(String...resourcesToGrantAccess) {
 		final List<Permission> permissions = List.of(resourcesToGrantAccess).stream().map(res -> Permission.requireAll(Permission.OPERATION_BROWSE, res)).collect(Collectors.toList());
-		final User user =  new User("test_user", List.of(new Role("reader", permissions)));
+		final User user =  new User("test_user", permissions);
 		return Services.service(JWTGenerator.class).generate(user);
 	}
 	
