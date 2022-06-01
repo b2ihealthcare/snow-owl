@@ -70,6 +70,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
@@ -528,6 +529,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.SNAPSHOT.name())
 				.put("startEffectiveTime", versionEffectiveTime)
+				.put("componentTypes", List.of(SnomedReferenceSetMember.TYPE))
 				.build();
 			
 		final File exportArchive = doExport(taskBranch, config);
