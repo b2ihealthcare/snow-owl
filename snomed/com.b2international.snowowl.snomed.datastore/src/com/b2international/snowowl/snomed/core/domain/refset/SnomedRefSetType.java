@@ -175,7 +175,15 @@ public enum SnomedRefSetType {
 	 * @see #COMPLEX_BLOCK_MAP_VALUE
 	 * @ordered
 	 */
-	COMPLEX_BLOCK_MAP(19, "COMPLEX_BLOCK_MAP", "COMPLEX_BLOCK_MAP");
+	COMPLEX_BLOCK_MAP(19, "COMPLEX_BLOCK_MAP", "COMPLEX_BLOCK_MAP"),
+	
+	/**
+	 * Simple map to SNOMEDCT type.
+	 * @see #SIMPLE_MAP_TO_SNOMEDCT_VALUE
+	 * @ordered
+	 */
+	SIMPLE_MAP_TO_SNOMEDCT(20, "SIMPLE_MAP_TO_SNOMEDCT", "SIMPLE_MAP_TO_SNOMEDCT"),
+;
 
 
 	/**
@@ -397,6 +405,14 @@ public enum SnomedRefSetType {
 	 * @ordered
 	 */
 	public static final int COMPLEX_BLOCK_MAP_VALUE = 19;
+	
+	/**
+	 * The '<em><b>SIMPLE MAP TO SNOMEDCT</b></em>' literal value.
+	 * @see #SIMPLE_MAP_TO_SNOMEDCT
+	 * @model
+	 * @ordered
+	 */
+	public static final int SIMPLE_MAP_TO_SNOMEDCT_VALUE = 20;
 
 	/**
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
@@ -425,6 +441,7 @@ public enum SnomedRefSetType {
 			MRCM_MODULE_SCOPE,
 			ANNOTATION,
 			COMPLEX_BLOCK_MAP,
+			SIMPLE_MAP_TO_SNOMEDCT
 		};
 
 	/**
@@ -485,6 +502,7 @@ public enum SnomedRefSetType {
 			case MRCM_MODULE_SCOPE_VALUE: return MRCM_MODULE_SCOPE;
 			case ANNOTATION_VALUE: return ANNOTATION;
 			case COMPLEX_BLOCK_MAP_VALUE: return COMPLEX_BLOCK_MAP;
+			case SIMPLE_MAP_TO_SNOMEDCT_VALUE: return SIMPLE_MAP_TO_SNOMEDCT;
 		}
 		return null;
 	}

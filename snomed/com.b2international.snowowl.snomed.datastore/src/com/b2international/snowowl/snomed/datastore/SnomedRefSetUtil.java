@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSet
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.EXTENDED_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP_TO_SNOMEDCT;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -85,6 +86,7 @@ public abstract class SnomedRefSetUtil {
 						SnomedRefSetType.LANGUAGE)
 			.putAll(SnomedRF2Folder.MAP, 
 						SnomedRefSetType.SIMPLE_MAP,
+						SnomedRefSetType.SIMPLE_MAP_TO_SNOMEDCT,
 						SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
 						SnomedRefSetType.COMPLEX_MAP,
 						SnomedRefSetType.COMPLEX_BLOCK_MAP,
@@ -151,6 +153,7 @@ public abstract class SnomedRefSetUtil {
 	 */
 	public static boolean isMapping(final SnomedRefSetType type) {
 		return SIMPLE_MAP.equals(type) 
+				|| SIMPLE_MAP_TO_SNOMEDCT.equals(type) 
 				|| SIMPLE_MAP_WITH_DESCRIPTION.equals(type)
 				|| COMPLEX_MAP.equals(type)
 				|| COMPLEX_BLOCK_MAP.equals(type)
@@ -163,6 +166,7 @@ public abstract class SnomedRefSetUtil {
 	 */
 	public static List<SnomedRefSetType> getMapTypeRefSets() {
 		return ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, 
+				SnomedRefSetType.SIMPLE_MAP_TO_SNOMEDCT,
 				SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
 				SnomedRefSetType.COMPLEX_MAP,
 				SnomedRefSetType.COMPLEX_BLOCK_MAP,
@@ -190,6 +194,8 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_SIMPLE_MAP_TYPE;
 			case SIMPLE:
 				return Concepts.REFSET_SIMPLE_TYPE;
+			case SIMPLE_MAP_TO_SNOMEDCT: 
+				return Concepts.REFSET_SIMPLE_MAP_TO_SNOMEDCT;
 			case COMPLEX_MAP:
 				return Concepts.REFSET_COMPLEX_MAP_TYPE;
 			case COMPLEX_BLOCK_MAP:
