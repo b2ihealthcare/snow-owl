@@ -74,7 +74,7 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implements IConceptMapApiProvider {
 
-	private static final List<SnomedRefSetType> CONCEPT_MAP_TYPES = ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, 
+	private static final List<SnomedRefSetType> CONCEPT_MAP_TYPES = ImmutableList.of(SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT, 
 			SnomedRefSetType.COMPLEX_MAP, 
 			SnomedRefSetType.COMPLEX_BLOCK_MAP,
 			SnomedRefSetType.EXTENDED_MAP);
@@ -482,7 +482,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		
 		SnomedRefSetType snomedRefSetType = mappingSetMember.type();
 		
-		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP) {
+		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT) {
 			return ConceptMapEquivalence.EQUIVALENT; //probably true
 		}
 		

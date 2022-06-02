@@ -93,7 +93,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void indexSimpleMapMember() throws Exception {
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
-				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
+				.referenceSetType(SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT)
 				.field(Fields.MAP_TARGET, "A01")
 				.build();
 			
@@ -112,7 +112,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
-				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
+				.referenceSetType(SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT)
 				.field(Fields.MAP_TARGET, componentURI.toString())
 				.build();
 		

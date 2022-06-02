@@ -393,7 +393,7 @@ public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomed
 			);
 		case SIMPLE:
 			return Json.object();
-		case SIMPLE_MAP:
+		case SIMPLE_MAP_FROM_SNOMEDCT:
 			return Json.object(
 				SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget2"
 			);
@@ -497,7 +497,7 @@ public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomed
 			return Json.object(
 				SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "abc"
 			);
-		case SIMPLE_MAP:
+		case SIMPLE_MAP_FROM_SNOMEDCT:
 			return Json.object(
 				SnomedRf2Headers.FIELD_MAP_TARGET, ""
 			);

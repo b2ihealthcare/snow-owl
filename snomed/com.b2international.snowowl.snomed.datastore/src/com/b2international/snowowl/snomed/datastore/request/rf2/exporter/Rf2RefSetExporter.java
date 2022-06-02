@@ -145,7 +145,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case QUERY: //$FALL-THROUGH$
 			case ATTRIBUTE_VALUE: //$FALL-THROUGH$
 			case EXTENDED_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_FROM_SNOMEDCT: //$FALL-THROUGH$
 			case SIMPLE_MAP_WITH_DESCRIPTION: //$FALL-THROUGH$
 			case COMPLEX_MAP: //$FALL-THROUGH$
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
@@ -292,7 +292,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "s";
 			case DESCRIPTION_TYPE: 
 				return "ci";
-			case SIMPLE_MAP: 
+			case SIMPLE_MAP_FROM_SNOMEDCT: 
 				return "s";
 			case SIMPLE_MAP_WITH_DESCRIPTION: 
 				return "ss";
@@ -336,7 +336,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return SnomedRf2Headers.QUERY_TYPE_HEADER;
 		case DESCRIPTION_TYPE: 
 			return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
-		case SIMPLE_MAP: 
+		case SIMPLE_MAP_FROM_SNOMEDCT: 
 			return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
 		case SIMPLE_MAP_WITH_DESCRIPTION: 
 			return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;

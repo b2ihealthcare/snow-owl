@@ -653,7 +653,7 @@ public abstract class SnomedRestFixtures {
 			);
 		case SIMPLE:
 			return Json.object();
-		case SIMPLE_MAP:
+		case SIMPLE_MAP_FROM_SNOMEDCT:
 			return Json.object(
 				SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget"
 			);

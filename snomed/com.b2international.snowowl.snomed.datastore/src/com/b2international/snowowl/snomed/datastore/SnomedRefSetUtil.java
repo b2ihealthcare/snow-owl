@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_BLOCK_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.EXTENDED_MAP;
-import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP_TO_SNOMEDCT;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -85,7 +85,7 @@ public abstract class SnomedRefSetUtil {
 			.putAll(SnomedRF2Folder.LANGUAGE, 
 						SnomedRefSetType.LANGUAGE)
 			.putAll(SnomedRF2Folder.MAP, 
-						SnomedRefSetType.SIMPLE_MAP,
+						SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT,
 						SnomedRefSetType.SIMPLE_MAP_TO_SNOMEDCT,
 						SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
 						SnomedRefSetType.COMPLEX_MAP,
@@ -152,7 +152,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return {@code true} if the reference set type is simple, complex or extended map type, otherwise returns with {@code false}.
 	 */
 	public static boolean isMapping(final SnomedRefSetType type) {
-		return SIMPLE_MAP.equals(type) 
+		return SIMPLE_MAP_FROM_SNOMEDCT.equals(type) 
 				|| SIMPLE_MAP_TO_SNOMEDCT.equals(type) 
 				|| SIMPLE_MAP_WITH_DESCRIPTION.equals(type)
 				|| COMPLEX_MAP.equals(type)
@@ -165,7 +165,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return 
 	 */
 	public static List<SnomedRefSetType> getMapTypeRefSets() {
-		return ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, 
+		return ImmutableList.of(SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT, 
 				SnomedRefSetType.SIMPLE_MAP_TO_SNOMEDCT,
 				SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
 				SnomedRefSetType.COMPLEX_MAP,
@@ -189,7 +189,7 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_LANGUAGE_TYPE;
 			case QUERY:
 				return Concepts.REFSET_QUERY_SPECIFICATION_TYPE;
-			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_FROM_SNOMEDCT: //$FALL-THROUGH$
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return Concepts.REFSET_SIMPLE_MAP_FROM_SNOMEDCT_TYPE;
 			case SIMPLE:

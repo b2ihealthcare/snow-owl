@@ -45,7 +45,7 @@ public class SnomedOfficialRefSetTest extends SnomedRefSetParameterizedTest {
 			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
 			//  Query type reference sets are tested separately 
 			{ 	SnomedRefSetType.SIMPLE							}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT						}, 
 			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
 			{ 	SnomedRefSetType.OWL_AXIOM						},
 			{ 	SnomedRefSetType.OWL_ONTOLOGY					},

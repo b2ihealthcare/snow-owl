@@ -213,7 +213,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 				return new SnomedQueryMemberCreateDelegate(this);
 			case SIMPLE: 
 				return new SnomedSimpleMemberCreateDelegate(this);
-			case SIMPLE_MAP:
+			case SIMPLE_MAP_FROM_SNOMEDCT:
 				return new SnomedSimpleMapMemberCreateDelegate(this);
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return new SnomedSimpleMapMemberWithDescriptionCreateDelegate(this);

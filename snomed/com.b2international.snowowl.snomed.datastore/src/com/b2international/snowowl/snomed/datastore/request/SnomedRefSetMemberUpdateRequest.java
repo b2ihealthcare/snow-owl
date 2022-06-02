@@ -145,7 +145,7 @@ final class SnomedRefSetMemberUpdateRequest extends SnomedComponentUpdateRequest
 				return new SnomedQueryMemberUpdateDelegate(this);
 			case SIMPLE: 
 				return new SnomedSimpleMemberUpdateDelegate(this);
-			case SIMPLE_MAP:
+			case SIMPLE_MAP_FROM_SNOMEDCT:
 				return new SnomedSimpleMapMemberUpdateDelegate(this);
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return new SnomedSimpleMapMemberWithDescriptionUpdateDelegate(this);
