@@ -34,8 +34,16 @@ public enum SnomedRefSetType {
 	 * Simple map type.
 	 * @see #SIMPLE_MAP_VALUE
 	 * @ordered
+	 * @deprecated
 	 */
 	SIMPLE_MAP(1, "SIMPLE_MAP", "SIMPLE_MAP"),
+	
+	/**
+	 * Simple map from SNOMEDCT type. 
+	 * @see #SIMPLE_MAP_FROM_SNOMEDCT_VALUE
+	 * @ordered
+	 */
+	SIMPLE_MAP_FROM_SNOMEDCT(1, "SIMPLE_MAP_FROM_SNOMEDCT", "SIMPLE_MAP_FROM_SNOMEDCT"),
 
 	/**
 	 * Language type.
@@ -413,6 +421,15 @@ public enum SnomedRefSetType {
 	 * @ordered
 	 */
 	public static final int SIMPLE_MAP_TO_SNOMEDCT_VALUE = 20;
+	
+	/**
+	 * The '<em><b>SIMPLE MAP FROM SNOMEDCT</b></em>' literal value.
+	 * @see #SIMPLE_MAP_FROM_SNOMEDCT
+	 * @model
+	 * @ordered
+	 */
+	public static final int SIMPLE_MAP_FROM_SNOMEDCT_VALUE = 21;
+
 
 	/**
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
@@ -423,6 +440,7 @@ public enum SnomedRefSetType {
 		new SnomedRefSetType[] {
 			SIMPLE,
 			SIMPLE_MAP,
+			SIMPLE_MAP_FROM_SNOMEDCT,
 			LANGUAGE,
 			ATTRIBUTE_VALUE,
 			QUERY,
@@ -484,6 +502,7 @@ public enum SnomedRefSetType {
 		switch (value) {
 			case SIMPLE_VALUE: return SIMPLE;
 			case SIMPLE_MAP_VALUE: return SIMPLE_MAP;
+			case SIMPLE_MAP_FROM_SNOMEDCT_VALUE: return SIMPLE_MAP_FROM_SNOMEDCT;
 			case LANGUAGE_VALUE: return LANGUAGE;
 			case ATTRIBUTE_VALUE_VALUE: return ATTRIBUTE_VALUE;
 			case QUERY_VALUE: return QUERY;
