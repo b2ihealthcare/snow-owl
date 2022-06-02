@@ -131,7 +131,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 				.active(true)
 				.containerSetURI(containerURI)
 				.containerTerm(baseReferenceSetURI == containerURI ? "rf1" : "rf2")
-				.containerIconId(Concepts.REFSET_SIMPLE_MAP_TYPE)
+				.containerIconId(Concepts.REFSET_SIMPLE_MAP_FROM_SNOMEDCT_TYPE)
 				.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, sourceCode))
 				.sourceTerm(sourceCode)
 				.sourceIconId("attribute")

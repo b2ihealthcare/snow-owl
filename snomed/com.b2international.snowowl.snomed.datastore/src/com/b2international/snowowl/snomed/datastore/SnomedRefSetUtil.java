@@ -191,7 +191,7 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_QUERY_SPECIFICATION_TYPE;
 			case SIMPLE_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP_WITH_DESCRIPTION:
-				return Concepts.REFSET_SIMPLE_MAP_TYPE;
+				return Concepts.REFSET_SIMPLE_MAP_FROM_SNOMEDCT_TYPE;
 			case SIMPLE:
 				return Concepts.REFSET_SIMPLE_TYPE;
 			case SIMPLE_MAP_TO_SNOMEDCT: 
