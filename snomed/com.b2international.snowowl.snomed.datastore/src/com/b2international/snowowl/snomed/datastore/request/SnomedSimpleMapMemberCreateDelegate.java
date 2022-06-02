@@ -38,7 +38,7 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 
 	@Override
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
-		checkRefSetType(refSet, SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT);
+		checkRefSetType(refSet, SnomedRefSetType.SIMPLE_MAP);
 		checkReferencedComponent(refSet);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());

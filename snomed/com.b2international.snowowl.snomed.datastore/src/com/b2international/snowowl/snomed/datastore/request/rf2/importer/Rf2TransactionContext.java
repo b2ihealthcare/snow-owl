@@ -430,7 +430,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
 						.withMapTargetDescription((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION));
 				break;
-			case SIMPLE_MAP_FROM_SNOMEDCT: 
+			case SIMPLE_MAP: 
 				builder = SnomedComponents.newSimpleMapMember()
 						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
 				break;

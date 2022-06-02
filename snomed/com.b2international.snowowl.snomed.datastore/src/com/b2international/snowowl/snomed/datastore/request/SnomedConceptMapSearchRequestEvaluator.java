@@ -222,7 +222,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 		SnomedRefSetType snomedRefSetType = mappingSetMember.type();
 
-		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT || snomedRefSetType == SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION) {
+		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP || snomedRefSetType == SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION) {
 			return MappingCorrelation.EXACT_MATCH; //probably true
 		}
 

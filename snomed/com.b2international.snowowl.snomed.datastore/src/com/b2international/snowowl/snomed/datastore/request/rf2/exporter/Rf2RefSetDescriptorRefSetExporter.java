@@ -141,7 +141,7 @@ public final class Rf2RefSetDescriptorRefSetExporter extends Rf2Exporter<SnomedR
 			return Pair.of(Concepts.ATTRIBUTE_TYPE_QUERY, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);
 		// simple, complex, extended map
 		case SnomedRf2Headers.FIELD_MAP_TARGET: 
-			if (SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT.equals(refSet.getType())) {
+			if (SnomedRefSetType.SIMPLE_MAP.equals(refSet.getType())) {
 				return Pair.of(Concepts.ATTRIBUTE_TYPE_SCHEME_VALUE, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);
 			} else {
 				return Pair.of(Concepts.ATTRIBUTE_TYPE_MAP_TARGET, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);

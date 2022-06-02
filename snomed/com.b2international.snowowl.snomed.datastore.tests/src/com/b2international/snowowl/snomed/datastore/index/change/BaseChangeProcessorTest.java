@@ -166,7 +166,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	}
 	
 	protected final SnomedRefSetMemberIndexEntry createSimpleMapMember(final String referencedComponentId, final String mapTarget, final String refSetId) {
-		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder().referenceSetType(SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT)
+		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder().referenceSetType(SnomedRefSetType.SIMPLE_MAP)
 				.field(SnomedRf2Headers.FIELD_MAP_TARGET, mapTarget);
 		return createMember(member, referencedComponentId, refSetId);
 	}

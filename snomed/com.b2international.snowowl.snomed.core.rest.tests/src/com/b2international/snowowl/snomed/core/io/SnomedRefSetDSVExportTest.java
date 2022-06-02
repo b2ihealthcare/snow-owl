@@ -139,7 +139,7 @@ public class SnomedRefSetDSVExportTest {
 
 	@Test
 	public void mapTypeDSVExport() throws Exception {
-		String refsetId = createRefset(branchPath, SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT);
+		String refsetId = createRefset(branchPath, SnomedRefSetType.SIMPLE_MAP);
 		addMember(branchPath, refsetId, Concepts.SUBSTANCE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
 		addMember(branchPath, refsetId, Concepts.FINDING_SITE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
 		

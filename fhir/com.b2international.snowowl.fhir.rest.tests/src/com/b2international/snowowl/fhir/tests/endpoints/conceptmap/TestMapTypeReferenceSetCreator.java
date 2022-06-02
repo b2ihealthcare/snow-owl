@@ -70,7 +70,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 		if (!refsetDescription.isPresent()) {
 			
 			System.out.println("Creating simple map type reference set...");
-			String refsetId = createRefsetConcept(branchPath, simpleMapName, SnomedRefSetType.SIMPLE_MAP_FROM_SNOMEDCT);
+			String refsetId = createRefsetConcept(branchPath, simpleMapName, SnomedRefSetType.SIMPLE_MAP);
 			System.out.println("Creating reference set members for map type refset: " + simpleMapName);
 			createSimpleMapping(branchPath, refsetId, FhirTestConcepts.BACTERIA, "Bacteria Target");
 			createSimpleMapping(branchPath, refsetId, FhirTestConcepts.MICROORGANISM, "MO");
