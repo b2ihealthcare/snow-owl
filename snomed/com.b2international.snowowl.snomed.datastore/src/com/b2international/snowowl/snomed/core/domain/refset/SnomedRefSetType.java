@@ -38,12 +38,6 @@ public enum SnomedRefSetType {
 	 */
 	SIMPLE_MAP(1, "SIMPLE_MAP", "SIMPLE_MAP"),
 	
-	/**
-	 * Simple map from SNOMEDCT type. 
-	 * @see #SIMPLE_MAP_FROM_SNOMEDCT_VALUE
-	 * @ordered
-	 */
-	SIMPLE_MAP_FROM_SNOMEDCT(1, "SIMPLE_MAP_FROM_SNOMEDCT", "SIMPLE_MAP_FROM_SNOMEDCT"),
 
 	/**
 	 * Language type.
@@ -191,6 +185,13 @@ public enum SnomedRefSetType {
 	 * @ordered
 	 */
 	SIMPLE_MAP_TO_SNOMEDCT(20, "SIMPLE_MAP_TO_SNOMEDCT", "SIMPLE_MAP_TO_SNOMEDCT"),
+	
+	/**
+	 * Simple map from SNOMEDCT type. 
+	 * @see #SIMPLE_MAP_FROM_SNOMEDCT_VALUE
+	 * @ordered
+	 */
+	SIMPLE_MAP_FROM_SNOMEDCT(21, "SIMPLE_MAP_FROM_SNOMEDCT", "SIMPLE_MAP_FROM_SNOMEDCT"),
 ;
 
 
