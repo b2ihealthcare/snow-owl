@@ -276,7 +276,7 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	 * Single nested module expand of definitionStatus results in status 500
 	 */
 	@Test
-	public void epxandNestedModuleOnly() {
+	public void expandNestedModuleOnly() {
 		final String conceptExpand = "definitionStatus(expand(module()))";
 		
 		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
@@ -298,7 +298,7 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	 * Definitions status module expand fail.
 	 */
 	@Test
-	public void epxandNestedModule() {
+	public void expandNestedModule() {
 		final String conceptExpand = "definitionStatus(expand(pt(),fsn(),module(expand(pt(),fsn())))),module(expand(pt(),fsn()))";
 		
 		final String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
