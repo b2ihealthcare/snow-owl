@@ -142,7 +142,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		final Set<SnomedRefSetType> resolvedRefSetTypes = newHashSetWithExpectedSize(refSetTypes.length);
 		
 		for (String refSetTypeString : refSetTypes) {
-			final SnomedRefSetType refSetType = SnomedRefSetType.get(refSetTypeString.toUpperCase());
+			final SnomedRefSetType refSetType = SnomedRefSetType.valueOf(refSetTypeString.toUpperCase());
 			if (refSetType != null) {
 				resolvedRefSetTypes.add(refSetType);
 			} else {
@@ -152,7 +152,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		
 		if (!unresolvedRefSetTypes.isEmpty()) {
 			throw new BadRequestException("Unknown reference set types: '%s'", unresolvedRefSetTypes)
-				.withDeveloperMessage("Available reference set types are: " + SnomedRefSetType.VALUES);
+				.withDeveloperMessage("Available reference set types are: " + SnomedRefSetType.values());
 		}
 		
 		return resolvedRefSetTypes;
