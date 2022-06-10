@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.19.3
+
+### Bugs/Improvements
+- [docker] use latest `b2ihealthcare:centos7-jre11` image for docker build
+- [snomed] add minimal type-only support for Simple map to SNOMED CT reference sets (#1029)
+
 ## 7.19.1
 
 ### Bugs/Improvements
