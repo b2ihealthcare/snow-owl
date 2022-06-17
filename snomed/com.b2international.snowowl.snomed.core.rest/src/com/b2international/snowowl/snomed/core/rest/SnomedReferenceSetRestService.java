@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -146,7 +147,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		final Set<SnomedRefSetType> resolvedRefSetTypes = newHashSetWithExpectedSize(refSetTypes.length);
 		
 		for (String refSetTypeString : refSetTypes) {
-			final SnomedRefSetType refSetType = SnomedRefSetType.get(refSetTypeString.toUpperCase());
+			final SnomedRefSetType refSetType = SnomedRefSetType.getByName(refSetTypeString.toUpperCase());
 			if (refSetType != null) {
 				resolvedRefSetTypes.add(refSetType);
 			} else {
@@ -156,7 +157,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		
 		if (!unresolvedRefSetTypes.isEmpty()) {
 			throw new BadRequestException("Unknown reference set types: '%s'", unresolvedRefSetTypes)
-				.withDeveloperMessage("Available reference set types are: " + SnomedRefSetType.VALUES);
+				.withDeveloperMessage("Available reference set types are: " + Arrays.toString(SnomedRefSetType.values()));
 		}
 		
 		return resolvedRefSetTypes;
