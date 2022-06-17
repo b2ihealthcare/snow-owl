@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,13 +69,16 @@ public abstract class SnomedRf2Headers {
 	 * RF2 column name for association type reference set file target components
 	 */
 	public static final String FIELD_TARGET_COMPONENT_ID = "targetComponentId"; 
-	
+
 	// Field names introduced in simple map type reference set files
 	public static final String FIELD_MAP_TARGET = "mapTarget";
 	
 	//field name for SDD specific simple map reference sets where target description is available 
 	public static final String FIELD_MAP_TARGET_DESCRIPTION = "mapTargetDescription";
 
+	// Field names introduced in "simple map to" type reference set files (since 2022-02-28)
+	public static final String FIELD_MAP_SOURCE = "mapSource";
+	
 	// Field names introduced in complex map type reference set files
 	public static final String FIELD_MAP_GROUP = "mapGroup";
 	public static final String FIELD_MAP_PRIORITY = "mapPriority";
@@ -275,6 +278,15 @@ public abstract class SnomedRf2Headers {
 		FIELD_MAP_TARGET,
 		FIELD_MAP_TARGET_DESCRIPTION };
 
+	public static final String[] SIMPLE_MAP_TO_TYPE_HEADER = {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID, 
+		FIELD_REFERENCED_COMPONENT_ID,
+		FIELD_MAP_SOURCE };
+	
 	public static final String[] COMPLEX_MAP_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
