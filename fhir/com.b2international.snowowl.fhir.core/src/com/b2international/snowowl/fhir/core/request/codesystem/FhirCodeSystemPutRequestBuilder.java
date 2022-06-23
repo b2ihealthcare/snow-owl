@@ -25,17 +25,21 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
  */
 public final class FhirCodeSystemPutRequestBuilder implements ResourceRepositoryRequestBuilder<Boolean> {
 	
-	
 	private CodeSystem codeSystem;
+	private String author;
 	
 	public FhirCodeSystemPutRequestBuilder setCodeSystem(CodeSystem codeSystem) {
 		this.codeSystem = codeSystem;
 		return this;
 	}
 	
-	@Override
-	public Request<RepositoryContext, Boolean> build() {
-		return new FhirCodeSystemPutRequest(codeSystem);
+	public FhirCodeSystemPutRequestBuilder setAuthor(String author) {
+		this.author = author;
+		return this;
 	}
 	
+	@Override
+	public Request<RepositoryContext, Boolean> build() {
+		return new FhirCodeSystemPutRequest(codeSystem, author);
+	}
 }
