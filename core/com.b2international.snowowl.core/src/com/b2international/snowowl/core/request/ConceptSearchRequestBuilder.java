@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.request;
+
+import java.util.List;
 
 import com.b2international.snowowl.core.CodeType;
 import com.b2international.snowowl.core.ResourceURI;
@@ -98,7 +100,14 @@ public final class ConceptSearchRequestBuilder
 	public ConceptSearchRequestBuilder filterByQuery(String query) {
 		return addOption(OptionKey.QUERY, query);
 	}
-
+	
+	/**
+	 * Filters matches by similarity to given set of terms
+	 */
+	public ConceptSearchRequestBuilder filterByMoreLikeThis(List<String> terms) {
+		return addOption(OptionKey.MORE_LIKE_THIS_QUERY, terms);
+	}
+	
 	/**
 	 * Filter by multiple query expressions defined in the target code system's query language.
 	 * 

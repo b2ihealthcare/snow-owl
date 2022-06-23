@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -79,6 +80,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	@Override
 	public SnomedConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, termFilter);
+	}
+	
+	public SnomedConceptSearchRequestBuilder filterByMoreLikeThis(Collection<String> terms) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.MORE_LIKE_THIS, terms);
 	}
 
 	/**

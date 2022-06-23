@@ -21,10 +21,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -73,6 +70,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 * Description term to (smart) match
 		 */
 		TERM,
+		
+		/** 
+		 * Description terms to match 
+		 */
+		MORE_LIKE_THIS,
 		
 		/**
 		 * Description type to match
@@ -204,14 +206,15 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			queryBuilder.filter(SnomedConceptDocument.Expressions.semanticTags(getCollection(OptionKey.SEMANTIC_TAG, String.class)));
 		}
 		
-		if (containsKey(OptionKey.TERM)) {
+		if (containsKey(OptionKey.TERM) || containsKey(OptionKey.MORE_LIKE_THIS)) {
 			final ExpressionBuilder bq = Expressions.bool();
 			// nest current query
 			bq.filter(queryBuilder.build());
 			queryBuilder = bq;
 			
 			final TermFilter termFilter = containsKey(OptionKey.TERM) ? get(OptionKey.TERM, TermFilter.class) : null;
-			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, termFilter);
+			final Collection<String> terms = containsKey(OptionKey.MORE_LIKE_THIS) ? getCollection(OptionKey.MORE_LIKE_THIS, String.class) : Collections.emptyList();
+			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, termFilter, terms);
 			
 			if (termFilter != null) {
 				try {
@@ -291,7 +294,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		}
 	}
 	
-	private Map<String, Float> executeDescriptionSearch(BranchContext context, TermFilter termFilter) {
+	private Map<String, Float> executeDescriptionSearch(BranchContext context, TermFilter termFilter, Collection<String> terms) {
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
@@ -303,6 +306,10 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			requestBuilder.filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(context, extendedLocales));
 		}
 			
+		if (!terms.isEmpty()) {
+			requestBuilder.filterByMoreLikeThis(terms);
+		}
+		
 		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConcepts(ids));
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
@@ -322,7 +329,8 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		final Map<String, Float> conceptMap = newHashMap();
 		
 		for (SnomedDescription description : items) {
-			if (!conceptMap.containsKey(description.getConceptId())) {
+			if (!conceptMap.containsKey(description.getConceptId()) 
+					|| conceptMap.get(description.getConceptId()) < description.getScore()) {
 				conceptMap.put(description.getConceptId(), description.getScore());
 			}
 		}

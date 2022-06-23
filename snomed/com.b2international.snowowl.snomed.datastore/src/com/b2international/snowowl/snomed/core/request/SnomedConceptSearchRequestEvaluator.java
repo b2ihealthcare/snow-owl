@@ -91,6 +91,11 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			req.filterByAncestors(search.getCollection(OptionKey.ANCESTOR, String.class));
 		}
 		
+		if (search.containsKey(OptionKey.MORE_LIKE_THIS_QUERY)) {
+			req.filterByMoreLikeThis(search.getCollection(OptionKey.MORE_LIKE_THIS_QUERY, String.class));
+			req.withDoi();
+		}
+		
 		if (search.containsKey(OptionKey.TERM_TYPE)) {
 			req.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
 		}

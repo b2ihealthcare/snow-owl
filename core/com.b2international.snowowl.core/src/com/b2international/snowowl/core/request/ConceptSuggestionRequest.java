@@ -19,6 +19,7 @@ import static com.b2international.snowowl.core.request.ConceptSearchRequestEvalu
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -30,6 +31,7 @@ import org.tartarus.snowball.ext.EnglishStemmer;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.compat.TextConstants;
+import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
@@ -67,9 +69,14 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	private int topTokenCount;
 	
 	private transient List<String> topTokens;
+	private boolean useMoreLikeThis;
 	
 	void setTopTokenCount(int topTokenCount) {
 		this.topTokenCount = topTokenCount;
+	}
+	
+	public void setUseMoreLikeThis(boolean useMoreLikeThis) {
+		this.useMoreLikeThis = useMoreLikeThis;
 	}
 	
 	@Override
@@ -79,13 +86,33 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 
 	@Override
 	protected Suggestions doExecute(BranchContext context) throws IOException {
-		TermFilter termFilter;
+		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder();
 		
-		if (containsKey(TERM)) {
+		if (useMoreLikeThis) {			
+			final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
+					.filterByCodeSystemUri(context.service(ResourceURI.class))
+					.setLimit(SCROLL_LIMIT)
+					.setLocales(locales());
+			
+			if (containsKey(QUERY)) {
+				baseRequestBuilder.filterByInclusions(getCollection(QUERY, String.class));
+			}
+			
+			if (containsKey(MUST_NOT_QUERY)) {
+				baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
+			}
+
+			List<String> terms = new ArrayList<>();
+			baseRequestBuilder.stream(context)
+					.flatMap(Concepts::stream)
+					.flatMap(concept -> getAllTerms(concept).stream())
+					.forEach(terms::add);
+			resultRequestBuilder.filterByMoreLikeThis(terms);
+		} else if (containsKey(TERM)) {
 			if (containsKey(MIN_OCCURENCE_COUNT)) {
-				termFilter = TermFilter.minTermMatch(getString(TERM), (Integer) get(MIN_OCCURENCE_COUNT)).withIgnoreStopwords();
+				resultRequestBuilder.filterByTerm(TermFilter.minTermMatch(getString(TERM), (Integer) get(MIN_OCCURENCE_COUNT)).withIgnoreStopwords());
 			} else {
-				termFilter = TermFilter.defaultTermMatch(getString(TERM)).withIgnoreStopwords();
+				resultRequestBuilder.filterByTerm(TermFilter.defaultTermMatch(getString(TERM)).withIgnoreStopwords());
 			}
 		} else if (containsKey(QUERY) || containsKey(MUST_NOT_QUERY)) {
 			// Gather tokens
@@ -127,7 +154,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			}
 			
 			int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): Math.min(DEFAULT_MIN_OCCURENCE_COUNT, topTokens.size());
-			termFilter = TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch);
+			resultRequestBuilder.filterByTerm(TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch));
 		} else {
 			throw new BadRequestException("Either a specific term or query/mustNotQuery must be specified for suggestion base set.");
 		}
@@ -140,10 +167,9 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		exclusions.addAll(getCollection(QUERY, String.class));
 		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
 
-		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
+		resultRequestBuilder
 				.filterByCodeSystemUri(context.service(ResourceURI.class))
-				.filterByActive(true)
-				.filterByTerm(termFilter)
+				.filterByActive(true)		
 				.setPreferredDisplay(getString(DISPLAY))
 				.setLimit(limit())
 				.setLocales(locales())
@@ -154,7 +180,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			resultRequestBuilder.filterByExclusions(exclusions);
 		}
 		
-		final Concepts conceptSuggestions = resultRequestBuilder.build().execute(context);
+		final Concepts conceptSuggestions = resultRequestBuilder.sortBy(Sort.fieldDesc(SortBy.FIELD_SCORE)).build().execute(context);
 		
 		return new Suggestions(topTokens, conceptSuggestions.getItems(), conceptSuggestions.getSearchAfter(), limit(), conceptSuggestions.getTotal());
 	}

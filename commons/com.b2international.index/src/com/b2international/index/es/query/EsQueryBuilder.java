@@ -138,13 +138,35 @@ public final class EsQueryBuilder {
 			visit((DoubleRangePredicate) expression);
 		} else if (expression instanceof DoubleSetPredicate) {
 			visit((DoubleSetPredicate) expression);
-		} else if (expression instanceof ScriptQueryExpression){
+		} else if (expression instanceof ScriptQueryExpression) {
 			visit((ScriptQueryExpression)expression);
+		} else if (expression instanceof MoreLikeThisQuery) {
+			visit((MoreLikeThisQuery) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
 	}
 
+	private void visit(MoreLikeThisQuery expression) {
+		if (expression.getLikeTexts() != null) {		
+			
+			if (expression.getLikeItems() != null) {
+				
+				if (expression.getFields() != null) {
+					deque.push(QueryBuilders.moreLikeThisQuery(expression.getFields(), expression.getLikeTexts(), expression.getLikeItems())
+							);					
+				} else {
+					deque.push(QueryBuilders.moreLikeThisQuery(expression.getLikeTexts(), expression.getLikeItems()));					
+				}
+			} else {
+				deque.push(QueryBuilders.moreLikeThisQuery(expression.getLikeTexts()));				
+			}
+		} else if (expression.getLikeItems() != null) {
+			deque.push(QueryBuilders.moreLikeThisQuery(expression.getLikeItems()));			
+		}
+		needsScoring = true;
+	}
+	
 	private void visit(ScriptQueryExpression expression) {
 		deque.push(QueryBuilders.scriptQuery(expression.toEsScript(mapping)));
 	}

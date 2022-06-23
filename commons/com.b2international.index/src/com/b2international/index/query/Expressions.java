@@ -16,9 +16,14 @@
 package com.b2international.index.query;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.elasticsearch.index.query.MoreLikeThisQueryBuilder.Item;
 
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
@@ -279,7 +284,15 @@ public class Expressions {
 	public static Expression scriptQuery(String script, Map<String, Object> params) {
 		return new ScriptQueryExpression(script, params);
 	}
-
+	
+	public static Expression moreLikeThis(Item[] items, String[] fields, String[] texts) {
+		return new MoreLikeThisQuery(fields, texts, items);
+	}
+	
+	public static Expression moreLikeThis(String[] texts, String[] fields) {
+		return new MoreLikeThisQuery(fields, texts, new Item[0]);
+	}
+	
 	public static Expression matchAnyObject(String field, Iterable<?> values) {
 		Object firstValue = Iterables.getFirst(values, null);
 		if (firstValue == null) {

@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
+import static com.b2international.index.revision.Revision.Expressions.id;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.*;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -59,6 +60,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		ACCEPTABLE_IN_LOCALES,
 		PREFERRED_IN,
 		PREFERRED_IN_LOCALES, 
+		MORE_LIKE_THIS 
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -135,12 +137,18 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			queryBuilder.must(toDescriptionTermQuery(termFilter));
 		}
 		
+		if (containsKey(OptionKey.MORE_LIKE_THIS)) {
+			Collection<String> terms = getCollection(OptionKey.MORE_LIKE_THIS, String.class);
+			String[] likeTerms = terms.toArray(new String[terms.size()]);
+			queryBuilder.must(Expressions.moreLikeThis(likeTerms, new String[] {"term.text"}));
+		}
+		
 		return queryBuilder.build();
 	}
 
 	@Override
 	protected boolean trackScores() {
-		return containsKey(OptionKey.TERM);
+		return containsKey(OptionKey.TERM) || containsKey(OptionKey.MORE_LIKE_THIS);
 	}
 
 	@Override

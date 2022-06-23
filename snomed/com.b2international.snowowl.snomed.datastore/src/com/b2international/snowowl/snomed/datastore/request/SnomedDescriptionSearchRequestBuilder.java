@@ -294,4 +294,9 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
 	}
+
+	public SnomedDescriptionSearchRequestBuilder filterByMoreLikeThis(Collection<String> terms) {
+		return addOption(OptionKey.MORE_LIKE_THIS, terms);
+	}
+	
 }
