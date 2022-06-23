@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -71,9 +70,16 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
 	@PutMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
-	public ResponseEntity<Void> put(@RequestBody final ResourceRequest<CodeSystem> codeSystem) {
+	public ResponseEntity<Void> put(
+		@RequestBody 
+		final ResourceRequest<CodeSystem> codeSystem,
+		
+		@RequestHeader(value = X_AUTHOR, required = false)
+		final String author) {
+
 		FhirRequests.codeSystems().preparePut()
 			.setCodeSystem(codeSystem.getChange())
+			.setAuthor(author)
 			.buildAsync()
 			.execute(getBus())
 			.getSync();
