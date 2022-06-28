@@ -76,6 +76,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		 * Search resources by status
 		 */
 		STATUS,
+		
+		/**
+		 * Search resources by owner
+		 */
+		OWNER,
 	}
 	
 	@Override
@@ -94,6 +99,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
+		addFilter(queryBuilder, OptionKey.OWNER, String.class, ResourceDocument.Expressions::owners);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);

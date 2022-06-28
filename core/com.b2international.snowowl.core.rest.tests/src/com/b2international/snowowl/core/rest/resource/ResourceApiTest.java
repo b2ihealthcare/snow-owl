@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
@@ -52,8 +52,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.BundleApiAssert;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 8.0
@@ -65,6 +63,7 @@ public class ResourceApiTest {
 	private static final String DEFAULT_CODE_SYSTEM_DESCRIPTION = "# Description";
 	private static final String DEFAULT_CODE_SYSTEM_SHORT_NAME = "sn";
 	private static final String DEFAULT_CODE_SYSTEM_OID = "oid";
+	private static final String DEFAULT_OWNER = "defaultOwner";
 
 	private static IEventBus bus;
 
@@ -139,7 +138,7 @@ public class ResourceApiTest {
 		createCodeSystemWithStatus(id1, "draft");
 		createCodeSystemWithStatus(id2, "active");
 		
-		assertResourceSearch(ImmutableMap.of("status", ImmutableList.of("draft")))
+		assertResourceSearch(Map.of("status", List.of("draft")))
 			.statusCode(200)
 			.body("total", equalTo(1))
 			.body("items[0].id", equalTo(id1))
@@ -161,6 +160,10 @@ public class ResourceApiTest {
 	}
 
 	private CommitResult createCodeSystemWithStatus(final String shortName, final String status) {
+		return createCodeSystem(shortName, status, DEFAULT_OWNER);
+	}
+
+	private CommitResult createCodeSystem(final String shortName, final String status, final String owner) {
 		return CodeSystemRequests.prepareNewCodeSystem()
 			.setId(shortName)
 			.setTitle(shortName)
@@ -169,6 +172,7 @@ public class ResourceApiTest {
 			.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
 			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
 			.setStatus(status)
+			.setOwner(owner)
 			.setOid("https://b2i.sg/" + shortName)
 			.build(RestExtensions.USER, String.format("New code system %s", shortName))
 			.execute(bus)
@@ -196,14 +200,13 @@ public class ResourceApiTest {
 		final String id3 = "C";
 		final String id4 = "D";
 		
-		
 		createCodeSystemWithStatus(id1, "active");
 		createCodeSystemWithStatus(id2, "active");
 		
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
-		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:asc", "title:asc")))
+		assertResourceSearch(Map.of("sort", List.of("typeRank:asc", "title:asc")))
 			.statusCode(200)
 			.body("items.id", contains(id3, id4, id1, id2));
 	}
@@ -215,14 +218,13 @@ public class ResourceApiTest {
 		final String id3 = "C";
 		final String id4 = "D";
 		
-		
 		createCodeSystemWithStatus(id1, "active");
 		createCodeSystemWithStatus(id2, "active");
 		
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
-		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
+		assertResourceSearch(Map.of("sort", List.of("typeRank:desc", "title:asc")))
 			.statusCode(200)
 			.body("items.id", contains(id1, id2, id3, id4));
 	}
@@ -331,4 +333,15 @@ public class ResourceApiTest {
 		assertResourceSearch(Map.of("timestamp", timestamp3)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2", "cs3"));
 		assertResourceSearch(Map.of("timestamp", timestamp3 + 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2", "cs3"));
 	}
+	
+	
+	@Test
+	public void searchByOwner() throws Exception {
+		final String id1 = createCodeSystem("cs1", "draft", "owner1").getResultAs(String.class);
+		final String id2 = createCodeSystem("cs2", "draft", "owner2").getResultAs(String.class);
+		
+		assertResourceSearch(Map.of("owner", "ownerx")).statusCode(200).body("items", empty());
+		assertResourceSearch(Map.of("owner", "owner1")).statusCode(200).body("items.id", containsInAnyOrder(id1));
+	}
+	
 }

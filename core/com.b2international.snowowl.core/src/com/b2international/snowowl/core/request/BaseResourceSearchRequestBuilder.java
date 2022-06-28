@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,6 +115,10 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 
 	public RB filterByStatus(Iterable<String> status) {
 		return addOption(OptionKey.STATUS, status);
+	}
+	
+	public RB filterByOwner(Iterable<String> owner) {
+		return addOption(OptionKey.OWNER, owner);
 	}
 
 }
