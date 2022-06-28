@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.Map;
-
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequestBuilder;
 
@@ -31,7 +29,6 @@ public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequ
 	private String toolingId;
 	private ResourceURI extensionOf;
 	private ResourceURI upgradeOf;
-	private Map<String, Object> settings;
 
 	CodeSystemCreateRequestBuilder() {}
 
@@ -59,11 +56,6 @@ public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequ
 		this.upgradeOf = upgradeOf;
 		return getSelf();
 	}
-	
-	public CodeSystemCreateRequestBuilder setSettings(Map<String, Object> settings) {
-		this.settings = settings;
-		return getSelf();
-	}
 
 	@Override
 	public CodeSystemCreateRequest createResourceRequest() {
@@ -74,7 +66,6 @@ public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequ
 		req.setToolingId(toolingId);
 		req.setExtensionOf(extensionOf);
 		req.setUpgradeOf(upgradeOf);
-		req.setSettings(settings);
 		
 		return req;
 	}
