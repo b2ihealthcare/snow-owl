@@ -66,7 +66,8 @@ public final class Bundle extends Resource {
 				.setContact(getContact())
 				.setUsage(getUsage())
 				.setPurpose(getPurpose())
-				.setBundleId(getBundleId());
+				.setBundleId(getBundleId())
+				.setSettings(getSettings());
 	}
 
 	@Override
@@ -85,7 +86,8 @@ public final class Bundle extends Resource {
 				.usage(getUsage())
 				.purpose(getPurpose())
 				.bundleAncestorIds(getBundleAncestorIds())
-				.bundleId(getBundleId());
+				.bundleId(getBundleId())
+				.settings(getSettings());
 	}
 	
 	public static Bundle from(ResourceDocument doc) {
@@ -105,6 +107,7 @@ public final class Bundle extends Resource {
 		bundle.setBundleId(doc.getBundleId());
 		bundle.setCreatedAt(doc.getCreatedAt());
 		bundle.setUpdatedAt(doc.getUpdatedAt());
+		bundle.setSettings(doc.getSettings());
 		return bundle;
 	}
 }
