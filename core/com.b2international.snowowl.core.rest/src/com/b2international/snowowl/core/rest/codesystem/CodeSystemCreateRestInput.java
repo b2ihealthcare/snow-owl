@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import java.util.Map;
-
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -30,7 +28,6 @@ public final class CodeSystemCreateRestInput extends BaseResourceRestInput {
 	private String oid;
 	private String branchPath;
 	private String toolingId;
-	private Map<String, Object> settings;
 	private ResourceURI extensionOf;
 	
 	public void setOid(String oid) {
@@ -55,14 +52,6 @@ public final class CodeSystemCreateRestInput extends BaseResourceRestInput {
 	
 	public String getToolingId() {
 		return toolingId;
-	}
-	
-	public void setSettings(Map<String, Object> settings) {
-		this.settings = settings;
-	}
-	
-	public Map<String, Object> getSettings() {
-		return settings;
 	}
 	
 	public void setExtensionOf(ResourceURI extensionOf) {
