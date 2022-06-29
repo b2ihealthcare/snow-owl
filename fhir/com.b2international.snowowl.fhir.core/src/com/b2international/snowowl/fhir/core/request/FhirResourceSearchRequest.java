@@ -142,10 +142,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		// remove all fields that are not part of the current resource model
 		fieldsToLoad.removeAll(EXTERNAL_FHIR_RESOURCE_FIELDS);
 		fieldsToLoad.removeAll(getExternalFhirResourceFields());
-		// replace publisher with internal owner field
+		// replace publisher with internal contact field
 		if (fieldsToLoad.contains(CodeSystem.Fields.PUBLISHER)) {
 			fieldsToLoad.remove(CodeSystem.Fields.PUBLISHER);
-			fieldsToLoad.add(ResourceDocument.Fields.OWNER);
+			fieldsToLoad.add(ResourceDocument.Fields.CONTACT);
 		}
 		// replace identifier with internal oid field
 		if (fieldsToLoad.contains(CodeSystem.Fields.IDENTIFIER)) {
@@ -212,7 +212,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			if (!CompareUtils.isEmpty(versionFragment.getVersion())) {
 				ResourceFragment versionCodeSystem = internalResourcesById.get(versionFragment.getResourceURI().getResourceId());
 				versionFragment.setStatus(versionCodeSystem.getStatus());
-				versionFragment.setOwner(versionCodeSystem.getOwner());
+				versionFragment.setContact(versionCodeSystem.getContact());
 				versionFragment.setCopyright(versionCodeSystem.getCopyright());
 				versionFragment.setLanguage(versionCodeSystem.getLanguage());
 				versionFragment.setDescription(versionCodeSystem.getDescription());
@@ -252,7 +252,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		includeIfFieldSelected(CodeSystem.Fields.URL, resource::getUrl, entry::url);
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, resource::getVersion, entry::version);
-		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, resource::getOwner, entry::publisher);
+		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, resource::getContact, entry::publisher);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, resource::getLanguage, entry::language);
 		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, resource::getDescription, entry::description);
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, resource::getPurpose, entry::purpose);
@@ -304,7 +304,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		// Resource only fields, for Versions they got their values from the corresponding Resource
 		
 		String status;
-		String owner;
+		String contact;
 		String copyright;
 		String language;
 		String description;
@@ -355,8 +355,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			return status;
 		}
 		
-		public String getOwner() {
-			return owner;
+		public String getContact() {
+			return contact;
 		}
 		
 		public String getCopyright() {
@@ -419,8 +419,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			this.status = status;
 		}
 		
-		public void setOwner(String owner) {
-			this.owner = owner;
+		public void setContact(String contact) {
+			this.contact = contact;
 		}
 		
 		public void setCopyright(String copyright) {
