@@ -155,6 +155,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setContact("https://b2i.sg")
 			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.setSettings(Map.of(
+				"publisher", "SNOMED International",
 				SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of(
 					Map.of(
 						"languageTag", "en",

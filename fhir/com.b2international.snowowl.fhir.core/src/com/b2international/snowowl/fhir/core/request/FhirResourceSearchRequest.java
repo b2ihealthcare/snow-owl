@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.fhir.core.model.*;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.google.common.collect.Lists;
@@ -142,10 +144,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		// remove all fields that are not part of the current resource model
 		fieldsToLoad.removeAll(EXTERNAL_FHIR_RESOURCE_FIELDS);
 		fieldsToLoad.removeAll(getExternalFhirResourceFields());
-		// replace publisher with internal contact field
+		// replace publisher with internal settings field (publisher is stored within resource metadata)
 		if (fieldsToLoad.contains(CodeSystem.Fields.PUBLISHER)) {
 			fieldsToLoad.remove(CodeSystem.Fields.PUBLISHER);
-			fieldsToLoad.add(ResourceDocument.Fields.CONTACT);
+			fieldsToLoad.add(ResourceDocument.Fields.SETTINGS);
 		}
 		// replace identifier with internal oid field
 		if (fieldsToLoad.contains(CodeSystem.Fields.IDENTIFIER)) {
@@ -213,6 +215,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				ResourceFragment versionCodeSystem = internalResourcesById.get(versionFragment.getResourceURI().getResourceId());
 				versionFragment.setStatus(versionCodeSystem.getStatus());
 				versionFragment.setContact(versionCodeSystem.getContact());
+				versionFragment.setSettings(versionCodeSystem.getSettings());
 				versionFragment.setCopyright(versionCodeSystem.getCopyright());
 				versionFragment.setLanguage(versionCodeSystem.getLanguage());
 				versionFragment.setDescription(versionCodeSystem.getDescription());
@@ -252,10 +255,17 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		includeIfFieldSelected(CodeSystem.Fields.URL, resource::getUrl, entry::url);
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, resource::getVersion, entry::version);
-		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, resource::getContact, entry::publisher);
+		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, () -> getPublisher(resource), entry::publisher);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, resource::getLanguage, entry::language);
 		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, resource::getDescription, entry::description);
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, resource::getPurpose, entry::purpose);
+
+		if (CompareUtils.isEmpty(fields()) || fields().contains(CodeSystem.Fields.CONTACT)) {
+			ContactDetail contact = getContact(resource);
+			if (contact != null) {
+				entry.addContact(contact);
+			}
+		}
 		
 		// XXX: inclusion of the copyright field is pushed to each search request subclass as specific resource 
 		// and builder subtypes are available there.
@@ -265,6 +275,28 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		expandResourceSpecificFields(context, entry, resource);
 		
 		return entry.build();
+	}
+
+	private String getPublisher(ResourceFragment resource) {
+		Map<String, Object> settings = resource.getSettings();
+		if (settings == null) {
+			return "";
+		}
+		
+		return (String) settings.getOrDefault(CodeSystem.Fields.PUBLISHER, "");
+	}
+
+	private ContactDetail getContact(ResourceFragment resource) {
+		if (StringUtils.isEmpty(resource.getContact())) {
+			return null;
+		}
+		
+		return ContactDetail.builder()
+			.addTelecom(ContactPoint.builder()
+				.system("url")
+				.value(resource.getContact())
+				.build())
+			.build();
 	}
 	
 	protected void expandResourceSpecificFields(RepositoryContext context, B entry, ResourceFragment resource) {
@@ -310,6 +342,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		String description;
 		String purpose;
 		String oid;
+		
+		Map<String, Object> settings;
 		
 		public String getId() {
 			return id;
@@ -442,7 +476,13 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		public void setOid(String oid) {
 			this.oid = oid;
 		}
+	
+		public Map<String, Object> getSettings() {
+			return settings;
+		}
 		
+		public void setSettings(Map<String, Object> settings) {
+			this.settings = settings;
+		}
 	}
-
 }
