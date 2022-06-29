@@ -23,6 +23,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.bundle.Bundle;
@@ -195,6 +196,11 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	@Override
 	public final String execute(TransactionContext context) {
+		// prevent creating a resource with the -1 default ROOT ID
+		if (IComponent.ROOT_ID.equals(id)) {
+			throw new ConflictException("Special '-1' identifier is being used by the Root Bundle.");
+		}
+		
 		// validate ID before use, IDs sometimes being used as branch paths, so must be a valid branch path
 		IDs.checkBase64(id, getClass().getSimpleName().replace("CreateRequest", ".id"));
 			

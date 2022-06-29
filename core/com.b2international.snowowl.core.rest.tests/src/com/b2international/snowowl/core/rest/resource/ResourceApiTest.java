@@ -38,7 +38,9 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -95,14 +97,14 @@ public class ResourceApiTest {
 
 	@Test
 	public void searchAllResources() {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 
 		assertResourceSearch().statusCode(200).body("items", iterableWithSize(1));
 	}
 
 	@Test
 	public void getById() {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 
 		assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
 			.statusCode(200)
@@ -116,8 +118,8 @@ public class ResourceApiTest {
 		final String oid1 = "https://b2i.sg/" + id1;
 		final String id2 = IDs.base62UUID();
 		final String oid2 = "https://b2i.sg/" + id2;
-		createDefaultCodeSystem(id1, oid1);
-		createDefaultCodeSystem(id2, oid2);
+		createCodeSystemWithOid(id1, oid1);
+		createCodeSystemWithOid(id2, oid2);
 
 		final List<Resource> resources = ResourceRequests.prepareSearch()
 				.filterByOid(oid1)
@@ -149,7 +151,7 @@ public class ResourceApiTest {
 	public void searchAfter() throws Exception {
 		final String id1 = IDs.base62UUID();
 		final String oid1 = "https://b2i.sg/" + id1;
-		createDefaultCodeSystem(id1, oid1);
+		createCodeSystemWithOid(id1, oid1);
 
 		CodeSystemRequests.prepareSearchCodeSystem()
 			.filterById(id1)
@@ -159,36 +161,36 @@ public class ResourceApiTest {
 			.getSync();
 	}
 
-	private CommitResult createCodeSystemWithStatus(final String shortName, final String status) {
-		return createCodeSystem(shortName, status, DEFAULT_OWNER);
-	}
-
-	private CommitResult createCodeSystem(final String shortName, final String status, final String owner) {
+	private CommitResult createCodeSystem(final String codeSystemId, final String status, final String owner) {
 		return CodeSystemRequests.prepareNewCodeSystem()
-			.setId(shortName)
-			.setTitle(shortName)
-			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
+			.setId(codeSystemId)
+			.setTitle(codeSystemId)
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + codeSystemId)
 			.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
 			.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
 			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
 			.setStatus(status)
 			.setOwner(owner)
-			.setOid("https://b2i.sg/" + shortName)
-			.build(RestExtensions.USER, String.format("New code system %s", shortName))
+			.setOid("https://b2i.sg/" + codeSystemId)
+			.build(RestExtensions.USER, String.format("New code system %s", codeSystemId))
 			.execute(bus)
 			.getSync();
 	}
 	
-	private void createDefaultCodeSystem(final String shortName, final String oid) {
-		CodeSystemRequests.prepareNewCodeSystem()
-			.setId(shortName)
-			.setTitle(String.format("%s - %s", shortName, oid))
-			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
+	private CommitResult createCodeSystemWithStatus(final String codeSystemId, final String status) {
+		return createCodeSystem(codeSystemId, status, DEFAULT_OWNER);
+	}
+	
+	private CommitResult createCodeSystemWithOid(final String codeSystemId, final String oid) {
+		return CodeSystemRequests.prepareNewCodeSystem()
+			.setId(codeSystemId)
+			.setTitle(String.join(" - ", codeSystemId, oid))
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + codeSystemId)
 			.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
 			.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
 			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
 			.setOid(oid)
-			.build(RestExtensions.USER, String.format("New code system %s", shortName))
+			.build(RestExtensions.USER, String.format("New code system %s", codeSystemId))
 			.execute(bus)
 			.getSync();
 	}
@@ -250,7 +252,7 @@ public class ResourceApiTest {
 	
 	@Test
 	public void createdAtAndUpdatedAt() throws Exception {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 		
 		// assert that createdAt and updatedAt values are the same after create
 		CodeSystem createdCodeSystem = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
@@ -277,7 +279,7 @@ public class ResourceApiTest {
 	
 	@Test
 	public void getWithTimestamp() throws Exception {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 		
 		CodeSystem createdCodeSystem = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
 			.statusCode(200)
@@ -316,7 +318,7 @@ public class ResourceApiTest {
 				.extract()
 				.as(CodeSystem.class);
 		
-		assertEquals("Updated copyright", codeSystem3.getCopyright());		
+		assertEquals("Updated copyright", codeSystem3.getCopyright());
 	}
 	
 	@Test
@@ -334,7 +336,6 @@ public class ResourceApiTest {
 		assertResourceSearch(Map.of("timestamp", timestamp3 + 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2", "cs3"));
 	}
 	
-	
 	@Test
 	public void searchByOwner() throws Exception {
 		final String id1 = createCodeSystem("cs1", "draft", "owner1").getResultAs(String.class);
@@ -342,6 +343,11 @@ public class ResourceApiTest {
 		
 		assertResourceSearch(Map.of("owner", "ownerx")).statusCode(200).body("items", empty());
 		assertResourceSearch(Map.of("owner", "owner1")).statusCode(200).body("items.id", containsInAnyOrder(id1));
+	}
+	
+	@Test(expected = ConflictException.class)
+	public void tryToCreateRootBundle() throws Exception {
+		createCodeSystemWithStatus(IComponent.ROOT_ID, "draft");
 	}
 	
 }
