@@ -87,7 +87,8 @@ public abstract class CodeSystemRestRequests {
 			"language", "ENG",
 			"extensionOf", extensionOf,
 			"branchPath", branchPath,
-			"owner", "https://b2i.sg",
+			"owner", "owner",
+			"contact", "https://b2i.sg",
 			"settings", configureLanguageConfig(settings)
 		);
 				
