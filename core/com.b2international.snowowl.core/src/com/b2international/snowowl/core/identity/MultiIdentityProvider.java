@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -47,9 +48,13 @@ public final class MultiIdentityProvider implements IdentityProvider, IdentityWr
 	@Override
 	public User auth(String username, String token) {
 		for (IdentityProvider identityProvider : providers) {
-			User user = identityProvider.auth(username, token);
-			if (user != null) {
-				return user;
+			try {
+				User user = identityProvider.auth(username, token);
+				if (user != null) {
+					return user;
+				}
+			} catch (BadRequestException e) {
+				// ignore bad request exceptions coming from providers
 			}
 		}
 		return null;

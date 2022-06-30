@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.events.util.Promise;
 
 /**
@@ -74,7 +75,7 @@ public interface IdentityProvider {
 		
 		@Override
 		public User auth(String username, String password) {
-			throw new UnsupportedOperationException("AccessToken based authentication/authorization does not support username/password");
+			return null;
 		}
 		
 		@Override
@@ -84,7 +85,7 @@ public interface IdentityProvider {
 		
 		@Override
 		public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
-			throw new UnsupportedOperationException("AccessToken based authentication/authorization does not support searching users");
+			return Promise.immediate(new Users(limit, 0));
 		}
 		
 		@Override
@@ -98,6 +99,7 @@ public interface IdentityProvider {
 	 * @param username - a username to use for authentication
 	 * @param password - the user's password to use for authentication
 	 * @return an authenticated {@link User} and its permissions or <code>null</code> if the username or password is incorrect.
+	 * @throws BadRequestException - if authentication is not supported by this provider
 	 */
 	User auth(String username, String password);
 	
