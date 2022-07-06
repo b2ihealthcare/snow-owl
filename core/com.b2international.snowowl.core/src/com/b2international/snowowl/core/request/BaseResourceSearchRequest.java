@@ -149,8 +149,8 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				// explicit IDs
 				bool.should(ResourceDocument.Expressions.ids(exactResourceIds));
 				// or the permitted resources are bundles which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
+//				bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
+//				bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
 				// allow backward compatibility with older authorization systems where repositoryId/toolingIds are being used in permissions
 				// XXX this needs to be removed in Snow Owl 9, once we completely eliminate reflective access and toolingId/branch support from the Java API
 				bool.should(ResourceDocument.Expressions.toolingIds(exactResourceIds));
@@ -160,8 +160,8 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				// partial IDs, prefixes
 				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
 				// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
+//				bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
+//				bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
 			}
 			
 			queryBuilder.filter(bool.build());
