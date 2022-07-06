@@ -21,6 +21,7 @@ import java.util.Map;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
@@ -76,6 +77,8 @@ public interface AccessControl {
 			// if a resource that is being accessed is part of a bundle and the user has access to that bundle then it has access to the resource as well
 			accessedResources.add(terminologyResourceRequest.getResource(context).getBundleId());
 			accessedResources.addAll(Collections3.toImmutableSet(terminologyResourceRequest.getResource(context).getBundleAncestorIds()));
+			// ensure Root bundle is not present when checking access
+			accessedResources.remove(IComponent.ROOT_ID);
 		}
 	}
 
