@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.b2international.commons.CompareUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -133,5 +134,12 @@ public interface Permission extends Serializable {
 			return requireAll(operation, List.of(resourceReference));
 		}
 	}
+
+	/**
+	 * Perform custom access check on each resource present in this {@link Permission}.
+	 * @param checkResource - the function to run for each resource in this permission
+	 * @return <code>true</code> or <code>false</code> depending on whether the user has access to the resource or not
+	 */
+	boolean check(Predicate<String> checkResource);
 	
 }
