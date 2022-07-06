@@ -86,5 +86,9 @@ public interface AuthorizationService {
 				.flatMap(p -> p.getResources().stream())
 				.collect(Collectors.toSet());
 	}
+
+	default boolean isDefault() {
+		return AuthorizationService.DEFAULT == this;
+	}
 	
 }
