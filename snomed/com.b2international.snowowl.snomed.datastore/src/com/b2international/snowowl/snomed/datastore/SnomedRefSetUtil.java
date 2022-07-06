@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,7 +187,7 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_QUERY_SPECIFICATION_TYPE;
 			case SIMPLE_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP_WITH_DESCRIPTION:
-				return Concepts.REFSET_SIMPLE_MAP_TYPE;
+				return Concepts.REFSET_SIMPLE_MAP_FROM_TYPE;
 			case SIMPLE:
 				return Concepts.REFSET_SIMPLE_TYPE;
 			case COMPLEX_MAP:
