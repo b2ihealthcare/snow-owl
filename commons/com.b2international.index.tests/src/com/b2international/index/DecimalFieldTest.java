@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,8 +32,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -45,17 +45,18 @@ public class DecimalFieldTest extends BaseIndexTest {
 	private static final BigDecimal VALUE_05 = new BigDecimal("0.5");
 	private static final BigDecimal VALUE_10 = new BigDecimal("1.0");
 	private static final BigDecimal VALUE_20 = new BigDecimal("2.0");
+	private static final BigDecimal VALUE_TEN = new BigDecimal("10.000");
 	private static final String KEY3 = "key3";
 	private static final String KEY4 = "key4";
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(DataWithDecimal.class);
+		return Set.of(DataWithDecimal.class);
 	}
 
 	@Before
 	public void setup() {
-		indexDocuments(ImmutableMap.of(
+		indexDocuments(Map.of(
 			KEY1, new DataWithDecimal(VALUE_10),
 			KEY2, new DataWithDecimal(VALUE_05),
 			KEY3, new DataWithDecimal(VALUE_20),
@@ -173,6 +174,25 @@ public class DecimalFieldTest extends BaseIndexTest {
 		assertThat(hits).hasSize(1);
 		final DataWithDecimal hit = Iterables.getOnlyElement(hits);
 		assertEquals(new DataWithDecimal(REALLY_SMALL), hit);
+	}
+	
+	@Test
+	public void indexRemovesTrailingZeros() throws Exception {
+		final DataWithDecimal expected = new DataWithDecimal(VALUE_TEN);
+		indexDocument(KEY1, expected);
+		final DataWithDecimal actual = getDocument(DataWithDecimal.class, KEY1);
+		
+		// The sortable compact BigDecimal representation we use from Solr removes excess zeros
+		assertEquals(expected.getValue().stripTrailingZeros(), actual.getValue());
+
+		// The change in precision and scale in the two representations changes the output of "toString()" as well
+		assertEquals("10.000", expected.getValue().toString());
+		assertEquals(5, expected.getValue().precision()); // "10000 x 10^-3"
+		assertEquals(3, expected.getValue().scale());
+		
+		assertEquals("1E+1", actual.getValue().toString());
+		assertEquals(1, actual.getValue().precision()); // "1 x 10^1"
+		assertEquals(-1, actual.getValue().scale());
 	}
 	
 	@Doc
