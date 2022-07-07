@@ -112,6 +112,12 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			return;
 		}
 		
+		// no need to perform security filtering when we are asking the metadata repository
+		// TODO store the resourceUri/Id on the Commit objects to allow filtering by external authorization systems 
+		if (context.info().id().equals("resources")) {
+			return;
+		}
+		
 		final Set<String> accessibleResources = context.optionalService(AuthorizationService.class)
 				.orElse(AuthorizationService.DEFAULT)
 				.getAccessibleResources(user);
