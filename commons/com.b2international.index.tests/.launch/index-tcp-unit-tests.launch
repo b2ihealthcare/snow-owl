@@ -121,6 +121,7 @@
         <setEntry value="com.b2international.index.tests@default:false"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.snowowl.logback.config@default:false"/>
+        <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
         <setEntry value="org.hamcrest.core@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
