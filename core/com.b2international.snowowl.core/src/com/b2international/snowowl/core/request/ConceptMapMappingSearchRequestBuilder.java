@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,12 +50,12 @@ public final class ConceptMapMappingSearchRequestBuilder
 		return addOption(OptionKey.URI, conceptMapUris == null ? null : FluentIterable.from(conceptMapUris).transform(ResourceURI::toString).toSet());
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentId(String componentId) {
-		return addOption(OptionKey.REFERENCED_COMPONENT, componentId);
+	public ConceptMapMappingSearchRequestBuilder filterByMapSource(String mapSource) {
+		return addOption(OptionKey.MAP_SOURCE, mapSource);
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentIds(Iterable<String> componentIds) {
-		return addOption(OptionKey.REFERENCED_COMPONENT, componentIds);
+	public ConceptMapMappingSearchRequestBuilder filterByMapSources(Iterable<String> mapSources) {
+		return addOption(OptionKey.MAP_SOURCE, mapSources);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByMapTarget(String mapTarget) {
@@ -94,5 +94,4 @@ public final class ConceptMapMappingSearchRequestBuilder
 	protected SearchResourceRequest<ServiceProvider, ConceptMapMappings> createSearch() {
 		return new ConceptMapMappingSearchRequest();
 	}
-
 }
