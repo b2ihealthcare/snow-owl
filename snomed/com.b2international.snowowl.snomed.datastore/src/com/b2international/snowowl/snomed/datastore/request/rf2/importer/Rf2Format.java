@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ public final class Rf2Format {
 			.add(new Rf2LanguageRefSetContentType())
 			// Refset/Map
 			.add(new Rf2SimpleMapRefSetContentType())
+			.add(new Rf2SimpleMapToRefSetContentType())
 			.add(new Rf2SimpleMapWithDescriptionContentType())
 			.add(new Rf2ComplexMapRefSetContentType())
 			.add(new Rf2ComplexBlockMapRefSetContentType())
