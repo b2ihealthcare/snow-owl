@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -193,10 +194,21 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 						conceptDocToUpdate = (SnomedConceptDocument) newComponents.get(refSetId);
 					}
 					if (conceptDocToUpdate.getRefSetType() == null) {
+						// Not qualified, eg. "concept"
 						final String referencedComponentType = SnomedComponent.getType(member.getReferencedComponentId());
+						
 						String mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 						try {
-							mapTargetComponentType = SnomedComponent.getType((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));
+							// Qualified type, eg. "snomed.concept" or "lcs.concept"
+							mapTargetComponentType = getQualifiedType(member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));
+						} catch (IllegalArgumentException e) {
+							// ignored
+						}
+						
+						String mapSourceComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+						try {
+							// Qualified type, eg. "snomed.concept" or "icd10.concept"							
+							mapSourceComponentType = getQualifiedType(member.getProperties().get(SnomedRf2Headers.FIELD_MAP_SOURCE));
 						} catch (IllegalArgumentException e) {
 							// ignored
 						}
@@ -205,6 +217,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 						refSet.setType(member.type());
 						refSet.setReferencedComponentType(referencedComponentType);
 						refSet.setMapTargetComponentType(mapTargetComponentType);
+						refSet.setMapSourceComponentType(mapSourceComponentType);
 						
 						final SnomedConceptDocument updatedConcept = SnomedConceptDocument.builder(conceptDocToUpdate).refSet(refSet).build();
 						if (newComponents.containsKey(refSetId)) {
@@ -266,11 +279,16 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 								.refSetType(newRefSet.getRefSetType())
 								.referencedComponentType(newRefSet.getReferencedComponentType())
 								.mapTargetComponentType(newRefSet.getMapTargetComponentType())
+								.mapSourceComponentType(newRefSet.getMapSourceComponentType())
 								.build());
 					}
 				}
 			}
 		}
+	}
+
+	private String getQualifiedType(final Object componentId) {
+		return SnomedTerminologyComponentConstants.TOOLING_ID + "." + SnomedComponent.getType((String) componentId);
 	}
 
 	/* Creates a minimal object to represent an item from the RF2 archive, ID and unreleased only */
@@ -418,6 +436,10 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 			case SIMPLE_MAP: 
 				builder = SnomedComponents.newSimpleMapMember()
 						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
+				break;
+			case SIMPLE_MAP_TO: 
+				builder = SnomedComponents.newSimpleMapToMember()
+						.withMapSourceId((String) properties.get(SnomedRf2Headers.FIELD_MAP_SOURCE));
 				break;
 			case MODULE_DEPENDENCY:
 				builder = SnomedComponents.newModuleDependencyMember()
