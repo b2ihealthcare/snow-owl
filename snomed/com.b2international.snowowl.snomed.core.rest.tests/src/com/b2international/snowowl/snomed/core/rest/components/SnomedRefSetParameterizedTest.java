@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
@@ -52,6 +53,20 @@ public abstract class SnomedRefSetParameterizedTest extends AbstractSnomedApiTes
 
 	public SnomedRefSetParameterizedTest(SnomedRefSetType refSetType) {
 		this.refSetType = refSetType;
+	}
+	
+	@Before
+	public void ensureIdentifierParentConceptExists() {
+		final String parentConceptId = SnomedRefSetUtil.getParentConceptId(refSetType);
+		final int statusCode = getComponent(branchPath, SnomedComponentType.CONCEPT, parentConceptId)
+			.extract()
+			.statusCode();
+		
+		if (statusCode == 404) {
+			createComponent(branchPath, SnomedComponentType.CONCEPT, createConceptRequestBody(Concepts.REFSET_ALL)
+				.with("id", parentConceptId)
+				.with("commitComment", "Created parent concept for reference set type '" + refSetType + "'")).statusCode(201);
+		}
 	}
 
 	@Test

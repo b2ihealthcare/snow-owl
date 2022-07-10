@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.Pair;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.google.common.collect.Maps;
 
@@ -70,6 +72,20 @@ public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomed
 
 	public SnomedRefSetMemberParameterizedTest(SnomedRefSetType refSetType) {
 		this.refSetType = refSetType;
+	}
+
+	@Before
+	public void ensureIdentifierParentConceptExists() {
+		final String parentConceptId = SnomedRefSetUtil.getParentConceptId(refSetType);
+		final int statusCode = getComponent(branchPath, SnomedComponentType.CONCEPT, parentConceptId)
+			.extract()
+			.statusCode();
+		
+		if (statusCode == 404) {
+			createComponent(branchPath, SnomedComponentType.CONCEPT, createConceptRequestBody(Concepts.REFSET_ALL)
+				.with("id", parentConceptId)
+				.with("commitComment", "Created parent concept for reference set type '" + refSetType + "'")).statusCode(201);
+		}
 	}
 
 	@Test
@@ -397,6 +413,10 @@ public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomed
 			return Json.object(
 				SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget2"
 			);
+		case SIMPLE_MAP_TO:
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_SOURCE, "simpleMapSource2"
+			);
 		case SIMPLE_MAP_WITH_DESCRIPTION:
 			return Json.object(
 				SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget2",
@@ -500,6 +520,10 @@ public abstract class SnomedRefSetMemberParameterizedTest extends AbstractSnomed
 		case SIMPLE_MAP:
 			return Json.object(
 				SnomedRf2Headers.FIELD_MAP_TARGET, ""
+			);
+		case SIMPLE_MAP_TO:
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_SOURCE, ""
 			);
 		case SIMPLE_MAP_WITH_DESCRIPTION:
 			return Json.object(

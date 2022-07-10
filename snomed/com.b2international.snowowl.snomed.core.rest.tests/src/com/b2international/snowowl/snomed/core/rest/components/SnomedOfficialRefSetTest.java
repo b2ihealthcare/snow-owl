@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public class SnomedOfficialRefSetTest extends SnomedRefSetParameterizedTest {
 			//  Query type reference sets are tested separately 
 			{ 	SnomedRefSetType.SIMPLE							}, 
 			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP_TO					}, 
 			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
 			{ 	SnomedRefSetType.OWL_AXIOM						},
 			{ 	SnomedRefSetType.OWL_ONTOLOGY					},
