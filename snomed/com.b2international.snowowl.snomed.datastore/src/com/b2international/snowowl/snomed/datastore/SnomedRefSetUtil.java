@@ -18,8 +18,6 @@ package com.b2international.snowowl.snomed.datastore;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_BLOCK_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.EXTENDED_MAP;
-import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP;
-import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -40,13 +38,7 @@ import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 /** 
  * Utility class collecting commons operations related to SNOMED CT reference sets. 
@@ -86,6 +78,7 @@ public abstract class SnomedRefSetUtil {
 			.putAll(SnomedRF2Folder.MAP, 
 						SnomedRefSetType.SIMPLE_MAP,
 						SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
+						SnomedRefSetType.SIMPLE_MAP_TO,
 						SnomedRefSetType.COMPLEX_MAP,
 						SnomedRefSetType.COMPLEX_BLOCK_MAP,
 						SnomedRefSetType.EXTENDED_MAP)
@@ -150,11 +143,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return {@code true} if the reference set type is simple, complex or extended map type, otherwise returns with {@code false}.
 	 */
 	public static boolean isMapping(final SnomedRefSetType type) {
-		return SIMPLE_MAP.equals(type) 
-				|| SIMPLE_MAP_WITH_DESCRIPTION.equals(type)
-				|| COMPLEX_MAP.equals(type)
-				|| COMPLEX_BLOCK_MAP.equals(type)
-				|| EXTENDED_MAP.equals(type);
+		return getMapTypeRefSets().contains(type); 
 	}
 	
 	/**
@@ -162,11 +151,12 @@ public abstract class SnomedRefSetUtil {
 	 * @return 
 	 */
 	public static List<SnomedRefSetType> getMapTypeRefSets() {
-		return ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, 
-				SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
-				SnomedRefSetType.COMPLEX_MAP,
-				SnomedRefSetType.COMPLEX_BLOCK_MAP,
-				SnomedRefSetType.EXTENDED_MAP);
+		return List.of(SnomedRefSetType.SIMPLE_MAP, 
+			SnomedRefSetType.SIMPLE_MAP_TO, 
+			SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
+			SnomedRefSetType.COMPLEX_MAP,
+			SnomedRefSetType.COMPLEX_BLOCK_MAP,
+			SnomedRefSetType.EXTENDED_MAP);
 	}
 	
 	/**
@@ -188,6 +178,8 @@ public abstract class SnomedRefSetUtil {
 			case SIMPLE_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return Concepts.REFSET_SIMPLE_MAP_FROM_TYPE;
+			case SIMPLE_MAP_TO:
+				return Concepts.REFSET_SIMPLE_MAP_TO_TYPE;
 			case SIMPLE:
 				return Concepts.REFSET_SIMPLE_TYPE;
 			case COMPLEX_MAP:
