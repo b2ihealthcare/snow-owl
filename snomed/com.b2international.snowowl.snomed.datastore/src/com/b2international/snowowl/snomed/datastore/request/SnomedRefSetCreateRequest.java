@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,17 +34,17 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
  */
 final class SnomedRefSetCreateRequest implements Request<TransactionContext, String>, AccessControl {
 
-	public static final Set<String> STRUCTURAL_ATTRIBUTE_VALUE_SETS = ImmutableSet.of(
-			Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
-			Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-			Concepts.REFSET_RELATIONSHIP_REFINABILITY);	
+	public static final Set<String> STRUCTURAL_ATTRIBUTE_VALUE_SETS = Set.of(
+		Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
+		Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+		Concepts.REFSET_RELATIONSHIP_REFINABILITY
+	);	
 	
 	@NotNull
 	private final SnomedRefSetType type;
@@ -54,6 +54,8 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	
 	private String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
 	
+	private String mapSourceComponentType = TerminologyRegistry.UNSPECIFIED;
+	
 	private String identifierId;
 	
 	SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType) {
@@ -61,6 +63,7 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 		this.referencedComponentType = referencedComponentType;
 	}
 
+	// Used by SnomedConceptCreateRequest to check if the type matches the parent concept of the new identifier concept 
 	SnomedRefSetType getRefSetType() {
 		return type;
 	}
@@ -72,33 +75,40 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	void setMapTargetComponentType(String mapTargetComponentType) {
 		this.mapTargetComponentType = mapTargetComponentType;
 	}
+	
+	void setMapSourceComponentType(String mapSourceComponentType) {
+		this.mapSourceComponentType = mapSourceComponentType;
+	}
 
 	@Override
 	public String execute(TransactionContext context) {
 		RefSetSupport.checkType(type, referencedComponentType);
 		
-		final SnomedConceptDocument concept;
 		if (Strings.isNullOrEmpty(identifierId)) {
 			throw new BadRequestException("Reference set identifier ID may not be null or empty.");
-		} else {
-			try {
-				concept = context.lookup(identifierId, SnomedConceptDocument.class);
-				if (concept.getRefSetType() != null) {
-					throw new BadRequestException("Identifier concept %s has been already registered as refset", identifierId);
-				}
-			} catch (ComponentNotFoundException e) {
-				throw e.toBadRequestException();
+		}
+		
+		final SnomedConceptDocument concept;
+		try {
+			concept = context.lookup(identifierId, SnomedConceptDocument.class);
+			if (concept.getRefSetType() != null) {
+				throw new BadRequestException("Identifier concept %s has been already registered as refset", identifierId);
 			}
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
 		}
 		
 		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);
+
 		final SnomedReferenceSet refSet = new SnomedReferenceSet();
 		refSet.setType(type);
 		refSet.setReferencedComponentType(referencedComponentType);
 		
 		if (SnomedRefSetUtil.isMapping(type)) {
 			refSet.setMapTargetComponentType(mapTargetComponentType);
+			refSet.setMapSourceComponentType(mapSourceComponentType);
 		}
+
 		updatedConcept.refSet(refSet);
 		context.update(concept, updatedConcept.build());
 		return identifierId;
@@ -108,5 +118,4 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	public String getOperation() {
 		return Permission.OPERATION_EDIT;
 	}
-
 }

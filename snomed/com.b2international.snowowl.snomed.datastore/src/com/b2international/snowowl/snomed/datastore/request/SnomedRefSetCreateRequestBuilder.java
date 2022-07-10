@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseRequestBuilder<S
 	private SnomedRefSetType type;
 	private String referencedComponentType = TerminologyRegistry.UNSPECIFIED;
 	private String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
+	private String mapSourceComponentType = TerminologyRegistry.UNSPECIFIED;
 	private String identifierId;
 	
 	SnomedRefSetCreateRequestBuilder() {
@@ -54,6 +55,11 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseRequestBuilder<S
 		return getSelf();
 	}
 	
+	public SnomedRefSetCreateRequestBuilder setMapSourceComponentType(String mapSourceComponentType) {
+		this.mapSourceComponentType = mapSourceComponentType;
+		return getSelf();
+	}
+	
 	public SnomedRefSetCreateRequestBuilder setIdentifierId(String identifierId) {
 		this.identifierId = identifierId;
 		return getSelf();
@@ -64,7 +70,7 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseRequestBuilder<S
 		final SnomedRefSetCreateRequest createRequest = new SnomedRefSetCreateRequest(type, referencedComponentType);
 		createRequest.setIdentifierId(identifierId);
 		createRequest.setMapTargetComponentType(mapTargetComponentType);
+		createRequest.setMapSourceComponentType(mapSourceComponentType);
 		return createRequest;
 	}
-	
 }
