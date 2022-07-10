@@ -147,6 +147,8 @@ final class SnomedRefSetMemberUpdateRequest extends SnomedComponentUpdateRequest
 				return new SnomedSimpleMemberUpdateDelegate(this);
 			case SIMPLE_MAP:
 				return new SnomedSimpleMapMemberUpdateDelegate(this);
+			case SIMPLE_MAP_TO:
+				return new SnomedSimpleMapToMemberUpdateDelegate(this);
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return new SnomedSimpleMapMemberWithDescriptionUpdateDelegate(this);
 			case OWL_AXIOM: //$FALL-THROUGH$
