@@ -32,14 +32,11 @@ final class SnomedSimpleMapToMemberUpdateDelegate extends SnomedRefSetMemberUpda
 	boolean execute(final SnomedRefSetMemberIndexEntry original, final SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 		String newMapSourceId = getComponentId(SnomedRf2Headers.FIELD_MAP_SOURCE);
 
-		boolean changed = false;
-
 		if (newMapSourceId != null && !newMapSourceId.equals(original.getMapSource())) {
 			member.field(SnomedRf2Headers.FIELD_MAP_SOURCE, newMapSourceId);
-			changed |= true;
+			return true;
 		}
 
-		return changed;
+		return false;
 	}
-
 }
