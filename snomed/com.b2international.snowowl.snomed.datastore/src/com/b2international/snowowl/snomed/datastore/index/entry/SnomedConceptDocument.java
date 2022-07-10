@@ -45,7 +45,6 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -378,7 +377,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				mapSourceComponentType(refSet.getMapSourceComponentType());
 			}
 			
-			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
+			if (!StringUtils.isEmpty(refSet.getReferencedComponentType())) {
 				referencedComponentType(refSet.getReferencedComponentType());
 			}
 			
