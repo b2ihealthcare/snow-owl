@@ -79,6 +79,7 @@ public final class SnomedReferenceSetConverter extends BaseRevisionResourceConve
 		refset.setScore(entry.getScore());
 		refset.setReferencedComponentType(entry.getReferencedComponentType());
 		refset.setMapTargetComponentType(entry.getMapTargetComponentType());
+		refset.setMapSourceComponentType(entry.getMapSourceComponentType());
 		refset.setType(entry.getRefSetType());
 		return refset;
 	}
