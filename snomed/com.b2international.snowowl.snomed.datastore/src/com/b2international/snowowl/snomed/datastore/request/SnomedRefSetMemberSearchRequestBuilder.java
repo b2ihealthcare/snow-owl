@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,4 +100,19 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 		return addOption(OptionKey.COMPONENT, componentIds);
 	}
 
+	/**
+	 * Matches map type reference set members where the map source is contained in the given values, irrespective of its RF2 field name
+	 * ({@code referencedComponentId} in "map from SNOMED CT" reference sets, {@code mapSource} in "map to SNOMED CT" reference sets).
+	 */
+	public SnomedRefSetMemberSearchRequestBuilder filterByMapSourceIds(Iterable<String> mapSourceIds) {
+		return addOption(OptionKey.MAP_SOURCE, mapSourceIds);
+	}
+
+	/**
+	 * Matches map type reference set members where the map target is contained in the given values, irrespective of its RF2 field name
+	 * ({@code mapTarget} in "map from SNOMED CT" reference sets, {@code referencedComponentId} in "map to SNOMED CT" reference sets).
+	 */
+	public SnomedRefSetMemberSearchRequestBuilder filterByMapTargetIds(Iterable<String> mapTargetIds) {
+		return addOption(OptionKey.MAP_TARGET, mapTargetIds);
+	}
 }
