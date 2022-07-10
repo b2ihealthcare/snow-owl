@@ -20,6 +20,10 @@ package com.b2international.snowowl.snomed.core.domain.refset;
  */
 public enum SnomedRefSetType {
 
+	/*
+	 * XXX: The order of literals should not be relied upon, but in case some parts
+	 * of the code still do this, add new literals to the end.
+	 */
 	SIMPLE,
 	SIMPLE_MAP,
 	LANGUAGE,
@@ -44,6 +48,9 @@ public enum SnomedRefSetType {
 
 	/**
 	 * Returns the SnomedRefSetType literal with the specified name.
+	 * <p>
+	 * A less strict version of {@link #valueOf(String)} that returns <code>null</code> 
+	 * if the input string does not map to an enum literal.
 	 */
 	public static SnomedRefSetType getByName(final String name) {
 		for (final SnomedRefSetType result : values()) {
