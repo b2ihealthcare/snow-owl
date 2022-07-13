@@ -64,6 +64,7 @@ public class ResourceRestService extends AbstractRestService {
 			.filterByBundleAncestorIds(params.getBundleAncestorId())
 			.filterByStatus(params.getStatus())
 			.filterByUrls(params.getUrl())
+			.filterByOwner(params.getOwner())
 			.setLimit(params.getLimit())
 			.setExpand(params.getExpand())
 			.setFields(params.getField())

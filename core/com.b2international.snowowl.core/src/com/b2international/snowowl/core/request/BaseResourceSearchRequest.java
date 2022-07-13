@@ -76,6 +76,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		 * Search resources by status
 		 */
 		STATUS,
+		
+		/**
+		 * Search resources by owner
+		 */
+		OWNER,
 	}
 	
 	@Override
@@ -94,6 +99,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
+		addFilter(queryBuilder, OptionKey.OWNER, String.class, ResourceDocument.Expressions::owners);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
@@ -122,9 +128,8 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			return;
 		}
 		
-		final Set<String> accessibleResources = context.optionalService(AuthorizationService.class)
-				.orElse(AuthorizationService.DEFAULT)
-				.getAccessibleResources(user);
+		final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
+		final Set<String> accessibleResources = authz.getAccessibleResources(user);
 		
 		final SortedSet<String> exactResourceIds = accessibleResources.stream()
 				.filter(resource -> !resource.endsWith("*"))
@@ -142,9 +147,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			if (!exactResourceIds.isEmpty()) {
 				// explicit IDs
 				bool.should(ResourceDocument.Expressions.ids(exactResourceIds));
-				// or the permitted resources are bundles which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
+				if (authz.isDefault()) {
+					// or the permitted resources are bundles which give access to all resources within it (recursively) (perform only in default mode, let external authorization systems handle this)
+					bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
+					bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
+				}
 				// allow backward compatibility with older authorization systems where repositoryId/toolingIds are being used in permissions
 				// XXX this needs to be removed in Snow Owl 9, once we completely eliminate reflective access and toolingId/branch support from the Java API
 				bool.should(ResourceDocument.Expressions.toolingIds(exactResourceIds));
@@ -153,9 +160,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			if (!resourceIdPrefixes.isEmpty()) {
 				// partial IDs, prefixes
 				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
-				// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
+				if (authz.isDefault()) {
+					// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively) (perform only in default mode, let external authorization systems handle this)
+					bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
+					bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
+				}
 			}
 			
 			queryBuilder.filter(bool.build());

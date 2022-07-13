@@ -1,6 +1,45 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.4.0
+
+### Core
+- Introduce configurable authorization service (#1020, #1026)
+  * External authorization systems can now be configured to provide list of accessible resource IDs and/or check whether a certain permission is present for a user or not
+  * The default implementation performs the same evaluation as before based on either the incoming JWT's permissions claim or using information provided by the underlying identity provider
+- Introduce a new `GET /toolings` endpoint (#1023)
+  * Lists all supported tooling (aka schema) values from the current deployment
+- Support querying resources by their `url` value (#1027)
+- Support `settings` metadata on Bundle resource types (#1034)
+
+### FHIR
+- Accept wider range of FHIR inputs based on official R4 and third-party CodeSystem sources (#1017)
+  * Support `SUPPLEMENT` content mode
+  * Support `code` extension type
+  * Make `div` validator more lenient and accept opening tag without attributes
+  * Support all FHIR-approved date formats in `dateTime` properties
+  * Support FHIR `contact` property (1247e96)
+
+### Bugs/Improvements
+- [index] fix incorrectly reduced "must" and "filter" clauses causing invalid search results in certain queries (#1015)
+- [index] restrict the number of prefix values and prefix clauses that can be present in a request (eb6df3b)
+- [transport] enable eventbus call stack tracing (#1021)
+- [core] fix serialization of User object (#1022)
+- [core] prevent creating resources with the reserved `-1` identifier (#1036)
+- [api] support X-Author header in Versioning API (#1018)
+- [api] support X-Author header in RF2 Import API (#1031)
+- [api] support X-Author header in FHIR CodeSystem API (#1031)
+- [api] support filtering resources by `owner` field in Resources API (#1035)
+- [api] respond with HTTP 401 properly when trying to authenticate with a Snow Owl without any identity provider configured (7f16e9f)
+- [fhir] fix potential NPE during lookup property validation (#1019)
+- [cli] allow commands to be executed when no JWT signing is configured (b0e81e8)
+- [classification] add missing resourcePath parameter to classification jobs (#1025)
+- [snomed] fix incorrect RF2 export component type when exporting refsets (#1028)
+
+### Dependencies/Packaging
+- Upgrade `snomed-ecl` to 2.0.4 (76c464b)
+- Upgrade bundled `JDK` to 17.0.3 (#1016)
+
 ## 8.3.0
 
 ### Core

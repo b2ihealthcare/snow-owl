@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.request;
+
+import java.util.Map;
 
 import com.b2international.snowowl.core.context.ResourceRepositoryTransactionRequestBuilder;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -40,6 +42,7 @@ public abstract class BaseResourceUpdateRequestBuilder<RB extends BaseResourceUp
 	private String usage;
 	private String purpose;
 	private String bundleId;
+	private Map<String, Object> settings;
 
 	protected BaseResourceUpdateRequestBuilder(final String resourceId) {
 		super();
@@ -104,6 +107,11 @@ public abstract class BaseResourceUpdateRequestBuilder<RB extends BaseResourceUp
 		this.bundleId = bundleId;
 		return getSelf();
 	}
+	
+	public final RB setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+		return getSelf();
+	}
 
 	public abstract R createResourceRequest();
 
@@ -122,6 +130,7 @@ public abstract class BaseResourceUpdateRequestBuilder<RB extends BaseResourceUp
 		req.setUsage(usage);
 		req.setPurpose(purpose);
 		req.setBundleId(bundleId);
+		req.setSettings(settings);
 
 		return req;
 	}

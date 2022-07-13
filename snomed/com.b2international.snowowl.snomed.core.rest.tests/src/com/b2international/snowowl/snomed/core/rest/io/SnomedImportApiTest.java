@@ -43,11 +43,15 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -548,7 +552,41 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void import34MapToReferenceSet() throws Exception {
+	public void import34ImportWithAuthor() throws Exception {
+		createCodeSystem(branchPath, "SNOMEDCT-AUTR").statusCode(201);
+		
+		final Map<String, ?> importConfiguration = Map.of(
+			"type", Rf2ReleaseType.DELTA.name(),
+			"createVersions", true
+		);
+		
+		final String location = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.multiPart(PlatformUtil.toAbsolutePath(getClass(), "SnomedCT_Release_INT_20220623_new_concept.zip").toFile())
+			.queryParams(importConfiguration)
+			.header(AbstractRestService.X_AUTHOR, "author@example.com")
+			.post("/{path}/import", branchPath.toString())
+			.then()
+			.statusCode(201)
+			.extract().header("Location");
+
+		final String importId = lastPathSegment(location); 
+		waitForImportJob(branchPath, importId)
+			.statusCode(200)
+			.body("status", equalTo(RemoteJobState.FINISHED.name()));
+		
+		CommitInfos authorCommits = RepositoryRequests.commitInfos()
+			.prepareSearchCommitInfo()
+			.filterByAuthor("author@example.com")
+			.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.execute(getBus())
+			.getSync();
+		
+		// The entire import fits in a single commit
+		assertEquals(1, authorCommits.getTotal());
+	}
+  
+  @Test
+  public void import35MapToReferenceSet() throws Exception {
 		createComponent(branchPath, SnomedComponentType.CONCEPT, createConceptRequestBody(Concepts.REFSET_ALL)
 			.with("id", SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP_TO))
 			.with("commitComment", "Created parent concept for reference set type 'SIMPLE_MAP_TO'")).statusCode(201);

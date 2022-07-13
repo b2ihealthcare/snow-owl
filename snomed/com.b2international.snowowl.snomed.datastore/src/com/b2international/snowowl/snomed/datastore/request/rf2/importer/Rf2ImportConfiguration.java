@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,16 @@ public final class Rf2ImportConfiguration {
 	
 	private final boolean createVersions;
 	private final Rf2ReleaseType releaseType;
+	private String author;
 
 	@JsonCreator
 	public Rf2ImportConfiguration(
 			@JsonProperty("releaseType") Rf2ReleaseType releaseType, 
-			@JsonProperty("createVersions") boolean createVersions) {
+			@JsonProperty("createVersions") boolean createVersions, 
+			@JsonProperty("author") String author) {
 		this.releaseType = releaseType;
 		this.createVersions = createVersions;
+		this.author = author;
 	}
 	
 	public boolean isCreateVersions() {
@@ -43,4 +46,7 @@ public final class Rf2ImportConfiguration {
 		return releaseType;
 	}
 
+	public String getAuthor() {
+		return author;
+	}
 }

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.context.ResourceRepositoryTransactionRequestBuilder;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -42,6 +44,7 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 	private String contact;
 	private String usage;
 	private String purpose;
+	private Map<String, Object> settings;
 	
 	public final RB setId(String id) {
 		this.id = id;
@@ -103,6 +106,11 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		return getSelf();
 	}
 	
+	public final RB setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+		return getSelf();
+	}
+	
 	public abstract R createResourceRequest();
 	
 	@Override
@@ -121,6 +129,7 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		req.setUsage(usage);
 		req.setPurpose(purpose);
 		req.setBundleId(bundleId == null ? IComponent.ROOT_ID : bundleId);
+		req.setSettings(settings);
 		
 		return req;
 	}

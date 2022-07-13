@@ -87,8 +87,9 @@ public abstract class CodeSystemRestRequests {
 			"language", "ENG",
 			"extensionOf", extensionOf,
 			"branchPath", branchPath,
-			"owner", "https://b2i.sg",
-			"settings", configureLanguageConfig(settings)
+			"owner", "owner",
+			"contact", "https://b2i.sg",
+			"settings", configureLanguageAndPublisher(settings)
 		);
 				
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
@@ -98,8 +99,9 @@ public abstract class CodeSystemRestRequests {
 				.then();
 	}
 
-	private static Map<String, Object> configureLanguageConfig(Map<String, Object> settings) {
+	private static Map<String, Object> configureLanguageAndPublisher(Map<String, Object> settings) {
 		settings = settings == null ? Maps.newHashMap() : Maps.newHashMap(settings);
+		settings.putIfAbsent("publisher", "SNOMED International");
 		settings.putIfAbsent(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of(
 			Map.of(
 				"languageTag", "en",

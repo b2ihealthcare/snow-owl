@@ -29,7 +29,8 @@ public interface FhirCodeSystemCUDSupport {
 	 *  
 	 * @param context - the context to use when looking for this code system
 	 * @param codeSystem 
+	 * @param author
 	 */
-	public void updateOrCreateCodeSystem(ServiceProvider context, CodeSystem codeSystem);	
+	public void updateOrCreateCodeSystem(ServiceProvider context, CodeSystem codeSystem, String author);	
 	
 }

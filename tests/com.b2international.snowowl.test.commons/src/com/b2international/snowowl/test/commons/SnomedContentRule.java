@@ -151,9 +151,11 @@ public class SnomedContentRule extends ExternalResource {
 			.setLanguage("ENG")
 			.setTitle(codeSystemId.getResourceId())
 			.setOid("oid:" + codeSystemId)
-			.setOwner("https://b2i.sg")
+			.setOwner("owner")
+			.setContact("https://b2i.sg")
 			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.setSettings(Map.of(
+				"publisher", "SNOMED International",
 				SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, List.of(
 					Map.of(
 						"languageTag", "en",

@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -104,6 +105,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		assertThat(bundle.getOwner()).isEqualTo(OWNER);
 		assertThat(bundle.getUsage()).isEqualTo(USAGE);
 		assertThat(bundle.getPurpose()).isEqualTo(PURPOSE);
+		assertThat(bundle.getSettings()).isEqualTo(SETTINGS);
 		assertThat(bundle.getBundleId()).isEqualTo(parentBundleId);
 	}
 	
@@ -335,6 +337,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String newUsage = "New usage";
 		final String newPurpose = "New purpose";
 		final String newBundleId = createBundle(IDs.base62UUID());
+		final Map<String, Object> newSettings = Map.of("ownerProfileName", "admin");
 		
 		ResourceRequests.bundles().prepareUpdate(id)
 		 	.setUrl(newUrl)
@@ -348,6 +351,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 			.setUsage(newUsage)
 			.setPurpose(newPurpose)
 			.setBundleId(newBundleId)
+			.setSettings(newSettings)
 			.build(USER, String.format("Update bundle: %s", id))
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
@@ -365,6 +369,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		assertThat(bundle.getUsage()).isEqualTo(newUsage);
 		assertThat(bundle.getPurpose()).isEqualTo(newPurpose);
 		assertThat(bundle.getBundleId()).isEqualTo(newBundleId);
+		assertThat(bundle.getSettings()).isEqualTo(newSettings);
 	}
 
 	@Test
