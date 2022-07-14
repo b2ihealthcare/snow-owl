@@ -404,6 +404,7 @@ public abstract class SnomedConstants {
 		public static final String ATTRIBUTE_TYPE_MAP_PRIORITY = "900000000000502003";
 		public static final String ATTRIBUTE_TYPE_MAP_RULE = "900000000000503008";
 		public static final String ATTRIBUTE_TYPE_MAP_TARGET = "900000000000505001";
+		public static final String ATTRIBUTE_TYPE_MAP_SOURCE = "900000000000500006";
 		
 		// Query attributes
 		public static final String ATTRIBUTE_TYPE_QUERY = "900000000000515007";
