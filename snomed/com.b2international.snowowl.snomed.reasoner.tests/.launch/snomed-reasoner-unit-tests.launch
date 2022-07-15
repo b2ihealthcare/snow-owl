@@ -65,9 +65,6 @@
         <setEntry value="com.sun.xml.bind.jaxb-core@default:default"/>
         <setEntry value="com.sun.xml.bind.jaxb-impl@default:default"/>
         <setEntry value="de.svenkubiak.jBCrypt@default:default"/>
-        <setEntry value="groovy-json@default:false"/>
-        <setEntry value="groovy-xml@default:false"/>
-        <setEntry value="groovy@default:default"/>
         <setEntry value="io.github.classgraph.classgraph@default:default"/>
         <setEntry value="io.github.classgraph@default:default"/>
         <setEntry value="io.netty.buffer@default:default"/>
@@ -168,6 +165,7 @@
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
         <setEntry value="com.b2international.commons@default:default"/>
+        <setEntry value="com.b2international.groovy@default:default"/>
         <setEntry value="com.b2international.index.test.tools@default:default"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
