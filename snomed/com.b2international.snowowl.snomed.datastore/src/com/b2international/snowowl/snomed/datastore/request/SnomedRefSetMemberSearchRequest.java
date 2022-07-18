@@ -277,6 +277,7 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 				Expressions.bool()
 					.should(referencedComponentIds(componentIds))
 					.should(mapTargets(componentIds))
+					.should(mapSources(componentIds))
 				.build()
 			);
 		}
