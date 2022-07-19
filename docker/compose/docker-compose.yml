@@ -1,0 +1,41 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+    container_name: elasticsearch
+    environment:
+      - "ES_JAVA_OPTS=-Xms6g -Xmx6g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ./data:/usr/share/elasticsearch/data
+      - ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    healthcheck:
+      test: curl --fail http://localhost:9200/_cluster/health?wait_for_status=green || exit 1
+      interval: 1s
+      timeout: 1s
+      retries: 60
+    ports:
+     - "127.0.0.1:9200:9200"
+    command: "bash -c 'chmod g+rwx /usr/share/elasticsearch/data && chgrp 0 /usr/share/elasticsearch/data && /usr/local/bin/docker-entrypoint.sh eswrapper'"
+    restart: unless-stopped
+  snowowl:
+    image: b2ihealthcare/snow-owl-oss:7.19.3
+    container_name: snowowl
+    environment:
+      - "SO_JAVA_OPTS=-Xms6g -Xmx6g"
+      - "ELASTICSEARCH_URL=http://elasticsearch:9200"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./config/snowowl/snowowl.yml:/etc/snowowl/snowowl.yml
+      - ./config/snowowl/users:/etc/snowowl/users # default username and password: test - test
+      - ./data:/var/lib/snowowl/resources/indexes
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

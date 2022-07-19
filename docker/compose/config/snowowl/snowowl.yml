@@ -1,0 +1,15 @@
+identity:
+  providers:
+    - file:
+        name: users
+
+repository:
+  index:
+    socketTimeout: 60000
+    clusterUrl: ${ELASTICSEARCH_URL}
+
+snomed:
+  maxReasonerCount: 1
+
+monitoring:
+  enabled: true
