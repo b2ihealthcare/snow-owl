@@ -1,20 +1,9 @@
-version: "3.7"
-
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.2
     container_name: elasticsearch
     environment:
-      cluster.name: "elastic-snowowl"
-      node.name: "elastic-snowowl"
-      discovery.type: "single-node"
-      rest.action.multi.allow_explicit_index: "false"
-      bootstrap.memory_lock: "true"
-      ES_JAVA_OPTS: "-Xms6g -Xmx6g"
-      TAKE_FILE_OWNERSHIP: "true"
-      http.type: "netty4"
-      http.cors.enabled: "true"
-      http.cors.allow-origin: "/https?:\\/\\/localhost(:[0-9]+)?/"
+      - "ES_JAVA_OPTS=-Xms6g -Xmx6g"
     ulimits:
       memlock:
         soft: -1
@@ -23,30 +12,31 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - /path/to/indexes:/usr/share/elasticsearch/data
-      - ./config/analysis/synonym.txt:/usr/share/elasticsearch/config/analysis/synonym.txt
+      - ./data:/usr/share/elasticsearch/data
+      - ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./config/elasticsearch/synonym.txt:/usr/share/elasticsearch/config/analysis/synonym.txt
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://elasticsearch:9200"]
+      test: curl --fail http://localhost:9200/_cluster/health?wait_for_status=green || exit 1
       interval: 1s
       timeout: 1s
       retries: 60
     ports:
      - "127.0.0.1:9200:9200"
-     - "127.0.0.1:9300:9300"
+    command: "bash -c 'chmod g+rwx /usr/share/elasticsearch/data && chgrp 0 /usr/share/elasticsearch/data && /usr/local/bin/docker-entrypoint.sh eswrapper'"
     restart: unless-stopped
   snowowl:
     image: b2ihealthcare/snow-owl-oss:latest
     container_name: snowowl
     environment:
-      SO_JAVA_OPTS: "-Xms6g -Xmx6g"
-      ES_CLUSTER_URL: "tcp://elasticsearch:9300"        # or http://elasticsearch:9200
+      - "SO_JAVA_OPTS=-Xms6g -Xmx6g"
+      - "ELASTICSEARCH_URL=http://elasticsearch:9200"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     volumes:
-      - ./path/to/snowowl.yml:/etc/snowowl/snowowl.yml  # Snow Owl's configuration file
-      - ./path/to/users:/etc/snowowl/users              # Snow Owl's file based authentication file
-      - /path/to/resources:/var/lib/snowowl             # Snow Owl's resources folder
-      - /path/to/logs:/var/log/snowowl                  # Snow Owl's log folder
+      - ./config/snowowl/snowowl.yml:/etc/snowowl/snowowl.yml
+      - ./config/snowowl/users:/etc/snowowl/users # default username and password: test - test
+      - ./data:/var/lib/snowowl/resources/indexes
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
     restart: unless-stopped
