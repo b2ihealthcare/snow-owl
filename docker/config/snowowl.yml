@@ -1,7 +1,3 @@
-#
-# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
-#
-
 identity:
   providers:
     - file:
