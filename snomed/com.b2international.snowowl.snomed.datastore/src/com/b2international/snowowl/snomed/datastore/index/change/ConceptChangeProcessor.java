@@ -72,13 +72,13 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.onResultOf((SnomedDescriptionFragment description) -> {
 				if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
 					if (description.getLanguageRefSetIds().contains(Concepts.REFSET_LANGUAGE_TYPE_US)) {
-						return 0;
+						return "0";
 					} else if (description.getLanguageRefSetIds().contains(Concepts.REFSET_LANGUAGE_TYPE_UK)) {
-						return 1;
+						return "1";
 					}
-					return 2;
+					return "2";
 				} else if (Concepts.SYNONYM.equals(description.getTypeId())) {
-					return 3;
+					return "3";
 				} else {
 					return description.getTypeId();
 				}
