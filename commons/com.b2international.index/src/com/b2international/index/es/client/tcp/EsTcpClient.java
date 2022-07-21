@@ -57,6 +57,13 @@ public final class EsTcpClient extends EsClientBase {
 	}
 	
 	@Override
+	public String version() throws IOException {
+		// fake version to mimic 7.x behavior, TCP support has been removed in 8.x of ES, no need to ask the connected ES what version it has
+		// replace this with actual logic if we need an actual 7.x ES version for anything
+		return "7.x";
+	}
+	
+	@Override
 	protected boolean ping() throws IOException {
 		return true; // always returns true
 	}
