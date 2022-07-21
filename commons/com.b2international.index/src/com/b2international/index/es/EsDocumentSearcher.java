@@ -544,6 +544,10 @@ public class EsDocumentSearcher implements Searcher {
 	
 	@Override
 	public <T> Hits<T> knn(Knn<T> knn) throws IOException {
+		if (admin.es8Client() == null) {
+			throw new BadRequestException("Approximate knn search is only available in Elastiscearch 8 clusters. The currently connected ES cluster version is %s.", admin.client().version());
+		}
+		
 		final ElasticsearchClient client = admin.es8Client().client();
 		final DocumentMapping mapping = admin.mappings().getMapping(knn.getFrom());
 		

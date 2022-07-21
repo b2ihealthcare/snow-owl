@@ -81,7 +81,9 @@ public interface Searcher {
 	 * @return a {@link Hits} containing all hits returned by the knn search
 	 * @throws IOException
 	 */
-	<T> Hits<T> knn(Knn<T> knn) throws IOException;
+	default <T> Hits<T> knn(Knn<T> knn) throws IOException {
+		throw new UnsupportedOperationException("This feature is only supported is specific searcher implementations");
+	}
 	
 	/**
 	 * Returns a {@link Stream} that computes all matches of the given query,
