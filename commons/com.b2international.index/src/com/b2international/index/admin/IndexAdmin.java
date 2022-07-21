@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 
@@ -123,6 +125,14 @@ public interface IndexAdmin {
 	 * @return the Elasticsearch client used by this {@link IndexAdmin}.
 	 */
 	EsClient client();
+	
+	/**
+	 * NOTE: depending on configuration, this client might not be available.
+	 * 
+	 * @return the Elasticsearch high-level client that supports all Elasticsearch 8 features
+	 * @throws UnsupportedOperationException - if es8Client is not available
+	 */
+	Es8Client es8Client() throws UnsupportedOperationException;
 
 	/**
 	 * @return the indices maintained by this {@link IndexAdmin}
@@ -133,6 +143,10 @@ public interface IndexAdmin {
 				.map(this::getTypeIndex)
 				.distinct()
 				.toArray(String[]::new);
+	}
+	
+	static Logger createIndexLogger(String name) {
+		return LoggerFactory.getLogger(String.join(".", "index", name));
 	}
 
 }

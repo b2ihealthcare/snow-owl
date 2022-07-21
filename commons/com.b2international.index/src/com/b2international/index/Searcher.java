@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
+import com.b2international.index.query.Knn;
 import com.b2international.index.query.Query;
 import com.google.common.collect.Streams;
 
@@ -71,6 +72,16 @@ public interface Searcher {
 	 * @throws IOException
 	 */
 	<T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException;
+	
+	/**
+	 * Perform k nearest neighbor search on the select index using the provided search parameters.
+	 * 
+	 * @param <T> - the response type
+ 	 * @param knn - the knn query to run
+	 * @return a {@link Hits} containing all hits returned by the knn search
+	 * @throws IOException
+	 */
+	<T> Hits<T> knn(Knn<T> knn) throws IOException;
 	
 	/**
 	 * Returns a {@link Stream} that computes all matches of the given query,

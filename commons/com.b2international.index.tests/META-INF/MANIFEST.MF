@@ -9,6 +9,7 @@ Bundle-ActivationPolicy: lazy
 Fragment-Host: com.b2international.index
 Require-Bundle: org.junit;bundle-version="4.13.0",
  com.b2international.index.test.tools,
+ com.b2international.collections.jackson,
  org.apache.commons.lang,
  com.fasterxml.jackson.core.jackson-annotations,
  ch.qos.logback.classic;bundle-version="1.2.3",
