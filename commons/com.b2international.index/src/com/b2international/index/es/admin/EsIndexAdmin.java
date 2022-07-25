@@ -561,6 +561,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 		Map<String, Object> esSettings = new HashMap<>(newSettings);
 		// remove any local settings from esSettings
 		esSettings.keySet().removeAll(LOCAL_SETTINGS);
+		// also remove type index specific mapping settings, those are dynamically not adjustable
+		esSettings.keySet().removeAll(mappings.getTypeIndexNames());
 		
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);

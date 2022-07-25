@@ -58,6 +58,11 @@ public class Elasticsearch8ClientTest extends BaseRevisionIndexTest {
 		}
 		
 	}
+	
+	@Override
+	protected String version() {
+		return "8";
+	}
 		
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {

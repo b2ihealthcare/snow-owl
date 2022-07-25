@@ -118,10 +118,12 @@
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
         <setEntry value="com.b2international.commons@default:default"/>
+        <setEntry value="com.b2international.index.es8@default:default"/>
         <setEntry value="com.b2international.index.test.tools@default:default"/>
         <setEntry value="com.b2international.index.tests@default:false"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.snowowl.logback.config@default:false"/>
+        <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
     <booleanAttribute key="tracing" value="false"/>

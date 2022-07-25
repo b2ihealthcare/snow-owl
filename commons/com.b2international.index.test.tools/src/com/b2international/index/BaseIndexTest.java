@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,13 +43,21 @@ public abstract class BaseIndexTest {
 	protected static final String KEY2 = "key2";
 
 	@Rule
-	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper, this::getIndexSettings);
+	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper, this::getIndexSettings, this::version);
 
 	/**
 	 * @return the document types used by this test case
 	 */
 	protected abstract Collection<Class<?>> getTypes();
 
+	/**
+	 * Subclasses may override this method to return an Elasticsearch major that they support. By default it returns `*`, which represents all versions are supported and tests should run on all versions.
+	 * 
+	 * @return
+	 */
+	protected String version() {
+		return "*";
+	}
 	
 	protected void configureMapper(ObjectMapper mapper) {
 		

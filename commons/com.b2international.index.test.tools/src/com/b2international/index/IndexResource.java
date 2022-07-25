@@ -15,6 +15,8 @@
  */
 package com.b2international.index;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -62,11 +64,13 @@ public final class IndexResource extends ExternalResource {
 	private final Collection<Class<?>> types;
 	private final Consumer<ObjectMapper> objectMapperConfigurator;
 	private final Supplier<Map<String, Object>> indexSettings;
+	private final Supplier<String> supportedVersion;
 	
-	private IndexResource(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator, Supplier<Map<String, Object>> indexSettings) {
+	private IndexResource(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator, Supplier<Map<String, Object>> indexSettings, Supplier<String> supportedVersion) {
 		this.types = types;
 		this.objectMapperConfigurator = objectMapperConfigurator;
 		this.indexSettings = indexSettings;
+		this.supportedVersion = supportedVersion;
 	}
 	
 	@Override
@@ -99,6 +103,9 @@ public final class IndexResource extends ExternalResource {
 			index = new DefaultIndex(client);
 			revisionIndex = new DefaultRevisionIndex(index, new TimestampProvider.Default(), mapper);
 		}
+		
+		// when init is ready check version and ignore test if connected cluster is not supported
+		assumeTrue(supportedVersion.get().equals("*") || index.admin().client().version().startsWith(supportedVersion.get()));
 		
 		if (container != null) {
 			// make sure we update the synonyms.txt inside the test container
@@ -150,8 +157,8 @@ public final class IndexResource extends ExternalResource {
 		return mapper;
 	}
 	
-	public static IndexResource create(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator, Supplier<Map<String, Object>> indexSettings) {
-		return new IndexResource(types, objectMapperConfigurator, indexSettings);
+	public static IndexResource create(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator, Supplier<Map<String, Object>> indexSettings, Supplier<String> supportedVersion) {
+		return new IndexResource(types, objectMapperConfigurator, indexSettings, supportedVersion);
 	}
 
 }
