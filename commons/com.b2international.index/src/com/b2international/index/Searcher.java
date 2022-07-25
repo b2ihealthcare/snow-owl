@@ -82,7 +82,7 @@ public interface Searcher {
 	 * @throws IOException
 	 */
 	default <T> Hits<T> knn(Knn<T> knn) throws IOException {
-		throw new UnsupportedOperationException("This feature is only supported is specific searcher implementations");
+		throw new UnsupportedOperationException("This feature is only supported in specific searcher implementations");
 	}
 	
 	/**
