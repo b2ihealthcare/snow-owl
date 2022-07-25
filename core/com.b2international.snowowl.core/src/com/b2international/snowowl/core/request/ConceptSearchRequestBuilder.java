@@ -89,6 +89,10 @@ public final class ConceptSearchRequestBuilder
 	public ConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(OptionKey.TERM, termFilter);
 	}
+	
+	public ConceptSearchRequestBuilder filterByTerms(List<String> terms) {
+		return addOption(OptionKey.TERMS, terms);
+	}
 
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
@@ -106,6 +110,10 @@ public final class ConceptSearchRequestBuilder
 	 */
 	public ConceptSearchRequestBuilder filterByMoreLikeThis(List<String> terms) {
 		return addOption(OptionKey.MORE_LIKE_THIS_QUERY, terms);
+	}
+	
+	public ConceptSearchRequestBuilder filterByTitle(String title) {
+		return addOption(OptionKey.TITLE, title);
 	}
 	
 	/**

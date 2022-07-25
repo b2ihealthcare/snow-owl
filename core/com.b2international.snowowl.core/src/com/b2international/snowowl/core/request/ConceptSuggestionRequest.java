@@ -70,6 +70,8 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	
 	private transient List<String> topTokens;
 	private boolean useMoreLikeThis;
+	private String title;
+	private boolean useTerms = false;
 	
 	void setTopTokenCount(int topTokenCount) {
 		this.topTokenCount = topTokenCount;
@@ -77,6 +79,10 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	
 	public void setUseMoreLikeThis(boolean useMoreLikeThis) {
 		this.useMoreLikeThis = useMoreLikeThis;
+	}
+	
+	public void setTitle(final String title) {
+		this.title = title;
 	}
 	
 	@Override
@@ -154,7 +160,16 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			}
 			
 			int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): Math.min(DEFAULT_MIN_OCCURENCE_COUNT, topTokens.size());
-			resultRequestBuilder.filterByTerm(TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch));
+			if (useTerms) {
+				List<String> terms = new ArrayList<>();
+				baseRequestBuilder.stream(context)
+					.flatMap(Concepts::stream)
+					.flatMap(concept -> getAllTerms(concept).stream())
+					.forEach(terms::add);
+				resultRequestBuilder.filterByTerms(terms);
+			} else {
+				resultRequestBuilder.filterByTerm(TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch));
+			}
 		} else {
 			throw new BadRequestException("Either a specific term or query/mustNotQuery must be specified for suggestion base set.");
 		}
@@ -166,7 +181,11 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		final Set<String> exclusions = newHashSet();
 		exclusions.addAll(getCollection(QUERY, String.class));
 		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
-
+		
+		if (title != null) {
+			resultRequestBuilder.filterByTitle(title);
+		}
+		
 		resultRequestBuilder
 				.filterByCodeSystemUri(context.service(ResourceURI.class))
 				.filterByActive(true)		

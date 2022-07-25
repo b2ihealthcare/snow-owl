@@ -29,6 +29,7 @@ public final class ConceptSuggestionRequestBuilder
 
 	private int topTokenCount = 9;
 	private boolean useMoreLikeThis;
+	private String title;
 	
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
@@ -90,6 +91,11 @@ public final class ConceptSuggestionRequestBuilder
 		return getSelf();
 	}
 	
+	public ConceptSuggestionRequestBuilder filterByTitle(String title) {
+		this.title = title;
+		return getSelf();
+	}
+	
 	/**
 	 * Set the {@link SnomedDisplayTermType} of the returning term in case of SNOMED.
 	 * 
@@ -129,6 +135,7 @@ public final class ConceptSuggestionRequestBuilder
 		final ConceptSuggestionRequest request = new ConceptSuggestionRequest();
 		request.setTopTokenCount(topTokenCount);
 		request.setUseMoreLikeThis(useMoreLikeThis);
+		request.setTitle(title);
 		return request;
 	}
 

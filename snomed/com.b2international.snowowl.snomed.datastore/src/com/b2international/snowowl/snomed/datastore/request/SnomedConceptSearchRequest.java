@@ -49,6 +49,7 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConve
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.google.common.base.Strings;
 
 /**
  * SNOMED CT Concept search request implementation.
@@ -125,6 +126,8 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 * Match concept descriptions where the description has language membership in one of the provided locales
 		 */
 		LANGUAGE_REFSET,
+		TERMS, 
+		TITLE,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -206,15 +209,18 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			queryBuilder.filter(SnomedConceptDocument.Expressions.semanticTags(getCollection(OptionKey.SEMANTIC_TAG, String.class)));
 		}
 		
-		if (containsKey(OptionKey.TERM) || containsKey(OptionKey.MORE_LIKE_THIS)) {
+		if (containsKey(OptionKey.TERM) || containsKey(OptionKey.TERMS) || containsKey(OptionKey.MORE_LIKE_THIS)) {
 			final ExpressionBuilder bq = Expressions.bool();
 			// nest current query
 			bq.filter(queryBuilder.build());
 			queryBuilder = bq;
 			
 			final TermFilter termFilter = containsKey(OptionKey.TERM) ? get(OptionKey.TERM, TermFilter.class) : null;
-			final Collection<String> terms = containsKey(OptionKey.MORE_LIKE_THIS) ? getCollection(OptionKey.MORE_LIKE_THIS, String.class) : Collections.emptyList();
-			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, termFilter, terms);
+			final Collection<String> terms = containsKey(OptionKey.MORE_LIKE_THIS) ? getCollection(OptionKey.MORE_LIKE_THIS, String.class) 
+					: containsKey(OptionKey.TERMS) ? getCollection(OptionKey.TERMS, String.class) : Collections.emptyList();
+			boolean perTermQuery = containsKey(OptionKey.TERMS);
+			boolean isMoreLikeThis = containsKey(OptionKey.MORE_LIKE_THIS);
+			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, termFilter, terms, perTermQuery, isMoreLikeThis, false);
 			
 			if (termFilter != null) {
 				try {
@@ -224,6 +230,23 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 					}
 				} catch (IllegalArgumentException e) {
 					// ignored
+				}
+			}
+			final String title;
+			if (containsKey(OptionKey.TITLE)) {
+				title = getString(OptionKey.TITLE);
+				if (!Strings.isNullOrEmpty(title)) {
+					float boostFactor = 1.2f;
+					final Map<String, Float> titleConceptScoreMap = executeDescriptionSearch(context, TermFilter.minTermMatch(title, 1).withIgnoreStopwords(), Collections.emptyList(), false, false, true);
+					for (String conceptId : titleConceptScoreMap.keySet()) {
+						if (!conceptScoreMap.containsKey(conceptId)) {
+							conceptScoreMap.put(conceptId, boostFactor*titleConceptScoreMap.get(conceptId));
+						}
+						
+						if (conceptScoreMap.get(conceptId) < boostFactor*titleConceptScoreMap.get(conceptId)) {
+							conceptScoreMap.put(conceptId, boostFactor*titleConceptScoreMap.get(conceptId));
+						}
+					}
 				}
 			}
 			
@@ -294,9 +317,10 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		}
 	}
 	
-	private Map<String, Float> executeDescriptionSearch(BranchContext context, TermFilter termFilter, Collection<String> terms) {
+	private Map<String, Float> executeDescriptionSearch(BranchContext context, TermFilter termFilter, Collection<String> terms, 
+			boolean usePerTermQuery, boolean useMoreLikeThis, boolean limit) {
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
-			.all()
+			.setLimit(limit ? Math.floorDiv(limit(), 2) : Integer.MAX_VALUE)
 			.filterByActive(true)
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
@@ -306,7 +330,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			requestBuilder.filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(context, extendedLocales));
 		}
 			
-		if (!terms.isEmpty()) {
+		if (!terms.isEmpty() && !usePerTermQuery) {
 			requestBuilder.filterByMoreLikeThis(terms);
 		}
 		
@@ -321,10 +345,27 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			requestBuilder.filterByTerm(termFilter);
 		}
 		
-		final Collection<SnomedDescription> items = requestBuilder
-			.build()
-			.execute(context)
-			.getItems();
+		final Collection<SnomedDescription> items = new ArrayList<SnomedDescription>();
+		if (usePerTermQuery) {
+			terms.forEach(term -> {
+				if (useMoreLikeThis) {
+					requestBuilder.filterByMoreLikeThis(Collections.singleton(term));					
+				} else {
+					requestBuilder.filterByTerm(TermFilter.minTermMatch(term, 1).withIgnoreStopwords());					
+				}
+				
+				items.addAll(requestBuilder
+						.setLimit(50) //TODO Adjust as needed
+						.build()
+						.execute(context)
+						.getItems());
+			});
+		} else {
+			items.addAll(requestBuilder
+					.build()
+					.execute(context)
+					.getItems());			
+		}
 		
 		final Map<String, Float> conceptMap = newHashMap();
 		

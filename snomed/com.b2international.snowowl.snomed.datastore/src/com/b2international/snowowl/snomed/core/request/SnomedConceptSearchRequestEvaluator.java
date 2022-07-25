@@ -96,6 +96,15 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			req.withDoi();
 		}
 		
+		if (search.containsKey(OptionKey.TERMS)) {
+			req.filterByTerms(search.getCollection(OptionKey.TERMS, String.class));
+			req.withDoi();
+		}
+		
+		if (search.containsKey(OptionKey.TITLE)) {
+			req.filterByTitle(search.get(OptionKey.TITLE, String.class));
+		}
+		
 		if (search.containsKey(OptionKey.TERM_TYPE)) {
 			req.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
 		}

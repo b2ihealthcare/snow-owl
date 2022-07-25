@@ -85,6 +85,14 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	public SnomedConceptSearchRequestBuilder filterByMoreLikeThis(Collection<String> terms) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.MORE_LIKE_THIS, terms);
 	}
+	
+	public SnomedConceptSearchRequestBuilder filterByTerms(Collection<String> terms) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.TERMS, terms);
+	}
+	
+	public SnomedConceptSearchRequestBuilder filterByTitle(String title) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.TITLE, title);
+	}
 
 	/**
 	 * Filters the concepts based on the type of its descriptions where the description type is specified by an ECL expression. representing the type.

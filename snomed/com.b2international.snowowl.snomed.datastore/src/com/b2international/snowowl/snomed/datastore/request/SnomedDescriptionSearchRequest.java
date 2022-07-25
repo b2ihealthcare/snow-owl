@@ -140,7 +140,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (containsKey(OptionKey.MORE_LIKE_THIS)) {
 			Collection<String> terms = getCollection(OptionKey.MORE_LIKE_THIS, String.class);
 			String[] likeTerms = terms.toArray(new String[terms.size()]);
-			queryBuilder.must(Expressions.moreLikeThis(likeTerms, new String[] {"term.text"}));
+			queryBuilder.must(Expressions.moreLikeThis(likeTerms, new String[] {"term.prefix"}));
 		}
 		
 		return queryBuilder.build();

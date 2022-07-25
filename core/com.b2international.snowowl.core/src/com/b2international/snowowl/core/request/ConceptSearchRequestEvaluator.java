@@ -52,6 +52,7 @@ public interface ConceptSearchRequestEvaluator {
 		 * but usually it supports exact, partial word and prefix matches.
 		 */
 		TERM,
+		TERMS,
 
 		/**
 		 * One or more query expressions (defined in the target code system's query language) to include matches.
@@ -62,6 +63,7 @@ public interface ConceptSearchRequestEvaluator {
 		 * A more like this query filter that finds concepts based on similarity with existing descriptions in the value set. 
 		 */
 		MORE_LIKE_THIS_QUERY,
+		TITLE, 
 		
 		/**
 		 * One or more query expressions (defined in the target code system's query language) to exclude matches from the results.
