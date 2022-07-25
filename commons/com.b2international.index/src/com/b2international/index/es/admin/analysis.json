@@ -106,6 +106,19 @@
 				"edge_ngram"
 			]
 		},
+		"prefix_with_stop_words": {
+			"tokenizer": "whitespace",
+			"filter": [
+				"asciifolding",
+				"lowercase",
+				"stop_words",
+				"synonyms",
+				"possessive",
+				"word_splitter",
+				"unique_token",
+				"edge_ngram"
+			]
+		},
 		"case_sensitive_prefix": {
 			"tokenizer": "whitespace",
 			"filter": [
