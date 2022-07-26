@@ -193,6 +193,11 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void persistDataHasValueAxiom_DecimalWithTrailingZeros() throws Exception {
+		persistDataHasValueAxiom("\"100.00\"^^xsd:decimal", new RelationshipValue(new BigDecimal("100")));
+	}
+	
+	@Test
 	public void persistDataHasValueAxiom_String() throws Exception {
 		persistDataHasValueAxiom("\"Hello world\"^^xsd:string", new RelationshipValue("Hello world"));
 	}
