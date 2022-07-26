@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -29,7 +27,6 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.version.Version;
-import com.google.common.collect.Maps;
 
 /**
  * @since 8.0
@@ -42,7 +39,6 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 	private String oid;
 	private String branchPath;
 	private ResourceURI extensionOf;
-	private Map<String, Object> settings;
 //	private String iconPath; // TODO should we support custom icons for resources?? branding??
 	
 	public final void setOid(String oid) {
@@ -55,10 +51,6 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 	
 	public final void setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
-	}
-	
-	public final void setSettings(Map<String, Object> settings) {
-		this.settings = settings;
 	}
 	
 //	public final void setIconPath(final String iconPath) {
@@ -76,7 +68,6 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 		changed |= updateOid(context, resource.getOid(), updated);
 		changed |= updateBranchPath(context, updated, resource.getBranchPath(), resource.getToolingId());
 		changed |= updateExtensionOf(context, updated, resource.getExtensionOf(), resource.getId());
-		changed |= updateSettings(resource, updated);
 		
 //		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
 		return changed;
@@ -119,39 +110,6 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 //		updated.locales(ImmutableList.copyOf(locales));
 //		return true;
 //	}
-
-	private boolean updateSettings(final ResourceDocument codeSystem, final ResourceDocument.Builder updated) {
-		if (settings == null || settings.isEmpty()) {
-			return false;
-		}
-		
-		// Get mutable copy of existing settings, or an empty map for starters
-		final Map<String, Object> updatedSettings = Optional.ofNullable(codeSystem.getSettings())
-				.map(Maps::newHashMap)
-				.orElse(Maps.newHashMap());
-		
-		boolean changed = false;
-		
-		// Remove null values from map
-		final Set<String> keysToRemove = Maps.filterValues(settings, v -> v == null).keySet();
-		for (final String key : keysToRemove) {
-			changed |= (updatedSettings.remove(key) != null);
-		}
-
-		// Merge (add or modify) non-null values
-		final Set<String> keysToUpdate = Maps.filterValues(settings, v -> v != null).keySet();
-		for (final String key : keysToUpdate) {
-			changed |= updateProperty(settings.get(key), 			// value 
-					() -> updatedSettings.get(key),                 // getter
-					value -> updatedSettings.put(key, value));      // setter 
-		}
-		
-		if (changed) {
-			updated.settings(updatedSettings);
-		}
-		
-		return changed;
-	}
 
 	private boolean updateExtensionOf(final TransactionContext context, 
 			final ResourceDocument.Builder codeSystem, 

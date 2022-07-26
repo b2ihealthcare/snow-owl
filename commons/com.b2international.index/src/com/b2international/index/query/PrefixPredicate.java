@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@ package com.b2international.index.query;
 
 import java.util.stream.Collectors;
 
+import org.elasticsearch.common.util.iterable.Iterables;
+
+import com.b2international.commons.exceptions.BadRequestException;
+
 /**
  * @since 5.0
  */
@@ -24,6 +28,11 @@ public final class PrefixPredicate extends SetPredicate<String> {
 
 	PrefixPredicate(String field, Iterable<String> arguments) {
 		super(field, arguments);
+		final long numberOfTerms = Iterables.size(arguments);
+		// XXX the usual maxClauseCount default value in ES is 1024, so allow room for other clauses before responding with an error to the caller 
+		if (numberOfTerms > 1000) {
+			throw new BadRequestException("Too may ('%s') prefix query clauses supplied for '%s' field.", numberOfTerms, field);
+		}
 	}
 	
 	@Override

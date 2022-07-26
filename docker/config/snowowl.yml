@@ -1,10 +1,4 @@
-#
-# Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
-#
-
 identity:
-#  jws: HS256
-#  secret: <your-secret>
   providers:
     - file:
         name: users
@@ -15,6 +9,18 @@ identity:
 #        rootDnPassword: <adminpwd>
 #        userIdProperty: uid
 #        usePool: false
+
+snomed:
+  languages:
+    -
+      code: en
+      refSetIds: ["900000000000509007", "900000000000508004"]
+    -
+      code: en-us
+      refSetIds: ["900000000000509007"]
+    -
+      code: en-gb
+      refSetIds: ["900000000000508004"]
 
 monitoring:
   enabled: true

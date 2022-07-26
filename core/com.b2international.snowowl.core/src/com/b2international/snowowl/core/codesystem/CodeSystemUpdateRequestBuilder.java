@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.Map;
-
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.request.BaseResourceUpdateRequestBuilder;
 
@@ -29,7 +27,6 @@ public final class CodeSystemUpdateRequestBuilder
 	private String oid;
 	private String branchPath;
 	private ResourceURI extensionOf;
-	private Map<String, Object> settings;
 
 	CodeSystemUpdateRequestBuilder(String uniqueId) {
 		super(uniqueId);
@@ -50,11 +47,6 @@ public final class CodeSystemUpdateRequestBuilder
 		return getSelf();
 	}
 
-	public CodeSystemUpdateRequestBuilder setSettings(Map<String, Object> settings) {
-		this.settings = settings;
-		return getSelf();
-	}
-
 	@Override
 	public CodeSystemUpdateRequest createResourceRequest() {
 		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(getResourceId());
@@ -62,9 +54,7 @@ public final class CodeSystemUpdateRequestBuilder
 		req.setOid(oid);
 		req.setBranchPath(branchPath);
 		req.setExtensionOf(extensionOf);
-		req.setSettings(settings);
 
 		return req;
 	}
-
 }

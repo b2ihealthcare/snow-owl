@@ -39,6 +39,9 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 	@Parameter(description = "The timestamp to use for historical ('as of') queries")
 	private Long timestamp;
 	
+	@Parameter(description = "One or more owner user ids to match")
+	private List<String> owner;
+	
 	public List<String> getTitleExact() {
 		return titleExact;
 	}
@@ -78,4 +81,13 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
+	
+	public List<String> getOwner() {
+		return owner;
+	}
+	
+	public void setOwner(List<String> owner) {
+		this.owner = owner;
+	}
+
 }

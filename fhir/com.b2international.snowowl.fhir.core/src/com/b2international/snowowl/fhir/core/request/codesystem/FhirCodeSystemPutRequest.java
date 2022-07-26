@@ -34,9 +34,11 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 	private static final int CONCEPT_LIMIT = 5000;
 	
 	private final CodeSystem codeSystem;
+	private final String author;
 	
-	public FhirCodeSystemPutRequest(CodeSystem codeSystem) {
+	public FhirCodeSystemPutRequest(CodeSystem codeSystem, String author) {
 		this.codeSystem = codeSystem;
+		this.author = author;
 	}
 
 	@Override
@@ -48,7 +50,7 @@ final class FhirCodeSystemPutRequest implements Request<RepositoryContext, Boole
 			throw new NotImplementedException("FHIR CodeSystem resource creation is currently unavailable.");
 		}
 		
-		cudSupport.get().updateOrCreateCodeSystem(context, codeSystem);
+		cudSupport.get().updateOrCreateCodeSystem(context, codeSystem, author);
 		return Boolean.TRUE;			
 	}
 }

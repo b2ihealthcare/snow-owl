@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
@@ -30,6 +33,14 @@ import com.b2international.snowowl.core.identity.User;
  */
 public interface AuthorizationService {
 
+	/**
+	 * Global logger that should be used for authorization related logging. 
+	 */
+	Logger LOG = LoggerFactory.getLogger("authorization");
+	
+	/**
+	 * The default fallback no-op service when no authorization service has been configured by any of the known plug-ins.
+	 */
 	AuthorizationService DEFAULT = new AuthorizationService() {};
 	
 	/**
@@ -56,9 +67,8 @@ public interface AuthorizationService {
 	}
 
 	/**
-	 * Throws a {@link ForbiddenException} using the 
-	 * @param user
-	 * @param requiredPermission
+	 * Throws a {@link ForbiddenException} using the given required permission's descriptor.
+	 * @param requiredPermission - the permissions that was required but it was missing from the current user's permission list
 	 */
 	default void throwForbiddenException(Permission requiredPermission) {
 		throw new ForbiddenException("Operation not permitted. '%s' permission is required.", requiredPermission.getPermission());
@@ -75,6 +85,10 @@ public interface AuthorizationService {
 				.stream()
 				.flatMap(p -> p.getResources().stream())
 				.collect(Collectors.toSet());
+	}
+
+	default boolean isDefault() {
+		return AuthorizationService.DEFAULT == this;
 	}
 	
 }

@@ -180,12 +180,13 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 		final String importingMessage = isUnpublishedSlice() ? "Importing unpublished components" : String.format("Importing components from %s", getEffectiveTime());
 		final String commitMessage = isUnpublishedSlice() ? "Imported unpublished components" : String.format("Imported components from %s", getEffectiveTime());
 		final boolean doCreateVersion = !isUnpublishedSlice() && !isSnapshotSlice() && importConfig.isCreateVersions();
+		final String author = importConfig.getAuthor();
 		
 		// Collect the type ID for all integer relationship values
 		final LongKeyLongMap integerTypeIdsByValueId = PrimitiveMaps.newLongKeyLongOpenHashMap();
 		
 		context.log().info(importingMessage);
-		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT), loadOnDemand, importConfig)) {
+		try (Rf2TransactionContext tx = new Rf2TransactionContext(openTransaction(context, author), loadOnDemand, importConfig)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
@@ -236,7 +237,7 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 			// Check if any integer values should actually be decimals, indicated by the range constraint on MRCM members
 			final LongSet decimalTypeIds = collectAttributesWithRangeConstraint(context, "dec(>#0..)");
 			final LongSet decimalValueIds = collectValueTypeChanges(integerTypeIdsByValueId, decimalTypeIds);
-			swapValueType(context, decimalValueIds);
+			swapValueType(context, author, decimalValueIds);
 			
 			if (doCreateVersion) {
 				ResourceRequests.prepareNewVersion()
@@ -244,6 +245,7 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 					.setVersion(getEffectiveTime())
 					.setDescription("")
 					.setEffectiveTime(getEffectiveDate())
+					.setAuthor(author)
 //					.setForce(true) TODO force create version if reimporting latest release, patching it basically
 					.buildAsync()
 					.getRequest()
@@ -252,6 +254,11 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 		}
 		
 		context.log().info("{} in {}", commitMessage, w);
+	}
+
+	private TransactionContext openTransaction(final BranchContext context, final String author) {
+		// The default commit comment will not be used
+		return context.openTransaction(context, author, null, DatastoreLockContextDescriptions.IMPORT);
 	}
 
 	private LongSet collectAttributesWithRangeConstraint(final BranchContext context, final String rangeConstraint) {
@@ -299,7 +306,7 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 		return needsValueTypeChange;
 	}
 
-	private void swapValueType(final BranchContext context, final LongSet idsToUpdate) throws Exception {
+	private void swapValueType(final BranchContext context, final String author, final LongSet idsToUpdate) throws Exception {
 		if (idsToUpdate.isEmpty()) {
 			return;
 		}
@@ -307,7 +314,7 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 		final Set<String> idsAsString = LongSets.toStringSet(idsToUpdate);
 		idsToUpdate.clear();
 		
-		try (final TransactionContext tx = context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT)) {
+		try (final TransactionContext tx = openTransaction(context, author)) {
 			for (final List<String> batch : Iterables.partition(idsAsString, BATCH_SIZE)) {
 				final Map<String, SnomedRelationshipIndexEntry> entriesById = tx.lookup(batch, SnomedRelationshipIndexEntry.class);
 

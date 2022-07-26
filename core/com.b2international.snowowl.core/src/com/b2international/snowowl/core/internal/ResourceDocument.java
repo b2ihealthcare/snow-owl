@@ -229,6 +229,10 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression oids(Iterable<String> oids) {
 			return matchAny(Fields.OID, oids);
 		}
+		
+		public static Expression owners(Iterable<String> owners) {
+			return matchAny(Fields.OWNER, owners);
+		}
 
 		public static Expression status(String status) {
 			return exactMatch(Fields.STATUS, status);

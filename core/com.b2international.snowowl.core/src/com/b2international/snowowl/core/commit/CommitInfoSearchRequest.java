@@ -22,7 +22,6 @@ import static com.b2international.index.revision.Commit.Fields.BRANCH;
 import static com.b2international.index.revision.RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +32,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.MatchAll;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -112,16 +112,21 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			return;
 		}
 		
-		final List<Permission> readPermissions = user.getPermissions().stream()
-				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
-				.collect(Collectors.toList());
+		// no need to perform security filtering when we are asking the metadata repository
+		// TODO store the resourceUri/Id on the Commit objects to allow filtering by external authorization systems 
+		if (context.info().id().equals("resources")) {
+			return;
+		}
+		
+		final Set<String> accessibleResources = context.optionalService(AuthorizationService.class)
+				.orElse(AuthorizationService.DEFAULT)
+				.getAccessibleResources(user);
 		
 		final Set<String> exactResourceIds = Sets.newHashSet();
 		final Set<String> wildResourceIds = Sets.newHashSet();
 		final Multimap<String, String> branchesByResourceId = HashMultimap.create();
 		
-		readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
+		accessibleResources.stream()
 				.forEach(resource -> {
 					if (resource.endsWith("*")) {
 						if (resource.endsWith("/*")) {

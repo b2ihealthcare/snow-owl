@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,9 +67,9 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 		try {
 			final int limit = getLimit(descendantExpandOptions);
 			
-			final ExpressionBuilder expression = Expressions.builder();
+			final ExpressionBuilder expression = Expressions.bool();
 			expression.filter(active());
-			final ExpressionBuilder descendantFilter = Expressions.builder();
+			final ExpressionBuilder descendantFilter = Expressions.bool();
 			if (stated) {
 				descendantFilter.should(statedParents(conceptIds));
 				if (!direct) {
@@ -106,8 +106,8 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 			// in case of only one match and limit zero, use shortcut instead of loading all IDs and components
 			// XXX won't work if number of results is greater than one, either use custom ConceptSearch or figure out how to expand descendants effectively
 			if (conceptIds.size() == 1 && limit == 0) {
+				final SnomedConcepts descendants = new SnomedConcepts(0, hits.getTotal());
 				for (SnomedConcept concept : results) {
-					final SnomedConcepts descendants = new SnomedConcepts(0, hits.getTotal());
 					if (stated) {
 						concept.setStatedDescendants(descendants);
 					} else {

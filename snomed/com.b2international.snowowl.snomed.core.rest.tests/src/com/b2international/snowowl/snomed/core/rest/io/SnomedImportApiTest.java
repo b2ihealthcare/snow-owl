@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,14 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -540,6 +544,40 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
 				.extract().header("Location"));
 		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
+	}
+	
+	@Test
+	public void import34ImportWithAuthor() throws Exception {
+		createCodeSystem(branchPath, "SNOMEDCT-AUTR").statusCode(201);
+		
+		final Map<String, ?> importConfiguration = Map.of(
+			"type", Rf2ReleaseType.DELTA.name(),
+			"createVersions", true
+		);
+		
+		final String location = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.multiPart(PlatformUtil.toAbsolutePath(getClass(), "SnomedCT_Release_INT_20220623_new_concept.zip").toFile())
+			.queryParams(importConfiguration)
+			.header(AbstractRestService.X_AUTHOR, "author@example.com")
+			.post("/{path}/import", branchPath.toString())
+			.then()
+			.statusCode(201)
+			.extract().header("Location");
+
+		final String importId = lastPathSegment(location); 
+		waitForImportJob(branchPath, importId)
+			.statusCode(200)
+			.body("status", equalTo(RemoteJobState.FINISHED.name()));
+		
+		CommitInfos authorCommits = RepositoryRequests.commitInfos()
+			.prepareSearchCommitInfo()
+			.filterByAuthor("author@example.com")
+			.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.execute(getBus())
+			.getSync();
+		
+		// The entire import fits in a single commit
+		assertEquals(1, authorCommits.getTotal());
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,

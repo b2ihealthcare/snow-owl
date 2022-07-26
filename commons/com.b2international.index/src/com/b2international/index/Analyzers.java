@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,183 +35,209 @@ public enum Analyzers {
 
 	/**
 	 * Indexes the term as is for exact match searches with ASCII folding and in lower-case form.
+	 * 
+	 * <pre>
 	 * "exact_match": {
-        	"tokenizer": "keyword",
-        	"filter": [
-        	  "asciifolding",
-        	  "lowercase"
-        	]
-        }
+	 *   "tokenizer": "keyword",
+	 *   "filter": [
+	 *     "asciifolding",
+	 *     "lowercase"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	EXACT,
-
 	
 	/**
+	 * <pre>
 	 * "tokenized": {
-	       "tokenizer": "whitespace",
-	       "filter": [
-	          "asciifolding",
-	          "lowercase",
-	          "possessive",
-	          "word_splitter",
-	          "unique_token"
-	       ]
-	    }
-	    "word_splitter": {
-            "type": "word_delimiter",
-            "split_on_case_change": "false",
-            "split_on_numerics": "false",
-            "preserve_original": "true",
-            "stem_english_possessive": "false",
-            "type_table": [", => DIGIT", ". => DIGIT"]
-        }
+	 *   "tokenizer": "whitespace",
+	 *   "filter": [
+	 *     "asciifolding",
+	 *     "lowercase",
+	 *     "possessive",
+	 *     "word_splitter",
+	 *     "unique_token"
+	 *   ]
+	 * }
+	 * 
+	 * "word_splitter": {
+	 *   "type": "word_delimiter",
+	 *   "split_on_case_change": "false",
+	 *   "split_on_numerics": "false",
+	 *   "preserve_original": "true",
+	 *   "stem_english_possessive": "false",
+	 *   "type_table": [", => DIGIT", ". => DIGIT"]
+	 * }
+	 * </pre>
 	 */
 	TOKENIZED,
 	
 	/**
+	 * <pre>
 	 * "tokenized_synonyms": {
-	       "tokenizer": "whitespace",
-	       "filter": [
-	          "asciifolding",
-	          "lowercase",
-	          "possessive",
-	          "synonyms",
-	          "word_splitter",
-	          "unique_token"
-	       ]
-	    }
-	    "word_splitter": {
-            "type": "word_delimiter",
-            "split_on_case_change": "false",
-            "split_on_numerics": "false",
-            "preserve_original": "true",
-            "stem_english_possessive": "false",
-            "type_table": [", => DIGIT", ". => DIGIT"]
-        }
+	 *   "tokenizer": "whitespace",
+	 *   "filter": [
+	 *     "asciifolding",
+	 *     "lowercase",
+	 *     "possessive",
+	 *     "synonyms",
+	 *     "word_splitter",
+	 *     "unique_token"
+	 *   ]
+	 * }
+	 * 
+	 * "word_splitter": {
+	 *   "type": "word_delimiter",
+	 *   "split_on_case_change": "false",
+	 *   "split_on_numerics": "false",
+	 *   "preserve_original": "true",
+	 *   "stem_english_possessive": "false",
+	 *   "type_table": [", => DIGIT", ". => DIGIT"]
+	 * }
+	 * </pre>
 	 */
 	TOKENIZED_SYNONYMS,
 	
 	/**
+	 * <pre>
 	 * "tokenized_ignore_stopwords": {
-			"tokenizer": "whitespace",
-			"filter": [
-				"asciifolding",
-				"lowercase",
-				"stop_words",
-				"possessive",
-				"word_splitter",
-				"unique_token"				
-			]
-		}
+	 *   "tokenizer": "whitespace",
+	 *   "filter": [
+	 *     "asciifolding",
+	 *     "lowercase",
+	 *     "stop_words",
+	 *     "possessive",
+	 *     "word_splitter",
+	 *     "unique_token"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	TOKENIZED_IGNORE_STOPWORDS,
 	
 	/**
+	 * <pre>
 	 * "tokenized_synonyms_ignore_stopwords": {
-			"tokenizer": "whitespace",
-			"filter": [
-				"asciifolding",
-				"lowercase",
-				"stop_words",
-				"possessive",
-				"synonyms",
-				"word_splitter",
-				"unique_token"				
-			]
-		}
+	 *   "tokenizer": "whitespace",
+	 *   "filter": [
+	 *     "asciifolding",
+	 *     "lowercase",
+	 *     "stop_words",
+	 *     "possessive",
+	 *     "synonyms",
+	 *     "word_splitter",
+	 *     "unique_token"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	TOKENIZED_SYNONYMS_IGNORE_STOPWORDS,
 	
 	/**
+	 * <pre>
 	 * "stemming": {
-        	"tokenizer" : "whitespace",
-        	"filter" : [
-				"asciifolding",
-				"lowercase",
-				"possessive",
-				"word_splitter",
-				"unique_token",
-				"english_stemmer"
-        	]
-        }
+	 *   "tokenizer" : "whitespace",
+	 *   "filter" : [
+	 *     "asciifolding",
+	 *     "lowercase",
+	 *     "possessive",
+	 *     "word_splitter",
+	 *     "unique_token",
+	 *     "english_stemmer"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	STEMMING,
 
 	/**
+	 * <pre>
 	 * "search_stemming": {
-        	"tokenizer" : "whitespace",
-        	"filter" : [
-				"asciifolding",
-				"lowercase",
-				"possessive",
-				"unique_token",
-				"english_stemmer"
-        	]
-        }
+	 *   "tokenizer" : "whitespace",
+	 *   "filter" : [
+	 *     "asciifolding",
+	 *     "lowercase",
+	 *     "possessive",
+	 *     "unique_token",
+	 *     "english_stemmer"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	SEARCH_STEMMING,
 
 	/**
+	 * <pre>
 	 * "prefix": {
-           "tokenizer": "whitespace",
-           "filter": [
-              "asciifolding",
-              "lowercase",
-              "possessive",
-              "word_splitter",
-              "unique_token",
-              "edge_ngram"
-           ]
-        }
+	 *   "tokenizer": "whitespace",
+	 *   "filter": [
+	 *     "asciifolding",
+	 *     "lowercase",
+	 *     "possessive",
+	 *     "word_splitter",
+	 *     "unique_token",
+	 *     "edge_ngram"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	PREFIX,
 
 	/**
+	 * <pre>
 	 * "case_sensitive": {
-        	"tokenizer" : "whitespace",
-        	"filter" : [
-        		"possessive",
-        		"word_splitter",
-        		"unique_token"
-        	]
-        }
+	 *   "tokenizer" : "whitespace",
+	 *   "filter" : [
+	 *     "possessive",
+	 *     "word_splitter",
+	 *     "unique_token"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	CASE_SENSITIVE,
 	
 	/**
+	 * <pre>
 	 * "case_sensitive_prefix": {
-           "tokenizer": "whitespace",
-           "filter": [
-              "asciifolding",
-              "possessive",
-              "word_splitter",
-              "unique_token",
-              "edge_ngram"
-           ]
-        }
+	 *   "tokenizer": "whitespace",
+	 *   "filter": [
+	 *     "asciifolding",
+	 *     "possessive",
+	 *     "word_splitter",
+	 *     "unique_token",
+	 *     "edge_ngram"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	CASE_SENSITIVE_PREFIX,
 	
 	/**
+	 * <pre>
 	 * "case_sensitive_ascii_folding": {
-        	"tokenizer" : "whitespace",
-        	"filter" : [
-				"asciifolding",
-				"possessive",
-				"word_splitter",
-				"unique_token"
-        	]
-        }
+	 *   "tokenizer" : "whitespace",
+	 *   "filter" : [
+	 *     "asciifolding",
+	 *     "possessive",
+	 *     "word_splitter",
+	 *     "unique_token"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	CASE_SENSITIVE_ASCII,
 	
 	/**
+	 * <pre>
 	 * "case_sensitive_ascii_folding_exact_match": {
-        	"tokenizer" : "keyword",
-        	"filter" : [
-				"asciifolding"
-        	]
-        }
+	 *   "tokenizer" : "keyword",
+	 *   "filter" : [
+	 *     "asciifolding"
+	 *   ]
+	 * }
+	 * </pre>
 	 */
 	CASE_SENSITIVE_ASCII_EXACT, 
 	
@@ -226,22 +252,21 @@ public enum Analyzers {
 	 */
 	public String getAnalyzer() {
 		switch (this) {
-		case DEFAULT: return "standard";
-		case KEYWORD: return "keyword";
-		case EXACT: return "exact";
-		case TOKENIZED: return "tokenized";
-		case TOKENIZED_SYNONYMS: return "tokenized_synonyms";
-		case TOKENIZED_IGNORE_STOPWORDS: return "tokenized_ignore_stopwords";
-		case TOKENIZED_SYNONYMS_IGNORE_STOPWORDS: return "tokenized_synonyms_ignore_stopwords";
-		case STEMMING: return "stemming";
-		case SEARCH_STEMMING: return "search_stemming";
-		case CASE_SENSITIVE: return "case_sensitive";
-		case CASE_SENSITIVE_ASCII: return "case_sensitive_ascii";
-		case CASE_SENSITIVE_ASCII_EXACT: return "case_sensitive_ascii_exact";
-		case CASE_SENSITIVE_PREFIX: return "case_sensitive_prefix";
-		case PREFIX: return "prefix";
-		default: throw new UnsupportedOperationException("Unsupported analyzer: " + this);
+			case DEFAULT:                             return "standard";
+			case KEYWORD:                             return "keyword";
+			case EXACT:                               return "exact";
+			case TOKENIZED:                           return "tokenized";
+			case TOKENIZED_SYNONYMS:                  return "tokenized_synonyms";
+			case TOKENIZED_IGNORE_STOPWORDS:          return "tokenized_ignore_stopwords";
+			case TOKENIZED_SYNONYMS_IGNORE_STOPWORDS: return "tokenized_synonyms_ignore_stopwords";
+			case STEMMING:                            return "stemming";
+			case SEARCH_STEMMING:                     return "search_stemming";
+			case CASE_SENSITIVE:                      return "case_sensitive";
+			case CASE_SENSITIVE_ASCII:                return "case_sensitive_ascii";
+			case CASE_SENSITIVE_ASCII_EXACT:          return "case_sensitive_ascii_exact";
+			case CASE_SENSITIVE_PREFIX:               return "case_sensitive_prefix";
+			case PREFIX:                              return "prefix";
+			default: throw new UnsupportedOperationException("Unsupported analyzer: " + this);
 		}
 	}
-	
 }

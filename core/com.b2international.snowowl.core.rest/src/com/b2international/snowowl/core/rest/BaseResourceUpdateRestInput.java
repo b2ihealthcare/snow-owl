@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.rest;
+
+import java.util.Map;
 
 /**
  * @since 8.0
@@ -32,6 +34,7 @@ public abstract class BaseResourceUpdateRestInput {
 	private String contact;
 	private String usage;
 	private String purpose;
+	private Map<String, Object> settings;
 	
 	public final void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
@@ -119,5 +122,13 @@ public abstract class BaseResourceUpdateRestInput {
 	
 	public final String getPurpose() {
 		return purpose;
+	}
+	
+	public void setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+	}
+	
+	public Map<String, Object> getSettings() {
+		return settings;
 	}
 }

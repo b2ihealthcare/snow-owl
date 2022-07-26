@@ -85,7 +85,7 @@ public abstract class BaseAuthorizationTest {
 				ResourceDocument.Fields.BUNDLE_ID, UK_CLINICAL_BUNDLE_ID
 			))
 			.statusCode(201)
-			.header("Location", containsString("/codesystems/" + SNOMEDCT_UK_CL));
+			.header("Location", containsString("/codesystems/" + SNOMEDCT_UK_CL_MICRO));
 		
 		assertCodeSystemCreate(
 			Json.object(

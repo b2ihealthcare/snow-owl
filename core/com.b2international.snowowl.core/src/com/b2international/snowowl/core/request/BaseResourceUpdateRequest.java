@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -80,6 +81,9 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 	@JsonProperty
 	private String bundleId;
+	
+	@JsonProperty
+	private Map<String, Object> settings;
 
 	private transient ResourceDocument resource;
 	
@@ -127,6 +131,10 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		this.bundleId = bundleId;
 	}
 	
+	protected final void setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+	}
+	
 	protected BaseResourceUpdateRequest(String componentId) {
 		super(componentId);
 	}
@@ -141,6 +149,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		boolean changed = false;
 
 		changed |= updateSpecializedProperties(context, resource, updated);
+		changed |= updateSettings(resource, updated);
 
 		// url checked against all resources
 		if (url != null && !url.equals(resource.getUrl())) {
@@ -255,6 +264,39 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		}
 		
 		return true;
+	}
+	
+	private boolean updateSettings(final ResourceDocument resource, final ResourceDocument.Builder updated) {
+		if (settings == null || settings.isEmpty()) {
+			return false;
+		}
+		
+		// Get mutable copy of existing settings, or an empty map for starters
+		final Map<String, Object> updatedSettings = Optional.ofNullable(resource.getSettings())
+				.map(Maps::newHashMap)
+				.orElse(Maps.newHashMap());
+		
+		boolean changed = false;
+		
+		// Remove null values from map
+		final Set<String> keysToRemove = Maps.filterValues(settings, v -> v == null).keySet();
+		for (final String key : keysToRemove) {
+			changed |= (updatedSettings.remove(key) != null);
+		}
+
+		// Merge (add or modify) non-null values
+		final Set<String> keysToUpdate = Maps.filterValues(settings, v -> v != null).keySet();
+		for (final String key : keysToUpdate) {
+			changed |= updateProperty(settings.get(key), 			// value 
+					() -> updatedSettings.get(key),                 // getter
+					value -> updatedSettings.put(key, value));      // setter 
+		}
+		
+		if (changed) {
+			updated.settings(updatedSettings);
+		}
+		
+		return changed;
 	}
 
 	private List<String> getBundleAncestorIds(final TransactionContext context, final String resourceId) {
