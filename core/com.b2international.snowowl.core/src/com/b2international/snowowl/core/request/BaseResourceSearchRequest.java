@@ -78,6 +78,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		STATUS,
 		
 		/**
+		 * Search resources by owner
+		 */
+		OWNER,
+		
+		/**
 		 * Search resources by a concrete property and value pair in settings
 		 */
 		PROPERTIES

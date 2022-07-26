@@ -117,11 +117,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	public RB filterByStatus(Iterable<String> status) {
 		return addOption(OptionKey.STATUS, status);
 	}
-	
-	public RB filterByPropertyName(String propertyName) {
-		return addOption(OptionKey.PROPERTY_NAME, propertyName);
-	}
-	
+		
 	public RB filterByProperty(Pair<String, String> setting) {
 		return addOption(OptionKey.PROPERTIES, setting);
 	}
