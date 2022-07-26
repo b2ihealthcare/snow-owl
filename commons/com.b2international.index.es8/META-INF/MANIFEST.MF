@@ -9,17 +9,16 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.apache.commons.codec;bundle-version="1.11.0",
- com.b2international.commons;visibility:=reexport
+ com.b2international.commons;visibility:=reexport,
+ org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.2.0)",
+ org.apache.httpcomponents.httpclient;bundle-version="[4.5.10,4.6.0)",
+ org.apache.httpcomponents.httpcore;bundle-version="[4.4.12,4.5.0)"
 Bundle-ClassPath: .,
  lib/elasticsearch-java-8.3.2.jar,
  lib/elasticsearch-rest-client-8.3.2.jar,
  lib/jakarta.json-api-2.0.1.jar,
  lib/jsr305-3.0.2.jar,
- lib/parsson-1.0.0.jar,
- lib/httpasyncclient-4.1.4.jar,
- lib/httpclient-4.5.10.jar,
- lib/httpcore-4.4.12.jar,
- lib/httpcore-nio-4.4.12.jar
+ lib/parsson-1.0.0.jar
 Export-Package: co.elastic.clients,
  co.elastic.clients.elasticsearch,
  co.elastic.clients.elasticsearch._types,

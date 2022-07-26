@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/httpasyncclient-4.1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.5.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.12.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcore-nio-4.4.12.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-8.3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-java-8.3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jakarta.json-api-2.0.1.jar"/>

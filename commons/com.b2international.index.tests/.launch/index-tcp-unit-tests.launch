@@ -84,8 +84,8 @@
         <setEntry value="org.apache.commons.lang@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpclient*4.5.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpcore*4.4.12@default:default"/>
         <setEntry value="org.eclipse.core.contenttype@default:default"/>
         <setEntry value="org.eclipse.core.databinding.observable@default:default"/>
         <setEntry value="org.eclipse.core.databinding.property@default:default"/>

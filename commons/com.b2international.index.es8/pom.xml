@@ -47,10 +47,6 @@
 							<includeArtifactIds>
 								elasticsearch-java,
 								elasticsearch-rest-client,
-								httpasyncclient,
-								httpclient,
-								httpcore,
-								httpcore-nio,
 								jakarta.json-api,
 								jsr305,
 								parsson
