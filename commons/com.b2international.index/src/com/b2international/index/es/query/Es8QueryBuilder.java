@@ -21,21 +21,21 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.script.Script;
 import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.IndexClientFactory;
+import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.*;
+import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
 import com.google.common.collect.*;
 
 import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.elasticsearch._types.query_dsl.FunctionBoostMode;
-import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScoreBuilders;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
 import co.elastic.clients.json.JsonData;
 
 /**
@@ -53,6 +53,7 @@ public class Es8QueryBuilder {
 	private final String path;
 	
 	private boolean needsScoring;
+	private Float boost = null; // null means no boost
 	
 	public Es8QueryBuilder(DocumentMapping mapping, Map<String, Object> settings, Logger log) {
 		this(mapping, settings, log, "");
@@ -84,7 +85,16 @@ public class Es8QueryBuilder {
 	}
 
 	private void visit(Expression expression) {
-		if (expression instanceof MatchAll) {
+		if (expression instanceof BoostPredicate) {
+			// in case of boost predicate, store the boost value until visit of the inner expression happens, and let that set the boost value
+			BoostPredicate boostPredicate = (BoostPredicate) expression;
+			this.boost = boostPredicate.boost();
+			try {
+				visit(boostPredicate.expression());
+			} finally {
+				this.boost = null;
+			}
+		} else if (expression instanceof MatchAll) {
 			deque.push(QueryBuilders.matchAll(m -> m));
 		} else if (expression instanceof MatchNone) {
 			// XXX executing a term query on a probably nonexistent field and value, should return zero docs
@@ -123,8 +133,6 @@ public class Es8QueryBuilder {
 			visit((TextPredicate) expression);
 		} else if (expression instanceof DisMaxPredicate) {
 			visit((DisMaxPredicate) expression);
-		} else if (expression instanceof BoostPredicate) {
-			visit((BoostPredicate) expression);
 		} else if (expression instanceof ScriptScoreExpression) {
 			visit((ScriptScoreExpression) expression);
 		} else if (expression instanceof DecimalPredicate) {
@@ -147,8 +155,13 @@ public class Es8QueryBuilder {
 	}
 
 	private void visit(ScriptQueryExpression expression) {
-		throw new UnsupportedOperationException();
-//		deque.push(QueryBuilders.scriptQuery(expression.toEsScript(mapping)));
+		Script esScript = expression.toEsScript(mapping);
+		deque.push(QueryBuilders.script(script -> script.boost(this.boost).script(s -> s.inline(in -> in
+			.lang(esScript.getLang())
+			.source(esScript.getIdOrCode())
+			.options(esScript.getOptions())
+			.params(Maps.transformValues(esScript.getParams(), JsonData::of))
+		))));
 	}
 	
 	private void visit(ScriptScoreExpression expression) {
@@ -156,22 +169,22 @@ public class Es8QueryBuilder {
 		visit(inner);
 		final Query innerQuery = deque.pop();
 		
-		org.elasticsearch.script.Script esScript = expression.toEsScript(mapping);
+		Script esScript = expression.toEsScript(mapping);
 		
 		needsScoring = true;
 		deque.push(QueryBuilders
 			.functionScore(q -> q
+				.boost(this.boost)
 				.boostMode(FunctionBoostMode.Replace)
 				.query(innerQuery)
 				.functions(
 					FunctionScoreBuilders.scriptScore(
 						scriptScore -> scriptScore.script(
-							// TODO support stored scripts and params
 							s -> s.inline(in -> in
 								.lang(esScript.getLang())
 								.source(esScript.getIdOrCode())
 								.options(esScript.getOptions())
-//								.params(esScript.getParams())
+								.params(Maps.transformValues(esScript.getParams(), JsonData::of))
 							)
 						)
 					)
@@ -186,6 +199,7 @@ public class Es8QueryBuilder {
 		reduceTermFilters(bool.filterClauses());
 		
 		deque.push(QueryBuilders.bool(query -> {
+			query.boost(this.boost);
 			for (Expression must : bool.mustClauses()) {
 				// visit the item and immediately pop the deque item back
 				final Es8QueryBuilder innerQueryBuilder = new Es8QueryBuilder(mapping, settings, log, path);
@@ -273,14 +287,18 @@ public class Es8QueryBuilder {
 	}
 
 	private void visit(NestedPredicate predicate) {
-		throw new UnsupportedOperationException();
-//		final String nestedPath = toFieldPath(predicate);
-//		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-//		final Es8QueryBuilder nestedQueryBuilder = new Es8QueryBuilder(nestedMapping, settings, log, nestedPath);
-//		nestedQueryBuilder.visit(predicate.getExpression());
-//		needsScoring = nestedQueryBuilder.needsScoring;
-//		final QueryBuilder nestedQuery = nestedQueryBuilder.deque.pop();
-//		deque.push(QueryBuilders.nestedQuery(nestedPath, nestedQuery, ScoreMode.None));
+		final String nestedPath = toFieldPath(predicate);
+		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
+		final Es8QueryBuilder nestedQueryBuilder = new Es8QueryBuilder(nestedMapping, settings, log, nestedPath);
+		nestedQueryBuilder.visit(predicate.getExpression());
+		needsScoring = nestedQueryBuilder.needsScoring;
+		final Query nestedQuery = nestedQueryBuilder.deque.pop();
+		deque.push(QueryBuilders.nested(n -> n
+			.boost(this.boost)
+			.path(nestedPath)
+			.query(nestedQuery)
+			.scoreMode(ChildScoreMode.None)
+		));
 	}
 
 	private String toFieldPath(Predicate predicate) {
@@ -296,61 +314,84 @@ public class Es8QueryBuilder {
 	}
 
 	private void visit(TextPredicate predicate) {
-		throw new UnsupportedOperationException();
-//		final String field = toFieldPath(predicate);
-//		final String term = predicate.term();
-//		final MatchType type = predicate.type();
-//		final int minShouldMatch = predicate.minShouldMatch();
-//		QueryBuilder query;
-//		switch (type) {
-//		case BOOLEAN_PREFIX:
-//			query = QueryBuilders.matchBoolPrefixQuery(field, term)
-//				.analyzer(predicate.analyzer())
-//				.operator(Operator.AND);
-//				break;
-//		case PHRASE:
-//			query = QueryBuilders.matchPhraseQuery(field, term)
-//						.analyzer(predicate.analyzer());
-//			break;
-//		case ALL:
-//			query = QueryBuilders.matchQuery(field, term)
-//						.analyzer(predicate.analyzer())
-//						.operator(Operator.AND);
-//			break;
-//		case ANY:
-//			query = QueryBuilders.matchQuery(field, term)
-//						.analyzer(predicate.analyzer())
-//						.operator(Operator.OR)
-//						.minimumShouldMatch(Integer.toString(minShouldMatch));
-//			break;
-//		case FUZZY:
-//			query = QueryBuilders.matchQuery(field, term)
-//						.analyzer(predicate.analyzer())
-//						.fuzziness(Fuzziness.ONE)
-//						.prefixLength(1)
-//						.operator(Operator.AND)
-//						.maxExpansions(10);
-//			break;
-//		case PARSED:
-//			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
-//						.analyzer(predicate.analyzer())
-//						.field(field)
-//						.escape(false)
-//						.allowLeadingWildcard(true)
-//						.defaultOperator(Operator.AND);
-//			break;
-//		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
-//		}
-//		if (query == null) {
-//			query = MATCH_NONE;
-//		} else {
-//			needsScoring = true;
-//		}
-//		deque.push(query);
+		final String field = toFieldPath(predicate);
+		final String term = predicate.term();
+		final MatchType type = predicate.type();
+		final int minShouldMatch = predicate.minShouldMatch();
+		Query query;
+		switch (type) {
+		case BOOLEAN_PREFIX:
+			query = QueryBuilders.matchBoolPrefix(mbp -> mbp
+					.boost(this.boost)
+					.field(field)
+					.query(term)
+					.analyzer(predicate.analyzer())
+					.operator(Operator.And)
+			);
+			break;
+		case PHRASE:
+			query = QueryBuilders.matchPhrase(mp -> mp
+					.boost(this.boost)
+					.field(field)
+					.query(term)
+					.analyzer(predicate.analyzer())
+			);
+			break;
+		case ALL:
+			query = QueryBuilders.match(m -> m
+					.boost(this.boost)
+					.field(field)
+					.query(term)
+					.analyzer(predicate.analyzer())
+					.operator(Operator.And)
+			);
+			break;
+		case ANY:
+			query = QueryBuilders.match(m -> m
+					.boost(this.boost)
+					.field(field)
+					.query(term)
+					.analyzer(predicate.analyzer())
+					.operator(Operator.Or)
+					.minimumShouldMatch(Integer.toString(minShouldMatch))
+			);
+			break;
+		case FUZZY:
+			query = QueryBuilders.match(m -> m
+					.boost(this.boost)
+					.field(field)
+					.query(term)
+					.analyzer(predicate.analyzer())
+					.fuzziness("1")
+					.prefixLength(1)
+					.operator(Operator.And)
+					.maxExpansions(10)
+			);
+			break;
+		case PARSED:
+			query = QueryBuilders.queryString(qs -> qs
+					.boost(this.boost)
+					.fields(field)
+					.query(TextConstants.escape(term))
+					.analyzer(predicate.analyzer())
+					.escape(false)
+					.allowLeadingWildcard(true)
+					.defaultOperator(Operator.And)
+			);
+			break;
+		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
+		}
+		if (query == null) {
+			query = MATCH_NONE;
+		} else {
+			needsScoring = true;
+		}
+		deque.push(query);
 	}
 	
 	private void visit(SingleArgumentPredicate<?> predicate) {
 		deque.push(QueryBuilders.term(query -> query
+			.boost(this.boost)
 			.field(toFieldPath(predicate))
 			.value(String.valueOf(predicate.getArgument()))
 		));
@@ -358,6 +399,7 @@ public class Es8QueryBuilder {
 	
 	private void visit(DecimalPredicate predicate) {
 		deque.push(QueryBuilders.term(query -> query
+			.boost(this.boost)
 			.field(toFieldPath(predicate))
 			.value(DecimalUtils.encode(predicate.getArgument()))
 		));
@@ -385,6 +427,7 @@ public class Es8QueryBuilder {
 		if (terms.size() > maxTermsCount) {
 			log.warn("More ({}) than currently configured max_terms_count ({}) filter values on field query: {}.{}", terms.size(), maxTermsCount, mapping.typeAsString(), toFieldPath(predicate));
 			final Query boolQuery = QueryBuilders.bool(bool -> {
+				bool.boost(this.boost);
 				
 				Iterables.partition(terms, maxTermsCount).forEach(partition -> {
 					bool.should(QueryBuilders.terms(t -> t 
@@ -400,6 +443,7 @@ public class Es8QueryBuilder {
 		} else {
 			// push the terms query directly
 			deque.push(QueryBuilders.terms(t -> t 
+				.boost(this.boost)
 				.field(toFieldPath(predicate))
 				.terms(TermsQueryField.of(values -> values.value(terms.stream().map(_valueConverter).map(String::valueOf).map(FieldValue::of).collect(Collectors.toList()))))
 			));
@@ -412,11 +456,13 @@ public class Es8QueryBuilder {
 		} else if (predicate.values().size() == 1) {
 			deque.push(QueryBuilders.prefix(p ->
 				p
+					.boost(this.boost)
 					.field(toFieldPath(predicate))
 					.value(Iterables.getOnlyElement(predicate.values()))
 			));
 		} else {
 			deque.push(QueryBuilders.bool(bool -> {
+				bool.boost(this.boost);
 				for (String prefixMatch : predicate.values()) {
 					bool.should(QueryBuilders.prefix(p ->
 						p
@@ -430,11 +476,12 @@ public class Es8QueryBuilder {
 	}
 	
 	private void visit(RegexpPredicate regexp) {
-		deque.push(QueryBuilders.regexp(r -> r.field(toFieldPath(regexp)).value(regexp.getArgument())));
+		deque.push(QueryBuilders.regexp(r -> r.boost(this.boost).field(toFieldPath(regexp)).value(regexp.getArgument())));
 	}
 	
 	private void visit(RangePredicate<?> range) {
 		deque.push(QueryBuilders.range(r -> {
+			r.boost(this.boost);
 			if (range.lower() != null) {
 				if (range.isIncludeLower()) {
 					r.gte(JsonData.of(range.lower()));
@@ -455,6 +502,7 @@ public class Es8QueryBuilder {
 	
 	private void visit(DecimalRangePredicate range) {
 		deque.push(QueryBuilders.range(r -> {
+			r.boost(this.boost);
 			if (range.lower() != null) {
 				final String lower = DecimalUtils.encode(range.lower());
 				if (range.isIncludeLower()) {
@@ -477,6 +525,7 @@ public class Es8QueryBuilder {
 	
 	private void visit(DisMaxPredicate dismax) {
 		deque.push(QueryBuilders.disMax(dm -> {
+			dm.boost(this.boost);
 			List<Query> disjunctQueries = new ArrayList<>();
 			for (Expression disjunct : dismax.disjuncts()) {
 				visit(disjunct);
@@ -487,13 +536,5 @@ public class Es8QueryBuilder {
 					.tieBreaker((double) dismax.tieBreaker());
 		}));
 	}
-	
-	private void visit(BoostPredicate boost) {
-		throw new UnsupportedOperationException();
-//		visit(boost.expression());
-//		Query qb = deque.pop();
-//		qb.boost(boost.boost());
-//		deque.push(qb);
-	}
-	
+
 }
