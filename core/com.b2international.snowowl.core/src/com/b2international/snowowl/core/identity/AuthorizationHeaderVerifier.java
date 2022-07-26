@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.identity;
 
 import java.util.Base64;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.auth0.jwt.JWT;
@@ -132,9 +131,9 @@ public final class AuthorizationHeaderVerifier {
 					permissionsClaimProperty);
 		}
 
-		final Set<Permission> permissions = jwt.getClaim(permissionsClaimProperty).asList(String.class).stream().map(Permission::valueOf)
-				.collect(Collectors.toSet());
-		return new User(emailClaim.asString(), List.of(new Role("jwt_roles", permissions)));
+		final List<Permission> permissions = jwt.getClaim(permissionsClaimProperty).asList(String.class).stream().map(Permission::valueOf)
+				.collect(Collectors.toList());
+		return new User(emailClaim.asString(), permissions);
 	}
 
 	/**

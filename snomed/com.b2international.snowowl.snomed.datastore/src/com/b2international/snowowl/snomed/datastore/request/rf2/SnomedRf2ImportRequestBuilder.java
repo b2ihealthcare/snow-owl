@@ -44,6 +44,7 @@ public final class SnomedRf2ImportRequestBuilder
 	private boolean dryRun = false;
 	private LocalDate importUntil;
 	private int batchSize = DEFAULT_BATCH_SIZE;
+	private String author;
 	
 	SnomedRf2ImportRequestBuilder() {
 	}
@@ -87,6 +88,11 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ImportRequestBuilder setAuthor(String author) {
+		this.author = author;
+		return getSelf();
+	}
+
 	@Override
 	protected Request<BranchContext, ImportResponse> doBuild() {
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2Archive);
@@ -96,6 +102,7 @@ public final class SnomedRf2ImportRequestBuilder
 		req.setDryRun(dryRun);
 		req.setImportUntil(importUntil);
 		req.setBatchSize(batchSize);
+		req.setAuthor(author);
 		return req;
 	}
 

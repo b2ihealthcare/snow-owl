@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 
@@ -40,7 +40,6 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 	@Override
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.QUERY);
-		checkNonEmptyProperty(SnomedRf2Headers.FIELD_QUERY);
 
 		if (Strings.isNullOrEmpty(getReferencedComponentId())) {
 			return createWithNewRefSet(refSet, context);
@@ -61,21 +60,23 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		setReferencedComponentId(referencedComponentId);
 
 		// add all matching members 
-		final SnomedConcepts queryResults = SnomedRequests.prepareSearchConcept()
-				.all()
+		if (!Strings.isNullOrEmpty(getProperty(SnomedRf2Headers.FIELD_QUERY))) {
+			SnomedRequests.prepareSearchConcept()
+				.setFields(SnomedConceptDocument.Fields.ID)
+				.setLimit(10000)
 				.filterByEcl(getProperty(SnomedRf2Headers.FIELD_QUERY))
 				.build()
-				.execute(context);
-
-		for (SnomedConcept queryResult : queryResults) {
-			SnomedComponents.newSimpleMember()
-			.withActive(isActive())
-			.withReferencedComponent(queryResult.getId())
-			.withModuleId(getModuleId())
-			.withRefSet(referencedComponentId)
-			.addTo(context);
+				.execute(context)
+				.stream()
+				.forEach(concept -> {
+					SnomedComponents.newSimpleMember()
+					.withActive(isActive())
+					.withReferencedComponent(concept.getId())
+					.withModuleId(getModuleId())
+					.withRefSet(referencedComponentId)
+					.addTo(context);
+				});
 		}
-
 
 		return createWithExistingRefSet(refSet, context);
 	}

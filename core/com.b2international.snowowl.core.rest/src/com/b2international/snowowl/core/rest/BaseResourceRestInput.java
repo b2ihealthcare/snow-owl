@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 
@@ -38,6 +40,7 @@ public abstract class BaseResourceRestInput {
 	private String contact;
 	private String usage;
 	private String purpose;
+	private Map<String, Object> settings;
 	
 	public final void setId(String id) {
 		this.id = id;
@@ -133,5 +136,13 @@ public abstract class BaseResourceRestInput {
 	
 	public final String getPurpose() {
 		return purpose;
+	}
+	
+	public void setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+	}
+	
+	public Map<String, Object> getSettings() {
+		return settings;
 	}
 }

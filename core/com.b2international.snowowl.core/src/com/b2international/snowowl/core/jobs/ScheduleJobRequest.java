@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 				}
 			}
 			
-			final String userId = !Strings.isNullOrEmpty(user) ? user : context.service(User.class).getUsername();
+			final String userId = !Strings.isNullOrEmpty(user) ? user : context.service(User.class).getUserId();
 			
 			RemoteJob job = new RemoteJob(id, key, description, userId, context, request, autoClean);
 			job.setSystem(true);

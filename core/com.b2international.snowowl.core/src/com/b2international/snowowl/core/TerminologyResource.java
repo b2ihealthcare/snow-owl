@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core;
 
 import java.util.List;
-import java.util.Map;
 
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
@@ -63,9 +62,6 @@ public abstract class TerminologyResource extends Resource {
 	// used, when this resource is an extension of another TerminologyResource
 	private ResourceURI upgradeOf;
 	
-	// formerly additionalProperties in 7.x
-	private Map<String, Object> settings;
-	
 	// expandable
 	private BranchInfo extensionOfBranchInfo;
 	
@@ -111,16 +107,6 @@ public abstract class TerminologyResource extends Resource {
 	}
 	
 	/**
-	 * A configuration map storing additional key-value pairs specific to this terminology resource (can be {@code null}). Interpretation of values is
-	 * implementation-dependent.
-	 * 
-	 * @return
-	 */
-	public Map<String, Object> getSettings() {
-		return settings;
-	}
-	
-	/**
 	 * @return a list of {@link ResourceURI}s pointing to resource versions that have been created after the current {{@link #getExtensionOf()} version
 	 *         on the parent resource (can be {@code null} if not requested as part of an expand() option)
 	 */
@@ -154,10 +140,6 @@ public abstract class TerminologyResource extends Resource {
 	
 	public void setUpgradeInfo(UpgradeInfo upgradeInfo) {
 		this.upgradeInfo = upgradeInfo;
-	}
-	
-	public void setSettings(Map<String, Object> settings) {
-		this.settings = settings;
 	}
 	
 	public void setAvailableUpgrades(List<ResourceURI> availableUpgrades) {

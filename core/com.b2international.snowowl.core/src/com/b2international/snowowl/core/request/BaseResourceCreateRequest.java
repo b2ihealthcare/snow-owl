@@ -16,11 +16,14 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.bundle.Bundle;
@@ -84,6 +87,9 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	@JsonProperty
 	private String purpose;
 	
+	@JsonProperty
+	private Map<String, Object> settings;
+	
 	protected final String getId() {
 		return id;
 	}
@@ -130,6 +136,10 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	protected final String getPurpose() {
 		return purpose;
+	}
+	
+	public Map<String, Object> getSettings() {
+		return settings;
 	}
 	
 	protected final void setId(String id) {
@@ -179,9 +189,18 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	protected final void setPurpose(String purpose) {
 		this.purpose = purpose;
 	}
+
+	protected final void setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+	}
 	
 	@Override
 	public final String execute(TransactionContext context) {
+		// prevent creating a resource with the -1 default ROOT ID
+		if (IComponent.ROOT_ID.equals(id)) {
+			throw new ConflictException("Special '-1' identifier is being used by the Root Bundle.");
+		}
+		
 		// validate ID before use, IDs sometimes being used as branch paths, so must be a valid branch path
 		IDs.checkBase64(id, getClass().getSimpleName().replace("CreateRequest", ".id"));
 			
@@ -232,6 +251,19 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 			bundleAncestorIds = bundleParent.getResourcePathSegments();
 		}
 		
+		// Validate settings
+		if (settings != null) {
+			final Optional<String> nullValueProperty = settings.entrySet()
+				.stream()
+				.filter(e -> e.getValue() == null)
+				.map(e -> e.getKey())
+				.findFirst();
+			
+			nullValueProperty.ifPresent(key -> {
+				throw new BadRequestException("Setting value for key '%s' is null.", key);	
+			});
+		}
+
 		preExecute(context);
 		
 		context.add(createResourceDocument(context, bundleAncestorIds));
@@ -274,12 +306,13 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				// resources start their lifecycle in draft mode
 				.status(status == null ? "draft" : status)
 				.copyright(copyright)
-				.owner(Optional.ofNullable(owner).orElseGet(() -> context.service(User.class).getUsername()))
+				.owner(Optional.ofNullable(owner).orElseGet(() -> context.service(User.class).getUserId()))
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)
 				.bundleAncestorIds(bundleAncestorIds)
-				.bundleId(bundleId);
+				.bundleId(bundleId)
+				.settings(settings == null ? Map.of() : settings);
 		
 		completeResource(builder);
 		

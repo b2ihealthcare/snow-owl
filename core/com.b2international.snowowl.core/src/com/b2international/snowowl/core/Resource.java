@@ -129,7 +129,10 @@ public abstract class Resource implements Serializable {
 	// The commit object that holds information about the last update
 	private CommitInfo updatedAtCommit;
 	
-	// Extra data expanded through plugins
+	// Resource metadata
+	private Map<String, Object> settings;
+	
+	// Any additional properties in the JSON representation that are not defined above (usually added through plugins)
 	private Map<String, Object> properties;
 	
 	/**
@@ -300,6 +303,20 @@ public abstract class Resource implements Serializable {
 		this.updatedAtCommit = updatedAtCommit;
 	}
 	
+	/**
+	 * A configuration map storing additional key-value pairs specific to this terminology resource (can be {@code null}). Interpretation of values is
+	 * implementation-dependent.
+	 * 
+	 * @return
+	 */
+	public Map<String, Object> getSettings() {
+		return settings;
+	}
+
+	public void setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+	}
+
 	@JsonAnyGetter
 	public Map<String, Object> getProperties() {
 		return properties;
@@ -317,8 +334,6 @@ public abstract class Resource implements Serializable {
 		}
 		this.properties.put(key, value);
 	}
-	
-	
 	
 	/**
 	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root), or <code>null</code> if ancestry information is not available

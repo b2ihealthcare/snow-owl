@@ -105,7 +105,10 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			
 			@Parameter(description = "Import file", required = true)
 			@RequestPart("file") 
-			final MultipartFile file) throws IOException {
+			final MultipartFile file,
+			
+			@RequestHeader(value = X_AUTHOR, required = false)
+			final String author) throws IOException {
 		
 		final String importJobId = SnomedRf2Requests.importJobKey(path);
 		
@@ -120,6 +123,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			.setDryRun(dryRun)
 			.setImportUntil(importUntil)
 			.setBatchSize(batchSize)
+			.setAuthor(author)
 			.build(path)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))
 			.execute(getBus())

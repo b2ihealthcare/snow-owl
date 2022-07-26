@@ -16,14 +16,14 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
@@ -76,10 +76,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		 * Search resources by status
 		 */
 		STATUS,
-		/**
-		 * Search resources by an available property in settings
-		 */
-		PROPERTY_NAME,
+		
 		/**
 		 * Search resources by a concrete property and value pair in settings
 		 */
@@ -102,6 +99,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
+		addFilter(queryBuilder, OptionKey.OWNER, String.class, ResourceDocument.Expressions::owners);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
@@ -130,31 +128,30 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			return;
 		}
 		
-		// extract read permissions
-		final List<Permission> readPermissions = user.getPermissions().stream()
-				.filter(p -> Permission.ALL.equals(p.getOperation()) || Permission.OPERATION_BROWSE.equals(p.getOperation()))
-				.collect(Collectors.toList());
+		final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
+		final Set<String> accessibleResources = authz.getAccessibleResources(user);
 		
-		final SortedSet<String> exactResourceIds = readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
+		final SortedSet<String> exactResourceIds = accessibleResources.stream()
 				.filter(resource -> !resource.endsWith("*"))
 				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
-		final SortedSet<String> resourceIdPrefixes = readPermissions.stream()
-				.flatMap(p -> p.getResources().stream())
+		
+		final SortedSet<String> resourceIdPrefixes = accessibleResources.stream()
 				.filter(resource -> resource.endsWith("*"))
 				.map(resource -> resource.substring(0, resource.length() - 1))
 				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
 		
 		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
-			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUsername(), exactResourceIds, resourceIdPrefixes);
+			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUserId(), exactResourceIds, resourceIdPrefixes);
 			ExpressionBuilder bool = Expressions.bool();
 			// the permissions give access to either
 			if (!exactResourceIds.isEmpty()) {
 				// explicit IDs
 				bool.should(ResourceDocument.Expressions.ids(exactResourceIds));
-				// or the permitted resources are bundles which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
+				if (authz.isDefault()) {
+					// or the permitted resources are bundles which give access to all resources within it (recursively) (perform only in default mode, let external authorization systems handle this)
+					bool.should(ResourceDocument.Expressions.bundleIds(exactResourceIds));
+					bool.should(ResourceDocument.Expressions.bundleAncestorIds(exactResourceIds));
+				}
 				// allow backward compatibility with older authorization systems where repositoryId/toolingIds are being used in permissions
 				// XXX this needs to be removed in Snow Owl 9, once we completely eliminate reflective access and toolingId/branch support from the Java API
 				bool.should(ResourceDocument.Expressions.toolingIds(exactResourceIds));
@@ -163,9 +160,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			if (!resourceIdPrefixes.isEmpty()) {
 				// partial IDs, prefixes
 				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
-				// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively)
-				bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
-				bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
+				if (authz.isDefault()) {
+					// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively) (perform only in default mode, let external authorization systems handle this)
+					bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
+					bool.should(ResourceDocument.Expressions.bundleAncestorIdPrefixes(resourceIdPrefixes));
+				}
 			}
 			
 			queryBuilder.filter(bool.build());

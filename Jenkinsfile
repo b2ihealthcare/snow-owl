@@ -50,7 +50,7 @@ try {
 
 	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS') && !params.skipDeploy) {
 
-		build job: 'snow-owl-docker-build', parameters: [
+		build job: '/build/docker/snow-owl', parameters: [
 			string(name: 'groupId', value: 'com.b2international.snowowl'),
 			string(name: 'artifactId', value: 'com.b2international.snowowl.server.update'),
 			string(name: 'artifactVersion', value: currentVersion),
@@ -65,7 +65,7 @@ try {
 
 	if (!params.skipDownstreamBuilds) {
 
-		build job: 'build-'+branch+'/'+downstreamBuild+'', parameters: [
+		build job: downstreamBuild, parameters: [
 			booleanParam(name: 'skipTests', value: params.skipTests),
 			booleanParam(name: 'skipDeploy', value: params.skipDeploy),
 			booleanParam(name: 'skipDownstreamBuilds', value: params.skipDownstreamBuilds)

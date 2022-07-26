@@ -1,4 +1,6 @@
-FROM b2ihealthcare/centos7:latest AS builder
+ARG BASE_IMAGE="b2ihealthcare/centos7:latest"
+
+FROM ${BASE_IMAGE} AS builder
 
 ARG SNOWOWL_INSTALL_PACKAGE
 
@@ -13,11 +15,12 @@ RUN chmod 0775 configuration resources serviceability
 COPY config/snowowl.yml configuration/
 RUN chmod 0660 configuration/snowowl.yml
 
-FROM b2ihealthcare/centos7:latest
+FROM ${BASE_IMAGE}
 
 ARG BUILD_TIMESTAMP
 ARG TAG
 ARG GIT_REVISION
+ARG GIT_BRANCH
 ARG PRODUCT_NAME="Snow Owl OSS"
 ARG REPOSITORY_URL="https://github.com/b2ihealthcare/snow-owl"
 
@@ -48,7 +51,7 @@ LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
   org.label-schema.schema-version="1.0" \
   org.label-schema.url="${REPOSITORY_URL}" \
   org.label-schema.usage="https://docs.b2i.sg/snow-owl" \
-  org.label-schema.vcs-url="${REPOSITORY_URL}" \
+  org.label-schema.vcs-url="${REPOSITORY_URL}/tree/${GIT_BRANCH}" \
   org.label-schema.vendor="B2i Healthcare" \
   org.opencontainers.image.created="${BUILD_TIMESTAMP}" \
   org.opencontainers.image.revision="${GIT_REVISION}" \
@@ -57,7 +60,7 @@ LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
   org.opencontainers.image.title="${PRODUCT_NAME}" \
   org.opencontainers.image.url="${REPOSITORY_URL}" \
   org.opencontainers.image.documentation="https://docs.b2i.sg/snow-owl" \
-  org.opencontainers.image.source="${REPOSITORY_URL}" \
+  org.opencontainers.image.source="${REPOSITORY_URL}/tree/${GIT_BRANCH}" \
   org.opencontainers.image.vendor="B2i Healthcare"
 
 USER snowowl:root

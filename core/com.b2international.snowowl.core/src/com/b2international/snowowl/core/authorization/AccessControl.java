@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import java.util.Map;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
-import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.google.common.collect.Lists;
 
 /**
@@ -69,17 +68,6 @@ public interface AccessControl {
 	 * @param accessedResources
 	 */
 	default void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, final List<String> accessedResources) {
-		// extract repositoryId/branch resource if present (old 7.x format)
-		RepositoryRequest<?> repositoryRequest = Request.getNestedRequest(req, RepositoryRequest.class);
-		if (repositoryRequest != null) {
-			BranchRequest<?> branchRequest = Request.getNestedRequest(req, BranchRequest.class);
-			if (branchRequest != null) {
-				accessedResources.add(Permission.asResource(repositoryRequest.getRepositoryId(), branchRequest.getBranchPath()));
-			} else {
-				accessedResources.add(Permission.asResource(repositoryRequest.getRepositoryId()));
-			}
-		}
-		
 		// extract resourceUri format (new 8.x format)
 		TerminologyResourceRequest<?> terminologyResourceRequest = Request.getNestedRequest(req, TerminologyResourceRequest.class);
 		if (terminologyResourceRequest != null) {
@@ -89,6 +77,8 @@ public interface AccessControl {
 			// if a resource that is being accessed is part of a bundle and the user has access to that bundle then it has access to the resource as well
 			accessedResources.add(terminologyResourceRequest.getResource(context).getBundleId());
 			accessedResources.addAll(Collections3.toImmutableSet(terminologyResourceRequest.getResource(context).getBundleAncestorIds()));
+			// ensure Root bundle is not present when checking access
+			accessedResources.remove(IComponent.ROOT_ID);
 		}
 	}
 

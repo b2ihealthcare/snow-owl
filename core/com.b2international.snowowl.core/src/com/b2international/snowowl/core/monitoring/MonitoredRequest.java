@@ -61,7 +61,7 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			additionalInfo.put("metrics", Map.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
 			context.optionalService(User.class).ifPresent(user -> {
 				additionalInfo.put("user", Map.of(
-					"sub", user.getUsername()
+					"sub", user.getUserId()
 				));
 			});
 			LOG.info(toJson(context, next(), additionalInfo));

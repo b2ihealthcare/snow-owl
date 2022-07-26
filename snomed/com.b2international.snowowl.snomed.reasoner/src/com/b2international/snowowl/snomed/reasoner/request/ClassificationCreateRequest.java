@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 
-		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 		
 		tracker.classificationScheduled(classificationId, reasonerId, user, branch.path());
 

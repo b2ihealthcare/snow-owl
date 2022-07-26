@@ -62,7 +62,7 @@ public enum TerminologyRegistry {
 	public Set<String> getTerminologies() {
 		return Set.copyOf(terminologies.keySet());
 	}
-	
+		
 	public void register(Terminology terminology) {
 		Terminology prev = terminologies.put(terminology.getToolingId(), terminology);
 		if (prev != null) {

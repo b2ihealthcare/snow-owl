@@ -40,6 +40,7 @@ import org.mapdb.DBMaker.Maker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
@@ -130,6 +131,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	@JsonProperty
 	private boolean dryRun = false;
 	
+	@JsonProperty
+	private String author;
+
 	private transient Logger log;
 
 	SnomedRf2ImportRequest(Attachment rf2Archive) {
@@ -160,12 +164,19 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		this.batchSize = batchSize;
 	}
 	
+	void setAuthor(String author) {
+		this.author = author;
+	}
+
 	@Override
 	public ImportResponse execute(BranchContext context) {
 		log = LoggerFactory.getLogger("import");
 		context = context.inject().bind(Logger.class, log).build();
+		if (StringUtils.isEmpty(author)) {
+			author = context.service(User.class).getUserId();
+		}
 		
-		Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(releaseType, createVersions);
+		Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(releaseType, createVersions, author);
 		validate(context, importConfig);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(this.rf2Archive.getAttachmentId());
@@ -453,7 +464,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					CodeSystem.CommonSettings.LOCALES, locales,
 					SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, mergedLanguagesConfiguration.values()
 				))
-				.build(context.service(User.class).getUsername(), String.format("Update '%s' settings based on RF2 import", codeSystemUri.getResourceId()))
+				.build(author, String.format("Update '%s' settings based on RF2 import", codeSystemUri.getResourceId()))
 				.execute(context.service(IEventBus.class))
 				.getSync(2, TimeUnit.MINUTES);
 	}

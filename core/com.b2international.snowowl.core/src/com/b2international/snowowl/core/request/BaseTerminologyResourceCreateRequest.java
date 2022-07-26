@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -62,9 +61,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	@JsonProperty
 	private ResourceURI upgradeOf;
 	
-	@JsonProperty
-	private Map<String, Object> settings;
-	
 	private transient String parentPath;
 	
 	public final void setOid(String oid) {
@@ -87,10 +83,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		this.upgradeOf = upgradeOf;
 	}
 	
-	public final void setSettings(Map<String, Object> settings) {
-		this.settings = settings;
-	}
-	
 	protected final String getOid() {
 		return oid;
 	}
@@ -111,10 +103,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		return upgradeOf;
 	}
 	
-	protected final Map<String, Object> getSettings() {
-		return settings;
-	}
-	
 	@Override
 	protected Builder completeResource(Builder builder) {
 		return builder
@@ -122,8 +110,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.branchPath(branchPath)
 				.toolingId(toolingId)
 				.extensionOf(extensionOf)
-				.upgradeOf(upgradeOf)
-				.settings(settings == null ? Map.of() : settings);
+				.upgradeOf(upgradeOf);
 	}
 
 	@Override
@@ -141,7 +128,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		}
 
 		checkBranchPath(context, createBranch);
-		checkSettings();
 		
 		// Set branchPath to the path of the created branch 
 		if (createBranch) {
@@ -219,20 +205,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		}
 		
 		return Optional.empty();
-	}
-
-	private void checkSettings() {
-		if (settings != null) {
-			final Optional<String> nullValueProperty = settings.entrySet()
-				.stream()
-				.filter(e -> e.getValue() == null)
-				.map(e -> e.getKey())
-				.findFirst();
-			
-			nullValueProperty.ifPresent(key -> {
-				throw new BadRequestException("Setting value for key '%s' is null.", key);	
-			});
-		}
 	}
 	
 	private boolean branchExists(final String path, final ServiceProvider context) {

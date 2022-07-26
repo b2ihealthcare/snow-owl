@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.identity.IdentityProvider;
-import com.b2international.snowowl.core.identity.IdentityWriter;
-import com.b2international.snowowl.core.identity.Role;
-import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.core.identity.Users;
+import com.b2international.snowowl.core.identity.*;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -70,13 +66,13 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	@Override
 	public User auth(String username, String token) {
 		if (verifiedTokens.containsKey(username) && Objects.equals(token, verifiedTokens.get(username))) {
-			return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
+			return new User(username, List.of(Permission.ADMIN));
 		} else {
 			final FileUser user = getFileUser(username);
 			boolean success = user != null && BCrypt.checkpw(token, user.getHashedPassword());
 			if (success) {
 				verifiedTokens.put(username, token);
-				return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
+				return new User(username, List.of(Permission.ADMIN));
 			} else {
 				return null;
 			}
@@ -100,7 +96,7 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 			.filter(user -> usernames.isEmpty() || usernames.contains(user.getUsername())) // match users by user name
 			.sorted()
 			.limit(limit)
-			.map(user -> new User(user.getUsername(), ImmutableList.of(Role.ADMINISTRATOR)))
+			.map(user -> new User(user.getUsername(), List.of(Permission.ADMIN)))
 			.collect(Collectors.toList());
 		return Promise.immediate(new Users(matches, limit, users.size()));
 	}

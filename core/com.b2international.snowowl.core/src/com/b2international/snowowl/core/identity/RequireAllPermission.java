@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.identity;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -56,9 +57,14 @@ final class RequireAllPermission extends BasePermission {
 	
 	@Override
 	protected boolean doImplies(Permission permissionToAuthenticate) {
-		return getResources().stream().allMatch(resource -> {
+		return check(resource -> {
 			return permissionToAuthenticate.getResources().stream().anyMatch(res -> FilenameUtils.wildcardMatch(res, resource));
 		});
+	}
+	
+	@Override
+	public boolean check(Predicate<String> checkResource) {
+		return getResources().stream().allMatch(checkResource);
 	}
 	
 	static boolean isRequireAllResource(String resourceReference) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.model.property;
 
 import java.util.Date;
 
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -52,10 +53,10 @@ public class DateTimeConceptProperty extends ConceptProperty<Date> {
 		}
 		
 		/*
-		 * For deserialization support.
+		 * For deserialization support. The input value is passed to FhirDates so multiple date formats can be accepted.
 		 */
-		protected Builder valueDateTime(final Date value) {
-			this.value = value;
+		protected Builder valueDateTime(final String value) {
+			this.value = FhirDates.parseDate(value);
 			return this;
 		}
 

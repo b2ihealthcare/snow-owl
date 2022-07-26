@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,10 +122,6 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		return addOption(OptionKey.PROPERTY_NAME, propertyName);
 	}
 	
-	public RB filterByPropertyNames(Iterable<String> propertyNames) {
-		return addOption(OptionKey.PROPERTY_NAME, propertyNames);
-	}
-	
 	public RB filterByProperty(Pair<String, String> setting) {
 		return addOption(OptionKey.PROPERTIES, setting);
 	}
@@ -134,4 +130,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		return addOption(OptionKey.PROPERTIES, settings);
 	}	
 
+	public RB filterByOwner(Iterable<String> owner) {
+		return addOption(OptionKey.OWNER, owner);
+	}
 }

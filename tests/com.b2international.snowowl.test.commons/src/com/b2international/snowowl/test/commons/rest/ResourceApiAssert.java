@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest;
+package com.b2international.snowowl.test.commons.rest;
 
 import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCES_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;

@@ -69,7 +69,7 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 	@Override
 	public Boolean execute(final ServiceProvider context) throws LockedException, IllegalArgumentException {
 		final String userId = StringUtils.isEmpty(this.userId) 
-			? context.service(User.class).getUsername() 
+			? context.service(User.class).getUserId() 
 			: this.userId;
 			
 		final IOperationLockManager lockManager = context.service(IOperationLockManager.class);

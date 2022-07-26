@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,7 +151,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
-		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 		
 		try (Locks locks = Locks.on(context)
 				.user(user)

@@ -32,7 +32,6 @@ import org.hamcrest.CoreMatchers;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.identity.Role;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.google.common.base.*;
@@ -221,7 +220,11 @@ public class RestExtensions {
 	}
 	
 	public static String generateToken(Permission...permissions) {
-		return ApplicationContext.getServiceForClass(JWTGenerator.class).generate(new User(RestExtensions.USER, List.of(new Role("custom", List.of(permissions)))));
+		return generateToken(RestExtensions.USER, permissions);
+	}
+	
+	public static String generateToken(String userId, Permission...permissions) {
+		return ApplicationContext.getServiceForClass(JWTGenerator.class).generate(new User(userId, List.of(permissions)));
 	}
 
 }

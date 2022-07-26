@@ -89,9 +89,8 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	@JsonProperty
 	String commitComment;
 	
-	
 	@JsonProperty
-	public String author;
+	String author;
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
@@ -99,7 +98,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		final String user = !Strings.isNullOrEmpty(author) ? author : context.service(User.class).getUsername();			
+		final String submitter = context.service(User.class).getUserId();
+		if (Strings.isNullOrEmpty(author)) {
+			author = submitter;			
+		}
 		
 		if (!resource.isHead()) {
 			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'.", version, resource)
@@ -166,7 +168,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			}
 		}
 		
-		acquireLocks(context, user, resourcesToVersion);
+		acquireLocks(context, submitter, resourcesToVersion);
 		
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 		try {
@@ -180,7 +182,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(resourceToVersion.getToolingId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, resourceToVersion.getResourceURI(), version, description, effectiveTime, force))
+								.build(new VersioningConfiguration(author, resourceToVersion.getResourceURI(), version, description, effectiveTime, force))
 						)
 					)
 				).execute(context);
@@ -200,7 +202,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
 							.resource(resource)
 							.branchPath(resourceToVersion.getRelativeBranchPath(version))
-							.author(user)
+							.author(author)
 							.createdAt(Instant.now().toEpochMilli())
 							.updatedAt(Instant.now().toEpochMilli())
 							.toolingId(resourceToVersion.getToolingId())
@@ -209,7 +211,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					return Boolean.TRUE;
 				})
 				.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
-				.setAuthor(user)
+				.setAuthor(author)
 				.build()
 			).execute(context).getResultAs(Boolean.class);
 		} finally {
@@ -317,19 +319,13 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	
 	@Override
 	public List<Permission> getPermissions(ServiceProvider context, Request<ServiceProvider, ?> req) {
-		if (resourcesById == null) {
-			resourcesById = fetchResources(context);
-		}
-		List<Permission> permissions = new ArrayList<>(resourcesById.size());
-		for (ResourceURI accessedResourceURI : resourcesById.keySet()) {
-			permissions.add(Permission.requireAny(
+		return List.of(
+			Permission.requireAny(
 				getOperation(), 
-				resourcesById.get(accessedResourceURI).getToolingId(),
-				resourcesById.get(accessedResourceURI).getResourceURI().toString(),
-				resourcesById.get(accessedResourceURI).getId()
-			));
-		}
-		return permissions;
+				resource.toString(),
+				resource.withoutResourceType()
+			)
+		);
 	}
 	
 	@Override

@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
-import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceGet;
-import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceSearch;
 import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCES_API;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
+import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceGet;
+import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceSearch;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,9 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -47,13 +49,11 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.ResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.rest.BundleApiAssert;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.BundleApiAssert;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 8.0
@@ -65,6 +65,7 @@ public class ResourceApiTest {
 	private static final String DEFAULT_CODE_SYSTEM_DESCRIPTION = "# Description";
 	private static final String DEFAULT_CODE_SYSTEM_SHORT_NAME = "sn";
 	private static final String DEFAULT_CODE_SYSTEM_OID = "oid";
+	private static final String DEFAULT_OWNER = "defaultOwner";
 
 	private static IEventBus bus;
 
@@ -96,14 +97,14 @@ public class ResourceApiTest {
 
 	@Test
 	public void searchAllResources() {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 
 		assertResourceSearch().statusCode(200).body("items", iterableWithSize(1));
 	}
 
 	@Test
 	public void getById() {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 
 		assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
 			.statusCode(200)
@@ -117,8 +118,8 @@ public class ResourceApiTest {
 		final String oid1 = "https://b2i.sg/" + id1;
 		final String id2 = IDs.base62UUID();
 		final String oid2 = "https://b2i.sg/" + id2;
-		createDefaultCodeSystem(id1, oid1);
-		createDefaultCodeSystem(id2, oid2);
+		createCodeSystemWithOid(id1, oid1);
+		createCodeSystemWithOid(id2, oid2);
 
 		final List<Resource> resources = ResourceRequests.prepareSearch()
 				.filterByOid(oid1)
@@ -139,7 +140,7 @@ public class ResourceApiTest {
 		createCodeSystemWithStatus(id1, "draft");
 		createCodeSystemWithStatus(id2, "active");
 		
-		assertResourceSearch(ImmutableMap.of("status", ImmutableList.of("draft")))
+		assertResourceSearch(Map.of("status", List.of("draft")))
 			.statusCode(200)
 			.body("total", equalTo(1))
 			.body("items[0].id", equalTo(id1))
@@ -150,7 +151,7 @@ public class ResourceApiTest {
 	public void searchAfter() throws Exception {
 		final String id1 = IDs.base62UUID();
 		final String oid1 = "https://b2i.sg/" + id1;
-		createDefaultCodeSystem(id1, oid1);
+		createCodeSystemWithOid(id1, oid1);
 
 		CodeSystemRequests.prepareSearchCodeSystem()
 			.filterById(id1)
@@ -160,31 +161,36 @@ public class ResourceApiTest {
 			.getSync();
 	}
 
-	private CommitResult createCodeSystemWithStatus(final String shortName, final String status) {
+	private CommitResult createCodeSystem(final String codeSystemId, final String status, final String owner) {
 		return CodeSystemRequests.prepareNewCodeSystem()
-			.setId(shortName)
-			.setTitle(shortName)
-			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
+			.setId(codeSystemId)
+			.setTitle(codeSystemId)
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + codeSystemId)
 			.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
 			.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
 			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
 			.setStatus(status)
-			.setOid("https://b2i.sg/" + shortName)
-			.build(RestExtensions.USER, String.format("New code system %s", shortName))
+			.setOwner(owner)
+			.setOid("https://b2i.sg/" + codeSystemId)
+			.build(RestExtensions.USER, String.format("New code system %s", codeSystemId))
 			.execute(bus)
 			.getSync();
 	}
 	
-	private void createDefaultCodeSystem(final String shortName, final String oid) {
-		CodeSystemRequests.prepareNewCodeSystem()
-			.setId(shortName)
-			.setTitle(String.format("%s - %s", shortName, oid))
-			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
+	private CommitResult createCodeSystemWithStatus(final String codeSystemId, final String status) {
+		return createCodeSystem(codeSystemId, status, DEFAULT_OWNER);
+	}
+	
+	private CommitResult createCodeSystemWithOid(final String codeSystemId, final String oid) {
+		return CodeSystemRequests.prepareNewCodeSystem()
+			.setId(codeSystemId)
+			.setTitle(String.join(" - ", codeSystemId, oid))
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + codeSystemId)
 			.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
 			.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
 			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
 			.setOid(oid)
-			.build(RestExtensions.USER, String.format("New code system %s", shortName))
+			.build(RestExtensions.USER, String.format("New code system %s", codeSystemId))
 			.execute(bus)
 			.getSync();
 	}
@@ -196,14 +202,13 @@ public class ResourceApiTest {
 		final String id3 = "C";
 		final String id4 = "D";
 		
-		
 		createCodeSystemWithStatus(id1, "active");
 		createCodeSystemWithStatus(id2, "active");
 		
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
-		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:asc", "title:asc")))
+		assertResourceSearch(Map.of("sort", List.of("typeRank:asc", "title:asc")))
 			.statusCode(200)
 			.body("items.id", contains(id3, id4, id1, id2));
 	}
@@ -215,14 +220,13 @@ public class ResourceApiTest {
 		final String id3 = "C";
 		final String id4 = "D";
 		
-		
 		createCodeSystemWithStatus(id1, "active");
 		createCodeSystemWithStatus(id2, "active");
 		
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
-		assertResourceSearch(ImmutableMap.of("sort", ImmutableList.of("typeRank:desc", "title:asc")))
+		assertResourceSearch(Map.of("sort", List.of("typeRank:desc", "title:asc")))
 			.statusCode(200)
 			.body("items.id", contains(id1, id2, id3, id4));
 	}
@@ -248,7 +252,7 @@ public class ResourceApiTest {
 	
 	@Test
 	public void createdAtAndUpdatedAt() throws Exception {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 		
 		// assert that createdAt and updatedAt values are the same after create
 		CodeSystem createdCodeSystem = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
@@ -275,7 +279,7 @@ public class ResourceApiTest {
 	
 	@Test
 	public void getWithTimestamp() throws Exception {
-		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
+		createCodeSystemWithOid(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 		
 		CodeSystem createdCodeSystem = assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
 			.statusCode(200)
@@ -314,7 +318,7 @@ public class ResourceApiTest {
 				.extract()
 				.as(CodeSystem.class);
 		
-		assertEquals("Updated copyright", codeSystem3.getCopyright());		
+		assertEquals("Updated copyright", codeSystem3.getCopyright());
 	}
 	
 	@Test
@@ -331,4 +335,19 @@ public class ResourceApiTest {
 		assertResourceSearch(Map.of("timestamp", timestamp3)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2", "cs3"));
 		assertResourceSearch(Map.of("timestamp", timestamp3 + 1L)).statusCode(200).body("items.id", containsInAnyOrder("cs1", "cs2", "cs3"));
 	}
+	
+	@Test
+	public void searchByOwner() throws Exception {
+		final String id1 = createCodeSystem("cs1", "draft", "owner1").getResultAs(String.class);
+		final String id2 = createCodeSystem("cs2", "draft", "owner2").getResultAs(String.class);
+		
+		assertResourceSearch(Map.of("owner", "ownerx")).statusCode(200).body("items", empty());
+		assertResourceSearch(Map.of("owner", "owner1")).statusCode(200).body("items.id", containsInAnyOrder(id1));
+	}
+	
+	@Test(expected = ConflictException.class)
+	public void tryToCreateRootBundle() throws Exception {
+		createCodeSystemWithStatus(IComponent.ROOT_ID, "draft");
+	}
+	
 }

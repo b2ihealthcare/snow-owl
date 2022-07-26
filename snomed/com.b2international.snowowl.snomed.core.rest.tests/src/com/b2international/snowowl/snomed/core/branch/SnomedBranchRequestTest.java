@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,7 +187,7 @@ public class SnomedBranchRequestTest {
 		final Request<ServiceProvider, Merge> mergeRequest = merges.prepareCreate()
 				.setSource(first)
 				.setTarget(firstParentPath)
-				.setUserId(User.SYSTEM.getUsername())
+				.setUserId(User.SYSTEM.getUserId())
 				.setCommitComment("Merging changes")
 				.build(REPOSITORY_ID)
 				.getRequest();
@@ -195,7 +195,7 @@ public class SnomedBranchRequestTest {
 		final String mergeJobId = JobRequests.prepareSchedule()
 			.setDescription("Merging changes")
 			.setRequest(mergeRequest)
-			.setUser(User.SYSTEM.getUsername())
+			.setUser(User.SYSTEM.getUserId())
 			.buildAsync()
 			.execute(bus)
 			.getSync();
