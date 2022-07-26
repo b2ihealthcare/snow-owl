@@ -1,26 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>com.b2international.index.es8</artifactId>
+	<packaging>eclipse-plugin</packaging>
+	
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>commons-parent</artifactId>
 		<version>8.4.1-SNAPSHOT</version>
-		<artifactId>tests-parent</artifactId>
 	</parent>
-	<artifactId>com.b2international.snowowl.test.dependencies</artifactId>
-	<packaging>eclipse-plugin</packaging>
+	
+	<properties>
+		<elasticsearch8.version>8.3.2</elasticsearch8.version>
+	</properties>
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>1.17.3</version>
-			<scope>test</scope>
-		</dependency>
+      		<groupId>co.elastic.clients</groupId>
+      		<artifactId>elasticsearch-java</artifactId>
+      		<version>${elasticsearch8.version}</version>
+      		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+      		<groupId>jakarta.json</groupId>
+      		<artifactId>jakarta.json-api</artifactId>
+      		<version>2.0.1</version>
+      		<scope>provided</scope>
+    	</dependency>
 	</dependencies>
-
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -37,15 +45,11 @@
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
-								annotations,
-								commons-compress,
-								docker-java-api,
-								docker-java-transport,
-								docker-java-transport-zerodep,
-								duct-tape,
-								elasticsearch,
-								jna,
-								testcontainers
+								elasticsearch-java,
+								elasticsearch-rest-client,
+								jakarta.json-api,
+								jsr305,
+								parsson
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
@@ -86,5 +90,5 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 </project>

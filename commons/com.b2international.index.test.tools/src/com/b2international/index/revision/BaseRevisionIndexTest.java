@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public abstract class BaseRevisionIndexTest {
 	private final Collection<Hooks.Hook> hooks = newArrayListWithCapacity(2);
 	
 	@Rule
-	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper, this::getIndexSettings);
+	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper, this::getIndexSettings, this::version);
 
 	@After
 	public void after() {
@@ -62,6 +62,15 @@ public abstract class BaseRevisionIndexTest {
 	 */
 	protected Collection<Class<?>> getTypes() {
 		return Collections.emptySet();
+	}
+	
+	/**
+	 * Subclasses may override this method to return an Elasticsearch major that they support. By default it returns `*`, which represents all versions are supported and tests should run on all versions.
+	 * 
+	 * @return
+	 */
+	protected String version() {
+		return "*";
 	}
 	
 	protected void configureMapper(ObjectMapper mapper) {

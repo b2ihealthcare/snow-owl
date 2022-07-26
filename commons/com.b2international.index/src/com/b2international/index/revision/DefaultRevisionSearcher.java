@@ -26,7 +26,9 @@ import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.es.EsDocumentSearcher;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Knn;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -35,7 +37,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 4.7
  */
-public class DefaultRevisionSearcher implements RevisionSearcher {
+public final class DefaultRevisionSearcher implements RevisionSearcher {
 
 	private final RevisionBranchRef branch;
 	private final Searcher searcher;
@@ -87,28 +89,40 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 		if (query.isRevisionQuery()) {
 			if (query.getSelection().getParentScope() == null) {
 				// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
-				query = query.withFilter(branch.toRevisionFilter()).build();
+				query = query.withFilter(getRevisionFilter()).build();
 			} else {
 				checkArgument(Revision.class.isAssignableFrom(query.getSelection().getParentScope()), "Searching non-revision documents require a revision parent type: %s", query);
 				// run a query on the parent documents with nested match on the children
-				query = query.withFilter(Expressions.hasParent(query.getSelection().getParentScope(), branch.toRevisionFilter())).build();
+				query = query.withFilter(Expressions.hasParent(query.getSelection().getParentScope(), getRevisionFilter())).build();
 			}
 		}
 		return searcher.search(query);
 	}
-	
+
 	@Override
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
 		aggregation.query(Expressions.bool()
 				.filter(aggregation.getQuery())
-				.filter(branch.toRevisionFilter())
+				.filter(getRevisionFilter())
 			.build());
 		return searcher.aggregate(aggregation);
+	}
+	
+	@Override
+	public <T> Hits<T> knn(Knn<T> knn) throws IOException {
+		return searcher.knn(knn.withFilter(Expressions.bool()
+				.filter(knn.getFilter())
+				.filter(getRevisionFilter())
+			.build()));
 	}
 	
 	@Override
 	public String branch() {
 		return branch.path();
 	}
-
+	
+	public final Expression getRevisionFilter() {
+		return branch.toRevisionFilter();
+	}
+		
 }

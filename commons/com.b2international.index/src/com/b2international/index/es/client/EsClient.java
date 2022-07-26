@@ -54,6 +54,13 @@ public interface EsClient extends AutoCloseable {
 
 	Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
 	
+	/**
+	 * Gets the Elasticsearch version from the currently configured host using the Info Endpoint. 
+	 * @return a version number in the form of "major.minor.patch", never <code>null</code>
+	 * @throws IOException 
+	 */
+	String version() throws IOException;
+	
 	EsClusterStatus status(String...indices);
 	
 	IndicesClient indices();

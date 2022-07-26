@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
@@ -50,6 +51,7 @@ import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import com.b2international.collections.floats.FloatIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
@@ -59,9 +61,11 @@ import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.aggregations.Bucket;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.query.Es8QueryBuilder;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Knn;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
@@ -72,6 +76,11 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.primitives.Ints;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.KnnSearchRequest;
+import co.elastic.clients.elasticsearch.core.KnnSearchResponse;
+import co.elastic.clients.elasticsearch.core.knn_search.KnnSearchQuery;
 
 /**
  * @since 5.10
@@ -531,6 +540,42 @@ public class EsDocumentSearcher implements Searcher {
 	
 	public int maxTermsCount() {
 		return maxTermsCount;
+	}
+	
+	@Override
+	public <T> Hits<T> knn(Knn<T> knn) throws IOException {
+		if (admin.es8Client() == null) {
+			throw new BadRequestException("Approximate knn search is only available in Elastiscearch 8 clusters. The currently connected ES cluster version is %s.", admin.client().version());
+		}
+		
+		final ElasticsearchClient client = admin.es8Client().client();
+		final DocumentMapping mapping = admin.mappings().getMapping(knn.getFrom());
+		
+		Es8QueryBuilder q = new Es8QueryBuilder(mapping, admin.settings(), admin.log());
+		co.elastic.clients.elasticsearch._types.query_dsl.Query esQuery = q.build(knn.getFilter());
+		
+		// TODO consider adding support for double primitive lists
+		FloatIterator it = knn.getQueryVector().iterator();
+		final List<Double> queryVector = new ArrayList<>(knn.getQueryVector().size());
+		while (it.hasNext()) {
+			queryVector.add((double) it.next());
+		}
+		
+		KnnSearchResponse<T> response = client.knnSearch(KnnSearchRequest.of(search -> 
+			search
+				.knn(KnnSearchQuery.of(query -> query
+					.field(knn.getField())
+					.k(knn.getK())
+					.numCandidates(knn.getNumCandidates())
+					.queryVector(queryVector)
+				))
+				.index(admin.getTypeIndex(mapping))
+				.filter(esQuery)
+		), knn.getFrom());
+		
+		return new Hits<T>(response.hits().hits().stream().map(h -> {
+			return h.source();
+		}).collect(Collectors.toList()), null, response.hits().hits().size(), (int) response.hits().total().value());
 	}
 
 }

@@ -52,7 +52,6 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.xcontent.XContentType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
@@ -61,6 +60,7 @@ import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
+import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.Mappings;
@@ -113,6 +113,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private final Logger log;
 	private final String prefix;
 
+	// optionally available Elasticsearch 8 client API
+	private Es8Client es8Client;
+
 	public EsIndexAdmin(EsClient client, ObjectMapper mapper, String name, Mappings mappings, Map<String, Object> settings) {
 		this.client = client;
 		this.mapper = mapper;
@@ -120,7 +123,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.mappings = mappings;
 		this.settings = newHashMap(settings);
 		
-		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
+		this.log = IndexAdmin.createIndexLogger(name);
 		
 		// configuration settings for ES index
 		this.settings.putIfAbsent(IndexClientFactory.NUMBER_OF_SHARDS, IndexClientFactory.DEFAULT_NUMBER_OF_SHARDS);
@@ -138,6 +141,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		final String prefix = (String) settings.getOrDefault(IndexClientFactory.INDEX_PREFIX, IndexClientFactory.DEFAULT_INDEX_PREFIX);
 		this.prefix = prefix.isEmpty() ? "" : prefix + ".";
+	}
+
+	public EsIndexAdmin withEs8Client(Es8Client es8Client) {
+		this.es8Client = es8Client;
+		return this;
 	}
 	
 	@Override
@@ -553,6 +561,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 		Map<String, Object> esSettings = new HashMap<>(newSettings);
 		// remove any local settings from esSettings
 		esSettings.keySet().removeAll(LOCAL_SETTINGS);
+		// also remove type index specific mapping settings, those are dynamically not adjustable
+		esSettings.keySet().removeAll(mappings.getTypeIndexNames());
 		
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
@@ -614,6 +624,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public EsClient client() {
 		return client;
+	}
+	
+	@Override
+	public Es8Client es8Client() throws UnsupportedOperationException {
+		if (es8Client == null) {
+			throw new UnsupportedOperationException("Elasticsearch high-level client with new ES8 features is not available.");
+		}
+		return es8Client;
 	}
 	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
@@ -783,5 +801,5 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		return needsRefresh;
 	}
-	
+
 }

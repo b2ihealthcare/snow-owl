@@ -15,6 +15,7 @@
  */
 package com.b2international.index.es;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -25,9 +26,12 @@ import org.elasticsearch.node.Node;
 
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
+import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.client.http.EsHttpClient;
 import com.b2international.index.es.client.tcp.EsTcpClient;
+import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -54,11 +58,11 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final int socketTimeout = socketTimeoutSetting instanceof Integer ? (int) socketTimeoutSetting : Integer.parseInt((String) socketTimeoutSetting);
 		final String username = (String) settings.getOrDefault(CLUSTER_USERNAME, "");
 		final String password = (String) settings.getOrDefault(CLUSTER_PASSWORD, "");
+		final SSLContext sslContext = (SSLContext) settings.get(CLUSTER_SSL_CONTEXT);
 		
 		final EsClient client;
 		if (settings.containsKey(CLUSTER_URL)) {
 			final String clusterUrl = (String) settings.get(CLUSTER_URL);
-			SSLContext sslContext = (SSLContext) settings.get(CLUSTER_SSL_CONTEXT);
 			client = EsClient.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext));
 		} else {
 			// Start an embedded ES node only if a cluster URL is not set
@@ -72,6 +76,22 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 			}
 		}
 		
-		return new EsIndexClient(new EsIndexAdmin(client, mapper, name, mappings, settings), mapper);
+		// check version, and if needed create additional ES8 client as well, for certain ES8 features
+		boolean isElasticsearch8 = false;
+		try {
+			isElasticsearch8 = client.version().startsWith("8.");
+		} catch (IOException e) {
+			// report error as warning that Elasticsearch 8 client could not be connected succesfully and certain features will be disabled/unavailable
+			IndexAdmin.createIndexLogger(name).warn("Failed to determine version of underlying Elasticsearch cluster. Certain Elasticsearch 8 only features won't be available. Diagnosis: {}", e.getMessage());
+		}
+		
+		Es8Client es8Client = null;
+		// external Elasticsearch 8 cluster through http is supported, embedded and tcp support is not available
+		if (isElasticsearch8 && settings.containsKey(CLUSTER_URL) && client instanceof EsHttpClient) {
+			final String clusterUrl = (String) settings.get(CLUSTER_URL);
+			es8Client = new Es8Client(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext, mapper);
+		}
+		
+		return new EsIndexClient(new EsIndexAdmin(client, mapper, name, mappings, settings).withEs8Client(es8Client), mapper);
 	}
 }

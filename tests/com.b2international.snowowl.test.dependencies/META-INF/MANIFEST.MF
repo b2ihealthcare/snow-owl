@@ -14,10 +14,10 @@ Bundle-ClassPath: .,
  lib/docker-java-transport-3.2.13.jar,
  lib/docker-java-transport-zerodep-3.2.13.jar,
  lib/duct-tape-1.0.8.jar,
- lib/elasticsearch-1.17.1.jar,
+ lib/elasticsearch-1.17.3.jar,
  lib/jna-5.8.0.jar,
  lib/system-rules-1.18.0-sources.jar,
- lib/testcontainers-1.17.1.jar
+ lib/testcontainers-1.17.3.jar
 Export-Package: com.b2international.snowowl.rules,
  org.databene.contiperf,
  org.databene.contiperf.clock,

@@ -82,8 +82,8 @@
         <setEntry value="org.apache.commons.lang@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpclient*4.5.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpcore*4.4.12@default:default"/>
         <setEntry value="org.eclipse.core.contenttype@default:default"/>
         <setEntry value="org.eclipse.core.databinding.observable@default:default"/>
         <setEntry value="org.eclipse.core.databinding.property@default:default"/>
@@ -118,11 +118,12 @@
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
         <setEntry value="com.b2international.commons@default:default"/>
+        <setEntry value="com.b2international.index.es8@default:default"/>
         <setEntry value="com.b2international.index.test.tools@default:default"/>
         <setEntry value="com.b2international.index.tests@default:false"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.snowowl.logback.config@default:false"/>
-        <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>        
+        <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
     <booleanAttribute key="tracing" value="false"/>

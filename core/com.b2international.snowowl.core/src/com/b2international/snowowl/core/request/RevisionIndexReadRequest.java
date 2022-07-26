@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
+import com.b2international.index.query.Knn;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.QueryParseException;
 import com.b2international.index.revision.RevisionIndex;
@@ -96,6 +97,11 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 						@Override
 						public <T> T get(Class<T> type, String key) throws IOException {
 							return index.read(branchPath, searcher -> searcher.get(type, key));
+						}
+						
+						@Override
+						public <T> Hits<T> knn(Knn<T> knn) throws IOException {
+							return index.read(branchPath, searcher -> searcher.knn(knn));
 						}
 						
 						@Override

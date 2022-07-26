@@ -1,0 +1,132 @@
+/*
+ * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.index.query;
+
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.floats.FloatList;
+
+/**
+ * @since 8.5
+ */
+public final class Knn<T> {
+
+	private Class<T> from;
+	private String field;
+	private Expression filter;
+	private int k;
+	private int numCandidates;
+	private FloatList queryVector;
+	
+	public Knn() {
+	}
+	
+	public Class<T> getFrom() {
+		return from;
+	}
+	
+	public String getField() {
+		return field;
+	}
+	
+	public Expression getFilter() {
+		return filter;
+	}
+	
+	public int getK() {
+		return k;
+	}
+	
+	public int getNumCandidates() {
+		return numCandidates;
+	}
+	
+	public FloatList getQueryVector() {
+		return queryVector;
+	}
+	
+	public static <T> KnnBuilder<T> select(Class<T> from) {
+		return new KnnBuilder<>(from);
+	}
+	
+	public Knn<T> withFilter(Expression filter) {
+		return Knn.select(from)
+				.field(field)
+				.filter(filter)
+				.k(k)
+				.numCandidates(numCandidates)
+				.queryVector(queryVector)
+				.build();
+	}
+	
+	public static final class KnnBuilder<T> implements Buildable<Knn<T>> {
+
+		private final Class<T> from;
+		private String field;
+		private Expression filter;
+		private int k;
+		private int numCandidates;
+		private FloatList queryVector;
+
+		public KnnBuilder(Class<T> from) {
+			this.from = from;
+		}
+		
+		public KnnBuilder<T> field(String field) {
+			this.field = field;
+			return this;
+		}
+		
+		public KnnBuilder<T> filter(Expression filter) {
+			this.filter = filter;
+			return this;
+		}
+		
+		public KnnBuilder<T> k(int k) {
+			this.k = k;
+			return this;
+		}
+		
+		public KnnBuilder<T> numCandidates(int numCandidates) {
+			this.numCandidates = numCandidates;
+			return this;
+		}
+		
+		public KnnBuilder<T> queryVector(float...values) {
+			return queryVector(PrimitiveLists.newFloatArrayList(values));
+		}
+		
+		public KnnBuilder<T> queryVector(FloatList queryVector) {
+			this.queryVector = queryVector;
+			return this;
+		}
+		
+		@Override
+		public Knn<T> build() {
+			Knn<T> knn = new Knn<>();
+			knn.from = from;
+			knn.field = field;
+			knn.filter = filter;
+			knn.k = k;
+			knn.numCandidates = numCandidates;
+			knn.queryVector = queryVector;
+			return knn;
+		}
+		
+		
+		
+	}
+
+}
