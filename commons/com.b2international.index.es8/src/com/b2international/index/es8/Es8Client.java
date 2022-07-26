@@ -24,6 +24,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
@@ -35,6 +36,8 @@ import com.google.common.base.Strings;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.TransportOptions;
+import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 
 /**
@@ -45,6 +48,11 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
  */
 public class Es8Client implements Closeable {
 
+	/*
+	 * Customize the HTTP response consumer factory to allow processing greater than the default 100 MB of data (currently 1 GB) as the input.
+	 */
+	private static final int BUFFER_LIMIT = 1024 * 1024 * 1024;
+	
 	private final HttpHost host;
 	
 	private final ElasticsearchTransport transport;
@@ -78,7 +86,11 @@ public class Es8Client implements Closeable {
 
 		// Create the transport with a Jackson mapper
 		this.transport = new RestClientTransport(restClientBuilder.build(), new JacksonJsonpMapper(mapper));
-		this.client = new ElasticsearchClient(transport);
+		// override DEFAULT transport options from transport with a client with increased HTTP response buffer limit
+		TransportOptions transportOptions = new RestClientOptions.Builder(((RestClientOptions) this.transport.options()).restClientRequestOptions().toBuilder()
+				.setHttpAsyncResponseConsumerFactory(new HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory(BUFFER_LIMIT)))
+				.build();
+		this.client = new ElasticsearchClient(transport, transportOptions);
 	}
 	
 	public ElasticsearchClient client() {
