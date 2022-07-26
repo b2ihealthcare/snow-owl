@@ -1,0 +1,19 @@
+cluster.name: "elastic-snowowl"
+node.name: "elastic-snowowl"
+discovery.type: "single-node"
+rest.action.multi.allow_explicit_index: "false"
+bootstrap.memory_lock: "true"
+http.type: "netty4"
+http.cors.enabled: "true"
+http.cors.allow-origin: "/https?:\\/\\/localhost(:[0-9]+)?/"
+search.max_buckets: 1500000
+network.host: 0.0.0.0
+index.store.preload: ["dvd", "nvd"]
+xpack.security.enabled: false
+xpack.watcher.enabled: false
+xpack.ml.enabled: false
+ingest.geoip.downloader.enabled: false
+indices.lifecycle.history_index_enabled: false
+slm.history_index_enabled: false
+cluster.deprecation_indexing.enabled: false
+stack.templates.enabled: false
