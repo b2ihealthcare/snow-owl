@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request;
 
-import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
