@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.request.suggest;
 
 import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.*;
 import static com.google.common.collect.Sets.newHashSet;
@@ -35,6 +35,10 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.Suggestions;
+import com.b2international.snowowl.core.request.ConceptSearchRequest;
+import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
