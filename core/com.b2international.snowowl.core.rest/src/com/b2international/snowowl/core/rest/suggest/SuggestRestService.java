@@ -66,6 +66,7 @@ public class SuggestRestService extends AbstractRestService {
 				.setLimit(params.getLimit())
 				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
+				.setMoreLikeThis(params.getMlt())
 				.setMinOccurrenceCount(params.getMinOccurrenceCount())
 				.filterByTerm(params.getTerm())
 				.filterByQuery(params.getQuery())

@@ -19,10 +19,7 @@ import static com.b2international.snowowl.core.request.ConceptSearchRequestEvalu
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
@@ -94,7 +91,10 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	protected Suggestions doExecute(BranchContext context) throws IOException {
 		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder();
 		
-		if (useMoreLikeThis) {			
+		if (containsKey(MORE_LIKE_THIS_QUERY)) {
+			Collection<String> terms = getCollection(MORE_LIKE_THIS_QUERY, String.class);
+			resultRequestBuilder.filterByMoreLikeThis(List.copyOf(terms));
+		} else if (useMoreLikeThis) {			
 			final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
 					.filterByCodeSystemUri(context.service(ResourceURI.class))
 					.setLimit(SCROLL_LIMIT)

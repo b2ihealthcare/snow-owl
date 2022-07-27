@@ -28,6 +28,9 @@ public class SuggestRestParameters {
 
 	@Parameter(description = "The term to match")
 	private String term;
+	
+	@Parameter(description = "The term to match via more like this query")
+	private String mlt;
 
 	@Parameter(description = "The maximum number of items to return", example = "1", schema = @Schema(defaultValue = "1"))
 	private int limit = 1;
@@ -110,5 +113,13 @@ public class SuggestRestParameters {
 	
 	public void setMustNotQuery(String mustNotQuery) {
 		this.mustNotQuery = mustNotQuery;
+	}
+
+	public String getMlt() {
+		return mlt;
+	}
+
+	public void setMlt(String mlt) {
+		this.mlt = mlt;
 	}
 }

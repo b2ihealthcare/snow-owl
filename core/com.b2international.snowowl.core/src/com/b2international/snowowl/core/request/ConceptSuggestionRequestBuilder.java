@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collections;
+
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Suggestions;
@@ -128,6 +130,10 @@ public final class ConceptSuggestionRequestBuilder
 	 */
 	public ConceptSuggestionRequestBuilder setMinOccurrenceCount(Integer minOccurrenceCount) {
 		return addOption(OptionKey.MIN_OCCURENCE_COUNT, minOccurrenceCount);
+	}
+	
+	public ConceptSuggestionRequestBuilder setMoreLikeThis(String term) {
+		return addOption(OptionKey.MORE_LIKE_THIS_QUERY, Collections.singleton(term));
 	}
 	
 	@Override
