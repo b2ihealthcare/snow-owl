@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.request.suggest;
 
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;

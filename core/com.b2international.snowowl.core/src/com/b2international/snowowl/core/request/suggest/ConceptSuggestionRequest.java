@@ -34,7 +34,6 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
-import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.request.ConceptSearchRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;

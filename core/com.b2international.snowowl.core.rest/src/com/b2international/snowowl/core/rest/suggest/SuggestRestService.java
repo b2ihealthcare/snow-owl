@@ -24,10 +24,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.suggest.Suggestions;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
 import io.swagger.v3.oas.annotations.Operation;
