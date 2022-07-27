@@ -103,6 +103,21 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				.build());
 		}
 
+		if (containsKey(OptionKey.PROPERTIES)) {
+			final Collection<String> properties = getCollection(OptionKey.PROPERTIES, String.class);
+			properties.forEach( property -> {
+				if (property.contains(".")) {
+					final String propertyName = property.split("\\.")[0];
+					final String propertyValue = property.substring(propertyName.length() + 1, property.length());
+					//Check if property has specified value
+					queryBuilder.filter(Expressions.exactMatch(String.format("settings.%s", propertyName), propertyValue));									
+				} else {
+					//Check if property exists
+					queryBuilder.filter(Expressions.exists(String.format("settings.%s", property)));
+				}
+			});
+		}
+		
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		addFilter(queryBuilder, OptionKey.OWNER, String.class, ResourceDocument.Expressions::owners);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);

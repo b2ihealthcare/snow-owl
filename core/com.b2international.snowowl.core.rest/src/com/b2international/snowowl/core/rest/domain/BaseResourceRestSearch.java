@@ -42,6 +42,9 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 	@Parameter(description = "One or more owner user ids to match")
 	private List<String> owner;
 	
+	@Parameter(description = "One or more property names or property-value pairs separated by a dot.")
+	private List<String> properties;
+	
 	public List<String> getTitleExact() {
 		return titleExact;
 	}
@@ -88,6 +91,14 @@ public abstract class BaseResourceRestSearch extends ObjectRestSearch {
 	
 	public void setOwner(List<String> owner) {
 		this.owner = owner;
+	}
+
+	public List<String> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(List<String> properties) {
+		this.properties = properties;
 	}
 
 }
