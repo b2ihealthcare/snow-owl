@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.scripts.GroovyScriptEngineTest;
 import com.b2international.snowowl.core.taxonomy.SimpleTaxonomyGraphTest;
 import com.b2international.snowowl.core.uri.ComponentURITest;
 import com.b2international.snowowl.core.uri.ResourceURITest;
+import com.b2international.snowowl.core.uri.ResourceURIWithQueryTest;
 import com.b2international.snowowl.core.validation.ValidationRuleApiTest;
 import com.b2international.snowowl.core.validation.ValidationThreadPoolTest;
 import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
@@ -60,6 +61,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	EclEvaluationRequestTest.class,
 	ConsoleProgressMonitorTest.class,
 	ResourceURITest.class,
+	ResourceURIWithQueryTest.class,
 	ComponentURITest.class,
 	NotificationsTest.class,
 	PromiseTest.class,
