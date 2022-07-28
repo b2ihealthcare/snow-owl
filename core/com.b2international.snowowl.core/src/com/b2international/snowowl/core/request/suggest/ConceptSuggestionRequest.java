@@ -15,35 +15,15 @@
  */
 package com.b2international.snowowl.core.request.suggest;
 
-import static com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.*;
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.constraints.Min;
-
-import org.tartarus.snowball.ext.EnglishStemmer;
+import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.index.compat.TextConstants;
-import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.ConceptSearchRequest;
-import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.TermFilter;
-import com.google.common.base.Splitter;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A generic concept suggestion request that uses the generic search
@@ -53,129 +33,78 @@ import com.google.common.collect.Multisets;
  * @see ConceptSearchRequest
  * @see ConceptSuggestionRequestBuilder
  */
-public final class ConceptSuggestionRequest extends SearchResourceRequest<BranchContext, Suggestions> {
+public final class ConceptSuggestionRequest extends SearchResourceRequest<ServiceProvider, Suggestions> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
-	// Split terms at delimiter or whitespace separators
-	private static final Splitter TOKEN_SPLITTER = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER)
-			.trimResults()
-			.omitEmptyStrings();
-	
-	private static final int SCROLL_LIMIT = 1000;
-	
-	private static final int DEFAULT_MIN_OCCURENCE_COUNT = 3;
-
-	@Min(1)
-	private int topTokenCount;
-	
-	private transient List<String> topTokens;
-	
-	void setTopTokenCount(int topTokenCount) {
-		this.topTokenCount = topTokenCount;
+	/**
+	 * @since 8.5
+	 */
+	enum OptionKey {
+		
+		/**
+		 * Specifies the source code system (URI with optional query part) where suggestions should come from
+		 */
+		FROM,
+		
+		/**
+		 * Specifies an array of like texts or concepts to use when suggesting concepts. Usually suggested concepts should be close to these. If these are actual concepts, then the suggester should not return them.
+		 */
+		LIKE,
+		
+		/**
+		 * Specifies an array of unlike texts or concepts to use when suggesting concepts. Usually suggested concepts should be far from these. If these are actual concepts, then the suggester should not return them.
+		 */
+		UNLIKE,
+		
+		/**
+		 * Specifies the display term to return for the suggested concepts
+		 */
+		DISPLAY,
+		
 	}
 	
+	@JsonProperty
+	private Suggester suggester;
+	
+	void setSuggester(Suggester suggester) {
+		this.suggester = suggester;
+	}
+
 	@Override
 	protected Suggestions createEmptyResult(int limit) {
-		return new Suggestions(topTokens, limit, 0);
+		return new Suggestions(null, limit, 0);
 	}
 
 	@Override
-	protected Suggestions doExecute(BranchContext context) throws IOException {
-		TermFilter termFilter;
+	protected Suggestions doExecute(ServiceProvider context) throws IOException {
+		final ConceptSuggester.Registry suggesterRegistry = context.service(ConceptSuggester.Registry.class);
+		final Set<String> availableSuggesters = suggesterRegistry.getSuggesterTypes();
 		
-		if (containsKey(TERM)) {
-			if (containsKey(MIN_OCCURENCE_COUNT)) {
-				termFilter = TermFilter.minTermMatch(getString(TERM), (Integer) get(MIN_OCCURENCE_COUNT)).withIgnoreStopwords();
-			} else {
-				termFilter = TermFilter.defaultTermMatch(getString(TERM)).withIgnoreStopwords();
-			}
-		} else if (containsKey(QUERY) || containsKey(MUST_NOT_QUERY)) {
-			// Gather tokens
-			final Multiset<String> tokenOccurrences = HashMultiset.create(); 
-			final EnglishStemmer stemmer = new EnglishStemmer();
-			
-			// Get the suggestion base set of concepts
-			final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
-					.filterByCodeSystemUri(context.service(ResourceURI.class))
-					.setLimit(SCROLL_LIMIT)
-					.setLocales(locales());
-			
-			if (containsKey(QUERY)) {
-				baseRequestBuilder.filterByInclusions(getCollection(QUERY, String.class));
-			}
-			
-			if (containsKey(MUST_NOT_QUERY)) {
-				baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
-			}
-			
-			baseRequestBuilder.stream(context)
-				.flatMap(Concepts::stream)
-				.flatMap(concept -> getAllTerms(concept).stream())
-				.map(term -> term.toLowerCase(Locale.US))
-				.flatMap(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm).stream())
-				.map(token -> stemToken(stemmer, token))
-				.forEach(tokenOccurrences::add);
-			
-			topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
-					.elementSet()
-					.stream()
-					.filter(token -> token.length() > 2) // skip short tokens
-					.limit(topTokenCount)
-					.collect(Collectors.toList());
-			
-			// if there are no tokens to search for then shortcut here
-			if (topTokens.isEmpty()) {
-				return createEmptyResult(0);
-			}
-			
-			int minShouldMatch = containsKey(MIN_OCCURENCE_COUNT) ? (Integer) get(MIN_OCCURENCE_COUNT): Math.min(DEFAULT_MIN_OCCURENCE_COUNT, topTokens.size());
-			termFilter = TermFilter.minTermMatch(topTokens.stream().collect(Collectors.joining(" ")), minShouldMatch);
-		} else {
-			throw new BadRequestException("Either a specific term or query/mustNotQuery must be specified for suggestion base set.");
+		// suggester is mandatory, otherwise we can't suggest
+		if (suggester == null) {
+			throw new BadRequestException("'suggester' is required. Available suggesters are: %s", availableSuggesters);
 		}
 		
-		/* 
-		 * Run a search with the top tokens and minimum number of matches, excluding everything
-		 * that was included previously.
-		 */
-		final Set<String> exclusions = newHashSet();
-		exclusions.addAll(getCollection(QUERY, String.class));
-		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
-
-		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
-				.filterByCodeSystemUri(context.service(ResourceURI.class))
-				.filterByActive(true)
-				.filterByTerm(termFilter)
-				.setPreferredDisplay(getString(DISPLAY))
-				.setLimit(limit())
-				.setLocales(locales())
-				.setSearchAfter(searchAfter())
-				.sortBy(sortBy());
-		
-		if (!exclusions.isEmpty()) {
-			resultRequestBuilder.filterByExclusions(exclusions);
+		// from argument is required to suggests concepts
+		if (!containsKey(OptionKey.FROM)) {
+			throw new BadRequestException("'from' argument is required to suggest concepts from.");
 		}
 		
-		final Concepts conceptSuggestions = resultRequestBuilder.build().execute(context);
+		// like argument is required to suggest concepts
+		if (!containsKey(OptionKey.LIKE)) {
+			throw new BadRequestException("At least one like argument is required to generate suggestions.");
+		}
 		
-		return new Suggestions(topTokens, conceptSuggestions.getItems(), conceptSuggestions.getSearchAfter(), limit(), conceptSuggestions.getTotal());
+		return suggesterRegistry.create(this.suggester)
+				.suggest(
+					new ConceptSuggestionContext(context, getString(OptionKey.FROM), getList(OptionKey.LIKE, String.class), getList(OptionKey.UNLIKE, String.class), locales()),
+					limit(),
+					getString(OptionKey.DISPLAY),
+					locales()
+				)
+				.getSync(3, TimeUnit.MINUTES);
+		
 	}
 
-	private List<String> getAllTerms(Concept concept) {
-		Builder<String> allTerms = ImmutableList.<String>builder();
-		if (concept.getTerm() != null) {
-			allTerms.add(concept.getTerm());
-		}
-		if (concept.getAlternativeTerms() != null) {
-			allTerms.addAll(concept.getAlternativeTerms());
-		}
-		return allTerms.build();
-	}
-
-	private String stemToken(EnglishStemmer stemmer, String token) {
-		stemmer.setCurrent(token);
-		stemmer.stem();
-		return stemmer.getCurrent();
-	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.rest.suggest;
 
+import java.util.List;
+
+import com.b2international.snowowl.core.request.suggest.Suggester;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -23,47 +27,133 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 public class SuggestRestParameters {
 
-	@Parameter(description = "Code System path to find the concept in.")
+	// old, deprecated API, to be removed in Snow Owl 9
+	@Deprecated
+	@Parameter(description = "Code System path to find the concept in. Deprecated, use from configuration parameter instead.", deprecated = true)
 	private String codeSystemPath;
-
-	@Parameter(description = "The term to match")
+	
+	@Deprecated
+	@Parameter(description = "The term to match. Deprecated, use like configuration parameter instead.", deprecated = true)
 	private String term;
 
+	@Deprecated
+	@Parameter(description = "The query to match. Deprecated, use like configuration parameter instead.", deprecated = true)
+	private String query;
+	
+	@Deprecated
+	@Parameter(description = "Exclude elements by query. Deprecated, use unlike configuration parameter instead.", deprecated = true)
+	private String mustNotQuery;
+	
+	@Deprecated
+	@Parameter(description = "The minimum number of words that should match. Deprecated, use suggesterConfig parameter instead.", deprecated = true)
+	private Integer minOccurrenceCount;
+	
+	// preferred API since 8.5
+	@Parameter(description = "Code System path (or URI with query) to suggest concepts from.")
+	private String from;
+	
+	@Parameter(description = "An array of like texts or resource URI with optional query (ECL) part. Similar terms or concepts that should be close to the suggested concepts (NOTE: they will be excluded as well).")
+	private List<String> like;
+	
+	@Parameter(description = "An array of unlike texts or resource URI with optional query (ECL) part. Dissimilar terms or concepts that should be excluded or far from the suggested concepts.")
+	private List<String> unlike;
+	
+	@Parameter(description = "Configuration for the selected suggester to tweak the returned suggestions")
+	private Suggester suggester;
+	
+	// Unchanged parameters
 	@Parameter(description = "The maximum number of items to return", example = "1", schema = @Schema(defaultValue = "1"))
 	private int limit = 1;
 
 	@Parameter(description = "The preferred term display in case of SNOMED CT", example = "PT", schema = @Schema(allowableValues = {
 			"FSN", "PT", "ID_ONLY" }, defaultValue = "PT"))
 	private String preferredDisplay = "PT";
-
-	@Parameter(description = "Accepted language tags, in order of preference")
+	
+	@Parameter(description = "Accepted language tags, in order of preference (overrides Accept-Language header if specified).")
 	private String acceptLanguage;
 
-	@Parameter(description = "The minimum number of words that should match")
-	private Integer minOccurrenceCount;
-
-	@Parameter(description = "The query to match")
-	private String query;
+	public String getFrom() {
+		return from;
+	}
 	
-	@Parameter(description = "Exclude elements by query")
-	private String mustNotQuery;
-
+	public void setFrom(String from) {
+		this.from = from;
+	}
+	
+	public List<String> getLike() {
+		return like;
+	}
+	
+	public void setLike(List<String> like) {
+		this.like = like;
+	}
+	
+	public List<String> getUnlike() {
+		return unlike;
+	}
+	
+	public void setUnlike(List<String> unlike) {
+		this.unlike = unlike;
+	}
+	
+	public Suggester getSuggester() {
+		return suggester;
+	}
+	
+	public void setSuggester(Suggester suggester) {
+		this.suggester = suggester;
+	}
+	
+	@Deprecated
 	public String getCodeSystemPath() {
 		return codeSystemPath;
 	}
 
+	@Deprecated
 	public void setCodeSystemPath(String codeSystemPath) {
 		this.codeSystemPath = codeSystemPath;
 	}
 
+	@Deprecated
 	public String getTerm() {
 		return term;
 	}
 
+	@Deprecated
 	public void setTerm(String term) {
 		this.term = term;
 	}
 
+	@Deprecated
+	public Integer getMinOccurrenceCount() {
+		return minOccurrenceCount;
+	}
+
+	@Deprecated
+	public void setMinOccurrenceCount(Integer minOccurrenceCount) {
+		this.minOccurrenceCount = minOccurrenceCount;
+	}
+
+	@Deprecated
+	public String getQuery() {
+		return query;
+	}
+	
+	@Deprecated
+	public void setQuery(String query) {
+		this.query = query;
+	}
+	
+	@Deprecated
+	public String getMustNotQuery() {
+		return mustNotQuery;
+	}
+	
+	@Deprecated
+	public void setMustNotQuery(String mustNotQuery) {
+		this.mustNotQuery = mustNotQuery;
+	}
+	
 	public int getLimit() {
 		return limit;
 	}
@@ -87,28 +177,5 @@ public class SuggestRestParameters {
 	public void setAcceptLanguage(String acceptLanguage) {
 		this.acceptLanguage = acceptLanguage;
 	}
-
-	public Integer getMinOccurrenceCount() {
-		return minOccurrenceCount;
-	}
-
-	public void setMinOccurrenceCount(Integer minOccurrenceCount) {
-		this.minOccurrenceCount = minOccurrenceCount;
-	}
-
-	public String getQuery() {
-		return query;
-	}
 	
-	public void setQuery(String query) {
-		this.query = query;
-	}
-	
-	public String getMustNotQuery() {
-		return mustNotQuery;
-	}
-	
-	public void setMustNotQuery(String mustNotQuery) {
-		this.mustNotQuery = mustNotQuery;
-	}
 }

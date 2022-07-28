@@ -15,20 +15,94 @@
  */
 package com.b2international.snowowl.core.request.suggest;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
 import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 7.7
  */
 public final class ConceptSuggestionRequestBuilder
-		extends SearchPageableCollectionResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
-		implements TerminologyResourceContentRequestBuilder<Suggestions> {
+		extends SearchPageableCollectionResourceRequestBuilder<ConceptSuggestionRequestBuilder, ServiceProvider, Suggestions>
+		implements SystemRequestBuilder<Suggestions> {
 
-	private int topTokenCount = 9;
+	private Suggester suggester;
+	
+	@Deprecated
+	private Integer topTokenCount;
+	
+	@Deprecated
+	private Integer minOccurrenceCount;
+	
+	/**
+	 * Selects the substrate where the suggestions can come from. 
+	 * @param from - supports any code system {@link ResourceURI} optionally with {@link ResourceURIWithQuery query part (ECL)} 
+	 * @return
+	 * @since 8.5
+	 */
+	public ConceptSuggestionRequestBuilder setFrom(String from) {
+		return addOption(ConceptSuggestionRequest.OptionKey.FROM, from);
+	}
+	
+	/**
+	 * Configures the suggester to run when suggesting concepts.
+	 * 
+	 * @param suggester - configure the suggester type and its optional settings
+	 * @return 
+	 * @since 8.5
+	 */
+	public ConceptSuggestionRequestBuilder setSuggester(Suggester suggester) {
+		this.suggester = suggester;
+		return getSelf();
+	}
+	
+	/**
+	 * Suggest concepts that are similar to the text or concepts (selected via ECL query) specified here. 
+	 * 
+	 * @param likeTextOrQuery - supports any text as input, usually free text, terms or {@link ResourceURIWithQuery URIs with optional queries} 
+	 * @return
+	 * @since 8.5
+	 */
+	public ConceptSuggestionRequestBuilder setLike(String likeTextOrQuery) {
+		return addOption(ConceptSuggestionRequest.OptionKey.LIKE, likeTextOrQuery);
+	}
+	
+	/**
+	 * Suggest concepts that are similar to the array of text or concepts (selected via an array of ECL queries) specified here.
+	 * 
+	 * @param likeTextsOrQueries - supports any text as input, usually free text, terms or {@link ResourceURIWithQuery URIs with optional queries}
+	 * @return
+	 * @since 8.5
+	 */
+	public ConceptSuggestionRequestBuilder setLike(Iterable<String> likeTextsOrQueries) {
+		return addOption(ConceptSuggestionRequest.OptionKey.LIKE, likeTextsOrQueries);
+	}
+	
+	/**
+	 * Suggest concepts that are dissimilar to the text or concepts (selected via ECL query) specified here.
+	 * 
+	 * @param unlikeTextOrQuery - supports any text as input, usually free text, terms or {@link ResourceURIWithQuery URIs with optional queries}
+	 * @return
+	 * @since 8.5
+	 */
+	public ConceptSuggestionRequestBuilder setUnlike(String unlikeTextOrQuery) {
+		return addOption(ConceptSuggestionRequest.OptionKey.UNLIKE, unlikeTextOrQuery);
+	}
+	
+	/**
+	 * Suggest concepts that are dissimilar to the array of texts or concepts (selected via an array of ECL queries) specified here.
+	 * 
+	 * @param unlikeTextsOrQueries - supports any text as input, usually free text, terms or {@link ResourceURIWithQuery URIs with optional queries}
+	 * @return
+	 * @since 8.5
+	 */
+	public ConceptSuggestionRequestBuilder setUnlike(Iterable<String> unlikeTextsOrQueries) {
+		return addOption(ConceptSuggestionRequest.OptionKey.UNLIKE, unlikeTextsOrQueries);
+	}
 	
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
@@ -36,9 +110,10 @@ public final class ConceptSuggestionRequestBuilder
 	 * @param query
 	 *            - the query expression
 	 * @return
+	 * @deprecated - replaced with {@link #setLike(String)} configuration parameter, will be removed in Snow Owl 9
 	 */
 	public ConceptSuggestionRequestBuilder filterByQuery(String query) {
-		return addOption(OptionKey.QUERY, query);
+		return setLike(query);
 	}
 
 	/**
@@ -47,9 +122,10 @@ public final class ConceptSuggestionRequestBuilder
 	 * @param inclusions
 	 *            - query expressions that include matches
 	 * @return
+	 * @deprecated - replaced with {@link #setLike(Iterable)} configuration parameter, will be removed in Snow Owl 9
 	 */
 	public ConceptSuggestionRequestBuilder filterByInclusions(Iterable<String> inclusions) {
-		return addOption(OptionKey.QUERY, inclusions);
+		return setLike(inclusions);
 	}
 
 	/**
@@ -58,9 +134,10 @@ public final class ConceptSuggestionRequestBuilder
 	 * @param exclusion
 	 *            - query expression that exclude matches
 	 * @return
+	 * @deprecated - replaced with {@link #setUnlike(String)} configuration parameter, will be removed in Snow Owl 9
 	 */
 	public ConceptSuggestionRequestBuilder filterByExclusion(String exclusion) {
-		return addOption(OptionKey.MUST_NOT_QUERY, exclusion);
+		return setUnlike(exclusion);
 	}
 	
 	/**
@@ -69,20 +146,22 @@ public final class ConceptSuggestionRequestBuilder
 	 * @param exclusions
 	 *            - query expression that exclude matches
 	 * @return
+	 * @deprecated - replaced with {@link #setUnlike(Iterable)} configuration parameter, will be removed in Snow Owl 9
 	 */
 	public ConceptSuggestionRequestBuilder filterByExclusions(Iterable<String> exclusions) {
-		return addOption(OptionKey.MUST_NOT_QUERY, exclusions);
+		return setUnlike(exclusions);
 	}
 	
 	/**
-	 * Filter matches by a specified term.
+	 * Filter matches by a specified term. Please note that since Snow Owl 8.5 calling this method automatically configures the default term-based suggester, overriding the current suggester value.
 	 * 
 	 * @param term
 	 *            - term to filter matches by
 	 * @return
+	 * @deprecated - replaced with {@link #setLike(String)}, will be removed in Snow Owl 9
 	 */
 	public ConceptSuggestionRequestBuilder filterByTerm(final String term) {
-		return addOption(OptionKey.TERM, term);
+		return setLike(term);
 	}
 	
 	/**
@@ -102,8 +181,9 @@ public final class ConceptSuggestionRequestBuilder
 	 * 
 	 * @param topTokenCount the number of tokens to consider for suggestions (default is 9)
 	 * @return
+	 * @deprecated - replaced with specific suggester algorithm configuration, will be removed in Snow Owl 9
 	 */
-	public ConceptSuggestionRequestBuilder setTopTokenCount(int topTokenCount) {
+	public ConceptSuggestionRequestBuilder setTopTokenCount(Integer topTokenCount) {
 		this.topTokenCount = topTokenCount;
 		return getSelf();
 	}
@@ -114,16 +194,27 @@ public final class ConceptSuggestionRequestBuilder
 	 * 
 	 * @param minOccurrenceCount the minimum number of occurrences to use (default is 3)
 	 * @return
+	 * @deprecated - replaced with specific suggester algorithm configuration, will be removed in Snow Owl 9
 	 */
 	public ConceptSuggestionRequestBuilder setMinOccurrenceCount(Integer minOccurrenceCount) {
-		return addOption(OptionKey.MIN_OCCURENCE_COUNT, minOccurrenceCount);
+		this.minOccurrenceCount = minOccurrenceCount;
+		return getSelf();
 	}
 	
 	@Override
-	protected SearchResourceRequest<BranchContext, Suggestions> createSearch() {
-		final ConceptSuggestionRequest request = new ConceptSuggestionRequest();
-		request.setTopTokenCount(topTokenCount);
-		return request;
+	protected SearchResourceRequest<ServiceProvider, Suggestions> createSearch() {
+		// XXX API backward compatibility, channel topTokenCount and minOccurenceCount to suggester settings if suggester is defined, remove in Snow Owl 9
+		// if configured, specify the values here, otherwise let the suggester implementation use its defaults
+		if (suggester != null && topTokenCount != null) {
+			suggester.setSettings("topTokenCount", topTokenCount);
+		}
+		if (suggester != null && minOccurrenceCount != null) {
+			suggester.setSettings("minOccurenceCount", minOccurrenceCount);
+		}
+		
+		ConceptSuggestionRequest req = new ConceptSuggestionRequest();
+		req.setSuggester(suggester);
+		return req;
 	}
 
 }
