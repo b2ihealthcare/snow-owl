@@ -105,4 +105,11 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		return new ResourceURIWithQuery(String.join(Branch.SEPARATOR, resourceType, resourceIdWithQuery));
 	}
 	
+	public static ResourceURIWithQuery of(String resourceType, String resourceId, String query) {
+		checkNotNull(resourceType, "'resourceType' must be specified");
+		checkNotNull(resourceId, "'resourceId' must be specified");
+		checkNotNull(query, "'query' must be specified");
+		return new ResourceURIWithQuery(String.join(QUERY_PART_SEPARATOR, String.join(Branch.SEPARATOR, resourceType, resourceId), query));
+	}
+	
 }
