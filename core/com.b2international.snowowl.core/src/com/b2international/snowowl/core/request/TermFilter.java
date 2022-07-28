@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,8 +87,12 @@ public final class TermFilter implements Serializable {
 		return builder(this).ignoreStopwords(true).build();
 	}
 	
+	public static final Builder builder() {
+		return new Builder();
+	}
+	
 	public static final Builder builder(final TermFilter termFilter) {
-		return new Builder()
+		return builder()
 				.term(termFilter.getTerm())
 				.minShouldMatch(termFilter.getMinShouldMatch())
 				.fuzzy(termFilter.isFuzzy())
@@ -110,10 +114,6 @@ public final class TermFilter implements Serializable {
 		private boolean caseSensitive;
 		
 		private Builder() { }
-		
-		public static final Builder builder() {
-			return new Builder();
-		}
 		
 		public Builder term(final String term) {
 			this.term = term;
@@ -168,7 +168,7 @@ public final class TermFilter implements Serializable {
 	 */
 	@JsonIgnore
 	public static final TermFilter defaultTermMatch(final String term) {
-		return Builder.builder().term(term).build();
+		return builder().term(term).build();
 	}
 	
 	/**
@@ -186,7 +186,7 @@ public final class TermFilter implements Serializable {
 	@JsonIgnore
 	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch) {
 		if (minShouldMatch >= 1) {
-			return Builder.builder().term(term).minShouldMatch(minShouldMatch).build();
+			return builder().term(term).minShouldMatch(minShouldMatch).build();
 		} else {
 			throw new BadRequestException("minShouldMatch parameter must be greater than or equal to 1. It was '%s'.", minShouldMatch);
 		}
@@ -203,7 +203,7 @@ public final class TermFilter implements Serializable {
 	 */
 	@JsonIgnore
 	public static final TermFilter fuzzyMatch(final String term) {
-		return Builder.builder().term(term).fuzzy(true).build();
+		return builder().term(term).fuzzy(true).build();
 	}
 	
 	/**
@@ -217,7 +217,7 @@ public final class TermFilter implements Serializable {
 	 */
 	@JsonIgnore
 	public static final TermFilter exactTermMatch(final String term) {
-		return Builder.builder().term(term).exact(true).caseSensitive(true).build();
+		return builder().term(term).exact(true).caseSensitive(true).build();
 	}
 
 	/**
@@ -231,7 +231,7 @@ public final class TermFilter implements Serializable {
 	 */
 	@JsonIgnore
 	public static final TermFilter exactIgnoreCaseTermMatch(final String term) {
-		return Builder.builder().term(term).exact(true).build();
+		return builder().term(term).exact(true).build();
 	}
 	
 	/**
@@ -241,7 +241,7 @@ public final class TermFilter implements Serializable {
 	 */
 	@JsonIgnore
 	public static final TermFilter parsedTermMatch(final String term) {
-		return Builder.builder().term(term).parsed(true).build();
+		return builder().term(term).parsed(true).build();
 	}
 
 }
