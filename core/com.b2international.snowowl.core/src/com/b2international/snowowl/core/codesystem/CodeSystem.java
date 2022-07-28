@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -61,6 +62,10 @@ public final class CodeSystem extends TerminologyResource {
 	
 	public static ResourceURI uri(String codeSystemId, String path) {
 		return uri(codeSystemId).withPath(path);
+	}
+	
+	public static ResourceURIWithQuery uriWithQuery(String codeSystemIdWithQuery) {
+		return codeSystemIdWithQuery.startsWith(RESOURCE_TYPE) ? new ResourceURIWithQuery(codeSystemIdWithQuery) : ResourceURIWithQuery.of(RESOURCE_TYPE, codeSystemIdWithQuery);
 	}
 	
 	public static CodeSystem from(ResourceDocument doc) {
@@ -110,7 +115,7 @@ public final class CodeSystem extends TerminologyResource {
 				.setUpgradeOf(getUpgradeOf())
 				.setSettings(getSettings());
 	}
-	
+
 //	/**
 //	 * Returns all code system short name dependencies and itself.
 //	 */

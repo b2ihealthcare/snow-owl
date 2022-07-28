@@ -15,13 +15,18 @@
  */
 package com.b2international.snowowl.core;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Serializable;
 
 import org.elasticsearch.common.Strings;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 8.5
@@ -31,10 +36,14 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	private static final long serialVersionUID = 1L;
 
 	private static final String QUERY_PART_SEPARATOR = "?";
+	private static final String QUERY_KEY_SEPARATOR = "&";
+	private static final String QUERY_KEY_VALUE_SEPARATOR = "=";
 	
 	private final String uri;
 	private final ResourceURI resourceUri;
 	private final String query;
+	
+	private Multimap<String, String> queryValues;
 	
 	@JsonCreator
 	public ResourceURIWithQuery(String uri) {
@@ -49,7 +58,7 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		}
 		this.uri = uri;
 		this.resourceUri = new ResourceURI(uri.substring(0, firstQueryCharAt));
-		this.query = firstQueryCharAt == uri.length() ? "" : uri.substring(firstQueryCharAt + 1, uri.length()); 
+		this.query = firstQueryCharAt == uri.length() ? "" : uri.substring(firstQueryCharAt + 1, uri.length());
 	}
 	
 	public String getUri() {
@@ -64,6 +73,21 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		return query;
 	}
 	
+	public Multimap<String, String> getQueryValues() {
+		if (queryValues == null) {
+			queryValues = HashMultimap.create();
+			for (String keyValueRaw : this.query.split(QUERY_KEY_SEPARATOR)) {
+				if (!Strings.isNullOrEmpty(keyValueRaw)) {
+					String[] keyValue = keyValueRaw.split(QUERY_KEY_VALUE_SEPARATOR);
+					if (keyValue.length == 2) {
+						queryValues.put(keyValue[0], keyValue[1]);
+					}
+				}
+			}
+		}
+		return queryValues;
+	}
+	
 	@Override
 	public int compareTo(ResourceURIWithQuery o) {
 		return toString().compareTo(o.toString());
@@ -73,6 +97,12 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	@Override
 	public String toString() {
 		return getUri();
+	}
+
+	public static ResourceURIWithQuery of(String resourceType, String resourceIdWithQuery) {
+		checkNotNull(resourceType, "'resourceType' must be specified");
+		checkNotNull(resourceIdWithQuery, "'resourceIdWithQuery' must be specified");
+		return new ResourceURIWithQuery(String.join(Branch.SEPARATOR, resourceType, resourceIdWithQuery));
 	}
 	
 }
