@@ -44,7 +44,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.ecl.EclEvaluationRequest;
-import com.b2international.snowowl.core.request.search.TermFilter;
+import com.b2international.snowowl.core.request.search.MatchTermFilter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -623,8 +623,8 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	}
 	
 	@Override
-	protected Expression termMatchExpression(TermFilter termFilter) {
-		return SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(termFilter);
+	protected Expression termMatchExpression(MatchTermFilter termFilter) {
+		return termFilter.toExpression(SnomedDescriptionIndexEntry.Fields.TERM);
 	}
 	
 	@Override
@@ -634,7 +634,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	
 	@Override
 	protected Expression termCaseInsensitiveExpression(String term) {
-		return SnomedDescriptionIndexEntry.Expressions.matchTermCaseInsensitive(term);
+		return com.b2international.snowowl.core.request.search.TermFilter.exact().term(term).caseSensitive(false).build().toExpression(SnomedDescriptionIndexEntry.Fields.TERM);
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.*;
+import static com.b2international.index.revision.Revision.Expressions.id;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.acceptableIn;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
 
 import java.util.List;
 
@@ -36,6 +38,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedDescriptionConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -70,11 +73,11 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 	
 	@Override
 	protected Expression prepareQuery(BranchContext context) {
-		if (containsKey(OptionKey.TERM) && get(OptionKey.TERM, TermFilter.class).getTerm().length() < 2) {
-			throw new BadRequestException("Description term must be at least 2 characters long.");
+		if (containsKey(OptionKey.TERM) && get(OptionKey.TERM, TermFilter.class).getTerms().stream().anyMatch(term -> term.length() < 2)) {
+			throw new BadRequestException("'term' filter value must be at least 2 characters long.");
 		}
 
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		// Add (presumably) most selective filters first
 		addActiveClause(queryBuilder);
 		addReleasedClause(queryBuilder);
@@ -85,7 +88,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addMemberOfClause(context, queryBuilder);
 		
 		addEclFilter(context, queryBuilder, OptionKey.LANGUAGE_REFSET, ids -> {
-			return Expressions.builder()
+			return Expressions.bool()
 					.should(preferredIn(ids))
 					.should(acceptableIn(ids))
 					.build();
@@ -96,7 +99,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		// apply locale based filters
 		addFilter(queryBuilder, OptionKey.LANGUAGE_REFSET_LOCALES, ExtendedLocale.class, locales -> {
 			final List<String> languageRefSetIds = SnomedDescriptionUtils.getLanguageRefSetIds(context, (List<ExtendedLocale>) locales);
-			return Expressions.builder()
+			return Expressions.bool()
 					.should(preferredIn(languageRefSetIds))
 					.should(acceptableIn(languageRefSetIds))
 					.build();
@@ -158,25 +161,16 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 	}
 	
 	private Expression toDescriptionTermQuery(final TermFilter termFilter) {
-		final ExpressionBuilder qb = Expressions.builder();
-	
-		if (termFilter.isFuzzy()) {
-			qb.should(fuzzy(termFilter.getTerm()));
-		} else if (termFilter.isExact()) {
-			qb.should(matchTerm(termFilter.getTerm(), termFilter.isCaseSensitive()));
-		} else if (termFilter.isParsed()) {
-			qb.should(parsedTerm(termFilter.getTerm()));
-		} else if (termFilter.isAnyMatch()) {
-			qb.should(minShouldMatchTermDisjunctionQuery(termFilter));
+		final Expression descriptionTermQuery = termFilter.toExpression(SnomedDescriptionIndexEntry.Fields.TERM);
+		final String singleTerm = termFilter.getSingleTermOrNull();
+		if (!Strings.isNullOrEmpty(singleTerm) && isComponentId(singleTerm, ComponentCategory.DESCRIPTION)) {
+			final ExpressionBuilder qb = Expressions.bool();
+			qb.should(descriptionTermQuery);
+			qb.should(Expressions.boost(id(singleTerm), 1000f));
+			return qb.build();
 		} else {
-			qb.should(termDisjunctionQuery(termFilter));
+			return descriptionTermQuery;
 		}
-		
-		if (isComponentId(termFilter.getTerm(), ComponentCategory.DESCRIPTION)) {
-			qb.should(Expressions.boost(id(termFilter.getTerm()), 1000f));
-		}
-		
-		return qb.build();
 	}
 	
 	private boolean isComponentId(String value, ComponentCategory type) {

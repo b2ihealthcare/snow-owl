@@ -111,11 +111,12 @@ public final class TermConceptSuggester implements ConceptSuggester {
 			return Promise.immediate(new Suggestions(topTokens, limit, 0));
 		}
 		
-		final TermFilter termFilter = TermFilter.builder()
+		final TermFilter termFilter = TermFilter.match()
 				.term(String.join(" ", topTokens))
 				.minShouldMatch(Math.min(minOccurenceCount, topTokens.size()))
 				.ignoreStopwords(ignoreStopwords)
-				.fuzzy(fuzzy)
+				.fuzziness(fuzzy ? "AUTO" : null)
+				// TODO make fuzziness options configurable in term suggester settings
 				.build();
 		
 		// get the ECL query of the from code system

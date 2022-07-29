@@ -51,7 +51,7 @@ public interface TermFilterSupport<T> {
 	 * @see TermFilter#exactTermMatch(String)
 	 */
 	default T filterByExactTerm(final String exactTermFilter) {
-		return filterByTerm(exactTermFilter != null ? TermFilter.exactTermMatch(exactTermFilter) : null);
+		return filterByTerm(exactTermFilter != null ? TermFilter.exact().term(exactTermFilter).caseSensitive(true).build() : null);
 	}
 
 	/**
@@ -67,7 +67,7 @@ public interface TermFilterSupport<T> {
 	 * @see TermFilter#exactIgnoreCaseTermMatch(String)
 	 */
 	default T filterByExactTermIgnoreCase(final String exactTermFilter) {
-		return filterByTerm(exactTermFilter != null ? TermFilter.exactIgnoreCaseTermMatch(exactTermFilter) : null);
+		return filterByTerm(exactTermFilter != null ? TermFilter.exact().term(exactTermFilter).caseSensitive(false).build() : null);
 	}
 
 	/**
@@ -83,6 +83,6 @@ public interface TermFilterSupport<T> {
 	 * @see TermFilter#defaultTermMatch(String)
 	 */
 	default T filterByTerm(final String termFilter) {
-		return filterByTerm(termFilter != null ? TermFilter.defaultTermMatch(termFilter) : null);
+		return filterByTerm(termFilter != null ? TermFilter.match().term(termFilter).build() : null);
 	}
 }

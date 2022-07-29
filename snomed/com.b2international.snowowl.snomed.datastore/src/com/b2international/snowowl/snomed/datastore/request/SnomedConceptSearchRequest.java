@@ -52,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConve
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.google.common.base.Strings;
 
 /**
  * SNOMED CT Concept search request implementation.
@@ -143,7 +144,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	
 	@Override
 	protected String extractSpecialOptionValue(Options options, Enum<?> key) {
-		return options.get(OptionKey.TERM, TermFilter.class).getTerm();
+		return options.get(OptionKey.TERM, TermFilter.class).getSingleTermOrNull();
 	}
 	
 	@Override
@@ -215,9 +216,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			
 			if (termFilter != null) {
 				try {
-					final ComponentCategory category = SnomedIdentifiers.getComponentCategory(termFilter.getTerm());
-					if (category == ComponentCategory.CONCEPT) {
-						conceptScoreMap.put(termFilter.getTerm(), Float.MAX_VALUE);
+					final String singleTerm = termFilter.getSingleTermOrNull();
+					if (!Strings.isNullOrEmpty(singleTerm)) {
+						final ComponentCategory category = SnomedIdentifiers.getComponentCategory(singleTerm);
+						if (category == ComponentCategory.CONCEPT) {
+							conceptScoreMap.put(singleTerm, Float.MAX_VALUE);
+						}
 					}
 				} catch (IllegalArgumentException e) {
 					// ignored

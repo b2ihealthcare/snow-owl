@@ -85,10 +85,10 @@ public final class TextPredicate extends Predicate {
 		return withFuzziness(fuzziness, prefixLength, maxExpansions);
 	}
 	
-	public TextPredicate withFuzziness(String fuzziness, int prefixLength, int maxExpansions) {
+	public TextPredicate withFuzziness(String fuzziness, Integer prefixLength, Integer maxExpansions) {
 		this.fuzziness = fuzziness;
-		this.prefixLength = prefixLength;
-		this.maxExpansions = maxExpansions;
+		this.prefixLength = prefixLength != null ? prefixLength : 1;
+		this.maxExpansions = maxExpansions != null ? maxExpansions : 10;
 		return this;
 	}
 	

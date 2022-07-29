@@ -41,6 +41,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	 * 
 	 * @param termFilter - configuration
 	 * @return this builder
+	 * @see TermFilter hierarchy
 	 */
 	public final RB filterByTitle(final TermFilter termFilter) {
 		return addOption(OptionKey.TITLE, termFilter);
@@ -53,7 +54,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	 * @return this builder
 	 */
 	public final RB filterByTitle(final String title) {
-		return filterByTitle(title != null ? TermFilter.defaultTermMatch(title) : null);
+		return filterByTitle(title != null ? TermFilter.match().term(title).build() : null);
 	}
 	
 	/**
@@ -63,7 +64,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	 * @return this builder
 	 */
 	public final RB filterByExactTitle(final String exactTitle) {
-		return filterByTitle(exactTitle != null ? TermFilter.exactTermMatch(exactTitle) : null);
+		return filterByTitle(exactTitle != null ? TermFilter.exact().term(exactTitle).caseSensitive(true).build() : null);
 	}
 	
 	/**
@@ -73,7 +74,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	 * @return this builder
 	 */
 	public final RB filterByExactTitleIgnoreCase(final String exactTitle) {
-		return filterByTitle(exactTitle != null ? TermFilter.exactIgnoreCaseTermMatch(exactTitle) : null);
+		return filterByTitle(exactTitle != null ? TermFilter.exact().term(exactTitle).caseSensitive(false).build() : null);
 	}
 	
 	/**

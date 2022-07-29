@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.regexp;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -32,7 +34,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -146,44 +147,12 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private Expressions() {
 		}
 		
-		public static Expression termDisjunctionQuery(final TermFilter termFilter) {
-			return dismaxWithScoreCategories(
-				matchTermCaseInsensitive(termFilter.getTerm()),
-				matchTextAll(Fields.TERM_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
-				matchBooleanPrefix(Fields.TERM_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
-				matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
-			);
-		}
-		
-		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
-			return dismaxWithScoreCategories(
-				matchTextAny(Fields.TERM_TEXT, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
-				matchTextAny(Fields.TERM_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
-			);
-		}
-
-		public static Expression fuzzy(String term) {
-			return matchTextFuzzy(Fields.TERM_TEXT, term);
-		}
-		
-		public static Expression matchTerm(String term, boolean isCaseSensitive) {
-			return exactMatch(isCaseSensitive ? Fields.TERM : Fields.TERM_EXACT, term);
-		}
-		
-		public static Expression matchTermCaseInsensitive(String term) {
-			return matchTerm(term, false);
-		}
-		
 		public static Expression matchTerm(Iterable<String> terms) {
 			return matchAny(Fields.TERM, terms);
 		}
 		
 		public static Expression matchTermRegex(String regex) {
 			return regexp(Fields.TERM, regex);
-		}
-		
-		public static Expression parsedTerm(String term) {
-			return matchTextParsed(Fields.TERM_TEXT, term);
 		}
 		
 		public static Expression concept(String conceptId) {
