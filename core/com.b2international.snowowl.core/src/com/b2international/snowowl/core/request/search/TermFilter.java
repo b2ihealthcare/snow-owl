@@ -41,6 +41,10 @@ public abstract class TermFilter implements Serializable {
 	public static ParsedTermFilter.Builder parsed() {
 		return new ParsedTermFilter.Builder();
 	}
+	
+	public static MoreLikeThisTermFilter.Builder mlt() {
+		return new MoreLikeThisTermFilter.Builder();
+	}
 
 	/**
 	 * Get the search term(s) from this term filter. Certain implementations only support a single term to be defined.
