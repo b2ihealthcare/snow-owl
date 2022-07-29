@@ -21,6 +21,7 @@ import java.util.Set;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 
 /**
  * @since 8.5.0
@@ -64,48 +65,54 @@ public final class MoreLikeThisPredicate implements Expression {
 		return maxQueryTerms;
 	}
 
-	public void setMaxQueryTerms(int maxQueryTerms) {
-		this.maxQueryTerms = maxQueryTerms;
+	public MoreLikeThisPredicate withMaxQueryTerms(Integer maxQueryTerms) {
+		this.maxQueryTerms = maxQueryTerms != null ? maxQueryTerms : 25;
+		return this;
 	}
 	
 	public int getMinTermFreq() {
 		return minTermFreq;
 	}
 	
-	public void setMinTermFreq(int minTermFreq) {
-		this.minTermFreq = minTermFreq;
+	public MoreLikeThisPredicate withMinTermFreq(Integer minTermFreq) {
+		this.minTermFreq = minTermFreq != null ? minTermFreq : 1;
+		return this;
 	}
 	
 	public int getMinDocFreq() {
 		return minDocFreq;
 	}
 	
-	public void setMinDocFreq(int minDocFreq) {
-		this.minDocFreq = minDocFreq;
+	public MoreLikeThisPredicate withMinDocFreq(Integer minDocFreq) {
+		this.minDocFreq = minDocFreq != null ? minDocFreq : 1;
+		return this;
 	}
 	
 	public int getMaxWordLength() {
 		return maxWordLength;
 	}
 	
-	public void setMaxWordLength(int maxWordLength) {
-		this.maxWordLength = maxWordLength;
+	public MoreLikeThisPredicate withMaxWordLength(Integer maxWordLength) {
+		this.maxWordLength = maxWordLength != null ? maxWordLength : 0;
+		return this;
 	}
 	
 	public int getMinWordLength() {
 		return minWordLength;
 	}
 	
-	public void setMinWordLength(int minWordLength) {
-		this.minWordLength = minWordLength;
+	public MoreLikeThisPredicate withMinWordLength(Integer minWordLength) {
+		this.minWordLength = minWordLength != null ? minWordLength : 0;
+		return this;
 	}
 	
 	public String getMinimumShouldMatch() {
 		return minimumShouldMatch;
 	}
 	
-	public void setMinimumShouldMatch(String minimumShouldMatch) {
-		this.minimumShouldMatch = minimumShouldMatch;
+	public MoreLikeThisPredicate withMinimumShouldMatch(String minimumShouldMatch) {
+		this.minimumShouldMatch = !Strings.isNullOrEmpty(minimumShouldMatch) ? minimumShouldMatch : "30%";
+		return this;
 	}
 
 	@Override

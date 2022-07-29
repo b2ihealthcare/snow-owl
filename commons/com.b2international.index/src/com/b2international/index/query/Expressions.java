@@ -300,7 +300,7 @@ public class Expressions {
 		}
 	}
 	
-	public static Expression moreLikeThis(Iterable<String> fields, Iterable<String> likeTexts, Iterable<String> unlikeTexts) {
+	public static MoreLikeThisPredicate moreLikeThis(Iterable<String> fields, Iterable<String> likeTexts, Iterable<String> unlikeTexts) {
 		return new MoreLikeThisPredicate(fields, likeTexts, unlikeTexts);
 	}
 
