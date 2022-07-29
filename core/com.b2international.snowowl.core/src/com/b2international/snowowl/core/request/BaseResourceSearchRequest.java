@@ -85,7 +85,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		/**
 		 * Search resources by the presence of a property or by a specific property-value pair in settings
 		 */
-		PROPERTIES
+		SETTINGS
 	}
 	
 	@Override
@@ -103,11 +103,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				.build());
 		}
 
-		if (containsKey(OptionKey.PROPERTIES)) {
-			final Collection<String> properties = getCollection(OptionKey.PROPERTIES, String.class);
+		if (containsKey(OptionKey.SETTINGS)) {
+			final Collection<String> properties = getCollection(OptionKey.SETTINGS, String.class);
 			properties.forEach( property -> {
-				if (property.contains(".")) {
-					final String propertyName = property.split("\\.")[0];
+				if (property.contains("#")) {
+					final String propertyName = property.split("\\#")[0];
 					final String propertyValue = property.substring(propertyName.length() + 1, property.length());
 					//Check if property has specified value
 					queryBuilder.filter(Expressions.exactMatch(String.format("settings.%s", propertyName), propertyValue));									
