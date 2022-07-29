@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
@@ -109,6 +110,9 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				if (property.contains("#")) {
 					final String propertyName = property.split("\\#")[0];
 					final String propertyValue = property.substring(propertyName.length() + 1, property.length());
+					if (Strings.isNullOrEmpty(propertyValue)) {
+						throw new IllegalArgumentException(String.format("Settings argument %s is not allowed. Expected format is propertyName#propertyValue.", property));
+					}
 					//Check if property has specified value
 					queryBuilder.filter(Expressions.exactMatch(String.format("settings.%s", propertyName), propertyValue));									
 				} else {

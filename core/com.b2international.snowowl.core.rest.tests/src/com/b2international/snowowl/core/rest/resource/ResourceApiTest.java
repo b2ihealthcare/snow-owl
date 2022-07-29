@@ -167,6 +167,8 @@ public class ResourceApiTest {
 			.statusCode(200).body("total", equalTo(1)).body("items[0].id", equalTo(codesystemId1));
 		assertResourceSearch(Map.of("settings", String.format("%s.%s#%s", CODESYSTEM_LANGUAGE_CONFIG_KEY, "languageRefSetIds", languageRefsetId)))
 			.statusCode(200).body("total", equalTo(1)).body("items[0].id", equalTo(codesystemId1));
+		assertResourceSearch(Map.of("settings", String.format("%s#", CODESYSTEM_LANGUAGE_CONFIG_KEY)))
+		.statusCode(400);
 	}
 	
 	@Test(expected = BadRequestException.class)
