@@ -37,7 +37,7 @@ import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.test.commons.Services;
 
 /**

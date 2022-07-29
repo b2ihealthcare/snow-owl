@@ -21,6 +21,8 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
+import com.b2international.snowowl.core.request.search.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilterSupport;
 import com.google.common.collect.FluentIterable;
 
 /**

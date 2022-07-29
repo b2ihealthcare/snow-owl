@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.search.TermFilter;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**

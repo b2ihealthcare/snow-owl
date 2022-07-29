@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -43,7 +43,7 @@ import com.google.common.collect.Multisets;
  */
 @Component
 @JsonTypeName("term")
-public class TermConceptSuggester implements ConceptSuggester {
+public final class TermConceptSuggester implements ConceptSuggester {
 
 	// Split terms at delimiter or whitespace separators
 	private static final Splitter TOKEN_SPLITTER = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER)

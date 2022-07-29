@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceSearchRequest.OptionKey;
+import com.b2international.snowowl.core.request.search.TermFilter;
 
 /**
  * @since 8.0

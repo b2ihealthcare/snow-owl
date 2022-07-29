@@ -29,6 +29,8 @@ import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequestBuilder;
+import com.b2international.snowowl.core.request.search.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilterSupport;
 
 /**
  * @since 7.5
