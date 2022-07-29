@@ -16,7 +16,10 @@
 package com.b2international.index.query;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -299,6 +302,10 @@ public class Expressions {
 		} else {
 			throw new UnsupportedOperationException("Unsupported term expression value type: " + firstValue);
 		}
+	}
+	
+	public static Expression moreLikeThis(Iterable<String> fields, Iterable<String> likeTexts, Iterable<String> unlikeTexts) {
+		return new MoreLikeThisQuery(fields, likeTexts, unlikeTexts);
 	}
 
 }

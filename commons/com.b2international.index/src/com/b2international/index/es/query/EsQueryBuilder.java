@@ -140,6 +140,8 @@ public final class EsQueryBuilder {
 			visit((DoubleSetPredicate) expression);
 		} else if (expression instanceof ScriptQueryExpression){
 			visit((ScriptQueryExpression)expression);
+		} else if (expression instanceof MoreLikeThisQuery) {
+			visit((MoreLikeThisQuery) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -410,6 +412,19 @@ public final class EsQueryBuilder {
 		QueryBuilder qb = deque.pop();
 		qb.boost(boost.boost());
 		deque.push(qb);
+	}
+	
+	private void visit(MoreLikeThisQuery mlt) {
+		deque.push(
+			QueryBuilders.moreLikeThisQuery(mlt.getFields().toArray(i -> new String[i]), mlt.getLikeTexts().toArray(i -> new String[i]), null)
+				.unlike(mlt.getUnlikeTexts().toArray(i -> new String[i]))
+				.maxQueryTerms(mlt.getMaxQueryTerms())
+				.minTermFreq(mlt.getMinTermFreq())
+				.minDocFreq(mlt.getMinDocFreq())
+				.minWordLength(mlt.getMinWordLength())
+				.maxWordLength(mlt.getMaxWordLength())
+				.minimumShouldMatch(mlt.getMinimumShouldMatch())
+		);
 	}
 	
 }
