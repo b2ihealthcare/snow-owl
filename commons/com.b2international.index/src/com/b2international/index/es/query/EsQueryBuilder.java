@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
-import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.slf4j.Logger;
@@ -35,6 +34,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.*;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
+import com.google.common.base.Strings;
 import com.google.common.collect.*;
 
 /**
@@ -140,8 +140,8 @@ public final class EsQueryBuilder {
 			visit((DoubleSetPredicate) expression);
 		} else if (expression instanceof ScriptQueryExpression){
 			visit((ScriptQueryExpression)expression);
-		} else if (expression instanceof MoreLikeThisQuery) {
-			visit((MoreLikeThisQuery) expression);
+		} else if (expression instanceof MoreLikeThisPredicate) {
+			visit((MoreLikeThisPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -287,29 +287,35 @@ public final class EsQueryBuilder {
 			query = QueryBuilders.matchBoolPrefixQuery(field, term)
 				.analyzer(predicate.analyzer())
 				.operator(Operator.AND);
-				break;
+			break;
 		case PHRASE:
 			query = QueryBuilders.matchPhraseQuery(field, term)
 						.analyzer(predicate.analyzer());
 			break;
 		case ALL:
-			query = QueryBuilders.matchQuery(field, term)
+			MatchQueryBuilder all = QueryBuilders.matchQuery(field, term)
 						.analyzer(predicate.analyzer())
 						.operator(Operator.AND);
+			if (!Strings.isNullOrEmpty(predicate.fuzziness())) {
+				all
+					.fuzziness(predicate.fuzziness())
+					.prefixLength(predicate.prefixLength())
+					.maxExpansions(predicate.maxExpansions());
+			}
+			query = all;
 			break;
 		case ANY:
-			query = QueryBuilders.matchQuery(field, term)
+			MatchQueryBuilder any = QueryBuilders.matchQuery(field, term)
 						.analyzer(predicate.analyzer())
 						.operator(Operator.OR)
 						.minimumShouldMatch(Integer.toString(minShouldMatch));
-			break;
-		case FUZZY:
-			query = QueryBuilders.matchQuery(field, term)
-						.analyzer(predicate.analyzer())
-						.fuzziness(Fuzziness.ONE)
-						.prefixLength(1)
-						.operator(Operator.AND)
-						.maxExpansions(10);
+			if (!Strings.isNullOrEmpty(predicate.fuzziness())) {
+				any
+					.fuzziness(predicate.fuzziness())
+					.prefixLength(predicate.prefixLength())
+					.maxExpansions(predicate.maxExpansions());
+			}
+			query = any;
 			break;
 		case PARSED:
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
@@ -414,7 +420,7 @@ public final class EsQueryBuilder {
 		deque.push(qb);
 	}
 	
-	private void visit(MoreLikeThisQuery mlt) {
+	private void visit(MoreLikeThisPredicate mlt) {
 		deque.push(
 			QueryBuilders.moreLikeThisQuery(mlt.getFields().toArray(i -> new String[i]), mlt.getLikeTexts().toArray(i -> new String[i]), null)
 				.unlike(mlt.getUnlikeTexts().toArray(i -> new String[i]))

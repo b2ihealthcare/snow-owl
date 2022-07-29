@@ -23,9 +23,9 @@ import com.b2international.commons.collections.Collections3;
 import com.google.common.base.Joiner;
 
 /**
- * @since 8.4.0
+ * @since 8.5.0
  */
-public final class MoreLikeThisQuery implements Expression {
+public final class MoreLikeThisPredicate implements Expression {
 
 	private Set<String> fields;
 	private List<String> likeTexts;
@@ -42,7 +42,7 @@ public final class MoreLikeThisQuery implements Expression {
 	private int minDocFreq = 1;
 	
 
-	MoreLikeThisQuery(Iterable<String> fields, Iterable<String> likeTexts, Iterable<String> unlikeTexts) {
+	MoreLikeThisPredicate(Iterable<String> fields, Iterable<String> likeTexts, Iterable<String> unlikeTexts) {
 		this.fields = Collections3.toImmutableSet(fields);
 		this.likeTexts = Collections3.toImmutableList(likeTexts);
 		this.unlikeTexts = Collections3.toImmutableList(unlikeTexts);

@@ -234,10 +234,6 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.PHRASE);
 	}
 	
-	public static TextPredicate matchTextFuzzy(String field, String term) {
-		return new TextPredicate(field, term, MatchType.FUZZY);
-	}
-	
 	public static TextPredicate matchTextParsed(String field, String term) {
 		return new TextPredicate(field, term, MatchType.PARSED);
 	}
@@ -305,7 +301,7 @@ public class Expressions {
 	}
 	
 	public static Expression moreLikeThis(Iterable<String> fields, Iterable<String> likeTexts, Iterable<String> unlikeTexts) {
-		return new MoreLikeThisQuery(fields, likeTexts, unlikeTexts);
+		return new MoreLikeThisPredicate(fields, likeTexts, unlikeTexts);
 	}
 
 }

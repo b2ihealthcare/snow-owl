@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		indexRevision(MAIN, first, second);
 		
 		final Expression expression = Expressions
-				.builder()
+				.bool()
 				.should(Expressions.exactMatch("field1", "field1"))
 				.should(Expressions.exactMatch("field2", "field2"))
 				.setMinimumNumberShouldMatch(2)
@@ -205,7 +205,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		
 		indexRevision(MAIN, first, second);
 		
-		final Expression expression = Expressions.builder().filter(Expressions.exactMatch("field1", "field1")).build();
+		final Expression expression = Expressions.exactMatch("field1", "field1");
 		final Query<RevisionData> query = Query.select(RevisionData.class).where(expression).build();
 		final Iterable<RevisionData> matches = search(MAIN, query);
 		
@@ -234,7 +234,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		
 		indexRevision(MAIN, first, second);
 		
-		final Expression expression = Expressions.builder()
+		final Expression expression = Expressions.bool()
 				.filter(Expressions.matchRange("from", 2, 3))
 				.filter(Expressions.matchRange("to", 3, 4))
 				.build();
@@ -264,7 +264,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		final RevisionData data = new RevisionData(STORAGE_KEY1, "abcd", "efgh");
 		indexRevision(MAIN, data);
 		
-		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextFuzzy("field1.text", "aacd")).build();
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextAny("field1.text", "aacd").withFuzziness("AUTO")).build();
 		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(1);

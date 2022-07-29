@@ -29,6 +29,7 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.*;
+import com.b2international.index.query.MoreLikeThisPredicate;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
 import com.google.common.collect.*;
@@ -148,7 +149,9 @@ public class Es8QueryBuilder {
 		} else if (expression instanceof DoubleSetPredicate) {
 			visit((DoubleSetPredicate) expression);
 		} else if (expression instanceof ScriptQueryExpression){
-			visit((ScriptQueryExpression)expression);
+			visit((ScriptQueryExpression) expression);
+		} else if (expression instanceof MoreLikeThisPredicate){
+			visit((MoreLikeThisPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -344,6 +347,9 @@ public class Es8QueryBuilder {
 					.query(term)
 					.analyzer(predicate.analyzer())
 					.operator(Operator.And)
+					.fuzziness(predicate.fuzziness())
+					.prefixLength(predicate.prefixLength())
+					.maxExpansions(predicate.maxExpansions())
 			);
 			break;
 		case ANY:
@@ -354,18 +360,9 @@ public class Es8QueryBuilder {
 					.analyzer(predicate.analyzer())
 					.operator(Operator.Or)
 					.minimumShouldMatch(Integer.toString(minShouldMatch))
-			);
-			break;
-		case FUZZY:
-			query = QueryBuilders.match(m -> m
-					.boost(this.boost)
-					.field(field)
-					.query(term)
-					.analyzer(predicate.analyzer())
-					.fuzziness("1")
-					.prefixLength(1)
-					.operator(Operator.And)
-					.maxExpansions(10)
+					.fuzziness(predicate.fuzziness())
+					.prefixLength(predicate.prefixLength())
+					.maxExpansions(predicate.maxExpansions())
 			);
 			break;
 		case PARSED:
@@ -535,6 +532,22 @@ public class Es8QueryBuilder {
 					.queries(disjunctQueries)
 					.tieBreaker((double) dismax.tieBreaker());
 		}));
+	}
+	
+	private void visit(MoreLikeThisPredicate mlt) {
+		deque.push(
+			QueryBuilders.moreLikeThis(m -> m
+				.fields(List.copyOf(mlt.getFields()))
+				.like(mlt.getLikeTexts().stream().map(likeText -> Like.of(l -> l.text(likeText))).collect(Collectors.toList()))
+				.unlike(mlt.getUnlikeTexts().stream().map(unlikeText -> Like.of(l -> l.text(unlikeText))).collect(Collectors.toList()))
+				.maxQueryTerms(mlt.getMaxQueryTerms())
+				.minDocFreq(mlt.getMinDocFreq())
+				.minTermFreq(mlt.getMinTermFreq())
+				.minWordLength(mlt.getMinWordLength())
+				.maxWordLength(mlt.getMaxWordLength())
+				.minimumShouldMatch(mlt.getMinimumShouldMatch())
+			)
+		);
 	}
 
 }
