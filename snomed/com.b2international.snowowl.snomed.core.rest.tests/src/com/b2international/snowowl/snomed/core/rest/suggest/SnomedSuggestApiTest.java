@@ -71,6 +71,25 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void suggestMlt() {
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("body structure"),
+				"suggester", Json.object(
+					"type", "mlt"
+				)
+			)
+		)
+			.statusCode(200)
+			.assertThat()
+			//Use default limit, the result in the current minified dataset should be "Body structure, altered from its original anatomical structure (morphologic abnormality)"
+			.body("limit", equalTo(1))
+			.body("total", greaterThanOrEqualTo(1))
+			.body("items[0].id", equalTo("118956008"));
+	}
+	
+	@Test
 	public void suggestConceptWithoutAlternativeTerms() {
 		String descriptionToDelete = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		String baseConceptId = createConcept(branchPath, Json.object(
