@@ -115,11 +115,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Filters concepts by their ancestors (direct or indirect parents).
 		 */
 		ANCESTOR, 
-		
+
 		/**
-		 * Set the minimum count of words that should match.
+		 * Filter by semantic similarity using a query vector
 		 */
-		MIN_OCCURENCE_COUNT, 
+		KNN, 
 	}
 
 	/**
@@ -210,6 +210,12 @@ public interface ConceptSearchRequestEvaluator {
 	default void evaluateTermFilterOptions(TermFilterSupport<?> requestBuilder, Options search) {
 		if (search.containsKey(OptionKey.TERM)) {
 			requestBuilder.filterByTerm(search.get(OptionKey.TERM, TermFilter.class));
+		}
+	}
+	
+	default void evaluateKnnFilterOptions(KnnFilterSupport<?> requestBuilder, Options search) {
+		if (search.containsKey(OptionKey.KNN)) {
+			requestBuilder.filterByKnn(search.get(OptionKey.KNN, KnnFilter.class));
 		}
 	}
 	

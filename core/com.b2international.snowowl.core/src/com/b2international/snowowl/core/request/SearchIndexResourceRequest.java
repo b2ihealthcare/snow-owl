@@ -23,10 +23,7 @@ import java.util.Set;
 
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.b2international.index.query.SortBy;
+import com.b2international.index.query.*;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
@@ -62,18 +59,46 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 			fields = configureFieldsToLoad(fields);
 		}
 		
-		final Hits<D> hits = searcher.search(Query.select(getSelect())
-				.from(getFrom())
-				.fields(fields)
-				.where(where)
-				.searchAfter(searchAfter())
-				.limit(limit())
-				.sortBy(querySortBy(context))
-				.withScores(trackScores())
-				.cached(cacheHits(context))
-				.build());
+		final KnnFilter knnFilter = getKnnFilter();
+		final String knnField = getKnnField();
+		final Hits<D> hits; 
+		
+		if (knnFilter != null && knnField != null) {
+			hits = searcher.knn(Knn.select(getSelect())
+					.field(getKnnField())
+					.k(limit())
+					.filter(where)
+					.numCandidates(knnFilter.getNumCandidates())
+					.queryVector(knnFilter.getQueryVector())
+					.build());
+		} else {
+			hits = searcher.search(Query.select(getSelect())
+					.from(getFrom())
+					.fields(fields)
+					.where(where)
+					.searchAfter(searchAfter())
+					.limit(limit())
+					.sortBy(querySortBy(context))
+					.withScores(trackScores())
+					.cached(cacheHits(context))
+					.build());
+		}
+		
 		
 		return toCollectionResource(context, hits);
+	}
+
+	protected String getKnnField() {
+		return null;
+	}
+
+	/**
+	 * Subclasses may choose to support knn filtering by providing a knn filter here. Please note that this API is experimental and subject to change. Especially as the underlying API on the Elasticsearch side is also marked as experimental.
+	 * 
+	 * @return a {@link KnnFilter} to perform knn filtering
+	 */
+	protected KnnFilter getKnnFilter() {
+		return null;
 	}
 
 	private final List<String> configureFieldsToLoad(List<String> fields) {
