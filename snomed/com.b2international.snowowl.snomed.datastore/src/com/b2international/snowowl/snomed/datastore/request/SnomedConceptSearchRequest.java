@@ -38,6 +38,7 @@ import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.KnnFilter;
 import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -123,7 +124,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		/**
 		 * Match concept descriptions where the description has language membership in one of the provided locales
 		 */
-		LANGUAGE_REFSET,
+		LANGUAGE_REFSET, 
+		
+		/**
+		 * Knn filter to match concepts against a specified query vector
+		 */
+		KNN,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -262,7 +268,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	
 	@Override
 	protected boolean trackScores() {
-		return containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI);
+		return containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI) || containsKey(OptionKey.KNN);
 	}
 
 	@Override
@@ -282,6 +288,16 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	@Override
 	protected SnomedConcepts createEmptyResult(int limit) {
 		return new SnomedConcepts(limit, 0);
+	}
+	
+	@Override
+	protected KnnFilter getKnnFilter() {
+		return get(OptionKey.KNN, KnnFilter.class);
+	}
+	
+	@Override
+	protected String getKnnField() {
+		return SnomedConceptDocument.Fields.SIMILARITY_FIELD;
 	}
 
 	private Expression addSearchProfile(final Expression searchProfileQuery, final Expression query) {

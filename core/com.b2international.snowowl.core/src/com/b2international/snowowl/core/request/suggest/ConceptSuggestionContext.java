@@ -57,6 +57,14 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 		this.likes = Collections3.toImmutableSortedSet(likes);
 		this.unlikes = Collections3.toImmutableSortedSet(unlikes);
 	}
+	
+	public SortedSet<String> likes() {
+		return likes;
+	}
+	
+	public SortedSet<String> unlikes() {
+		return unlikes;
+	}
 
 	public Stream<String> streamLikes() {
 		Multimap<ResourceURI, String> unlikeQueriesByResource = HashMultimap.create();
