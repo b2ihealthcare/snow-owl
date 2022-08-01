@@ -554,7 +554,6 @@ public class EsDocumentSearcher implements Searcher {
 		Es8QueryBuilder q = new Es8QueryBuilder(mapping, admin.settings(), admin.log());
 		co.elastic.clients.elasticsearch._types.query_dsl.Query esQuery = q.build(knn.getFilter());
 		
-		// TODO consider adding support for double primitive lists
 		FloatIterator it = knn.getQueryVector().iterator();
 		final List<Double> queryVector = new ArrayList<>(knn.getQueryVector().size());
 		while (it.hasNext()) {
@@ -574,7 +573,11 @@ public class EsDocumentSearcher implements Searcher {
 		), knn.getFrom());
 		
 		return new Hits<T>(response.hits().hits().stream().map(h -> {
-			return h.source();
+			T hit = h.source();
+			if (hit instanceof WithScore) {
+				((WithScore) hit).setScore(h.score().floatValue());
+			}
+			return hit;
 		}).collect(Collectors.toList()), null, response.hits().hits().size(), (int) response.hits().total().value());
 	}
 
