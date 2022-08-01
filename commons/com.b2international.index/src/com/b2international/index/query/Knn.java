@@ -17,6 +17,7 @@ package com.b2international.index.query;
 
 import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.floats.FloatList;
+import com.b2international.commons.exceptions.BadRequestException;
 
 /**
  * @since 8.5
@@ -99,8 +100,8 @@ public final class Knn<T> {
 			return this;
 		}
 		
-		public KnnBuilder<T> numCandidates(int numCandidates) {
-			this.numCandidates = numCandidates;
+		public KnnBuilder<T> numCandidates(Integer numCandidates) {
+			this.numCandidates = numCandidates != null ? numCandidates : k;
 			return this;
 		}
 		
@@ -115,6 +116,19 @@ public final class Knn<T> {
 		
 		@Override
 		public Knn<T> build() {
+			if (numCandidates < k) {
+				throw new BadRequestException("numCandidates ('%s') cannot be less than the selected limit of '%s'.", numCandidates, k);
+			}
+			
+			if (k > 10000) {
+				throw new BadRequestException("knn search cannot return more than 10k results.");
+			}
+			
+			if (numCandidates > 10000) {
+				throw new BadRequestException("numCandidates cannot be greater than 10000. It was '%s'", numCandidates);
+			}
+				
+				
 			Knn<T> knn = new Knn<>();
 			knn.from = from;
 			knn.field = field;
@@ -122,6 +136,8 @@ public final class Knn<T> {
 			knn.k = k;
 			knn.numCandidates = numCandidates;
 			knn.queryVector = queryVector;
+			
+			
 			return knn;
 		}
 		
