@@ -25,7 +25,7 @@ import java.util.Objects;
  * @since 4.7
  * @param <A> the argument type
  */
-public abstract class SingleArgumentPredicate<A> extends Predicate {
+public abstract class SingleArgumentPredicate<A extends Comparable<A>> extends Predicate {
 
 	private final A argument;
 

@@ -248,20 +248,20 @@ public class Es8QueryBuilder {
 		for (String field : Set.copyOf(termExpressionsByField.keySet())) {
 			Collection<Expression> termExpressions = termExpressionsByField.removeAll(field);
 			if (termExpressions.size() > 1) {
-				Set<Object> values = null;
+				SortedSet<Comparable<?>> values = null;
 				for (Expression expression : termExpressions) {
 					if (values != null && values.isEmpty()) {
 						break;
 					}
-					Set<Object> expressionValues;
+					SortedSet<Comparable<?>> expressionValues;
 					if (expression instanceof SingleArgumentPredicate<?>) {
-						expressionValues = Set.of(((SingleArgumentPredicate<?>) expression).getArgument());
+						expressionValues = ImmutableSortedSet.copyOf(Set.of(((SingleArgumentPredicate<?>) expression).getArgument()));
 					} else if (expression instanceof SetPredicate<?>) {
-						expressionValues = Set.copyOf(((SetPredicate<?>) expression).values());
+						expressionValues = ImmutableSortedSet.copyOf(((SetPredicate<?>) expression).values());
 					} else {
 						throw new IllegalStateException("Invalid clause detected when processing term/terms clauses: " + expression);
 					}
-					values = values == null ? expressionValues : Set.copyOf(Sets.intersection(values, expressionValues));
+					values = values == null ? expressionValues : ImmutableSortedSet.copyOf(Sets.intersection(values, expressionValues));
 				}
 				// remove all matching clauses first
 				clauses.removeAll(termExpressions);
@@ -405,7 +405,7 @@ public class Es8QueryBuilder {
 		));
 	}
 	
-	private <T> void visit(SetPredicate<T> predicate) {
+	private <T extends Comparable<T>> void visit(SetPredicate<T> predicate) {
 		toTermsQuery(predicate, predicate.values(), null);
 	}
 
@@ -414,7 +414,7 @@ public class Es8QueryBuilder {
 	}
 	
 	// consider max terms count and break into multiple terms queries if number of terms are greater than that value
-	private <T> void toTermsQuery(SetPredicate<T> predicate, final Set<T> terms, final Function<T, ?> valueConverter) {
+	private <T extends Comparable<T>> void toTermsQuery(SetPredicate<T> predicate, final SortedSet<T> terms, final Function<T, ?> valueConverter) {
 		
 		final Function<T, ?> _valueConverter;
 		if (valueConverter == null) {

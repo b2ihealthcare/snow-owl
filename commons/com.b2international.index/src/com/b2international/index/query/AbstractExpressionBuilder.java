@@ -15,10 +15,7 @@
  */
 package com.b2international.index.query;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -156,7 +153,7 @@ public abstract class AbstractExpressionBuilder<B extends AbstractExpressionBuil
 		for (String field : Set.copyOf(termExpressionsByField.keySet())) {
 			Collection<Expression> termExpressions = termExpressionsByField.removeAll(field);
 			if (termExpressions.size() > 1) {
-				Set<Object> values = Sets.newHashSet();
+				SortedSet<Comparable<?>> values = Sets.newTreeSet();
 				for (Expression expression : termExpressions) {
 					if (expression instanceof SingleArgumentPredicate<?>) {
 						values.add(((SingleArgumentPredicate<?>) expression).getArgument());
