@@ -70,7 +70,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 	
 	@Override
 	public void expand(List<Resource> results) {
-		if (results.isEmpty()) {
+		if (results.isEmpty() || expand().isEmpty()) {
 			return;
 		}
 
