@@ -297,25 +297,31 @@ public final class EsIndexAdmin implements IndexAdmin {
 		// FIXME: Is XContent a good alternative to a Map? getAsStructureMap is now private
 		Map<String, Object> analysisMap = ReflectionUtils.callMethod(Settings.class, analysisSettings, "getAsStructuredMap");
 		
-		return ImmutableMap.<String, Object>builder()
-				.put("analysis", analysisMap)
-				.put(IndexClientFactory.NUMBER_OF_SHARDS, settings().get(IndexClientFactory.NUMBER_OF_SHARDS))
-				.put(IndexClientFactory.NUMBER_OF_REPLICAS, settings().get(IndexClientFactory.NUMBER_OF_REPLICAS))
-				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
-				.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY))
-				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
-				// disable es refresh, we will do it manually on each commit
-				// XXX we intentionally disallow the configuration of the refresh_interval via configuration (required for consistent writes)
-				.put("refresh_interval", "-1")
-				// use async durability for the translog
-				// XXX we intentionally disallow the configuration of the translog.durability via configuration (required for consistent writes)
-				.put("translog.durability", "async")
-				// wait all shards during writes
-				// XXX we intentionally disallow the configuration of the write.wait_for_active_shards via configuration (required for consistent writes)
-				.put("write.wait_for_active_shards", "all")
-				// while this allows external configuration, due to the way ImmutableMap builder works, this won't allow override of the above listed settings, those are required for a correctly working revision index
-				.putAll(additionalTypeIndexSettings)
-				.build();
+		final Map<String, Object> settings = new LinkedHashMap<>();
+		
+		// put defaults in for shards and replicas, can be configured externally via index specific settings
+		settings.put(IndexClientFactory.NUMBER_OF_SHARDS, settings().get(IndexClientFactory.NUMBER_OF_SHARDS));
+		settings.put(IndexClientFactory.NUMBER_OF_REPLICAS, settings().get(IndexClientFactory.NUMBER_OF_REPLICAS));
+		settings.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
+		settings.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
+		settings.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY));
+		
+		// add external config
+		settings.putAll(additionalTypeIndexSettings);
+		
+		// override any external or missing configuration with hardcoded defaults, these are required for a correctly working revision index
+		settings.put("analysis", analysisMap);
+		// disable es refresh, we will do it manually on each commit
+		// XXX we intentionally disallow the configuration of the refresh_interval via configuration (required for consistent writes)
+		settings.put("refresh_interval", "-1");
+		// use async durability for the translog
+		// XXX we intentionally disallow the configuration of the translog.durability via configuration (required for consistent writes)
+		settings.put("translog.durability", "async");
+		// wait all shards during writes
+		// XXX we intentionally disallow the configuration of the write.wait_for_active_shards via configuration (required for consistent writes)
+		settings.put("write.wait_for_active_shards", "all");
+		
+		return settings;
 	}
 	
 	private void waitForYellowHealth(String... indices) {
@@ -563,6 +569,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 		esSettings.keySet().removeAll(LOCAL_SETTINGS);
 		// also remove type index specific mapping settings, those are dynamically not adjustable
 		esSettings.keySet().removeAll(mappings.getTypeIndexNames());
+		
+		// fail-safe
+		if (esSettings.isEmpty()) {
+			return;
+		}
 		
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
