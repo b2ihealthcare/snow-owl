@@ -21,12 +21,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -59,7 +61,12 @@ public interface ResourceTypeConverter {
 			Multimap<String, Resource> resourcesByIndex = Multimaps.index(results, Resource::getResourceType);
 			for (String resourceTypeToExpand : resourcesByIndex.keySet()) {
 				checkArgument(resourceTypeConverters.containsKey(resourceTypeToExpand), "ResourceTypeConverter implementation is missing for type: %s", resourceTypeToExpand);
-				resourceTypeConverters.get(resourceTypeToExpand).expand(context, expand, locales, resourcesByIndex.get(resourceTypeToExpand));
+				Stopwatch w = Stopwatch.createStarted();
+				Collection<Resource> resourcesToExpand = resourcesByIndex.get(resourceTypeToExpand);
+				resourceTypeConverters.get(resourceTypeToExpand).expand(context, expand, locales, resourcesToExpand);
+				if (w.elapsed(TimeUnit.MILLISECONDS) > 50) {
+					context.log().warn("Expanded {} {} in {}", resourcesToExpand.size(), resourceTypeToExpand, w);
+				}
 			}
 		}
 	}
