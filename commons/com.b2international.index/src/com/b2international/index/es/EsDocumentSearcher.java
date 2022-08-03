@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.lucene.search.TotalHits;
@@ -248,9 +247,6 @@ public class EsDocumentSearcher implements Searcher {
 		
 		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, query.getSortBy(), allHits.build());
 		admin.log().trace("Executed query '{}' in '{}'", query, w);
-		if (w.elapsed(TimeUnit.MILLISECONDS) > 50) {
-			admin.log().warn("SLOW ({}) query: '{}'", w, esQuery);
-		}
 		return hits;
 	}
 
