@@ -114,7 +114,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 						throw new IllegalArgumentException(String.format("Settings argument %s is not allowed. Expected format is propertyName#propertyValue.", property));
 					}
 					//Check if property has specified value
-					queryBuilder.filter(Expressions.exactMatch(String.format("settings.%s", propertyName), propertyValue));									
+					if (propertyValue.endsWith("*")) {
+						queryBuilder.filter(Expressions.prefixMatch(String.format("settings.%s", propertyName), propertyValue.substring(0, (propertyValue.length() - 1))));						
+					} else {
+						queryBuilder.filter(Expressions.exactMatch(String.format("settings.%s", propertyName), propertyValue));															
+					}
 				} else {
 					//Check if property exists
 					queryBuilder.filter(Expressions.exists(String.format("settings.%s", property)));
