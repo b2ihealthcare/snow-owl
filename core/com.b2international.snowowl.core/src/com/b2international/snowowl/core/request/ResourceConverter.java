@@ -70,7 +70,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 	
 	@Override
 	public void expand(List<Resource> results) {
-		if (results.isEmpty()) {
+		if (results.isEmpty() || expand().isEmpty()) {
 			return;
 		}
 
@@ -92,6 +92,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 						.one()
 						.filterByBranch(Branch.MAIN_PATH) // all resource commits go to the main branch
 						.filterByAffectedComponent(res.getId())
+						.setFields(CommitInfo.Fields.DEAFULT_FIELD_SELECTION)
 						.sortBy("timestamp:desc")
 						.build()
 						.execute(context())

@@ -162,7 +162,13 @@ public class EsDocumentSearcher implements Searcher {
 			.trackTotalHitsUpTo(Integer.MAX_VALUE);
 		
 		// field selection
-		final boolean fetchSource = applySourceFiltering(query.getFields(), primaryMapping, reqSource);
+		final boolean fetchSource;
+		if (toRead > 0) {
+			fetchSource = applySourceFiltering(query.getFields(), primaryMapping, reqSource);
+		} else {
+			reqSource.fetchSource(false);
+			fetchSource = false;
+		}
 		
 		// this won't load fields like _parent, _routing, _uid at all
 		// and _id in cases where we explicitly require the _source

@@ -119,8 +119,11 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		return addOption(OptionKey.STATUS, status);
 	}
 	
+	public RB filterBySettings(Iterable<String> settings) {
+		return addOption(OptionKey.SETTINGS, settings);
+	}	
+
 	public RB filterByOwner(Iterable<String> owner) {
 		return addOption(OptionKey.OWNER, owner);
 	}
-
 }

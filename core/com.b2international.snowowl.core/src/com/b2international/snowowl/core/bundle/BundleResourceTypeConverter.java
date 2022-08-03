@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.expand.ResourceExpander;
 
 /**
  * @since 8.0
@@ -52,11 +53,12 @@ public final class BundleResourceTypeConverter implements ResourceTypeConverter 
 	@Override
 	public void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<Resource> results) {
 		if (expand.containsKey("content")) {
+			final Options expandOptions = expand.getOptions("content");
 			// allow expanding content via content expansion, for now hit count only
 			results.forEach(bundle -> {
 				final Resources resources = ResourceRequests.prepareSearch()
 						.filterByBundleAncestorId(bundle.getId())
-						.setLimit(0)
+						.setLimit(expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : ResourceExpander.DEFAULT_LIMIT)
 						.build()
 						.execute(context);
 				bundle.setProperties("content", resources);

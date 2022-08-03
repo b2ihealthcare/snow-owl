@@ -29,6 +29,8 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.search.TermFilter;
+
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 
@@ -83,6 +85,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		 * Search resources by owner
 		 */
 		OWNER,
+		
+		/**
+		 * Search resources by the presence of a property or by a specific property-value pair in settings
+		 */
+		SETTINGS
 	}
 	
 	@Override
@@ -100,6 +107,28 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				.build());
 		}
 
+		if (containsKey(OptionKey.SETTINGS)) {
+			final Collection<String> properties = getCollection(OptionKey.SETTINGS, String.class);
+			properties.forEach( property -> {
+				if (property.contains("#")) {
+					final String propertyName = property.split("\\#")[0];
+					final String propertyValue = property.substring(propertyName.length() + 1, property.length());
+					if (Strings.isNullOrEmpty(propertyValue)) {
+						throw new IllegalArgumentException(String.format("Settings argument %s is not allowed. Expected format is propertyName#propertyValue.", property));
+					}
+					//Check if property has specified value
+					if (propertyValue.endsWith("*")) {
+						queryBuilder.filter(Expressions.prefixMatch(String.format("settings.%s", propertyName), propertyValue.substring(0, (propertyValue.length() - 1))));						
+					} else {
+						queryBuilder.filter(Expressions.exactMatch(String.format("settings.%s", propertyName), propertyValue));															
+					}
+				} else {
+					//Check if property exists
+					queryBuilder.filter(Expressions.exists(String.format("settings.%s", property)));
+				}
+			});
+		}
+		
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		addFilter(queryBuilder, OptionKey.OWNER, String.class, ResourceDocument.Expressions::owners);
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
