@@ -567,28 +567,26 @@ public final class EsIndexAdmin implements IndexAdmin {
 		Map<String, Object> esSettings = new HashMap<>(newSettings);
 		// remove any local settings from esSettings
 		esSettings.keySet().removeAll(LOCAL_SETTINGS);
-		// also remove type index specific mapping settings, those are dynamically not adjustable
+		// also remove type index specific mapping settings, those are dynamically not adjustable in the remote ES cluster
 		esSettings.keySet().removeAll(mappings.getTypeIndexNames());
 		
-		// fail-safe
-		if (esSettings.isEmpty()) {
-			return;
-		}
-		
-		for (DocumentMapping mapping : mappings.getMappings()) {
-			final String index = getTypeIndex(mapping);
-			// if any index exists, then update the settings based on the new settings
-			if (exists(mapping)) {
-				
-				// construct a type specific setting based on external configuration
-				Map<String, Object> typeIndexSettings = new HashMap<>(esSettings);
-				
-				try {
-					log.info("Applying settings '{}' changes in index {}...", esSettings, index);
-					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(typeIndexSettings));
-					checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
-				} catch (IOException e) {
-					throw new IndexException(String.format("Couldn't update settings of index '%s'", index), e);
+		// if some settings are local only, update only the local settings object
+		if (!esSettings.isEmpty()) {
+			for (DocumentMapping mapping : mappings.getMappings()) {
+				final String index = getTypeIndex(mapping);
+				// if any index exists, then update the settings based on the new settings
+				if (exists(mapping)) {
+					
+					// construct a type specific setting based on external configuration
+					Map<String, Object> typeIndexSettings = new HashMap<>(esSettings);
+					
+					try {
+						log.info("Applying settings '{}' changes in index {}...", esSettings, index);
+						AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(typeIndexSettings));
+						checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
+					} catch (IOException e) {
+						throw new IndexException(String.format("Couldn't update settings of index '%s'", index), e);
+					}
 				}
 			}
 		}
