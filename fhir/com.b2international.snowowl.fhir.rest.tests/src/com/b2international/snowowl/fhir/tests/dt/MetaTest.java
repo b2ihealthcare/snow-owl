@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.Before;
@@ -50,9 +48,7 @@ public class MetaTest extends FhirTest {
 
 	@Before
 	public void setup() throws Exception {
-		
-		DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
-		Date date = df.parse(TEST_DATE_STRING);
+		Date date = FhirDates.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
 		
 		meta = Meta.builder()

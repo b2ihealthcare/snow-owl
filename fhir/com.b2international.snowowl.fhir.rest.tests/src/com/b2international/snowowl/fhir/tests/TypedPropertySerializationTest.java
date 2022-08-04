@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package com.b2international.snowowl.fhir.tests;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
@@ -63,7 +63,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 	@Test
 	public void dateTypedPropertyTest() throws Exception {
 		
-		Date date = Dates.parse(TEST_DATE_STRING, FhirDates.DATE_SHORT_FORMAT);
+		Date date = Dates.parse(Dates.formatByGmt(FhirDates.parse(TEST_DATE_STRING), DateFormats.DEFAULT), DateFormats.DEFAULT);
 
 		final class TestClass {
 			
@@ -74,14 +74,14 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		TestClass testObject = new TestClass();
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
-		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-23T00:00:00.000+0000"));
+		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-23T00:00:00.000+00:00"));
 		
 	}
 	
 	@Test
 	public void dateTimeTypedPropertyTest() throws Exception {
 		
-		Date date = Dates.parse(TEST_DATE_STRING, FhirDates.DATE_TIME_FORMAT);
+		Date date = FhirDates.parse(TEST_DATE_STRING);
 
 		final class TestClass {
 			
@@ -98,7 +98,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 	@Test
 	public void instantTypedPropertyTest() throws Exception {
 		
-		Date date = Dates.parse(TEST_DATE_STRING, FhirDates.DATE_TIME_FORMAT);
+		Date date = FhirDates.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
 
 		final class TestClass {

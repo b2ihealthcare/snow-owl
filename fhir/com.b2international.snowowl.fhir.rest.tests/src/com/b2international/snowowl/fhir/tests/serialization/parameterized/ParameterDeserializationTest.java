@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.*;
@@ -210,7 +209,7 @@ public class ParameterDeserializationTest extends FhirTest {
 				+ "\"parameter\":["
 					+ "{\"name\":\"code\",\"valueCode\":\"1234\"},"
 					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct/version/20180131\"},"
-					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21.000+0100\"},"
+					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21.000+01:00\"},"
 					+ "{\"name\":\"displayLanguage\",\"valueCode\":\"us-en\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop1\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop2\"},"
@@ -227,7 +226,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals("1234", lookupRequest.getCode());
 		assertEquals("http://snomed.info/sct/version/20180131", lookupRequest.getSystem());
 		
-		assertEquals(Dates.parse("2018-03-09T20:50:21.000+0100", FhirDates.DATE_TIME_FORMAT), lookupRequest.getDate());
+		assertEquals(FhirDates.parse("2018-03-09T20:50:21.000+01:00"), lookupRequest.getDate());
 		
 		assertEquals("us-en", lookupRequest.getDisplayLanguage().getCodeValue());
 		

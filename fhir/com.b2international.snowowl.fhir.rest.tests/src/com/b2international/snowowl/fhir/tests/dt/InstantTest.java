@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.tests.FhirTest;
@@ -34,7 +33,7 @@ public class InstantTest extends FhirTest {
 	
 	@Test
 	public void buildFromDate() throws Exception {
-		Date date = Dates.parse(TEST_DATE_STRING, FhirDates.DATE_TIME_FORMAT);
+		Date date = FhirDates.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
 		assertEquals("\"2018-03-23T07:49:40Z\"", objectMapper.writeValueAsString(instant));
 	}

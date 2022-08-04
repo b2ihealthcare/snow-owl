@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@ package com.b2international.snowowl.fhir.tests.dt;
 
 import static org.junit.Assert.assertEquals;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -43,9 +41,7 @@ public class PeriodTest extends FhirTest {
 	
 	@Before
 	public void setup() throws Exception {
-		
-		DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
-		startDate = df.parse(TEST_DATE_STRING);
+		startDate = FhirDates.parse(TEST_DATE_STRING);
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(startDate);
 		cal.add(Calendar.DAY_OF_MONTH, 1);
@@ -64,8 +60,8 @@ public class PeriodTest extends FhirTest {
 	@Test
 	public void serialize() throws Exception {
 		
-		String expected = "{\"start\":\"2018-03-23T07:49:40.000+0000\"," + 
-				"\"end\":\"2018-03-24T07:49:40.000+0000\"}";
+		String expected = "{\"start\":\"2018-03-23T07:49:40.000+00:00\"," + 
+				"\"end\":\"2018-03-24T07:49:40.000+00:00\"}";
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(period));
 	}

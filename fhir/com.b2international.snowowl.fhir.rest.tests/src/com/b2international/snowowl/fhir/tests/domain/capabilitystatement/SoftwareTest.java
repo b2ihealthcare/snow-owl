@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class SoftwareTest extends FhirTest {
 							.build())
 						.build())
 				.version("version")
-				.releaseDate(FhirDates.parseDate(TEST_DATE_STRING))
+				.releaseDate(FhirDates.parse(TEST_DATE_STRING))
 				.build();
 	}
 	
@@ -66,7 +66,7 @@ public class SoftwareTest extends FhirTest {
 	private void validate(Software software) {
 		assertEquals("name", software.getName());
 		assertEquals("version", software.getVersion());
-		assertEquals(FhirDates.parseDate(TEST_DATE_STRING), software.getReleaseDate());
+		assertEquals(FhirDates.parse(TEST_DATE_STRING), software.getReleaseDate());
 		assertEquals("extensionUrl", software.getExtensions().iterator().next().getUrl().getUriValue());
 	}
 

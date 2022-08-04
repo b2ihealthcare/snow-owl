@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
@@ -125,7 +124,7 @@ public class PropertySerializationTest extends FhirTest {
 	@Test
 	public void dateTimePropertyTest() throws Exception {
 
-		Date date = Dates.parse("2018-03-09T20:50:21.000+0100", FhirDates.DATE_TIME_FORMAT);
+		Date date = FhirDates.parse("2018-03-09T20:50:21.000+01:00");
 		
 		Property property = Property.builder()
 			.code("123")
@@ -140,7 +139,7 @@ public class PropertySerializationTest extends FhirTest {
 		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
 		assertThat(jsonPath.getList("parameter").size(), is(3));
 		assertThat(jsonPath, FhirParameterMatcher.hasParameter("code", FhirDataType.CODE, "123"));
-		assertThat(jsonPath, FhirParameterMatcher.hasParameter("value", FhirDataType.DATETIME, "2018-03-09T19:50:21.000+0000"));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("value", FhirDataType.DATETIME, "2018-03-09T19:50:21.000+00:00"));
 		assertThat(jsonPath, FhirParameterMatcher.hasParameter("description", FhirDataType.STRING, "propertyDescription"));
 	}
 	

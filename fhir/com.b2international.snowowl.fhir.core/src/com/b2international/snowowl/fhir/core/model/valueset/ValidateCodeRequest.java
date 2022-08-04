@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.model.valueset;
 import java.util.Date;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
@@ -257,7 +256,7 @@ public class ValidateCodeRequest {
 		
 		public Builder date(String date) {
 			try {
-				this.date = Dates.parse(date, FhirDates.DATE_TIME_FORMAT);
+				this.date = FhirDates.parse(date);
 			} catch (SnowowlRuntimeException e) {
 				throw new BadRequestException("Incorrect date format '%s'.", date);
 			}
