@@ -64,8 +64,8 @@ public abstract class TermFilter implements Serializable {
 	
 	public abstract Expression toExpression(String field, String textFieldSuffix, String exactFieldSuffix, String prefixFieldSuffix);
 	
-	protected final String fieldAlias(String field, String textFieldSuffix) {
-		return String.join(".", field, textFieldSuffix);
+	protected final String fieldAlias(String field, String fieldSuffix) {
+		return String.join(".", field, fieldSuffix);
 	}
 	
 //	/**
