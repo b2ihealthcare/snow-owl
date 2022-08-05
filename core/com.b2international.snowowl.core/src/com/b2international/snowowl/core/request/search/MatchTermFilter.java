@@ -132,6 +132,9 @@ public final class MatchTermFilter extends TermFilter {
 			this.minShouldMatch = from.getMinShouldMatch();
 			this.ignoreStopwords = from.isIgnoreStopwords();
 			this.caseSensitive = from.isCaseSensitive();
+			this.fuzziness = from.getFuzziness();
+			this.prefixLength = from.getPrefixLength();
+			this.maxExpansions = from.getMaxExpansions();
 		}
 		
 		public Builder term(String term) {
