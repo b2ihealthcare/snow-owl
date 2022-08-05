@@ -222,6 +222,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			
 			if (termFilter != null) {
 				try {
+					// XXX filtering multiple ID values via the term parameter is not supported, filterById can be used for that use case and should not be handled here unless a use case is provided for it
 					final String singleTerm = termFilter.getSingleTermOrNull();
 					if (!Strings.isNullOrEmpty(singleTerm)) {
 						final ComponentCategory category = SnomedIdentifiers.getComponentCategory(singleTerm);
