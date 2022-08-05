@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.request.search;
+
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 
 /**
  * Interface to configure term filters in a given request
@@ -49,7 +51,7 @@ public interface TermFilterSupport<T> {
 	 * @see TermFilter#exactTermMatch(String)
 	 */
 	default T filterByExactTerm(final String exactTermFilter) {
-		return filterByTerm(exactTermFilter != null ? TermFilter.exactTermMatch(exactTermFilter) : null);
+		return filterByTerm(exactTermFilter != null ? TermFilter.exact().term(exactTermFilter).caseSensitive(true).build() : null);
 	}
 
 	/**
@@ -65,7 +67,7 @@ public interface TermFilterSupport<T> {
 	 * @see TermFilter#exactIgnoreCaseTermMatch(String)
 	 */
 	default T filterByExactTermIgnoreCase(final String exactTermFilter) {
-		return filterByTerm(exactTermFilter != null ? TermFilter.exactIgnoreCaseTermMatch(exactTermFilter) : null);
+		return filterByTerm(exactTermFilter != null ? TermFilter.exact().term(exactTermFilter).caseSensitive(false).build() : null);
 	}
 
 	/**
@@ -81,6 +83,6 @@ public interface TermFilterSupport<T> {
 	 * @see TermFilter#defaultTermMatch(String)
 	 */
 	default T filterByTerm(final String termFilter) {
-		return filterByTerm(termFilter != null ? TermFilter.defaultTermMatch(termFilter) : null);
+		return filterByTerm(termFilter != null ? TermFilter.match().term(termFilter).build() : null);
 	}
 }

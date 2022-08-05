@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.Test;
@@ -67,7 +66,7 @@ public class ExpansionParameterTest extends FhirTest {
 	@Test
 	public void serializeDateTimeParameter() throws Exception {
 		
-		Date date = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT).parse(TEST_DATE_STRING);
+		Date date = FhirDates.parse(TEST_DATE_STRING);
 		
 		DateTimeParameter parameter = DateTimeParameter.builder()
 			.name("paramName")
@@ -164,18 +163,18 @@ public class ExpansionParameterTest extends FhirTest {
 		
 		DateTimeParameter parameter = DateTimeParameter.builder()
 				.name("paramName")
-				.value(FhirDates.parseDate(TEST_DATE_STRING))
+				.value(FhirDates.parse(TEST_DATE_STRING))
 				.build();
 		
 		assertEquals("paramName", parameter.getName());
-		assertEquals(FhirDates.parseDate(TEST_DATE_STRING), parameter.getValue());
+		assertEquals(FhirDates.parse(TEST_DATE_STRING), parameter.getValue());
 		
 		printPrettyJson(parameter);
 		
 		DateTimeParameter readParameter = objectMapper.readValue(objectMapper.writeValueAsString(parameter), DateTimeParameter.class);
 		
 		assertEquals("paramName", readParameter.getName());
-		assertEquals(FhirDates.parseDate(TEST_DATE_STRING), readParameter.getValue());
+		assertEquals(FhirDates.parse(TEST_DATE_STRING), readParameter.getValue());
 	
 	}
 	

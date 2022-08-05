@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.rest.suggest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.elasticsearch.common.Strings;
@@ -24,10 +25,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.suggest.Suggester;
+import com.b2international.snowowl.core.request.suggest.Suggestions;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,11 +44,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value = "/suggest", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 public class SuggestRestService extends AbstractRestService {
 	
-	private static final SortField SORT_BY = SearchIndexResourceRequest.SCORE;
-	
 	@Operation(
 		summary = "Concept suggestion", 
-		description = "Returns an actual concept of the specified code system based on the source term.")
+		description = "Returns an actual concept of the specified code system based on the source term. Deprecated: due to the introduction of the selectable suggester implementation, the GET endpoint is no longer supported. Use the POST endpoint to properly configure your request.",
+		deprecated = true
+	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
@@ -63,15 +63,32 @@ public class SuggestRestService extends AbstractRestService {
 		final String acceptLanguage) {
 		
 		return CodeSystemRequests.prepareSuggestConcepts()
+				// set the old parameters first, then if any new parameters present, override the old ones
+				// configure from
+				.setFrom(params.getCodeSystemPath())
+				.setFrom(params.getFrom())
+				
+				// configure like
+				.filterByTerm(params.getTerm())
+				.filterByQuery(params.getQuery())
+				.setLike(params.getQuery() == null ? null : List.of(params.getQuery()))
+				.setLike(params.getLike())
+				
+				// configure unlike
+				.filterByExclusion(params.getMustNotQuery())
+				.setUnlike(params.getMustNotQuery() == null ? null : List.of(params.getMustNotQuery()))
+				.setUnlike(params.getUnlike())
+				
+				// configure suggester
+				.setMinOccurrenceCount(params.getMinOccurrenceCount())
+				.setSuggester(params.getSuggester() == null && params.getTerm() != null ? Suggester.of("term", Map.of()) : params.getSuggester())
+
+				// configure limits, locales, display
 				.setLimit(params.getLimit())
 				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay())
-				.setMinOccurrenceCount(params.getMinOccurrenceCount())
-				.filterByTerm(params.getTerm())
-				.filterByQuery(params.getQuery())
-				.filterByExclusion(params.getMustNotQuery())
-				.sortBy(SORT_BY)
-				.build(params.getCodeSystemPath())
+				
+				.buildAsync()
 				.execute(getBus());
 	}
 	
@@ -109,6 +126,7 @@ public class SuggestRestService extends AbstractRestService {
 		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 		final String acceptLanguage) {
 		
+		// TODO configure batching, throttling, remote job management, etc.
 		final List<Promise<Suggestions>> promises = body.stream()
 				.map(params -> getSuggest(params, acceptLanguage))
 				.collect(Collectors.toList());

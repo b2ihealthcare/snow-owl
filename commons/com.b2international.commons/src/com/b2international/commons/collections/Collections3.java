@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
  */
 package com.b2international.commons.collections;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -43,6 +41,14 @@ public abstract class Collections3 {
 	
 	public static <T> List<T> toImmutableList(T[] values) {
 		return values != null ? ImmutableList.copyOf(values) : Collections.emptyList();
+	}
+	
+	public static <T extends Comparable<T>> SortedSet<T> toImmutableSortedSet(Iterable<T> values) {
+		return values != null ? ImmutableSortedSet.copyOf(values) : Collections.emptySortedSet();
+	}
+	
+	public static <T extends Comparable<T>> SortedSet<T> toImmutableSortedSet(T[] values) {
+		return values != null ? ImmutableSortedSet.copyOf(values) : Collections.emptySortedSet();
 	}
 	
 	/**

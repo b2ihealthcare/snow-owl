@@ -38,8 +38,9 @@ import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
-import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.KnnFilter;
 import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequest;
+import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConve
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.google.common.base.Strings;
 
 /**
  * SNOMED CT Concept search request implementation.
@@ -122,7 +124,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		/**
 		 * Match concept descriptions where the description has language membership in one of the provided locales
 		 */
-		LANGUAGE_REFSET,
+		LANGUAGE_REFSET, 
+		
+		/**
+		 * Knn filter to match concepts against a specified query vector
+		 */
+		KNN,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -143,7 +150,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	
 	@Override
 	protected String extractSpecialOptionValue(Options options, Enum<?> key) {
-		return options.get(OptionKey.TERM, TermFilter.class).getTerm();
+		return options.get(OptionKey.TERM, TermFilter.class).getSingleTermOrNull();
 	}
 	
 	@Override
@@ -215,9 +222,13 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			
 			if (termFilter != null) {
 				try {
-					final ComponentCategory category = SnomedIdentifiers.getComponentCategory(termFilter.getTerm());
-					if (category == ComponentCategory.CONCEPT) {
-						conceptScoreMap.put(termFilter.getTerm(), Float.MAX_VALUE);
+					// XXX filtering multiple ID values via the term parameter is not supported, filterById can be used for that use case and should not be handled here unless a use case is provided for it
+					final String singleTerm = termFilter.getSingleTermOrNull();
+					if (!Strings.isNullOrEmpty(singleTerm)) {
+						final ComponentCategory category = SnomedIdentifiers.getComponentCategory(singleTerm);
+						if (category == ComponentCategory.CONCEPT) {
+							conceptScoreMap.put(singleTerm, Float.MAX_VALUE);
+						}
 					}
 				} catch (IllegalArgumentException e) {
 					// ignored
@@ -258,7 +269,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	
 	@Override
 	protected boolean trackScores() {
-		return containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI);
+		return containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI) || containsKey(OptionKey.KNN);
 	}
 
 	@Override
@@ -278,6 +289,16 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	@Override
 	protected SnomedConcepts createEmptyResult(int limit) {
 		return new SnomedConcepts(limit, 0);
+	}
+	
+	@Override
+	protected KnnFilter getKnnFilter() {
+		return get(OptionKey.KNN, KnnFilter.class);
+	}
+	
+	@Override
+	protected String getKnnField() {
+		return SnomedConceptDocument.Fields.SIMILARITY_FIELD;
 	}
 
 	private Expression addSearchProfile(final Expression searchProfileQuery, final Expression query) {

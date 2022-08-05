@@ -61,9 +61,9 @@ public class TypedPropertyDeserializer extends StdDeserializer<TypedProperty> {
 		switch (type) {
 		
 		case "String": return new StringProperty(value);
-		case "Date": return new DateProperty(FhirDates.parseDate(value));
-		case "DateTime": return new DateTimeProperty(FhirDates.parseDate(value));
-		case "Instant": return new InstantProperty(Instant.builder().instant(FhirDates.parseDate(value)).build());
+		case "Date": return new DateProperty(FhirDates.parse(value));
+		case "DateTime": return new DateTimeProperty(FhirDates.parse(value));
+		case "Instant": return new InstantProperty(Instant.builder().instant(FhirDates.parse(value)).build());
 
 		default:
 			throw new IllegalArgumentException("Unsupported property type '" + type + "'.");

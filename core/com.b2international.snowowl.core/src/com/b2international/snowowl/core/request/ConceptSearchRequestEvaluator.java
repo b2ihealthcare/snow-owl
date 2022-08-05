@@ -29,6 +29,8 @@ import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequestBuilder;
+import com.b2international.snowowl.core.request.search.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilterSupport;
 
 /**
  * @since 7.5
@@ -113,11 +115,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Filters concepts by their ancestors (direct or indirect parents).
 		 */
 		ANCESTOR, 
-		
+
 		/**
-		 * Set the minimum count of words that should match.
+		 * Filter by semantic similarity using a query vector
 		 */
-		MIN_OCCURENCE_COUNT, 
+		KNN, 
 	}
 
 	/**
@@ -208,6 +210,12 @@ public interface ConceptSearchRequestEvaluator {
 	default void evaluateTermFilterOptions(TermFilterSupport<?> requestBuilder, Options search) {
 		if (search.containsKey(OptionKey.TERM)) {
 			requestBuilder.filterByTerm(search.get(OptionKey.TERM, TermFilter.class));
+		}
+	}
+	
+	default void evaluateKnnFilterOptions(KnnFilterSupport<?> requestBuilder, Options search) {
+		if (search.containsKey(OptionKey.KNN)) {
+			requestBuilder.filterByKnn(search.get(OptionKey.KNN, KnnFilter.class));
 		}
 	}
 	

@@ -28,8 +28,11 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.search.TermFilter;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 8.0
@@ -131,7 +134,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
-		addTitleExactFilter(queryBuilder);
+		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addUrlFilter(queryBuilder);
 		
 		prepareAdditionalFilters(context, queryBuilder);
@@ -214,35 +217,27 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		addFilter(queryBuilder, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
 	}
 	
-	protected final ExpressionBuilder addTitleFilter(ExpressionBuilder queryBuilder) {
+	protected final void addTitleFilter(ExpressionBuilder queryBuilder) {
 		if (!containsKey(OptionKey.TITLE)) {
-			return queryBuilder;
+			return;
 		}
 		
 		final TermFilter termFilter = get(OptionKey.TITLE, TermFilter.class);
 		
-		final ExpressionBuilder expressionBuilder = Expressions.bool();
+		final Set<String> terms = termFilter.getTerms();
 		
-		if (termFilter.isFuzzy()) {
-			expressionBuilder.should(ResourceDocument.Expressions.titleFuzzy(termFilter.getTerm()));
-		} else if (termFilter.isExact()) {
-			expressionBuilder.should(ResourceDocument.Expressions.matchTitleExact(termFilter.getTerm(), termFilter.isCaseSensitive()));
-		} else if (termFilter.isParsed()) {
-			expressionBuilder.should(ResourceDocument.Expressions.parsedTitle(termFilter.getTerm()));
-		} else if (termFilter.isAnyMatch()) {
-			expressionBuilder.should(ResourceDocument.Expressions.minShouldMatchTermDisjunctionQuery(termFilter));
+		// in case of searching for a single term in the term filter add a boosted query in case that term matches an ID
+		final Expression titleQuery = termFilter.toExpression(ResourceDocument.Fields.TITLE);
+		if (terms.size() == 1) {
+			final ExpressionBuilder expressionBuilder = Expressions.bool();
+			expressionBuilder.should(titleQuery);
+			expressionBuilder.should(Expressions.boost(ResourceDocument.Expressions.id(Iterables.getOnlyElement(terms)), 1000.0f));
+			queryBuilder.must(expressionBuilder.build());
 		} else {
-			expressionBuilder.should(ResourceDocument.Expressions.defaultTitleDisjunctionQuery(termFilter));
+			queryBuilder.must(titleQuery);
 		}
-		
-		expressionBuilder.should(Expressions.boost(ResourceDocument.Expressions.id(termFilter.getTerm()), 1000.0f));
-		return queryBuilder.must(expressionBuilder.build());
 	}
 	
-	protected final void addTitleExactFilter(ExpressionBuilder queryBuilder) {
-		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
-	}
-
 	@Override
 	protected final Class<ResourceDocument> getSelect() {
 		return ResourceDocument.class;

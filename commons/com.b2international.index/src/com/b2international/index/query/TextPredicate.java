@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.b2international.index.Analyzers;
 public final class TextPredicate extends Predicate {
 
 	public enum MatchType {
-		ALL, ANY, PHRASE, FUZZY, PARSED, BOOLEAN_PREFIX
+		ALL, ANY, PHRASE, PARSED, BOOLEAN_PREFIX
 	}
 	
 	private final String term;
@@ -32,6 +32,10 @@ public final class TextPredicate extends Predicate {
 	private final int minShouldMatch;
 	
 	private Analyzers analyzer;
+	
+	private String fuzziness;
+	private int maxExpansions = 10;
+	private int prefixLength = 1;
 	
 	TextPredicate(String field, String term, MatchType type) {
 		this(field, term, type, 1);
@@ -62,6 +66,29 @@ public final class TextPredicate extends Predicate {
 	
 	public TextPredicate withAnalyzer(Analyzers analyzer) {
 		this.analyzer = analyzer;
+		return this;
+	}
+	
+	public String fuzziness() {
+		return fuzziness;
+	}
+	
+	public int maxExpansions() {
+		return maxExpansions;
+	}
+	
+	public int prefixLength() {
+		return prefixLength;
+	}
+	
+	public TextPredicate withFuzziness(String fuzziness) {
+		return withFuzziness(fuzziness, prefixLength, maxExpansions);
+	}
+	
+	public TextPredicate withFuzziness(String fuzziness, Integer prefixLength, Integer maxExpansions) {
+		this.fuzziness = fuzziness;
+		this.prefixLength = prefixLength != null ? prefixLength : 1;
+		this.maxExpansions = maxExpansions != null ? maxExpansions : 10;
 		return this;
 	}
 	

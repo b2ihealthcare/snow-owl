@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class CodeSystemTest extends FhirTest {
 			
 		assertEquals(PublicationStatus.ACTIVE.getCode(), readCodeSystem.getStatus());
 		assertEquals(CodeSystemContentMode.COMPLETE.getCode(), readCodeSystem.getContent());
-		assertEquals(FhirDates.parseDate("2021-01-13T08:22:32+00:00"), readCodeSystem.getDate());
+		assertEquals(FhirDates.parse("2021-01-13T08:22:32+00:00"), readCodeSystem.getDate());
 		assertEquals("name", readCodeSystem.getContacts().iterator().next().getName());
 		
 	}
@@ -139,7 +139,7 @@ public class CodeSystemTest extends FhirTest {
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
 			.description("Code system description")
-			.date("2018-03-09T19:50:21.000+0000")
+			.date("2018-03-09T19:50:21.000+00:00")
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.addIdentifier(identifier)
 			.language("en")

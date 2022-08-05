@@ -56,7 +56,7 @@ public class DateTimeConceptProperty extends ConceptProperty<Date> {
 		 * For deserialization support. The input value is passed to FhirDates so multiple date formats can be accepted.
 		 */
 		protected Builder valueDateTime(final String value) {
-			this.value = FhirDates.parseDate(value);
+			this.value = FhirDates.parse(value);
 			return this;
 		}
 

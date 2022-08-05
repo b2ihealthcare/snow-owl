@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,21 @@
 package com.b2international.snowowl.fhir.tests.domain.codesystem;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
-import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.property.*;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.restassured.path.json.JsonPath;
 
@@ -108,14 +104,14 @@ public class ConceptPropertyTest extends FhirTest {
 	@Test
 	public void serializeDateConceptProperty() throws Exception {
 		
-		Date date = Dates.parse("2018-03-23T08:49:40.000+0100", FhirDates.DATE_TIME_FORMAT);
+		Date date = FhirDates.parse("2018-03-23T08:49:40.000+0100");
 		
 		DateTimeConceptProperty conceptProperty = DateTimeConceptProperty.builder()
 			.code("childConcept")
 			.value(date)
 			.build();
 		
-		String expected = "{\"code\":\"childConcept\",\"valueDateTime\":\"2018-03-23T07:49:40.000+0000\"}";
+		String expected = "{\"code\":\"childConcept\",\"valueDateTime\":\"2018-03-23T07:49:40.000+00:00\"}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
 	

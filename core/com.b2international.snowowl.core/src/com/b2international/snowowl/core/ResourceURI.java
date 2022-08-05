@@ -155,6 +155,11 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		}
 		return withPath(getPath() + timestampPart);
 	}
+	
+	@JsonIgnore
+	public ResourceURIWithQuery withQueryPart(String query) {
+		return ResourceURIWithQuery.of(resourceType, String.join(Branch.SEPARATOR, resourceId, path), query);
+	}
 
 	@JsonIgnore
 	public ResourceURI withoutPath() {

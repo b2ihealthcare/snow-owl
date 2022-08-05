@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -54,8 +52,7 @@ public class IdentiferTest extends FhirTest {
 	
 	@Before
 	public void setup() throws Exception {
-		DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
-		Date startDate = df.parse(TEST_DATE_STRING);
+		Date startDate = FhirDates.parse(TEST_DATE_STRING);
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(startDate);
 		cal.add(Calendar.DAY_OF_MONTH, 1);
@@ -106,8 +103,8 @@ public class IdentiferTest extends FhirTest {
 		assertThat(jsonPath.getString("type.coding[0].code"), equalTo("codingCode"));
 		assertThat(jsonPath.getString("type.coding[0].display"), equalTo("codingDisplay"));
 
-		assertThat(jsonPath.getString("period.start"), equalTo("2018-03-23T07:49:40.000+0000"));
-		assertThat(jsonPath.getString("period.end"), equalTo("2018-03-24T07:49:40.000+0000"));
+		assertThat(jsonPath.getString("period.start"), equalTo("2018-03-23T07:49:40.000+00:00"));
+		assertThat(jsonPath.getString("period.end"), equalTo("2018-03-24T07:49:40.000+00:00"));
 		assertThat(jsonPath.getString("assigner.reference"), equalTo("reference url"));
 		assertThat(jsonPath.getString("assigner.display"), equalTo("displayString"));
 		assertThat(jsonPath.getString("assigner.identifier.system"), equalTo("system"));

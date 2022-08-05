@@ -20,9 +20,9 @@ import java.util.List;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ecl.EclLabelerRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
-import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
 import com.b2international.snowowl.core.request.ValueSetMemberSearchRequestBuilder;
+import com.b2international.snowowl.core.request.suggest.ConceptSuggestionRequestBuilder;
 
 /**
  * @since 4.7

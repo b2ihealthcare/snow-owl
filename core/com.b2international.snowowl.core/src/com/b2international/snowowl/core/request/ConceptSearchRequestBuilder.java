@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
+import com.b2international.snowowl.core.request.search.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilterSupport;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -28,7 +30,7 @@ import com.google.common.collect.FluentIterable;
  */
 public final class ConceptSearchRequestBuilder 
 		extends SearchPageableCollectionResourceRequestBuilder<ConceptSearchRequestBuilder, ServiceProvider, Concepts>
-		implements SystemRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
+		implements SystemRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder>, KnnFilterSupport<ConceptSearchRequestBuilder> {
 
 	/**
 	 * Filters matches from a single CodeSystem. 
@@ -88,6 +90,14 @@ public final class ConceptSearchRequestBuilder
 		return addOption(OptionKey.TERM, termFilter);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ConceptSearchRequestBuilder filterByKnn(KnnFilter knnFilter) {
+		return addOption(OptionKey.KNN, knnFilter);
+	}
+	
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
 	 * 

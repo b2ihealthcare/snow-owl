@@ -37,7 +37,7 @@ import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.test.commons.Services;
 
 /**
@@ -188,7 +188,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String bundleId1 = createBundle("exactId1", ROOT, title1);
 		final String bundleId2 = createBundle("exactId2", ROOT, title2);
 		
-		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.parsedTermMatch("Bundle*"))))
+		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.parsed().term("Bundle*").build())))
 			.containsOnlyOnce(bundleId1, bundleId2);
 	}
 
@@ -199,10 +199,10 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String bundleId = createBundle(id, ROOT, title);
 		
 		// Only 1 Levenshtein distance is allowed
-		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.fuzzyMatch("uncle title"))))
+		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.match().term("uncle title").fuzzy().build())))
 			.isEmpty();
 
-		assertThat( executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.fuzzyMatch("Buncle title"))))
+		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.match().term("Buncle title").fuzzy().build())))
 			.containsOnly(bundleId);
 	}
 
@@ -221,7 +221,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 			.containsOnlyOnce(id1, id2);
 
 		// Match all word stop words ignored
-		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.defaultTermMatch("the search algorithm of").withIgnoreStopwords())))
+		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.match().term("the search algorithm of").ignoreStopwords(true).build())))
 			.containsOnlyOnce(id1, id2);
 
 		// Match prefixes
@@ -248,15 +248,15 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String id3 = createBundle("title_id_3", ROOT, title3);
 		
 		// 3 word of "General clinical state finding" must present
-		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.minTermMatch("General clinical state finding", 3))))
+		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.match().term("General clinical state finding").minShouldMatch(3).build())))
 			.containsOnlyOnce(id3);
 
 		// 2 word of "General clinical state finding" must present
-		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.minTermMatch("General clinical state finding", 2))))
+		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.match().term("General clinical state finding").minShouldMatch(2).build())))
 			.containsOnlyOnce(id1, id2, id3);
 		
 		// 3 word prefix of "en cli sta fin" must present
-		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.minTermMatch("en cli sta fin", 3))))
+		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByTitle(TermFilter.match().term("en cli sta fin").minShouldMatch(3).build())))
 			.containsOnlyOnce(id3, id2);
 	}
 	

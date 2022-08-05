@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -85,12 +85,12 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		List<String> fields = replaceFieldsToLoad(fields());
 		
 		// prepare filters
-		final ExpressionBuilder resourcesQuery = Expressions.builder()
+		final ExpressionBuilder resourcesQuery = Expressions.bool()
 				// the current resource type and versions of that resource type
 				.filter(ResourceDocument.Expressions.resourceType(getResourceType())); 
 		
 		// resource and version doc has id field
-		addIdFilter(resourcesQuery, ids -> Expressions.builder()
+		addIdFilter(resourcesQuery, ids -> Expressions.bool()
 				.should(ResourceDocument.Expressions.ids(ids))
 				.should(ResourceDocument.Expressions.urls(ids))
 				.build()); 
@@ -100,7 +100,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		addFilter(resourcesQuery, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		
 		if (containsKey(OptionKey.TITLE)) {
-			resourcesQuery.must(ResourceDocument.Expressions.defaultTitleDisjunctionQuery(TermFilter.defaultTermMatch(getString(OptionKey.TITLE))));
+			resourcesQuery.must(TermFilter.match().term(getString(OptionKey.TITLE)).build().toExpression(ResourceDocument.Fields.TITLE));
 		}
 		
 		Hits<ResourceFragment> internalResources = context.service(RevisionSearcher.class)

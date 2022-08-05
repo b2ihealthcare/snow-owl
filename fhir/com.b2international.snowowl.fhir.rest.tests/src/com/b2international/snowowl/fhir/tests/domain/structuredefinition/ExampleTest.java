@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.b2international.snowowl.fhir.tests.domain.structuredefinition;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-
-import java.text.SimpleDateFormat;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,14 +58,12 @@ public class ExampleTest extends FhirTest {
 		Example dateExample = Example.builder()
 				.id("id")
 				.label("label")
-				.value(new DateProperty(FhirDates.parseDate(TEST_DATE_STRING)))
+				.value(new DateProperty(FhirDates.parse(TEST_DATE_STRING)))
 				.build();
-		
-		String date = new SimpleDateFormat(FhirDates.DATE_SHORT_FORMAT).format(FhirDates.parseDate(TEST_DATE_STRING));
 		
 		assertEquals("id", dateExample.getId());
 		assertEquals("label", dateExample.getLabel());
-		assertEquals(date, dateExample.getValue().getValueString());
+		assertEquals(TEST_DATE_STRING, dateExample.getValue().getValueString());
 	}
 	
 	private void validate(Example example) {

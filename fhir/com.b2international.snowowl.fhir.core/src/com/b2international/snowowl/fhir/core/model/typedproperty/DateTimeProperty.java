@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.model.typedproperty;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.b2international.snowowl.fhir.core.FhirDates;
@@ -35,8 +34,7 @@ public class DateTimeProperty extends TypedProperty<Date> {
 	@Override
 	public String getValueString() {
 		Date date = getValue();
-		final SimpleDateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
-		return df.format(date);
+		return FhirDates.format(date);
 	}
 	
 }

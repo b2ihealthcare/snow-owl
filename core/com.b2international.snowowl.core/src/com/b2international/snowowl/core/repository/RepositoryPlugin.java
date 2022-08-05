@@ -25,7 +25,6 @@ import javax.net.ssl.SSLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
@@ -90,10 +89,6 @@ public final class RepositoryPlugin extends Plugin {
 		int maxThreads = repositoryConfiguration.getMaxThreads();
 		LOG.debug("Preparing EventBus communication (maxThreads={})", maxThreads);
 		env.services().registerService(IEventBus.class, EventBusUtil.getBus("server", maxThreads));
-		LOG.debug("Preparing JSON support");
-		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		mapper.registerModule(new PrimitiveCollectionModule());
-		env.services().registerService(ObjectMapper.class, mapper);
 		// initialize Notification support
 		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class)));
 		env.services().registerService(RepositoryCommitNotificationSender.class, new RepositoryCommitNotificationSender());

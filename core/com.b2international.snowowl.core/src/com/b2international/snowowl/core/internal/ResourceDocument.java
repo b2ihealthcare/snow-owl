@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.regexp;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +38,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.repository.RevisionDocument;
-import com.b2international.snowowl.core.request.TermFilter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -130,22 +132,6 @@ public final class ResourceDocument extends RevisionDocument {
 	 */
 	public static final class Expressions extends RevisionDocument.Expressions {
 		
-		public static Expression defaultTitleDisjunctionQuery(final TermFilter termFilter) {
-			return dismaxWithScoreCategories(
-				matchTitleExactCaseInsensitive(termFilter.getTerm()),
-				matchTextAll(Fields.TITLE_EXACT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
-				matchBooleanPrefix(Fields.TITLE_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
-				matchTextAll(Fields.TITLE_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
-			);
-		}
-		
-		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
-			return dismaxWithScoreCategories(
-				matchTextAny(Fields.TITLE_TEXT, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
-				matchTextAny(Fields.TITLE_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
-			);
-		}
-		
 		public static Expression url(String url) {
 			return exactMatch(Fields.URL, url);
 		}
@@ -162,14 +148,6 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.RESOURCE_TYPE, resourceTypes);
 		}
 		
-		public static Expression matchTitleExact(String term, boolean isCaseSensitive) {
-			return matchTextAll(isCaseSensitive ? Fields.TITLE : Fields.TITLE_EXACT, term);
-		}
-
-		public static Expression matchTitleExactCaseInsensitive(String term) {
-			return matchTitleExact(term, false);
-		}
-
 		public static Expression title(String title) {
 			return exactMatch(Fields.TITLE, title);
 		}
@@ -180,22 +158,6 @@ public final class ResourceDocument extends RevisionDocument {
 		
 		public static Expression matchTitleRegex(String regex) {
 			return regexp(Fields.TITLE, regex);
-		}
-		
-		public static Expression matchTitleAllPrefixesPresent(String term) {
-			return matchTextAll(Fields.TITLE_PREFIX, term);
-		}
-		
-		public static Expression matchTitleAllTermsPresent(String term) {
-			return matchTextAll(Fields.TITLE_TEXT, term);
-		}
-		
-		public static Expression titleFuzzy(String title) {
-			return matchTextFuzzy(Fields.TITLE_TEXT, title);
-		}
-		
-		public static Expression parsedTitle(String title) {
-			return matchTextParsed(Fields.TITLE_TEXT, title);
 		}
 		
 		public static Expression toolingIds(Iterable<String> toolingIds) {

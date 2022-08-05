@@ -105,8 +105,8 @@
         <setEntry value="org.apache.commons.lang@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpclient*4.5.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpcore*4.4.12@default:default"/>
         <setEntry value="org.apache.xmlgraphics@default:default"/>
         <setEntry value="org.ccil.cowan.tagsoup@default:default"/>
         <setEntry value="org.eclipse.ant.core@default:default"/>
@@ -195,6 +195,7 @@
         <setEntry value="com.b2international.commons.test@default:false"/>
         <setEntry value="com.b2international.commons@default:default"/>
         <setEntry value="com.b2international.groovy@default:default"/>
+        <setEntry value="com.b2international.index.es8@default:default"/>
         <setEntry value="com.b2international.index.test.tools@default:default"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class Instant extends Element {
 	
 	@JsonCreator
 	Instant(String instant) {
-		this(null, null, FhirDates.parseDate(instant).toInstant());
+		this(null, null, FhirDates.parse(instant).toInstant());
 	}
 	
 	Instant(String id, List<Extension<?>> extensions, java.time.Instant instant) {

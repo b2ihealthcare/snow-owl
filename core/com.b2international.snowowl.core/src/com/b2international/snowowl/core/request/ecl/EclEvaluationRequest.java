@@ -483,7 +483,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 
 		switch (lexicalSearchType) {
 			case MATCH:
-				return termMatchExpression(com.b2international.snowowl.core.request.TermFilter.defaultTermMatch(term));
+				return termMatchExpression(com.b2international.snowowl.core.request.search.TermFilter.match().term(term).build());
 			case WILD:
 				final String regex = term.replace("*", ".*");
 				return termRegexExpression(regex);
@@ -528,7 +528,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		return throwUnsupported("Unable to provide regex term expression for term filter: " + regex);
 	}
 
-	protected Expression termMatchExpression(com.b2international.snowowl.core.request.TermFilter termFilter) {
+	protected Expression termMatchExpression(com.b2international.snowowl.core.request.search.MatchTermFilter termFilter) {
 		return throwUnsupported("Unable to provide term expression for term filter: " + termFilter.getTerm());
 	}
 	

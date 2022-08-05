@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.elasticsearch.core.Set;
 
+import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -39,7 +40,9 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
+import com.b2international.snowowl.core.request.suggest.ConceptSuggester;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
@@ -73,11 +76,18 @@ public final class SnowOwlPlugin extends Plugin {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
+		final ClassPathScanner scanner = env.service(ClassPathScanner.class);
+		
+		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
+		mapper.registerModule(new PrimitiveCollectionModule());
+		env.services().registerService(ObjectMapper.class, mapper);
+		
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver(true));
 		env.services().registerService(PathTerminologyResourceResolver.class, new PathTerminologyResourceResolver.Default());
 		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
-		env.services().registerService(ResourceTypeConverter.Registry.class, new ResourceTypeConverter.Registry(env.service(ClassPathScanner.class)));
+		env.services().registerService(ResourceTypeConverter.Registry.class, new ResourceTypeConverter.Registry(scanner));
+		env.services().registerService(ConceptSuggester.Registry.class, new ConceptSuggester.Registry(scanner, mapper));
 		
 		// configure global branch name validator
 		env.services().registerService(BranchNameValidator.class, new BranchNameValidator.Default(

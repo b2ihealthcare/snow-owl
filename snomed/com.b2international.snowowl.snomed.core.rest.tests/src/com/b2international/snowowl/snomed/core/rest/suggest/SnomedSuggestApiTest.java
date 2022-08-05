@@ -26,6 +26,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
@@ -52,13 +53,40 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void suggestTerm() {
-		getSuggest(prepareJson().with("term", "body structure"))
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("body structure"),
+				"suggester", Json.object(
+					"type", "term"
+				)
+			)
+		)
 			.statusCode(200)
 			.assertThat()
 			//Use default limit
 			.body("limit", equalTo(1))
 			.body("total", greaterThanOrEqualTo(1))
 			.body("items[0].id", equalTo(BODY_STRUCTURE_ID));
+	}
+	
+	@Test
+	public void suggestMlt() {
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("body structure"),
+				"suggester", Json.object(
+					"type", "mlt"
+				)
+			)
+		)
+			.statusCode(200)
+			.assertThat()
+			//Use default limit, the result in the current minified dataset should be "Body structure, altered from its original anatomical structure (morphologic abnormality)"
+			.body("limit", equalTo(1))
+			.body("total", greaterThanOrEqualTo(1))
+			.body("items[0].id", equalTo("118956008"));
 	}
 	
 	@Test
@@ -121,7 +149,15 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 		SnomedComponentRestRequests.deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionToDelete, false).statusCode(204);
 		
 		// suggest should still work without any errors
-		getSuggest(prepareJson().with("query", baseConceptId).with("codeSystemPath", getDefaultSnomedResourceUri().withoutResourceType()))
+		suggest(
+			Json.object(
+				"from", getDefaultSnomedResourceUri().withoutResourceType(),
+				"like", Json.array(String.format("%s?ecl=%s", getDefaultSnomedResourceUri().withoutResourceType(), baseConceptId)),
+				"suggester", Json.object(
+					"type", "term"
+				)
+			)
+		)
 			.statusCode(200)
 			.assertThat()
 			// Use default limit
@@ -132,7 +168,15 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void suggestTerm_Post() {
-		postSuggest(prepareJson().with("term", "finding clinical"))
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("finding clinical"),
+				"suggester", Json.object(
+					"type", "term"
+				)
+			)
+		)
 			.statusCode(200)
 			.assertThat()
 			//Use default limit
@@ -143,7 +187,15 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void suggestNoMatch() {
-		getSuggest(prepareJson().with("term", "empty result term"))
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("empty result term"),
+				"suggester", Json.object(
+					"type", "term"
+				)
+			)
+		)
 			.statusCode(200)
 			.assertThat()
 			.body("limit", equalTo(1))
@@ -153,10 +205,17 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void suggestTermMinOccurrence() {
-		getSuggest(prepareJson()
-				.with("term", "special concept")
-				.with("minOccurrenceCount", 1)
-				.with("limit", Integer.MAX_VALUE))
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("special concept"),
+				"suggester", Json.object(
+					"type", "term",
+					"minOccurenceCount", 1
+				),
+				"limit", Integer.MAX_VALUE
+			)
+		)
 		.statusCode(200)
 		.assertThat()
 		.body("total", greaterThanOrEqualTo(2))
@@ -167,10 +226,17 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void suggestQueryMinOccurrence() {
-		getSuggest(prepareJson()
-				.with("query", String.join(" OR ", SPECIAL_CONCEPT_ID, ATTRIBUTE_ID))
-				.with("minOccurrenceCount", 2)
-				.with("limit", Integer.MAX_VALUE))
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array(String.format("%s?ecl=%s", CODE_SYSTEM_PATH, Ecl.or(SPECIAL_CONCEPT_ID, ATTRIBUTE_ID))),
+				"suggester", Json.object(
+					"type", "term",
+					"minOccurenceCount", 2
+				),
+				"limit", Integer.MAX_VALUE
+			)
+		)
 		.statusCode(200)
 		.assertThat()
 		.body("items.id", hasItems(CONCEPT_HISTORY_ATTRIBUTE_ID, CONCEPT_MODEL_ATTRIBUTE_ID, CONCEPT_ATTRIBUTE_ID))
@@ -179,11 +245,18 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void suggestMustNotQueryMinOccurrence() {
-		getSuggest(prepareJson()
-				.with("query", String.join(" OR ", SPECIAL_CONCEPT_ID, ATTRIBUTE_ID))
-				.with("mustNotQuery", String.join("<<", Concepts.FOUNDATION_METADATA_CONCEPTS))
-				.with("minOccurrenceCount", 2)
-				.with("limit", Integer.MAX_VALUE))
+		suggest(
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array(String.format("%s?ecl=%s", CODE_SYSTEM_PATH, Ecl.or(SPECIAL_CONCEPT_ID, ATTRIBUTE_ID))),
+				"unlike", Json.array(String.format("%s?ecl=%s", CODE_SYSTEM_PATH, "<<" + Concepts.FOUNDATION_METADATA_CONCEPTS)),
+				"suggester", Json.object(
+					"type", "term",
+					"minOccurenceCount", 2
+				),
+				"limit", Integer.MAX_VALUE
+			)
+		)
 		.statusCode(200)
 		.assertThat()
 		.body("items.id", hasItems(CONCEPT_HISTORY_ATTRIBUTE_ID, CONCEPT_MODEL_ATTRIBUTE_ID))
@@ -192,16 +265,25 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void suggestBulk() {
-		
 		final List<Json> body = List.of(
-			prepareJson()
-				.with("term", "STRUCTURE BODY")
-				.with("limit", 12)
-				.with("preferredDisplay", "ID_ONLY"),
-			prepareJson()
-				.with("term", "clinical finding")
-				.with("limit", 2)
-				.with("preferredDisplay", "FSN")
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("STRUCTURE BODY"),
+				"suggester", Json.object(
+					"type", "term"
+				),
+				"limit", 12,
+				"preferredDisplay", "ID_ONLY"
+			),
+			Json.object(
+				"from", CODE_SYSTEM_PATH,
+				"like", Json.array("clinical finding"),
+				"suggester", Json.object(
+					"type", "term"
+				),
+				"limit", 2,
+				"preferredDisplay", "FSN"
+			)
 		);
 		
 		postBulkSuggest(body)
@@ -221,15 +303,7 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 			.body("[1].items[0].term", equalTo("Clinical finding (finding)"));
 	}
 	
-	private ValidatableResponse getSuggest(Json params) {
-		return givenAuthenticatedRequest(SUGGEST_API)
-				.contentType(JSON_UTF8)
-				.queryParams(params)
-				.get()
-				.then();
-	}
-	
-	private ValidatableResponse postSuggest(Json body) {
+	private ValidatableResponse suggest(Json body) {
 		return givenAuthenticatedRequest(SUGGEST_API)
 				.contentType(JSON_UTF8)
 				.body(body)
@@ -245,7 +319,4 @@ public class SnomedSuggestApiTest extends AbstractSnomedApiTest {
 				.then();
 	}
 	
-	private Json prepareJson() {
-		return Json.object("codeSystemPath", CODE_SYSTEM_PATH);
-	}
 }
