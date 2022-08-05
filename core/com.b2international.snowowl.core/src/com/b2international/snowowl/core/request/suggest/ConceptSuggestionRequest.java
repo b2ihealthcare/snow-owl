@@ -79,10 +79,9 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Servic
 	@Override
 	protected Suggestions doExecute(ServiceProvider context) throws IOException {
 		final ConceptSuggester.Registry suggesterRegistry = context.service(ConceptSuggester.Registry.class);
-		final Set<String> availableSuggesters = suggesterRegistry.getSuggesterTypes();
-		
 		// suggester is mandatory, otherwise we can't suggest
 		if (suggester == null) {
+			final Set<String> availableSuggesters = suggesterRegistry.getSuggesterTypes();		
 			throw new BadRequestException("'suggester' is required. Available suggesters are: %s", availableSuggesters);
 		}
 		
