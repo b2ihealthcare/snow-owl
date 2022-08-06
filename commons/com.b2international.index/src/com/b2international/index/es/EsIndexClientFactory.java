@@ -63,13 +63,13 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final EsClient client;
 		if (settings.containsKey(CLUSTER_URL)) {
 			final String clusterUrl = (String) settings.get(CLUSTER_URL);
-			client = EsClient.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext));
+			client = EsClient.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext, mapper));
 		} else {
 			// Start an embedded ES node only if a cluster URL is not set
 			Node node = EsNode.getInstance(clusterName, configDirectory, dataDirectory, persistent);
 			// check sysprop to force HTTP client when still using embedded mode
 			if (System.getProperty("so.index.es.useHttp") != null) {
-				client = EsClient.create(new EsClientConfiguration(clusterName, "http://127.0.0.1:9200", username, password, connectTimeout, socketTimeout, null));
+				client = EsClient.create(new EsClientConfiguration(clusterName, "http://127.0.0.1:9200", username, password, connectTimeout, socketTimeout, null, mapper));
 			} else {
 				// and use the local NodeClient to communicate via the embedded node
 				client = new EsTcpClient(node.client());
@@ -89,7 +89,7 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		// external Elasticsearch 8 cluster through http is supported, embedded and tcp support is not available
 		if (isElasticsearch8 && settings.containsKey(CLUSTER_URL) && client instanceof EsHttpClient) {
 			final String clusterUrl = (String) settings.get(CLUSTER_URL);
-			es8Client = new Es8Client(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext, mapper);
+			es8Client = Es8Client.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, sslContext, mapper));
 		}
 		
 		return new EsIndexClient(new EsIndexAdmin(client, mapper, name, mappings, settings).withEs8Client(es8Client), mapper);

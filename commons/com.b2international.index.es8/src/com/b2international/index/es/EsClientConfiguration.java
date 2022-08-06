@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.util.Objects;
 
 import javax.net.ssl.SSLContext;
 
-import org.elasticsearch.common.Strings;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -41,6 +41,7 @@ public final class EsClientConfiguration {
 	private final int connectTimeout;
 	private final int socketTimeout;
 	private final SSLContext sslContext;
+	private final ObjectMapper mapper; 
 
 	public EsClientConfiguration(
 			final String clusterName,
@@ -49,7 +50,8 @@ public final class EsClientConfiguration {
 			final String password, 
 			final int connectTimeout, 
 			final int socketTimeout, 
-			final SSLContext sslContext) {
+			final SSLContext sslContext,
+			final ObjectMapper mapper) {
 		this.clusterName = clusterName;
 		this.clusterUrl = clusterUrl;
 		this.username = username;
@@ -57,6 +59,7 @@ public final class EsClientConfiguration {
 		this.connectTimeout = connectTimeout;
 		this.socketTimeout = socketTimeout;
 		this.sslContext = sslContext;
+		this.mapper = mapper;
 		checkArgument(
 			isTcp() || isHttp(), 
 			"Unsupported networking scheme in clusterUrl: %s. Supported schemes are: %s.", clusterUrl, ImmutableList.of(TCP_SCHEME, HTTP_SCHEME, HTTPS_SCHEME)
@@ -89,6 +92,10 @@ public final class EsClientConfiguration {
 	
 	public SSLContext getSslContext() {
 		return sslContext;
+	}
+	
+	public ObjectMapper getMapper() {
+		return mapper;
 	}
 
 	@Override

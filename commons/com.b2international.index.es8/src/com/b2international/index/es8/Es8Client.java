@@ -18,8 +18,6 @@ package com.b2international.index.es8;
 import java.io.Closeable;
 import java.io.IOException;
 
-import javax.net.ssl.SSLContext;
-
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -29,9 +27,17 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.b2international.index.es.EsClientConfiguration;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
@@ -48,6 +54,8 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
  */
 public class Es8Client implements Closeable {
 
+	private static final Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
+	
 	/*
 	 * Customize the HTTP response consumer factory to allow processing greater than the default 100 MB of data (currently 1 GB) as the input.
 	 */
@@ -58,26 +66,26 @@ public class Es8Client implements Closeable {
 	private final ElasticsearchTransport transport;
 	private final ElasticsearchClient client;
 
-	public Es8Client(String clusterName, String clusterUrl, String username, String password, int connectTimeout, int socketTimeout, SSLContext sslContext, ObjectMapper mapper) {
-		this.host = HttpHost.create(clusterUrl);
+	private Es8Client(EsClientConfiguration config) {
+		this.host = HttpHost.create(config.getClusterUrl());
 		
 		final RequestConfigCallback requestConfigCallback = requestConfigBuilder -> requestConfigBuilder
-				.setConnectTimeout(connectTimeout)
-				.setSocketTimeout(socketTimeout);
+				.setConnectTimeout(config.getConnectTimeout())
+				.setSocketTimeout(config.getSocketTimeout());
 		
 		final RestClientBuilder restClientBuilder = RestClient.builder(host)
 			.setRequestConfigCallback(requestConfigCallback);
 		
-		final boolean isProtected = !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(password);
+		final boolean isProtected = !Strings.isNullOrEmpty(config.getUserName()) && !Strings.isNullOrEmpty(config.getPassword());
 		if (isProtected) {
 			
 			final HttpClientConfigCallback httpClientConfigCallback = httpClientConfigBuilder -> {
 				final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 				credentialsProvider.setCredentials(AuthScope.ANY, 
-						new UsernamePasswordCredentials(username, password));
+						new UsernamePasswordCredentials(config.getUserName(), config.getPassword()));
 				return httpClientConfigBuilder
 						.setDefaultCredentialsProvider(credentialsProvider)
-						.setSSLContext(sslContext);
+						.setSSLContext(config.getSslContext());
 			};
 			
 			restClientBuilder.setHttpClientConfigCallback(httpClientConfigCallback);
@@ -85,7 +93,7 @@ public class Es8Client implements Closeable {
 		}
 
 		// Create the transport with a Jackson mapper
-		this.transport = new RestClientTransport(restClientBuilder.build(), new JacksonJsonpMapper(mapper));
+		this.transport = new RestClientTransport(restClientBuilder.build(), new JacksonJsonpMapper(config.getMapper()));
 		// override DEFAULT transport options from transport with a client with increased HTTP response buffer limit
 		TransportOptions transportOptions = new RestClientOptions.Builder(((RestClientOptions) this.transport.options()).restClientRequestOptions().toBuilder()
 				.setHttpAsyncResponseConsumerFactory(new HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory(BUFFER_LIMIT)))
@@ -102,6 +110,60 @@ public class Es8Client implements Closeable {
 		if (this.transport != null) {
 			this.transport.close();
 		}
+	}
+	
+	public static Es8Client create(EsClientConfiguration config) {
+		return ClientPool.create(config);
+	}
+	
+	final class ClientPool {
+		
+		private static final LoadingCache<EsClientConfiguration, Es8Client> CLIENTS_BY_HOST = CacheBuilder.newBuilder()
+				.removalListener(ClientPool::onRemove)
+				.build(CacheLoader.from(ClientPool::onAdd));
+		
+		private ClientPool() {}
+		
+		static Es8Client create(EsClientConfiguration configuration) {
+			try {
+				return CLIENTS_BY_HOST.getUnchecked(configuration);
+			} catch (UncheckedExecutionException e) {
+				if (e.getCause() instanceof RuntimeException) {
+					throw (RuntimeException) e.getCause();
+				} else {
+					throw new RuntimeException(e.getCause());
+				}
+			}
+		}
+
+		static void closeAll() {
+			CLIENTS_BY_HOST.invalidateAll();
+			CLIENTS_BY_HOST.cleanUp();
+		}
+		
+		static Es8Client onAdd(final EsClientConfiguration configuration) {
+			Preconditions.checkArgument(configuration.isHttp(), "Only HTTP connection is allowed for Elasticsearch 8 clusters");
+			LOG.info("Connecting to Elasticsearch cluster with ES8 client at '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
+					configuration.getClusterUrl(),
+					configuration.isProtected() ? " using basic authentication" : "",
+					configuration.getConnectTimeout(),
+					configuration.getSocketTimeout());
+			return new Es8Client(configuration);
+		}
+		
+		static void onRemove(final RemovalNotification<EsClientConfiguration, Es8Client> notification) {
+			closeClient(notification.getKey(), notification.getValue());
+		}
+		
+		static void closeClient(final EsClientConfiguration configuration, Es8Client client) {
+			try {
+				client.close();
+				LOG.info("Closed ES client connected to '{}'", configuration.getClusterUrl());
+			} catch (final Exception e) {
+				LOG.error("Unable to close ES client connected to '{}'", configuration.getClusterUrl(), e);
+			}
+		}
+		
 	}
 	
 }

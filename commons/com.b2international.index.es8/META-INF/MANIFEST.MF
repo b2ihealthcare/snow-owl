@@ -202,6 +202,7 @@ Export-Package: co.elastic.clients,
  co.elastic.clients.transport.endpoints,
  co.elastic.clients.transport.rest_client,
  co.elastic.clients.util,
+ com.b2international.index.es,
  com.b2international.index.es8
 Import-Package: org.apache.commons.logging;version="1.2.0",
  org.slf4j;version="1.7.2"
