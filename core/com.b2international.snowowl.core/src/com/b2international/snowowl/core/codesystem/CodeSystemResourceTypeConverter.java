@@ -51,11 +51,13 @@ public final class CodeSystemResourceTypeConverter implements ResourceTypeConver
 	@Override
 	public void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<Resource> results) {
 		if (expand.containsKey("content")) {
+			final Options expandOptions = expand.getOptions("content");
 			// allow expanding content via content expansion, for now hit count only
 			results.forEach(codeSystem -> {
 				final Concepts concepts = CodeSystemRequests.prepareSearchConcepts()
+						.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
+						.filterByCodeSystemUri(expandOptions.containsKey("version") ? codeSystem.getResourceURI().withPath(expandOptions.getString("version")) : codeSystem.getResourceURI())
 						.setLimit(0)
-						.filterByCodeSystemUri(codeSystem.getResourceURI())
 						.buildAsync()
 						.execute(context);
 				codeSystem.setProperties("content", concepts);
