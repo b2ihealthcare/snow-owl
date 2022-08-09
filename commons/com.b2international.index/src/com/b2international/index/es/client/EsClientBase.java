@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -36,6 +37,8 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.action.support.IndicesOptions;
+import org.elasticsearch.action.support.IndicesOptions.Option;
+import org.elasticsearch.action.support.IndicesOptions.WildcardStates;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
@@ -56,6 +59,17 @@ import net.jodah.failsafe.function.CheckedSupplier;
 public abstract class EsClientBase implements EsClient {
 
 	private static final String READ_ONLY_SETTING = "index.blocks.read_only_allow_delete";
+	
+	// Equivalent to org.elasticsearch.action.support.IndicesOptions.lenientExpand() with ignore_throttled set to true
+	private static final IndicesOptions DEFAULT_INDICES_OPTIONS = new IndicesOptions(
+	        EnumSet.of(
+        		Option.ALLOW_NO_INDICES,
+        		Option.IGNORE_UNAVAILABLE,
+        		// this has to be set to avoid deprecation warnings in the log, see org.elasticsearch.client.RequestConverters.Params.withIndicesOptions(IndicesOptions)
+        		Option.IGNORE_THROTTLED 
+	        ),
+	        EnumSet.of(WildcardStates.OPEN, WildcardStates.CLOSED)
+		);
 	
 	private final HttpHost host;
 	private final Logger log;
@@ -144,10 +158,7 @@ public abstract class EsClientBase implements EsClient {
 			log.info("Checking cluster health at '{}'...", host.toURI());
 			ClusterHealthRequest req = new ClusterHealthRequest();
 			req.level(Level.INDICES);
-			// The default indices options (IndicesOptions.lenientExpandHidden()) returns all indices including system or hidden.
-			// It is not possible to determine if a hidden index is read only or not.
-			// This leads to the isIndexReadOnly() method waiting 60 seconds for each hidden index, eventually causing requests to be stalled.
-			req.indicesOptions(IndicesOptions.lenientExpand());
+			req.indicesOptions(DEFAULT_INDICES_OPTIONS);
 			return cluster().health(req);
 		} catch (IOException e) {
 			throw new IndexException("Failed to get cluster health", e);
@@ -157,7 +168,7 @@ public abstract class EsClientBase implements EsClient {
 	private GetSettingsResponse checkIndicesSettings(GetSettingsResponse previousSettings) {
 		try {
 			log.info("Checking indices settings at '{}'...", host.toURI());
-			return indices().settings(new GetSettingsRequest().indicesOptions(IndicesOptions.lenientExpand()));
+			return indices().settings(new GetSettingsRequest().indicesOptions(DEFAULT_INDICES_OPTIONS));
 		} catch (IOException e) {
 			throw new IndexException("Failed to get indices settings", e);
 		}
