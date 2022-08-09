@@ -606,7 +606,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		));
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", EffectiveTimes.today()))
 			.statusCode(400)
-			.body("message", containsString("Resource 'Code System cs31' cannot be versioned in its current status 'retired'."));
+			.body("message", containsString("Resource 'Code System cs31' cannot be versioned in its current status 'retired'"));
 	}
 	
 	@Test
