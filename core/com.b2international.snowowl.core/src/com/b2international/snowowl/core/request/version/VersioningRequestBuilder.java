@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.request.TransactionalRequest;
 @FunctionalInterface
 public interface VersioningRequestBuilder {
 
-	String NEW_VERSION_COMMIT_COMMENT_TEMPLATE = "Created new version '%s' for %s.";
+	String NEW_VERSION_COMMIT_COMMENT_TEMPLATE = "Created new version '%s' for '%s'";
 	
 	VersioningRequestBuilder DEFAULT = config -> {
 		return new TransactionalRequest(

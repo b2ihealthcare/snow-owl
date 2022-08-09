@@ -104,7 +104,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		}
 		
 		if (!resource.isHead()) {
-			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'.", version, resource)
+			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'", version, resource)
 				.withDeveloperMessage("Did you mean to version '%s'?", resource.withoutPath());
 		}
 		
@@ -123,7 +123,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		TerminologyResource resourceToVersion = resourcesById.get(resource);
 
 		if (TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resourceToVersion.getStatus())) {
-			throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'.", resourceToVersion.getTitle(), resourceToVersion.getStatus());
+			throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'", resourceToVersion.getTitle(), resourceToVersion.getStatus());
 		}
 		
 		// TODO resurrect or eliminate tooling dependencies
@@ -137,7 +137,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.filter(cs -> cs.getUpgradeOf() != null)
 			.findAny()
 			.ifPresent(cs -> {
-				throw new BadRequestException("Upgrade resource '%s' can not be versioned.", cs.getResourceURI());				
+				throw new BadRequestException("Upgrade resource '%s' can not be versioned", cs.getResourceURI());				
 			});
 		
 		for (TerminologyResource terminologyResource : resourcesToVersion) {
@@ -155,7 +155,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 						.execute(context);
 					
 					if (!branch.isDeleted()) {
-						throw new ConflictException("An existing version or branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
+						throw new ConflictException("An existing version or branch with path '%s' conflicts with the specified version identifier", newVersionPath);
 					}
 
 				} catch (NotFoundException e) {
@@ -270,7 +270,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			}
 			
 			if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
-				throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
+				throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'", effectiveTime, mostRecentVersionEffectiveTime);
 			}
 		});
 		
