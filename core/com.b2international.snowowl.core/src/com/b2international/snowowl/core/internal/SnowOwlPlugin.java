@@ -51,6 +51,7 @@ import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -80,6 +81,7 @@ public final class SnowOwlPlugin extends Plugin {
 		
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		mapper.registerModule(new PrimitiveCollectionModule());
+		mapper.registerModule(new JavaTimeModule());
 		env.services().registerService(ObjectMapper.class, mapper);
 		
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
