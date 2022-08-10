@@ -121,6 +121,7 @@ public class EsDocumentWriter implements Writer {
 		final EsClient client = admin.client();
 		// apply bulk updates first
 		final ListeningExecutorService executor;
+		admin.log().trace("Applying bulk updates ({}) and deletes ({})...", bulkUpdateOperations.size(), bulkDeleteOperations.size());
 		if (bulkUpdateOperations.size() > 1 || bulkDeleteOperations.size() > 1) {
 			final int threads = Math.min(4, Math.max(bulkUpdateOperations.size(), bulkDeleteOperations.size()));
 			executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threads));
@@ -153,10 +154,11 @@ public class EsDocumentWriter implements Writer {
 		
 		// then bulk indexes/deletes
 		if (!indexOperations.isEmpty() || !deleteOperations.isEmpty()) {
+			admin.log().trace("Applying writes ({}) and deletes ({})...", indexOperations.size(), deleteOperations.size());
 			final BulkProcessor processor = client.bulk(new BulkProcessor.Listener() {
 				@Override
 				public void beforeBulk(long executionId, BulkRequest request) {
-					admin.log().debug("Sending bulk request '{}', batch '{}', index '{}'", request.getDescription(), request.numberOfActions(), request.getIndices());
+					admin.log().trace("Sending bulk request to cluster '{}', batch '{}', index '{}'", request.getDescription(), request.numberOfActions(), request.getIndices());
 				}
 				
 				@Override
@@ -166,7 +168,7 @@ public class EsDocumentWriter implements Writer {
 				
 				@Override
 				public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-					admin.log().debug("Successfully processed bulk request '{}' ({}) in {}, index '{}'.", request.getDescription(), request.numberOfActions(), response.getTook(), request.getIndices());
+					admin.log().trace("Successfully sent bulk request to cluster '{}' ({}) in {}, index '{}'.", request.getDescription(), request.numberOfActions(), response.getTook(), request.getIndices());
 					if (response.hasFailures()) {
 						for (BulkItemResponse itemResponse : response.getItems()) {
 							checkState(!itemResponse.isFailed(), "Failed to commit bulk request in index '%s', %s", admin.name(), itemResponse.getFailureMessage());
