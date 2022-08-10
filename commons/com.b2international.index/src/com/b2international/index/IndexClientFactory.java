@@ -220,7 +220,7 @@ public interface IndexClientFactory {
 	/**
 	 * Default size in megabytes to limit all outgoing bulk requests.
 	 */
-	int DEFAULT_BULK_ACTIONS_SIZE_IN_MB = 9;
+	int DEFAULT_BULK_ACTIONS_SIZE_IN_MB = 49;
 	
 	/**
 	 * Default amount of commit details indicating low watermark
