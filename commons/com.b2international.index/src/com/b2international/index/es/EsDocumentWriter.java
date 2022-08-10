@@ -15,7 +15,6 @@
  */
 package com.b2international.index.es;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -28,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.action.DocWriteRequest.OpType;
 import org.elasticsearch.action.bulk.*;
+import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.UUIDs;
@@ -36,6 +36,7 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.xcontent.XContentType;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.index.*;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
@@ -153,6 +154,7 @@ public class EsDocumentWriter implements Writer {
 		}
 		
 		// then bulk indexes/deletes
+		final List<Failure> bulkIndexFailures = new ArrayList<>();
 		if (!indexOperations.isEmpty() || !deleteOperations.isEmpty()) {
 			admin.log().trace("Applying writes ({}) and deletes ({})...", indexOperations.size(), deleteOperations.size());
 			final BulkProcessor processor = client.bulk(new BulkProcessor.Listener() {
@@ -171,7 +173,9 @@ public class EsDocumentWriter implements Writer {
 					admin.log().trace("Successfully sent bulk request to cluster '{}' ({}) in {}, index '{}'.", request.getDescription(), request.numberOfActions(), response.getTook(), request.getIndices());
 					if (response.hasFailures()) {
 						for (BulkItemResponse itemResponse : response.getItems()) {
-							checkState(!itemResponse.isFailed(), "Failed to commit bulk request in index '%s', %s", admin.name(), itemResponse.getFailureMessage());
+							if (itemResponse.isFailed()) {
+								bulkIndexFailures.add(itemResponse.getFailure());
+							}
 						}
 					}
 				}
@@ -237,8 +241,16 @@ public class EsDocumentWriter implements Writer {
 			}
 		}
 
-		// refresh the index if there were only updates
+		// refresh the indexes after successfuly commit
 		admin.refresh(mappingsToRefresh);
+		
+		// if there were failures, fail the process here, as we are unable to rollback at any point due to append-only nature, the client has to mitigate the error either by restoring a backup or
+		if (!bulkIndexFailures.isEmpty()) {
+			bulkIndexFailures.forEach(failure -> {
+				admin.log().error("Failed to commit item in bulk request in index '{}' due to error: {}", failure.getIndex(), StringUtils.truncate(failure.getMessage(), 1000));
+			});
+			throw new IndexException("There were bulk indexing failures and certain documents did not get persisted into the index. Check the logs for further details.", null);
+		}
 	}
 
 	@Override
