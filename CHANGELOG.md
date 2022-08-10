@@ -1,6 +1,40 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.5.0
+
+### Core
+- Introducing the new Code System Concept Suggest API (#1049, 5aad00c)
+  * Based on lexical and/or semantic information concepts can be retrieved for a given set of like and unlike texts or queries
+  * Supports pluggable suggester implementations, currently available open-source suggesters are:
+    * `term` suggester - based on the most frequent tokens in the given like/unlike corpus the implementation suggests concepts based on their terms using default Elasticsearch full-text queries (synonym support, ignore stopwords, fuzziness, min occurence count configuration settings are available)
+    * `mlt` suggester - based on the given most frequent tokens in the like/unlike corpus the implementation suggests concepts based on their terms using Elasticsearch More Like This query (MLT specific configuration values are available, works best for large number of like texts)
+  * Add `batchSize` and `batchSizeTimeout` configuration parameters to `POST /suggest/bulk` API (05ae0ec)
+- Support filtering resources by any settings key-value pair (#1048, #1050)
+- Support Elasticsearch 8 clusters and features via dedicated high-level client (#1047)
+
+
+### Bugs/Improvements
+- [docker] improve docker example (#1044)
+- [index] add support for more-like-this Elasticsearch queries (#1049)
+- [index] add support for knn Elasticsearch queries (#1049)
+- [index] fix decimal value conversion issue (#1039) 
+- [index] allow configuration of `number_of_shards` and `number_of_replicas` in custom index specific configurations
+- [index] ensure that local settings get updated even if there are no remote ES settings to update (5a8d165)
+- [index] eliminate deprecation warning messages due to deprecated `ignore_throttled` query parameter in newer Elasticsearch versions (#1053)
+- [index] increase default `bulkActionSizeInMb` setting value to `50` (da69def)
+- [index] maintain order when merging term filters into a single filter array to ensure that the query is properly cached when requested (df0c594)
+- [core] load only the default field selection in `updatedAtCommit()` expansion (baaf59a)
+- [fhir] fix FHIR date parsing and formatting issue when timezone offset is specified (8e946e8)
+- [api] support `active` and `version` parameters in `content()` expand in Resources API (0068a66)
+- [core] allow querying draft resources with the special `LATEST` path using their current working branch (aka `HEAD`) (fa5898d)
+- [core] add support for ECL query definition inside ResourceURI instances with the `?ecl=` query part (1ded832, 79d112a)
+
+### Dependencies/Packaging
+- Upgrade Jackson libraries to 2.12.7
+- Upgrade Apache HTTP Core to 4.4.12
+- Upgrade Apache HTTP Client to 4.5.10
+
 ## 8.4.0
 
 ### Core
