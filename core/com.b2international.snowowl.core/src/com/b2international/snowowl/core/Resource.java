@@ -36,6 +36,7 @@ public abstract class Resource implements Serializable {
 
 	// known retired status value from FHIR, TODO make it configurable when needed
 	public static final String RETIRED_STATUS = "retired";
+	public static final String DRAFT_STATUS = "draft";
 
 	/**
 	 * @since 8.0

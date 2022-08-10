@@ -25,8 +25,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -45,6 +44,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
@@ -622,6 +622,18 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 				.execute(Services.bus())
 				.getSync();
 		assertThat(branches).isEmpty();
+	}
+	
+	@Test
+	public void codesystem33_AllowDraftResourcesToBeQueriedWithLATEST() throws Exception {
+		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody("cs33").with("status", "draft")).statusCode(201);
+		// this should proceed without any errors from now on, if it throws an error then that is a failure of the test
+		CodeSystemRequests.prepareSearchConcepts()
+			.setLimit(0)
+			.filterByCodeSystemUri(CodeSystem.uri("cs33", ResourceURI.LATEST))
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync();
 	}
 	
 	private long getCodeSystemCreatedAt(final String id) {

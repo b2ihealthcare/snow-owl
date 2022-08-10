@@ -68,8 +68,7 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 			TerminologyResource terminologyResource = (TerminologyResource) resource;
 			if (uriToResolve.isHead()) {
 				// use code system working branch directly when HEAD is specified
-				final String workingBranchPath = terminologyResource.getBranchPath() + uriToResolve.getTimestampPart();
-				return new PathWithVersion(workingBranchPath);
+				return getResourceHeadBranch(uriToResolve, terminologyResource);
 			}
 			
 			// prevent running version search if path does not look like a versionId (single path segment)
@@ -103,6 +102,10 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 					return new PathWithVersion(versionBranchPath, versionResourceURI);
 				})
 				.orElseGet(() -> {
+					// for draft resources allow HEAD to be queried via LATEST
+					if (uriToResolve.isLatest() && Resource.DRAFT_STATUS.equals(terminologyResource.getStatus())) {
+						return getResourceHeadBranch(uriToResolve, terminologyResource);
+					}
 					if (uriToResolve.isLatest() || !allowBranches) {
 						throw new BadRequestException("No Resource version is present in '%s'. Explicit '%s' can be used to retrieve the latest work in progress version of the Resource.", 
 							terminologyResource.getId(), terminologyResource.getId());
@@ -113,5 +116,10 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 		}
 		
 		return new PathWithVersion("");
+	}
+
+	private PathWithVersion getResourceHeadBranch(ResourceURI uriToResolve, TerminologyResource terminologyResource) {
+		final String workingBranchPath = terminologyResource.getBranchPath() + uriToResolve.getTimestampPart();
+		return new PathWithVersion(workingBranchPath);
 	}
 }
