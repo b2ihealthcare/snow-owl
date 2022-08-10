@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.core.rest.suggest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.common.Strings;
 import org.springdoc.api.annotations.ParameterObject;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.suggest.Suggester;
 import com.b2international.snowowl.core.request.suggest.Suggestions;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.google.common.collect.Iterables;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -118,19 +120,37 @@ public class SuggestRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
 	@PostMapping(value = "/bulk", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<List<Object>> postBulkSuggest(
+	public List<Suggestions> postBulkSuggest(
 		@RequestBody
 		final List<SuggestRestParameters> body,
+		
+		@Parameter(description = "The number of suggestion requests to process in a batch (aka parallel)", example = "10")
+		@RequestParam(value = "batchSize", defaultValue = "10")
+		final int batchSize,
+		
+		@Parameter(description = "Timeout after a batch of suggestion request will fail and report back as timeout error (specified in seconds)", example = "120")
+		@RequestParam(value = "batchTimeout", defaultValue = "120")
+		final int batchTimeout,
 		
 		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 		final String acceptLanguage) {
 		
-		// TODO configure batching, throttling, remote job management, etc.
-		final List<Promise<Suggestions>> promises = body.stream()
-				.map(params -> getSuggest(params, acceptLanguage))
-				.collect(Collectors.toList());
-	
-		return Promise.all(promises);
+		final List<Suggestions> response = new ArrayList<>(body.size());
+		for (Iterable<SuggestRestParameters> batch : Iterables.partition(body, batchSize)) {
+			final List<Promise<Suggestions>> batchResponse = new ArrayList<>(batchSize);
+			batch.forEach(params -> {
+				batchResponse.add(getSuggest(params, acceptLanguage));
+			});
+			// wait for batch completion then proceed to next batch, a batch must complete in under 2 minutes (configurable)
+			Promise.all(batchResponse)
+				.getSync(batchTimeout, TimeUnit.SECONDS)
+				.stream()
+				.filter(Suggestions.class::isInstance)
+				.map(Suggestions.class::cast)
+				.forEach(response::add);
+		}
+		
+		return response;
 	}
 }
