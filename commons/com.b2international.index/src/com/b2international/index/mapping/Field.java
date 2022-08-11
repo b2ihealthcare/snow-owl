@@ -48,5 +48,10 @@ public @interface Field {
 	 * @return whether to make the field available in search or just store only, defaults to make any field available for search always.
 	 */
 	boolean index() default true;
+	
+	/**
+	 * @return the type of the field. By default there is no type specified. 
+	 */
+	String type() default "";
 
 }

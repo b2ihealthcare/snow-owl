@@ -383,9 +383,16 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			if (Map.class.isAssignableFrom(fieldType)) {
 				// allow dynamic mappings for dynamic objects like field using Map
-				final Map<String, Object> prop = newHashMap();
-				prop.put("type", "object");
-				prop.put("dynamic", "true");
+				// alternatively allow custom type specifications such as "flattened"
+				final Map<String, Object> prop = newHashMap();	
+				boolean isTypeSpecified = fieldAnnotation != null && !Strings.isNullOrEmpty(fieldAnnotation.type());
+				final String type = isTypeSpecified ? fieldAnnotation.type() : "object";
+				
+				prop.put("type", type);
+				if (!isTypeSpecified) {
+					prop.put("dynamic", "true");										
+				}
+				
 				properties.put(property, prop);
 				continue;
 			} else if (fieldType.isAnnotationPresent(Doc.class)) {
