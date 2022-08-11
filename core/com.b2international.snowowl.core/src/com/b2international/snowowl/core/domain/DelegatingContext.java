@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,14 @@ public class DelegatingContext extends ServiceContext {
 		}
 		
 		public final Builder<C> bindAll(Bindable other) {
-			bindable.bindAll(other.getBindings());
+			bindAll(other.getBindings());
+			return this;
+		}
+		
+		public final Builder<C> bindAll(Map<Class<?>, Object> bindings) {
+			if (bindings != null) {
+				bindable.bindAll(bindings);
+			}
 			return this;
 		}
 		

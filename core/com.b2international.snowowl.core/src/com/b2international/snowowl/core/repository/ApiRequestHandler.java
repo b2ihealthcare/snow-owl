@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.util.Map;
+
 import org.eclipse.emf.common.util.WrappedException;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +24,7 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.RequestWithContext;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.core.events.util.ResponseHeaders;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
@@ -46,12 +49,24 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 	@Override
 	public final void handle(IMessage message) {
 		try {
-			final Request<ServiceProvider, ?> req = message.body(Request.class);
+			Request<ServiceProvider, ?> req = message.body(Request.class);
+			
+			Map<Class<?>, Object> initialContext = null;
+			if (req instanceof RequestWithContext<?, ?>) {
+				RequestWithContext requestWithContext = (RequestWithContext) req;
+				initialContext = requestWithContext.getContext();
+				req = requestWithContext.next();
+			}
+			
+			if (initialContext == null) {
+				initialContext = Map.of();
+			}
 			
 			final ResponseHeaders responseHeaders = new ResponseHeaders();
 			final ServiceProvider executionContext = context.inject()
 					.bind(RequestHeaders.class, new RequestHeaders(message.headers()))
 					.bind(ResponseHeaders.class, responseHeaders)
+					.bindAll(initialContext)
 					.build();
 			
 			// authorize each request execution

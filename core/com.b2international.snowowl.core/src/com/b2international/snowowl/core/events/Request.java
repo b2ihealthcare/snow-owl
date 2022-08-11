@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -111,6 +112,14 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	 */
 	default <T> T getNestedRequest(Class<T> type) {
 		return Request.getNestedRequest(this, type);
+	}
+	
+	default AsyncRequest<R> async() {
+		return new AsyncRequest<R>((Request) Request.this);
+	}
+	
+	default AsyncRequest<R> async(Map<Class<?>, Object> context) {
+		return new AsyncRequest<R>(new RequestWithContext<ServiceProvider, R>((Request) Request.this, context));
 	}
 	
 	/**
