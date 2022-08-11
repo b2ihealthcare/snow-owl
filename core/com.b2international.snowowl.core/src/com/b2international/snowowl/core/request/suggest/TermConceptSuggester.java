@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request.suggest;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.tartarus.snowball.ext.EnglishStemmer;
@@ -27,6 +28,7 @@ import com.b2international.index.compat.TextConstants;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
@@ -141,7 +143,8 @@ public final class TermConceptSuggester implements ConceptSuggester {
 				.setLocales(locales)
 				// always order by score
 				.sortBy(SearchIndexResourceRequest.SCORE)
-				.buildAsync()
+				.build()
+				.async(Map.of(User.class, context.service(User.class)))
 				.execute(context.service(IEventBus.class))
 				.then(concepts -> {
 					return new Suggestions(topTokens, concepts.getItems(), concepts.getSearchAfter(), limit, concepts.getTotal());

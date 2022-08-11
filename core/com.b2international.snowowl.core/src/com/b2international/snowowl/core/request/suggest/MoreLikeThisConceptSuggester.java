@@ -17,12 +17,14 @@ package com.b2international.snowowl.core.request.suggest;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.search.MoreLikeThisTermFilter;
@@ -98,7 +100,8 @@ public final class MoreLikeThisConceptSuggester implements ConceptSuggester {
 				.setLocales(locales)
 				// always order by score
 				.sortBy(SearchIndexResourceRequest.SCORE)
-				.buildAsync()
+				.build()
+				.async(Map.of(User.class, context.service(User.class)))
 				.execute(context.service(IEventBus.class))
 				.then(concepts -> {
 					return new Suggestions(null, concepts.getItems(), concepts.getSearchAfter(), limit, concepts.getTotal());
