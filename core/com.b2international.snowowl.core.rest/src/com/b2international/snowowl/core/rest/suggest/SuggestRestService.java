@@ -15,22 +15,22 @@
  */
 package com.b2international.snowowl.core.rest.suggest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.common.Strings;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.suggest.ConceptSuggestionBulkRequestBuilder;
+import com.b2international.snowowl.core.request.suggest.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.suggest.Suggester;
 import com.b2international.snowowl.core.request.suggest.Suggestions;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.google.common.collect.Iterables;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -64,40 +64,15 @@ public class SuggestRestService extends AbstractRestService {
 		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 		final String acceptLanguage) {
 		
-		return CodeSystemRequests.prepareSuggestConcepts()
-				// set the old parameters first, then if any new parameters present, override the old ones
-				// configure from
-				.setFrom(params.getCodeSystemPath())
-				.setFrom(params.getFrom())
-				
-				// configure like
-				.filterByTerm(params.getTerm())
-				.filterByQuery(params.getQuery())
-				.setLike(params.getQuery() == null ? null : List.of(params.getQuery()))
-				.setLike(params.getLike())
-				
-				// configure unlike
-				.filterByExclusion(params.getMustNotQuery())
-				.setUnlike(params.getMustNotQuery() == null ? null : List.of(params.getMustNotQuery()))
-				.setUnlike(params.getUnlike())
-				
-				// configure suggester
-				.setMinOccurrenceCount(params.getMinOccurrenceCount())
-				.setSuggester(params.getSuggester() == null && params.getTerm() != null ? Suggester.of("term", Map.of()) : params.getSuggester())
-
-				// configure limits, locales, display
-				.setLimit(params.getLimit())
-				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
-				.setPreferredDisplay(params.getPreferredDisplay())
-				
+		return prepareSuggestRequest(params, acceptLanguage)
 				.buildAsync()
 				.execute(getBus());
 	}
-	
+
 	@Operation(
 		summary = "Concept suggestion", 
 		description = "Returns an actual concept of the specified code system based on the source term.")
-	@ApiResponses({ 
+	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
@@ -135,22 +110,49 @@ public class SuggestRestService extends AbstractRestService {
 		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 		final String acceptLanguage) {
-		
-		final List<Suggestions> response = new ArrayList<>(body.size());
-		for (Iterable<SuggestRestParameters> batch : Iterables.partition(body, batchSize)) {
-			final List<Promise<Suggestions>> batchResponse = new ArrayList<>(batchSize);
-			batch.forEach(params -> {
-				batchResponse.add(getSuggest(params, acceptLanguage));
-			});
-			// wait for batch completion then proceed to next batch, a batch must complete in under 2 minutes (configurable)
-			Promise.all(batchResponse)
-				.getSync(batchTimeout, TimeUnit.SECONDS)
-				.stream()
-				.filter(Suggestions.class::isInstance)
-				.map(Suggestions.class::cast)
-				.forEach(response::add);
+	
+		if (body == null) {
+			throw new BadRequestException("");
 		}
 		
-		return response;
+		ConceptSuggestionBulkRequestBuilder bulk = CodeSystemRequests.prepareBulkSuggestConcepts();
+		
+		body.stream().map(params -> prepareSuggestRequest(params, acceptLanguage)).forEach(bulk::add);
+		
+		return bulk
+				.setBatchSize(batchSize)
+				.setBatchTimeout(batchTimeout)
+				.buildAsync()
+				.execute(getBus())
+				// XXX internal batchTimeout ensures that the request completes in time
+				.getSync();
+	}
+	
+	private ConceptSuggestionRequestBuilder prepareSuggestRequest(final SuggestRestParameters params, final String acceptLanguage) {
+		return CodeSystemRequests.prepareSuggestConcepts()
+				// set the old parameters first, then if any new parameters present, override the old ones
+				// configure from
+				.setFrom(params.getCodeSystemPath())
+				.setFrom(params.getFrom())
+				
+				// configure like
+				.filterByTerm(params.getTerm())
+				.filterByQuery(params.getQuery())
+				.setLike(params.getQuery() == null ? null : List.of(params.getQuery()))
+				.setLike(params.getLike())
+				
+				// configure unlike
+				.filterByExclusion(params.getMustNotQuery())
+				.setUnlike(params.getMustNotQuery() == null ? null : List.of(params.getMustNotQuery()))
+				.setUnlike(params.getUnlike())
+				
+				// configure suggester
+				.setMinOccurrenceCount(params.getMinOccurrenceCount())
+				.setSuggester(params.getSuggester() == null && params.getTerm() != null ? Suggester.of("term", Map.of()) : params.getSuggester())
+
+				// configure limits, locales, display
+				.setLimit(params.getLimit())
+				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
+				.setPreferredDisplay(params.getPreferredDisplay());
 	}
 }

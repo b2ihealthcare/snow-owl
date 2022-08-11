@@ -70,7 +70,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Servic
 	void setSuggester(Suggester suggester) {
 		this.suggester = suggester;
 	}
-
+	
 	@Override
 	protected Suggestions createEmptyResult(int limit) {
 		return new Suggestions(null, limit, 0);

@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.ecl.EclLabelerRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
 import com.b2international.snowowl.core.request.ValueSetMemberSearchRequestBuilder;
+import com.b2international.snowowl.core.request.suggest.ConceptSuggestionBulkRequestBuilder;
 import com.b2international.snowowl.core.request.suggest.ConceptSuggestionRequestBuilder;
 
 /**
@@ -84,6 +85,10 @@ public class CodeSystemRequests {
 	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {
 		return new ConceptSuggestionRequestBuilder();
 	}
+	
+	public static ConceptSuggestionBulkRequestBuilder prepareBulkSuggestConcepts() {
+		return new ConceptSuggestionBulkRequestBuilder();
+	}
 
 	public static QueryOptimizeRequestBuilder prepareOptimizeQueries() {
 		return new QueryOptimizeRequestBuilder();
@@ -110,6 +115,5 @@ public class CodeSystemRequests {
 	public static EclLabelerRequestBuilder prepareEclLabeler(String codeSystemUri, List<String> expressions) {
 		return new EclLabelerRequestBuilder(codeSystemUri, expressions);
 	}
-	
-	
+
 }
