@@ -125,12 +125,12 @@ public class SuggestRestService extends AbstractRestService {
 		final List<SuggestRestParameters> body,
 		
 		@Parameter(description = "The number of suggestion requests to process in a batch (aka parallel)", example = "10")
-		@RequestParam(value = "batchSize", defaultValue = "10")
-		final int batchSize,
+		@RequestParam(value = "batchSize", defaultValue = "10", required = false)
+		final Integer batchSize,
 		
 		@Parameter(description = "Timeout after a batch of suggestion request will fail and report back as timeout error (specified in seconds)", example = "120")
-		@RequestParam(value = "batchTimeout", defaultValue = "120")
-		final int batchTimeout,
+		@RequestParam(value = "batchTimeout", defaultValue = "120", required = false)
+		final Integer batchTimeout,
 		
 		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
 		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
