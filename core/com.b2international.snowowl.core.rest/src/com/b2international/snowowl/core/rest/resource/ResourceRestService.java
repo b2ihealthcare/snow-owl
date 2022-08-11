@@ -15,14 +15,20 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
+import java.util.concurrent.TimeUnit;
+
+import org.elasticsearch.common.Strings;
 import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -116,4 +122,64 @@ public class ResourceRestService extends AbstractRestService {
 			.buildAsync(timestamp)
 			.execute(getBus());
 	}
+	
+	@Operation(
+		summary = "Update a resource by its unique identifier", 
+		description = "Updates a resource definition in the system using its identifier and the given patch update."
+	)
+	@ApiResponses({ 
+		@ApiResponse(responseCode = "204", description = "No Content"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"), 
+	})
+	@PutMapping(value = "/{resourceId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void update(
+			@Parameter(description = "The resource identifier") 
+			@PathVariable(value = "resourceId") 
+			final String resourceId,
+			
+			@RequestBody
+			final ResourceRequest<ResourceUpdateRestInput> body,
+			
+			@RequestHeader(value = X_AUTHOR, required = false)
+			final String author) {
+		final String commitComment = Strings.isNullOrEmpty(body.getCommitComment()) ? String.format("Updated Resource %s", resourceId) : body.getCommitComment();
+		body.getChange().toUpdateRequest(resourceId)
+				.build(author, commitComment)
+				.execute(getBus())
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+	}
+	
+	@Operation(
+			summary="Delete a Resource",
+			description="Deletes a Resource permanently from the server")
+	@ApiResponses({
+		@ApiResponse(responseCode = "204", description = "No content"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "409", description = "Resource cannot be deleted")
+	})
+	@DeleteMapping(value = "/{resourceId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(
+			@Parameter(description = "The resource identifier")
+			@PathVariable(value="resourceId") 
+			final String resourceId,
+			
+			@RequestHeader(value = X_AUTHOR, required = false)
+			final String author) {
+		try {
+			final Resource codeSystem = ResourceRequests.prepareGet(resourceId)
+					.buildAsync()
+					.execute(getBus())
+					.getSync(1, TimeUnit.MINUTES);
+			
+			ResourceRequests.prepareDelete(resourceId)
+				.build(author, String.format("Deleted resource %s", codeSystem.getTitle()))
+				.execute(getBus())
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+		} catch(NotFoundException e) {
+			// already deleted, ignore error
+		}
+	}
+	
 }
