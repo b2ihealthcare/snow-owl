@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import com.b2international.snowowl.core.domain.DelegatingContext;
 
@@ -36,11 +37,11 @@ public final class RequestContext extends DelegatingContext {
 		bind(RequestContext.class, this);
 	}
 	
-	public void withMetric(String metricKey, Object value) {
+	public <T> void withMetric(String metricKey, T value, BiFunction<T, T, T> merge) {
 		if (this.metrics == null) {
 			this.metrics = new HashMap<>(2);
 		}
-		this.metrics.put(metricKey, value);
+		this.metrics.merge(metricKey, value, (BiFunction<? super Object, ? super Object, ? extends Object>) merge);
 	}
 	
 	public Map<String, Object> getMetrics() {

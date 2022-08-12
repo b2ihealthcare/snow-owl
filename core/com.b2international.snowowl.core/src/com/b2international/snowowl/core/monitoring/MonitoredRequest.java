@@ -61,12 +61,12 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			final long responseTime = responseTimeSample.stop(registry.timer("response_time", tags));
 			final Map<String, Object> additionalInfo = Maps.newHashMap();
 			
-			final Json metrics = Json.object(
+			Json metrics = Json.object(
 				"responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)
 			);
 			
 			// append all externally measured request specific metrics
-			context.optionalService(RequestContext.class).ifPresent(rc -> metrics.merge(rc.getMetrics()));
+			metrics = metrics.merge(context.optionalService(RequestContext.class).map(RequestContext::getMetrics).orElse(Map.of()));
 			
 			// register metrics
 			additionalInfo.put("metrics", metrics);
