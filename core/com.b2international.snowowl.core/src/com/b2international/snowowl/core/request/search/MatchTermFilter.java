@@ -25,6 +25,7 @@ import java.util.Set;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 8.5
@@ -84,6 +85,7 @@ public final class MatchTermFilter extends TermFilter {
 		return maxExpansions;
 	}
 	
+	@JsonIgnore
 	public boolean isAnyMatch() {
 		return getMinShouldMatch() != null;
 	}

@@ -85,6 +85,7 @@ public abstract class TermFilter implements Serializable {
 	 * 
 	 * @return a collection of search terms, never <code>null</code>
 	 */
+	@JsonIgnore
 	public abstract Set<String> getTerms();
 	
 	@JsonIgnore
