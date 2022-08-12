@@ -73,7 +73,7 @@ public final class ConceptSuggestionBulkRequest implements Request<ServiceProvid
 		context
 			.optionalService(AuthorizationService.class)
 			.orElse(AuthorizationService.DEFAULT)
-			.getAccessibleResources(user);
+			.getAccessibleResources(context, user);
 		
 		final List<Suggestions> response = new ArrayList<>(requests.size());
 		for (Iterable<ConceptSuggestionRequest> batch : Iterables.partition(requests, batchSize)) {

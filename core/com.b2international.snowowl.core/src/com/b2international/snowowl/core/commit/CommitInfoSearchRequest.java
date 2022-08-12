@@ -76,7 +76,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	protected void prepareQuery(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		super.prepareQuery(context, queryBuilder);
 		addIdFilter(queryBuilder, Commit.Expressions::ids);
-		addSecurityFilter(queryBuilder, context);
+		addSecurityFilter(context, queryBuilder);
 		addBranchClause(queryBuilder, context);
 		addBranchPrefixClause(queryBuilder);
 		addUserIdClause(queryBuilder);
@@ -105,7 +105,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		return new CommitInfos(limit, 0);
 	}
 	
-	private void addSecurityFilter(final ExpressionBuilder builder, RepositoryContext context) {
+	private void addSecurityFilter(RepositoryContext context, final ExpressionBuilder builder) {
 		
 		final User user = context.service(User.class);
 		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
@@ -120,7 +120,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		final Set<String> accessibleResources = context.optionalService(AuthorizationService.class)
 				.orElse(AuthorizationService.DEFAULT)
-				.getAccessibleResources(user);
+				.getAccessibleResources(context, user);
 		
 		final Set<String> exactResourceIds = Sets.newHashSet();
 		final Set<String> wildResourceIds = Sets.newHashSet();

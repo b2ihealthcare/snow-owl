@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ForbiddenException;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 
@@ -77,10 +78,11 @@ public interface AuthorizationService {
 	/**
 	 * Retrieves the list of accessible resources for the given user. By default this method returns all permission resources unfiltered, which is basically all resources the user has access to.
 	 * 
+	 * @param context - to use when checking for accessible resources, can be used to register request scoped metrics, or access other services if needed
 	 * @param user - the user to return the list of authorized resources
 	 * @return a {@link Set} of authorized resource IDs for the user
 	 */
-	default Set<String> getAccessibleResources(User user) {
+	default Set<String> getAccessibleResources(ServiceProvider context, User user) {
 		return user.getPermissions()
 				.stream()
 				.flatMap(p -> p.getResources().stream())

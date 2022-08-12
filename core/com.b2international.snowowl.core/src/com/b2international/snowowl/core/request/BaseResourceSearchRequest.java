@@ -153,14 +153,14 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	 * @param context - the context where user information will be extracted
 	 * @param queryBuilder - the query builder to append the clauses to
 	 */
-	protected final void addSecurityFilter(ServiceProvider context, ExpressionBuilder queryBuilder) {
+	protected final void addSecurityFilter(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		final User user = context.service(User.class);
 		if (user.isAdministrator() || user.hasPermission(Permission.requireAll(Permission.OPERATION_BROWSE, Permission.ALL))) {
 			return;
 		}
 		
 		final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
-		final Set<String> accessibleResources = authz.getAccessibleResources(user);
+		final Set<String> accessibleResources = authz.getAccessibleResources(context, user);
 		
 		final SortedSet<String> exactResourceIds = accessibleResources.stream()
 				.filter(resource -> !resource.endsWith("*"))
