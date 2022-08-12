@@ -16,10 +16,12 @@
 package com.b2international.snowowl.core.events;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.ScheduleJobRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -36,7 +38,20 @@ public final class AsyncRequest<R> {
 	public AsyncRequest(Request<ServiceProvider, R> request) {
 		this.request = request;
 	}
+	
+	public AsyncRequest<R> withContext(Map<Class<?>, Object> context) {
+		return context == null ? this : new AsyncRequest<>(new RequestWithContext<ServiceProvider, R>(request, context));
+	}
 
+	public Promise<R> executeWithContext(ServiceProvider context) {
+		User user = context.optionalService(User.class).orElse(null);
+		if (user != null) {
+			return withContext(Map.of(User.class, user)).execute(context.service(IEventBus.class));	
+		} else {
+			return execute(context.service(IEventBus.class));
+		}
+	}
+	
 	/**
 	 * Executes the asynchronous request using the event bus passed in.
 	 * @param bus

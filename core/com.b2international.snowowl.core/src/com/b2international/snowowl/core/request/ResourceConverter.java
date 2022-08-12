@@ -35,7 +35,6 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.version.Versions;
-import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 8.0
@@ -169,7 +168,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 						.sortBy(expandOptions.containsKey("sort") ? expandOptions.getString("sort") : null)
 						.setLocales(locales())
 						.build(res.getToolingId())
-						.execute(context().service(IEventBus.class))
+						.executeWithContext(context())
 						.then(commits -> {
 							res.setCommits(commits);
 							return commits;
