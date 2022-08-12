@@ -21,6 +21,7 @@ import org.eclipse.emf.common.util.WrappedException;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.snowowl.core.RequestContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -63,16 +64,16 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 			}
 			
 			final ResponseHeaders responseHeaders = new ResponseHeaders();
-			final ServiceProvider executionContext = context.inject()
-					.bind(RequestHeaders.class, new RequestHeaders(message.headers()))
-					.bind(ResponseHeaders.class, responseHeaders)
-					.bindAll(initialContext)
-					.build();
+			// prepare the request execution context
+			final RequestContext executionContext = new RequestContext(context);
+			executionContext.bind(RequestHeaders.class, new RequestHeaders(message.headers()));
+			executionContext.bind(ResponseHeaders.class, responseHeaders);
+			executionContext.bindAll(initialContext);
 			
-			// authorize each request execution
-			final Object body = new AuthorizedRequest<>(
-				// monitor each request execution
-				new MonitoredRequest<>(
+			// monitor each request execution
+			final Object body = new MonitoredRequest<>(
+				// authorize each request execution
+				new AuthorizedRequest<>(
 					// rate limit all requests
 					new RateLimitingRequest<>(
 						// actual request

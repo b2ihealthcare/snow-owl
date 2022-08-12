@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.snowowl.core.RequestContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -87,10 +88,13 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 					throw new UnauthorizedException("Incorrect authorization token");
 				}
 			}
+
+			// inject the user to the current RequestContext so that the entire request execution tree can access it
+			// create a context with the User object injected
+			context.service(RequestContext.class).bind(User.class, user);
 			
+			// generate new context with authorized bus instance
 			userContext = context.inject()
-					// create a context with the User object injected
-					.bind(User.class, user)
 					// and EventBus configured with header to access token in async execution scenarios
 					.bind(IEventBus.class, new AuthorizedEventBus(context.service(IEventBus.class), requestHeaders.headers()))
 					.build();
