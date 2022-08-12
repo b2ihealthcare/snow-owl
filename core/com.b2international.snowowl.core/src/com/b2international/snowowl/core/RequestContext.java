@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.b2international.snowowl.core.domain.DelegatingContext;
 
 /**
@@ -26,9 +29,22 @@ import com.b2international.snowowl.core.domain.DelegatingContext;
  */
 public final class RequestContext extends DelegatingContext {
 
+	private Map<String, Object> metrics;
+	
 	public RequestContext(ServiceProvider delegate) {
 		super(delegate);
 		bind(RequestContext.class, this);
+	}
+	
+	public void withMetric(String metricKey, Object value) {
+		if (this.metrics == null) {
+			this.metrics = new HashMap<>(2);
+		}
+		this.metrics.put(metricKey, value);
+	}
+	
+	public Map<String, Object> getMetrics() {
+		return metrics;
 	}
 
 }

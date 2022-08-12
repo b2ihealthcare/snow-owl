@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.RequestContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -58,7 +60,17 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			tags.and("context", DEFAULT_CONTEXT_ID);
 			final long responseTime = responseTimeSample.stop(registry.timer("response_time", tags));
 			final Map<String, Object> additionalInfo = Maps.newHashMap();
-			additionalInfo.put("metrics", Map.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
+			
+			final Json metrics = Json.object(
+				"responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)
+			);
+			
+			// append all externally measured request specific metrics
+			context.optionalService(RequestContext.class).ifPresent(rc -> metrics.merge(rc.getMetrics()));
+			
+			// register metrics
+			additionalInfo.put("metrics", metrics);
+			// register user sub
 			context.optionalService(User.class).ifPresent(user -> {
 				additionalInfo.put("user", Map.of(
 					"sub", user.getUserId()
