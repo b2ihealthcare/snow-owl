@@ -1,15 +1,17 @@
 {
   "name": "snow-owl-api-docs",
-  "version": "8.1.0",
+  "version": "8.5.1",
   "private": true,
   "homepage": "./site",
   "dependencies": {
-    "antd": "^4.19.5",
-    "rapidoc": "^9.2.0",
+    "antd": "^4.22.4",
+    "rapidoc": "^9.3.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-scripts": "^5.0.1",
-    "qs": "^6.10.3"
+    "qs": "^6.11.0"
+  },
+  "devDependencies": {
+    "react-scripts": "^5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
