@@ -25,7 +25,6 @@ import org.tartarus.snowball.ext.EnglishStemmer;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.compat.TextConstants;
-import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.User;
@@ -122,7 +121,7 @@ public final class TermConceptSuggester implements ConceptSuggester {
 				.build();
 		
 		// get the ECL query of the from code system
-		final Collection<String> inclusionQueries = context.from().getQueryValues().get("ecl");
+		final String inclusionQuery = context.getInclusionQueries();
 		// get the dynamically computed exclusion query set
 		final Collection<String> exclusionQueries = context.exclusionQuery(context.from().getResourceUri());
 		
@@ -132,7 +131,7 @@ public final class TermConceptSuggester implements ConceptSuggester {
 				.filterByActive(true)
 				// configure from, resource and optional ECL query
 				.filterByCodeSystemUri(context.from().getResourceUri())
-				.filterByQuery(inclusionQueries.isEmpty() ? null : Ecl.or(inclusionQueries))
+				.filterByQuery(inclusionQuery)
 				// make sure we won't suggest the same concepts as defined in like and unlike arrays (for the same code system)
 				.filterByExclusions(exclusionQueries.isEmpty() ? null : exclusionQueries)
 				// configure lexical match as basis of suggestion

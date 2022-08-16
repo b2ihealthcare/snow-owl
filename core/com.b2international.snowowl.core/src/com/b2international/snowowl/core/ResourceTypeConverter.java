@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -37,20 +38,21 @@ import com.google.common.collect.Multimaps;
 public interface ResourceTypeConverter {
 
 	final class Registry {
-		
+
 		private final Map<String, ResourceTypeConverter> resourceTypeConverters = new HashMap<>();
-		
+
 		public Registry(ClassPathScanner scanner) {
 			scanner.getComponentsByInterface(ResourceTypeConverter.class).forEach(converter -> {
 				resourceTypeConverters.put(converter.getResourceType(), converter);
 			});
 		}
-		
+
 		public Resource toResource(ResourceDocument doc) {
-			checkArgument(resourceTypeConverters.containsKey(doc.getResourceType()), "ResourceTypeConverter implementation is missing for type: %s", doc.getResourceType());
+			checkArgument(resourceTypeConverters.containsKey(doc.getResourceType()), "ResourceTypeConverter implementation is missing for type: %s",
+					doc.getResourceType());
 			return resourceTypeConverters.get(doc.getResourceType()).toResource(doc);
 		}
-		
+
 		public Map<String, ResourceTypeConverter> getResourceTypeConverters() {
 			return ImmutableMap.copyOf(resourceTypeConverters);
 		}
@@ -58,19 +60,33 @@ public interface ResourceTypeConverter {
 		public void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, List<Resource> results) {
 			Multimap<String, Resource> resourcesByIndex = Multimaps.index(results, Resource::getResourceType);
 			for (String resourceTypeToExpand : resourcesByIndex.keySet()) {
-				checkArgument(resourceTypeConverters.containsKey(resourceTypeToExpand), "ResourceTypeConverter implementation is missing for type: %s", resourceTypeToExpand);
+				checkArgument(resourceTypeConverters.containsKey(resourceTypeToExpand),
+						"ResourceTypeConverter implementation is missing for type: %s", resourceTypeToExpand);
 				resourceTypeConverters.get(resourceTypeToExpand).expand(context, expand, locales, resourcesByIndex.get(resourceTypeToExpand));
 			}
 		}
 	}
-	
+
 	String getResourceType();
-	
+
 	Integer getRank();
-	
+
 	Resource toResource(ResourceDocument doc);
-	
+
 	default void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<Resource> results) {
 	}
-	
+
+	/**
+	 * Resolves an URI to a CodeSystemURI with ECL part if supported by this resource type converter using the given context.
+	 * 
+	 * @param context 
+	 * @param uriToResolve 
+	 * 
+	 * @return
+	 * @throws BadRequestException - if the uri cannot be resolved to a valid CodeSystem URI with ECL part
+	 */
+	default ResourceURIWithQuery resolveToCodeSystemUriWithQuery(ServiceProvider context, String uriToResolve) {
+		throw new BadRequestException("'%s' represents a resource that cannot be resolved into a CodeSystem URI with ECL query part.", uriToResolve);
+	}
+
 }

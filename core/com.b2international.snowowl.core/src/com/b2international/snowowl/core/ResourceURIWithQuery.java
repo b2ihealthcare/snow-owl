@@ -61,6 +61,12 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		this.query = firstQueryCharAt == uri.length() ? "" : uri.substring(firstQueryCharAt + 1, uri.length());
 	}
 	
+	ResourceURIWithQuery(ResourceURI resourceUri, String query) {
+		this.resourceUri = resourceUri;
+		this.query = query;
+		this.uri = String.join(QUERY_PART_SEPARATOR, resourceUri.toString(), query);
+	}
+	
 	public String getUri() {
 		return uri;
 	}

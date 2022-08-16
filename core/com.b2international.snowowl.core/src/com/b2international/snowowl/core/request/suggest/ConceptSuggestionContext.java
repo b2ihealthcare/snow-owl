@@ -24,6 +24,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snomed.ecl.Ecl;
+import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -49,15 +50,14 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 	// dynamically computed exclusion items during like item computation
 	private Multimap<ResourceURI, String> exclusionQueriesPerResourceUri = HashMultimap.create();
 
-	public ConceptSuggestionContext(ServiceProvider delegate, String from, List<String> likes, List<String> unlikes, List<ExtendedLocale> locales) {
-		super(delegate);
+	public ConceptSuggestionContext(ServiceProvider context, String from, List<String> likes, List<String> unlikes, List<ExtendedLocale> locales) {
+		super(context);
 		this.locales = locales;
-		// FIXME accepts only codesystem URIs for now, should we allow suggestions to come from VS/CM/Bundles/etc.?
-		this.from = CodeSystem.uriWithQuery(from);
+		this.from = resolveUri(context, from);
 		this.likes = Collections3.toImmutableSortedSet(likes);
 		this.unlikes = Collections3.toImmutableSortedSet(unlikes);
 	}
-	
+
 	public SortedSet<String> likes() {
 		return likes;
 	}
@@ -71,7 +71,7 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 		
 		unlikes.forEach(unlike -> {
 			try {
-				final ResourceURIWithQuery uri = CodeSystem.uriWithQuery(unlike);
+				final ResourceURIWithQuery uri = resolveUri(this, unlike);
 				Collection<String> eclQueries = uri.getQueryValues().get("ecl");
 				if (eclQueries.isEmpty()) {
 					throw new BadRequestException("Selecting an entire Code System as unlike is not supported yet. Specify an ECL query part like this: %s?ecl=<your_query>", uri.getResourceUri().withoutResourceType());
@@ -92,7 +92,7 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 			.stream()
 			.flatMap(like -> {
 				try {
-					final ResourceURIWithQuery uri = CodeSystem.uriWithQuery(like);
+					final ResourceURIWithQuery uri = resolveUri(this, like);
 					// raw URIs are not supported yet, because those can select too many concepts
 					Collection<String> eclQueries = uri.getQueryValues().get("ecl");
 					if (eclQueries.isEmpty()) {
@@ -146,6 +146,24 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 
 	public Collection<String> exclusionQuery(ResourceURI resourceUri) {
 		return exclusionQueriesPerResourceUri.get(resourceUri);
+	}
+
+	public String getInclusionQueries() {
+		final Collection<String> inclusionQueries = from().getQueryValues().get("ecl");
+		return inclusionQueries.isEmpty() ? null : Ecl.or(inclusionQueries);
+	}
+	
+	private ResourceURIWithQuery resolveUri(ServiceProvider context, String uriToResolve) {
+		// find the appropriate resource for this URI by looking at the plugged in resources types
+		ResourceURIWithQuery uri = null;
+		for (ResourceTypeConverter resourceTypeConverter : context.service(ResourceTypeConverter.Registry.class).getResourceTypeConverters().values()) {
+			if (uriToResolve.startsWith(resourceTypeConverter.getResourceType())) {
+				uri = resourceTypeConverter.resolveToCodeSystemUriWithQuery(context, uriToResolve);
+				break;
+			}
+		}
+		// if the URI is still null, treat it as CodeSystem for now
+		return uri == null ? CodeSystem.uriWithQuery(uriToResolve) : uri;
 	}
 	
 }

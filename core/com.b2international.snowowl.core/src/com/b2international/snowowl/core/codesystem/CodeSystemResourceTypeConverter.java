@@ -22,6 +22,8 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -63,6 +65,11 @@ public final class CodeSystemResourceTypeConverter implements ResourceTypeConver
 				codeSystem.setProperties("content", concepts);
 			});
 		}
+	}
+	
+	@Override
+	public ResourceURIWithQuery resolveToCodeSystemUriWithQuery(ServiceProvider context, String uriToResolve) {
+		return CodeSystem.uriWithQuery(uriToResolve);
 	}
 
 }

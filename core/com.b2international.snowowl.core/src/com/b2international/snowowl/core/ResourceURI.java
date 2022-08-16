@@ -225,4 +225,8 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
 	}
 
+	public ResourceURIWithQuery withQuery(String query) {
+		return new ResourceURIWithQuery(this, query);
+	}
+
 }
