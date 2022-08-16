@@ -203,8 +203,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		
 		addEclFilter(context, queryBuilder);
 		
-		Expression searchProfileQuery = null;
-		
 		final Expression queryExpression;
 		
 		if (containsKey(OptionKey.SEMANTIC_TAG)) {
@@ -241,13 +239,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			
 			queryBuilder.filter(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
 			
-			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
-			queryExpression = Expressions.scriptScore(q, "doiFactor", Map.of("termScores", conceptScoreMap, "useDoi", containsKey(OptionKey.USE_DOI), "minDoi", MIN_DOI_VALUE, "maxDoi", MAX_DOI_VALUE));
+			queryExpression = Expressions.scriptScore(queryBuilder.build(), "doiFactor", Map.of("termScores", conceptScoreMap, "useDoi", containsKey(OptionKey.USE_DOI), "minDoi", MIN_DOI_VALUE, "maxDoi", MAX_DOI_VALUE));
 		} else if (containsKey(OptionKey.USE_DOI)) {
-			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
-			queryExpression = Expressions.scriptScore(q, "doi");
+			queryExpression = Expressions.scriptScore(queryBuilder.build(), "doi");
 		} else {
-			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
+			queryExpression = queryBuilder.build();
 		}
 		
 		return queryExpression;
