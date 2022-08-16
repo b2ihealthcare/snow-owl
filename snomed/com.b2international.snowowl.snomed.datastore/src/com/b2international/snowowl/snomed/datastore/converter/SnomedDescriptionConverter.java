@@ -65,7 +65,6 @@ public final class SnomedDescriptionConverter extends BaseRevisionResourceConver
 		result.setTerm(input.getTerm());
 		result.setSemanticTag(input.getSemanticTag());
 		result.setTypeId(input.getTypeId());
-		result.setType(new SnomedConcept(input.getTypeId()));
 		result.setScore(input.getScore());
 		
 		if (input.getMemberOf() != null) {
