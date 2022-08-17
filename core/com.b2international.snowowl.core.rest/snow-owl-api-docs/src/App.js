@@ -43,6 +43,8 @@ class App extends React.Component {
           server-url = {`${serverUrl}`}
           route-prefix = {`?api=${this.state.selectedKey}#`}
           render-style = "focused"
+          show-method-in-nav-bar = "as-colored-text"
+          nav-item-spacing = "default"
           use-path-in-nav-bar = "true"
           default-schema-tab = "example"
           layout = "row"
