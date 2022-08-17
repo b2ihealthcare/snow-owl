@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.5.1
+
+### Bugs/Improvements
+- [index] properly catch and report bulk indexing failures during index commit (e93433c)
+- [api] support field selection in SNOMED CT Concept expansions (661c774)
+- [api] add update and delete resource REST API endpoints (b79a13c)
+- [api] reduce execution time of bulk suggest requests by performing a single authorization check at the beginning (f507964)
+- [api] support other resource URIs not just Code Systems in suggest API (64c5559)
+- [docs] update rapidoc to latest 9.3.3 version (2dce6a6)
+- [docs] minor changes to the Suggest API OpenAPI definition (f550166)
+- [log] include auth/authz related execution time in request response metrics (1654004)
+
 ## 8.5.0
 
 ### Core
