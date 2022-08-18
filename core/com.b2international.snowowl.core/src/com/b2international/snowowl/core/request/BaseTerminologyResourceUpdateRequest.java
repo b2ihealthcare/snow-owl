@@ -80,6 +80,7 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 		
 		if (!oid.isBlank()) {
 			final boolean oidExist = ResourceRequests.prepareSearch()
+					.setLimit(0)
 					.filterByOid(oid)
 					.build()
 					.execute(context)
