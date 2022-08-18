@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.5.2
+
+### Bugs/Improvements
+- [api] fetch hit count only in resource update requests (9165d40)
+- [api] add OID filter to `GET /resources` endpoint (f32391a)
+
 ## 8.5.1
 
 ### Bugs/Improvements
