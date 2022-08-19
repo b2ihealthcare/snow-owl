@@ -34,12 +34,15 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.similarity.Similarity;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -124,7 +127,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.term(doc.getTerm())
 				.typeId(doc.getTypeId())
 				.caseSignificanceId(doc.getCaseSignificanceId())
-				.acceptabilityMap(doc.getAcceptabilityMap());
+				.acceptabilityMap(doc.getAcceptabilityMap())
+				.similarity(doc.getSimilarity());
 	}
 	
 	public final static class Fields extends SnomedComponentDocument.Fields {
@@ -140,6 +144,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String TERM_TEXT = Fields.TERM + ".text";
 		public static final String TERM_PREFIX = Fields.TERM + ".prefix";
 		public static final String TERM_EXACT = Fields.TERM + ".exact";
+		
+		public static final String SIMILARITY_FIELD = "similarity.predicted_value";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
@@ -224,7 +230,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private SortedSet<String> acceptableIn = Sets.newTreeSet();
 		private SortedSet<String> preferredIn = Sets.newTreeSet();
 		private String semanticTag;
-
+		private Similarity similarity;
+		
 		@JsonCreator
 		private Builder() {
 			// Disallow instantiation outside static method
@@ -299,6 +306,12 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
+		@JsonSetter
+		/*package*/ Builder similarity(Similarity similarity) {
+			this.similarity = similarity;
+			return getSelf();
+		}
+		
 		public SnomedDescriptionIndexEntry build() {
 			if (!Strings.isNullOrEmpty(term) && semanticTag == null) {
 				semanticTag = extractSemanticTag(term);
@@ -319,6 +332,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
+			
+			if (similarity != null) {
+				doc.similarity = similarity;
+			}
+			
 			return doc;
 		}
 	}
@@ -338,6 +356,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private final String caseSignificanceId;
 	private final SortedSet<String> acceptableIn;
 	private final SortedSet<String> preferredIn;
+	private Similarity similarity;
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String moduleId, 
@@ -448,6 +467,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	 */
 	public SortedSet<String> getAcceptableIn() {
 		return acceptableIn;
+	}
+	
+	@JsonGetter
+	/*package*/ Similarity getSimilarity() {
+		return similarity;
 	}
 	
 	/**
