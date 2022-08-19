@@ -7,6 +7,7 @@
 *	skipDownstreamBuilds - whether to skip execution of downstream builds
 *	downstreamBuild - name of downstream build
 **/
+
 try {
 
 	def currentVersion
@@ -56,7 +57,8 @@ try {
 			string(name: 'imageClassifier', value: 'oss'),
 			string(name: 'gitRevision', value: revision),
 			string(name: 'gitBranch', value: branch),
-			string(name: 'baseImage', value: 'b2ihealthcare/centos7-jre11:latest')
+			string(name: 'baseImage', value: 'b2ihealthcare/ubuntu-jdk11:lts'),
+			booleanParam(name: 'integrationTests', value: !skipTests)
 		], quietPeriod: 1, wait: false
 
 	}
