@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -685,6 +685,10 @@ public abstract class SnomedRestFixtures {
 		case SIMPLE_MAP:
 			return Json.object(
 				SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget"
+			);
+		case SIMPLE_MAP_TO:
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_SOURCE, "simpleMapSource"
 			);
 		case SIMPLE_MAP_WITH_DESCRIPTION:
 			return Json.object(

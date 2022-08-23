@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -121,8 +122,14 @@ public final class Rf2RefSetDescriptorRefSetExporter extends Rf2Exporter<SnomedR
 	private static Pair<String, String> getAttributeDescriptionAndType(SnomedReferenceSet refSet, String columnName) {
 		switch (columnName) {
 		// attribute
-		case SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID: 
-			return Pair.of(Concepts.ATTRIBUTE_DESCRIPTION_REFERENCED_COMPONENT, getReferencedComponentType(refSet.getReferencedComponentType()));
+		case SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID:
+			if (SnomedRefSetType.SIMPLE_MAP_TO.equals(refSet.getType())) {
+				return Pair.of(Concepts.ATTRIBUTE_TYPE_MAP_TARGET, getReferencedComponentType(refSet.getReferencedComponentType()));
+			} else if (SnomedRefSetUtil.isMapping(refSet.getType())) {
+				return Pair.of(Concepts.ATTRIBUTE_TYPE_MAP_SOURCE, getReferencedComponentType(refSet.getReferencedComponentType()));
+			} else {
+				return Pair.of(Concepts.ATTRIBUTE_DESCRIPTION_REFERENCED_COMPONENT, getReferencedComponentType(refSet.getReferencedComponentType()));
+			}
 		case SnomedRf2Headers.FIELD_VALUE:
 			if (Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSet.getId())) {
 				return Pair.of(Concepts.DESCRIPTION_INACTIVATION_VALUE, Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT);
@@ -142,11 +149,9 @@ public final class Rf2RefSetDescriptorRefSetExporter extends Rf2Exporter<SnomedR
 			return Pair.of(Concepts.ATTRIBUTE_TYPE_QUERY, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);
 		// simple, complex, extended map
 		case SnomedRf2Headers.FIELD_MAP_TARGET: 
-			if (SnomedRefSetType.SIMPLE_MAP.equals(refSet.getType())) {
-				return Pair.of(Concepts.ATTRIBUTE_TYPE_SCHEME_VALUE, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);
-			} else {
-				return Pair.of(Concepts.ATTRIBUTE_TYPE_MAP_TARGET, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);
-			}
+			return Pair.of(Concepts.ATTRIBUTE_TYPE_MAP_TARGET, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);
+		case SnomedRf2Headers.FIELD_MAP_SOURCE: 
+			return Pair.of(Concepts.ATTRIBUTE_TYPE_MAP_SOURCE, Concepts.ATTRIBUTE_TYPE_STRING_TYPE);
 		// complex, extended map
 		case SnomedRf2Headers.FIELD_MAP_GROUP: 
 			return Pair.of(Concepts.ATTRIBUTE_TYPE_MAP_GROUP, Concepts.ATTRIBUTE_TYPE_UNSIGNED_INTEGER_TYPE);

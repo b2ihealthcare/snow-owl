@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ public final class SnomedReferenceSet extends SnomedComponent {
 		public static final String TYPE = "type";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
+		public static final String MAP_SOURCE_COMPONENT_TYPE = "mapSourceComponentType";
 		
 		public static final Set<String> ALL = ImmutableSet.of(
 				ID,
@@ -87,6 +88,7 @@ public final class SnomedReferenceSet extends SnomedComponent {
 				TYPE,
 				REFERENCED_COMPONENT_TYPE,
 				MAP_TARGET_COMPONENT_TYPE,
+				MAP_SOURCE_COMPONENT_TYPE,
 				RELEASED);
 		
 	}
@@ -94,6 +96,7 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	private SnomedRefSetType type;
 	private String referencedComponentType;
 	private String mapTargetComponentType;
+	private String mapSourceComponentType;
 	private SnomedReferenceSetMembers members;
 
 	@Override
@@ -120,11 +123,19 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	}
 
 	/**
-	 * Returns the type of the map target if this reference set is a mapping reference set.
+	 * Returns the type of the map target if this reference set is a "map from SNOMED CT" reference set.
 	 * @return
 	 */
 	public String getMapTargetComponentType() {
 		return mapTargetComponentType;
+	}
+	
+	/**
+	 * Returns the type of the map source if this reference set is a "map to SNOMED CT" reference set.
+	 * @return
+	 */
+	public String getMapSourceComponentType() {
+		return mapSourceComponentType;
 	}
 
 	/**
@@ -149,6 +160,10 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	
 	public void setMapTargetComponentType(String mapTargetComponentType) {
 		this.mapTargetComponentType = mapTargetComponentType;
+	}
+	
+	public void setMapSourceComponentType(String mapSourceComponentType) {
+		this.mapSourceComponentType = mapSourceComponentType;
 	}
 	
 	public void setType(SnomedRefSetType type) {

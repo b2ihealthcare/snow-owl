@@ -77,7 +77,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		
 		final ConceptMapMappings conceptMaps = ConceptMapRequests.prepareSearchConceptMapMappings()
 				.all()
-				.filterByReferencedComponentId(REFERENCED_COMPONENT)
+				.filterByMapSource(REFERENCED_COMPONENT)
 				.filterByConceptMap(ComponentURI.of(CODESYSTEM, SnomedConcept.REFSET_TYPE, refSetId).toString())
 				.setLocales("en")
 				.buildAsync()

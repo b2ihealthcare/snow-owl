@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,6 +136,12 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case COMPLEX_BLOCK_MAP:
 				// XXX: complex maps with map block are also considered "extended", but with a different column type
 				return "ExtendedMap";
+			case SIMPLE_MAP_TO:
+				/*
+				 * XXX: while "map to"-type reference sets are also simple maps, content for both "map from" and "map to" 
+				 * members can not appear together in combined output files; the column names are different.
+				 */
+				return "SimpleMapTo";
 			case ASSOCIATION: //$FALL-THROUGH$
 			case SIMPLE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
@@ -276,7 +282,9 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "s";
 			case DESCRIPTION_TYPE: 
 				return "ci";
-			case SIMPLE_MAP: 
+			case SIMPLE_MAP:
+				return "s";
+			case SIMPLE_MAP_TO:
 				return "s";
 			case SIMPLE_MAP_WITH_DESCRIPTION: 
 				return "ss";
@@ -322,6 +330,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
 		case SIMPLE_MAP: 
 			return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
+		case SIMPLE_MAP_TO: 
+			return SnomedRf2Headers.SIMPLE_MAP_TO_TYPE_HEADER;
 		case SIMPLE_MAP_WITH_DESCRIPTION: 
 			return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;
 		case COMPLEX_MAP: 

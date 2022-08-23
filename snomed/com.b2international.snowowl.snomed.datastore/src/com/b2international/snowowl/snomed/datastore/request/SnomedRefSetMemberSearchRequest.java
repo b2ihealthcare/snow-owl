@@ -38,11 +38,13 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedReferenceSetMemberConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
@@ -75,6 +77,7 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 			// String types, no ECL support
 			.put(SnomedRf2Headers.FIELD_MAP_TARGET, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::mapTargets, false))
 			.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::mapTargetDescriptions, false))
+			.put(SnomedRf2Headers.FIELD_MAP_SOURCE, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::mapSources, false))
 			.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, new SnomedRefsetMemberFieldQueryHandler<>(String.class, values -> SnomedRefSetMemberIndexEntry.Expressions.rangeConstraint(Iterables.getOnlyElement(values)), false))
 			.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::owlExpressions, false))
 			
@@ -88,6 +91,9 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 			.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, new SnomedRefsetMemberFieldQueryHandler<>(Boolean.class, values -> SnomedRefSetMemberIndexEntry.Expressions.grouped(Iterables.getOnlyElement(values)), false))
 			.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI, new SnomedRefsetMemberFieldQueryHandler<>(Boolean.class, values -> SnomedRefSetMemberIndexEntry.Expressions.gciAxiom(Iterables.getOnlyElement(values)), false))
 			.build();
+	
+	private static final Set<SnomedRefSetType> REVERSE_MAP_TYPES = Set.of(SnomedRefSetType.SIMPLE_MAP_TO);
+	private static final Set<SnomedRefSetType> FORWARD_MAP_TYPES = Set.copyOf(Sets.difference(Set.copyOf(SnomedRefSetUtil.getMapTypeRefSets()), REVERSE_MAP_TYPES));
 	
 	/**
 	 * @since 4.5
@@ -121,7 +127,17 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 		/**
 		 * Matches reference set members where either the referenced component or map target matches the given value.
 		 */
-		COMPONENT
+		COMPONENT,
+		
+		/**
+		 * Filter by map source, irrespective of the RF2 field name
+		 */
+		MAP_SOURCE,
+		
+		/**
+		 * Filter by map target, irrespective of the RF2 field name 
+		 */
+		MAP_TARGET,
 	}
 
 	SnomedRefSetMemberSearchRequest() {}
@@ -146,6 +162,7 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 		addEffectiveTimeClause(queryBuilder);
 		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::refsetIds);
 		addComponentClause(queryBuilder);
+		addMapClauses(queryBuilder);
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
 			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, String.class)));
@@ -260,14 +277,46 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 				Expressions.bool()
 					.should(referencedComponentIds(componentIds))
 					.should(mapTargets(componentIds))
+					.should(mapSources(componentIds))
 				.build()
 			);
 		}
 	}
 	
+	private void addMapClauses(ExpressionBuilder builder) {
+		if (containsKey(OptionKey.MAP_SOURCE)) {
+			final Collection<String> mapSourceIds = getCollection(OptionKey.MAP_SOURCE, String.class);
+			
+			builder.filter(Expressions.bool()
+				.should(Expressions.bool()
+					.filter(refSetTypes(REVERSE_MAP_TYPES))
+					.filter(mapSources(mapSourceIds))
+					.build())
+				.should(Expressions.bool()
+					.filter(refSetTypes(FORWARD_MAP_TYPES))
+					.filter(referencedComponentIds(mapSourceIds))
+					.build())
+				.build());
+		}
+		
+		if (containsKey(OptionKey.MAP_TARGET)) {
+			final Collection<String> mapTargetIds = getCollection(OptionKey.MAP_TARGET, String.class);
+			
+			builder.filter(Expressions.bool()
+				.should(Expressions.bool()
+					.filter(refSetTypes(REVERSE_MAP_TYPES))
+					.filter(referencedComponentIds(mapTargetIds))
+					.build())
+				.should(Expressions.bool()
+					.filter(refSetTypes(FORWARD_MAP_TYPES))
+					.filter(mapTargets(mapTargetIds))
+					.build())
+				.build());
+		}
+	}
+
 	@Override
 	protected SnomedReferenceSetMembers createEmptyResult(int limit) {
 		return new SnomedReferenceSetMembers(limit, 0);
 	}
-	
 }

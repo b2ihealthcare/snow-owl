@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,9 @@ public interface MemberSearchRequestEvaluator<R> {
 		SOURCE_TOOLING_ID,
 		
 		/**
-		 * Search for mappings with the specified referenced component id(s)
+		 * Search for mappings with the specified map source id(s)
 		 */
-		REFERENCED_COMPONENT,
+		MAP_SOURCE,
 		
 		/**
 		 * Search for mappings with the specified map target id(s)
@@ -103,5 +103,4 @@ public interface MemberSearchRequestEvaluator<R> {
 	 * @return resource 
 	 */
 	R evaluate(ResourceURI uri, ServiceProvider context, Options search);
-
 }

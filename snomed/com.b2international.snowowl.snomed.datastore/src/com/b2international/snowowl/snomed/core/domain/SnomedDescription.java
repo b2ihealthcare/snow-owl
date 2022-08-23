@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import com.google.common.collect.ImmutableSet;
 		MapTargetTypes.SIMPLE,
 		MapTargetTypes.ATTRIBUTE_VALUE,
 		MapTargetTypes.SIMPLE_MAP,
+		MapTargetTypes.SIMPLE_MAP_TO,
 		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION,
 		MapTargetTypes.LANGUAGE
 	}

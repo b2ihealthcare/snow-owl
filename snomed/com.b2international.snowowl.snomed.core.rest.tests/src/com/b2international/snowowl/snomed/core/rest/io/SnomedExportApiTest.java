@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -1235,6 +1236,45 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlOntologyMemberLine));
 		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlAxiomMemberLine));
 
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+
+	@Test
+	public void exportUnpublishedMapToRefsetMember() throws Exception {
+		createComponent(branchPath, SnomedComponentType.CONCEPT, createConceptRequestBody(Concepts.REFSET_ALL)
+			.with("id", SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP_TO))
+			.with("commitComment", "Created parent concept for reference set type 'SIMPLE_MAP_TO'")).statusCode(201);
+
+		String refSetId = assertCreated(createComponent(branchPath, SnomedComponentType.REFSET, createConceptRequestBody(Concepts.REFSET_SIMPLE_MAP_TO_TYPE)
+			.with("type", SnomedRefSetType.SIMPLE_MAP_TO.toString())
+			.with("referencedComponentType", SnomedConcept.TYPE)
+			.with("commitComment", "Created 'map to' reference set")));
+
+		Json mapToRequestBody = createRefSetMemberRequestBody(refSetId, Concepts.ROOT_CONCEPT)
+			.with(SnomedRf2Headers.FIELD_MAP_SOURCE, "mapSource")
+			.with("commitComment", "Created new 'map to' reference set member");
+
+		String refsetMemberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, mapToRequestBody));
+		
+		File exportArchive = doExport(branchPath, Json.object("type", Rf2ReleaseType.DELTA.name()));
+
+		String mapToMemberLine = TAB_JOINER.join(refsetMemberId, 
+			"", 
+			"1",
+			Concepts.MODULE_SCT_CORE, 
+			refSetId, 
+			Concepts.ROOT_CONCEPT,
+			"mapSource"); 
+
+		String expectedMapToDeltaFile = "der2_sRefset_SimpleMapToDelta";
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+			.put(expectedMapToDeltaFile, true)
+			.build();
+			
+		assertArchiveContainsFiles(exportArchive, files);
+
+		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		fileToLinesMap.put(expectedMapToDeltaFile, Pair.of(true, mapToMemberLine));
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
 	

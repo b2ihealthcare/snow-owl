@@ -85,6 +85,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	supportedRefSetTypes = {
 		MapTargetTypes.SIMPLE,
 		MapTargetTypes.SIMPLE_MAP,
+		MapTargetTypes.SIMPLE_MAP_TO,
 		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION,
 		MapTargetTypes.ATTRIBUTE_VALUE,
 		MapTargetTypes.COMPLEX_MAP,

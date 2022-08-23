@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,15 +57,17 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.SIMPLE, SnomedDescription.TYPE)
 			.put(SnomedRefSetType.SIMPLE, SnomedRelationship.TYPE)
 			.put(SnomedRefSetType.SIMPLE_MAP, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP, SnomedDescription.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP_TO, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP_TO, SnomedDescription.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedDescription.TYPE)
 			.put(SnomedRefSetType.OWL_AXIOM, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.OWL_ONTOLOGY, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.MRCM_DOMAIN, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.MRCM_MODULE_SCOPE, SnomedConcept.TYPE)
-			.put(SnomedRefSetType.SIMPLE_MAP, SnomedDescription.TYPE)
-			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedConcept.TYPE)
-			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedDescription.TYPE)
 			.build();
 
 	public static boolean isSupported(SnomedRefSetType type) {

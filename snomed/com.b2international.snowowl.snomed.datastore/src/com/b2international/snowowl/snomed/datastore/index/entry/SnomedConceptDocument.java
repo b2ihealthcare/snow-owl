@@ -45,7 +45,6 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -185,6 +184,14 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static Expression mapTargetComponentTypes(Collection<String> mapTargetComponentTypes) {
 			return matchAny(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
+		
+		public static Expression mapSourceComponentType(int mapSourceComponentType) {
+			return match(Fields.MAP_SOURCE_COMPONENT_TYPE, mapSourceComponentType);
+		}
+		
+		public static Expression mapSourceComponentTypes(Collection<String> mapSourceComponentTypes) {
+			return matchAny(Fields.MAP_SOURCE_COMPONENT_TYPE, mapSourceComponentTypes);
+		}
 
 		public static Expression semanticTag(String semanticTag) {
 			return exactMatch(Fields.SEMANTIC_TAGS, semanticTag);
@@ -208,6 +215,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String REFSET_TYPE = "refSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
+		public static final String MAP_SOURCE_COMPONENT_TYPE = "mapSourceComponentType";
 		public static final String DOI = "doi";
 		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 		public static final String SEMANTIC_TAGS = "semanticTags";
@@ -232,6 +240,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.statedAncestors(input.getStatedAncestors())
 				.referencedComponentType(input.getReferencedComponentType())
 				.mapTargetComponentType(input.getMapTargetComponentType())
+				.mapSourceComponentType(input.getMapSourceComponentType())
 				.preferredDescriptions(input.getPreferredDescriptions())
 				.refSetType(input.getRefSetType())
 				.doi(input.getDoi())
@@ -280,6 +289,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private SnomedRefSetType refSetType;
 		private String referencedComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 		private String mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+		private String mapSourceComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 		private SortedSet<String> semanticTags = Collections.emptySortedSet();
 		private float doi = DEFAULT_DOI;
@@ -353,6 +363,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public Builder clearRefSet() {
 			referencedComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 			mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+			mapSourceComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 			refSetType = null;
 			return getSelf();
 		}
@@ -363,7 +374,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				mapTargetComponentType(refSet.getMapTargetComponentType());
 			}
 			
-			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
+			if (!StringUtils.isEmpty(refSet.getMapSourceComponentType())) {
+				mapSourceComponentType(refSet.getMapSourceComponentType());
+			}
+			
+			if (!StringUtils.isEmpty(refSet.getReferencedComponentType())) {
 				referencedComponentType(refSet.getReferencedComponentType());
 			}
 			
@@ -372,6 +387,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		
 		public Builder mapTargetComponentType(String mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
+			return getSelf();
+		}
+		
+		public Builder mapSourceComponentType(String mapSourceComponentType) {
+			this.mapSourceComponentType = mapSourceComponentType;
 			return getSelf();
 		}
 		
@@ -421,6 +441,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 					refSetType, 
 					referencedComponentType,
 					mapTargetComponentType,
+					mapSourceComponentType,
 					memberOf,
 					activeMemberOf,
 					preferredDescriptions);
@@ -462,6 +483,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private final SnomedRefSetType refSetType;
 	private final String referencedComponentType;
 	private final String mapTargetComponentType;
+	private final String mapSourceComponentType;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSortedSet parents;
@@ -486,6 +508,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final SnomedRefSetType refSetType, 
 			final String referencedComponentType,
 			final String mapTargetComponentType,
+			final String mapSourceComponentType,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
@@ -496,6 +519,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
 		this.mapTargetComponentType = mapTargetComponentType;
+		this.mapSourceComponentType = mapSourceComponentType;
 		this.preferredDescriptions = preferredDescriptions;
 	}
 	
@@ -555,6 +579,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return mapTargetComponentType;
 	}
 	
+	public String getMapSourceComponentType() {
+		return mapSourceComponentType;
+	}
+	
 	@JsonIgnore
 	public boolean isRefSet() {
 		return getRefSetType() != null;
@@ -576,6 +604,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.add("refSetType", refSetType)
 				.add("referencedComponentType", referencedComponentType)
 				.add("mapTargetComponentType", mapTargetComponentType)
+				.add("mapSourceComponentType", mapSourceComponentType)
 				.add("parents", parents)
 				.add("ancestors", ancestors)
 				.add("statedParents", statedParents)

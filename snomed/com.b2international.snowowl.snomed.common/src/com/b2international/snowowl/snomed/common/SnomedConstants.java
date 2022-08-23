@@ -114,7 +114,8 @@ public abstract class SnomedConstants {
 		public static final String REFSET_LANGUAGE_TYPE_SG = "9011000132109";
 		public static final String REFSET_LANGUAGE_TYPE_ES = "450828004";
 		public static final String REFSET_QUERY_SPECIFICATION_TYPE = "900000000000512005";
-		public static final String REFSET_SIMPLE_MAP_TYPE = "900000000000496009";
+		public static final String REFSET_SIMPLE_MAP_FROM_TYPE = "900000000000496009";
+		public static final String REFSET_SIMPLE_MAP_TO_TYPE = "1187636009"; // since 2022-02-28
 		public static final String REFSET_DESCRIPTION_TYPE = "900000000000538005";
 		public static final String REFSET_CONCRETE_DOMAIN_TYPE_AU = "50131000036100"; //AU release -> NEHTA_0856_2012_AMTImplentationKit_20120229
 		public static final String REFSET_MODULE_DEPENDENCY_TYPE = "900000000000534007";
@@ -403,6 +404,7 @@ public abstract class SnomedConstants {
 		public static final String ATTRIBUTE_TYPE_MAP_PRIORITY = "900000000000502003";
 		public static final String ATTRIBUTE_TYPE_MAP_RULE = "900000000000503008";
 		public static final String ATTRIBUTE_TYPE_MAP_TARGET = "900000000000505001";
+		public static final String ATTRIBUTE_TYPE_MAP_SOURCE = "900000000000500006";
 		
 		// Query attributes
 		public static final String ATTRIBUTE_TYPE_QUERY = "900000000000515007";

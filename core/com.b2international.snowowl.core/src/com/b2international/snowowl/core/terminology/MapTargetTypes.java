@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public final class MapTargetTypes {
 	public static final String ATTRIBUTE_VALUE = "ATTRIBUTE_VALUE";
 	public static final String SIMPLE = "SIMPLE";
 	public static final String SIMPLE_MAP = "SIMPLE_MAP";
+	public static final String SIMPLE_MAP_TO = "SIMPLE_MAP_TO";
 	public static final String SIMPLE_MAP_WITH_DESCRIPTION = "SIMPLE_MAP_WITH_DESCRIPTION";
 	public static final String COMPLEX_MAP = "COMPLEX_MAP";
 	public static final String EXTENDED_MAP = "EXTENDED_MAP";

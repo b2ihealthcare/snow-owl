@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1217,7 +1217,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		//Create 1st MRCM rule
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember1 = member(Concepts.FINDING_SITE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
-				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
 				.rangeConstraint(String.format("<<%s", Concepts.PHYSICAL_OBJECT))
 				.contentTypeId(PRECOORDINATED_CONTENT)
 				.build();
@@ -1225,7 +1225,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		//Create 2nd MRCM rule (6b6e3ed0-383e-4950-b7e8-ae11277663b9)
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember2 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
-				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
 				.rangeConstraint("<< 71388002 |Procedure (procedure)|")
 				.contentTypeId(PRECOORDINATED_CONTENT)
 				.build();
@@ -1233,7 +1233,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		//Create 3rd MRCM rule (ae16bb19-1389-403c-888d-ea81c9c13d4f)
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember3 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
-				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
 				.rangeConstraint("<< 363787002 |Observable entity (observable entity)| OR << 71388002 |Procedure (procedure)|")
 				.contentTypeId(POSTCOORDINATED_CONTENT)
 				.build();
@@ -1241,7 +1241,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		//Create concrete value MRCM rule
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember4 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
-				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.getName())
+				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
 				.rangeConstraint("int(>#0)")
 				.contentTypeId(POSTCOORDINATED_CONTENT)
 				.build();

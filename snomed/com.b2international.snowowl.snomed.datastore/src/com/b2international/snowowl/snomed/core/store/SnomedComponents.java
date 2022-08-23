@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,6 +128,15 @@ public class SnomedComponents {
 	 */
 	public static SnomedSimpleMapReferenceSetMemberBuilder newSimpleMapMember() {
 		return new SnomedSimpleMapReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedSimpleMapToReferenceSetMemberBuilder SNOMED CT Simple Map To Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedSimpleMapToReferenceSetMemberBuilder newSimpleMapToMember() {
+		return new SnomedSimpleMapToReferenceSetMemberBuilder();
 	}
 
 	/**

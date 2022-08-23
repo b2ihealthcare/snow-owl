@@ -33,6 +33,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.similarity.Similarity;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,6 +113,7 @@ public class SnomedConceptDocumentSerializationTest extends BaseRevisionIndexTes
 				.refSetType(SnomedRefSetType.ASSOCIATION)
 				.referencedComponentType(SnomedConcept.TYPE)
 				.mapTargetComponentType(SnomedRelationship.TYPE)
+				.mapSourceComponentType(SnomedDescription.TYPE)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, concept);

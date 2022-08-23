@@ -80,6 +80,7 @@ import com.google.common.collect.Iterables;
 		SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME,
 		SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET,
 		SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_DESCRIPTION,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_SOURCE,
 		SnomedRefSetMemberIndexEntry.Fields.MAP_CATEGORY_ID,
 		SnomedRefSetMemberIndexEntry.Fields.CORRELATION_ID,
 		SnomedRefSetMemberIndexEntry.Fields.MAP_ADVICE,
@@ -125,7 +126,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		// Association type
 		public static final String TARGET_COMPONENT_ID = SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID;
 		
-		// Simple, complex extended map type
+		// Simple, complex, extended map type
 		public static final String MAP_TARGET = SnomedRf2Headers.FIELD_MAP_TARGET;
 		public static final String MAP_TARGET_DESCRIPTION = SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION;
 		public static final String MAP_GROUP = SnomedRf2Headers.FIELD_MAP_GROUP;
@@ -134,6 +135,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String MAP_ADVICE = SnomedRf2Headers.FIELD_MAP_ADVICE;
 		public static final String MAP_CATEGORY_ID = SnomedRf2Headers.FIELD_MAP_CATEGORY_ID;
 		public static final String CORRELATION_ID = SnomedRf2Headers.FIELD_CORRELATION_ID;
+		
+		// "Simple map to" type
+		public static final String MAP_SOURCE = SnomedRf2Headers.FIELD_MAP_SOURCE;
 		
 		// Description format
 		public static final String DESCRIPTION_FORMAT = SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT;
@@ -284,6 +288,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression mapTargetDescriptions(Collection<String> mapTargetDescriptions) {
 			return matchAny(Fields.MAP_TARGET_DESCRIPTION, mapTargetDescriptions);
 		}
+		
+		public static Expression mapSources(Collection<String> mapSources) {
+			return matchAny(Fields.MAP_SOURCE, mapSources);
+		}		
 		
 		public static Expression mapGroups(Collection<Integer> mapGroups) {
 			return matchAnyInt(Fields.MAP_GROUP, mapGroups);
@@ -525,6 +533,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		// SIMPLE MAP reference set members
 		private String mapTarget;
 		private String mapTargetDescription;
+		// SIMPLE MAP TO reference set members
+		private String mapSource;
 		// COMPLEX MAP
 		private String mapCategoryId;
 		private String correlationId;
@@ -591,6 +601,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			case Fields.MAP_RULE: this.mapRule = (String) value; break;
 			case Fields.MAP_TARGET: this.mapTarget = (String) value; break;
 			case Fields.MAP_TARGET_DESCRIPTION: this.mapTargetDescription = (String) value; break;
+			case Fields.MAP_SOURCE: this.mapSource = (String) value; break;
 			case Fields.QUERY: this.query = (String) value; break;
 			case Fields.SOURCE_EFFECTIVE_TIME: this.sourceEffectiveTime = (Long) value; break;
 			case Fields.TARGET_COMPONENT_ID: this.targetComponentId = (String) value; break;
@@ -727,6 +738,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public Builder mapTargetDescription(final String mapTargetDescription) {
 			this.mapTargetDescription = mapTargetDescription;
+			return getSelf();
+		}
+		
+		public Builder mapSource(final String mapSource) {
+			this.mapSource = mapSource;
 			return getSelf();
 		}
 		
@@ -929,6 +945,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			// simple map
 			doc.mapTarget = mapTarget;
 			doc.mapTargetDescription = mapTargetDescription;
+			// simple map to
+			doc.mapSource = mapSource;
 			// complex map
 			doc.mapCategoryId = mapCategoryId;
 			doc.mapAdvice = mapAdvice;
@@ -1009,6 +1027,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	// SIMPLE MAP reference set members
 	private String mapTarget;
 	private String mapTargetDescription;
+	// SIMPLE MAP TO reference set members
+	private String mapSource;
 	// COMPLEX MAP
 	private String mapCategoryId;
 	private String correlationId;
@@ -1186,6 +1206,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public String getMapTarget() {
 		return mapTarget;
+	}
+	
+	public String getMapSource() {
+		return mapSource;
 	}
 
 	public Integer getMapGroup() {
@@ -1365,6 +1389,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		// SIMPLE MAP reference set members
 		putIfPresent(builder, Fields.MAP_TARGET, getMapTarget());
 		putIfPresent(builder, Fields.MAP_TARGET_DESCRIPTION, getMapTargetDescription());
+		// SIMPLE MAP TO reference set members
+		putIfPresent(builder, Fields.MAP_SOURCE, getMapSource());
 		// COMPLEX MAP
 		putIfPresent(builder, Fields.MAP_CATEGORY_ID, getMapCategoryId());
 		putIfPresent(builder, Fields.CORRELATION_ID, getCorrelationId());
@@ -1428,6 +1454,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("sourceEffectiveTime", sourceEffectiveTime)
 				.add("targetEffectiveTime", targetEffectiveTime)
 				.add("mapTarget", mapTarget)
+				.add("mapSource", mapSource)
 				.add("mapTargetDescription", mapTargetDescription)
 				.add("mapCategoryId", mapCategoryId)
 				.add("correlationId", correlationId)

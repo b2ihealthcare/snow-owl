@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.rest.io;
 
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.doImport;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.waitForImportJob;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.assertGetVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
@@ -46,6 +48,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.util.PlatformUtil;
@@ -54,10 +57,12 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.response.ValidatableResponse;
@@ -578,6 +583,31 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		// The entire import fits in a single commit
 		assertEquals(1, authorCommits.getTotal());
+	}
+  
+  @Test
+  public void import35MapToReferenceSet() throws Exception {
+		createComponent(branchPath, SnomedComponentType.CONCEPT, createConceptRequestBody(Concepts.REFSET_ALL)
+			.with("id", SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP_TO))
+			.with("commitComment", "Created parent concept for reference set type 'SIMPLE_MAP_TO'")).statusCode(201);
+		
+		final String importFileName = "SnomedCT_Release_INT_20220712_map_to_reference_set.zip";	
+		importArchive(importFileName);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "98406000", "referenceSet()")
+			.statusCode(200)
+			.body("referenceSet.type", equalTo("SIMPLE_MAP_TO"))
+			.body("referenceSet.referencedComponentType", equalTo(SnomedConcept.TYPE))
+			.body("referenceSet.mapSourceComponentType", equalTo(TerminologyRegistry.UNKNOWN_COMPONENT_TYPE))
+			.body("referenceSet.mapTargetComponentType", equalTo(TerminologyRegistry.UNKNOWN_COMPONENT_TYPE));
+			
+		getComponent(branchPath, SnomedComponentType.MEMBER, "00012345-c001-acef-1236-cafe00000112")
+			.statusCode(200)
+			.body("active", equalTo(false))
+			.body("moduleId", equalTo("900000000000207008"))
+			.body("refsetId", equalTo("98406000"))
+			.body("referencedComponent.id", equalTo("138875005"))
+			.body(SnomedRf2Headers.FIELD_MAP_SOURCE, equalTo("mapSource"));
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
