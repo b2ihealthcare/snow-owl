@@ -123,7 +123,7 @@ final class EclLabelerRequest extends ResourceRequest<ServiceProvider, LabeledEc
 		// fetch all concept labels
 		final Map<String, String> labels = CodeSystemRequests.prepareSearchConcepts()
 				.filterByIds(conceptIdsToLabel)
-				.filterByCodeSystem(codeSystemUri)
+				.filterByCodeSystemUri(CodeSystem.uri(codeSystemUri))
 				.setPreferredDisplay(descriptionType)
 				.setLimit(conceptIdsToLabel.size())
 				.setLocales(locales())
