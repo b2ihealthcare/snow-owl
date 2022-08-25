@@ -77,9 +77,13 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author) {
 
-		FhirRequests.codeSystems().preparePut()
-			.setCodeSystem(codeSystem.getChange())
+		FhirRequests.codeSystems()
+			.prepareUpdate()
+			.setFhirCodeSystem(codeSystem.getChange())
 			.setAuthor(author)
+			// .setAuthorDisplayName(...)
+			// .setBundleId(...)
+			// .setDefaultEffectiveDate(...)
 			.buildAsync()
 			.execute(getBus())
 			.getSync();
