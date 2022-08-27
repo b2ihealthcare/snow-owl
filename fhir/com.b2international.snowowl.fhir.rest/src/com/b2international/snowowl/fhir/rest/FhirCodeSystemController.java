@@ -17,7 +17,11 @@ package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 
+import java.time.LocalDate;
+
 import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,13 +49,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @since 8.0
  */
 @Tag(description = "CodeSystem", name = "CodeSystem", extensions = 
-@Extension(name = B2I_OPENAPI_X_NAME, properties = { 
-		  @ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CodeSystem")
-	}))
+@Extension(name = B2I_OPENAPI_X_NAME, properties = {
+	@ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CodeSystem")
+}))
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemController extends AbstractFhirController {
 	
+	private static final String X_EFFECTIVE_DATE = "X-Effective-Date";
+	private static final String X_AUTHOR_DISPLAY_NAME = "X-Author-Display-Name";
+	private static final String X_BUNDLE_ID = "X-Bundle-Id";
+
 	/**
 	 * HTTP PUT /CodeSystem
 	 * @param codeSystem - the new or updated code system to add
@@ -70,20 +78,30 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
 	@PutMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
-	public ResponseEntity<Void> put(
+	public ResponseEntity<Void> createOrUpdateCodeSystem(
 		@RequestBody 
 		final ResourceRequest<CodeSystem> codeSystem,
 		
+		@RequestHeader(value = X_EFFECTIVE_DATE, required = false)
+		@DateTimeFormat(iso = ISO.DATE)
+		final LocalDate defaultEffectiveDate,
+		
 		@RequestHeader(value = X_AUTHOR, required = false)
-		final String author) {
+		final String author,
+		
+		@RequestHeader(value = X_AUTHOR_DISPLAY_NAME, required = false)
+		final String authorDisplayName,
+		
+		@RequestHeader(value = X_BUNDLE_ID, required = false)
+		final String bundleId) {
 
 		FhirRequests.codeSystems()
 			.prepareUpdate()
 			.setFhirCodeSystem(codeSystem.getChange())
 			.setAuthor(author)
-			// .setAuthorDisplayName(...)
-			// .setBundleId(...)
-			// .setDefaultEffectiveDate(...)
+			.setAuthorDisplayName(authorDisplayName)
+			.setBundleId(bundleId)
+			.setDefaultEffectiveDate(defaultEffectiveDate)
 			.buildAsync()
 			.execute(getBus())
 			.getSync();
