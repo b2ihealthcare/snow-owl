@@ -271,7 +271,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	
 	@Override
 	protected boolean trackScores() {
-		return containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI) || containsKey(OptionKey.KNN);
+		return containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI) || containsKey(OptionKey.KNN) || containsKey(OptionKey.DESCRIPTION_KNN);
 	}
 
 	@Override
@@ -331,7 +331,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		if (containsKey(OptionKey.DESCRIPTION_KNN)) {
 			requestBuilder
 				// TODO for now just use 10x more description scores to calculate the best x concepts
-				.setLimit(limit() * 10)
+				.setLimit(Math.min(limit() * 10, 10_000))
 				.filterByKnn(get(OptionKey.DESCRIPTION_KNN, KnnFilter.class));
 		}
 		
