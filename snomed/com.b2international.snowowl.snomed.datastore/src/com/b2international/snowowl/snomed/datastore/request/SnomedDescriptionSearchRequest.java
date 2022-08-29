@@ -30,6 +30,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.KnnFilter;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -61,7 +62,12 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		ACCEPTABLE_IN,
 		ACCEPTABLE_IN_LOCALES,
 		PREFERRED_IN,
-		PREFERRED_IN_LOCALES, 
+		PREFERRED_IN_LOCALES,
+		
+		/**
+		 * To perform knn based query vector filtering using a similarity vector field indexed on the description documents
+		 */
+		KNN, 
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -143,7 +149,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 
 	@Override
 	protected boolean trackScores() {
-		return containsKey(OptionKey.TERM);
+		return containsKey(OptionKey.TERM) || containsKey(OptionKey.KNN);
 	}
 
 	@Override
@@ -158,6 +164,16 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 	@Override
 	protected SnomedDescriptions createEmptyResult(int limit) {
 		return new SnomedDescriptions(limit, 0);
+	}
+	
+	@Override
+	protected KnnFilter getKnnFilter() {
+		return get(OptionKey.KNN, KnnFilter.class);
+	}
+	
+	@Override
+	protected String getKnnField() {
+		return SnomedDescriptionIndexEntry.Fields.SIMILARITY_FIELD;
 	}
 	
 	private Expression toDescriptionTermQuery(final TermFilter termFilter) {

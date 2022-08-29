@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
@@ -130,6 +131,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 * Knn filter to match concepts against a specified query vector
 		 */
 		KNN,
+		
+		/**
+		 * Knn filter to match concept description against a specified query vector 
+		 */
+		DESCRIPTION_KNN,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -297,20 +303,8 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		return SnomedConceptDocument.Fields.SIMILARITY_FIELD;
 	}
 
-	private Expression addSearchProfile(final Expression searchProfileQuery, final Expression query) {
-		if (searchProfileQuery == null) {
-			return query;
-		} else {
-			return Expressions.bool()
-					.filter(searchProfileQuery)
-					.filter(query)
-					.build();
-		}
-	}
-	
 	private Map<String, Float> executeDescriptionSearch(BranchContext context, TermFilter termFilter) {
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
-			.all()
 			.filterByActive(true)
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
@@ -328,13 +322,22 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		}
 		
 		if (termFilter != null) {
-			requestBuilder.filterByTerm(termFilter);
+			requestBuilder
+				// XXX would it make sense to use other than fetching all matching descriptions with scores?
+				.all()
+				.filterByTerm(termFilter);
 		}
 		
-		final Collection<SnomedDescription> items = requestBuilder
+		if (containsKey(OptionKey.DESCRIPTION_KNN)) {
+			requestBuilder
+				// TODO for now just use 10x more description scores to calculate the best x concepts
+				.setLimit(limit() * 10)
+				.filterByKnn(get(OptionKey.DESCRIPTION_KNN, KnnFilter.class));
+		}
+		
+		final SnomedDescriptions items = requestBuilder
 			.build()
-			.execute(context)
-			.getItems();
+			.execute(context);
 		
 		final Map<String, Float> conceptMap = newHashMap();
 		

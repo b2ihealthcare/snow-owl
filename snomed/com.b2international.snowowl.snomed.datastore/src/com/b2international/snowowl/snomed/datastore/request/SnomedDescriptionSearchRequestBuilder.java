@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.request.KnnFilter;
+import com.b2international.snowowl.core.request.KnnFilterSupport;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.request.search.TermFilterSupport;
@@ -37,13 +39,26 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSea
  * @since 4.5
  */
 public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions>
-		implements TermFilterSupport<SnomedDescriptionSearchRequestBuilder>{
+		implements TermFilterSupport<SnomedDescriptionSearchRequestBuilder>, KnnFilterSupport<SnomedDescriptionSearchRequestBuilder> {
 
 	SnomedDescriptionSearchRequestBuilder() {}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(OptionKey.TERM, termFilter);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @since 8.6
+	 */
+	@Override
+	public SnomedDescriptionSearchRequestBuilder filterByKnn(KnnFilter knnFilter) {
+		return addOption(OptionKey.KNN, knnFilter);
 	}
 
 	/**

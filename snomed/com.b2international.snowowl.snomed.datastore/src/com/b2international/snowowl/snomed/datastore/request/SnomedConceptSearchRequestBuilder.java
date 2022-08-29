@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.request.DescriptionKnnFilterSupport;
 import com.b2international.snowowl.core.request.KnnFilter;
 import com.b2international.snowowl.core.request.KnnFilterSupport;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -35,7 +36,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
  * @since 4.5
  */
 public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts>
-		implements TermFilterSupport<SnomedConceptSearchRequestBuilder>, KnnFilterSupport<SnomedConceptSearchRequestBuilder> {
+		implements TermFilterSupport<SnomedConceptSearchRequestBuilder>, KnnFilterSupport<SnomedConceptSearchRequestBuilder>, DescriptionKnnFilterSupport<SnomedConceptSearchRequestBuilder> {
 
 	/**
 	 * Special term based sort key for sorting by preferred term based on locale and term.
@@ -78,14 +79,28 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, withDoi);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public SnomedConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, termFilter);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public SnomedConceptSearchRequestBuilder filterByKnn(KnnFilter knnFilter) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.KNN, knnFilter);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public SnomedConceptSearchRequestBuilder filterByDescriptionKnn(KnnFilter knnFilter) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_KNN, knnFilter);
 	}
 
 	/**
