@@ -215,7 +215,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			queryBuilder.filter(SnomedConceptDocument.Expressions.semanticTags(getCollection(OptionKey.SEMANTIC_TAG, String.class)));
 		}
 		
-		if (containsKey(OptionKey.TERM)) {
+		if (containsKey(OptionKey.TERM) || containsKey(OptionKey.DESCRIPTION_KNN)) {
 			final ExpressionBuilder bq = Expressions.bool();
 			// nest current query
 			bq.filter(queryBuilder.build());
