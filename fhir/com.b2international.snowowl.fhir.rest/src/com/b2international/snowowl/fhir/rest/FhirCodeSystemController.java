@@ -57,7 +57,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class FhirCodeSystemController extends AbstractFhirController {
 	
 	private static final String X_EFFECTIVE_DATE = "X-Effective-Date";
-	private static final String X_AUTHOR_DISPLAY_NAME = "X-Author-Display-Name";
+	private static final String X_AUTHOR_PROFILE_NAME = "X-Author-Profile-Name";
 	private static final String X_BUNDLE_ID = "X-Bundle-Id";
 
 	/**
@@ -89,8 +89,8 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author,
 		
-		@RequestHeader(value = X_AUTHOR_DISPLAY_NAME, required = false)
-		final String authorDisplayName,
+		@RequestHeader(value = X_AUTHOR_PROFILE_NAME, required = false)
+		final String authorProfileName,
 		
 		@RequestHeader(value = X_BUNDLE_ID, required = false)
 		final String bundleId) {
@@ -98,8 +98,8 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		FhirRequests.codeSystems()
 			.prepareUpdate()
 			.setFhirCodeSystem(codeSystem.getChange())
-			.setAuthor(author)
-			.setAuthorDisplayName(authorDisplayName)
+			.setOwner(author)
+			.setOwnerProfileName(authorProfileName)
 			.setBundleId(bundleId)
 			.setDefaultEffectiveDate(defaultEffectiveDate)
 			.buildAsync()

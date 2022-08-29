@@ -20,6 +20,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -34,39 +38,47 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 final class FhirCodeSystemUpdateRequest implements Request<RepositoryContext, Boolean> {
 
 	private static final long serialVersionUID = 1L;
+	
 	private static final int CONCEPT_LIMIT = 5000;
 
+	@NotNull
 	private final CodeSystem fhirCodeSystem;
-	private final String author;
-	private final String authorProfileName;
+	
+	private final String owner;
+	private final String ownerProfileName;
 	private final LocalDate defaultEffectiveDate;
+
+	@NotEmpty
 	private final String bundleId;
 
 	public FhirCodeSystemUpdateRequest(
 		final CodeSystem fhirCodeSystem, 
-		final String author, 
-		final String authorProfileName,
+		final String owner, 
+		final String ownerProfileName,
 		final LocalDate defaultEffectiveDate, 
 		final String bundleId) {
 		
 		this.fhirCodeSystem = fhirCodeSystem;
-		this.author = author;
-		this.authorProfileName = authorProfileName;
+		this.owner = owner;
+		this.ownerProfileName = ownerProfileName;
 		this.defaultEffectiveDate = defaultEffectiveDate;
 		this.bundleId = bundleId;
 	}
 
+	private boolean conceptCountUnderLimit() {
+		return Optional.ofNullable(fhirCodeSystem.getConcepts())
+			.map(concepts -> concepts.size() < CONCEPT_LIMIT)
+			.orElse(Boolean.TRUE);
+	}
+	
 	@Override
 	public Boolean execute(final RepositoryContext context) {
-		checkArgument(
-			fhirCodeSystem.getConcepts() == null || fhirCodeSystem.getConcepts().size() < CONCEPT_LIMIT, 
-			"Maintenance of code systems with more than %s codes is not supported.", CONCEPT_LIMIT);
-
+		checkArgument(conceptCountUnderLimit(), "Maintenance of code systems with more than %s codes is not supported.", CONCEPT_LIMIT);
 		final Optional<FhirCodeSystemOperations> codeSystemOperations = context.optionalService(FhirCodeSystemOperations.class);
 
 		codeSystemOperations
-			.orElseThrow(() -> new NotImplementedException("FHIR CodeSystem resource creation is currently unavailable."))
-			.update(context, fhirCodeSystem, author, authorProfileName, defaultEffectiveDate, bundleId);
+			.orElseThrow(() -> new NotImplementedException("FHIR CodeSystem resource creation is not configured."))
+			.update(context, fhirCodeSystem, owner, ownerProfileName, defaultEffectiveDate, bundleId);
 
 		return Boolean.TRUE;			
 	}

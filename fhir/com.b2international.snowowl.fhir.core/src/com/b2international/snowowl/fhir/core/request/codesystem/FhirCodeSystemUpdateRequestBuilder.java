@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.time.LocalDate;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -29,8 +30,8 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 public final class FhirCodeSystemUpdateRequestBuilder implements ResourceRepositoryRequestBuilder<Boolean> {
 
 	private CodeSystem fhirCodeSystem;
-	private String author;
-	private String authorDisplayName;
+	private String owner;
+	private String ownerProfileName;
 	private LocalDate defaultEffectiveDate;
 	private String bundleId = IComponent.ROOT_ID;
 
@@ -39,13 +40,13 @@ public final class FhirCodeSystemUpdateRequestBuilder implements ResourceReposit
 		return this;
 	}
 
-	public FhirCodeSystemUpdateRequestBuilder setAuthor(final String author) {
-		this.author = author;
+	public FhirCodeSystemUpdateRequestBuilder setOwner(final String owner) {
+		this.owner = owner;
 		return this;
 	}
 	
-	public FhirCodeSystemUpdateRequestBuilder setAuthorDisplayName(final String authorDisplayName) {
-		this.authorDisplayName = authorDisplayName;
+	public FhirCodeSystemUpdateRequestBuilder setOwnerProfileName(final String ownerProfileName) {
+		this.ownerProfileName = ownerProfileName;
 		return this;
 	}
 	
@@ -55,12 +56,16 @@ public final class FhirCodeSystemUpdateRequestBuilder implements ResourceReposit
 	}
 
 	public FhirCodeSystemUpdateRequestBuilder setBundleId(final String bundleId) {
-		this.bundleId = bundleId;
+		if (!StringUtils.isEmpty(bundleId)) {
+			this.bundleId = bundleId;
+		} else {
+			this.bundleId = IComponent.ROOT_ID;
+		}
 		return this;
 	}
 
 	@Override
 	public Request<RepositoryContext, Boolean> build() {
-		return new FhirCodeSystemUpdateRequest(fhirCodeSystem, author, authorDisplayName, defaultEffectiveDate, bundleId);
+		return new FhirCodeSystemUpdateRequest(fhirCodeSystem, owner, ownerProfileName, defaultEffectiveDate, bundleId);
 	}
 }

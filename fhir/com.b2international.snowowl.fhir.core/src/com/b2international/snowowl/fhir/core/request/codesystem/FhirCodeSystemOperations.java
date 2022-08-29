@@ -33,9 +33,10 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
  * the top-level {@link ServiceProvider} (ie. {@link Environment}).
  * <p>
  * For other resource types (value sets and concept maps) where multiple
- * implementations can coexist, the corresponding {@link Repository} should have a
- * registered service entry (and so the retrieved service reference will be
- * different depending on which {@link RepositoryContext} is opened for the request).
+ * implementations can coexist, the corresponding {@link Repository} should have
+ * a registered service entry (and so the retrieved service reference will be
+ * different depending on which {@link RepositoryContext} is opened for the
+ * request).
  * 
  * @since 8.2.0
  */
@@ -47,19 +48,20 @@ public interface FhirCodeSystemOperations {
 	 * 
 	 * @param context - the request context to use for creation/update
 	 * @param fhirCodeSystem - the input FHIR representation of the code system
-	 * @param author - the commit author, usually provided via a request
-	 * header (can be different from the user associated with the service provider)
-	 * @param authorProfileName - the commit author's display name, stored in 
-	 * resource settings
+	 * @param owner - the commit author and resource owner, usually provided 
+	 * via a request header (can be different from the user associated with the 
+	 * service provider)
+	 * @param ownerProfileName - the owner's display name, stored in resource settings
 	 * @param defaultEffectiveDate - the default effective date to use if no date
-	 * information is present on the resource
-	 * @param bundleId - the parent bundle identifier 
+	 * information is present on the resource (when not given and a version is present,
+	 * but no effective time is recorded on the code system, an exception will be thrown)
+	 * @param bundleId - the parent bundle identifier
 	 */
 	public void update(
 		ServiceProvider context, 
 		CodeSystem fhirCodeSystem, 
-		String author, 
-		String authorProfileName,
+		String owner, 
+		String ownerProfileName,
 		LocalDate defaultEffectiveDate,
 		String bundleId);	
 }
