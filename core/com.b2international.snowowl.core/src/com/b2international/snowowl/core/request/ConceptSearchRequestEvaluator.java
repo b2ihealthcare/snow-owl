@@ -119,7 +119,13 @@ public interface ConceptSearchRequestEvaluator {
 		/**
 		 * Filter by semantic similarity using a query vector
 		 */
-		KNN, 
+		KNN,
+		
+		/**
+		 * Filter by semantic similarity using only query vectors based on concept description terms
+		 */
+		DESCRIPTION_KNN,
+		
 	}
 
 	/**
@@ -213,9 +219,18 @@ public interface ConceptSearchRequestEvaluator {
 		}
 	}
 	
+	/**
+	 * Configures knn filtering if the necessary configuration present in the given search options.
+	 * 
+	 * @param requestBuilder
+	 * @param search
+	 */
 	default void evaluateKnnFilterOptions(KnnFilterSupport<?> requestBuilder, Options search) {
 		if (search.containsKey(OptionKey.KNN)) {
 			requestBuilder.filterByKnn(search.get(OptionKey.KNN, KnnFilter.class));
+		}
+		if (search.containsKey(OptionKey.DESCRIPTION_KNN) && requestBuilder instanceof DescriptionKnnFilterSupport<?>) {
+			((DescriptionKnnFilterSupport<?>) requestBuilder).filterByDescriptionKnn(search.get(OptionKey.DESCRIPTION_KNN, KnnFilter.class));
 		}
 	}
 	

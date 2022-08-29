@@ -30,7 +30,7 @@ import com.google.common.collect.FluentIterable;
  */
 public final class ConceptSearchRequestBuilder 
 		extends SearchPageableCollectionResourceRequestBuilder<ConceptSearchRequestBuilder, ServiceProvider, Concepts>
-		implements SystemRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder>, KnnFilterSupport<ConceptSearchRequestBuilder> {
+		implements SystemRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder>, KnnFilterSupport<ConceptSearchRequestBuilder>, DescriptionKnnFilterSupport<ConceptSearchRequestBuilder> {
 
 	/**
 	 * Filters matches from a single CodeSystem. 
@@ -96,6 +96,14 @@ public final class ConceptSearchRequestBuilder
 	@Override
 	public ConceptSearchRequestBuilder filterByKnn(KnnFilter knnFilter) {
 		return addOption(OptionKey.KNN, knnFilter);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ConceptSearchRequestBuilder filterByDescriptionKnn(KnnFilter knnFilter) {
+		return addOption(OptionKey.DESCRIPTION_KNN, knnFilter);
 	}
 	
 	/**
