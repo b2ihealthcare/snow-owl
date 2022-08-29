@@ -22,7 +22,7 @@ import com.b2international.collections.floats.FloatList;
  * 
  * @since 8.5
  */
-public interface KnnFilterSupport<T> {
+public interface KnnFilterSupport<T extends KnnFilterSupport<T>> {
 
 	/**
 	 * Filter results by returning semantically similar matches compared to the given query vector.
