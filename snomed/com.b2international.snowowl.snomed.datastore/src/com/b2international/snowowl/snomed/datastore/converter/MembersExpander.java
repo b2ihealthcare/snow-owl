@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ class MembersExpander {
 			
 			addActiveFilter(requestBuilder, membersOptions);
 			addRefSetTypesFilter(requestBuilder, membersOptions);
+			addRefsetIdFilter(requestBuilder, membersOptions);
 			
 			final OptionsBuilder propertyOptionsBuilder = OptionsBuilder.newBuilder();
 			addCharacteristicTypeFilter(propertyOptionsBuilder, membersOptions);
@@ -109,4 +110,11 @@ class MembersExpander {
 					membersOptions.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class));
 		}
 	}
+	
+	private void addRefsetIdFilter(SnomedRefSetMemberSearchRequestBuilder requestBuilder, Options membersOptions) {
+		if (membersOptions.containsKey(SnomedRf2Headers.FIELD_REFSET_ID)) {
+			requestBuilder.filterByRefSet(membersOptions.getCollection(SnomedRf2Headers.FIELD_REFSET_ID, String.class));
+		}
+	}
+	
 }
