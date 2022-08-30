@@ -27,7 +27,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 /**
  * @since 8.2.0
  */
-public final class FhirCodeSystemUpdateRequestBuilder implements ResourceRepositoryRequestBuilder<Boolean> {
+public final class FhirCodeSystemUpdateRequestBuilder implements ResourceRepositoryRequestBuilder<FhirCodeSystemOperations.UpdateResult> {
 
 	private CodeSystem fhirCodeSystem;
 	private String owner;
@@ -65,7 +65,7 @@ public final class FhirCodeSystemUpdateRequestBuilder implements ResourceReposit
 	}
 
 	@Override
-	public Request<RepositoryContext, Boolean> build() {
+	public Request<RepositoryContext, FhirCodeSystemOperations.UpdateResult> build() {
 		return new FhirCodeSystemUpdateRequest(fhirCodeSystem, owner, ownerProfileName, defaultEffectiveDate, bundleId);
 	}
 }
