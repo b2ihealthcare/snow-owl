@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -267,7 +268,14 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
 	@GetMapping
-	public Promise<Bundle> getCodeSystems(@ParameterObject FhirCodeSystemSearchParameters params) {
+	public Promise<Bundle> getCodeSystems(
+			@ParameterObject 
+			FhirCodeSystemSearchParameters params,
+
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+			
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
 //		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
@@ -286,6 +294,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 				.setSummary(params.get_summary())
 				.setElements(params.get_elements())
 				.sortByFields(params.get_sort())
+				.setLocales(acceptLanguage)
 				.buildAsync()
 				.execute(getBus());
 		// TODO convert returned Bundle entries to have a fullUrl, either here or supply current url to request via header param
@@ -315,11 +324,16 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			final String id,
 			
 			@ParameterObject
-			final FhirResourceSelectors selectors) {
+			final FhirResourceSelectors selectors,
+			
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 		
 		return FhirRequests.codeSystems().prepareGet(id)
 				.setSummary(selectors.get_summary())
 				.setElements(selectors.get_elements())
+				.setLocales(acceptLanguage)
 				.buildAsync()
 				.execute(getBus());
 	}
