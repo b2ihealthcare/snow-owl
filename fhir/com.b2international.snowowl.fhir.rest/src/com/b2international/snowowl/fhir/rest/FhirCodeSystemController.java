@@ -38,7 +38,7 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
-import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemOperations;
+import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemWriteSupport;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -224,7 +224,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			throw new BadRequestException("Code system resource ID '" + idInResource + "' disagrees with '" + id + "' provided in the request URL.");
 		}
 		
-		final FhirCodeSystemOperations.UpdateResult updateResult = FhirRequests.codeSystems()
+		final FhirCodeSystemWriteSupport.UpdateResult updateResult = FhirRequests.codeSystems()
 			.prepareUpdate()
 			.setFhirCodeSystem(fhirCodeSystem)
 			.setOwner(author)

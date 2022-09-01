@@ -17,30 +17,17 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.time.LocalDate;
 
-import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 
 /**
  * Implementing classes provide support for code system interactions and named
  * operations which can not be achieved using tooling-independent building
  * blocks.
- * <p>
- * <b>Implementation note</b>: As at the moment only a single tooling has such
- * functionality, the implementing class is registered directly as a service on
- * the top-level {@link ServiceProvider} (ie. {@link Environment}).
- * <p>
- * For other resource types (value sets and concept maps) where multiple
- * implementations can coexist, the corresponding {@link Repository} should have
- * a registered service entry (and so the retrieved service reference will be
- * different depending on which {@link RepositoryContext} is opened for the
- * request).
  * 
  * @since 8.2.0
  */
-public interface FhirCodeSystemOperations {
+public interface FhirCodeSystemWriteSupport {
 
 	enum UpdateResult {
 		CREATED, UPDATED

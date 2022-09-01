@@ -35,7 +35,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
  * @see <a href="https://hl7.org/fhir/http.html#update">Update interaction</a>
  * @since 8.2.0
  */
-final class FhirCodeSystemUpdateRequest implements Request<RepositoryContext, FhirCodeSystemOperations.UpdateResult> {
+final class FhirCodeSystemUpdateRequest implements Request<RepositoryContext, FhirCodeSystemWriteSupport.UpdateResult> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -72,9 +72,9 @@ final class FhirCodeSystemUpdateRequest implements Request<RepositoryContext, Fh
 	}
 	
 	@Override
-	public FhirCodeSystemOperations.UpdateResult execute(final RepositoryContext context) {
+	public FhirCodeSystemWriteSupport.UpdateResult execute(final RepositoryContext context) {
 		checkArgument(conceptCountUnderLimit(), "Maintenance of code systems with more than %s codes is not supported.", CONCEPT_LIMIT);
-		final Optional<FhirCodeSystemOperations> codeSystemOperations = context.optionalService(FhirCodeSystemOperations.class);
+		final Optional<FhirCodeSystemWriteSupport> codeSystemOperations = context.optionalService(FhirCodeSystemWriteSupport.class);
 
 		return codeSystemOperations
 			.orElseThrow(() -> new NotImplementedException("FHIR CodeSystem resource creation is not configured."))
