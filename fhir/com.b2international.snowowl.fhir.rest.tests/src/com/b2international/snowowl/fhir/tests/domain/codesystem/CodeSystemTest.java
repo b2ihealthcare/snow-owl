@@ -211,7 +211,6 @@ public class CodeSystemTest extends FhirTest {
 		assertThat(jsonPath.getString("designation[0].use.code"), equalTo("internal"));
 		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("http://b2i.sg/test"));
 		assertThat(jsonPath.getString("designation[0].value"), equalTo("conceptLabel_uk"));
-		assertThat(jsonPath.getString("designation[0].languageCode"), equalTo("uk_en"));
 
 		assertThat(jsonPath.getString("property[0].code"), equalTo("childConcept"));
 		assertThat(jsonPath.getString("property[0].valueCode"), equalTo("childId"));
