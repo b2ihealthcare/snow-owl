@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -62,10 +64,12 @@ public final class Designation {
 		this.value = value;
 	}
 	
+	@JsonProperty("language")
 	public Code getLanguageCode() {
 		return language;
 	}
-	
+
+	@JsonIgnore
 	public String getLanguage() {
 		return language.getCodeValue();
 	}
@@ -89,16 +93,19 @@ public final class Designation {
 		private Coding use;
 		private String value;
 
+		@JsonIgnore
 		public Builder languageCode(final String languageCode) {
 			this.language = new Code(languageCode);
 			return this;
 		}
 		
+		@JsonIgnore
 		public Builder language(final Code languageCode) {
 			this.language = languageCode;
 			return this;
 		}
 		
+		@JsonProperty
 		public Builder language(final String language) {
 			this.language = new Code(language);
 			return this;

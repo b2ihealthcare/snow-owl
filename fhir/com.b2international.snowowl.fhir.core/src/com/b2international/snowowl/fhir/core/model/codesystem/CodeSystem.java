@@ -385,9 +385,14 @@ public class CodeSystem extends MetadataResource {
 		}
 		
 		public Builder addIdentifier(Identifier identifier) {
+			if (identifier == null) {
+				return getSelf();
+			}
+			
 			if (identifiers == null) {
 				identifiers = new ArrayList<>();
 			}
+			
 			identifiers.add(identifier);
 			return getSelf();
 		}
