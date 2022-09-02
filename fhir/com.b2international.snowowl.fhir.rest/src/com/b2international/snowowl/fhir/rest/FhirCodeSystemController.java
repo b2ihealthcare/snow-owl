@@ -38,7 +38,7 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
-import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemWriteSupport;
+import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -82,7 +82,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		description = "Create a new FHIR code system.", 
 		extensions = {
 			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
-				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create/update a code system"),
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_CREATE, value = "Create a code system"),
 			}),
 		}
 	)
@@ -224,7 +224,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			throw new BadRequestException("Code system resource ID '" + idInResource + "' disagrees with '" + id + "' provided in the request URL.");
 		}
 		
-		final FhirCodeSystemWriteSupport.UpdateResult updateResult = FhirRequests.codeSystems()
+		final FhirResourceUpdateResult updateResult = FhirRequests.codeSystems()
 			.prepareUpdate()
 			.setFhirCodeSystem(fhirCodeSystem)
 			.setOwner(author)

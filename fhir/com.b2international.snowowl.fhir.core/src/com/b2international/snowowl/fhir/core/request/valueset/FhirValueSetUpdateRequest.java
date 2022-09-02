@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.request.codesystem;
-
-import static com.google.common.base.Preconditions.checkArgument;
+package com.b2international.snowowl.fhir.core.request.valueset;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
@@ -25,25 +24,27 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
 /**
- * Updates an existing code system or creates a new one if no code system exists for the specified identifier.
+ * Updates an existing value set or creates a new one if no value set exists for the specified identifier.
  * 
  * @see <a href="https://hl7.org/fhir/http.html#update">Update interaction</a>
  * @since 8.2.0
  */
-final class FhirCodeSystemUpdateRequest implements Request<RepositoryContext, FhirResourceUpdateResult> {
+final class FhirValueSetUpdateRequest implements Request<RepositoryContext, FhirResourceUpdateResult> {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final int CONCEPT_LIMIT = 5000;
-
 	@NotNull
-	private final CodeSystem fhirCodeSystem;
+	private final ValueSet fhirValueSet;
+	
+	@NotNull
+	private final Map<String, ResourceURI> systemUriOverrides;
 	
 	private final String owner;
 	private final String ownerProfileName;
@@ -52,33 +53,28 @@ final class FhirCodeSystemUpdateRequest implements Request<RepositoryContext, Fh
 	@NotEmpty
 	private final String bundleId;
 
-	public FhirCodeSystemUpdateRequest(
-		final CodeSystem fhirCodeSystem, 
+	public FhirValueSetUpdateRequest(
+		final ValueSet fhirValueSet,
+		final Map<String, ResourceURI> systemUriOverrides,
 		final String owner, 
 		final String ownerProfileName,
 		final LocalDate defaultEffectiveDate, 
 		final String bundleId) {
 		
-		this.fhirCodeSystem = fhirCodeSystem;
+		this.fhirValueSet = fhirValueSet;
+		this.systemUriOverrides = systemUriOverrides;
 		this.owner = owner;
 		this.ownerProfileName = ownerProfileName;
 		this.defaultEffectiveDate = defaultEffectiveDate;
 		this.bundleId = bundleId;
 	}
-
-	private boolean conceptCountUnderLimit() {
-		return Optional.ofNullable(fhirCodeSystem.getConcepts())
-			.map(concepts -> concepts.size() < CONCEPT_LIMIT)
-			.orElse(Boolean.TRUE);
-	}
 	
 	@Override
 	public FhirResourceUpdateResult execute(final RepositoryContext context) {
-		checkArgument(conceptCountUnderLimit(), "Maintenance of code systems with more than %s codes is not supported.", CONCEPT_LIMIT);
-		final Optional<FhirCodeSystemWriteSupport> codeSystemOperations = context.optionalService(FhirCodeSystemWriteSupport.class);
-
-		return codeSystemOperations
-			.orElseThrow(() -> new NotImplementedException("FHIR CodeSystem resource creation is not configured."))
-			.update(context, fhirCodeSystem, owner, ownerProfileName, defaultEffectiveDate, bundleId);
+		final Optional<FhirValueSetWriteSupport> valueSetWriteSupport = context.optionalService(FhirValueSetWriteSupport.class);
+		
+		return valueSetWriteSupport
+			.orElseThrow(() -> new NotImplementedException("FHIR ValueSet resource creation is not configured."))
+			.update(context, fhirValueSet, systemUriOverrides, owner, ownerProfileName, defaultEffectiveDate, bundleId);
 	}
 }

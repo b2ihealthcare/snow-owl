@@ -13,50 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.request.codesystem;
+package com.b2international.snowowl.fhir.core.request.conceptmap;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
 /**
  * @since 8.2.0
  */
-public final class FhirCodeSystemUpdateRequestBuilder implements ResourceRepositoryRequestBuilder<FhirResourceUpdateResult> {
+public final class FhirConceptMapUpdateRequestBuilder implements ResourceRepositoryRequestBuilder<FhirResourceUpdateResult> {
 
-	private CodeSystem fhirCodeSystem;
+	private ConceptMap fhirConceptMap;
+	private Map<String, ResourceURI> systemUriOverrides = Map.of();
 	private String owner;
 	private String ownerProfileName;
 	private LocalDate defaultEffectiveDate;
 	private String bundleId = IComponent.ROOT_ID;
 
-	public FhirCodeSystemUpdateRequestBuilder setFhirCodeSystem(final CodeSystem fhirCodeSystem) {
-		this.fhirCodeSystem = fhirCodeSystem;
+	public FhirConceptMapUpdateRequestBuilder setFhirConceptMap(final ConceptMap fhirConceptMap) {
+		this.fhirConceptMap = fhirConceptMap;
 		return this;
 	}
 
-	public FhirCodeSystemUpdateRequestBuilder setOwner(final String owner) {
+	public FhirConceptMapUpdateRequestBuilder setSystemUriOverrides(final Map<String, ResourceURI> systemUriOverrides) {
+		if (systemUriOverrides == null) {
+			this.systemUriOverrides = Map.of();
+		} else {
+			this.systemUriOverrides = systemUriOverrides;
+		}
+		return this;
+	}
+	
+	public FhirConceptMapUpdateRequestBuilder setOwner(final String owner) {
 		this.owner = owner;
 		return this;
 	}
 	
-	public FhirCodeSystemUpdateRequestBuilder setOwnerProfileName(final String ownerProfileName) {
+	public FhirConceptMapUpdateRequestBuilder setOwnerProfileName(final String ownerProfileName) {
 		this.ownerProfileName = ownerProfileName;
 		return this;
 	}
 	
-	public FhirCodeSystemUpdateRequestBuilder setDefaultEffectiveDate(final LocalDate defaultEffectiveDate) {
+	public FhirConceptMapUpdateRequestBuilder setDefaultEffectiveDate(final LocalDate defaultEffectiveDate) {
 		this.defaultEffectiveDate = defaultEffectiveDate;
 		return this;
 	}
 
-	public FhirCodeSystemUpdateRequestBuilder setBundleId(final String bundleId) {
+	public FhirConceptMapUpdateRequestBuilder setBundleId(final String bundleId) {
 		if (!StringUtils.isEmpty(bundleId)) {
 			this.bundleId = bundleId;
 		} else {
@@ -67,6 +79,12 @@ public final class FhirCodeSystemUpdateRequestBuilder implements ResourceReposit
 
 	@Override
 	public Request<RepositoryContext, FhirResourceUpdateResult> build() {
-		return new FhirCodeSystemUpdateRequest(fhirCodeSystem, owner, ownerProfileName, defaultEffectiveDate, bundleId);
+		return new FhirConceptMapUpdateRequest(
+			fhirConceptMap, 
+			systemUriOverrides, 
+			owner, 
+			ownerProfileName, 
+			defaultEffectiveDate, 
+			bundleId);
 	}
 }
