@@ -60,7 +60,7 @@ try {
 			string(name: 'gitRevision', value: revision),
 			string(name: 'gitBranch', value: branch),
 			string(name: 'baseImage', value: 'b2ihealthcare/ubuntu:lts'),
-			booleanParam(name: 'integrationTests', value: !skipTests)
+			booleanParam(name: 'integrationTests', value: !params.skipTests)
 		], quietPeriod: 1, wait: false
 
 	}
