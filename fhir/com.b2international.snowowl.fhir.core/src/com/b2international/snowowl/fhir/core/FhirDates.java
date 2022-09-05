@@ -18,6 +18,8 @@ package com.b2international.snowowl.fhir.core;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
@@ -34,6 +36,25 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 public class FhirDates {
 
 	/**
+	 * https://www.hl7.org/fhir/datatypes.html#dateTime
+	 */
+	private static String[] DATETIME_PATTERNS = {
+		"yyyy", 
+		"yyyy-MM", 
+		"yyyy-MM-dd",
+		"yyyy-MM-dd'T'HH:mm:ssZ",
+		"yyyy-MM-dd'T'HH:mm:ss.SZ", // Regexp in specification allows 1+ digits for milliseconds; going up to 4 here
+		"yyyy-MM-dd'T'HH:mm:ss.SSZ",
+		"yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+		"yyyy-MM-dd'T'HH:mm:ss.SSSSZ",
+		"yyyy-MM-dd'T'HH:mm:ssXXX", 
+		"yyyy-MM-dd'T'HH:mm:ss.SXXX",
+		"yyyy-MM-dd'T'HH:mm:ss.SSXXX",
+		"yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+		"yyyy-MM-dd'T'HH:mm:ss.SSSSXXX",
+	};
+	
+	/**
 	 * Returns a date object for the given string representation supported by FHIR
 	 * 
 	 * @param dateString
@@ -42,7 +63,7 @@ public class FhirDates {
 	 */
 	public static Date parse(final String dateString) {
 		try {
-			return new StdDateFormat().parse(dateString);
+			return DateUtils.parseDate(dateString, DATETIME_PATTERNS);
 		} catch (NullPointerException | ParseException e) {
 			throw FhirException.createFhirError(String.format("Invalid date string '%s'. Reason: %s", dateString, e.getMessage()), OperationOutcomeCode.MSG_PARAM_INVALID);
 		}
