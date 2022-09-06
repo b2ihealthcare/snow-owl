@@ -226,10 +226,10 @@ public class FhirValueSetController extends AbstractFhirController {
 			.execute(getBus())
 			.getSync();
 		
-		switch (updateResult) {
+		switch (updateResult.getAction()) {
 			case CREATED:
 				final URI locationUri = MvcUriComponentsBuilder.fromController(FhirValueSetController.class)
-					.pathSegment(id)
+					.pathSegment(updateResult.getId())
 					.build()
 					.toUri();
 				

@@ -230,10 +230,10 @@ public class FhirConceptMapController extends AbstractFhirController {
 			.execute(getBus())
 			.getSync();
 		
-		switch (updateResult) {
+		switch (updateResult.getAction()) {
 			case CREATED:
 				final URI locationUri = MvcUriComponentsBuilder.fromController(FhirConceptMapController.class)
-					.pathSegment(id)
+					.pathSegment(updateResult.getId())
 					.build()
 					.toUri();
 				

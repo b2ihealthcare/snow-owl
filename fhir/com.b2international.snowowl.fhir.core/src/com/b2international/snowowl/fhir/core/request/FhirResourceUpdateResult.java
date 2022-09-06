@@ -18,7 +18,26 @@ package com.b2international.snowowl.fhir.core.request;
 /**
  * @since 8.5.3
  */
-public enum FhirResourceUpdateResult {
-	CREATED, 
-	UPDATED,
+public class FhirResourceUpdateResult {
+	
+	public enum Action {
+		CREATED, 
+		UPDATED,
+	}
+	
+	private Action action;
+	private String id;
+	
+	public FhirResourceUpdateResult(Action action, String id) {
+		this.action = action;
+		this.id = id;
+	}
+
+	public Action getAction() {
+		return action;
+	}
+	
+	public String getId() {
+		return id;
+	}
 }
