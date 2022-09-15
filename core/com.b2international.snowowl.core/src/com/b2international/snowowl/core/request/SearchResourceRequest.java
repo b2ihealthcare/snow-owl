@@ -356,7 +356,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			Collection<String> filterValues = new HashSet<>();
 			Collection<String> mustNotValues = new HashSet<>();
 			for (String value : getCollection(optionKey, String.class)) {
-				if (value.startsWith(EXCLUSION_CHARACTER)) {
+				if (value.length() > 1 && value.startsWith(EXCLUSION_CHARACTER)) {
 					// substring removes the first character, the exclusion marker
 					mustNotValues.add(value.substring(1));
 				} else {
@@ -367,7 +367,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 				queryBuilder.filter(expressionFactory.apply(filterValues));
 			}
 			if (!mustNotValues.isEmpty()) {
-				// remove EXCLUSION character from the values
 				queryBuilder.mustNot(expressionFactory.apply(mustNotValues));
 			}
 		}

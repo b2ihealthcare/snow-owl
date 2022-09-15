@@ -174,6 +174,18 @@ public class ResourceApiTest {
 	}
 	
 	@Test
+	public void filterByOwnerNegatedEmptyValue() {
+		final String id1 = IDs.base62UUID();
+		final String id2 = IDs.base62UUID();
+		createCodeSystem(id1, "draft", DEFAULT_OWNER);
+		createCodeSystem(id2, "active", "otherOwner");
+		
+		assertResourceSearch(Map.of("owner", List.of("-")))
+			.statusCode(200)
+			.body("total", equalTo(0));
+	}
+	
+	@Test
 	public void filterBySettings() {
 		final String codesystemId1 = IDs.base62UUID();
 		final String codesystemId2 = IDs.base62UUID();
