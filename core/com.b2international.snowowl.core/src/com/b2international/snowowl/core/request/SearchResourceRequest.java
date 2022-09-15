@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,11 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public abstract class SearchResourceRequest<C extends ServiceProvider, B> extends IndexResourceRequest<C, B> {
 	
+	/**
+	 * Character to indicate that a value must not match when filtering by it. Can be used in certain filter options in search APIs. 
+	 */
+	private static final String EXCLUSION_CHARACTER = "-";
+
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -333,6 +338,38 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		if (containsKey(optionKey)) {
 			Collection<T> filterValues = getCollection(optionKey, filterType);
 			queryBuilder.filter(expressionFactory.apply(filterValues));
+		}
+	}
+	
+	/**
+	 * Applies a filter/mustNot clause to the given queryBuilder if the specified optionKey holds any value, otherwise this method does nothing. In order to register a value as negation (in the mustNot clause) the value needs to be prefixed with the minus character ('-'), otherwise each value is considered a positive/filter value.
+	 * Please note that this method does not takes into account when the underlying field supports values that can start with the minus character, thus using this feature on such fields might lead to inconsistent behavior. It is recommended to enable this only on field where the values never start with the minus ('-') character. 
+	 *  
+	 * @param <T> - the expected type of the filter values
+	 * @param queryBuilder - the query builder to apply the filter to
+	 * @param optionKey - the search option key
+	 * @param filterType - the expected type of the filter values
+	 * @param expressionFactory - the factory that creates the index clause based on the filter values
+	 */
+	protected final void addFilterWithNegations(ExpressionBuilder queryBuilder, Enum<?> optionKey, Function<Collection<String>, Expression> expressionFactory) {
+		if (containsKey(optionKey)) {
+			Collection<String> filterValues = new HashSet<>();
+			Collection<String> mustNotValues = new HashSet<>();
+			for (String value : getCollection(optionKey, String.class)) {
+				if (value.startsWith(EXCLUSION_CHARACTER)) {
+					// substring removes the first character, the exclusion marker
+					mustNotValues.add(value.substring(1));
+				} else {
+					filterValues.add(value);
+				}
+			}
+			if (!filterValues.isEmpty()) {
+				queryBuilder.filter(expressionFactory.apply(filterValues));
+			}
+			if (!mustNotValues.isEmpty()) {
+				// remove EXCLUSION character from the values
+				queryBuilder.mustNot(expressionFactory.apply(mustNotValues));
+			}
 		}
 	}
 	

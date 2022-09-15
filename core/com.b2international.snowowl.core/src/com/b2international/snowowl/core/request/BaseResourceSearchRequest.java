@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.SortedSet;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -114,7 +115,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 					final String propertyName = property.split("\\#")[0];
 					final String propertyValue = property.substring(propertyName.length() + 1, property.length());
 					if (Strings.isNullOrEmpty(propertyValue)) {
-						throw new IllegalArgumentException(String.format("Settings argument %s is not allowed. Expected format is propertyName#propertyValue.", property));
+						throw new BadRequestException("Settings argument %s is not allowed. Expected format is propertyName#propertyValue.", property);
 					}
 					//Check if property has specified value
 					if (propertyValue.endsWith("*")) {
@@ -130,8 +131,8 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 		
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
-		addFilter(queryBuilder, OptionKey.OWNER, String.class, ResourceDocument.Expressions::owners);
-		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
+		addFilterWithNegations(queryBuilder, OptionKey.OWNER, ResourceDocument.Expressions::owners);
+		addFilterWithNegations(queryBuilder, OptionKey.STATUS, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);

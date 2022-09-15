@@ -146,6 +146,34 @@ public class ResourceApiTest {
 	}
 	
 	@Test
+	public void filterByStatusNegated() {
+		final String id1 = IDs.base62UUID();
+		final String id2 = IDs.base62UUID();
+		createCodeSystemWithStatus(id1, "draft");
+		createCodeSystemWithStatus(id2, "active");
+		
+		assertResourceSearch(Map.of("status", List.of("-draft")))
+			.statusCode(200)
+			.body("total", equalTo(1))
+			.body("items[0].id", equalTo(id2))
+			.body("items[0].status", equalTo("active"));
+	}
+	
+	@Test
+	public void filterByOwnerNegated() {
+		final String id1 = IDs.base62UUID();
+		final String id2 = IDs.base62UUID();
+		createCodeSystem(id1, "draft", DEFAULT_OWNER);
+		createCodeSystem(id2, "active", "otherOwner");
+		
+		assertResourceSearch(Map.of("owner", List.of("-otherOwner")))
+			.statusCode(200)
+			.body("total", equalTo(1))
+			.body("items[0].id", equalTo(id1))
+			.body("items[0].owner", equalTo(DEFAULT_OWNER));
+	}
+	
+	@Test
 	public void filterBySettings() {
 		final String codesystemId1 = IDs.base62UUID();
 		final String codesystemId2 = IDs.base62UUID();
