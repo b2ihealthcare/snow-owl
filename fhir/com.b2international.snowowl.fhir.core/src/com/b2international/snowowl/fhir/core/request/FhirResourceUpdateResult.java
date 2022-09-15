@@ -16,7 +16,7 @@
 package com.b2international.snowowl.fhir.core.request;
 
 /**
- * @since 8.5.3
+ * @since 8.6.0
  */
 public class FhirResourceUpdateResult {
 	

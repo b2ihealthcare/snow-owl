@@ -27,7 +27,7 @@ import com.google.common.base.MoreObjects;
  * <p>
  * Example: <code>http://loinc.org</code> &rarr; <code>codesystems/LOINC/2.73</code>
  * 
- * @since 8.5.3
+ * @since 8.6.0
  */
 public class ConceptMapWithUriMapping {
 
