@@ -41,7 +41,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.MatchNone;
@@ -207,12 +206,12 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		assertEquals(expected, actual);
 	}
 	
-	@Test(expected = NotImplementedException.class)
+	@Test(expected = BadRequestException.class)
 	public void memberOfUnsupportedRefsetField() throws Exception {
 		eval("^ [moduleId, mapTarget]"+Concepts.REFSET_DESCRIPTION_TYPE);
 	}
 	
-	@Test(expected = NotImplementedException.class)
+	@Test(expected = BadRequestException.class)
 	public void memberOfUnsupportedWildcard() throws Exception {
 		eval("^ [*]"+Concepts.REFSET_DESCRIPTION_TYPE);
 	}
@@ -230,9 +229,9 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		final Expression actual = eval("<*");
 		final Expression expected;
 		if (isInferred()) {
-			expected = Expressions.builder().mustNot(parents(Collections.singleton(IComponent.ROOT_ID))).build();
+			expected = Expressions.bool().mustNot(parents(Collections.singleton(IComponent.ROOT_ID))).build();
 		} else {
-			expected = Expressions.builder().mustNot(statedParents(Collections.singleton(IComponent.ROOT_ID))).build();
+			expected = Expressions.bool().mustNot(statedParents(Collections.singleton(IComponent.ROOT_ID))).build();
 			
 		}
 		assertEquals(expected, actual);
@@ -243,14 +242,14 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		final Expression actual = eval("<<"+ROOT_ID);
 		Expression expected;
 		if (isInferred()) {
-			expected = Expressions.builder()
+			expected = Expressions.bool()
 					.should(ids(Collections.singleton(ROOT_ID)))
 					.should(parents(Collections.singleton(ROOT_ID)))
 					.should(ancestors(Collections.singleton(ROOT_ID)))
 					.build();
 			
 		} else {
-			expected = Expressions.builder()
+			expected = Expressions.bool()
 					.should(ids(Collections.singleton(ROOT_ID)))
 					.should(statedParents(Collections.singleton(ROOT_ID)))
 					.should(statedAncestors(Collections.singleton(ROOT_ID)))
@@ -305,9 +304,9 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		final Expression actual = eval("<!*");
 		Expression expected; 
 		if (isInferred()) {
-			expected = Expressions.builder().mustNot(parents(Collections.singleton(IComponent.ROOT_ID))).build();
+			expected = Expressions.bool().mustNot(parents(Collections.singleton(IComponent.ROOT_ID))).build();
 		} else {
-			expected = Expressions.builder().mustNot(statedParents(Collections.singleton(IComponent.ROOT_ID))).build();
+			expected = Expressions.bool().mustNot(statedParents(Collections.singleton(IComponent.ROOT_ID))).build();
 			
 		}
 		assertEquals(expected, actual);
@@ -324,7 +323,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 			
 		}
 		assertEquals(
-			Expressions.builder()
+			Expressions.bool()
 				.should(ids(Collections.singleton(ROOT_ID)))
 				.should(expectedParentsClause)
 			.build(), 
@@ -427,7 +426,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	@Test
 	public void selfAndNotOther() throws Exception {
 		final Expression actual = eval(ROOT_ID + " MINUS " + OTHER_ID);
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 				.filter(id(ROOT_ID))
 				.mustNot(id(OTHER_ID))
 				.build();
@@ -610,7 +609,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected =	Expressions.builder()
+		final Expression expected =	Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(TRIPHASIL_TABLET, PANADOL_TABLET)))
 				.build();
@@ -635,7 +634,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		}
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s != <%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected =	Expressions.builder()
+		final Expression expected =	Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(DRUG_WITH_INVALID_HAI)))
 				.build();
@@ -647,7 +646,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s != %s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT1));
-		final Expression expected =	Expressions.builder()
+		final Expression expected =	Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(TRIPHASIL_TABLET)))
 				.build();
@@ -659,7 +658,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: [0..1] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected =	Expressions.builder()
+		final Expression expected =	Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(TRIPHASIL_TABLET)))
 				.build();
@@ -712,7 +711,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateDrugHierarchy();
 		generateTisselKit();
 		final Expression actual = eval(String.format("<%s:%s=%s OR %s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4));
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 				.should(and(
 					descendantsOf(DRUG_ROOT),
 					ids(Set.of(TRIPHASIL_TABLET))
@@ -730,7 +729,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateDrugHierarchy();
 		generateTisselKit();
 		final Expression actual = eval(String.format("<%s:%s=%s OR (%s=%s AND %s=%s)", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 				.should(and(
 					descendantsOf(DRUG_ROOT),
 					ids(Set.of(TRIPHASIL_TABLET))
@@ -833,7 +832,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateDrugsWithGroups();
 		
 		final Expression actual = eval(String.format("<%s: [0..0] {%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(ASPIRIN_TABLET, ALGOFLEX_TABLET, TRIPLEX_TABLET)))
 				.build();
@@ -845,7 +844,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateDrugsWithGroups();
 		
 		final Expression actual = eval(String.format("<%s: [0..1] {%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(ALGOFLEX_TABLET)))
 				.build();
@@ -869,7 +868,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		generateHierarchy();
 		final Expression actual = eval(String.format("<<%s:{[0..1]%s=<<%s,[1..1]%s=<<%s,[1..1]%s=<<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, HAS_BOSS, SUBSTANCE, HAS_TRADE_NAME, SUBSTANCE));
 		
-		final Expression descendantsOrSelfOf = Expressions.builder()
+		final Expression descendantsOrSelfOf = Expressions.bool()
 				.should(ids(Collections.singleton(DRUG_ROOT)))
 				.should(isInferred() ? parents(Collections.singleton(DRUG_ROOT)) : statedParents(Collections.singleton(DRUG_ROOT)))
 				.should(isInferred() ? ancestors(Collections.singleton(DRUG_ROOT)) : statedAncestors(Collections.singleton(DRUG_ROOT)))
@@ -1217,7 +1216,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	public void groupCardinalityZeroToZeroWithDefaultAttributeCardinality() throws Exception {
 		generateDrugsWithGroups();
 		final Expression actual = eval(String.format("<%s: [0..0] { %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(ALGOFLEX_TABLET, TRIPLEX_TABLET, ASPIRIN_TABLET)))
 				.build();;
@@ -1228,7 +1227,7 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	public void groupCardinalityZeroToOneWithDefaultAttributeCardinality() throws Exception {
 		generateDrugsWithGroups();
 		final Expression actual = eval(String.format("<%s: [0..1] { %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = Expressions.builder()
+		final Expression expected = Expressions.bool()
 				.filter(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(Set.of(ALGOFLEX_TABLET)))
 				.build();;
@@ -1632,17 +1631,17 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	}
 	
 	private static Expression and(Expression left, Expression right) {
-		return Expressions.builder().filter(left).filter(right).build();
+		return Expressions.bool().filter(left).filter(right).build();
 	}
 	
 	private Expression descendantsOf(String...conceptIds) {
 		if (isInferred()) {
-			return Expressions.builder()
+			return Expressions.bool()
 					.should(parents(Set.of(conceptIds)))
 					.should(ancestors(Set.of(conceptIds)))
 					.build();
 		} else {
-			return Expressions.builder()
+			return Expressions.bool()
 					.should(statedParents(Set.of(conceptIds)))
 					.should(statedAncestors(Set.of(conceptIds)))
 					.build();
