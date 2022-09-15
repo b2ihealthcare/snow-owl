@@ -60,10 +60,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirValueSetController extends AbstractFhirController {
 	
-	private static final String X_EFFECTIVE_DATE = "X-Effective-Date";
-	private static final String X_AUTHOR_PROFILE_NAME = "X-Author-Profile-Name";
-	private static final String X_BUNDLE_ID = "X-Bundle-Id";
-
 	/**
 	 * <code><b>POST /ValueSet</b></code>
 	 * <p>
