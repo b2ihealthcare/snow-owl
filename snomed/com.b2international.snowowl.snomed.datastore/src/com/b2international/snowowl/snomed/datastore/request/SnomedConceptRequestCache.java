@@ -104,7 +104,11 @@ public class SnomedConceptRequestCache {
 		configsToFetch.forEach(cfg -> {
 			ImmutableMap.Builder<String, SnomedConcept> configConcepts = ImmutableMap.builder();
 			cfg.ids.forEach(idToCache -> {
-				configConcepts.put(idToCache, fetchedConcepts.get(idToCache));
+				if (fetchedConcepts.containsKey(idToCache)) {
+					configConcepts.put(idToCache, fetchedConcepts.get(idToCache));
+				} else {
+					context.log().warn("Concept '{}' couldn't be expanded during request because it does not exist.", idToCache);
+				}
 			});
 			ImmutableMap<String, SnomedConcept> concepts = configConcepts.build();
 			cache.put(cfg, concepts);
