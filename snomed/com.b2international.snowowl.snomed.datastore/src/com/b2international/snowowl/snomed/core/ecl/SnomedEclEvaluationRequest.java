@@ -28,7 +28,7 @@ import javax.validation.constraints.NotNull;
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -153,7 +153,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 			// Find concepts that match the member expression, then use the resulting concept IDs as the expression
 			return filterExpression.then(ex -> executeMemberSearch(context, ex));
 		} else {
-			throw new NotImplementedException("Not supported ECL domain type: %s", filterDomain);
+			throw new BadRequestException("Not supported ECL domain type: %s", filterDomain);
 		}
 	}
 	
@@ -414,7 +414,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 					dialectQuery.mustNot(Expressions.matchAny(key, values));
 					break;
 				default: 
-					throw new NotImplementedException("Unsupported dialectAliasFilter operator '%s'", dialectAliasFilter.getOp());
+					throw new BadRequestException("Unsupported dialectAliasFilter operator '%s'", dialectAliasFilter.getOp());
 			}
 		});
 		
@@ -451,7 +451,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 				dialectQuery.mustNot(Expressions.matchAny(key, values));
 				break;
 			default: 
-				throw new NotImplementedException("Unsupported dialectIdFilter operator '%s'", dialectIdFilter.getOp());
+				throw new BadRequestException("Unsupported dialectIdFilter operator '%s'", dialectIdFilter.getOp());
 			}
 		});
 		
@@ -564,7 +564,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		} else if (historyProfile instanceof NestedExpression) {
 			return evaluate(context, historyProfile).then(resolveIds(context));
 		} else {
-			throw new NotImplementedException("Unsupported history supplement profile: %s", historyProfile);
+			throw new BadRequestException("Unsupported history supplement profile: %s", historyProfile);
 		}
 		
 	}
@@ -581,7 +581,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		case GTE: return SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
 		case LT: return SearchResourceRequest.Operator.LESS_THAN;
 		case LTE: return SearchResourceRequest.Operator.LESS_THAN_EQUALS;
-		default: throw new NotImplementedException("Unknown ECL operator '%s'", op);
+		default: throw new BadRequestException("Unknown ECL operator '%s'", op);
 		}
 	}
 
@@ -697,7 +697,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	/*package*/ static String extractTerm(TypedSearchTermClause clause) {
 		LexicalSearchType searchType = LexicalSearchType.fromString(clause.getLexicalSearchType());
 		if (searchType != null && LexicalSearchType.EXACT != searchType) {
-			throw new NotImplementedException("Not implemented ECL feature: match, wild and regex lexical search types are not supported in (concrete value, refset member field) string matching.");
+			throw new BadRequestException("Not implemented ECL feature: match, wild and regex lexical search types are not supported in (concrete value, refset member field) string matching.");
 		}
 		return clause.getTerm();
 	}

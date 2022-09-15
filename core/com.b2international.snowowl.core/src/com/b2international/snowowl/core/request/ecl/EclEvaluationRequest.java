@@ -34,7 +34,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.query.*;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
@@ -513,7 +513,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	}
 	
 	public static <T> T throwUnsupported(String feature) {
-		throw new NotImplementedException("Not implemented ECL feature: %s", feature);
+		throw new BadRequestException("Not supported ECL feature: %s", feature);
 	}
 	
 	protected abstract Expression parentsExpression(Set<String> ids);
