@@ -13,24 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.request.codesystem;
-
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+package com.b2international.snowowl.fhir.core.request;
 
 /**
- * @since 8.2.0
+ * @since 8.6.0
  */
-public interface FhirCodeSystemCUDSupport {
-
-	/**
-	 * Implementers need to create the specified codesystem in their tooling
-	 * if it does not exist yet, update it otherwise
-	 *  
-	 * @param context - the context to use when looking for this code system
-	 * @param codeSystem 
-	 * @param author
-	 */
-	public void updateOrCreateCodeSystem(ServiceProvider context, CodeSystem codeSystem, String author);	
+public class FhirResourceUpdateResult {
 	
+	public enum Action {
+		CREATED, 
+		UPDATED,
+	}
+	
+	private Action action;
+	private String id;
+	
+	public FhirResourceUpdateResult(Action action, String id) {
+		this.action = action;
+		this.id = id;
+	}
+
+	public Action getAction() {
+		return action;
+	}
+	
+	public String getId() {
+		return id;
+	}
 }

@@ -294,6 +294,13 @@ public abstract class MetadataResource extends DomainResource {
 			return getSelf();
 		}
 
+		@JsonIgnore
+		public B status(final Code status) {
+			this.status = status;
+			return getSelf();
+		}
+		
+		@JsonProperty
 		public B status(PublicationStatus status) {
 			this.status = status.getCode();
 			return getSelf();

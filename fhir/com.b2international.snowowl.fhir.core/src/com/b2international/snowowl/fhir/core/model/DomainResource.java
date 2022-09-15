@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Collection;
 import javax.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
@@ -69,6 +68,10 @@ public abstract class DomainResource extends FhirResource {
 
 	public Narrative getText() {
 		return text;
+	}
+	
+	public Collection<Extension<?>> getExtensions() {
+		return extensions;
 	}
 	
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends FhirResource.Builder<B, T> {

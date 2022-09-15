@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemRequests;
 import com.b2international.snowowl.fhir.core.request.conceptmap.FhirConceptMapRequests;
 import com.b2international.snowowl.fhir.core.request.valueset.FhirValueSetRequests;
 
 /**
  * Main class to access FHIR requests.
+ * 
  * @since 8.0
  */
 public class FhirRequests {
@@ -31,13 +33,12 @@ public class FhirRequests {
 	public static FhirConceptMapRequests conceptMaps() {
 		return new FhirConceptMapRequests();
 	}
-	
+
 	public static FhirValueSetRequests valueSets() {
 		return new FhirValueSetRequests();
 	}
-	
+
 	public static FhirBundleRequests bundles() {
 		return new FhirBundleRequests();
 	}
-	
 }

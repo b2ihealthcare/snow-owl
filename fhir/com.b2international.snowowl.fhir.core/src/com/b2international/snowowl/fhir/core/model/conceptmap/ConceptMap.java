@@ -124,7 +124,6 @@ public class ConceptMap extends MetadataResource {
 	private Uri targetCanonical;
 
 	@Valid
-	@JsonProperty("group")
 	private final Collection<Group> groups;
 
 	ConceptMap(
@@ -232,6 +231,11 @@ public class ConceptMap extends MetadataResource {
 	@JsonProperty
 	public Uri getTargetCanonical() {
 		return targetCanonical;
+	}
+	
+	@JsonProperty("group")
+	public Collection<Group> getGroups() {
+		return groups;
 	}
 
 	public static Builder builder() {

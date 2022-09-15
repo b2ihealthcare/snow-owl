@@ -13,43 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.request;
+package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
-import com.b2international.snowowl.fhir.core.request.codesystem.*;
 
 /**
  * @since 8.0
  */
 public final class FhirCodeSystemRequests {
 
-	public FhirCodeSystemPutRequestBuilder preparePut() {
-		return new FhirCodeSystemPutRequestBuilder();
+	public FhirCodeSystemUpdateRequestBuilder prepareUpdate() {
+		return new FhirCodeSystemUpdateRequestBuilder();
 	}
-	
+
 	public FhirCodeSystemSearchRequestBuilder prepareSearch() {
 		return new FhirCodeSystemSearchRequestBuilder();
 	}
-	
-	public FhirCodeSystemGetRequestBuilder prepareGet(String idOrUrl) {
+
+	public FhirCodeSystemGetRequestBuilder prepareGet(final String idOrUrl) {
 		return new FhirCodeSystemGetRequestBuilder(idOrUrl);
 	}
 
 	public FhirLookupRequestBuilder prepareLookup() {
 		return new FhirLookupRequestBuilder();
 	}
-	
+
 	public FhirSubsumesRequestBuilder prepareSubsumes() {
 		return new FhirSubsumesRequestBuilder();
 	}
-	
+
 	public FhirValidateCodeRequestBuilder prepareValidateCode() {
 		return new FhirValidateCodeRequestBuilder();
 	}
-	
-	public ResourceDeleteRequestBuilder prepareDelete(String codeSystemId) {
+
+	public ResourceDeleteRequestBuilder prepareDelete(final String codeSystemId) {
 		return new ResourceDeleteRequestBuilder(codeSystemId, ResourceDocument.class);
 	}
-
 }

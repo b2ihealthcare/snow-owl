@@ -26,6 +26,7 @@ import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A simple authorization interface that allows plug-ins to customize the default behavior of authorization. 
@@ -93,4 +94,52 @@ public interface AuthorizationService {
 		return AuthorizationService.DEFAULT == this;
 	}
 	
+	/**
+	 * Returns a decorating instance that grants all access to the given user on the
+	 * specified resource. Should only be used in short-lived requests.
+	 * 
+	 * @param subject
+	 * @param resourceId
+	 * @return
+	 */
+	default AuthorizationService allowingResourceForUser(User subject, String resourceId) {
+		final AuthorizationService delegate = this;
+		
+		return new AuthorizationService() {
+			@Override
+			public User checkPermission(User user, List<Permission> requiredPermissions) {
+				if (subject.equals(user)) {
+					final ImmutableSet<Permission> temporaryPermissions = ImmutableSet.<Permission>builder()
+						.addAll(user.getPermissions())
+						.add(Permission.requireAll(Permission.ALL, resourceId))
+						.build();
+					
+					final User temporaryUser = new User(user.getUserId(), temporaryPermissions.asList());
+					delegate.checkPermission(temporaryUser, requiredPermissions);
+					return user;
+				} else {
+					return delegate.checkPermission(user, requiredPermissions);
+				}
+			}
+			
+			@Override
+			public void throwForbiddenException(Permission requiredPermission) {
+				delegate.throwForbiddenException(requiredPermission);
+			}
+			
+			@Override
+			public Set<String> getAccessibleResources(ServiceProvider context, User user) {
+				if (subject.equals(user)) {
+					final Set<String> resourceList = ImmutableSet.<String>builder()
+						.addAll(delegate.getAccessibleResources(context, user))
+						.add(resourceId)
+						.build();
+
+					return resourceList;
+				} else {
+					return delegate.getAccessibleResources(context, user);
+				}
+			}
+		};
+	}
 }

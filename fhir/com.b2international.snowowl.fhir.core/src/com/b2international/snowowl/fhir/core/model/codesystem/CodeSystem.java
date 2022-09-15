@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -385,9 +385,14 @@ public class CodeSystem extends MetadataResource {
 		}
 		
 		public Builder addIdentifier(Identifier identifier) {
+			if (identifier == null) {
+				return getSelf();
+			}
+			
 			if (identifiers == null) {
 				identifiers = new ArrayList<>();
 			}
+			
 			identifiers.add(identifier);
 			return getSelf();
 		}
@@ -412,6 +417,13 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 		
+		@JsonIgnore
+		public Builder hierarchyMeaning(Code hierarchyMeaning) {
+			this.hierarchyMeaning = hierarchyMeaning;
+			return getSelf();
+		}
+		
+		@JsonProperty
 		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
 			if (codeSystemHierarchyMeaning == null) {
 				hierarchyMeaning = null;
@@ -431,6 +443,13 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 
+		@JsonIgnore
+		public Builder content(Code content) {
+			this.content = content;
+			return getSelf();
+		}
+		
+		@JsonProperty
 		public Builder content(CodeSystemContentMode contentMode) {
 			this.content = contentMode.getCode();
 			return getSelf();
@@ -441,7 +460,7 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 
-		public Builder count(int count) {
+		public Builder count(Integer count) {
 			this.count = count;
 			return getSelf();
 		}

@@ -56,6 +56,11 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	
 	private static final String GENERIC_USER_MESSAGE = "Something went wrong during the processing of your request.";
+
+	// Headers used in resource creation/udpate requests 
+	protected static final String X_EFFECTIVE_DATE = "X-Effective-Date";
+	protected static final String X_AUTHOR_PROFILE_NAME = "X-Author-Profile-Name";
+	protected static final String X_BUNDLE_ID = "X-Bundle-Id";
 	
 	@Autowired
 	protected ObjectMapper mapper;
