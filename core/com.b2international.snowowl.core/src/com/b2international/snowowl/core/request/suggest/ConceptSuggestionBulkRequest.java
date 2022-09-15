@@ -80,7 +80,11 @@ public final class ConceptSuggestionBulkRequest implements Request<ServiceProvid
 			final List<Promise<Suggestions>> batchResponse = new ArrayList<>(batchSize);
 			batch.forEach(request -> {
 				// pass the prefetched User with accessible resource information forward, so that nested suggestion requests can use the cached info
-				batchResponse.add(request.async(Map.of(User.class, user)).execute(context.service(IEventBus.class)));
+				batchResponse.add(request.async(Map.of(User.class, user)).execute(context.service(IEventBus.class)).fail(err -> {
+					// TODO report error for this batch in the response
+					context.log().error("Failed to compute suggestions for request: {}", request, err);
+					return new Suggestions(List.of(), 0, 0);
+				}));
 			});
 			// wait for batch completion then proceed to next batch, a batch must complete in under the specified minutes (default 2 min, configurable)
 			Promise.all(batchResponse)
