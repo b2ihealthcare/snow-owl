@@ -54,9 +54,9 @@
 		<repository location="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<repository location="mvn:com.b2international:com.b2international.snomed.ecl.update:2.1.0-SNAPSHOT:zip"/>
-		<unit id="com.b2international.snomed.ecl.feature.feature.group" version="2.1.0.202209161344"/>
-		<unit id="com.b2international.snomed.ecl.ui.feature.feature.group" version="2.1.0.202209161344"/>
+		<repository location="mvn:com.b2international:com.b2international.snomed.ecl.update:2.1.1:zip"/>
+		<unit id="com.b2international.snomed.ecl.feature.feature.group" version="2.1.1"/>
+		<unit id="com.b2international.snomed.ecl.ui.feature.feature.group" version="2.1.1"/>
 	</location>
 	<location includeSource="true" missingManifest="error" type="Maven">
 		<dependencies>
