@@ -325,6 +325,11 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 			.then(SnomedDescriptionIndexEntry.Expressions::types);
 	}
 	
+	protected Promise<Expression> eval(BranchContext context, final IdFilter idFilter) {
+		final Collection<String> ids = idFilter.getIds();
+		return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.ids(ids));
+	}
+	
 	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
 		final FilterValue languageRefSetId = preferredInFilter.getLanguageRefSetId();
 		return evaluate(context, languageRefSetId)

@@ -240,6 +240,24 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	public void descriptionId() throws Exception {
+		final String descriptionId = generateDescriptionId();
+
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+			.id(descriptionId)
+			.active(true)
+			.moduleId(Concepts.MODULE_SCT_CORE)
+			.term("Clinical finding")
+			.conceptId(Concepts.ROOT_CONCEPT)
+			.typeId(Concepts.TEXT_DEFINITION)
+			.build());
+		
+		final Expression actual = eval("* {{ id = " + descriptionId + " }}");
+		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
 	@Test(expected = BadRequestException.class)
 	public void conjunctionAmbiguity() throws Exception {
 		eval("* {{ active=true AND moduleId = " + Concepts.MODULE_SCT_CORE + " OR term=\"clinical finding\" }}");
