@@ -326,8 +326,15 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final IdFilter idFilter) {
-		final Collection<String> ids = idFilter.getIds();
-		return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.ids(ids));
+		final Operator op = Operator.fromString(idFilter.getOp());
+		Expression expression = SnomedDescriptionIndexEntry.Expressions.ids(idFilter.getIds());
+		if (op == Operator.NOT_EQUALS) {
+			expression = Expressions.bool()
+				.mustNot(expression)
+				.build();
+		}
+
+		return Promise.immediate(expression);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
