@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,154 +19,167 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.IndexResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.*;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 
 /**
  * @since 4.5
  */
 public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest<BranchContext, QueryRefSetMemberEvaluation> implements AccessControl {
 
+	private static final int BATCH_SIZE = 10_000;
+
 	private static final long serialVersionUID = 1L;
-	
+
 	@NotEmpty
-	private String memberId;
-	
-	EvaluateQueryRefSetMemberRequest(String memberId) {
+	private final String memberId;
+
+	EvaluateQueryRefSetMemberRequest(final String memberId) {
 		this.memberId = memberId;
 	}
-	
+
 	@Override
-	public QueryRefSetMemberEvaluation execute(BranchContext context) {
+	public QueryRefSetMemberEvaluation execute(final BranchContext context) {
 		// TODO support pre-population???
 		final boolean active;
 		final String query;
 		final String targetReferenceSet;
-		
+
 		if (context instanceof TransactionContext) {
-			SnomedRefSetMemberIndexEntry member = ((TransactionContext) context).lookup(memberId, SnomedRefSetMemberIndexEntry.class);
+			final TransactionContext transactionContext = (TransactionContext) context;
+			final SnomedRefSetMemberIndexEntry member = transactionContext.lookup(memberId, SnomedRefSetMemberIndexEntry.class);
+			
 			query = member.getQuery();
 			targetReferenceSet = member.getReferencedComponentId();
 			active = member.isActive();
 		} else {
-			final SnomedReferenceSetMember member = SnomedRequests
-					.prepareGetMember(memberId)
-					.build()
-					.execute(context);
-			
+			final SnomedReferenceSetMember member = SnomedRequests.prepareGetMember(memberId)
+				.build()
+				.execute(context);
+
 			query = (String) member.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
-			targetReferenceSet = member.getReferencedComponent().getId();
+			targetReferenceSet = member.getReferencedComponentId();
 			active = member.isActive();
 		}
-		
+
 		if (!active) {
-			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, Collections.emptyList());
+			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet);
 		}
-		
+
 		if (Strings.isNullOrEmpty(query)) {
-			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, Collections.emptyList());
+			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet);
 		}
 
-		// add all matching first
-		final Map<String, SnomedConcept> conceptsToAdd = newHashMap();
-		// GET matching members of a query
-		SnomedRequests.prepareSearchConcept()
-				.filterByEcl(query)
-				.setLimit(10_000)
-				.stream(context)
-				.flatMap(SnomedConcepts::stream)
-				.forEach(match -> conceptsToAdd.put(match.getId(), match));
+		final Set<String> expectedConcepts = newHashSet();
+		final Options expandOptions = expand().getOptions("referencedComponent");
 		
-		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();
-		final Collection<SnomedReferenceSetMember> conceptsToActivate = newHashSet();
+		// Evaluate the query expression to find out which concepts should be in the simple type reference set
+		final Stream<MemberChange> expectedConceptChanges = SnomedRequests.prepareSearchConcept()
+			.filterByEcl(query)
+			.setExpand(expandOptions.getOptions("expand"))
+			.setLocales(locales())
+			.setLimit(10_000)
+			.stream(context)
+			.flatMap(batch -> {
+				final Map<String, SnomedConcept> conceptsToAdd = newHashMap(Maps.uniqueIndex(batch, SnomedConcept::getId));
+				final Map<String, SnomedConcept> conceptsSeen = newHashMap();
+				final List<MemberChange> memberChanges = newArrayList();
 
-		// then re-evaluate all current members of the target simple type reference set
-		SnomedRequests.prepareSearchMember()
-				.filterByRefSet(targetReferenceSet)
-				.setLimit(10_000)
-				.stream(context)
-				.flatMap(SnomedReferenceSetMembers::stream)
-				.forEach(member -> {
-					final String referencedComponentId = member.getReferencedComponent().getId();
-					if (conceptsToAdd.containsKey(referencedComponentId)) {
-						if (!member.isActive()) {
-							conceptsToAdd.remove(referencedComponentId);
-							conceptsToActivate.add(member);
+				expectedConcepts.addAll(conceptsToAdd.keySet());
+				
+				/*
+				 * Search for existing reference set members with the same referenced component
+				 * (but keep in mind that multiple members can be present for each one)
+				 */
+				SnomedRequests.prepareSearchMember()
+					.filterByRefSet(targetReferenceSet)
+					.filterByReferencedComponent(conceptsToAdd.keySet())
+					.sortBy("id:asc")
+					.setLimit(BATCH_SIZE)
+					.stream(context)
+					.flatMap(SnomedReferenceSetMembers::stream)
+					.forEachOrdered(member -> {
+						final String memberId = member.getId();
+						final Boolean memberActive = member.isActive();
+						final String referencedComponentId = member.getReferencedComponentId();
+
+						if (conceptsToAdd.containsKey(referencedComponentId)) {
+							final SnomedConcept visitedConcept = conceptsToAdd.remove(referencedComponentId);
+							conceptsSeen.put(visitedConcept.getId(), visitedConcept);
+							
+							if (!memberActive) {
+								// We don't need to add a new member, set the existing one to active instead
+								memberChanges.add(MemberChangeImpl.changed(visitedConcept, memberId));
+							} else {
+								// The referenced component is in the evaluated result set, no need to add it again
+								conceptsToAdd.remove(referencedComponentId);
+							}
 						} else {
-							conceptsToAdd.remove(referencedComponentId);
+							if (memberActive) {
+								// We have seen the referenced component earlier; later occurrences should be removed
+								memberChanges.add(MemberChangeImpl.removed(conceptsSeen.get(referencedComponentId), memberId));
+							}
 						}
-					} else {
-						if (member.isActive()) {
-							membersToRemove.add(member);
-						}
-					}
+					});
+					
+				// Any concept still present in conceptsToAdd should be added as a new member
+				conceptsToAdd.values().forEach(c -> {
+					memberChanges.add(MemberChangeImpl.added(c));
 				});
-		
-		
-		// fetch all referenced components
-		final Set<String> referencedConceptIds = newHashSet();
-		referencedConceptIds.addAll(conceptsToAdd.keySet());
-		referencedConceptIds.addAll(FluentIterable.from(membersToRemove).transform(SnomedReferenceSetMember::getReferencedComponent).transform(IComponent::getId).toSet());
-		
-		referencedConceptIds.addAll(FluentIterable.from(conceptsToActivate).transform(SnomedReferenceSetMember::getReferencedComponent).transform(IComponent::getId).toSet());
-		
-		final Map<String, SnomedConcept> concepts;
-		if (expand().containsKey("referencedComponent")) {
-			final Options expandOptions = expand().getOptions("referencedComponent");
-			concepts = Maps.uniqueIndex(SnomedRequests.prepareSearchConcept()
-					.filterByIds(referencedConceptIds)
-					.setLimit(referencedConceptIds.size())
-					.setExpand(expandOptions.getOptions("expand"))
-					.setLocales(locales())
-					.build()
-					.execute(context), IComponent::getId);
-		} else {
-			// initialize with empty SnomedConcept resources
-			concepts = newHashMap();
-			for (String referencedConceptId : referencedConceptIds) {
-				concepts.put(referencedConceptId, new SnomedConcept(referencedConceptId));
-			}
-		}
-		
-		final Collection<MemberChange> changes = newArrayList();
-		
-		for (String id : conceptsToAdd.keySet()) {
-			changes.add(MemberChangeImpl.added(concepts.get(id)));
-		}
+				
+				return memberChanges.stream();
+			});
 
-		for (SnomedReferenceSetMember memberToRemove : membersToRemove) {
-			changes.add(MemberChangeImpl.removed(concepts.get(memberToRemove.getReferencedComponent().getId()), memberToRemove.getId()));
-		}
+		/*
+		 * XXX: Remaining active members that have an "unexpected" referenced component
+		 * should also be registered for removal, however we won't know what these are
+		 * until after the Stream above has been exhausted!
+		 * 
+		 * So adding a filter condition here that says "filter by all referenced 
+		 * components _except_ this set" would turn up empty handed, as the set is not 
+		 * populated at the time the query is put together.
+		 */
+		final Stream<MemberChange> unexpectedConceptChanges = SnomedRequests.prepareSearchMember()
+			.filterByActive(true)
+			.filterByRefSet(targetReferenceSet)
+			.setExpand(expand())
+			.setLocales(locales())
+			.setLimit(10_000)
+			.stream(context)
+			.flatMap(batch -> batch.stream())
+			.filter(member -> !expectedConcepts.contains(member.getReferencedComponentId()))
+			.<MemberChange>map(member -> MemberChangeImpl.removed((SnomedConcept) member.getReferencedComponent(), member.getId()));
 
-		for (SnomedReferenceSetMember conceptToActivate : conceptsToActivate) {
-			changes.add(MemberChangeImpl.changed(concepts.get(conceptToActivate.getReferencedComponent().getId()), conceptToActivate.getId()));
-		}
-		return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
+		/* 
+		 * We checked elements in batches of 10 000 above, however if only a few members out of a single "run" are affected,
+		 * we get small lists of changes which is ineffective. Re-package them into larger batches here.
+		 */
+		final Stream<List<MemberChange>> expectedConceptBatches = Streams.stream(Iterators.partition(expectedConceptChanges.iterator(), 10_000));
+		final Stream<List<MemberChange>> unexpectedConceptBatches = Streams.stream(Iterators.partition(unexpectedConceptChanges.iterator(), 10_000));
+		return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, Stream.concat(expectedConceptBatches, unexpectedConceptBatches));
 	}
-	
+
 	@Override
 	public String getOperation() {
 		return Permission.OPERATION_BROWSE;
 	}
-
 }

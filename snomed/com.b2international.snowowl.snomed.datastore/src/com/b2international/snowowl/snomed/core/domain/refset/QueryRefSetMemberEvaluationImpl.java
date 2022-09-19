@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,15 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
+import java.io.ObjectStreamException;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Streams;
 
 /**
  * @since 4.5
@@ -26,14 +34,27 @@ public class QueryRefSetMemberEvaluationImpl implements QueryRefSetMemberEvaluat
 	
 	private final String memberId;
 	private final String referenceSetId;
-	private final Collection<MemberChange> changes;
+	
+	private final AtomicBoolean streamCollected;
+	private volatile Collection<MemberChange> changes;
+	private transient Stream<List<MemberChange>> changesAsStream;
 
-	public QueryRefSetMemberEvaluationImpl(String memberId, String referenceSetId, Collection<MemberChange> changes) {
+	public QueryRefSetMemberEvaluationImpl(final String memberId, final String referenceSetId) {
 		this.memberId = memberId;
 		this.referenceSetId = referenceSetId;
-		this.changes = changes;
+		this.streamCollected = new AtomicBoolean(true);
+		this.changes = List.of();
+		this.changesAsStream = Stream.empty();
 	}
 	
+	public QueryRefSetMemberEvaluationImpl(final String memberId, final String referenceSetId, final Stream<List<MemberChange>> changesAsStream) {
+		this.memberId = memberId;
+		this.referenceSetId = referenceSetId;
+		this.streamCollected = new AtomicBoolean(false);
+		this.changes = null;
+		this.changesAsStream = changesAsStream;
+	}
+
 	@Override
 	public String getMemberId() {
 		return memberId;
@@ -46,7 +67,26 @@ public class QueryRefSetMemberEvaluationImpl implements QueryRefSetMemberEvaluat
 
 	@Override
 	public Collection<MemberChange> getChanges() {
+		if (streamCollected.compareAndExchange(false, true) == false) {
+			changes = changesAsStream
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
+		}
+		
 		return changes;
 	}
 	
+	public Stream<List<MemberChange>> getChangesAsStream() {
+		return changesAsStream;
+	}
+
+	private Object writeReplace() throws ObjectStreamException {
+		getChanges();
+		return this;
+	}
+	
+	private Object readResolve() throws ObjectStreamException {
+		changesAsStream = Streams.stream(Iterables.partition(changes, 10_000));
+		return this;
+	}
 }

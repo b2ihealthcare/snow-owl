@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @since 4.5
@@ -43,5 +45,11 @@ public interface QueryRefSetMemberEvaluation extends Serializable {
 	 * @return
 	 */
 	Collection<MemberChange> getChanges();
-
+	
+	/**
+	 * Returns the changes in batches, lazily evaluated (only on the server side). Can only be iterated over once.
+	 * 
+	 * @return
+	 */
+	Stream<List<MemberChange>> getChangesAsStream();
 }
