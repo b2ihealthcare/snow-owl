@@ -39,6 +39,7 @@ public class CountDownHandler implements IHandler<IMessage> {
 	public void handle(IMessage message) {
 		assertEquals(expectedMessage, message.body(String.class));
 		latch.countDown();
+		message.reply(Boolean.TRUE);
 	}
 
 }

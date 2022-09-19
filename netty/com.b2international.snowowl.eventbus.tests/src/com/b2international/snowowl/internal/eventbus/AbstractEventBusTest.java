@@ -41,14 +41,19 @@ public class AbstractEventBusTest {
 	protected static final String REPLY_MESSAGE = "Pong";
 	
 	protected IHandler<IMessage> noopHandler = IHandler.NOOP;
-	protected EventBus bus = new EventBus();
+	protected EventBus bus;
 	private int waitTime = DEFAULT_WAIT_TIME;
 	
 	@Before
 	public void before() {
+		bus = createBus();
 		bus.activate();
 	}
 	
+	protected EventBus createBus() {
+		return new EventBus();
+	}
+
 	@After
 	public void after() {
 		bus.deactivate();
