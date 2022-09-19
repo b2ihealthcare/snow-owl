@@ -132,7 +132,7 @@
     "severity": "WARNING",
     "checkType": "NORMAL",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"concept\",\"active\": \"false\",\"isActiveMemberOf\": \"<900000000000455006 MINUS (<900000000000522004 OR 900000000000489007)\"}"
+    "implementation": "{\"componentType\": \"concept\",\"active\": \"false\",\"isActiveMemberOf\": \"<900000000000455006 MINUS (<900000000000522004 OR 900000000000489007 OR  900000000000497000)\"}"
   },
   {
     "id": "115b",
