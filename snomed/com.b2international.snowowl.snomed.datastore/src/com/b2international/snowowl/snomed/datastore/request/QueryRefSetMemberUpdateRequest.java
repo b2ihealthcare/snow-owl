@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,11 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.5
@@ -51,54 +51,73 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 	@Override
 	public Boolean execute(TransactionContext context) {
 		// evaluate query member
-		final QueryRefSetMemberEvaluation evaluation = SnomedRequests.prepareQueryRefSetMemberEvaluation(memberId).build().execute(context);
+		final QueryRefSetMemberEvaluation evaluation = SnomedRequests.prepareQueryRefSetMemberEvaluation(memberId)
+			.build()
+			.execute(context);
 		
 		// lookup IDs before applying change to speed up query member update
-		final Set<String> referencedComponents = evaluation.getChanges().stream().map(MemberChange::getReferencedComponent).map(SnomedConcept::getId).collect(Collectors.toSet());
-		context.lookup(referencedComponents, SnomedConceptDocument.class);
-		
-		// apply all change as request on the target reference set
-		for (MemberChange change : evaluation.getChanges()) {
-			switch (change.getChangeKind()) {
-			case ADD:
-				SnomedRequests
-					.prepareNewMember()
-					.setModuleId(moduleId)
-					.setReferencedComponentId(change.getReferencedComponent().getId())
-					.setRefsetId(evaluation.getReferenceSetId())
-					.buildNoContent()
-					.execute(context);
-				break;
-			case REMOVE:
-				final SnomedReferenceSetMember member = SnomedRequests.prepareGetMember(change.getMemberId())
-					.build()
-					.execute(context);
-				if (member.isReleased()) {
-					SnomedRequests.prepareUpdateMember(change.getMemberId())
-						.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.FALSE))
-						.build()
-						.execute(context);
-				} else {
-					SnomedRequests.prepareDeleteMember(change.getMemberId())
-						.build()
-						.execute(context);
+		evaluation.getChangesAsStream().forEachOrdered(batch -> {
+			final Set<String> referencedComponentIds = batch.stream()
+				.map(change -> change.getReferencedComponent().getId())
+				.collect(Collectors.toSet());
+			
+			context.lookup(referencedComponentIds, SnomedConceptDocument.class);
+			
+			final Set<String> memberIds = batch.stream()
+				.map(change -> change.getMemberId())
+				.filter(Predicates.notNull())
+				.collect(Collectors.toSet());
+			
+			final Map<String, SnomedReferenceSetMember> membersById = Maps.uniqueIndex(SnomedRequests.prepareSearchMember()
+				.filterByRefSet(evaluation.getReferenceSetId())
+				.filterByIds(memberIds)
+				.setLimit(memberIds.size())
+				.build()
+				.execute(context), SnomedReferenceSetMember::getId);
+			
+			batch.forEach(change -> {
+				final SnomedReferenceSetMember member = membersById.get(change.getMemberId());
+				switch (change.getChangeKind()) {
+					case ADD:
+						SnomedRequests.prepareNewMember()
+							.setModuleId(moduleId)
+							.setReferencedComponentId(change.getReferencedComponent().getId())
+							.setRefsetId(evaluation.getReferenceSetId())
+							.buildNoContent()
+							.execute(context);
+						break;
+
+					case REMOVE:
+						if (member.isReleased()) {
+							SnomedRequests.prepareUpdateMember(change.getMemberId())
+								.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.FALSE))
+								.build()
+								.execute(context);
+						} else {
+							SnomedRequests.prepareDeleteMember(change.getMemberId())
+								.build()
+								.execute(context);
+						}
+						break;
+						
+					case CHANGE:
+						if (!member.isActive()) {
+							SnomedRequests.prepareUpdateMember(change.getMemberId())
+								.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
+								.build()
+								.execute(context);
+						}
+						break;
+						
+					default: 
+						throw new UnsupportedOperationException("Unexpected change kind: " + change.getChangeKind()); 
 				}
-				break;
-			case CHANGE:
-				final SnomedReferenceSetMember memberToChange = SnomedRequests.prepareGetMember(change.getMemberId())
-					.build()
-					.execute(context);
-				if(!memberToChange.isActive()) {
-					SnomedRequests.prepareUpdateMember(change.getMemberId())
-					.setSource(Map.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
-					.build()
-					.execute(context);
-				}
-				break;	
-			default: 
-				throw new UnsupportedOperationException("Not implemented case: " + change.getChangeKind()); 
-			}
-		}
+			});
+			
+			// Commit changes at the end of each batch (the context will also be committed at the end of the request)
+			context.commit();
+		});
+
 		return Boolean.TRUE;
 	}
 	
@@ -106,5 +125,4 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 	public String getOperation() {
 		return Permission.OPERATION_EDIT;
 	}
-
 }
