@@ -47,6 +47,8 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public final class SnomedQueryOptimizer implements QueryOptimizer {
 
+	private static final int PAGE_SIZE = 10_000;
+
 	@Override
 	public QueryExpressionDiffs optimize(BranchContext context, Options params) {
 		final Collection<QueryExpression> inclusions = params.getCollection(QueryOptimizer.OptionKey.INCLUSIONS, QueryExpression.class);
@@ -56,6 +58,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		final LoadingCache<String, ExpressionConstraint> eclCache = CacheBuilder.newBuilder()
 				.build(CacheLoader.from(eclParser::parse));
 		
+		// extract inclusions that reference a single concept ID only
 		final Multimap<String, QueryExpression> singleConceptInclusions = FluentIterable.from(inclusions)
 				.filter(ex -> isSingleConceptExpression(eclCache, ex.getQuery()))
 				.index(ex -> toSingleConceptId(eclCache, ex.getQuery()));
@@ -68,9 +71,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// Record the ancestors (both direct and indirect) of each single concept inclusion
 		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
 		
-		SnomedRequests.prepareSearchConcept()
-				.filterByIds(singleConceptInclusions.keySet())
-				.setLimit(singleConceptInclusions.keySet().size())
+		Iterables.partition(singleConceptInclusions.keySet(), PAGE_SIZE).forEach(batchIds -> {
+			SnomedRequests.prepareSearchConcept()
+				.filterByIds(batchIds)
+				.setLimit(batchIds.size())
 				.stream(context)
 				.flatMap(SnomedConcepts::stream)
 				.forEach(child -> {
@@ -90,6 +94,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 						}
 					});
 				});
+		});
 
 
 		// Get number of referenced descendants (taking possible duplicates into account)
@@ -105,14 +110,20 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// Retrieve descendant counts for parents; if the two numbers match, the single concept
 		// references can be replaced with a single << expression.
 		for (Entry<String, Long> uniqueDescendantsByParentEntry : uniqueDescendantsByParent.entrySet()) {
-			SnomedConcept parent = SnomedRequests.prepareGetConcept(uniqueDescendantsByParentEntry.getKey())
+			final String parentId = uniqueDescendantsByParentEntry.getKey();
+			final int referencedDescendants = Ints.checkedCast(uniqueDescendantsByParent.get(parentId));
+			
+			// optimize if at least two descendants are referenced for a given parent, otherwise skip
+			if (referencedDescendants <= 1) {
+				continue;
+			}
+			
+			SnomedConcept parent = SnomedRequests.prepareGetConcept(parentId)
 				.setLocales(locales)
 				.setExpand("pt(),descendants(direct:false,limit:0)")
 				.build()
 				.execute(context);
 			
-			final String parentId = parent.getId();
-			final int referencedDescendants = Ints.checkedCast(uniqueDescendantsByParent.get(parentId));
 			final int totalDescendants = parent.getDescendants().getTotal();
 			
 			if (totalDescendants == referencedDescendants) {
