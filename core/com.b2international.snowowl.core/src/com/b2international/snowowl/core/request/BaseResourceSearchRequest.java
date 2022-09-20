@@ -26,6 +26,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -43,7 +44,6 @@ import com.google.common.collect.Iterables;
 public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRequest<RepositoryContext, R, ResourceDocument> {
 
 	private static final long serialVersionUID = 1L;
-	private static final Object SNOMED_FIRST = "snomedFirst";
 	
 	/**
 	 * @since 8.0
@@ -251,7 +251,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	protected void toQuerySortBy(RepositoryContext context, Builder sortBuilder, Sort sort) {
 		if (sort instanceof SortField) {
 			SortField sortField = (SortField) sort;
-			if (SNOMED_FIRST.equals(sortField.getField())) {
+			if (Resource.SNOMED_FIRST.equals(sortField.getField())) {
 				sortBuilder.sortByScript("snomedFirst", Map.of(), sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}
