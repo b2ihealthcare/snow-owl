@@ -65,11 +65,10 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 @Script(
 		name="typeSort", 
-		script="return params.ranks.getOrDefault(doc.toolingId.value, \"0\")")
+		script="return doc.toolingId.value.equals(\"snomed\") ? \"1\" : \"0\"")
 public final class ResourceDocument extends RevisionDocument {
 
 	public static final String TYPE = "resource";
-	public static final Map<String, Object> RANKS = Map.of("ranks", Map.of("snomed", "1"));
 	
 	/**
 	 * @since 8.0
