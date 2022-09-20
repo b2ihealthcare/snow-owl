@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.common.Strings;
@@ -27,9 +26,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
@@ -80,8 +77,7 @@ public class ResourceRestService extends AbstractRestService {
 			.setExpand(params.getExpand())
 			.setFields(params.getField())
 			.setSearchAfter(params.getSearchAfter())
-			.sortBy(extractSortFields(params.getSort(), List.of(Sort.scriptDesc("typeSort", ResourceDocument.RANKS), 
-					Sort.fieldAsc(ResourceDocument.Fields.TITLE))))
+			.sortBy(extractSortFields(params.getSort()))
 			.buildAsync(params.getTimestamp())
 			.execute(getBus());
 	}
