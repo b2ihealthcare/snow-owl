@@ -64,7 +64,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 @Script(
-		name="typeSort", 
+		name="snomedFirst", 
 		script="return doc.toolingId.value.equals(\"snomed\") ? \"1\" : \"0\"")
 public final class ResourceDocument extends RevisionDocument {
 

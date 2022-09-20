@@ -111,7 +111,7 @@ public abstract class AbstractRestService {
 		if (CompareUtils.isEmpty(sortKeys)) {
 			return Collections.emptyList();
 		}
-		
+
 		final List<Sort> result = Lists.newArrayList();
 		for (String sortKey : sortKeys) {
 			Matcher matcher = sortKeyPattern.matcher(sortKey);
@@ -125,7 +125,7 @@ public abstract class AbstractRestService {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Creates a Location header URI builder from this controller class.
 	 * @return an {@link UriComponentsBuilder} instance using this class as base
