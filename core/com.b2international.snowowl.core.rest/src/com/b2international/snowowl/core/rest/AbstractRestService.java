@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.elasticsearch.core.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
@@ -107,24 +108,22 @@ public abstract class AbstractRestService {
 	 * @return
 	 */ 
 	protected final List<Sort> extractSortFields(List<String> sortKeys) {
-		return extractSortFields(sortKeys, List.of());
-	}
-	
-	protected final List<Sort> extractSortFields(List<String> sortKeys, List<Sort> defaultsSortKeys) {
-		if (CompareUtils.isEmpty(sortKeys)) {
-			return defaultsSortKeys;
-		}
-		return convertToSortKeys(sortKeys);
-	}
-	
-	private final List<Sort> convertToSortKeys(List<String> sortKeys) {
 		final List<Sort> result = Lists.newArrayList();
+		if (CompareUtils.isEmpty(sortKeys)) {
+			return Collections.emptyList();
+		}
+		
 		for (String sortKey : sortKeys) {
 			Matcher matcher = sortKeyPattern.matcher(sortKey);
 			if (matcher.matches()) {
 				String field = matcher.group(1);
 				String order = matcher.group(2);
 				result.add(SearchResourceRequest.SortField.of(field, !"desc".equals(order)));
+			} else if (sortKey.startsWith("script")) {
+				String[] parts = sortKey.split(":");
+				String script = parts[1];
+				String order = parts.length > 2 ? parts[2] : "";
+				result.add(SearchResourceRequest.SortScript.of(script, Map.of(), !"desc".equals(order)));
 			} else {
 				throw new BadRequestException("Sort key '%s' is not supported, or incorrect sort field pattern.", sortKey);				
 			}
