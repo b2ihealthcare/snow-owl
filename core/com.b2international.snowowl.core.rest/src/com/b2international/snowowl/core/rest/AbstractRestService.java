@@ -108,22 +108,17 @@ public abstract class AbstractRestService {
 	 * @return
 	 */ 
 	protected final List<Sort> extractSortFields(List<String> sortKeys) {
-		final List<Sort> result = Lists.newArrayList();
 		if (CompareUtils.isEmpty(sortKeys)) {
 			return Collections.emptyList();
 		}
 		
+		final List<Sort> result = Lists.newArrayList();
 		for (String sortKey : sortKeys) {
 			Matcher matcher = sortKeyPattern.matcher(sortKey);
 			if (matcher.matches()) {
 				String field = matcher.group(1);
 				String order = matcher.group(2);
 				result.add(SearchResourceRequest.SortField.of(field, !"desc".equals(order)));
-			} else if (sortKey.startsWith("script")) {
-				String[] parts = sortKey.split(":");
-				String script = parts[1];
-				String order = parts.length > 2 ? parts[2] : "";
-				result.add(SearchResourceRequest.SortScript.of(script, Map.of(), !"desc".equals(order)));
 			} else {
 				throw new BadRequestException("Sort key '%s' is not supported, or incorrect sort field pattern.", sortKey);				
 			}
