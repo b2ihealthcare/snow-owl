@@ -107,9 +107,17 @@ public abstract class AbstractRestService {
 	 * @return
 	 */ 
 	protected final List<Sort> extractSortFields(List<String> sortKeys) {
+		return extractSortFields(sortKeys, List.of());
+	}
+	
+	protected final List<Sort> extractSortFields(List<String> sortKeys, List<Sort> defaultsSortKeys) {
 		if (CompareUtils.isEmpty(sortKeys)) {
-			return Collections.emptyList();
+			return defaultsSortKeys;
 		}
+		return convertToSortKeys(sortKeys);
+	}
+	
+	private final List<Sort> convertToSortKeys(List<String> sortKeys) {
 		final List<Sort> result = Lists.newArrayList();
 		for (String sortKey : sortKeys) {
 			Matcher matcher = sortKeyPattern.matcher(sortKey);
@@ -123,7 +131,7 @@ public abstract class AbstractRestService {
 		}
 		return result;
 	}
-
+	
 	/**
 	 * Creates a Location header URI builder from this controller class.
 	 * @return an {@link UriComponentsBuilder} instance using this class as base
