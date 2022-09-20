@@ -110,7 +110,6 @@ public abstract class AbstractRestService {
 		if (CompareUtils.isEmpty(sortKeys)) {
 			return Collections.emptyList();
 		}
-
 		final List<Sort> result = Lists.newArrayList();
 		for (String sortKey : sortKeys) {
 			Matcher matcher = sortKeyPattern.matcher(sortKey);
