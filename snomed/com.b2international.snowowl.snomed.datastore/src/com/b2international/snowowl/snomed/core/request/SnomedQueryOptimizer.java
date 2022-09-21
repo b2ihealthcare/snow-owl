@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -120,7 +121,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			
 			SnomedConcept parent = SnomedRequests.prepareGetConcept(parentId)
 				.setLocales(locales)
-				.setExpand("pt(),descendants(direct:false,limit:0)")
+				.setExpand("fsn(),descendants(direct:false,limit:0)")
 				.build()
 				.execute(context);
 			
@@ -134,7 +135,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				
 				// The optimization is a "net win" if we can remove at least two clauses from the original
 				if (remove.size() > 1) {
-					final QueryExpression replacement = new QueryExpression(IDs.base62UUID(), String.format("<%s%s", parent.getId(), getTerm(parent)), false);
+					final QueryExpression replacement = new QueryExpression(IDs.base62UUID(), String.format("<%s", Concept.toConceptString(parentId, SnomedDisplayTermType.FSN.getLabel(parent))), false);
 					final List<QueryExpression> addToInclusion = List.of(replacement);
 					final List<QueryExpression> addToExclusion = List.of();
 
@@ -145,10 +146,6 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 		
 		return new QueryExpressionDiffs(diffs.build());
-	}
-
-	private String getTerm(SnomedConcept parent) {
-		return parent.getPt() != null ? String.format("|%s|", parent.getPt().getTerm()) : "";
 	}
 
 	private boolean isSingleConceptExpression(LoadingCache<String, ExpressionConstraint> eclCache, String query) {
