@@ -27,7 +27,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
@@ -312,6 +312,24 @@ public class ResourceApiTest {
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
 		
 		assertResourceSearch(Map.of("sort", List.of("typeRank:desc", "title:asc")))
+			.statusCode(200)
+			.body("items.id", contains(id1, id2, id3, id4));
+	}
+	
+	@Test
+	public void sortBySnomedFirst() throws Exception {
+		final String id1 = "A";
+		final String id2 = "B";
+		final String id3 = "C";
+		final String id4 = "D";
+		
+		createCodeSystemWithStatus(id1, "active");
+		createCodeSystemWithStatus(id2, "active");
+		
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id3));
+		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(id4));
+		
+		assertResourceSearch(Map.of("sort", List.of("snomedFirst", "title:asc")))
 			.statusCode(200)
 			.body("items.id", contains(id1, id2, id3, id4));
 	}
