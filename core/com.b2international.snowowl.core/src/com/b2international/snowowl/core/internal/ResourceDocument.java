@@ -66,6 +66,9 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Script(
 		name="typeRank", 
 		script="return params.ranks.getOrDefault(doc.resourceType.value, Integer.MAX_VALUE)")
+@Script(
+		name="snomedFirst", 
+		script="return doc.toolingId.value.equals(\"snomed\") ? \"0\" : \"1\"")
 public final class ResourceDocument extends RevisionDocument {
 
 	public static final String TYPE = "resource";
