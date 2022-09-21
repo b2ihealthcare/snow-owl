@@ -11,6 +11,6 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snomed-parent</artifactId>
-		<version>8.5.3-SNAPSHOT</version>
+		<version>8.6.0</version>
 	</parent>
 </project>
