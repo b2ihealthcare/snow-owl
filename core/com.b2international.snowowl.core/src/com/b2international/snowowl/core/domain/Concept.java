@@ -148,7 +148,7 @@ public final class Concept extends BaseComponent {
 		if (Strings.isNullOrEmpty(term)) {
 			return id;
 		} else {
-			return String.format("%s |%s|", id, term);
+			return String.format("%s|%s|", id, term);
 		}
 	}
 	
