@@ -3,7 +3,7 @@
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 
 [![build status](https://img.shields.io/github/workflow/status/b2ihealthcare/snow-owl/Java%20CI/8.x?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v8.2.0)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v8.6.0)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/8.x/LICENSE)
@@ -20,10 +20,10 @@ Features include:
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
     * SNOMED CT terminology support
-        * RF2 Release File Specification as of 2021-07-31
+        * RF2 Release File Specification as of 2022-08-31
         * Support for Relationships with concrete values
         * Official and Custom Reference Sets
-        * Expression Constraint Language v2.0.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.0-en-US_INT_20220404.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl) including advanced unofficial property filters and others (see [Query Language Draft 0.1.0](https://confluence.ihtsdotools.org/download/attachments/52180605/Draft%20SNOMED%20Query%20Language%20-%20Examples%20for%20Discussion.pptx?api=v2))
+        * Expression Constraint Language v2.1.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.1-en-US_INT_20220824.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
         * Compositional Grammar 2.3.1 [spec](https://confluence.ihtsdotools.org/download/attachments/33496020/doc_CompositionalGrammar_v2.3.1-en-US_INT_20161118.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-scg)
         * Expression Template Language 1.0.0 [spec](https://confluence.ihtsdotools.org/download/attachments/45529301/doc_TemplateSyntax_v1.0-en-US_INT_20170726.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-etl)
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
@@ -39,16 +39,16 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-oss.zip.sha1)
-* [MACOS/LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-oss.tar.gz.sha1) 
-* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-rpm.rpm.sha1)
-* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.0.0/com.b2international.snowowl.server.update-8.0.0-deb.deb.sha1)
+* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-oss.zip.sha1)
+* [MACOS/LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-oss.tar.gz.sha1) 
+* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-rpm.rpm.sha1)
+* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.6.0/com.b2international.snowowl.server.update-8.6.0-deb.deb.sha1)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v8.0.0).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v8.6.0).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
