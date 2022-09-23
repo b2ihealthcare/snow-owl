@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,14 @@ public final class DeleteRequest implements Request<TransactionContext, Boolean>
 	@Override
 	public void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, List<String> accessedResources) {
 		accessedResources.add(componentId);
+		
+		/*
+		 * XXX: Permit deleting the component if the user has edit permission on the
+		 * component itself or any of its container resource and bundle(s) -- the
+		 * justification is that if the user has such permissions, they would be able to
+		 * delete the entire resource or even multiple resources alongside the current
+		 * one.
+		 */
+		AccessControl.super.collectAccessedResources(context, req, accessedResources);
 	}
-	
 }

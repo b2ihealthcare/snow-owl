@@ -26,6 +26,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.UnauthorizedException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 
 /**
@@ -47,6 +48,21 @@ public final class AuthorizationHeaderVerifier {
 		this.identityProvider = identityProvider;
 		this.emailClaimProperty = emailClaimProperty;
 		this.permissionsClaimProperty = permissionsClaimProperty;
+	}
+	
+	@VisibleForTesting
+	public JWTVerifier getVerifier() {
+		return verifier;
+	}
+	
+	@VisibleForTesting
+	public String getEmailClaimProperty() {
+		return emailClaimProperty;
+	}
+	
+	@VisibleForTesting
+	public String getPermissionsClaimProperty() {
+		return permissionsClaimProperty;
 	}
 
 	/**
