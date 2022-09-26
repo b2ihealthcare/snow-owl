@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
+
+import java.util.Locale;
 
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
@@ -31,10 +33,11 @@ public class Filters {
 		ANCESTOR,
 		CONCEPT,
 		EXPRESSION,
-		EXPRESSIONS;
+		EXPRESSIONS, 
+		CONSTRAINT;
 		
 		public String getDisplayName() {
-			return name().toLowerCase();
+			return name().toLowerCase(Locale.ENGLISH);
 		}
 	}
 	
@@ -71,11 +74,11 @@ public class Filters {
 		.build();
 	
 	public static final Filter COMMON_ANCESTOR_FILTER = Filter.builder()
-			.code("ancestor")
-			.description("Filter to return concepts that are ancestors of the given concept specified by the concept ID.")
-			.addOperator(FilterOperator.EQUALS)
-			.value("concept id")
-			.build();
+		.code("ancestor")
+		.description("Filter to return concepts that are ancestors of the given concept specified by the concept ID.")
+		.addOperator(FilterOperator.EQUALS)
+		.value("concept id")
+		.build();
 			
 	//SNOMED CT filters
 	/**
@@ -122,4 +125,13 @@ public class Filters {
 		.value("true or false")
 		.build();
 
+	/*
+	 * Expression filter for non-SNOMED CT code systems
+	 */
+	public static final Filter CONSTRAINT_FILTER = Filter.builder()
+		.code(FilterPropertyCode.CONSTRAINT.getDisplayName())
+		.description("Filter result of the given expression constraint")
+		.addOperator(FilterOperator.EQUALS)
+		.value("Terminology-independent ECL expression")
+		.build();
 }
