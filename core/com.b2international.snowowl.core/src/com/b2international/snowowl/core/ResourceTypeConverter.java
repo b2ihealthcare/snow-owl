@@ -57,8 +57,8 @@ public interface ResourceTypeConverter {
 			return ImmutableMap.copyOf(resourceTypeConverters);
 		}
 
-		public void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, List<Resource> results) {
-			Multimap<String, Resource> resourcesByIndex = Multimaps.index(results, Resource::getResourceType);
+		public <T extends Resource> void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, List<T> results) {
+			Multimap<String, T> resourcesByIndex = Multimaps.index(results, Resource::getResourceType);
 			for (String resourceTypeToExpand : resourcesByIndex.keySet()) {
 				checkArgument(resourceTypeConverters.containsKey(resourceTypeToExpand),
 						"ResourceTypeConverter implementation is missing for type: %s", resourceTypeToExpand);
@@ -73,7 +73,7 @@ public interface ResourceTypeConverter {
 
 	Resource toResource(ResourceDocument doc);
 
-	default void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<Resource> results) {
+	default <T extends Resource> void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<T> results) {
 	}
 
 	/**
