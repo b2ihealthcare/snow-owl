@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.6.1
+
+### Bugs/Improvements
+- [core] allow deleting a component if its container resource or any of its container bundles can be edited (#1062)
+- [api] support pluggable converters on CodeSystems API (83731e8)
+- [api] support active flag on generic concept model (f77a5c0)
+- [fhir] add generic "constraint" filter (evaluated the same way as SNOMED CT's "expression" filter) (#1063)
+
 ## 8.6.0
 
 ### Core
