@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.request.io.ImportDefect;
 import com.b2international.snowowl.core.request.io.ImportResponse;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -70,7 +71,7 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		
 		final Collection<String> issues = getDefectMessages(response);
 		assertThat(issues).hasSize(1);
-		assertEquals(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel(), Iterables.getOnlyElement(issues));
+		assertEquals(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.format(ComponentCategory.CONCEPT, ComponentCategory.DESCRIPTION, "11320138110"), Iterables.getOnlyElement(issues));
 		assertFalse(response.isSuccess());
 	}
 	
@@ -81,7 +82,7 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		
 		final Collection<String> issues = getDefectMessages(response);
 		assertThat(issues).hasSize(1);
-		assertEquals(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel(), Iterables.getOnlyElement(issues));
+		assertEquals(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.format(ComponentCategory.CONCEPT, ComponentCategory.DESCRIPTION, "11000172113"), Iterables.getOnlyElement(issues));
 		assertFalse(response.isSuccess());
 	}
 	

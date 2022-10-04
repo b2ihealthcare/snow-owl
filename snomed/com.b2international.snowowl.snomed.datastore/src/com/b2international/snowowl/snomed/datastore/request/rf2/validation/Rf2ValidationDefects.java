@@ -29,7 +29,7 @@ public enum Rf2ValidationDefects {
 	EMPTY_REFSET_MEMBER_FIELD("Reference set member field is empty"),
 	INVALID_REFSET_MEMBER_TYPE("Invalid reference set value for member type"),
 	ENCOUNTER_UNKNOWN_RELEASE_FILE("Encountered unknown release file"), 
-	UNEXPECTED_COMPONENT_CATEGORY("Unexpected component category found in column of the release file"),
+	UNEXPECTED_COMPONENT_CATEGORY("Unexpected component category found in release file. Expected: '%s', found: '%s' (identifier: '%s')"),
 	MISSING_DESCRIPTION_TERM("Description term is missing from release file"), 
 	RELATIONSHIP_SOURCE_DESTINATION_EQUALS("Relationships source and target id are equivalent"), 
 	MISSING_ACTIVE_FLAG("Missing active flag from release file"), 
@@ -46,6 +46,10 @@ public enum Rf2ValidationDefects {
 	
 	public String getLabel() {
 		return label;
+	}
+	
+	public String format(Object...args) {
+		return String.format(label, args);
 	}
 	
 	@Override

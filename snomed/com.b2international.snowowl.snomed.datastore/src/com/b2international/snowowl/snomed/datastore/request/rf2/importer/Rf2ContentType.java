@@ -90,16 +90,19 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 	}
 	
 	default void validateByComponentCategory(ImportDefectBuilder defectBuilder, String id, ComponentCategory expectedCategory) {
+		
 		validateId(defectBuilder, id);
 		
 		final ComponentCategory componentCategory[] = new ComponentCategory[1];
+		
 		defectBuilder
 			.whenThrows(() -> { componentCategory[0] = SnomedIdentifiers.getComponentCategory(id); })
 			.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
 		
 		defectBuilder
 			.whenNotEqual(componentCategory[0], expectedCategory)
-			.error(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel());
+			.error(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.format(expectedCategory, componentCategory[0], id));
+		
 	}
 	
 	default void validateId(ImportDefectBuilder defectBuilder, String id) {
