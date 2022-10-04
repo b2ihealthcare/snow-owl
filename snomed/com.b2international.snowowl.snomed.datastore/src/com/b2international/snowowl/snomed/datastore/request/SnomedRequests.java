@@ -15,19 +15,27 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.DeleteRequestBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.Identifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -386,5 +394,35 @@ public abstract class SnomedRequests {
 	public static SnomedConceptSearchRequestBuilder prepareGetSynonyms() {
 		return prepareSearchConcept().all().filterByActive(true).filterByEcl("<<"+Concepts.SYNONYM);
 	}
-
+	
+	public static Promise<Collection<String>> getApplicableTypes(final IEventBus bus, final String resourcePath, 
+			final Set<String> ruleParentIds, 
+			final Set<String> refSetIds) {
+		List<String> domainIds = new ArrayList<>(refSetIds);
+		domainIds.addAll(ruleParentIds);		
+		return SnomedRequests.prepareSearchMember()
+			.all()
+			.filterByActive(true)
+			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+			.filterByProps(Options.from(Map.of(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainIds)))
+			.build(resourcePath)
+			.execute(bus)
+			.then(members -> members.stream().map(m -> m.getReferencedComponentId()).collect(Collectors.toSet()));
+	}
+	
+	public static Promise<SnomedReferenceSetMembers> getApplicableRanges(final IEventBus bus, final String resourcePath, 
+			final Set<String> ruleParentIds, 
+			final Set<String> refSetIds) {
+		return getApplicableTypes(bus, resourcePath, ruleParentIds, refSetIds)
+				.thenWith(typeIds -> {
+					return SnomedRequests.prepareSearchMember()
+							.all()
+							.filterByActive(true)
+							.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+							.filterByReferencedComponent(typeIds)
+							.build(resourcePath)
+							.execute(bus);
+				});
+	}
+	
 }
