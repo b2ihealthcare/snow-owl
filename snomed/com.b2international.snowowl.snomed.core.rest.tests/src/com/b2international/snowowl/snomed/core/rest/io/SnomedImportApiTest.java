@@ -48,9 +48,9 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -608,6 +608,11 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 			.body("refsetId", equalTo("98406000"))
 			.body("referencedComponent.id", equalTo("138875005"))
 			.body(SnomedRf2Headers.FIELD_MAP_SOURCE, equalTo("mapSource"));
+	}
+  
+  	@Test
+	public void import36ContentWithEmptyLines() throws Exception {
+  		importArchive("SnomedCT_Release_INT_20220623_new_concept_w_empty_line.zip");
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
