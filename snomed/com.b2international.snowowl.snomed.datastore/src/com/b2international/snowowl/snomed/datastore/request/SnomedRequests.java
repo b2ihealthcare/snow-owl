@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
@@ -397,23 +400,46 @@ public abstract class SnomedRequests {
 	
 	public static Promise<Collection<String>> getApplicableTypes(final IEventBus bus, final String resourcePath, 
 			final Set<String> ruleParentIds, 
-			final Set<String> refSetIds) {
-		List<String> domainIds = new ArrayList<>(refSetIds);
-		domainIds.addAll(ruleParentIds);		
+			final Set<String> refSetIds,
+			final String moduleId) {
 		return SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByActive(true)
-			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
-			.filterByProps(Options.from(Map.of(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainIds)))
+			.filterByRefSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
+			.filterByReferencedComponent(moduleId)
 			.build(resourcePath)
 			.execute(bus)
-			.then(members -> members.stream().map(m -> m.getReferencedComponentId()).collect(Collectors.toSet()));
+			.then(members -> members.stream()
+					.map(m -> (String) m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID))
+					.collect(Collectors.toSet()))
+			.thenWith(inScopeRefSetIds -> {
+				Set<String> domainIds = new HashSet<>();
+				
+				if (ruleParentIds != null) {
+					domainIds.addAll(ruleParentIds);
+				}
+				
+				if (refSetIds != null) {
+					domainIds.addAll(refSetIds);
+				}
+				
+				return SnomedRequests.prepareSearchMember()
+					.all()
+					.filterByActive(true)
+					.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+					.filterByRefSet(inScopeRefSetIds)
+					.filterByProps(Options.from(Map.of(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainIds)))
+					.build(resourcePath)
+					.execute(bus);
+			}).then(members -> members.stream().map(m -> m.getReferencedComponentId()).collect(Collectors.toSet()));
 	}
 	
-	public static Promise<SnomedReferenceSetMembers> getApplicableRanges(final IEventBus bus, final String resourcePath, 
+	public static Promise<SnomedReferenceSetMembers> getApplicableRanges(final IEventBus bus, 
+			final String resourcePath, 
 			final Set<String> ruleParentIds, 
-			final Set<String> refSetIds) {
-		return getApplicableTypes(bus, resourcePath, ruleParentIds, refSetIds)
+			final Set<String> refSetIds,
+			final String moduleId) {
+		return getApplicableTypes(bus, resourcePath, ruleParentIds, refSetIds, moduleId)
 				.thenWith(typeIds -> {
 					return SnomedRequests.prepareSearchMember()
 							.all()
