@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
@@ -30,6 +27,7 @@ import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.DeleteRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.Identifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -401,12 +399,14 @@ public abstract class SnomedRequests {
 	public static Promise<Collection<String>> getApplicableTypes(final IEventBus bus, final String resourcePath, 
 			final Set<String> ruleParentIds, 
 			final Set<String> refSetIds,
-			final String moduleId) {
+			final List<String> moduleIds,
+			boolean needsDataAttributes,
+			boolean needsObjectAttributes) {
 		return SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByActive(true)
 			.filterByRefSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
-			.filterByReferencedComponent(moduleId)
+			.filterByReferencedComponent(moduleIds)
 			.build(resourcePath)
 			.execute(bus)
 			.then(members -> members.stream()
@@ -431,16 +431,42 @@ public abstract class SnomedRequests {
 					.filterByProps(Options.from(Map.of(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainIds)))
 					.build(resourcePath)
 					.execute(bus);
-			}).then(members -> members.stream().map(m -> m.getReferencedComponentId()).collect(Collectors.toSet()));
+			}).thenWith(members -> {
+				Set<String> typeIds = members.stream().map(m -> m.getReferencedComponentId()).collect(Collectors.toSet());
+				if ((needsDataAttributes && needsObjectAttributes) || typeIds.isEmpty()) {
+					return Promise.immediate(typeIds);
+				}
+				
+				SnomedConceptSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchConcept()
+						.filterByActive(true)
+						.filterByIds(typeIds)
+						.setFields(SnomedConceptDocument.Fields.ID);
+				
+				if (needsDataAttributes && !needsObjectAttributes) {
+					requestBuilder.filterByAncestor(SnomedConstants.Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE);
+				} else if (!needsDataAttributes && needsObjectAttributes) {
+					requestBuilder.filterByAncestor(SnomedConstants.Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+				}
+				
+				return requestBuilder.build(resourcePath).execute(bus)
+						.then(types -> types.stream().map(SnomedConcept::getId).toList());
+			});
 	}
 	
 	public static Promise<SnomedReferenceSetMembers> getApplicableRanges(final IEventBus bus, 
 			final String resourcePath, 
 			final Set<String> ruleParentIds, 
 			final Set<String> refSetIds,
-			final String moduleId) {
-		return getApplicableTypes(bus, resourcePath, ruleParentIds, refSetIds, moduleId)
+			final List<String> moduleIds,
+			boolean needsDataAttributes,
+			boolean needsObjectAttributes) {
+		return getApplicableTypes(bus, resourcePath, ruleParentIds, refSetIds, moduleIds, needsDataAttributes, needsObjectAttributes)
 				.thenWith(typeIds -> {
+					
+					if (typeIds.isEmpty()) {
+						return Promise.immediate(new SnomedReferenceSetMembers(0, 0));
+					}
+					
 					return SnomedRequests.prepareSearchMember()
 							.all()
 							.filterByActive(true)
