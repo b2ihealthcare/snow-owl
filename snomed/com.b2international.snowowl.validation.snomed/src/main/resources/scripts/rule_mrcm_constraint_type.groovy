@@ -21,10 +21,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
 import com.google.common.base.Joiner
 import com.google.common.base.Strings
-import com.google.common.collect.HashMultimap
-import com.google.common.collect.Maps
-import com.google.common.collect.Multimap
-import com.google.common.collect.Sets
+import com.google.common.collect.*
 
 import groovy.transform.Field
 
@@ -176,6 +173,13 @@ def searchRelationships = { boolean isValidationRun ->
 		
 		searcher.stream(relationshipQuery).each { hits ->
 			hits.forEach({ String relationshipId ->
+				if (relationshipId.equals("3336507024")) {
+					println "Relationship id: 3336507024"
+					println "Validation run: ${isValidationRun}"
+					println "Domain constraint : ${domainConstraint}"
+					println "Allowed type ids:"
+					attributes.each { println it }
+				}
 				if (isValidationRun) {
 					issues.remove(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId));
 				} else {
@@ -257,9 +261,72 @@ def searchRelationshipsWithUnregulatedTypeIds =  {
 		owlMemberExpressionBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 	}
 	
-	final Query<String> owlMemberQuery = Query.select(String.class)
+	final Query<String[]> owlMemberQuery = Query.select(String[].class)
 		.from(SnomedRefSetMemberIndexEntry.class)
-		.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
+		.fields(SnomedRefSetMemberIndexEntry.Fields.ID, SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION)
+		.where(owlMemberExpressionBuilder.build())
+		.limit(50_000)
+		.build();
+	
+	searcher.stream(owlMemberQuery).forEach({ hits ->
+		hits.each { hit ->
+			def id = hit[0];
+			def owlExpression = hit[1];
+			if (!owlExpression.contains("TransitiveObjectProperty") &&
+				!owlExpression.contains("ReflexiveObjectProperty") &&
+				!owlExpression.contains("SubDataPropertyOf") &&
+				!owlExpression.contains("SubObjectPropertyOf") &&
+				!owlExpression.contains("ObjectPropertyChain")) {
+				//Skip axiom member with no generated axiom relationships
+				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
+			}
+		}
+	});
+}
+
+def searchRelationshipsInUnregulatedDomains =  {
+	String regulatedDomainSpace = Joiner.on(" OR ")
+		.join(FluentIterable.from(domainMembers.values())
+			.transform({ m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT)})
+			.transform({ c -> "(${c})"}));
+				
+	Set<String> unregulatedDomainSpace = getApplicableConcepts("* MINUS (${regulatedDomainSpace})");
+	
+	//Find non-IsA relationships in domains where no MRCM rule is defined
+	ExpressionBuilder relationshipQueryBuilder = Expressions.builder()
+			.filter(SnomedRelationshipIndexEntry.Expressions.active())
+			.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(unregulatedDomainSpace))
+			.mustNot(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A));
+	
+	if (params.isUnpublishedOnly) {
+		relationshipQueryBuilder.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+	}
+	
+	final Query<String> relationshipQuery = Query.select(String.class)
+		.from(SnomedRelationshipIndexEntry.class)
+		.fields(SnomedRelationshipIndexEntry.Fields.ID)
+		.where(relationshipQueryBuilder.build())
+		.limit(50_000)
+		.build();
+	
+	searcher.stream(relationshipQuery).each { hits -> hits.each { id ->
+		issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
+	}}
+	
+	//Find OWL Axiom relationships that have no MRCM rules with this type
+	final ExpressionBuilder owlMemberExpressionBuilder = Expressions.builder()
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(unregulatedDomainSpace))
+		.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType([Concepts.IS_A]));
+	
+	if (params.isUnpublishedOnly) {
+		owlMemberExpressionBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+	}
+	
+	final Query<String[]> owlMemberQuery = Query.select(String[].class)
+		.from(SnomedRefSetMemberIndexEntry.class)
+		.fields(SnomedRefSetMemberIndexEntry.Fields.ID, SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION)
 		.where(owlMemberExpressionBuilder.build())
 		.limit(50_000)
 		.build();
@@ -288,5 +355,7 @@ reportedRelationshipIds = issues.collect{ ComponentIdentifier identifier -> iden
 searchRelationships(true);
 //Find all concepts whith type ids not accounted for in MRCM rules, irrespective of what domain they are in
 searchRelationshipsWithUnregulatedTypeIds();
+//Find all non-IsA relationships in domains missing from relevant MRCM domain reference sets
+searchRelationshipsInUnregulatedDomains();
 
 return issues as List;
