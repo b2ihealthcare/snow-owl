@@ -32,7 +32,22 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 Set<ComponentIdentifier> potentialIssues = Sets.newHashSet();
 
-final String domainRefset = Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
+List<String> moduleIds = SnomedRequests.prepareSearchConcept()
+	.filterByEcl(params.modules)
+	.filterByActive(true)
+	.all()
+	.build()
+	.execute(ctx)
+	.collect({it.getId()})
+
+List<String> inScopeRefSets = SnomedRequests.prepareSearchMember()
+	.all()
+	.filterByActive(true)
+	.filterByRefSet(Concepts.REFSET_MRCM_MODULE_SCOPE)
+	.filterByReferencedComponent(moduleIds)
+	.build()
+	.execute(ctx)
+	.collect { SnomedReferenceSetMember m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)}
 
 def getApplicableConcepts = { String conceptSetExpression ->
 	def expression = EclExpression.of(conceptSetExpression, Trees.INFERRED_FORM).resolveToExpression(ctx).getSync(1, TimeUnit.MINUTES);
@@ -58,7 +73,8 @@ Map<String, SnomedReferenceSetMember> domainMembers = Maps.newHashMap();
 
 SnomedRequests.prepareSearchMember()
 	.filterByActive(true)
-	.filterByRefSet(domainRefset)
+	.filterByRefSet(inScopeRefSets)
+	.filterByRefSetType(SnomedRefSetType.MRCM_DOMAIN)
 	.all()
 	.setFields(SnomedRefSetMemberIndexEntry.Fields.ID,
 		SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID,
@@ -83,6 +99,7 @@ domainMembers.keySet().forEach({ String domainId ->
 		.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 		.where(Expressions.builder()
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(inScopeRefSets))
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN]))
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.domainIds(Collections.singleton(domainId)))
 			.build())
@@ -247,7 +264,20 @@ def searchRelationshipsWithUnregulatedTypeIds =  {
 		.limit(50_000)
 		.build();
 	
-	searcher.stream(owlMemberQuery).forEach({ hits -> });
+	searcher.stream(owlMemberQuery).forEach({ hits ->
+		hits.each { hit ->
+			def id = hit[0];
+			def owlExpression = hit[1];
+			if (!owlExpression.contains("TransitiveObjectProperty") &&
+				!owlExpression.contains("ReflexiveObjectProperty") &&
+				!owlExpression.contains("SubDataPropertyOf") &&
+				!owlExpression.contains("SubObjectPropertyOf") &&
+				!owlExpression.contains("ObjectPropertyChain")) {
+				//Skip axiom member with no generated axiom relationships
+				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
+			}
+		}
+	});
 }
 
 //On the first run find potential MRCM type violations
