@@ -104,7 +104,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 				MODULE_ID,
 				REFSET_ID,
 				REFERENCED_COMPONENT_ID,
-				// special fieldss
+				// special fields
 				TYPE,
 				RELEASED);
 		
