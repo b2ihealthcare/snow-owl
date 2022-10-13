@@ -68,7 +68,7 @@ searcher.search(mrcmRangeMemberQuery).each { hit ->
 	String typeId = hit[1];
 	String rangeConstraint = hit[2];
 	
-	if (!rangeConstraint.startsWith("int") && !rangeConstraint.startsWith("dec")) {
+	if (rangeConstraint.startsWith("int") || rangeConstraint.startsWith("dec")) {
 		//Do nothing, skip concrete value type range validation for now
 	} else {
 		if (allowedRanges.containsKey(typeId)) {
