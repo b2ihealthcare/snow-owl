@@ -173,13 +173,6 @@ def searchRelationships = { boolean isValidationRun ->
 		
 		searcher.stream(relationshipQuery).each { hits ->
 			hits.forEach({ String relationshipId ->
-				if (relationshipId.equals("3336507024")) {
-					println "Relationship id: 3336507024"
-					println "Validation run: ${isValidationRun}"
-					println "Domain constraint : ${domainConstraint}"
-					println "Allowed type ids:"
-					attributes.each { println it }
-				}
 				if (isValidationRun) {
 					issues.remove(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId));
 				} else {
