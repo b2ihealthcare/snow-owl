@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -148,6 +149,9 @@ public final class ComponentURI implements Serializable {
 	public static ComponentURI of(String uri) {
 		if (Strings.isNullOrEmpty(uri)) {
 			return ComponentURI.UNSPECIFIED;
+		}
+		if (uri.contains(ResourceURIWithQuery.QUERY_PART_SEPARATOR)) {
+			throw new BadRequestException("Component URIs does not support query parts. Got: %s", uri);
 		}
 		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
 		if (parts.size() < 4) {

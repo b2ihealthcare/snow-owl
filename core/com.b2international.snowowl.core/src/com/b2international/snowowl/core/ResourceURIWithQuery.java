@@ -35,7 +35,7 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String QUERY_PART_SEPARATOR = "?";
+	public static final String QUERY_PART_SEPARATOR = "?";
 	private static final String QUERY_KEY_SEPARATOR = "&";
 	private static final String QUERY_KEY_VALUE_SEPARATOR = "=";
 	
