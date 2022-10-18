@@ -1218,6 +1218,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember1 = member(Concepts.FINDING_SITE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
+				.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.rangeConstraint(String.format("<<%s", Concepts.PHYSICAL_OBJECT))
 				.contentTypeId(PRECOORDINATED_CONTENT)
 				.build();
@@ -1226,6 +1227,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember2 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
+				.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.rangeConstraint("<< 71388002 |Procedure (procedure)|")
 				.contentTypeId(PRECOORDINATED_CONTENT)
 				.build();
@@ -1234,6 +1236,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember3 = member(ASSOCIATED_PROCEDURE, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
+				.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.rangeConstraint("<< 363787002 |Observable entity (observable entity)| OR << 71388002 |Procedure (procedure)|")
 				.contentTypeId(POSTCOORDINATED_CONTENT)
 				.build();
@@ -1242,6 +1245,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final SnomedRefSetMemberIndexEntry mrcmRangeMember4 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 				.typeId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE.name())
+				.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.rangeConstraint("int(>#0)")
 				.contentTypeId(POSTCOORDINATED_CONTENT)
 				.build();
@@ -1296,22 +1300,26 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		//First MRCM rule
 		final SnomedRefSetMemberIndexEntry mrcmDomainMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
+				.refsetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.domainConstraint(String.format("<<%s", Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		
 		final SnomedRefSetMemberIndexEntry mrcmAttributeDomainMember1 = member(Concepts.FINDING_SITE, Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+				.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
 				.domainId(Concepts.CONCEPT_MODEL_ATTRIBUTE)
 				.build();
 		
 		//Second MRCM rule
 		final SnomedRefSetMemberIndexEntry mrcmDomainMember2 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
+				.refsetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.domainConstraint(String.format("<<%s", Concepts.PHYSICAL_OBJECT))
 				.build();
 		
 		final SnomedRefSetMemberIndexEntry mrcmAttributeDomainMember2 = member(Concepts.HAS_ACTIVE_INGREDIENT, Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+				.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
 				.domainId(Concepts.PHYSICAL_OBJECT)
 				.build();
 				

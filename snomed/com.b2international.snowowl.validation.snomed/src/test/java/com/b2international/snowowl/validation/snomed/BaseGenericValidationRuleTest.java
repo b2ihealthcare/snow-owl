@@ -164,6 +164,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 			.stageNew(concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build())
+			// MRCM Scope Refset Members
+			.stageNew(member(Concepts.MODULE_B2I_EXTENSION, Concepts.REFSET_MRCM_MODULE_SCOPE).mrcmRuleRefsetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL).build())
+			.stageNew(member(Concepts.MODULE_B2I_EXTENSION, Concepts.REFSET_MRCM_MODULE_SCOPE).mrcmRuleRefsetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL).build())
+			.stageNew(member(Concepts.MODULE_B2I_EXTENSION, Concepts.REFSET_MRCM_MODULE_SCOPE).mrcmRuleRefsetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL).build())
 			.commit(currentTime(), UUID.randomUUID().toString(), "Initialize test data");
 	}
 	
