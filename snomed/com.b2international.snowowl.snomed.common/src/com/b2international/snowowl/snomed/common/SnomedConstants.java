@@ -436,6 +436,7 @@ public abstract class SnomedConstants {
 		// MRCM Attribute Range
 		public static final String ATTRIBUTE_TYPE_RANGE_CONSTRAINT = "723575003";
 		public static final String ATTRIBUTE_TYPE_ATTRIBUTE_RULE = "723576002";
+		public static final String ALL_PRECOORDINATED_CONTENT = "723594008";
 
 		// MRCM Module Scope
 		public static final String ATTRIBUTE_TYPE_RULE_REFSET = "723577006";
