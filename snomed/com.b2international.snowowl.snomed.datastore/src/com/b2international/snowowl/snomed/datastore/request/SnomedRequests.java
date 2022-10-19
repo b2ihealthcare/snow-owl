@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ALL_PRECOORDINATED_CONTENT;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -473,7 +475,18 @@ public abstract class SnomedRequests {
 							.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 							.filterByReferencedComponent(typeIds)
 							.build(resourcePath)
-							.execute(bus);
+							.execute(bus)
+							.then(members -> {
+								Map<String, SnomedReferenceSetMember> rangeConstraintMembers = new HashMap<>();
+								members.forEach( m -> {
+									String contentType = (String) m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
+									if (!rangeConstraintMembers.containsKey(m.getReferencedComponentId()) || ALL_PRECOORDINATED_CONTENT.equals(contentType)) {
+										rangeConstraintMembers.put(m.getReferencedComponentId(), m);
+									}
+								});
+								
+								return new SnomedReferenceSetMembers(List.copyOf(rangeConstraintMembers.values()), null, rangeConstraintMembers.size(), rangeConstraintMembers.size());
+							});
 				});
 	}
 	
