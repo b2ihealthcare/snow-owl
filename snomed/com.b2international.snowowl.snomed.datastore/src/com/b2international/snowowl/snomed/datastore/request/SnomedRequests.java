@@ -448,6 +448,8 @@ public abstract class SnomedRequests {
 					requestBuilder.filterByAncestor(SnomedConstants.Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE);
 				} else if (!needsDataAttributes && needsObjectAttributes) {
 					requestBuilder.filterByAncestor(SnomedConstants.Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+				} else {
+					//If the boolean flags are not different from each other include both types of attributes
 				}
 				
 				return requestBuilder.build(resourcePath).execute(bus)
