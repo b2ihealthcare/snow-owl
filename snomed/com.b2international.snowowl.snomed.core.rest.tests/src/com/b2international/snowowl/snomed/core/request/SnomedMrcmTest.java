@@ -46,11 +46,11 @@ public class SnomedMrcmTest {
 		final String isAModificationOf = "738774007";
 		final String hasDisposition = "726542003";
 		
-		Collection<String> substanceDataTypes = SnomedRequests.getApplicableTypes(Services.bus(), CODESYSTEM, 
+		Collection<String> substanceDataTypes = SnomedRequests.getApplicableTypes(Services.bus(), CODESYSTEM, Set.of(),
 				Set.of(SUBSTANCE), Set.of(), List.of(Concepts.MODULE_SCT_CORE), true, false).getSync(1, TimeUnit.MINUTES);
 		assertEquals(0, substanceDataTypes.size());
 		
-		Collection<String> substanceObjectTypes = SnomedRequests.getApplicableTypes(Services.bus(), CODESYSTEM, 
+		Collection<String> substanceObjectTypes = SnomedRequests.getApplicableTypes(Services.bus(), CODESYSTEM, Set.of(),
 				Set.of(SUBSTANCE), Set.of(), List.of(Concepts.MODULE_SCT_CORE), false, true).getSync(1, TimeUnit.MINUTES);
 		assertEquals(2, substanceObjectTypes.size());
 		assertTrue(substanceObjectTypes.containsAll(List.of(isAModificationOf, hasDisposition)));
@@ -59,11 +59,11 @@ public class SnomedMrcmTest {
 	@Test
 	public void applicableRangeTest() {
 		SnomedReferenceSetMembers substanceDataTypeRanges = SnomedRequests.getApplicableRanges(Services.bus(), CODESYSTEM, 
-				Set.of(SUBSTANCE), Set.of(), List.of(Concepts.MODULE_SCT_CORE), true, false).getSync(1, TimeUnit.MINUTES);
+				Set.of(SUBSTANCE), Set.of(), Set.of(), List.of(Concepts.MODULE_SCT_CORE), true, false).getSync(1, TimeUnit.MINUTES);
 		assertEquals(0, substanceDataTypeRanges.getTotal());
 		
 		SnomedReferenceSetMembers substanceObjectTypeRanges = SnomedRequests.getApplicableRanges(Services.bus(), CODESYSTEM, 
-				Set.of(SUBSTANCE), Set.of(), List.of(Concepts.MODULE_SCT_CORE), false, true).getSync(1, TimeUnit.MINUTES);
+				Set.of(SUBSTANCE), Set.of(), Set.of(), List.of(Concepts.MODULE_SCT_CORE), false, true).getSync(1, TimeUnit.MINUTES);
 		assertEquals(2, substanceObjectTypeRanges.getTotal());
 		Map<String, String> ranges = Map.of("738774007", "<< 105590001 |Substance (substance)|", //Is A Modification Of
 				"726542003", "<< 726711005 |Disposition (disposition)|"); //Has Disposition

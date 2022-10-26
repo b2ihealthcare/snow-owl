@@ -404,6 +404,7 @@ public abstract class SnomedRequests {
 	}
 	
 	public static Promise<Collection<String>> getApplicableTypes(final IEventBus bus, final String resourcePath, 
+			final Set<String> selfIds, 
 			final Set<String> ruleParentIds, 
 			final Set<String> refSetIds,
 			final List<String> moduleIds,
@@ -422,6 +423,10 @@ public abstract class SnomedRequests {
 					.collect(Collectors.toSet()))
 			.thenWith(inScopeRefSetIds -> {
 				Set<String> domainIds = new HashSet<>();
+				
+				if (selfIds != null) {
+					domainIds.addAll(selfIds);
+				}
 				
 				if (ruleParentIds != null) {
 					domainIds.addAll(ruleParentIds);
@@ -466,12 +471,13 @@ public abstract class SnomedRequests {
 	
 	public static Promise<SnomedReferenceSetMembers> getApplicableRanges(final IEventBus bus, 
 			final String resourcePath, 
+			final Set<String> selfIds,
 			final Set<String> ruleParentIds, 
 			final Set<String> refSetIds,
 			final List<String> moduleIds,
 			boolean needsDataAttributes,
 			boolean needsObjectAttributes) {
-		return getApplicableTypes(bus, resourcePath, ruleParentIds, refSetIds, moduleIds, needsDataAttributes, needsObjectAttributes)
+		return getApplicableTypes(bus, resourcePath, selfIds, ruleParentIds, refSetIds, moduleIds, needsDataAttributes, needsObjectAttributes)
 				.thenWith(typeIds -> {
 					
 					if (typeIds.isEmpty()) {
