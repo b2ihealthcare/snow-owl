@@ -34,6 +34,9 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.google.common.base.Objects;
 
+/**
+ * @since 8.7.0
+ */
 public class SnomedMrcmTest {
 	
 	private static final String CODESYSTEM = "SNOMEDCT";
