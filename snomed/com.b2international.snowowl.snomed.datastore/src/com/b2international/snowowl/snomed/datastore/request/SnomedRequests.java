@@ -16,6 +16,11 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ALL_PRECOORDINATED_CONTENT;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.ID;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -409,6 +414,7 @@ public abstract class SnomedRequests {
 			.filterByActive(true)
 			.filterByRefSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
 			.filterByReferencedComponent(moduleIds)
+			.setFields(ID, MRCM_RULE_REFSET_ID)
 			.build(resourcePath)
 			.execute(bus)
 			.then(members -> members.stream()
@@ -431,6 +437,7 @@ public abstract class SnomedRequests {
 					.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
 					.filterByRefSet(inScopeRefSetIds)
 					.filterByProps(Options.from(Map.of(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainIds)))
+					.setFields(REFERENCED_COMPONENT_ID, ID)
 					.build(resourcePath)
 					.execute(bus);
 			}).thenWith(members -> {
@@ -476,6 +483,7 @@ public abstract class SnomedRequests {
 							.filterByActive(true)
 							.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 							.filterByReferencedComponent(typeIds)
+							.setFields(ID, REFERENCED_COMPONENT_ID, MRCM_RANGE_CONSTRAINT, MRCM_CONTENT_TYPE_ID)
 							.build(resourcePath)
 							.execute(bus)
 							.then(members -> {
