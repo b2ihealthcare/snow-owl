@@ -103,7 +103,7 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "404", description = "Not found")
 	})
-	@GetMapping(value = "/{bundleId:**}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping(value = "/{bundleId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundle> get(
 		@Parameter(description="The bundle identifier")
 		@PathVariable(value="bundleId", required = true) 
@@ -119,6 +119,34 @@ public class BundleRestService extends AbstractRestService {
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
 			.buildAsync(timestamp)
+			.execute(getBus());
+	}
+	
+	@Operation(
+		summary="Retrieve bundle by its unique identifier",
+		description="Returns generic information about a single bundle associated to the given unique identifier."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
+	})
+	@GetMapping(value = "/{bundleId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<Bundle> getVersioned(
+		@Parameter(description="The bundle identifier")
+		@PathVariable(value="bundleId", required = true) 
+		final String bundleId,
+		
+		@Parameter(description="The code system version")
+		@PathVariable(value="versionId", required = true) 
+		final String versionId,
+
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
+		return ResourceRequests.bundles().prepareGet(Bundle.uri(bundleId, versionId))
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.buildAsync()
 			.execute(getBus());
 	}
 	

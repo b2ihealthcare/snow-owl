@@ -95,6 +95,10 @@ public final class Bundle extends Resource {
 		return bundleUri.startsWith(RESOURCE_TYPE) ? new ResourceURI(bundleUri) : ResourceURI.of(RESOURCE_TYPE, bundleUri);
 	}
 	
+	public static ResourceURI uri(String bundleUri, String versionId) {
+		return uri(bundleUri).withPath(versionId);
+	}
+	
 	public static Bundle from(ResourceDocument doc) {
 		final Bundle bundle = new Bundle();
 		bundle.setId(doc.getId());

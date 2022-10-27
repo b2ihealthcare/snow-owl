@@ -109,10 +109,11 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "404", description = "Not found")
 	})
-	@GetMapping(value = "/{codeSystemId:**}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping(value = "/{codeSystemId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystem> get(
 		@Parameter(description="The code system identifier")
-		@PathVariable(value="codeSystemId") final String codeSystemId,
+		@PathVariable(value="codeSystemId", required = true) 
+		final String codeSystemId,
 		
 		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
 		final Long timestamp,
@@ -121,6 +122,34 @@ public class CodeSystemRestService extends AbstractRestService {
 		final ResourceSelectors selectors) {
 		
 		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId.contains(RevisionIndex.AT_CHAR) || timestamp == null ? CodeSystem.uri(codeSystemId) : CodeSystem.uri(codeSystemId).withTimestampPart(RevisionIndex.AT_CHAR + timestamp))
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.buildAsync()
+			.execute(getBus());
+	}
+	
+	@Operation(
+		summary="Retrieve a versioned code system by its unique identifier",
+		description="Returns generic information about a single code system associated to the given unique identifier."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
+	})
+	@GetMapping(value = "/{codeSystemId}/{versionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<CodeSystem> getVersioned(
+		@Parameter(description="The code system identifier")
+		@PathVariable(value="codeSystemId", required = true) 
+		final String codeSystemId,
+		
+		@Parameter(description="The code system version")
+		@PathVariable(value="versionId", required = true) 
+		final String versionId,
+		
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
+		return CodeSystemRequests.prepareGetCodeSystem(CodeSystem.uri(codeSystemId, versionId))
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
 			.buildAsync()
