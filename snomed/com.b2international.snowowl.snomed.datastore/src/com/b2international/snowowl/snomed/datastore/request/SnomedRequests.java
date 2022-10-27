@@ -15,35 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ALL_PRECOORDINATED_CONTENT;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.DeleteRequestBuilder;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.Identifiers;
-import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -403,107 +387,12 @@ public abstract class SnomedRequests {
 		return prepareSearchConcept().all().filterByActive(true).filterByEcl("<<"+Concepts.SYNONYM);
 	}
 	
-	public static Promise<Collection<String>> getApplicableTypes(final IEventBus bus, final String resourcePath, 
-			final Set<String> selfIds, 
-			final Set<String> ruleParentIds, 
-			final Set<String> refSetIds,
-			final List<String> moduleIds,
-			boolean needsDataAttributes,
-			boolean needsObjectAttributes) {
-		return SnomedRequests.prepareSearchMember()
-			.all()
-			.filterByActive(true)
-			.filterByRefSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
-			.filterByReferencedComponent(moduleIds)
-			.setFields(ID, MRCM_RULE_REFSET_ID)
-			.build(resourcePath)
-			.execute(bus)
-			.then(members -> members.stream()
-					.map(m -> (String) m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID))
-					.collect(Collectors.toSet()))
-			.thenWith(inScopeRefSetIds -> {
-				Set<String> domainIds = new HashSet<>();
-				
-				if (selfIds != null) {
-					domainIds.addAll(selfIds);
-				}
-				
-				if (ruleParentIds != null) {
-					domainIds.addAll(ruleParentIds);
-				}
-				
-				if (refSetIds != null) {
-					domainIds.addAll(refSetIds);
-				}
-				
-				return SnomedRequests.prepareSearchMember()
-					.all()
-					.filterByActive(true)
-					.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
-					.filterByRefSet(inScopeRefSetIds)
-					.filterByProps(Options.from(Map.of(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainIds)))
-					.setFields(REFERENCED_COMPONENT_ID, ID)
-					.build(resourcePath)
-					.execute(bus);
-			}).thenWith(members -> {
-				Set<String> typeIds = members.stream().map(m -> m.getReferencedComponentId()).collect(Collectors.toSet());
-				if ((needsDataAttributes && needsObjectAttributes) || typeIds.isEmpty()) {
-					return Promise.immediate(typeIds);
-				}
-				
-				SnomedConceptSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchConcept()
-						.filterByActive(true)
-						.filterByIds(typeIds)
-						.setFields(SnomedConceptDocument.Fields.ID);
-				
-				if (needsDataAttributes && !needsObjectAttributes) {
-					requestBuilder.filterByAncestor(SnomedConstants.Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE);
-				} else if (!needsDataAttributes && needsObjectAttributes) {
-					requestBuilder.filterByAncestor(SnomedConstants.Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
-				} else {
-					//If the boolean flags are not different from each other include both types of attributes
-				}
-				
-				return requestBuilder.build(resourcePath).execute(bus)
-						.then(types -> types.stream().map(SnomedConcept::getId).toList());
-			});
+	public static MrcmTypeRequestBuilder prepareGetMrcmTypeRules() {
+		return new MrcmTypeRequestBuilder();
 	}
 	
-	public static Promise<SnomedReferenceSetMembers> getApplicableRanges(final IEventBus bus, 
-			final String resourcePath, 
-			final Set<String> selfIds,
-			final Set<String> ruleParentIds, 
-			final Set<String> refSetIds,
-			final List<String> moduleIds,
-			boolean needsDataAttributes,
-			boolean needsObjectAttributes) {
-		return getApplicableTypes(bus, resourcePath, selfIds, ruleParentIds, refSetIds, moduleIds, needsDataAttributes, needsObjectAttributes)
-				.thenWith(typeIds -> {
-					
-					if (typeIds.isEmpty()) {
-						return Promise.immediate(new SnomedReferenceSetMembers(0, 0));
-					}
-					
-					return SnomedRequests.prepareSearchMember()
-							.all()
-							.filterByActive(true)
-							.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
-							.filterByReferencedComponent(typeIds)
-							.setFields(ID, REFERENCED_COMPONENT_ID, MRCM_RANGE_CONSTRAINT, MRCM_CONTENT_TYPE_ID)
-							.build(resourcePath)
-							.execute(bus)
-							.then(members -> {
-								Map<String, SnomedReferenceSetMember> rangeConstraintMembers = new HashMap<>();
-								members.forEach( m -> {
-									String contentType = (String) m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
-									if (!rangeConstraintMembers.containsKey(m.getReferencedComponentId()) || ALL_PRECOORDINATED_CONTENT.equals(contentType)) {
-										rangeConstraintMembers.put(m.getReferencedComponentId(), m);
-									}
-								});
-								
-								return new SnomedReferenceSetMembers(List.copyOf(rangeConstraintMembers.values()), null, rangeConstraintMembers.size(), rangeConstraintMembers.size());
-							});
-				});
-	}
+	public static MrcmRangeRequestBuilder prepareGetMrcmRangeRules() {
+		return new MrcmRangeRequestBuilder();
+	}	
 	
 }
