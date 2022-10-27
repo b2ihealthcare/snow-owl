@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.regexp;
 
 import java.util.List;
 import java.util.Map;
@@ -210,14 +213,6 @@ public final class ResourceDocument extends RevisionDocument {
 		
 		public static Expression upgradeOfs(Iterable<ResourceURI> upgradeOfs) {
 			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
-		}
-		
-		public static Expression validAsOf(Long createdTimestamp) {
-			// A small revision range filter assuming a single branch and linear history
-			return bool()
-				.filter(matchRange(Fields.CREATED, RevisionBranchPoint.toIpv6(0, 0L), RevisionBranchPoint.toIpv6(0, createdTimestamp), false, true))
-				.mustNot(matchRange(Fields.REVISED, RevisionBranchPoint.toIpv6(0, 0L), RevisionBranchPoint.toIpv6(0, createdTimestamp), false, true))
-				.build();
 		}
 	}
 
