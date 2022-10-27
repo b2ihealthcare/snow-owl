@@ -385,7 +385,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 				// allow dynamic mappings for dynamic objects like field using Map
 				final Map<String, Object> prop = newHashMap();
 				prop.put("type", "object");
-				prop.put("dynamic", "true");
+				if (fieldAnnotation != null && !fieldAnnotation.index()) {
+					prop.put("enabled", "false");
+				} else {
+					prop.put("dynamic", "true");			
+				}
 				properties.put(property, prop);
 				continue;
 			} else if (fieldType.isAnnotationPresent(Doc.class)) {
