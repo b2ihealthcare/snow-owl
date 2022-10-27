@@ -148,6 +148,7 @@ public final class VersionDocument implements Serializable {
 		private String url;
 		private String author;
 
+		private String resourceDescription;
 		private String title;
 		private String status;
 		private String contact;
@@ -212,6 +213,11 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
+		public Builder resourceDescription(String resourceDescription) {
+			this.resourceDescription = resourceDescription;
+			return this;
+		}
+		
 		public Builder title(String title) {
 			this.title = title;
 			return this;
@@ -253,19 +259,21 @@ public final class VersionDocument implements Serializable {
 		}
 		
 		@JsonIgnore
-		public Builder resource(TerminologyResource resource) {
-			if (resource != null) {
+		public Builder resourceSnapshot(TerminologyResource resourceSnapshot) {
+			if (resourceSnapshot != null) {
 				return this
-					.title(resource.getTitle())
-					.status(resource.getStatus())
-					.contact(resource.getContact())
-					.copyright(resource.getCopyright())
-					.language(resource.getLanguage())
-					.purpose(resource.getPurpose())
-					.oid(resource.getOid())
-					.settings(resource.getSettings());
+					.resourceDescription(resourceSnapshot.getDescription())
+					.title(resourceSnapshot.getTitle())
+					.status(resourceSnapshot.getStatus())
+					.contact(resourceSnapshot.getContact())
+					.copyright(resourceSnapshot.getCopyright())
+					.language(resourceSnapshot.getLanguage())
+					.purpose(resourceSnapshot.getPurpose())
+					.oid(resourceSnapshot.getOid())
+					.settings(resourceSnapshot.getSettings());
 			} else {
 				return this
+					.resourceDescription(null)
 					.title(null)
 					.status(null)
 					.contact(null)
@@ -318,6 +326,7 @@ public final class VersionDocument implements Serializable {
 				url,
 				author,
 				
+				resourceDescription,
 				title,
 				status,
 				contact,
@@ -360,6 +369,7 @@ public final class VersionDocument implements Serializable {
 	private String resourceType;
 
 	// a snapshot of the corresponding resource document fields at the point of versioning (not indexed)
+	@Field(index = false) private final String resourceDescription;
 	@Field(index = false) private final String title;
 	@Field(index = false) private final String status;
 	@Field(index = false) private final String contact;
@@ -382,6 +392,7 @@ public final class VersionDocument implements Serializable {
 		final String url,
 		final String author,
 		
+		final String resourceDescription,
 		final String title,
 		final String status,
 		final String contact,
@@ -406,6 +417,7 @@ public final class VersionDocument implements Serializable {
 		this.author = author;
 		this.created = createdAt != null ? new RevisionBranchPoint(RevisionBranch.MAIN_BRANCH_ID, createdAt) : null;
 		
+		this.resourceDescription = resourceDescription;
 		this.title = title;
 		this.status = status;
 		this.contact = contact;
@@ -470,6 +482,10 @@ public final class VersionDocument implements Serializable {
 	
 	public String getAuthor() {
 		return author;
+	}
+	
+	public String getResourceDescription() {
+		return resourceDescription;
 	}
 	
 	public String getTitle() {
@@ -550,6 +566,7 @@ public final class VersionDocument implements Serializable {
 			.add("updatedAt", updatedAt)
 			.add("url", url)
 			.add("author", author)
+			.add("resourceDescription", resourceDescription)
 			.add("title", title)
 			.add("status", status)
 			.add("contact", contact)

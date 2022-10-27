@@ -207,7 +207,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 						.updatedAt(Instant.now().toEpochMilli())
 						.toolingId(resourceToVersion.getToolingId())
 						.url(buildVersionUrl(context, resourceToVersion))
-						.resource(resourceToVersion)
+						.resourceSnapshot(resourceToVersion)
 						.build());
 					
 					return Boolean.TRUE;

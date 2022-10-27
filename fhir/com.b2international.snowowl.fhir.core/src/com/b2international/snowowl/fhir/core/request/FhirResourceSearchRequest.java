@@ -193,23 +193,25 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 	private void fillResourceOnlyProperties(RepositoryContext context, Hits<ResourceFragment> internalResources, List<String> fields) throws IOException {
 		for (final ResourceFragment fragment : internalResources) {
 			if (CompareUtils.isEmpty(fragment.getVersion())) {
-				// This fragment was created from a resource document
+				// This fragment was created from a resource document, set resourceDescription and continue
+				fragment.setResourceDescription(fragment.getDescription());
 				continue;
 			}
 			
 			if (!CompareUtils.isEmpty(fragment.getStatus())) {
-				// This fragment was created from a version with snapshot (it has resource status on it)
+				// This fragment was created from a version with snapshot (it has a resource status on it)
 				continue;
 			}
 			
-			// Retrieve resource representation with the same "created" branch timestamp
+			// Retrieve resource representation with the same "created" branch timestamp (we defer to the low-level Searcher for this) 
 			final Hits<ResourceFragment> resourceFragments = context.service(RevisionSearcher.class)
+				.searcher()
 				.search(Query.select(ResourceFragment.class)
 				.from(ResourceDocument.class)
 				.fields(fields)
 				.where(Expressions.bool()
-					.filter(ResourceDocument.Expressions.id(fragment.getId()))
-					.filter(ResourceDocument.Expressions.created(fragment.getCreated().getTimestamp()))
+					.filter(ResourceDocument.Expressions.id(fragment.getResourceURI().getResourceId()))
+					.filter(ResourceDocument.Expressions.validAsOf(fragment.getCreated().getTimestamp()))
 					.build())
 				.limit(1)
 				.build());
@@ -224,9 +226,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				fragment.setPurpose(resourceSnapshot.getPurpose());
 				fragment.setOid(resourceSnapshot.getOid());
 				fragment.setSettings(resourceSnapshot.getSettings());
+				fragment.setResourceDescription(resourceSnapshot.getDescription());
 			}
-			
-			// XXX: the version's description will be used instead of the resource description for versioned resources
 		}
 	}
 	
@@ -262,7 +263,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, resource::getVersion, entry::version);
 		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, () -> getPublisher(resource), entry::publisher);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, resource::getLanguage, entry::language);
-		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, resource::getDescription, entry::description);
+		// XXX: use the resource's description in all cases
+		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, resource::getResourceDescription, entry::description);
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, resource::getPurpose, entry::purpose);
 
 		if (CompareUtils.isEmpty(fields()) || fields().contains(CodeSystem.Fields.CONTACT)) {
@@ -329,6 +331,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		String url;
 		String branchPath;
 		
+		String resourceDescription;
 		String title;
 		String status;
 		String contact;
@@ -378,6 +381,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		public String getBranchPath() {
 			return branchPath;
+		}
+		
+		public String getResourceDescription() {
+			return resourceDescription;
 		}
 		
 		public String getTitle() {
@@ -450,6 +457,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		public void setBranchPath(String branchPath) {
 			this.branchPath = branchPath;
+		}
+		
+		public void setResourceDescription(String resourceDescription) {
+			this.resourceDescription = resourceDescription;
 		}
 		
 		public void setTitle(String title) {

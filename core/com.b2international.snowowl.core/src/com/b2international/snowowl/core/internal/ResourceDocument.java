@@ -212,8 +212,12 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
 		
-		public static Expression created(Long createdTimestamp) {
-			return exactMatch(Fields.CREATED, RevisionBranchPoint.toIpv6(0, createdTimestamp));
+		public static Expression validAsOf(Long createdTimestamp) {
+			// A small revision range filter assuming a single branch and linear history
+			return bool()
+				.filter(matchRange(Fields.CREATED, RevisionBranchPoint.toIpv6(0, 0L), RevisionBranchPoint.toIpv6(0, createdTimestamp), false, true))
+				.mustNot(matchRange(Fields.REVISED, RevisionBranchPoint.toIpv6(0, 0L), RevisionBranchPoint.toIpv6(0, createdTimestamp), false, true))
+				.build();
 		}
 	}
 
