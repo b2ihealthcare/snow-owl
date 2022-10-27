@@ -72,8 +72,8 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedRf2ExportConfiguration params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 			final String acceptLanguage) {
 		
 		final Attachment exportedFile = SnomedRequests.rf2().prepareExport()

@@ -75,8 +75,8 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedRelationshipRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 			final String acceptLanguage) {
 		return SnomedRequests
 					.prepareSearchRelationship()
@@ -128,8 +128,8 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedRelationshipRestSearch params,
 		
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 			final String acceptLanguage) {
 		return searchByGet(path, params, acceptLanguage);
 	}
@@ -201,8 +201,8 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@ParameterObject
 			final ResourceSelectors selectors,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 			final String acceptLanguage) {
 
 		return SnomedRequests.prepareGetRelationship(relationshipId)

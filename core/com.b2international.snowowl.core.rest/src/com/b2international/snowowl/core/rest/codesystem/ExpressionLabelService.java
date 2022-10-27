@@ -52,8 +52,8 @@ public class ExpressionLabelService extends AbstractRestService {
 			@RequestBody
 			final ExpressionLabelRestInput body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 			final String acceptLanguage) {
 				return CodeSystemRequests.prepareEclLabeler(body.getCodeSystemUri(), body.getExpressions())
 						.setDescriptionType(body.getDescriptionType())
