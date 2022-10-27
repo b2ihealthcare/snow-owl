@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,17 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.request.resource.BaseGetResourceRequestBuilder;
 
 /**
  * @since 8.0
  */
 public final class BundleGetRequestBuilder
-		extends GetResourceRequestBuilder<BundleGetRequestBuilder, BundleSearchRequestBuilder, RepositoryContext, Bundles, Bundle>
-		implements ResourceRepositoryRequestBuilder<Bundle> {
+		extends BaseGetResourceRequestBuilder<BundleGetRequestBuilder, BundleSearchRequestBuilder, Bundles, Bundle> {
 
-	BundleGetRequestBuilder(final String id) {
-		super(new BundleGetRequest(id));
+	BundleGetRequestBuilder(final ResourceURI resourceUri) {
+		super(new BundleGetRequest(resourceUri));
 	}
 
 }

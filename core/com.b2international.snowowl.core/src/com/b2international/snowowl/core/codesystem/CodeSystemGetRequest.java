@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,19 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.request.resource.BaseGetResourceRequest;
 
 /**
  * @since 5.7
  */
 final class CodeSystemGetRequest 
-		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems, CodeSystem> {
+		extends BaseGetResourceRequest<CodeSystemSearchRequestBuilder, CodeSystems, CodeSystem> {
 
 	private static final long serialVersionUID = 1L;
 	
-	CodeSystemGetRequest(String id) {
-		super(id);
+	CodeSystemGetRequest(ResourceURI resourceUri) {
+		super(resourceUri);
 	}
 
 	@Override

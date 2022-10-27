@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -108,13 +109,13 @@ public class BundleRestService extends AbstractRestService {
 		@PathVariable(value="bundleId", required = true) 
 		final String bundleId,
 
-		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
 		final Long timestamp,
 		
 		@ParameterObject
 		final ResourceSelectors selectors) {
 		
-		return ResourceRequests.bundles().prepareGet(bundleId)
+		return ResourceRequests.bundles().prepareGet(bundleId.contains(RevisionIndex.AT_CHAR) || timestamp == null ? Bundle.uri(bundleId) : Bundle.uri(bundleId).withTimestampPart(RevisionIndex.AT_CHAR + timestamp))
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
 			.buildAsync(timestamp)

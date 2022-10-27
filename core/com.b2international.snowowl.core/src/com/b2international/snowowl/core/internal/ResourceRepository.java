@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.VersionDocument;
+import com.b2international.snowowl.core.version.Versions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -57,8 +58,8 @@ public final class ResourceRepository implements RevisionIndex {
 		return index.read(Branch.MAIN_PATH, read);
 	}
 	
-	public <T> T read(long timestamp, RevisionIndexRead<T> read) {
-		return index.read(RevisionIndex.toBranchAtPath(Branch.MAIN_PATH, timestamp), read);
+	public <T> T read(Long timestamp, RevisionIndexRead<T> read) {
+		return timestamp == null ? read(read) : index.read(RevisionIndex.toBranchAtPath(Branch.MAIN_PATH, timestamp), read);
 	}
 	
 	@Override
@@ -140,10 +141,10 @@ public final class ResourceRepository implements RevisionIndex {
 				final Set<String> resources = resourceUrisByTooling.get(toolingId).stream().map(ResourceDocument::getResourceURI).map(ResourceURI::toString).collect(Collectors.toSet());
 				
 				ResourceRequests.prepareSearchVersion()
-					.all()
+					.setLimit(10_000)
 					.filterByResources(resources)
-					.build()
-					.execute(context)
+					.stream(context)
+					.flatMap(Versions::stream)
 					.forEach(version -> {
 						staging.stageRemove(version.getId(), VersionDocument.builder()
 								.id(version.getId())

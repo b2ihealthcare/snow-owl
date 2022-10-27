@@ -58,8 +58,7 @@ public abstract class CodeSystemApiAssert {
 	
 	public static ValidatableResponse assertCodeSystemGet(final String codeSystemId, final long timestamp) {
 		return givenAuthenticatedRequest(CODESYSTEMS_API)
-			.queryParam("timestamp", timestamp)
-			.get("/{id}", codeSystemId)
+			.get("/{id}", codeSystemId + "@" + timestamp)
 			.then();
 	}
 	
