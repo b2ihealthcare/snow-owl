@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.prefixMatch;
-import static com.b2international.index.query.Expressions.regexp;
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
@@ -88,7 +85,18 @@ public abstract class Revision {
 		public static Expression idRegex(String idRegex) {
 			return regexp(Fields.ID, idRegex);
 		}
-
+		
+		/**
+		 * A very simple revision range filter assuming a single branch and linear history.
+		 * 
+		 * @apiNote Use RevisionSearcher for more complex use cases.
+		 */
+		public static Expression validAsOf(Long createdTimestamp) {
+			return bool()
+				.filter(matchRange(Fields.CREATED, RevisionBranchPoint.toIpv6(0, 0L), RevisionBranchPoint.toIpv6(0, createdTimestamp), false, true))
+				.mustNot(matchRange(Fields.REVISED, RevisionBranchPoint.toIpv6(0, 0L), RevisionBranchPoint.toIpv6(0, createdTimestamp), false, true))
+				.build();
+		}
 	}
 
 

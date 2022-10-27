@@ -21,17 +21,16 @@ import static com.b2international.index.query.Expressions.matchRange;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
+import com.b2international.index.mapping.Field;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -148,6 +147,16 @@ public final class VersionDocument implements Serializable {
 		private String toolingId;
 		private String url;
 		private String author;
+
+		private String resourceDescription;
+		private String title;
+		private String status;
+		private String contact;
+		private String copyright;
+		private String language;
+		private String purpose;
+		private String oid;
+		private Map<String, Object> settings;
 		
 		public Builder id(String id) {
 			this.id = id;
@@ -204,6 +213,78 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
+		public Builder resourceDescription(String resourceDescription) {
+			this.resourceDescription = resourceDescription;
+			return this;
+		}
+		
+		public Builder title(String title) {
+			this.title = title;
+			return this;
+		}
+		
+		public Builder status(String status) {
+			this.status = status;
+			return this;
+		}
+		
+		public Builder contact(String contact) {
+			this.contact = contact;
+			return this;
+		}
+		
+		public Builder copyright(String copyright) {
+			this.copyright = copyright;
+			return this;
+		}
+		
+		public Builder language(String language) {
+			this.language = language;
+			return this;
+		}
+		
+		public Builder purpose(String purpose) {
+			this.purpose = purpose;
+			return this;
+		}
+		
+		public Builder oid(String oid) {
+			this.oid = oid;
+			return this;
+		}
+		
+		public Builder settings(Map<String, Object> settings) {
+			this.settings = (settings == null) ? null : Map.copyOf(settings);
+			return this;
+		}
+		
+		@JsonIgnore
+		public Builder resourceSnapshot(TerminologyResource resourceSnapshot) {
+			if (resourceSnapshot != null) {
+				return this
+					.resourceDescription(resourceSnapshot.getDescription())
+					.title(resourceSnapshot.getTitle())
+					.status(resourceSnapshot.getStatus())
+					.contact(resourceSnapshot.getContact())
+					.copyright(resourceSnapshot.getCopyright())
+					.language(resourceSnapshot.getLanguage())
+					.purpose(resourceSnapshot.getPurpose())
+					.oid(resourceSnapshot.getOid())
+					.settings(resourceSnapshot.getSettings());
+			} else {
+				return this
+					.resourceDescription(null)
+					.title(null)
+					.status(null)
+					.contact(null)
+					.copyright(null)
+					.language(null)
+					.purpose(null)
+					.oid(null)
+					.settings(null);
+			}
+		}
+		
 		// index only fields, for searching, sorting, etc.
 		
 		@JsonSetter
@@ -243,7 +324,17 @@ public final class VersionDocument implements Serializable {
 				updatedAt,
 				toolingId,
 				url,
-				author
+				author,
+				
+				resourceDescription,
+				title,
+				status,
+				contact,
+				copyright,
+				language,
+				purpose,
+				oid,
+				settings
 			);
 		}
 
@@ -277,18 +368,42 @@ public final class VersionDocument implements Serializable {
 	private String resourceId;
 	private String resourceType;
 
+	// a snapshot of the corresponding resource document fields at the point of versioning (not indexed)
+	private final String resourceDescription;
+	private final String title;
+	private final String status;
+	private final String contact;
+	private final String copyright;
+	private final String language;
+	private final String purpose;
+	private final String oid;
+	
+	@Field(index = false) 
+	private final Map<String, Object> settings;
+
 	private VersionDocument(
-			final String id, 
-			final String version,
-			final String description,
-			final Long effectiveTime, 
-			final ResourceURI resource,
-			final String branchPath,
-			final Long createdAt,
-			final Long updatedAt,
-			final String toolingId,
-			final String url,
-			final String author) {
+		final String id, 
+		final String version,
+		final String description,
+		final Long effectiveTime, 
+		final ResourceURI resource,
+		final String branchPath,
+		final Long createdAt,
+		final Long updatedAt,
+		final String toolingId,
+		final String url,
+		final String author,
+		
+		final String resourceDescription,
+		final String title,
+		final String status,
+		final String contact,
+		final String copyright,
+		final String language,
+		final String purpose,
+		final String oid,
+		final Map<String, Object> settings) {
+		
 		this.id = id;
 		this.version = version;
 		this.description = description;
@@ -303,6 +418,16 @@ public final class VersionDocument implements Serializable {
 		this.url = url;
 		this.author = author;
 		this.created = createdAt != null ? new RevisionBranchPoint(RevisionBranch.MAIN_BRANCH_ID, createdAt) : null;
+		
+		this.resourceDescription = resourceDescription;
+		this.title = title;
+		this.status = status;
+		this.contact = contact;
+		this.copyright = copyright;
+		this.language = language;
+		this.purpose = purpose;
+		this.oid = oid;
+		this.settings = settings;
 	}
 	
 	public String getId() {
@@ -361,6 +486,42 @@ public final class VersionDocument implements Serializable {
 		return author;
 	}
 	
+	public String getResourceDescription() {
+		return resourceDescription;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+	
+	public String getStatus() {
+		return status;
+	}
+	
+	public String getContact() {
+		return contact;
+	}
+	
+	public String getCopyright() {
+		return copyright;
+	}
+	
+	public String getLanguage() {
+		return language;
+	}
+	
+	public String getPurpose() {
+		return purpose;
+	}
+	
+	public String getOid() {
+		return oid;
+	}
+	
+	public Map<String, Object> getSettings() {
+		return settings;
+	}
+	
 	// additional helpers
 	
 	/**
@@ -396,18 +557,26 @@ public final class VersionDocument implements Serializable {
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
-				.add("id", id)
-				.add("version", version)
-				.add("description", description)
-				.add("effectiveTime", effectiveTime)
-				.add("resource", resource)
-				.add("branchPath", branchPath)
-				.add("toolingId", toolingId)
-				.add("createdAt", createdAt)
-				.add("updatedAt", updatedAt)
-				.add("url", url)
-				.add("author", author)
-				.toString();
+			.add("id", id)
+			.add("version", version)
+			.add("description", description)
+			.add("effectiveTime", effectiveTime)
+			.add("resource", resource)
+			.add("branchPath", branchPath)
+			.add("toolingId", toolingId)
+			.add("createdAt", createdAt)
+			.add("updatedAt", updatedAt)
+			.add("url", url)
+			.add("author", author)
+			.add("resourceDescription", resourceDescription)
+			.add("title", title)
+			.add("status", status)
+			.add("contact", contact)
+			.add("copyright", copyright)
+			.add("language", language)
+			.add("purpose", purpose)
+			.add("oid", oid)
+			.add("settings", settings)
+			.toString();
 	}
-
 }

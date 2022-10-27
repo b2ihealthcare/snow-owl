@@ -214,7 +214,6 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression upgradeOfs(Iterable<ResourceURI> upgradeOfs) {
 			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
-		
 	}
 
 	public static Builder builder() {
