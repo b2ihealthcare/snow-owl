@@ -16,7 +16,10 @@
 package com.b2international.snowowl.fhir.core.request;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -27,6 +30,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -44,8 +48,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * @since 8.0
@@ -187,41 +191,42 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 	}
 	
 	private void fillResourceOnlyProperties(RepositoryContext context, Hits<ResourceFragment> internalResources, List<String> fields) throws IOException {
-		final Set<String> versionResources = internalResources.stream()
-				.filter(fragment -> !CompareUtils.isEmpty(fragment.getVersion()))
-				.map(fragment -> fragment.getResourceURI().getResourceId())
-				.collect(Collectors.toSet());
-		Map<String, ResourceFragment> internalResourcesById = new HashMap<>(internalResources.getHits().size());
-		internalResources.forEach(fragment -> {
-			internalResourcesById.put(fragment.getId(), fragment);
-		});
-		
-		Set<String> missingCodeSystems = Sets.difference(versionResources, internalResourcesById.keySet());
-		if (!missingCodeSystems.isEmpty()) {
-			context.service(RevisionSearcher.class)
+		for (final ResourceFragment fragment : internalResources) {
+			if (CompareUtils.isEmpty(fragment.getVersion())) {
+				// This fragment was created from a resource document
+				continue;
+			}
+			
+			if (!CompareUtils.isEmpty(fragment.getStatus())) {
+				// This fragment was created from a version with snapshot (it has resource status on it)
+				continue;
+			}
+			
+			// Retrieve resource representation with the same "created" branch timestamp
+			final Hits<ResourceFragment> resourceFragments = context.service(RevisionSearcher.class)
 				.search(Query.select(ResourceFragment.class)
 				.from(ResourceDocument.class)
 				.fields(fields)
-				.where(ResourceDocument.Expressions.ids(missingCodeSystems))
-				.limit(missingCodeSystems.size())
-				.build())
-				.forEach(missingFragment -> {
-					internalResourcesById.put(missingFragment.getId(), missingFragment);
-				});
-		}
-		
-		for (ResourceFragment versionFragment : internalResourcesById.values()) {
-			if (!CompareUtils.isEmpty(versionFragment.getVersion())) {
-				ResourceFragment versionCodeSystem = internalResourcesById.get(versionFragment.getResourceURI().getResourceId());
-				versionFragment.setStatus(versionCodeSystem.getStatus());
-				versionFragment.setContact(versionCodeSystem.getContact());
-				versionFragment.setSettings(versionCodeSystem.getSettings());
-				versionFragment.setCopyright(versionCodeSystem.getCopyright());
-				versionFragment.setLanguage(versionCodeSystem.getLanguage());
-				versionFragment.setDescription(versionCodeSystem.getDescription());
-				versionFragment.setPurpose(versionCodeSystem.getPurpose());
-				versionFragment.setOid(versionCodeSystem.getOid());
+				.where(Expressions.bool()
+					.filter(ResourceDocument.Expressions.id(fragment.getId()))
+					.filter(ResourceDocument.Expressions.created(fragment.getCreated().getTimestamp()))
+					.build())
+				.limit(1)
+				.build());
+			
+			final ResourceFragment resourceSnapshot = Iterables.getFirst(resourceFragments, null);
+			if (resourceSnapshot != null) {
+				fragment.setTitle(resourceSnapshot.getTitle());
+				fragment.setStatus(resourceSnapshot.getStatus());
+				fragment.setContact(resourceSnapshot.getContact());
+				fragment.setCopyright(resourceSnapshot.getCopyright());
+				fragment.setLanguage(resourceSnapshot.getLanguage());
+				fragment.setPurpose(resourceSnapshot.getPurpose());
+				fragment.setOid(resourceSnapshot.getOid());
+				fragment.setSettings(resourceSnapshot.getSettings());
 			}
+			
+			// XXX: the version's description will be used instead of the resource description for versioned resources
 		}
 	}
 	
@@ -314,63 +319,45 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 	 * @since 8.0
 	 */
 	protected static class ResourceFragment {
-		
-		String resourceType;
-		
 		String id;
-		
-		String url;
-		
-		String title;
-		
+		String version;
+		String description;
+		String resourceType;
+		Long createdAt;
+		Long updatedAt;
 		String toolingId;
-		
+		String url;
 		String branchPath;
 		
-		String version;
-		
-		Long createdAt;
-		
-		Long updatedAt;
-		
-		// Resource only fields, for Versions they got their values from the corresponding Resource
-		
+		String title;
 		String status;
 		String contact;
 		String copyright;
 		String language;
-		String description;
 		String purpose;
 		String oid;
-		
 		Map<String, Object> settings;
+		
+		RevisionBranchPoint created;
+		
+		public final ResourceURI getResourceURI() {
+			return ResourceURI.of(resourceType, id);
+		}
 		
 		public String getId() {
 			return id;
 		}
 		
-		public String getResourceType() {
-			return resourceType;
-		}
-		
-		public String getUrl() {
-			return url;
-		}
-		
-		public String getTitle() {
-			return title;
-		}
-		
-		public String getToolingId() {
-			return toolingId;
-		}
-		
-		public String getBranchPath() {
-			return branchPath;
-		}
-		
 		public String getVersion() {
 			return version;
+		}
+		
+		public String getDescription() {
+			return description;
+		}
+		
+		public String getResourceType() {
+			return resourceType;
 		}
 		
 		public Long getCreatedAt() {
@@ -381,8 +368,20 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			return updatedAt;
 		}
 		
-		public ResourceURI getResourceURI() {
-			return ResourceURI.of(resourceType, id);
+		public String getToolingId() {
+			return toolingId;
+		}
+		
+		public String getUrl() {
+			return url;
+		}
+		
+		public String getBranchPath() {
+			return branchPath;
+		}
+		
+		public String getTitle() {
+			return title;
 		}
 		
 		public String getStatus() {
@@ -401,10 +400,6 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			return language;
 		}
 		
-		public String getDescription() {
-			return description;
-		}
-		
 		public String getPurpose() {
 			return purpose;
 		}
@@ -413,32 +408,28 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			return oid;
 		}
 		
-		public void setResourceType(String resourceType) {
-			this.resourceType = resourceType;
+		public Map<String, Object> getSettings() {
+			return settings;
+		}
+		
+		public RevisionBranchPoint getCreated() {
+			return created;
 		}
 		
 		public void setId(String id) {
 			this.id = id;
 		}
 		
-		public void setUrl(String url) {
-			this.url = url;
-		}
-		
-		public void setTitle(String title) {
-			this.title = title;
-		}
-		
-		public void setToolingId(String toolingId) {
-			this.toolingId = toolingId;
-		}
-		
-		public void setBranchPath(String branchPath) {
-			this.branchPath = branchPath;
-		}
-		
 		public void setVersion(String version) {
 			this.version = version;
+		}
+		
+		public void setDescription(String description) {
+			this.description = description;
+		}
+		
+		public void setResourceType(String resourceType) {
+			this.resourceType = resourceType;
 		}
 		
 		public void setCreatedAt(Long createdAt) {
@@ -447,6 +438,22 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		public void setUpdatedAt(Long updatedAt) {
 			this.updatedAt = updatedAt;
+		}
+		
+		public void setToolingId(String toolingId) {
+			this.toolingId = toolingId;
+		}
+		
+		public void setUrl(String url) {
+			this.url = url;
+		}
+		
+		public void setBranchPath(String branchPath) {
+			this.branchPath = branchPath;
+		}
+		
+		public void setTitle(String title) {
+			this.title = title;
 		}
 		
 		public void setStatus(String status) {
@@ -465,10 +472,6 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			this.language = language;
 		}
 		
-		public void setDescription(String description) {
-			this.description = description;
-		}
-		
 		public void setPurpose(String purpose) {
 			this.purpose = purpose;
 		}
@@ -476,13 +479,13 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		public void setOid(String oid) {
 			this.oid = oid;
 		}
-	
-		public Map<String, Object> getSettings() {
-			return settings;
-		}
 		
 		public void setSettings(Map<String, Object> settings) {
 			this.settings = settings;
+		}
+		
+		public void setCreated(RevisionBranchPoint created) {
+			this.created = created;
 		}
 	}
 }

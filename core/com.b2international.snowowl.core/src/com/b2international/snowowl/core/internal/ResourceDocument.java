@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.prefixMatch;
-import static com.b2international.index.query.Expressions.regexp;
+import static com.b2international.index.query.Expressions.*;
 
 import java.util.List;
 import java.util.Map;
@@ -215,6 +212,9 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
 		
+		public static Expression created(Long createdTimestamp) {
+			return exactMatch(Fields.CREATED, RevisionBranchPoint.toIpv6(0, createdTimestamp));
+		}
 	}
 
 	public static Builder builder() {
