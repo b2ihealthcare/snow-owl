@@ -145,7 +145,7 @@ public final class ResourceRepository implements RevisionIndex {
 					.filterByResources(resources)
 					.stream(context)
 					.flatMap(Versions::stream)
-					.forEach(version -> {
+					.forEachOrdered(version -> {
 						staging.stageRemove(version.getId(), VersionDocument.builder()
 								.id(version.getId())
 								.build());
