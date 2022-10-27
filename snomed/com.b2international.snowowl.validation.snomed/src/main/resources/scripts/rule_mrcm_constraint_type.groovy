@@ -29,6 +29,10 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 Set<ComponentIdentifier> potentialIssues = Sets.newHashSet();
 
+//No OWL axiom relationship produced by axioms containing the below phrases, nothing to validate in such cases
+Set<String> unsupportedAxiomMarkers = [ "TransitiveObjectProperty", "ReflexiveObjectProperty",
+ "SubDataPropertyOf", "SubObjectPropertyOf", "ObjectPropertyChain"];
+
 List<String> moduleIds = SnomedRequests.prepareSearchConcept()
 	.filterByEcl(params.modules)
 	.filterByActive(true)
@@ -328,12 +332,9 @@ def searchRelationshipsInUnregulatedDomains =  {
 		hits.each { hit ->
 			def id = hit[0];
 			def owlExpression = hit[1];
-			if (!owlExpression.contains("TransitiveObjectProperty") &&
-				!owlExpression.contains("ReflexiveObjectProperty") &&
-				!owlExpression.contains("SubDataPropertyOf") &&
-				!owlExpression.contains("SubObjectPropertyOf") &&
-				!owlExpression.contains("ObjectPropertyChain")) {
-				//Skip axiom member with no generated axiom relationships
+			def hasAxiomRelationships = !unsupportedAxiomMarkers.stream().filter({ marker -> owlExpression.contains(marker)}).findAny();
+			
+			if (hasAxiomRelationships) {
 				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
 			}
 		}
