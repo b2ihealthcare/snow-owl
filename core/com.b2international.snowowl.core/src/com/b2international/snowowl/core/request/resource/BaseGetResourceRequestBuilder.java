@@ -27,7 +27,8 @@ public abstract class BaseGetResourceRequestBuilder<
 	B extends GetResourceRequestBuilder<B, SB, RepositoryContext, SR, R>, 
 	SB extends SearchResourceRequestBuilder<SB, RepositoryContext, SR>, 
 	SR, 
-	R> extends GetResourceRequestBuilder<B, SB, RepositoryContext, SR, R> implements ResourceRepositoryRequestBuilder<R> {
+	R> 
+	extends GetResourceRequestBuilder<B, SB, RepositoryContext, SR, R> implements ResourceRepositoryRequestBuilder<R> {
 
 	public BaseGetResourceRequestBuilder(BaseGetResourceRequest<SB, SR, R> request) {
 		super(request);
