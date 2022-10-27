@@ -6,6 +6,7 @@ import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
 import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
+import com.b2international.snomed.ecl.Ecl
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
@@ -279,12 +280,10 @@ def searchRelationshipsWithUnregulatedTypeIds =  {
 }
 
 def searchRelationshipsInUnregulatedDomains =  {
-	String regulatedDomainSpace = Joiner.on(" OR ")
-		.join(FluentIterable.from(domainMembers.values())
-			.transform({ m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT)})
-			.transform({ c -> "(${c})"}));
-				
-	Set<String> unregulatedDomainSpace = getApplicableConcepts("* MINUS (${regulatedDomainSpace})");
+	String regulatedDomainSpace = Ecl.or(FluentIterable.from(domainMembers.values())
+			.transform({ m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT)}).toList());
+	
+	Set<String> unregulatedDomainSpace = getApplicableConcepts(Ecl.exclude("*", regulatedDomainSpace));
 	
 	//Find non-IsA relationships in domains where no MRCM rule is defined
 	ExpressionBuilder relationshipQueryBuilder = Expressions.builder()
