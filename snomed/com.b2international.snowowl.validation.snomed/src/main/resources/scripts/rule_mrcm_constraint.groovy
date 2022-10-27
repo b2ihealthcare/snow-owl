@@ -29,6 +29,8 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 
 final String allPrecoordinatedContent = "723594008";
+final String integerTypeRangePrefix = "int";
+final String decimalTypeRangePrefix = "dec";
 
 Map<String, String> allowedRanges = Maps.newHashMap();
 
@@ -68,7 +70,7 @@ searcher.search(mrcmRangeMemberQuery).each { hit ->
 	String typeId = hit[1];
 	String rangeConstraint = hit[2];
 	
-	if (rangeConstraint.startsWith("int") || rangeConstraint.startsWith("dec")) {
+	if (rangeConstraint.startsWith(integerTypeRangePrefix) || rangeConstraint.startsWith(decimalTypeRangePrefix)) {
 		//Do nothing, skip concrete value type range validation for now
 	} else {
 		if (allowedRanges.containsKey(typeId)) {
