@@ -130,13 +130,13 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "404", description = "Not found")
 	})
-	@GetMapping(value = "/{bundleId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping(value = "/{bundleId}/{versionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundle> getVersioned(
 		@Parameter(description="The bundle identifier")
 		@PathVariable(value="bundleId", required = true) 
 		final String bundleId,
 		
-		@Parameter(description="The code system version")
+		@Parameter(description="The bundle version")
 		@PathVariable(value="versionId", required = true) 
 		final String versionId,
 

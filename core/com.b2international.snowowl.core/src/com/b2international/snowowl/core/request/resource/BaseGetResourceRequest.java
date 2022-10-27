@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -52,7 +51,7 @@ public abstract class BaseGetResourceRequest<SB extends SearchResourceRequestBui
 		} else if (!resourceUri.isHead() && !resourceUri.isNext()) {
 			VersionSearchRequestBuilder versionSearch = ResourceRequests.prepareSearchVersion()
 				.one()
-				.filterByResource(resourceUri.withoutPath());
+				.filterByResource(resourceUri.withoutPath().withoutResourceType());
 			
 			if (resourceUri.isLatest()) {
 				// fetch the latest resource version if LATEST is specified in the URI
@@ -67,14 +66,9 @@ public abstract class BaseGetResourceRequest<SB extends SearchResourceRequestBui
 				.execute(context)
 				.first()
 				.map(Version::getCreatedAt)
-				.orElseGet(() -> {
-					// ignore if accessing the LATEST versioned state, but there is no version present
-					if (resourceUri.isLatest()) {
-						return null;
-					} else {
-						throw new BadRequestException("Only version paths and timestamp fragments are supported when accessing a resource via an URI. Got: %s", resourceUri.getPath());
-					}
-				});
+				// for now fall back to fetching the HEAD version of the resource, this is okay for most of the cases, but should fail when accessing versioned content
+				// TODO this requires configuration of the error handling part
+				.orElse(null);
 		}
 		return null;
 	}
