@@ -369,15 +369,17 @@ public final class VersionDocument implements Serializable {
 	private String resourceType;
 
 	// a snapshot of the corresponding resource document fields at the point of versioning (not indexed)
-	@Field(index = false) private final String resourceDescription;
-	@Field(index = false) private final String title;
-	@Field(index = false) private final String status;
-	@Field(index = false) private final String contact;
-	@Field(index = false) private final String copyright;
-	@Field(index = false) private final String language;
-	@Field(index = false) private final String purpose;
-	@Field(index = false) private final String oid;
-	@Field(index = false) private final Map<String, Object> settings;
+	private final String resourceDescription;
+	private final String title;
+	private final String status;
+	private final String contact;
+	private final String copyright;
+	private final String language;
+	private final String purpose;
+	private final String oid;
+	
+	@Field(index = false) 
+	private final Map<String, Object> settings;
 
 	private VersionDocument(
 		final String id, 
