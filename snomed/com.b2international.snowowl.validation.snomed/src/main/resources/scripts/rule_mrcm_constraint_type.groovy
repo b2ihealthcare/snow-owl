@@ -269,12 +269,9 @@ def searchRelationshipsWithUnregulatedTypeIds =  {
 		hits.each { hit ->
 			def id = hit[0];
 			def owlExpression = hit[1];
-			if (!owlExpression.contains("TransitiveObjectProperty") &&
-				!owlExpression.contains("ReflexiveObjectProperty") &&
-				!owlExpression.contains("SubDataPropertyOf") &&
-				!owlExpression.contains("SubObjectPropertyOf") &&
-				!owlExpression.contains("ObjectPropertyChain")) {
-				//Skip axiom member with no generated axiom relationships
+			def hasAxiomRelationships = !unsupportedAxiomMarkers.stream().filter({ marker -> owlExpression.contains(marker)}).findAny();
+			
+			if (hasAxiomRelationships) {
 				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
 			}
 		}
