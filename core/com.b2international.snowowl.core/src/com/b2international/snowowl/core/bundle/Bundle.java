@@ -16,7 +16,9 @@
 package com.b2international.snowowl.core.bundle;
 
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -88,6 +90,14 @@ public final class Bundle extends Resource {
 				.bundleAncestorIds(getBundleAncestorIds())
 				.bundleId(getBundleId())
 				.settings(getSettings());
+	}
+
+	public static ResourceURI uri(String bundleUri) {
+		return bundleUri.startsWith(RESOURCE_TYPE + Branch.SEPARATOR) ? new ResourceURI(bundleUri) : ResourceURI.of(RESOURCE_TYPE, bundleUri);
+	}
+	
+	public static ResourceURI uri(String bundleUri, String versionId) {
+		return uri(bundleUri).withPath(versionId);
 	}
 	
 	public static Bundle from(ResourceDocument doc) {

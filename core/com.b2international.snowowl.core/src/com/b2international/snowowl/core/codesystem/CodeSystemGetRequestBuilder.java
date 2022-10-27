@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,17 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.request.resource.BaseGetResourceRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemGetRequestBuilder 
-		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems, CodeSystem>
-		implements ResourceRepositoryRequestBuilder<CodeSystem> {
+		extends BaseGetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, CodeSystems, CodeSystem> {
 
-	CodeSystemGetRequestBuilder(String uniqueId) {
-		super(new CodeSystemGetRequest(uniqueId));
+	CodeSystemGetRequestBuilder(ResourceURI resourceUri) {
+		super(new CodeSystemGetRequest(resourceUri));
 	}
 	
 }

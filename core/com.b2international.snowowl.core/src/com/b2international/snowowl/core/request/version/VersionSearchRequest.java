@@ -89,12 +89,12 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder query = Expressions.builder();
+		final ExpressionBuilder query = Expressions.bool();
 
 		addIdFilter(query, VersionDocument.Expressions::ids);
 		addFilter(query, OptionKey.RESOURCE_TYPE, String.class, VersionDocument.Expressions::resourceTypes);
 		// TODO add a security filter to return commits from resources that can be accessed by the current user
-		addFilter(query, OptionKey.RESOURCE, String.class, resources -> Expressions.builder()
+		addFilter(query, OptionKey.RESOURCE, String.class, resources -> Expressions.bool()
 				.should(VersionDocument.Expressions.resources(resources))
 				.should(VersionDocument.Expressions.resourceIds(resources))
 				.build());

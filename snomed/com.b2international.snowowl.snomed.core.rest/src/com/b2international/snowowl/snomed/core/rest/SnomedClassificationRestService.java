@@ -177,8 +177,8 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 			
-			@Parameter(description ="Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@Parameter(description ="Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 			final String acceptLanguage) {
 
 		return ClassificationRequests.prepareSearchEquivalentConceptSet()
@@ -247,8 +247,8 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //			@PathVariable(value="conceptId")
 //			final String conceptId,
 //
-//			@Parameter(value ="Language codes and reference sets, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-//			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
+//			@Parameter(value ="Language codes and reference sets, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+//			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false)
 //			final String languageSetting) {
 //
 //		final List<ExtendedLocale> extendedLocales = getExtendedLocales(languageSetting);

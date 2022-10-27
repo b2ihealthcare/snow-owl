@@ -40,8 +40,12 @@ public class CodeSystemRequests {
 		return new CodeSystemUpdateRequestBuilder(codeSystemId);
 	}
 
-	public static CodeSystemGetRequestBuilder prepareGetCodeSystem(final String codeSystemId) {
-		return new CodeSystemGetRequestBuilder(codeSystemId);
+	public static CodeSystemGetRequestBuilder prepareGetCodeSystem(final String codeSystemUri) {
+		return new CodeSystemGetRequestBuilder(CodeSystem.uri(codeSystemUri));
+	}
+	
+	public static CodeSystemGetRequestBuilder prepareGetCodeSystem(final ResourceURI codeSystemUri) {
+		return new CodeSystemGetRequestBuilder(codeSystemUri);
 	}
 
 	public static CodeSystemSearchRequestBuilder prepareSearchCodeSystem() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,19 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.request.resource.BaseGetResourceRequest;
 
 /**
  * @since 8.0
  */
 final class BundleGetRequest
-		extends GetResourceRequest<BundleSearchRequestBuilder, RepositoryContext, Bundles, Bundle> {
+		extends BaseGetResourceRequest<BundleSearchRequestBuilder, Bundles, Bundle> {
 
 	private static final long serialVersionUID = 1L;
 
-	BundleGetRequest(String id) {
-		super(id);
+	BundleGetRequest(ResourceURI resourceUri) {
+		super(resourceUri);
 	}
 
 	@Override

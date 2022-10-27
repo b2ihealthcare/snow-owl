@@ -25,7 +25,8 @@ public abstract class GetResourceRequestBuilder<
 	SB extends SearchResourceRequestBuilder<SB, C, SR>,
 	C extends ServiceProvider, 
 	SR,
-	R> extends IndexResourceRequestBuilder<B, C, R> {
+	R> 
+	extends IndexResourceRequestBuilder<B, C, R> {
 	
 	private final GetResourceRequest<SB, C, SR, R> request;
 

@@ -534,7 +534,22 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			.extract()
 			.as(CodeSystem.class);
 		
-		assertEquals("Updated copyright", codeSystem3.getCopyright());		
+		assertEquals("Updated copyright", codeSystem3.getCopyright());
+		
+		// check versioned resource access
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", "2020-04-15")).statusCode(201);
+		
+		// update copyright after versioning to have a different latest revision
+		assertCodeSystemUpdated(codeSystemId, Json.object("copyright", "Updated copyright after versioning"));
+
+		// get the versioned state
+		final CodeSystem v1CodeSystemState = assertCodeSystemGet(codeSystemId + "/v1")
+				.statusCode(200)
+				.extract()
+				.as(CodeSystem.class);
+		
+		// verify that the copyright is the old version
+		assertEquals("Updated copyright", v1CodeSystemState.getCopyright());
 	}
 	
 	@Test
