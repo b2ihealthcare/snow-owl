@@ -30,9 +30,9 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -253,7 +253,7 @@ public final class VersionDocument implements Serializable {
 		}
 		
 		@JsonIgnore
-		public Builder resourceSnapshot(ResourceDocument resource) {
+		public Builder resource(TerminologyResource resource) {
 			if (resource != null) {
 				return this
 					.title(resource.getTitle())
