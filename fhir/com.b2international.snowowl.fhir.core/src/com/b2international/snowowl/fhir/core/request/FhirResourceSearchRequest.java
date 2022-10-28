@@ -140,6 +140,9 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			if (!fieldsToLoad.contains(ResourceDocument.Fields.TOOLING_ID)) {
 				fieldsToLoad.add(ResourceDocument.Fields.TOOLING_ID);
 			}
+			if (!fieldsToLoad.contains(ResourceDocument.Fields.CREATED_AT)) {
+				fieldsToLoad.add(ResourceDocument.Fields.CREATED_AT);
+			}
 			if (!fieldsToLoad.contains(ResourceDocument.Fields.UPDATED_AT)) {
 				fieldsToLoad.add(ResourceDocument.Fields.UPDATED_AT);
 			}
@@ -211,7 +214,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				.fields(fields)
 				.where(Expressions.bool()
 					.filter(ResourceDocument.Expressions.id(fragment.getResourceURI().getResourceId()))
-					.filter(ResourceDocument.Expressions.validAsOf(fragment.getCreated().getTimestamp()))
+					.filter(ResourceDocument.Expressions.validAsOf(fragment.getCreatedAt()))
 					.build())
 				.limit(1)
 				.build());
