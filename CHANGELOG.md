@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.7.0
+
+### Core
+- Support versioned resource access via dedicated GET endpoints (#1073)
+  * `GET /bundles/:id/:version`
+  * `GET /codesystems/:id/:version`
+  * Content requests will now fetch and use the correct point-in-time version of the corresponding resource (HEAD, timestamped or versioned)
+
+### Bugs/Improvements
+- [index] support disabling indexing on Map/Object type fields (#1071)
+- [fhir] improve computation of `CodeSystem.content` property (#1069)
+- [fhir] versioned FHIR resources should get their proper versioned state
+- [snomed] skip empty lines when importing an RF2 archive (#1065)
+- [snomed] improve validation error message when an RF2 column has an unexpected SNOMED CT component ID (#1066)
+
 ## 8.6.1
 
 ### Bugs/Improvements
