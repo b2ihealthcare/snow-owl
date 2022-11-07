@@ -8,8 +8,6 @@ If you’d like to see Snow Owl in action, the [Snowray Terminology Service™](
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/8.x/LICENSE)
-[![grade: Java](https://img.shields.io/lgtm/grade/java/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/context:java)
-[![alerts](https://img.shields.io/lgtm/alerts/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/alerts/)
 [![codecov](https://codecov.io/gh/b2ihealthcare/snow-owl/branch/8.x/graph/badge.svg?style=flat-square)](https://codecov.io/gh/b2ihealthcare/snow-owl)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fb2ihealthcare%2Fsnow-owl.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fb2ihealthcare%2Fsnow-owl?ref=badge_shield)
 
