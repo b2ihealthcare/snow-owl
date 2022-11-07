@@ -272,6 +272,41 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		assertHierarchyContains("ancestor", "parent", roleToId, Set.of("child1", "descendant1"));
 	}
 	
+	@Test
+	public void searchByEffectiveTimeRange() throws Exception {
+		List<String> matchedEffectiveTimes = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("effectiveTime", "20050131...20050731"))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.extract()
+			.path("items.effectiveTime");
+		
+		assertThat(matchedEffectiveTimes).containsOnly("20050131", "20050731");
+	}
+	
+	@Test
+	public void searchByEffectiveTimeRangeNoStartDate() throws Exception {
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("effectiveTime", "...20050731"))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(400);
+	}
+	
+	@Test
+	public void searchByEffectiveTimeRangeNoEndDate() throws Exception {
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("effectiveTime", "20050131..."))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(400);
+	}
+	
 	/**
 	 * Single nested module expand of definitionStatus results in status 500
 	 */
