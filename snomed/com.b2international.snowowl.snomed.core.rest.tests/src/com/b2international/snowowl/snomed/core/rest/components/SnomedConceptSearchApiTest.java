@@ -273,6 +273,21 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void searchByEffectiveTime() throws Exception {
+		List<String> matchedEffectiveTimes = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("effectiveTime", "20050131"))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.assertThat()
+			.extract()
+			.path("items.effectiveTime");
+		
+		assertThat(matchedEffectiveTimes).containsOnly("20050131");
+	}
+	
+	@Test
 	public void searchByEffectiveTimeRange() throws Exception {
 		List<String> matchedEffectiveTimes = givenAuthenticatedRequest(getApiBaseUrl())
 			.accept(JSON_UTF8)
