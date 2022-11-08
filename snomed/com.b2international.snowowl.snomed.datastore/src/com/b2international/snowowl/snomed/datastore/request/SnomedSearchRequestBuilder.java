@@ -16,14 +16,17 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Date;
+import java.util.List;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
+import com.google.common.base.Splitter;
 
 /**
  * Abstract class for SNOMED CT search request builders. It collects functionality common to SNOMED CT components.
@@ -33,6 +36,9 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.
 public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R extends PageableCollectionResource<?>> 
 		extends AbstractComponentSearchRequestBuilder<B, BranchContext, R>
 		implements SnomedContentRequestBuilder<R> {
+
+	private static final String EFFECTIVE_TIME_RANGE_SEPARATOR = "...";
+	private static final Splitter EFFECTIVE_TIME_RANGE_SPLITTER = Splitter.on(EFFECTIVE_TIME_RANGE_SEPARATOR);
 
 	/**
 	 * Filter to return components with the specified module id. 
@@ -77,9 +83,9 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	}
 
 	/**
-	 * Filter to return components with the specified effective time represented as a string in {@value DateFormats#SHORT} format
+	 * Filter to return components with the specified effective time represented as a string in {@value DateFormats#SHORT} format represented either as single value for exact match or range value (with ... separator) as range value match. 
 	 * 
-	 * @param effectiveTime - the effective time filter.
+	 * @param effectiveTime - the effective time filter value
 	 * @return this builder
 	 * @see DateFormats#SHORT
 	 * @see EffectiveTimes
@@ -90,12 +96,22 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 		} else {
 			if (EffectiveTimes.isUnset(effectiveTime)) {
 				return filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			} else if (isEffectiveTimeRange(effectiveTime)) {
+				final List<String> rangeValues = EFFECTIVE_TIME_RANGE_SPLITTER.splitToList(effectiveTime);
+				if (rangeValues.size() != 2) {
+					throw new BadRequestException("effectiveTime range filter requires a start and end argument in the form of <yyyyMMdd>...<yyyyMMdd>. Got: %s", effectiveTime);
+				}
+				return filterByEffectiveTime(EffectiveTimes.getEffectiveTime(rangeValues.get(0), DateFormats.SHORT), EffectiveTimes.getEffectiveTime(rangeValues.get(1), DateFormats.SHORT));
 			} else {
 				return filterByEffectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime, DateFormats.SHORT));
 			}
 		}
 	}
 	
+	private boolean isEffectiveTimeRange(String effectiveTime) {
+		return effectiveTime.contains(EFFECTIVE_TIME_RANGE_SEPARATOR);
+	}
+
 	/**
 	 * Filter to return components with the specified effective time represented as a long (ms since epoch) format.
 	 * 

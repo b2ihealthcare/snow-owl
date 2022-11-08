@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import io.swagger.v3.oas.annotations.Parameter;
  */
 public class SnomedRestSearch extends ObjectRestSearch {
 
-	@Parameter(description = "The effective time value to match (yyyyMMdd or Unpublished)")
+	@Parameter(description = "The effective time value to match (yyyyMMdd or Unpublished) or an effective time range value to match (yyyyMMdd...yyyyMMdd), inclusive range")
 	private String effectiveTime;
-
+	
 	@Parameter(description = "The component status to match")
 	private Boolean active = null;
 	
