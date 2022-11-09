@@ -98,6 +98,8 @@ public class ExpandValueSetRequest {
 	// FHIR API Extension to allow cursor pased paging instead of offset+count
 	private final String after;
 	
+	private final Boolean withHistorySupplements;
+	
 	ExpandValueSetRequest(
 		Uri url,
 		ValueSet valueSet,
@@ -120,7 +122,8 @@ public class ExpandValueSetRequest {
 		Uri systemVersion,
 		Uri checkSystemVersion,
 		Uri forceSystemVersion,
-		String after) {
+		String after,
+		Boolean withHistorySupplements) {
 		
 		this.url = url;
 		this.valueSet = valueSet;
@@ -144,6 +147,7 @@ public class ExpandValueSetRequest {
 		this.checkSystemVersion = checkSystemVersion;
 		this.forceSystemVersion = forceSystemVersion;
 		this.after = after;
+		this.withHistorySupplements = withHistorySupplements;
 	}
 	
 	public Uri getUrl() {
@@ -237,6 +241,10 @@ public class ExpandValueSetRequest {
 	public String getAfter() {
 		return after;
 	}
+	
+	public Boolean getWithHistorySupplements() {
+		return withHistorySupplements;
+	}
 
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends ValidatingBuilder<ExpandValueSetRequest> {
@@ -263,6 +271,7 @@ public class ExpandValueSetRequest {
 		private Uri checkSystemVersion;
 		private Uri forceSystemVersion;
 		private String after;
+		private Boolean withHistorySupplements;
 		
 		Builder() {}
 		
@@ -401,11 +410,18 @@ public class ExpandValueSetRequest {
 			return this;
 		}
 		
+		public Builder withHistorySupplements(Boolean withHistorySupplements) {
+			this.withHistorySupplements = withHistorySupplements;
+			return this;
+		}
+		
 		@Override
 		protected ExpandValueSetRequest doBuild() {
-			return new ExpandValueSetRequest(url, valueSet, valueSetVersion, context, contextDirection, filter, date, offset, count, includeDesignations, designations.build(),
-					includeDefinition, activeOnly, excludeNested, excludeNotForUI, excludePostCoordinated, displayLanguage, excludeSystem, systemVersion, checkSystemVersion, forceSystemVersion,
-					after);
+			return new ExpandValueSetRequest(
+				url, valueSet, valueSetVersion, context, contextDirection, filter, date, offset, count, includeDesignations, designations.build(),
+				includeDefinition, activeOnly, excludeNested, excludeNotForUI, excludePostCoordinated, displayLanguage, excludeSystem, systemVersion, checkSystemVersion, forceSystemVersion,
+				after, withHistorySupplements
+			);
 		}
 
 	}
