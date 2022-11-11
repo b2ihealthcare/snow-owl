@@ -114,9 +114,9 @@ public final class RemoteJob extends Job {
 					.developerMessage("Exception caught while executing request in remote job.")
 					.addInfo("exception-class", e.getClass().getSimpleName())
 					.build();
-				LOG.error("Error encountered while executing remote job", e);
 			}
 			
+			LOG.error("Error encountered while executing remote job", e);
 			this.response = toJson(mapper, apiError);
 			// XXX: Don't delete remote jobs with errors
 			autoClean = false;
