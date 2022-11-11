@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
@@ -46,6 +48,8 @@ import com.google.common.primitives.Primitives;
 public final class RemoteJob extends Job {
 
 	public static final QualifiedName REQUEST_STATUS = new QualifiedName(null, "requestStatus");
+	private static final Logger LOG = LoggerFactory.getLogger(RemoteJob.class);
+	
 	private final String id;
 	private final String key;
 	private final String description;
@@ -110,6 +114,7 @@ public final class RemoteJob extends Job {
 					.developerMessage("Exception caught while executing request in remote job.")
 					.addInfo("exception-class", e.getClass().getSimpleName())
 					.build();
+				LOG.error("Error encountered while executing remote job", e);
 			}
 			
 			this.response = toJson(mapper, apiError);
