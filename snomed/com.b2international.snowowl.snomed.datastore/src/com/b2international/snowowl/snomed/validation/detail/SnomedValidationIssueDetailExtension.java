@@ -253,7 +253,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		if (!affectedComponentLabelsByConcept.isEmpty()) {
 			issuesByConceptMap.keySet().forEach(conceptId -> {
 				issuesByConceptMap.get(conceptId).forEach(issue -> {
-					issue.setAffectedComponentLabels(ImmutableList.of(affectedComponentLabelsByConcept.get(conceptId)));
+					issue.setAffectedComponentLabels(ImmutableList.of(affectedComponentLabelsByConcept.getOrDefault(conceptId, conceptId)));
 				});
 				
 			});
