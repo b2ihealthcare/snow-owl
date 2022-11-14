@@ -24,6 +24,7 @@ import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -41,8 +42,11 @@ import com.google.common.collect.*;
  */
 public final class CodeSystemConverter extends BaseResourceConverter<ResourceDocument, CodeSystem, CodeSystems> {
 
+	private final ResourceTypeConverter.Registry converters;
+	
 	public CodeSystemConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+		this.converters = context().service(ResourceTypeConverter.Registry.class);
 	}
 	
 	@Override
@@ -69,6 +73,9 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		expandAvailableUpgrades(results);
 		expandExtensionOfBranchState(results);
 		expandUpgradeOfInfo(results);
+		
+		// expand additional fields via pluggable converters
+		converters.expand(context(), expand(), locales(), results);
 	}
 
 	private void expandExtensionOfBranchState(List<CodeSystem> results) {

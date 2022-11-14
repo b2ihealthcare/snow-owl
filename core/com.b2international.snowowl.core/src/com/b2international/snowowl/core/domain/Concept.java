@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public final class Concept extends BaseComponent {
 	private final ResourceURI codeSystemUri;
 	private final String componentType;
 	
+	private Boolean active;
 	private String term;
 	private String iconId;
 	private SortedSet<String> alternativeTerms;
@@ -50,6 +51,10 @@ public final class Concept extends BaseComponent {
 		this.componentType = componentType;
 	}
 	
+	public Boolean isActive() {
+		return active;
+	}
+	
 	public ResourceURI getCodeSystemUri() {
 		return codeSystemUri;
 	}
@@ -60,6 +65,10 @@ public final class Concept extends BaseComponent {
 	
 	public String getIconId() {
 		return iconId;
+	}
+	
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 	
 	public void setTerm(String term) {
@@ -148,7 +157,7 @@ public final class Concept extends BaseComponent {
 		if (Strings.isNullOrEmpty(term)) {
 			return id;
 		} else {
-			return String.format("%s |%s|", id, term);
+			return String.format("%s|%s|", id, term);
 		}
 	}
 	

@@ -1468,7 +1468,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		final Map<String, Object> config = Map.of("type", Rf2ReleaseType.DELTA.name());
 		export(codeSystemId + "@1234567", config).then()
-			.statusCode(400);
+			.statusCode(404);
 	}
 	
 	@Test

@@ -37,7 +37,8 @@ public abstract class Resource implements Serializable {
 	// known retired status value from FHIR, TODO make it configurable when needed
 	public static final String RETIRED_STATUS = "retired";
 	public static final String DRAFT_STATUS = "draft";
-
+	public static final String SNOMED_FIRST = "snomedFirst";
+	
 	/**
 	 * @since 8.0
 	 */
@@ -67,7 +68,8 @@ public abstract class Resource implements Serializable {
 			CREATED_AT,
 			UPDATED_AT,
 			RESOURCE_TYPE,
-			TYPE_RANK
+			TYPE_RANK,
+			SNOMED_FIRST
 		);
 	}
 	

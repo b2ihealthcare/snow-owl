@@ -54,6 +54,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			concept.setAlternativeTerms(alternativeTerms);
 		}
 		
+		concept.setActive(snomedConcept.isActive());
 		concept.setParentIds(snomedConcept.getParentIdsAsString());
 		concept.setAncestorIds(snomedConcept.getAncestorIdsAsString());
 		if (requestedExpand) {

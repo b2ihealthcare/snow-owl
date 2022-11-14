@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.bundle.BundleRequests;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
+import com.b2international.snowowl.core.request.resource.ResourceGetRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionGetRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
@@ -35,16 +36,17 @@ public final class ResourceRequests {
 		return new BundleRequests();
 	}
 	
-	public static ResourceGetRequestBuilder prepareGet(ResourceURI resourceUri) {
-		return prepareGet(resourceUri.getResourceId());
-	}
-	
 	public static ResourceUpdateRequestBuilder prepareUpdate(final String resourceId) {
 		return new ResourceUpdateRequestBuilder(resourceId);
 	}
 	
 	public static ResourceGetRequestBuilder prepareGet(String resourceId) {
-		return new ResourceGetRequestBuilder(resourceId);
+		// XXX the resourceType part of the URI won't and should not be used in the request itself, it is okay to use any here
+		return prepareGet(ResourceURI.of("any", resourceId));
+	}
+	
+	public static ResourceGetRequestBuilder prepareGet(ResourceURI resourceUri) {
+		return new ResourceGetRequestBuilder(resourceUri);
 	}
 	
 	public static ResourceSearchRequestBuilder prepareSearch() {

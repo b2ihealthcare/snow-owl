@@ -159,6 +159,8 @@ public interface ConceptSearchRequestEvaluator {
 		result.setIconId(iconId);
 		result.setTerm(term);
 		result.setScore(score);
+		// treat all concepts active by default, so terminology plugin that does not support statuses can be simplified
+		result.setActive(true);
 		result.setInternalConcept(concept);
 		mapRemainingFields(result, concept);
 		return result;

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -23,6 +24,9 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.SortBy.Builder;
+import com.b2international.index.query.SortBy.Order;
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -30,7 +34,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.search.TermFilter;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
@@ -243,4 +246,17 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	protected final Class<ResourceDocument> getSelect() {
 		return ResourceDocument.class;
 	}
+	
+	@Override
+	protected void toQuerySortBy(RepositoryContext context, Builder sortBuilder, Sort sort) {
+		if (sort instanceof SortField) {
+			SortField sortField = (SortField) sort;
+			if (Resource.SNOMED_FIRST.equals(sortField.getField())) {
+				sortBuilder.sortByScript("snomedFirst", Map.of(), sort.isAscending() ? Order.ASC : Order.DESC);
+				return;
+			}
+		}
+		super.toQuerySortBy(context, sortBuilder, sort);
+	}
+	
 }

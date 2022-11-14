@@ -51,7 +51,7 @@ public final class CodeSystemResourceTypeConverter implements ResourceTypeConver
 	}
 	
 	@Override
-	public void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<Resource> results) {
+	public <T extends Resource> void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<T> results) {
 		if (expand.containsKey("content")) {
 			final Options expandOptions = expand.getOptions("content");
 			// allow expanding content via content expansion, for now hit count only

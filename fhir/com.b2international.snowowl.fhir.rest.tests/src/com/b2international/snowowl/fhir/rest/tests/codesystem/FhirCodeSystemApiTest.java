@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			// only text, id, meta and mandatory
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
 			.body("entry[0].resource.status", equalTo("draft"))
-			.body("entry[0].resource.content", equalTo("complete"))
+			.body("entry[0].resource.content", equalTo("not-present"))
 			.body("entry[0].resource.meta", notNullValue())
 			.body("entry[0].resource.text", notNullValue())
 			.body("entry[0].resource.count", nullValue())
@@ -197,7 +197,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			// only id, meta and mandatory
 			.body("entry[0].resource.id", notNullValue())
 			.body("entry[0].resource.status", equalTo("draft"))
-			.body("entry[0].resource.content", equalTo("complete"))
+			.body("entry[0].resource.content", equalTo("not-present"))
 			// other fields should be null
 			.body("entry[0].resource.text", nullValue())
 			.body("entry[0].resource.url", nullValue())
@@ -252,7 +252,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("type", equalTo("searchset"))
 			// mandatory fields
 			.body("entry[0].resource.status", equalTo("draft"))
-			.body("entry[0].resource.content", equalTo("complete"))
+			.body("entry[0].resource.content", equalTo("not-present"))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
 			// summary and optional fields
 			.body("entry[0].resource.text", nullValue())

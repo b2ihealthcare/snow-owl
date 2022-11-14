@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
@@ -60,9 +63,6 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 	
 	@Override
 	protected void expandResourceSpecificFields(RepositoryContext context, CodeSystem.Builder entry, ResourceFragment resource) {
-		// treat all CodeSystems complete by default, later we might add this field to the document, if needed
-		entry.content(CodeSystemContentMode.COMPLETE);
-		
 		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
 			if (!CompareUtils.isEmpty(resource.getOid())) {
@@ -81,15 +81,40 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 				.optionalService(FhirCodeSystemResourceConverter.class)
 				.orElse(FhirCodeSystemResourceConverter.DEFAULT);
 		
-		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, resource.getResourceURI()), entry::count);
-		includeIfFieldSelected(CodeSystem.Fields.CONCEPT, () -> converter.expandConcepts(context, resource.getResourceURI(), locales()), entry::concepts);
-		includeIfFieldSelected(CodeSystem.Fields.FILTER, () -> converter.expandFilters(context, resource.getResourceURI(), locales()), entry::filters);
-		includeIfFieldSelected(CodeSystem.Fields.PROPERTY, () -> converter.expandProperties(context, resource.getResourceURI(), locales()), properties -> {
+		final ResourceURI resourceURI = resource.getResourceURI();
+		
+		if (fields().isEmpty() || fields().contains(CodeSystem.Fields.CONCEPT)) {
+			// XXX: When "concept" is requested to be included, we also need a total concept count to set "content" properly
+			final List<Concept> concepts = converter.expandConcepts(context, resourceURI, locales());
+			final int count = converter.count(context, resourceURI);
+
+			if (concepts.size() == 0) {
+				entry.content(CodeSystemContentMode.NOT_PRESENT);	
+			} else if (concepts.size() == count) {
+				entry.content(CodeSystemContentMode.COMPLETE);
+			} else {
+				/*
+				 * If the total concept count differs from the returned list's size, content is
+				 * to be considered partial. We have two values to represent this scenario,
+				 * "example" and "fragment", but the latter implies a curated subset, whereas
+				 * the former is intended for subsets without a specific intent.
+				 */				
+				entry.content(CodeSystemContentMode.EXAMPLE);
+			}
+			
+			entry.concepts(concepts);
+			entry.count(count);
+		} else {
+			entry.content(CodeSystemContentMode.NOT_PRESENT);
+			includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, resourceURI), entry::count);
+		}
+		
+		includeIfFieldSelected(CodeSystem.Fields.FILTER, () -> converter.expandFilters(context, resourceURI, locales()), entry::filters);
+		includeIfFieldSelected(CodeSystem.Fields.PROPERTY, () -> converter.expandProperties(context, resourceURI, locales()), properties -> {
 			properties.stream()
 				.filter(p -> !(SupportedCodeSystemRequestProperties.class.isInstance(p)))
 				.map(prop -> SupportedConceptProperty.builder(prop).build())
 				.forEach(entry::addProperty);
 		});
 	}
-	
 }

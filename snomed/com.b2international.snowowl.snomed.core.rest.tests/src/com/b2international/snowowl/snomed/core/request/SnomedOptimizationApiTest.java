@@ -51,11 +51,11 @@ public class SnomedOptimizationApiTest {
 	 * 			|_EDEMA
 	 */
 	
-	private static final String MORPHOLOGICALLY_ABNORMAL_STRUCTURE = "49755003|Morphologically abnormal structure|";
-	private static final String LESION = "52988006|Lesion|";
-	private static final String MECHANICAL_ABNORMALITY = "107658001|Mechanical abnormality|";
-	private static final String FLUID_DISTURBANCE = "107666005|Fluid disturbance|";
-	private static final String EDEMA = "79654002|Edema|";
+	private static final String MORPHOLOGICALLY_ABNORMAL_STRUCTURE = "49755003|Morphologically abnormal structure (morphologic abnormality)|";
+	private static final String LESION = "52988006|Lesion (morphologic abnormality)|";
+	private static final String MECHANICAL_ABNORMALITY = "107658001|Mechanical abnormality (morphologic abnormality)|";
+	private static final String FLUID_DISTURBANCE = "107666005|Fluid disturbance (morphologic abnormality)|";
+	private static final String EDEMA = "79654002|Edema (morphologic abnormality)|";
 	
 	private static final QueryExpression QUERY_LESION = new QueryExpression(IDs.base62UUID(), LESION, false);
 	private static final QueryExpression QUERY_MECHANICAL_ABNORMALITY = new QueryExpression(IDs.base62UUID(), MECHANICAL_ABNORMALITY, false);

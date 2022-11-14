@@ -1,6 +1,56 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.7.0
+
+### Core
+- Support versioned resource access via dedicated GET endpoints (#1073)
+  * `GET /bundles/:id/:version`
+  * `GET /codesystems/:id/:version`
+  * Content requests will now fetch and use the correct point-in-time version of the corresponding resource (HEAD, timestamped or versioned)
+
+### Bugs/Improvements
+- [index] support disabling indexing on Map/Object type fields (#1071)
+- [fhir] improve computation of `CodeSystem.content` property (#1069)
+- [fhir] versioned FHIR resources should get their proper versioned state
+- [snomed] skip empty lines when importing an RF2 archive (#1065)
+- [snomed] improve validation error message when an RF2 column has an unexpected SNOMED CT component ID (#1066)
+
+## 8.6.1
+
+### Bugs/Improvements
+- [core] allow deleting a component if its container resource or any of its container bundles can be edited (#1062)
+- [api] support pluggable converters on CodeSystems API (83731e8)
+- [api] support active flag on generic concept model (f77a5c0)
+- [fhir] add generic "constraint" filter (evaluated the same way as SNOMED CT's "expression" filter) (#1063)
+
+## 8.6.0
+
+### Core
+- Support negated filter values in `owner` and `status` filters in Resource API (006e44b, d9a0bb1)
+- Support `snomedFirst` sort keyword in Resource API to display SNOMED CT resources before any other (#1061)
+
+### SNOMED CT
+- Support ECL specification 2.1 (#1060)
+- Support SNOMED CT Simple map to concept reference set types (#1043)
+  * Complete read/write/export/import support for the new SNOMED CT Simple map to concept reference set
+
+### FHIR
+- Support importing FHIR resources from FHIR JSON format (#1058)
+
+### Packaging
+- Use Ubuntu 22.04 as base image instead of obsolete CentOS (#1052)
+
+### Bugs/Improvements
+- [core] ecl labeling should handle Code System URI values (1103222)
+- [ecl] throw HTTP 400 instead of HTTP 501 when encountering a not implemented ECL feature (6e2b411)
+- [snomed] support knn vector search for SNOMED CT description documents (6cbe08f, 05fa3e8, f3ed8f7)
+- [snomed] prevent NPE during computation of concept expand cache in SNOMED CT Concept API (cb2befe)
+- [snomed] improve performance of query reference set evaluation (3de012a, 880e7e8)
+- [snomed] improve performance of ECL query optimizer (670d8f0)
+- [snomed] ensure that ECL query optimizer generates ECL expressions with FSN labels (d11fd38)
+- [api] ensure that bulk suggest API responds even if one of the bulk item requests fails (f199e7c)
+
 ## 8.5.2
 
 ### Bugs/Improvements

@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.b2international.snowowl.core.repository.DefaultRepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryAwareRequest;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequestTimestampProvider;
 
 /**
  * @since 8.0
@@ -67,21 +68,34 @@ public final class ResourceRepositoryRequest<R> extends DelegatingRequest<Servic
 	@Override
 	public R execute(ServiceProvider context) {
 		ResourceRepository resourceRepository = context.service(ResourceRepository.class);
-		RevisionIndexRead<R> read = searcher -> {
-			// TODO check health
-			DefaultRepositoryContext repository = new DefaultRepositoryContext(context, RepositoryInfo.of(RESOURCE_REPOSITORY_ID, Health.GREEN, null, List.of()));
-			repository.bind(RevisionIndex.class, resourceRepository);
-			repository.bind(Searcher.class, searcher.searcher());
-			repository.bind(RevisionSearcher.class, searcher);
-			repository.bind(ContextConfigurer.class, ContextConfigurer.NOOP);
-			repository.bind(BaseRevisionBranching.class, resourceRepository.branching());
-			return next(repository);
-		};
+		RevisionIndexRead<R> read = searcher -> next(prepareRepositoryContext(context, resourceRepository, searcher));
 
-		if (timestamp == null) {
-			return resourceRepository.read(read);
+		// read from the latest snapshot of the repository to get the actual timestamp we have to read to satisfy the request
+		Long readTimestamp = resourceRepository.read((searcher) -> getReadTimestamp(prepareRepositoryContext(context, resourceRepository, searcher)));
+		
+		return resourceRepository.read(readTimestamp, read);
+	}
+
+	private DefaultRepositoryContext prepareRepositoryContext(ServiceProvider context, ResourceRepository resourceRepository, RevisionSearcher searcher) {
+		// TODO check health
+		DefaultRepositoryContext repository = new DefaultRepositoryContext(context, RepositoryInfo.of(RESOURCE_REPOSITORY_ID, Health.GREEN, null, List.of()));
+		repository.bind(RevisionIndex.class, resourceRepository);
+		repository.bind(Searcher.class, searcher.searcher());
+		repository.bind(RevisionSearcher.class, searcher);
+		repository.bind(ContextConfigurer.class, ContextConfigurer.NOOP);
+		repository.bind(BaseRevisionBranching.class, resourceRepository.branching());
+		return repository;
+	}
+
+	private Long getReadTimestamp(ServiceProvider context) {
+		if (timestamp != null) {
+			return timestamp;
 		} else {
-			return resourceRepository.read(timestamp, read);
+			RevisionIndexReadRequestTimestampProvider readTimestampProvider = getNestedRequest(RevisionIndexReadRequestTimestampProvider.class);
+			if (readTimestampProvider != null) {
+				return readTimestampProvider.getReadTimestamp(context);
+			}
 		}
+		return null;
 	}
 }

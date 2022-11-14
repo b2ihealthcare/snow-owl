@@ -196,18 +196,20 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				new ResourceRepositoryCommitRequestBuilder()
 				.setBody(tx -> {
 					tx.add(VersionDocument.builder()
-							.id(resource.withPath(version).withoutResourceType())
-							.version(version)
-							.description(description)
-							.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
-							.resource(resource)
-							.branchPath(resourceToVersion.getRelativeBranchPath(version))
-							.author(author)
-							.createdAt(Instant.now().toEpochMilli())
-							.updatedAt(Instant.now().toEpochMilli())
-							.toolingId(resourceToVersion.getToolingId())
-							.url(buildVersionUrl(context, resourceToVersion))
-							.build());
+						.id(resource.withPath(version).withoutResourceType())
+						.version(version)
+						.description(description)
+						.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
+						.resource(resource)
+						.branchPath(resourceToVersion.getRelativeBranchPath(version))
+						.author(author)
+						.createdAt(Instant.now().toEpochMilli())
+						.updatedAt(Instant.now().toEpochMilli())
+						.toolingId(resourceToVersion.getToolingId())
+						.url(buildVersionUrl(context, resourceToVersion))
+						.resourceSnapshot(resourceToVersion)
+						.build());
+					
 					return Boolean.TRUE;
 				})
 				.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)

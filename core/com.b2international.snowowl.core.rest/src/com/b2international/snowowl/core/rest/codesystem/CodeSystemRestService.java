@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -111,18 +112,47 @@ public class CodeSystemRestService extends AbstractRestService {
 	@GetMapping(value = "/{codeSystemId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystem> get(
 		@Parameter(description="The code system identifier")
-		@PathVariable(value="codeSystemId") final String codeSystemId,
+		@PathVariable(value="codeSystemId", required = true) 
+		final String codeSystemId,
 		
-		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
 		final Long timestamp,
 		
 		@ParameterObject
 		final ResourceSelectors selectors) {
 		
-		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId.contains(RevisionIndex.AT_CHAR) || timestamp == null ? CodeSystem.uri(codeSystemId) : CodeSystem.uri(codeSystemId).withTimestampPart(RevisionIndex.AT_CHAR + timestamp))
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
-			.buildAsync(timestamp)
+			.buildAsync()
+			.execute(getBus());
+	}
+	
+	@Operation(
+		summary="Retrieve a versioned code system by its unique identifier",
+		description="Returns generic information about a single code system associated to the given unique identifier."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
+	})
+	@GetMapping(value = "/{codeSystemId}/{versionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<CodeSystem> getVersioned(
+		@Parameter(description="The code system identifier")
+		@PathVariable(value="codeSystemId", required = true) 
+		final String codeSystemId,
+		
+		@Parameter(description="The code system version")
+		@PathVariable(value="versionId", required = true) 
+		final String versionId,
+		
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
+		return CodeSystemRequests.prepareGetCodeSystem(CodeSystem.uri(codeSystemId, versionId))
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.buildAsync()
 			.execute(getBus());
 	}
 	

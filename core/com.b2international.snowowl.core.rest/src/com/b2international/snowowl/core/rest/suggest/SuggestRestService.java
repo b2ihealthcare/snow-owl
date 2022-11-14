@@ -60,8 +60,8 @@ public class SuggestRestService extends AbstractRestService {
 		@ParameterObject
 		final SuggestRestParameters params,
 		
-		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 		final String acceptLanguage) {
 		
 		return prepareSuggestRequest(params, acceptLanguage)
@@ -81,8 +81,8 @@ public class SuggestRestService extends AbstractRestService {
 		@RequestBody
 		final SuggestRestParameters body,
 		
-		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 		final String acceptLanguage) {
 		return getSuggest(body, acceptLanguage);
 	}
@@ -107,8 +107,8 @@ public class SuggestRestService extends AbstractRestService {
 		@RequestParam(value = "batchTimeout", defaultValue = "120", required = false)
 		final Integer batchTimeout,
 		
-		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6")
-		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+		@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
+		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
 		final String acceptLanguage) {
 	
 		if (body == null) {

@@ -316,6 +316,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Rf2ValidationIssueReporter reporter) {
 		final CsvMapper csvMapper = new CsvMapper();
 		csvMapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
+		csvMapper.enable(CsvParser.Feature.SKIP_EMPTY_LINES);
+		
 		final CsvSchema schema = CsvSchema.emptySchema()
 				.withoutQuoteChar()
 				.withColumnSeparator('\t')

@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -108,16 +109,44 @@ public class BundleRestService extends AbstractRestService {
 		@PathVariable(value="bundleId", required = true) 
 		final String bundleId,
 
-		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
 		final Long timestamp,
 		
 		@ParameterObject
 		final ResourceSelectors selectors) {
 		
-		return ResourceRequests.bundles().prepareGet(bundleId)
+		return ResourceRequests.bundles().prepareGet(bundleId.contains(RevisionIndex.AT_CHAR) || timestamp == null ? Bundle.uri(bundleId) : Bundle.uri(bundleId).withTimestampPart(RevisionIndex.AT_CHAR + timestamp))
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
 			.buildAsync(timestamp)
+			.execute(getBus());
+	}
+	
+	@Operation(
+		summary="Retrieve bundle by its unique identifier",
+		description="Returns generic information about a single bundle associated to the given unique identifier."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
+	})
+	@GetMapping(value = "/{bundleId}/{versionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<Bundle> getVersioned(
+		@Parameter(description="The bundle identifier")
+		@PathVariable(value="bundleId", required = true) 
+		final String bundleId,
+		
+		@Parameter(description="The bundle version")
+		@PathVariable(value="versionId", required = true) 
+		final String versionId,
+
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
+		return ResourceRequests.bundles().prepareGet(Bundle.uri(bundleId, versionId))
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.buildAsync()
 			.execute(getBus());
 	}
 	
