@@ -461,9 +461,11 @@ public final class ResourceDocument extends RevisionDocument {
 	private final Long createdAt;
 	private final Long updatedAt;
 	
-	// mapping only field, no actual purpose or use, required to support multi-index search with doc type VersionDocument
+	// mapping only fields, no actual purpose or use, required to support multi-index search with doc type VersionDocument
 	@SuppressWarnings("unused")
 	private String version;
+	@SuppressWarnings("unused")
+	private Long effectiveTime;
 	
 	public ResourceDocument(
 			final String id, 
