@@ -17,12 +17,10 @@ package com.b2international.snowowl.fhir.core.request.conceptmap;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 
 /**
@@ -30,50 +28,71 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
  */
 public interface FhirWriteSupport {
 
+	/**
+	 * Checks whether a version can be created based on an incoming resource snapshot state (FHIR Resource representation).
+	 * 
+	 * @param context
+	 * @param resourceUri
+	 * @param newVersionToCreate
+	 * @param newVersionEffectiveDate
+	 * @return a boolean value indicating whether the version can be created either forcefully or via the standard way.
+	 * @throws BadRequestException - if the version creation cannot be completed for any reason
+	 */
 	default boolean ensureVersionCanBeCreated(
 			final ServiceProvider context, 
-			final ResourceURI conceptMapUri, 
-			final String versionId, 
-			final LocalDate effectiveDate) {
+			final ResourceURI resourceUri, 
+			final String newVersionToCreate, 
+			final LocalDate newVersionEffectiveDate) {
 			
-			final Optional<Version> latestVersion = ResourceRequests.prepareSearchVersion()
-				.setLimit(1)
-				.filterByResource(conceptMapUri)
-				.sortBy("effectiveTime:desc")
-				.buildAsync()
-				.execute(context)
-				.first();
-		
-			final Optional<String> latestVersionId = latestVersion.map(lv -> {
-				// Allow importing with the same effective date as the latest version
-				if (lv.getEffectiveTime().compareTo(effectiveDate) > 0) {
-					throw new BadRequestException(String.format("A concept map version for effective time '%s' already exists, can't add content with effective time '%s'.",
-						lv.getEffectiveTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
-						effectiveDate.format(DateTimeFormatter.ISO_LOCAL_DATE)));
+		return ResourceRequests.prepareSearchVersion()
+			.setLimit(1)
+			.filterByResource(resourceUri)
+			.sortBy("effectiveTime:desc")
+			.buildAsync()
+			.execute(context)
+			.first()
+			.map(latestVersion -> {
+				final int newVersionEffectiveDateCompareValue = newVersionEffectiveDate.compareTo(latestVersion.getEffectiveTime());
+				
+				// disallow importing versions with earlier effective date
+				if (newVersionEffectiveDateCompareValue < 0) {
+					throw new BadRequestException(String.format("A version for effective time '%s' already exists, can't add content with effective time '%s'.",
+						latestVersion.getEffectiveTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
+						newVersionEffectiveDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+					);
 				}
 				
-				return lv.getVersion();
-			});
-			
-			// Force re-create latest version if the specified ID is equal to the ID of the version instance 
-			final boolean force = latestVersionId.map(versionId::equals)
-				.orElse(Boolean.FALSE);
-
-			if (!force) {
-				final boolean versionAlreadyExists = ResourceRequests.prepareSearchVersion()
-					.setLimit(0)
-					.filterByResource(conceptMapUri)
-					.filterByVersionId(versionId)
-					.buildAsync()
-					.execute(context)
-					.getTotal() > 0;
+				// the incoming version uses the same effective date value, allow patching only when the version value matches
+				if (newVersionEffectiveDateCompareValue == 0) {
+					if (!newVersionToCreate.equals(latestVersion.getVersion())) {
+						throw new BadRequestException(String.format("A different version ('%s') is already using the given effective time '%s' value.",
+							latestVersion.getVersion(),
+							newVersionEffectiveDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+						);
+					}
 					
-				if (versionAlreadyExists) {
-					throw new BadRequestException(String.format("A concept map version with identifier '%s' already exists.", versionId));
+					// if the same effective date and version is given, then allow recreating the version forcefully
+					return true;
 				}
-			}
-			
-			return force;
-		}
+				
+				// in all other cases check whether the version id is already taken
+				final boolean versionAlreadyExists = ResourceRequests.prepareSearchVersion()
+						.setLimit(0)
+						.filterByResource(resourceUri)
+						.filterByVersionId(newVersionToCreate)
+						.buildAsync()
+						.execute(context)
+						.getTotal() > 0;
+
+				if (versionAlreadyExists) {
+					throw new BadRequestException(String.format("A version with identifier '%s' already exists.", newVersionToCreate));
+				}
+				
+				// if not, allow version creation
+				return false;
+			})
+			// no version present for this resource, let version create proceed without the need for force creation
+			.orElse(false);
+	}
 	
 }
