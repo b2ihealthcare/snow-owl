@@ -29,7 +29,7 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 public interface FhirWriteSupport {
 
 	/**
-	 * Checks whether a version can be created based on an incoming resource snapshot state (FHIR Resource representation).
+	 * Checks whether a business version can be created based on an incoming resource snapshot state (FHIR Resource representation).
 	 * 
 	 * @param context
 	 * @param resourceUri
@@ -38,7 +38,7 @@ public interface FhirWriteSupport {
 	 * @return a boolean value indicating whether the version can be created either forcefully or via the standard way.
 	 * @throws BadRequestException - if the version creation cannot be completed for any reason
 	 */
-	default boolean ensureVersionCanBeCreated(
+	default boolean checkBusinessVersion(
 			final ServiceProvider context, 
 			final ResourceURI resourceUri, 
 			final String newVersionToCreate, 
