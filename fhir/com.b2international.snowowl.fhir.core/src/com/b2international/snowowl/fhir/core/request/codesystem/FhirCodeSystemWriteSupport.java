@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
+import com.b2international.snowowl.fhir.core.request.conceptmap.FhirWriteSupport;
 
 /**
  * Implementing classes provide support for code system interactions and named
@@ -28,7 +29,7 @@ import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
  * 
  * @since 8.2.0
  */
-public interface FhirCodeSystemWriteSupport {
+public interface FhirCodeSystemWriteSupport extends FhirWriteSupport {
 
 	/**
 	 * Creates a new code system based on the specified input, or updates an
