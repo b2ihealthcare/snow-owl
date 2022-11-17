@@ -42,7 +42,6 @@
 		<!-- Build tool/compiler versions -->
 		<tycho.version>2.5.0</tycho.version>
 		<tycho-extras.version>2.5.0</tycho-extras.version>
-		<xtend.compiler.version>2.23.0</xtend.compiler.version>
 		<jacoco.version>0.8.6</jacoco.version>
 		
 		<!-- Versioning -->
@@ -887,7 +886,6 @@
 						<target>11</target>
 						<excludeResources>
 							<excludeResource>**/*.groovy</excludeResource>
-							<excludeResource>**/*.xtend</excludeResource>
 						</excludeResources>
 					</configuration>
 				</plugin>
