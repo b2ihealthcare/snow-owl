@@ -15,15 +15,20 @@
  */
 package com.b2international.snowowl.snomed.core.io.commit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.elasticsearch.core.Map;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.commit.CommitInfo;
@@ -31,6 +36,9 @@ import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -151,6 +159,32 @@ public class SnomedCommitApiTest {
 		assertEquals(commitInfo.getTimestamp(), Iterables.getOnlyElement(commitInfos.getItems()).getTimestamp());
 	}
 	
+	@Test
+	public void authorizeRepositoryCommits() throws Exception {
+		final String shortName1 = UUID.randomUUID().toString();
+		final String comment1 = "Code system for commit info 5";
+		createCodeSystem(shortName1, comment1);
+		
+		final String shortName2 = UUID.randomUUID().toString();
+		final String comment2 = "Code system for commit info 6";
+		createCodeSystem(shortName2, comment2);
+		
+		Request<RepositoryContext, CommitInfos> req = RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.build();
+		
+		final CommitInfos commitInfos = new ResourceRepositoryRequestBuilder<CommitInfos>() {
+			@Override
+			public Request<RepositoryContext, CommitInfos> build() {
+				return req;
+			}
+		}.buildAsync().execute(new AuthorizedEventBus(bus, Map.of(AuthorizedRequest.AUTHORIZATION_HEADER, generateAccessTokenForResourceAccess(shortName1)))).getSync();
+
+		assertThat(commitInfos)
+			.hasSize(1);
+	}
+	
 	private void createCodeSystem(final String codeSystemId, final String comment) {
 		createCodeSystem(codeSystemId, comment, USER_ID);
 	}
@@ -178,20 +212,24 @@ public class SnomedCommitApiTest {
 				.build();
 		
 		final CommitInfos commitInfos = new ResourceRepositoryRequestBuilder<CommitInfos>() {
-
 			@Override
 			public Request<RepositoryContext, CommitInfos> build() {
 				return req;
 			}
-			
-		 }
-		 .buildAsync()
-		 .execute(bus)
-		 .getSync();
+		}
+		.buildAsync()
+		.execute(bus)
+		.getSync();
 		 
 		assertEquals(commitInfos.getTotal(), 1);
 		
 		return Iterables.getOnlyElement(commitInfos);
+	}
+	
+	private String generateAccessTokenForResourceAccess(String...resourcesToGrantAccess) {
+		final List<Permission> permissions = List.of(resourcesToGrantAccess).stream().map(res -> Permission.requireAll(Permission.OPERATION_BROWSE, res)).collect(Collectors.toList());
+		final User user =  new User(USER_ID, permissions);
+		return Services.service(JWTGenerator.class).generate(user);
 	}
 	
 }
