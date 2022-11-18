@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,14 +169,21 @@ public final class Commit implements WithScore {
 		}
 
 		public static Expression affectedObject(String objectId) {
-			return com.b2international.index.query.Expressions.builder()
+			return com.b2international.index.query.Expressions.bool()
 					.should(exactMatch(Fields.DETAILS_OBJECT, objectId))
 					.should(exactMatch(Fields.DETAILS_COMPONENT, objectId))
 					.build();
 		}
+		
+		public static Expression affectedObjects(Iterable<String> objectIds) {
+			return com.b2international.index.query.Expressions.bool()
+					.should(matchAny(Fields.DETAILS_OBJECT, objectIds))
+					.should(matchAny(Fields.DETAILS_COMPONENT, objectIds))
+					.build();
+		}
 
 		public static Expression mergeFrom(long branchId, long mergeSourceTimestampStart, long mergeSourceTimestampEnd, boolean squash) {
-			return com.b2international.index.query.Expressions.builder()
+			return com.b2international.index.query.Expressions.bool()
 					.filter(match("squashMerge", squash))
 					.filter(matchRange("mergeSource", RevisionBranchPoint.toIpv6(branchId, mergeSourceTimestampStart), RevisionBranchPoint.toIpv6(branchId, mergeSourceTimestampEnd), true, true))
 					.build();
