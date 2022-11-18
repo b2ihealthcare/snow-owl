@@ -16,10 +16,10 @@
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 
@@ -57,8 +57,8 @@ public interface FhirWriteSupport {
 				// disallow importing versions with earlier effective date
 				if (newVersionEffectiveDateCompareValue < 0) {
 					throw new BadRequestException(String.format("A version for effective time '%s' already exists, can't add content with effective time '%s'.",
-						latestVersion.getEffectiveTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
-						newVersionEffectiveDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+						EffectiveTimes.format(latestVersion.getEffectiveTime()),
+						EffectiveTimes.format(newVersionEffectiveDate))
 					);
 				}
 				
@@ -67,7 +67,7 @@ public interface FhirWriteSupport {
 					if (!newVersionToCreate.equals(latestVersion.getVersion())) {
 						throw new BadRequestException(String.format("A different version ('%s') is already using the given effective time '%s' value.",
 							latestVersion.getVersion(),
-							newVersionEffectiveDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+							EffectiveTimes.format(newVersionEffectiveDate))
 						);
 					}
 					
