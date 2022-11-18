@@ -123,7 +123,7 @@ public final class RemoteJob extends Job {
 					.build();
 			}
 			
-			LOG.error("Error encountered while executing remote job", e);
+			LOG.error("Error encountered while executing remote job '{}'", id, e);
 			this.response = toJson(mapper, apiError);
 			// XXX: Don't delete remote jobs with errors
 			autoClean = false;
