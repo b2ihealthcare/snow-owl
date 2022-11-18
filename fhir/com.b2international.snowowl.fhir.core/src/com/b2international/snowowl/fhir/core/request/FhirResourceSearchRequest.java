@@ -142,6 +142,9 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			if (!fieldsToLoad.contains(ResourceDocument.Fields.UPDATED_AT)) {
 				fieldsToLoad.add(ResourceDocument.Fields.UPDATED_AT);
 			}
+			if (!fieldsToLoad.contains(VersionDocument.Fields.VERSION)) {
+				fieldsToLoad.add(VersionDocument.Fields.VERSION);
+			}
 		}
 		
 		// remove all fields that are not part of the current resource model
