@@ -16,10 +16,7 @@
 package com.b2international.snowowl.fhir.core.request;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -60,7 +57,6 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 
 	private static final Set<String> EXTERNAL_FHIR_RESOURCE_FIELDS = Set.of(
 		MetadataResource.Fields.NAME,
-		MetadataResource.Fields.DATE,
 		MetadataResource.Fields.META,
 		MetadataResource.Fields.TEXT
 	);
@@ -122,7 +118,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			
 		return prepareBundle()
 				.entry(internalResources.stream().map(codeSystem -> toFhirResourceEntry(context, codeSystem)).collect(Collectors.toList()))
-//				.after(internalCodeSystems.getSearchAfter())
+//				.after(internalResources.getSearchAfter())
 				.total(internalResources.getTotal())
 				.build();
 	}
@@ -140,8 +136,14 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			if (!fieldsToLoad.contains(ResourceDocument.Fields.TOOLING_ID)) {
 				fieldsToLoad.add(ResourceDocument.Fields.TOOLING_ID);
 			}
+			if (!fieldsToLoad.contains(ResourceDocument.Fields.CREATED_AT)) {
+				fieldsToLoad.add(ResourceDocument.Fields.CREATED_AT);
+			}
 			if (!fieldsToLoad.contains(ResourceDocument.Fields.UPDATED_AT)) {
 				fieldsToLoad.add(ResourceDocument.Fields.UPDATED_AT);
+			}
+			if (!fieldsToLoad.contains(VersionDocument.Fields.VERSION)) {
+				fieldsToLoad.add(VersionDocument.Fields.VERSION);
 			}
 		}
 		
@@ -149,14 +151,20 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		fieldsToLoad.removeAll(EXTERNAL_FHIR_RESOURCE_FIELDS);
 		fieldsToLoad.removeAll(getExternalFhirResourceFields());
 		// replace publisher with internal settings field (publisher is stored within resource metadata)
-		if (fieldsToLoad.contains(CodeSystem.Fields.PUBLISHER)) {
-			fieldsToLoad.remove(CodeSystem.Fields.PUBLISHER);
+		if (fieldsToLoad.contains(MetadataResource.Fields.PUBLISHER)) {
+			fieldsToLoad.remove(MetadataResource.Fields.PUBLISHER);
 			fieldsToLoad.add(ResourceDocument.Fields.SETTINGS);
 		}
 		// replace identifier with internal oid field
 		if (fieldsToLoad.contains(CodeSystem.Fields.IDENTIFIER)) {
 			fieldsToLoad.remove(CodeSystem.Fields.IDENTIFIER);
 			fieldsToLoad.add(ResourceDocument.Fields.OID);
+		}
+		
+		// for all supported FHIR Metadata Resources replace the incoming date property with the effectiveTime when requesting it
+		if (fieldsToLoad.contains(MetadataResource.Fields.DATE)) {
+			fieldsToLoad.remove(MetadataResource.Fields.DATE);
+			fieldsToLoad.add(VersionDocument.Fields.EFFECTIVE_TIME);
 		}
 		
 		// support any specific field selection changes
@@ -211,7 +219,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 				.fields(fields)
 				.where(Expressions.bool()
 					.filter(ResourceDocument.Expressions.id(fragment.getResourceURI().getResourceId()))
-					.filter(ResourceDocument.Expressions.validAsOf(fragment.getCreated().getTimestamp()))
+					.filter(ResourceDocument.Expressions.validAsOf(fragment.getCreatedAt()))
 					.build())
 				.limit(1)
 				.build());
@@ -256,16 +264,17 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		// optional fields
 		// we are using the ID of the resource as machine readable name
-		includeIfFieldSelected(CodeSystem.Fields.NAME, resource::getId, entry::name);
-		includeIfFieldSelected(CodeSystem.Fields.TITLE, resource::getTitle, entry::title);
-		includeIfFieldSelected(CodeSystem.Fields.URL, resource::getUrl, entry::url);
-		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
-		includeIfFieldSelected(CodeSystem.Fields.VERSION, resource::getVersion, entry::version);
-		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, () -> getPublisher(resource), entry::publisher);
-		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, resource::getLanguage, entry::language);
+		includeIfFieldSelected(MetadataResource.Fields.NAME, resource::getId, entry::name);
+		includeIfFieldSelected(MetadataResource.Fields.TITLE, resource::getTitle, entry::title);
+		includeIfFieldSelected(MetadataResource.Fields.URL, resource::getUrl, entry::url);
+		includeIfFieldSelected(DomainResource.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
+		includeIfFieldSelected(MetadataResource.Fields.VERSION, resource::getVersion, entry::version);
+		includeIfFieldSelected(MetadataResource.Fields.PUBLISHER, () -> getPublisher(resource), entry::publisher);
+		includeIfFieldSelected(FhirResource.Fields.LANGUAGE, resource::getLanguage, entry::language);
+		includeIfFieldSelected(MetadataResource.Fields.DATE, () -> resource.getEffectiveTime() == null ? null : new Date(resource.getEffectiveTime()), entry::date);
 		// XXX: use the resource's description in all cases
-		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, resource::getResourceDescription, entry::description);
-		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, resource::getPurpose, entry::purpose);
+		includeIfFieldSelected(MetadataResource.Fields.DESCRIPTION, resource::getResourceDescription, entry::description);
+		includeIfFieldSelected(MetadataResource.Fields.PURPOSE, resource::getPurpose, entry::purpose);
 
 		if (CompareUtils.isEmpty(fields()) || fields().contains(CodeSystem.Fields.CONTACT)) {
 			ContactDetail contact = getContact(resource);
@@ -330,6 +339,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		String toolingId;
 		String url;
 		String branchPath;
+		Long effectiveTime;
 		
 		String resourceDescription;
 		String title;
@@ -353,6 +363,10 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		
 		public String getVersion() {
 			return version;
+		}
+		
+		public Long getEffectiveTime() {
+			return effectiveTime;
 		}
 		
 		public String getDescription() {

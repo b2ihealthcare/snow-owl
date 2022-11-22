@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
+import com.b2international.snowowl.fhir.core.request.conceptmap.FhirWriteSupport;
 
 /**
  * Implementing classes provide support for value set interactions and named
@@ -30,7 +31,7 @@ import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
  * 
  * @since 8.2.0
  */
-public interface FhirValueSetWriteSupport {
+public interface FhirValueSetWriteSupport extends FhirWriteSupport {
 
 	/**
 	 * Creates a new value set based on the specified input, or updates an

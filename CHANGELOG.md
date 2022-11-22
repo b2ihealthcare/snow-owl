@@ -1,6 +1,19 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.7.1
+
+### Bugs/Improvements
+- [core] authorize resource commit entries instead of letting anyone access them (#1088)
+- [validation] fix potential NPE when extending a validation issue for a concept without any active descriptions (#1080)
+- [api] support effectiveTime range filtering using `<effectiveTimeStart>...<effectiveTimeEnd>` range format (#1074)
+- [fhir] support `withHistorySupplements` query parameter when expanding a Value Set (#1076)
+- [fhir] properly fetch point-in-time version of the resource in datasets where information is not stored on the version entry (#1086, #1089)
+- [fhir] add missing date property to versioned resource responses (#1085)
+- [fhir] prevent reusing the same `effectiveTime` value for different versions when creating resources via FHIR POST endpoints (#1087)
+- [log] improve log output of failed remote jobs (#1083)
+- [ci] replace LGTM analysis with GitHub CodeQL Action flow (e94de72, cf3ac45, bde939b)
+
 ## 8.7.0
 
 ### Core
