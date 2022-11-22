@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
@@ -75,10 +76,14 @@ import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.dataformat.xml.XmlFactory;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
@@ -292,12 +297,33 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
 		converters.add(new CsvMessageConverter());
-		// XXX using null value here as Spring calls a proxied method anyway which returns an already configured instance, see mapping2JacksonHttpMessageConverter Bean method
-		converters.add(mapping2JacksonHttpMessageConverter(null));
+		// XXX using null value here to allow custom XmlFactory implementations to be injected through other configuration classes
+		converters.add(mappingJackson2XmlHttpMessageConverter(null));
+		// XXX using null value here as Spring calls a proxied method anyway which returns an already configured instance, see objectMapper Bean method above
+		converters.add(mappingJackson2HttpMessageConverter(null));
 	}
 
 	@Bean
-	public MappingJackson2HttpMessageConverter mapping2JacksonHttpMessageConverter(ObjectMapper mapper) {
+	public MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter(@Autowired Optional<XmlFactory> xmlFactory) {
+		
+		MappingJackson2XmlHttpMessageConverter xmlConverter = new MappingJackson2XmlHttpMessageConverter();
+		
+		final XmlMapper mapper = xmlFactory.isPresent() ? new XmlMapper(xmlFactory.get()) : new XmlMapper();
+		
+		mapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+		mapper.registerModule(new JavaTimeModule());
+		mapper.setDateFormat(new StdDateFormat());
+		
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+		
+		xmlConverter.setObjectMapper(mapper);
+		
+		return xmlConverter;
+		
+	}
+	
+	@Bean
+	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper mapper) {
 		return new MappingJackson2HttpMessageConverter(mapper);
 	}
 	
