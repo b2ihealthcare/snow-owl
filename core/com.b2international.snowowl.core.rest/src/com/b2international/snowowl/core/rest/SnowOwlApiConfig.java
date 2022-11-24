@@ -297,10 +297,10 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
 		converters.add(new CsvMessageConverter());
-		// XXX using null value here to allow custom XmlFactory implementations to be injected through other configuration classes
-		converters.add(mappingJackson2XmlHttpMessageConverter(null));
 		// XXX using null value here as Spring calls a proxied method anyway which returns an already configured instance, see objectMapper Bean method above
 		converters.add(mappingJackson2HttpMessageConverter(null));
+		// XXX using null value here to allow custom XmlFactory implementations to be injected through other configuration classes
+		converters.add(mappingJackson2XmlHttpMessageConverter(null));
 	}
 
 	@Bean
