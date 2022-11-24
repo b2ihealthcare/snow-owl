@@ -44,7 +44,7 @@ public abstract class Resource implements Serializable {
 	public static final class Settings {
 		
 		public static final String PUBLISHER = "publisher";
-		public static final String DISTRIBUTABLE = "distributable";
+		public static final String DISTRIBUTABLE = "distributable"; // "true" or "false"
 		
 	}
 	
