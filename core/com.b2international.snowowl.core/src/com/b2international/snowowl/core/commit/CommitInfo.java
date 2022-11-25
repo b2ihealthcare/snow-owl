@@ -37,7 +37,7 @@ public final class CommitInfo implements Serializable {
 	}
 	
 	public static final class Fields {
-		public static final List<String> DEAFULT_FIELD_SELECTION = List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID);
+		public static final List<String> DEFAULT_FIELD_SELECTION = List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID);
 	}
 	
 	public static Builder builder() {

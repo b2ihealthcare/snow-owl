@@ -69,7 +69,7 @@ public class VersionConverter extends BaseResourceConverter<VersionDocument, Ver
 						.one()
 						.filterByBranch(Branch.MAIN_PATH) // all resource commits go to the main branch
 						.filterByAffectedComponent(res.getId())
-						.setFields(CommitInfo.Fields.DEAFULT_FIELD_SELECTION)
+						.setFields(CommitInfo.Fields.DEFAULT_FIELD_SELECTION)
 						.sortBy("timestamp:desc")
 						.build()
 						.execute(context())

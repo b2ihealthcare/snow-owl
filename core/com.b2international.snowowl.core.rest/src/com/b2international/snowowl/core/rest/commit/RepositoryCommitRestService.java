@@ -65,7 +65,7 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 		if (!CompareUtils.isEmpty(params.getField())) {
 			fields = params.getField();
 		} else if (CompareUtils.isEmpty(params.getExpand())) {
-			fields = CommitInfo.Fields.DEAFULT_FIELD_SELECTION;
+			fields = CommitInfo.Fields.DEFAULT_FIELD_SELECTION;
 		} else {
 			fields = null;
 		}

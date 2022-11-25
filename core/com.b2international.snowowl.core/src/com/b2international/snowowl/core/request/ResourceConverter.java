@@ -91,7 +91,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 						.one()
 						.filterByBranch(Branch.MAIN_PATH) // all resource commits go to the main branch
 						.filterByAffectedComponent(res.getId())
-						.setFields(CommitInfo.Fields.DEAFULT_FIELD_SELECTION)
+						.setFields(CommitInfo.Fields.DEFAULT_FIELD_SELECTION)
 						.sortBy("timestamp:desc")
 						.build()
 						.execute(context())
@@ -164,7 +164,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 					return RepositoryRequests.commitInfos().prepareSearchCommitInfo()
 						.filterByBranch(res.getBranchPath())
 						.setLimit(getLimit(expandOptions))
-						.setFields(expandOptions.containsKey("fields") ? expandOptions.getList("fields", String.class) : CommitInfo.Fields.DEAFULT_FIELD_SELECTION)
+						.setFields(expandOptions.containsKey("fields") ? expandOptions.getList("fields", String.class) : CommitInfo.Fields.DEFAULT_FIELD_SELECTION)
 						.sortBy(expandOptions.containsKey("sort") ? expandOptions.getString("sort") : null)
 						.setLocales(locales())
 						.build(res.getToolingId())
