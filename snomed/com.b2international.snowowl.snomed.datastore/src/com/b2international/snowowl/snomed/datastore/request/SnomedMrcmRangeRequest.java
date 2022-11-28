@@ -41,7 +41,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeReques
 /**
  * @since 8.8.0
  */
-public class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
+final class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
 	
 	private static final long serialVersionUID = 1L;
 	
