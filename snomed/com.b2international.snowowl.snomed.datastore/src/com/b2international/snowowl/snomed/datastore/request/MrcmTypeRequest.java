@@ -110,7 +110,7 @@ public class MrcmTypeRequest implements Request<BranchContext, SnomedReferenceSe
 			break;
 		case OBJECT: eclConstraint = String.format("<%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE);
 			break;
-		case ALL: eclConstraint = String.format("<%s AND <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE );
+		case ALL: eclConstraint = String.format("<%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE );
 			break;
 		default: eclConstraint = "*";
 		};
