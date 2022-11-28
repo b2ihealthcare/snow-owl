@@ -103,7 +103,7 @@ public class MrcmTypeRequest implements Request<BranchContext, SnomedReferenceSe
 			return new SnomedReferenceSetMembers(0, 0);
 		}
 		
-		String eclConstraint = "*";
+		final String eclConstraint;
 		
 		switch (attributeType) {
 		case DATA: eclConstraint = String.format("<%s", CONCEPT_MODEL_DATA_ATTRIBUTE);
@@ -111,7 +111,8 @@ public class MrcmTypeRequest implements Request<BranchContext, SnomedReferenceSe
 		case OBJECT: eclConstraint = String.format("<%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE);
 			break;
 		case ALL: eclConstraint = String.format("<%s AND <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE );
-			break;		
+			break;
+		default: eclConstraint = "*";
 		};
 		
 		final Set<String> typeIds = SnomedRequests.prepareSearchConcept()
