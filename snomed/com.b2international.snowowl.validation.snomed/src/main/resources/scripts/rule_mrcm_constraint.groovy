@@ -1,6 +1,7 @@
 package scripts 
 
 import static com.b2international.index.query.Expressions.*;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ALL_PRECOORDINATED_CONTENT;
 
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
@@ -9,6 +10,7 @@ import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.ecl.EclParser
+import com.b2international.snowowl.snomed.common.SnomedConstants
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
@@ -28,7 +30,6 @@ import com.google.common.collect.Sets
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 
-final String allPrecoordinatedContent = "723594008";
 final String integerTypeRangePrefix = "int";
 final String decimalTypeRangePrefix = "dec";
 
@@ -74,7 +75,7 @@ searcher.search(mrcmRangeMemberQuery).each { hit ->
 		//Do nothing, skip concrete value type range validation for now
 	} else {
 		if (allowedRanges.containsKey(typeId)) {
-			if (allPrecoordinatedContent.equals(contentType)) {
+			if (ALL_PRECOORDINATED_CONTENT.equals(contentType)) {
 				allowedRanges.put(typeId, rangeConstraint);
 			} else {
 				//Do nothing, the already mapped member should be chosen over this
