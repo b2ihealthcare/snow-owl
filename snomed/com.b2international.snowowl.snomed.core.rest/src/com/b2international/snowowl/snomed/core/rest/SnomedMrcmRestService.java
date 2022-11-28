@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.MrcmTypeRequest.ATTRIBUTE_TYPE;
+import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.ATTRIBUTE_TYPE;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import io.swagger.v3.oas.annotations.Operation;

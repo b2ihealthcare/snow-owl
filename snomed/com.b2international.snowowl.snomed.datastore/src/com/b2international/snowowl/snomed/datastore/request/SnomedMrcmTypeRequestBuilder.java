@@ -22,48 +22,48 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.MrcmTypeRequest.ATTRIBUTE_TYPE;
+import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.ATTRIBUTE_TYPE;
 
 /**
  * @since 8.8.0
  */
-public class MrcmRangeRequestBuilder extends BaseRequestBuilder<MrcmRangeRequestBuilder, BranchContext, SnomedReferenceSetMembers>
+public class SnomedMrcmTypeRequestBuilder extends BaseRequestBuilder<SnomedMrcmTypeRequestBuilder, BranchContext, SnomedReferenceSetMembers> 
 	implements SnomedContentRequestBuilder<SnomedReferenceSetMembers> {
-	
+
 	private Set<String> selfIds;
 	private Set<String> parentIds; 
 	private Set<String> refSetIds;
 	private List<String> moduleIds = List.of();
 	private ATTRIBUTE_TYPE attributeType = ATTRIBUTE_TYPE.ALL;
 	
-	public MrcmRangeRequestBuilder setSelfIds(Set<String> selfIds) {
+	public SnomedMrcmTypeRequestBuilder setSelfIds(Set<String> selfIds) {
 		this.selfIds = selfIds;
 		return getSelf();
 	}
 	
-	public MrcmRangeRequestBuilder setParentIds(Set<String> parentIds) {
+	public SnomedMrcmTypeRequestBuilder setParentIds(Set<String> parentIds) {
 		this.parentIds = parentIds;
 		return getSelf();
 	}
 	
-	public MrcmRangeRequestBuilder setRefSetIds(Set<String> refSetIds) {
+	public SnomedMrcmTypeRequestBuilder setRefSetIds(Set<String> refSetIds) {
 		this.refSetIds = refSetIds;
 		return getSelf();
 	}
 	
-	public MrcmRangeRequestBuilder setModuleIds(List<String> moduleIds) {
+	public SnomedMrcmTypeRequestBuilder setModuleIds(List<String> moduleIds) {
 		this.moduleIds = moduleIds;
 		return getSelf();
 	}
 	
-	public MrcmRangeRequestBuilder setAttributeType(ATTRIBUTE_TYPE attributeType) {
+	public SnomedMrcmTypeRequestBuilder setAttributeType(ATTRIBUTE_TYPE attributeType) {
 		this.attributeType = attributeType;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<BranchContext, SnomedReferenceSetMembers> doBuild() {	
-		MrcmRangeRequest request = new MrcmRangeRequest();
+		SnomedMrcmTypeRequest request = new SnomedMrcmTypeRequest();
 		request.setAttributeType(attributeType);
 		request.setModuleIds(moduleIds);
 		request.setRefSetIds(refSetIds);

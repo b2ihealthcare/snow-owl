@@ -36,12 +36,12 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.MrcmTypeRequest.ATTRIBUTE_TYPE;
+import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.ATTRIBUTE_TYPE;
 
 /**
  * @since 8.8.0
  */
-public class MrcmRangeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
+public class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
 	
 	private static final long serialVersionUID = 1L;
 	
