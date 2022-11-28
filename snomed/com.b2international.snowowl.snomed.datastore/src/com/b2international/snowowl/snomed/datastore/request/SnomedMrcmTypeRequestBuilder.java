@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeReques
 /**
  * @since 8.8.0
  */
-final class SnomedMrcmTypeRequestBuilder extends BaseRequestBuilder<SnomedMrcmTypeRequestBuilder, BranchContext, SnomedReferenceSetMembers> 
+public class SnomedMrcmTypeRequestBuilder extends BaseRequestBuilder<SnomedMrcmTypeRequestBuilder, BranchContext, SnomedReferenceSetMembers> 
 	implements SnomedContentRequestBuilder<SnomedReferenceSetMembers> {
 
 	private Set<String> selfIds;
