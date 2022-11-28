@@ -106,13 +106,17 @@ public class MrcmTypeRequest implements Request<BranchContext, SnomedReferenceSe
 		final String eclConstraint;
 		
 		switch (attributeType) {
-		case DATA: eclConstraint = String.format("<%s", CONCEPT_MODEL_DATA_ATTRIBUTE);
+		case DATA: 
+			eclConstraint = String.format("<%s", CONCEPT_MODEL_DATA_ATTRIBUTE);
 			break;
-		case OBJECT: eclConstraint = String.format("<%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+		case OBJECT: 
+			eclConstraint = String.format("<%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE);
 			break;
-		case ALL: eclConstraint = String.format("<%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE );
+		case ALL: 
+			eclConstraint = String.format("<%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE );
 			break;
-		default: eclConstraint = "*";
+		default: 
+			eclConstraint = "*";
 		};
 		
 		final Set<String> typeIds = SnomedRequests.prepareSearchConcept()
