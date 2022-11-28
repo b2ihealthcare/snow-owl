@@ -46,7 +46,7 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 
 	@Override
 	public User auth(String username, String token) {
-		return delegate.auth(username, token);
+		return overrideUserRoles(delegate.auth(username, token));
 	}
 
 	@Override
@@ -55,11 +55,15 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 					.then(matches -> {
 						// override roles
 						return new Users(
-							matches.stream().map(user -> new User(user.getUserId(), ADMINPARTY_ROLES)).collect(Collectors.toList()), 
+							matches.stream().map(user -> overrideUserRoles(user)).collect(Collectors.toList()), 
 							matches.getLimit(), 
 							matches.getTotal()
 						);
 					});
+	}
+
+	private User overrideUserRoles(User user) {
+		return new User(user.getUserId(), ADMINPARTY_ROLES);
 	}
 	
 	@Override
