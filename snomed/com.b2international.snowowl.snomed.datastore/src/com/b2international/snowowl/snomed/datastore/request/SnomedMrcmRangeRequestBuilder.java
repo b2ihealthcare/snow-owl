@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.ATTRIBUTE_TYPE;
+import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.MrcmAttributeType;
 
 /**
  * @since 8.8.0
@@ -34,7 +34,7 @@ public class SnomedMrcmRangeRequestBuilder extends BaseRequestBuilder<SnomedMrcm
 	private Set<String> parentIds; 
 	private Set<String> refSetIds;
 	private List<String> moduleIds = List.of();
-	private ATTRIBUTE_TYPE attributeType = ATTRIBUTE_TYPE.ALL;
+	private MrcmAttributeType attributeType = MrcmAttributeType.ALL;
 	
 	public SnomedMrcmRangeRequestBuilder setSelfIds(Set<String> selfIds) {
 		this.selfIds = selfIds;
@@ -56,7 +56,7 @@ public class SnomedMrcmRangeRequestBuilder extends BaseRequestBuilder<SnomedMrcm
 		return getSelf();
 	}
 	
-	public SnomedMrcmRangeRequestBuilder setAttributeType(ATTRIBUTE_TYPE attributeType) {
+	public SnomedMrcmRangeRequestBuilder setAttributeType(MrcmAttributeType attributeType) {
 		this.attributeType = attributeType;
 		return getSelf();
 	}

@@ -32,7 +32,7 @@ import org.junit.Test;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.ATTRIBUTE_TYPE;
+import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.MrcmAttributeType;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.google.common.base.Objects;
@@ -50,7 +50,7 @@ public class SnomedMrcmTest {
 		final String hasDisposition = "726542003";
 		
 		SnomedReferenceSetMembers substanceDataTypes = SnomedRequests.prepareGetMrcmTypeRules()
-				.setAttributeType(ATTRIBUTE_TYPE.DATA)
+				.setAttributeType(MrcmAttributeType.DATA)
 				.setModuleIds(List.of(Concepts.MODULE_SCT_CORE))
 				.setParentIds(Set.of(SUBSTANCE))
 				.build(CODESYSTEM)
@@ -59,7 +59,7 @@ public class SnomedMrcmTest {
 		assertEquals(0, substanceDataTypes.getTotal());
 		
 		Collection<String> substanceObjectTypes = SnomedRequests.prepareGetMrcmTypeRules()
-			.setAttributeType(ATTRIBUTE_TYPE.OBJECT)
+			.setAttributeType(MrcmAttributeType.OBJECT)
 			.setModuleIds(List.of(Concepts.MODULE_SCT_CORE))
 			.setParentIds(Set.of(SUBSTANCE))
 			.build(CODESYSTEM)
@@ -76,7 +76,7 @@ public class SnomedMrcmTest {
 	@Test
 	public void applicableRangeTest() {
 		SnomedReferenceSetMembers substanceDataTypeRanges = SnomedRequests.prepareGetMrcmRangeRules()
-				.setAttributeType(ATTRIBUTE_TYPE.DATA)
+				.setAttributeType(MrcmAttributeType.DATA)
 				.setModuleIds(List.of(Concepts.MODULE_SCT_CORE))
 				.setParentIds(Set.of(SUBSTANCE))
 				.build(CODESYSTEM)
@@ -85,7 +85,7 @@ public class SnomedMrcmTest {
 		assertEquals(0, substanceDataTypeRanges.getTotal());
 		
 		SnomedReferenceSetMembers substanceObjectTypeRanges = SnomedRequests.prepareGetMrcmRangeRules()
-				.setAttributeType(ATTRIBUTE_TYPE.OBJECT)
+				.setAttributeType(MrcmAttributeType.OBJECT)
 				.setModuleIds(List.of(Concepts.MODULE_SCT_CORE))
 				.setParentIds(Set.of(SUBSTANCE))
 				.build(CODESYSTEM)

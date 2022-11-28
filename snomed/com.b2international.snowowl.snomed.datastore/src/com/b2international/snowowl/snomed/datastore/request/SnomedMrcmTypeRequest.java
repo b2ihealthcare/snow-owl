@@ -44,13 +44,13 @@ public class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedRefer
 	
 	private static final long serialVersionUID = 1L;
 
-	public enum ATTRIBUTE_TYPE {
+	public enum MrcmAttributeType {
 		DATA,
 		OBJECT,
 		ALL;
 		
-		public static ATTRIBUTE_TYPE getByNameIgnoreCase(String name) {
-			for (final ATTRIBUTE_TYPE type : values()) {
+		public static MrcmAttributeType getByNameIgnoreCase(String name) {
+			for (final MrcmAttributeType type : values()) {
 				if (nullToEmpty(name).equalsIgnoreCase(type.toString())) {
 					return type;
 				}
@@ -63,7 +63,7 @@ public class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedRefer
 	private Set<String> ruleParentIds; 
 	private Set<String> refSetIds;
 	private List<String> moduleIds;
-	private ATTRIBUTE_TYPE attributeType;
+	private MrcmAttributeType attributeType;
 	
 	public void setSelfIds(Set<String> selfIds) {
 		this.selfIds = selfIds;
@@ -81,7 +81,7 @@ public class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedRefer
 		this.moduleIds = moduleIds;
 	}
 
-	public void setAttributeType(ATTRIBUTE_TYPE attributeType) {
+	public void setAttributeType(MrcmAttributeType attributeType) {
 		this.attributeType = attributeType;
 	}
 	

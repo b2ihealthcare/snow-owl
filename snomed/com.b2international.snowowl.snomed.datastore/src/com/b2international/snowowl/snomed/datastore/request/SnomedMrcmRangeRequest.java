@@ -36,7 +36,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.ATTRIBUTE_TYPE;
+import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.MrcmAttributeType;
 
 /**
  * @since 8.8.0
@@ -49,7 +49,7 @@ public class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedRefe
 	private Set<String> parentIds; 
 	private Set<String> refSetIds;
 	private List<String> moduleIds;
-	private ATTRIBUTE_TYPE attributeType;
+	private MrcmAttributeType attributeType;
 
 	public void setSelfIds(Set<String> selfIds) {
 		this.selfIds = selfIds;
@@ -67,7 +67,7 @@ public class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedRefe
 		this.moduleIds = moduleIds;
 	}
 
-	public void setAttributeType(ATTRIBUTE_TYPE attributeType) {
+	public void setAttributeType(MrcmAttributeType attributeType) {
 		this.attributeType = attributeType;
 	}
 		

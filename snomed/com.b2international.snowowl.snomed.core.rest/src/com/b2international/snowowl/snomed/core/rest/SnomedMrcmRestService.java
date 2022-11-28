@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.ATTRIBUTE_TYPE;
+import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.MrcmAttributeType;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -76,7 +76,7 @@ public class SnomedMrcmRestService extends AbstractRestService {
 			) {
 		
 		return SnomedRequests.prepareGetMrcmTypeRules()
-			.setAttributeType(ATTRIBUTE_TYPE.getByNameIgnoreCase(attributeType))
+			.setAttributeType(MrcmAttributeType.getByNameIgnoreCase(attributeType))
 			.setModuleIds(moduleIds)
 			.setParentIds(parentIds)
 			.setRefSetIds(refsetIds)
@@ -121,7 +121,7 @@ public class SnomedMrcmRestService extends AbstractRestService {
 				) {
 			
 			return SnomedRequests.prepareGetMrcmRangeRules()
-				.setAttributeType(ATTRIBUTE_TYPE.getByNameIgnoreCase(attributeType))
+				.setAttributeType(MrcmAttributeType.getByNameIgnoreCase(attributeType))
 				.setModuleIds(moduleIds)
 				.setParentIds(parentIds)
 				.setRefSetIds(refsetIds)
