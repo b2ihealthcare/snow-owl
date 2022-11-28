@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.request.MrcmTypeRequest.ATTRIBUTE_TYPE;
 
 /**
- * @since 8.7.0
+ * @since 8.8.0
  */
 public class MrcmTypeRequestBuilder extends BaseRequestBuilder<MrcmTypeRequestBuilder, BranchContext, SnomedReferenceSetMembers> 
 	implements SnomedContentRequestBuilder<SnomedReferenceSetMembers> {

@@ -34,7 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * @since 8.7.0
+ * @since 8.8.0
  */
 @Tag(description="Rules", name = "rules")
 @RestController

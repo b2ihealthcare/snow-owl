@@ -38,7 +38,7 @@ import com.b2international.snowowl.test.commons.Services;
 import com.google.common.base.Objects;
 
 /**
- * @since 8.7.0
+ * @since 8.8.0
  */
 public class SnomedMrcmTest {
 	

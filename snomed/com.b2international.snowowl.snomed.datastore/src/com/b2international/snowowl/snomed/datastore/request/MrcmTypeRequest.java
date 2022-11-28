@@ -38,7 +38,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
- * @since 8.7.0
+ * @since 8.8.0
  */
 public class MrcmTypeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
 	
