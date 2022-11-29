@@ -218,7 +218,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 					JsonDiff.diff(currentTypeMapping, newTypeMapping).forEach(change -> {
 						if (change.isAdd()) {
 							compatibleChanges.add(change.getFieldPath());
-						} else if (change.isMove() || change.isReplace()) {
+						} else if (change.isRemove() || change.isMove() || change.isReplace()) {
 							incompatibleChanges.add(change.getFieldPath());
 						}
 					});
