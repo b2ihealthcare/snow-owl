@@ -21,8 +21,8 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.core.MrcmAttributeType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.request.SnomedMrcmTypeRequest.MrcmAttributeType;
 
 /**
  * @since 8.8.0

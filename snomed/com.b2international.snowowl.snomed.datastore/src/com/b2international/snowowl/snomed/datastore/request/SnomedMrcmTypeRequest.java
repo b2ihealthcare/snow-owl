@@ -19,7 +19,6 @@ import static com.b2international.index.revision.Revision.Fields.ID;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID;
-import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.HashSet;
 import java.util.List;
@@ -27,11 +26,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.MrcmAttributeType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -43,21 +42,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 final class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
 	
 	private static final long serialVersionUID = 1L;
-
-	public enum MrcmAttributeType {
-		DATA,
-		OBJECT,
-		ALL;
-		
-		public static MrcmAttributeType getByNameIgnoreCase(String name) {
-			for (final MrcmAttributeType type : values()) {
-				if (nullToEmpty(name).equalsIgnoreCase(type.toString())) {
-					return type;
-				}
-			}
-			throw new BadRequestException("Unknown attribute type: '%s'", name);
-		}
-	}
 	
 	private Set<String> selfIds;
 	private Set<String> ruleParentIds; 
