@@ -215,11 +215,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.getSourceAsMap());
 					SortedSet<String> compatibleChanges = Sets.newTreeSet();
 					SortedSet<String> incompatibleChanges = Sets.newTreeSet();
-					JsonDiff.diff(currentTypeMapping, newTypeMapping).forEach(change -> {
+					final JsonDiff schemaChanges = JsonDiff.diff(currentTypeMapping, newTypeMapping);
+					schemaChanges.forEach(change -> {
 						if (change.isAdd()) {
 							compatibleChanges.add(change.getFieldPath());
-						} else if (change.isRemove() || change.isMove() || change.isReplace()) {
+						} else if (change.isMove() || change.isReplace()) {
 							incompatibleChanges.add(change.getFieldPath());
+						} else if (change.isRemove()) {
+							// XXX while remove is bad it is hard to detect true incompatibility where we try to support dynamic fields (like Maps)
+							// raise the incompatibility warning only when the root field is being reported, not a nested property under the root property
+							if (!change.getFieldPath().contains("/properties")) {
+								incompatibleChanges.add(change.getFieldPath());
+							}
 						}
 					});
 					if (!incompatibleChanges.isEmpty()) {
@@ -525,8 +532,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 		final Set<DocumentMapping> typesToRefresh = Collections.synchronizedSet(newHashSetWithExpectedSize(types.size()));
 		
 		for (Class<?> type : types) {
-			if (bulkDelete(new BulkDelete<>(type, Expressions.matchAll()))) {
-				typesToRefresh.add(mappings.getMapping(type));
+			DocumentMapping mapping = mappings.getMapping(type);
+			if (exists(mapping)) {
+				if (bulkDelete(new BulkDelete<>(type, Expressions.matchAll()))) {
+					typesToRefresh.add(mapping);
+				}
 			}
 		}
 		
