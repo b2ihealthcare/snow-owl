@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.7.2
+
+### Bugs/Improvements
+- [index] ensure that removed properties properly trigger index schema incompatibility error when detected during boot (45f622d, 28b058f)
+
 ## 8.7.1
 
 ### Bugs/Improvements
