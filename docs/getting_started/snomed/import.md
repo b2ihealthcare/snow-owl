@@ -1,9 +1,9 @@
 # Import RF2 distribution
 
-Let's import an RF2 release in `SNAPSHOT` mode so that we can further explore the available SNOMED CT APIs! To do so, use the appropriate request from the [SNOMED CT Import API](../../api/snomed/import.md) as follows:
+Let's import an RF2 release in `SNAPSHOT` mode so that we can further explore the available SNOMED CT APIs! To do so, use the appropriate request from the [SNOMED CT Import API](../../api/snomed/import.md) as follows (the second `SNOMEDCT` in the request path represents the code system identifier):
 
 ```bash
-curl -v http://localhost:8080/snowowl/snomedct/SNOMEDCT/import?type=snapshot \
+curl -v http://localhost:8080/snowowl/snomedct/SNOMEDCT/import?type=snapshot\&createVersions=false \
 -F file=@SnomedCT_RF2Release_INT_20170731.zip
 ```
 
