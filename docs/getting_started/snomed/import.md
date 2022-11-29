@@ -22,13 +22,13 @@ Depending on the size and type of the RF2 package, hardware and Snow Owl configu
 
 The process itself is asynchronous and its status can be checked by periodically sending a GET request to the location indicated by the response header:
 
-```
+```bash
 curl http://localhost:8080/snowowl/snomedct/SNOMEDCT/import/107f6efa69886bfdd73db5586dcf0e15f738efed?pretty
 ```
 
 The expected response while the import is running:
 
-```javascript
+```json
 {
   "id" : "107f6efa69886bfdd73db5586dcf0e15f738efed",
   "status" : "RUNNING"

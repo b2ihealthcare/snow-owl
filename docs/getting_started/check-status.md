@@ -4,13 +4,13 @@ Let’s start with a basic health check, which we can use to see how our instanc
 
 We will be using Snow Owl's [Core API](../api/admin/index.md) to check its status. You can run the following command by clicking the "Copy" link on the right side and pasting it into a terminal.
 
-```
+```bash
 curl http://localhost:8080/snowowl/info?pretty
 ```
 
 And the response:
 
-```
+```json
 {
   "version": "<version>",
   "description": "You Know, for Terminologies",

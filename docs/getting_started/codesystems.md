@@ -8,7 +8,7 @@ curl http://localhost:8080/snowowl/codesystems?pretty
 
 The response:
 
-```javascript
+```json
 {
   "items" : [ ],
   "limit" : 0,
@@ -18,7 +18,7 @@ The response:
 
 ...it sure looks empty! This is expected, as Snow Owl does not contain any predefined code system metadata out of the box. We can create the first code system with the following request:
 
-```
+```bash
 curl -X POST \
 -H "Content-type: application/json" \
 http://localhost:8080/snowowl/codesystems \
@@ -87,13 +87,13 @@ The request body includes:
 
 If everything goes well, the command will run without any errors (the server returns a "204 No Content" response). We can double-check that code system metadata has been registered correctly with the following request:
 
-```
+```bash
 curl http://localhost:8080/snowowl/codesystems/SNOMEDCT?pretty
 ```
 
 The expected response is:
 
-```
+```json
 {
   "id": "SNOMEDCT",
   "url": "http://snomed.info/sct/900000000000207008",

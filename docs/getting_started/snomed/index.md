@@ -10,7 +10,7 @@ curl http://localhost:8080/snowowl/snomedct/SNOMEDCT/concepts?pretty
 
 The expected response is:
 
-```javascript
+```json
 {
   "items": [ ],
   "limit": 50,
