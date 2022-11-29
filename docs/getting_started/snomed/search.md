@@ -1,4 +1,4 @@
-# Search SNOMED CT Content
+# Search SNOMED CT
 
 ## GET the ROOT concept:
 
@@ -8,7 +8,7 @@ curl 'http://localhost:8080/snowowl/snomedct/MAIN/concepts/138875005'
 
 And the response:
 
-```json
+```javascript
 {
   "id": "138875005",
   "released": true,
@@ -29,7 +29,7 @@ curl 'http://localhost:8080/snowowl/snomedct/MAIN/concepts?active=true&ecl=%3C&#
 
 And the response:
 
-```json
+```javascript
 {
   "items": [
     {

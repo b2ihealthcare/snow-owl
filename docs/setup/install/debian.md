@@ -1,4 +1,4 @@
-# Install Snow Owl with Debian Package
+# Installing Snow Owl with Debian Package
 
 The Debian package for Snow Owl can be downloaded from the Downloads section. It can be used to install Snow Owl on any Debian-based system such as Debian and Ubuntu.
 
@@ -56,7 +56,7 @@ curl http://localhost:8080/snowowl/admin/info
 
 which should give you a response something like this:
 
-```json
+```javascript
 {
   "version": "7.2.0",
   "description": "You Know, for Terminologies",
@@ -85,13 +85,13 @@ NOTE: Distributions that use `systemd` require that system resource limits be co
 
 The Debian package places config files, logs, and the data directory in the appropriate locations for a Debian-based system:
 
-| Type          | Description             | Default Location  | Setting |
-| ------------- | ----------------------- | ----------------- | ------- |
-| home          | Snow Owl home directory or `$SO_HOME` | `/usr/share/snowowl` ||
-| bin           | Binary scripts including startup/shutdown to start/stop the instance       | `/usr/share/snowowl/bin` ||
-| conf          | Configuration files including `snowowl.yml` | `/etc/snowowl` | [SO_PATH_CONF](../configure/index.md#config-files-location) |
-| data          | The location of the data files and resources. | /var/lib/snowowl | path.data |
-| logs          | Log files location. | /var/log/snowowl ||
+| Type | Description                                                          | Default Location         | Setting                                                       |
+| ---- | -------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------- |
+| home | Snow Owl home directory or `$SO_HOME`                                | `/usr/share/snowowl`     |                                                               |
+| bin  | Binary scripts including startup/shutdown to start/stop the instance | `/usr/share/snowowl/bin` |                                                               |
+| conf | Configuration files including `snowowl.yml`                          | `/etc/snowowl`           | [SO\_PATH\_CONF](../configure/index.md#config-files-location) |
+| data | The location of the data files and resources.                        | /var/lib/snowowl         | path.data                                                     |
+| logs | Log files location.                                                  | /var/log/snowowl         |                                                               |
 
 ## Next steps
 
@@ -99,4 +99,4 @@ You now have a test Snow Owl environment set up. Before you start serious develo
 
 * Learn how to [configure Snow Owl](../configure/index.md).
 * Configure [important Snow Owl settings](../configure/important-settings.md).
-* Configure [important system settings](../configure/).
+* Configure [important system settings](https://github.com/b2ihealthcare/snow-owl/tree/8a7fdb764156e4d99482a6868a5efcce0e6dcb0e/docs/setup/configure/README.md).

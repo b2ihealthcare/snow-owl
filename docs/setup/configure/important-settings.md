@@ -10,7 +10,7 @@ By default, Snow Owl includes the OSS version of Elasticsearch and runs it in em
 
 To configure Snow Owl to connect to an Elasticsearch cluster, change the `clusterUrl` property in the `snowowl.yml` configuration file:
 
-```yml
+```
 repository:
   index:
     clusterUrl: http://your.es.cluster:9200 # the ES cluster URL
@@ -26,7 +26,7 @@ If you are using the `.zip` or `.tar.gz` archives, the data and logs directories
 
 In production use, you will almost certainly want to change the locations of the data and log folders.
 
-```yml
+```
 path:
   data: /var/data/snowowl
 ```
@@ -36,6 +36,7 @@ The RPM and Debian distributions already use custom paths for data and logs.
 ## Network settings
 
 To allow clients to connect to Snow Owl, make sure you open access to the following ports:
+
 * 8080/TCP:: Used by Snow Owl Server's REST API for HTTP access
 * 8443/TCP:: Used by Snow Owl Server's REST API for HTTPS access
 * 2036/TCP:: Used by the Net4J binary protocol connecting Snow Owl clients to the server

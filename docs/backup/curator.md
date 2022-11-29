@@ -1,4 +1,4 @@
-# Backup and Restore with Curator
+# Curator
 
 ## Prerequisites
 
@@ -21,19 +21,15 @@ $ curl -XPUT localhost:9200/_snapshot/snowowl-snapshots -d
 }
 ```
 
-Elasticsearch requires that the specified `/path/to/shared/mount` is whitelisted in the `path.repo` configuration setting in the `elasticsearch.yml` configuration file. See section
-[Shared file system repository](https://www.elastic.co/guide/en/elasticsearch/reference/7.7/snapshots-register-repository.html#snapshots-filesystem-repository) of
-the Elasticsearch reference for details.
+Elasticsearch requires that the specified `/path/to/shared/mount` is whitelisted in the `path.repo` configuration setting in the `elasticsearch.yml` configuration file. See section [Shared file system repository](https://www.elastic.co/guide/en/elasticsearch/reference/7.7/snapshots-register-repository.html#snapshots-filesystem-repository) of the Elasticsearch reference for details.
 
 ## Curator configuration file
 
-Curator requires a single configuration file to be specified when running it.
-If you are using a default Elasticsearch cluster with default configurations then the default Curator recommended file should be sufficient. 
-Any configuration changes you have made to your Elasticsearch cluster needs to be changed here as well in this config file so Curator can access your cluster without any issues. 
+Curator requires a single configuration file to be specified when running it. If you are using a default Elasticsearch cluster with default configurations then the default Curator recommended file should be sufficient. Any configuration changes you have made to your Elasticsearch cluster needs to be changed here as well in this config file so Curator can access your cluster without any issues.
 
 Example `curator.yml`:
 
-```yml
+```
 client:
   hosts:
     - 127.0.0.1
@@ -57,15 +53,13 @@ logging:
 
 ## Snapshot Action
 
-Curator is using action YML files to perform a set of actions sequentially.
-See the available steps here: 
-https://www.elastic.co/guide/en/elasticsearch/client/curator/5.8/actions.html
+Curator is using action YML files to perform a set of actions sequentially. See the available steps here: [https://www.elastic.co/guide/en/elasticsearch/client/curator/5.8/actions.html](https://www.elastic.co/guide/en/elasticsearch/client/curator/5.8/actions.html)
 
 A Snapshot Action that can be used to backup the content from a Snow Owl Terminology Server.
 
 Example `snowowl_snapshot.yml` file:
 
-```yml
+```
 actions:
   1:
     action: snapshot
@@ -116,7 +110,7 @@ A Restore Action that can be used to restore the latest snapshot (aka backup) to
 
 Example `snowowl_restore.yml` file:
 
-```yml
+```
 actions:
   1:
     action: restore
@@ -156,8 +150,7 @@ $ curator --config curator.yml snowowl_restore.yml
 
 ## Taking scheduled backups
 
-To schedule automated backups, you can use [Cron](https://en.wikipedia.org/wiki/Cron) on Unix-style operating systems to automate the job.
-The back up interval depends on your use case and how you are accessing the data. If you have a write-heavy scenario, we recommend a hourly backup interval, otherwise some value between hourly - daily is preferable.
+To schedule automated backups, you can use [Cron](https://en.wikipedia.org/wiki/Cron) on Unix-style operating systems to automate the job. The back up interval depends on your use case and how you are accessing the data. If you have a write-heavy scenario, we recommend a hourly backup interval, otherwise some value between hourly - daily is preferable.
 
 An example crontab entry that initiates a daily backup at 03:00, and captures Curator's output to `/var/log/backup.log` (both standard output and standard error) would look like this:
 

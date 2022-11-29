@@ -1,4 +1,4 @@
-# Install Snow Owl with .zip or .tar.gz
+# Installing Snow Owl with .zip or .tar.gz
 
 Snow Owl is provided as a `.zip` and as a `.tar.gz` package. These packages can be used to install Snow Owl on any system and are the easiest package format to use when trying out Snow Owl.
 
@@ -56,7 +56,7 @@ curl http://localhost:8080/snowowl/admin/info
 
 which should give you a response like this:
 
-```json
+```javascript
 {
   "version": "7.0.0",
   "description": "You Know, for Terminologies",
@@ -95,17 +95,17 @@ or using the provided shutdown script:
 
 ## Directory layout of `.zip` and `.tar.gz` archives:
 
-The `.zip` and `.tar.gz` packages are entirely self-contained. All files and directories are, by default, contained within `$SO_HOME` — the directory created when unpacking the archive.
+The `.zip` and `.tar.gz` packages are entirely self-contained. All files and directories are, by default, contained within `$SO_HOME` — the directory created when unpacking the archive.
 
 This is very convenient because you don’t have to create any directories to start using Snow Owl, and uninstalling Snow Owl is as easy as removing the `$SO_HOME` directory. However, it is advisable to change the default locations of the config directory, the data directory, and the logs directory so that you do not delete important data later on.
 
-| Type          | Description             | Default Location  | Setting |
-| ------------- | ----------------------- | ----------------- | ------- |
-| home          | Snow Owl home directory or `$SO_HOME` | Directory created by unpacking the archive ||
-| bin           | Binary scripts including startup/shutdown to start/stop the instance       | $SO_HOME/bin ||
-| conf          | Configuration files including `snowowl.yml` | $SO_HOME/configuration | [SO_PATH_CONF](../configure/index.md#config-files-location) |
-| data          | The location of the data files and resources. | $SO_HOME/resources | path.data |
-| logs          | Log files location. | $SO_HOME/serviceability/logs ||
+| Type | Description                                                          | Default Location                           | Setting                                                       |
+| ---- | -------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------- |
+| home | Snow Owl home directory or `$SO_HOME`                                | Directory created by unpacking the archive |                                                               |
+| bin  | Binary scripts including startup/shutdown to start/stop the instance | $SO\_HOME/bin                              |                                                               |
+| conf | Configuration files including `snowowl.yml`                          | $SO\_HOME/configuration                    | [SO\_PATH\_CONF](../configure/index.md#config-files-location) |
+| data | The location of the data files and resources.                        | $SO\_HOME/resources                        | path.data                                                     |
+| logs | Log files location.                                                  | $SO\_HOME/serviceability/logs              |                                                               |
 
 ## Next steps
 
@@ -113,4 +113,4 @@ You now have a test Snow Owl environment set up. Before you start serious develo
 
 * Learn how to [configure Snow Owl](../configure/index.md).
 * Configure [important Snow Owl settings](../configure/important-settings.md).
-* Configure [important system settings](../configure/).
+* Configure [important system settings](https://github.com/b2ihealthcare/snow-owl/tree/8a7fdb764156e4d99482a6868a5efcce0e6dcb0e/docs/setup/configure/README.md).

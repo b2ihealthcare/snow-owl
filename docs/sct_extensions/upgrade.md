@@ -1,6 +1,7 @@
-# Extension Maintenance and Upgrades
+# Upgrading
 
 Maintenance of a SNOMED CT Extension is essential to ensure that
+
 * it incorporates changes requested by terminology consumers
 * it remains aligned with the SNOMED CT International Edition
 
@@ -8,17 +9,18 @@ While both of these maintenance related tasks are potentially assigned to one of
 
 {% hint style="info" %}
 See additional Extension maintenance related material in the official [Extensions Practical Guide](https://confluence.ihtsdotools.org/display/DOCEXTPG/5.7+Maintenance).
-{% endhint %}#
+{% endhint %}
 
 ## Change requests
 
-Changes requested by your terminology consumers are typically content authoring tasks that you would assign to an Extension authoring team. They usually come with a well-described problem you need to address in the terminology as you would do in the usual development cycle. 
+Changes requested by your terminology consumers are typically content authoring tasks that you would assign to an Extension authoring team. They usually come with a well-described problem you need to address in the terminology as you would do in the usual development cycle.
 
-See the [Extension Development](./development.md) section on how you can address change requests and incorporate them as regular tasks into the main version of your Extension.
+See the [Extension Development](development.md) section on how you can address change requests and incorporate them as regular tasks into the main version of your Extension.
 
 ## International Edition Changes
 
 Aligning content to the SNOMED CT International Edition is one of the main responsibilities of an Extension maintainer. However, keeping up with the changes introduced in SNOMED CT International Edition biannually (on January 31st and July 31st) can be an overwhelming task, especially if:
+
 * you are under pressure from your terminology consumers to make the requested changes ASAP, especially in mission critical scenarios.
 * the changes introduced in the International Edition are conflicting with your local changes and/or causing maintenance related issues after the upgrade.
 
@@ -34,19 +36,19 @@ In Snow Owl, SNOMED CT Extension are linked to their SNOMED CT dependency with t
 
 Extension upgrades can be started when there is a new version available in the Extension/Edition we have selected as our dependency in the `extensionOf` property. When fetching a SNOMED CT Code System via the Code System API, Snow Owl will check if there are any upgrades availables and return them in the `availableUpdates` array property. If there are no upgrades available the array will be empty.
 
-![extension-upgrade-available](images/extension-upgrade-available.png "SNOMEDCT-MYEXT can be upgraded to SNOMEDCT/2020-01-31")
+![SNOMEDCT-MYEXT can be upgraded to SNOMEDCT/2020-01-31](images/extension-upgrade-available.png)
 
-To start an Extension upgrade to a newer International Edition (or to a newer Extension dependency version), you can use the [Upgrade API](../api/admin/upgrade.md). The only thing that needs to be specified there is the desired new version of the Extension's `extensionOf` dependency.
+To start an Extension upgrade to a newer International Edition (or to a newer Extension dependency version), you can use the [Upgrade API](https://github.com/b2ihealthcare/snow-owl/tree/8a7fdb764156e4d99482a6868a5efcce0e6dcb0e/docs/api/admin/upgrade.md). The only thing that needs to be specified there is the desired new version of the Extension's `extensionOf` dependency.
 
 When the upgrade is started, Snow Owl creates a special `<codeSystemShortName>-UP-<newExtensionOf>` (eg. `SNOMEDCT-MYEXT-UP-SNOMEDCT-2020-01-31`) Code System to allow authors and the automated processes to migrate the latest development version of the Extension to the new dependency.
 
-![extension-upgrade-start](images/extension-upgrade-start.png "SNOMEDCT-MYEXT is upgrading to SNOMEDCT/2020-01-31")
+![SNOMEDCT-MYEXT is upgrading to SNOMEDCT/2020-01-31](images/extension-upgrade-start.png)
 
 ### Regular Maintenance
 
 Regular daily Extension development tasks still need to be resolved and pushed somewhere in order to continue the development of the Extension, even if an upgrade process is in progress. Each Extension still has an active development version, even if an upgrade is in progress, which can be used to push daily maintenance changes and business as usual tasks.
 
-![extension-upgrade-regular-maintenance](images/extension-upgrade-regular-maintenance.png "SNOMEDCT-MYEXT is being developed and upgraded at the same time")
+![SNOMEDCT-MYEXT is being developed and upgraded at the same time](images/extension-upgrade-regular-maintenance.png)
 
 Changes pushed to the development area will regularly need to be synced with the upgrade until the upgrade completes, so the upgrade team will be able to resolve all remaining conflicts and issues.
 
@@ -56,10 +58,10 @@ Upgrade Checks ensure the quality of the upgrade process and execute certain tas
 
 ### Completing the Upgrade
 
-Once the upgrade authoring team is done with the necessary changes to align the Extension with the new International Edition and all the checks are completed successfully the upgrade can be completed.
-Completing the upgrade performs the following steps:
+Once the upgrade authoring team is done with the necessary changes to align the Extension with the new International Edition and all the checks are completed successfully the upgrade can be completed. Completing the upgrade performs the following steps:
+
 * Creates a `<codeSystemShortName>-DO-<previousExtensionOf>` Code System to refer to the previous state of the Extension
 * Changes the current working branch of the Extension Code System to the branch that was used during the upgrade process
 * Deletes the `<codeSystemShortName>-UP-<newExtensionOf>` Code System, which marks the upgrade complete, and the upgrade itself cannot be accessed anymore.
 
-![extension-upgrade-complete](images/extension-upgrade-complete.png "SNOMEDCT-MYEXT has been upgraded to International Edition 2020-01-31")
+![SNOMEDCT-MYEXT has been upgraded to International Edition 2020-01-31](images/extension-upgrade-complete.png)
