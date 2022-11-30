@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.MrcmAttributeType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -39,7 +39,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 /**
  * @since 8.8.0
  */
-final class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
+final class SnomedMrcmTypeRequest extends SearchResourceRequest<BranchContext, SnomedReferenceSetMembers> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -70,16 +70,14 @@ final class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedRefere
 	}
 	
 	@Override
-	public SnomedReferenceSetMembers execute(BranchContext context) {
+	public SnomedReferenceSetMembers doExecute(BranchContext context) {
 		Set<String> inScopeRefSetIds = SnomedRequests.prepareSearchMember()
-				.all()
 				.filterByActive(true)
 				.filterByRefSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
 				.filterByReferencedComponent(moduleIds)
 				.setFields(ID, MRCM_RULE_REFSET_ID)
-				.build()
-				.execute(context)
-				.stream()
+				.stream(context)
+				.flatMap(members -> members.stream())
 				.map(m -> (String) m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID))
 				.collect(Collectors.toSet());
 		
@@ -104,13 +102,11 @@ final class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedRefere
 		};
 		
 		final Set<String> typeIds = SnomedRequests.prepareSearchConcept()
-			.all()
 			.filterByActive(true)
 			.filterByEcl(eclConstraint)
 			.setFields(SnomedConceptDocument.Fields.ID)
-			.build()
-			.execute(context)
-			.stream()
+			.stream(context)
+			.flatMap(concepts -> concepts.stream())
 			.map(SnomedConcept::getId)
 			.collect(Collectors.toSet());
 		
@@ -133,7 +129,6 @@ final class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedRefere
 		}
 		
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
-			.all()
 			.filterByActive(true)
 			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
 			.filterByRefSet(inScopeRefSetIds)
@@ -143,7 +138,16 @@ final class SnomedMrcmTypeRequest implements Request<BranchContext, SnomedRefere
 			requestBuilder.filterByProps(Options.from(Map.of(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainIds)));	
 		}
 		
-		return requestBuilder.build().execute(context);
+		return requestBuilder
+				.setLimit(limit())
+				.setSearchAfter(searchAfter())
+				.build()
+				.execute(context);
+	}
+
+	@Override
+	protected SnomedReferenceSetMembers createEmptyResult(int limit) {
+		return new SnomedReferenceSetMembers(limit, 0);
 	}
 	
 }

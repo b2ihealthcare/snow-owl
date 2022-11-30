@@ -21,10 +21,7 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_M
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.MRCM_ATTRIBUTE_RANGE;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.MRCM_MODULE_SCOPE;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +30,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.MrcmAttributeType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -41,7 +38,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 /**
  * @since 8.8.0
  */
-final class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedReferenceSetMembers> {
+final class SnomedMrcmRangeRequest extends SearchResourceRequest<BranchContext, SnomedReferenceSetMembers> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -72,16 +69,14 @@ final class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedRefer
 	}
 		
 	@Override
-	public SnomedReferenceSetMembers execute(BranchContext context) {
+	public SnomedReferenceSetMembers doExecute(BranchContext context) {
 		Set<String> inScopeRefSetIds = SnomedRequests.prepareSearchMember()
-				.all()
 				.filterByActive(true)
 				.filterByRefSetType(MRCM_MODULE_SCOPE)
 				.filterByReferencedComponent(moduleIds)
 				.setFields(ID, MRCM_RULE_REFSET_ID)
-				.build()
-				.execute(context)
-				.stream()
+				.stream(context)
+				.flatMap(members -> members.stream())
 				.map(m -> (String) m.getProperties().get(FIELD_MRCM_RULE_REFSET_ID))
 				.collect(Collectors.toSet());
 
@@ -107,12 +102,12 @@ final class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedRefer
 		
 		Map<String, SnomedReferenceSetMember> rangeConstraintMembers = new HashMap<>();
 		SnomedRequests.prepareSearchMember()
-			.all()
 			.filterByActive(true)
 			.filterByRefSetType(MRCM_ATTRIBUTE_RANGE)
 			.filterByReferencedComponent(typeIds)
 			.filterByRefSet(inScopeRefSetIds)
-			.setFields(ID, REFERENCED_COMPONENT_ID, MRCM_RANGE_CONSTRAINT, MRCM_CONTENT_TYPE_ID)
+			.setLimit(limit())
+			.setSearchAfter(searchAfter())
 			.build()
 			.execute(context)
 			.forEach(m -> {
@@ -123,6 +118,11 @@ final class SnomedMrcmRangeRequest implements Request<BranchContext, SnomedRefer
 			});
 		
 		return new SnomedReferenceSetMembers(List.copyOf(rangeConstraintMembers.values()), null, rangeConstraintMembers.size(), rangeConstraintMembers.size());		
+	}
+
+	@Override
+	protected SnomedReferenceSetMembers createEmptyResult(int limit) {
+		return new SnomedReferenceSetMembers(limit, 0);
 	}
 	
 }

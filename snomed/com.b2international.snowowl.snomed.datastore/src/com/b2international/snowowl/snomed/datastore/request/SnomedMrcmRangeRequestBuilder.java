@@ -19,16 +19,14 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.MrcmAttributeType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 
 /**
  * @since 8.8.0
  */
-public class SnomedMrcmRangeRequestBuilder extends BaseRequestBuilder<SnomedMrcmRangeRequestBuilder, BranchContext, SnomedReferenceSetMembers>
-	implements SnomedContentRequestBuilder<SnomedReferenceSetMembers> {
+public class SnomedMrcmRangeRequestBuilder extends SnomedSearchRequestBuilder<SnomedMrcmRangeRequestBuilder, SnomedReferenceSetMembers> {
 	
 	private Set<String> selfIds;
 	private Set<String> parentIds; 
@@ -62,7 +60,7 @@ public class SnomedMrcmRangeRequestBuilder extends BaseRequestBuilder<SnomedMrcm
 	}
 	
 	@Override
-	protected Request<BranchContext, SnomedReferenceSetMembers> doBuild() {	
+	protected SearchResourceRequest<BranchContext, SnomedReferenceSetMembers> createSearch() {	
 		SnomedMrcmRangeRequest request = new SnomedMrcmRangeRequest();
 		request.setAttributeType(attributeType);
 		request.setModuleIds(moduleIds);

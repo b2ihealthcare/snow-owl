@@ -36,7 +36,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 8.8.0
  */
-@Tag(description="Rules", name = "rules")
+@Tag(description="MRCM Rules", name = "mrcm")
 @RestController
 public class SnomedMrcmRestService extends AbstractRestService {
 	
@@ -48,7 +48,7 @@ public class SnomedMrcmRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 		@ApiResponse(responseCode = "404", description = "Not found"),
 	})
-	@GetMapping(value = "/{path:**}/types", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping(value = "/{path:**}/mrcm/attribute/domains", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedReferenceSetMembers> getApplicableTypes(
 			@Parameter(description = "The resource path", required = true)
 			@PathVariable(name ="path")
@@ -72,8 +72,15 @@ public class SnomedMrcmRestService extends AbstractRestService {
 			
 			@Parameter(name = "moduleIds", description = "List of applicable modules refining the scope of returned rules", required = false)
 			@RequestParam(name = "moduleIds", required = false)
-			final List<String> moduleIds
-			) {
+			final List<String> moduleIds,
+			
+			@RequestParam(name = "searchAfter", required = false)
+			@Parameter(name = "searchAfter", description = "The search key to use for retrieving the next page of results")
+			final String searchAfter,
+			
+			@RequestParam(name = "limit", required = false, defaultValue = "50")
+			@Parameter(name = "limit",description = "The maximum number of items to return")
+			int limit) {
 		
 		return SnomedRequests.prepareGetMrcmTypeRules()
 			.setAttributeType(MrcmAttributeType.getByNameIgnoreCase(attributeType))
@@ -81,6 +88,8 @@ public class SnomedMrcmRestService extends AbstractRestService {
 			.setParentIds(parentIds)
 			.setRefSetIds(refsetIds)
 			.setSelfIds(selfIds)
+			.setLimit(limit)
+			.setSearchAfter(searchAfter)
 			.build(path)
 			.execute(getBus());
 	}
@@ -93,7 +102,7 @@ public class SnomedMrcmRestService extends AbstractRestService {
 			@ApiResponse(responseCode = "400", description = "Bad Request"),
 			@ApiResponse(responseCode = "404", description = "Not found"),
 		})
-		@GetMapping(value = "/{path:**}/ranges", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+		@GetMapping(value = "/{path:**}/mrcm/attribute/ranges", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 		public @ResponseBody Promise<SnomedReferenceSetMembers> getApplicableRanges(
 				@Parameter(description = "The resource path", required = true)
 				@PathVariable(name ="path")
@@ -117,8 +126,15 @@ public class SnomedMrcmRestService extends AbstractRestService {
 				
 				@Parameter(name = "moduleIds", description = "List of applicable modules refining the scope of returned rules", required = false)
 				@RequestParam(name = "moduleIds", required = false)
-				final List<String> moduleIds
-				) {
+				final List<String> moduleIds,
+				
+				@RequestParam(name = "searchAfter", required = false)
+				@Parameter(name = "searchAfter", description = "The search key to use for retrieving the next page of results")
+				final String searchAfter,
+				
+				@RequestParam(name = "limit", required = false, defaultValue = "50")
+				@Parameter(name = "limit",description = "The maximum number of items to return")
+				int limit) {
 			
 			return SnomedRequests.prepareGetMrcmRangeRules()
 				.setAttributeType(MrcmAttributeType.getByNameIgnoreCase(attributeType))
@@ -126,6 +142,8 @@ public class SnomedMrcmRestService extends AbstractRestService {
 				.setParentIds(parentIds)
 				.setRefSetIds(refsetIds)
 				.setSelfIds(selfIds)
+				.setLimit(limit)
+				.setSearchAfter(searchAfter)
 				.build(path)
 				.execute(getBus());
 		}
