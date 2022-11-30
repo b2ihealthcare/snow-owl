@@ -65,11 +65,8 @@ http://localhost:8080/snowowl/codesystems \
       }
     ],
     "publisher": "SNOMED International",
-    "ownerProfileName": "snowowl",
     "namespace": "373872000",
-    "maintainerType": "SNOMED_INTERNATIONAL",
-    "defaultRefsetModuleId": "900000000000012004",
-    "defaultQueryTypeRefsetId": "900000000000513000"
+    "maintainerType": "SNOMED_INTERNATIONAL"
   }
 }'
 ```
