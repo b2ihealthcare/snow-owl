@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,12 +61,13 @@ public class CisAuthenticationService extends AbstractRestService {
 	public Token login(
 			@Parameter(description = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
-		return UserRequests.prepareLogin()
+		return new Token(UserRequests.prepareLogin()
 				.setUsername(credentials.getUsername())
 				.setPassword(credentials.getPassword())
 				.buildAsync()
 				.execute(getBus())
-				.getSync();
+				.getSync()
+				.getAccessToken());
 	}
 	
 	@Operation(summary="Closes a session, identified by the token.")

@@ -97,6 +97,7 @@ public interface Permission extends Serializable {
 	/**
 	 * @return a {@link List} representation of all permission resources this permission gives access to.
 	 */
+	@JsonIgnore
 	default List<String> getResources() {
 		return List.of(getResource());
 	}
@@ -110,6 +111,7 @@ public interface Permission extends Serializable {
 	/**
 	 * @return <code>true</code> if the permission implies the superuser (aka administrator) permission, which is any operation allowed on any resource, <code>false</code> if not.
 	 */
+	@JsonIgnore
 	default boolean isAdmin() {
 		return Permission.ALL.equals(getOperation()) && Permission.ALL.equals(getResource());
 	}
