@@ -39,7 +39,6 @@ import com.b2international.snowowl.core.util.PlatformUtil;
 public class JWTConfigurationTest {
 
 	private ApplicationContext services = ApplicationContext.getInstance();
-	private IdentityProvider identityProvider = IdentityProvider.NOOP;
 
 	@Before
 	public void setup() {
@@ -59,7 +58,7 @@ public class JWTConfigurationTest {
 	@Test
 	public void defaultConfig() throws Exception {
 		IdentityConfiguration conf = readConfig("default.yml");
-		new IdentityPlugin().configureJWT(services, identityProvider, conf);
+		new IdentityPlugin().initializeIdentityProvider(env, conf);
 		assertThatThrownBy(() -> services.getService(JWTGenerator.class).generate("test@example.com", Map.of()))
 			.isInstanceOf(BadRequestException.class)
 			.hasMessage("JWT token signing is not configured.");

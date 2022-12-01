@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.JWTCapableIdentityProvider;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.Users;
@@ -62,7 +62,7 @@ import com.google.common.collect.Iterators;
  * @since 5.11
  * @see LdapIdentityProviderConfig
  */
-final class LdapIdentityProvider implements IdentityProvider {
+final class LdapIdentityProvider extends JWTCapableIdentityProvider<LdapIdentityProviderConfig> {
 
 	private enum EmptyNamingEnumeration implements NamingEnumeration<Object> {
 		INSTANCE;
@@ -102,10 +102,8 @@ final class LdapIdentityProvider implements IdentityProvider {
 	private static final String ATTRIBUTE_DN = "dn";
 	private static final String ATTR_CN = "cn";
 	
-	private final LdapIdentityProviderConfig conf;
-	
 	public LdapIdentityProvider(LdapIdentityProviderConfig conf) {
-		this.conf = conf;
+		super(conf);
 		final Map<String, String> options = new TreeMap<>();
 		options.put("bindDn", conf.getBindDn());
 		options.put("baseDn", conf.getBaseDn());
@@ -115,11 +113,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		options.put("userIdProperty", conf.getUserIdProperty());
 		options.put("memberProperty", conf.getMemberProperty());
 		options.put("permissionProperty", conf.getPermissionProperty());
-		LOG.info("Configured LDAP identity provider with the following options: {}", options);
-	}
-	
-	@Override
-	public void validateSettings() throws Exception {
+		LOG.info("Verifying LDAP identity provider options: {}", options);
 		InitialLdapContext systemContext = null;
 		try {
 			systemContext = createLdapContext();
@@ -129,11 +123,17 @@ final class LdapIdentityProvider implements IdentityProvider {
 		} finally {
 			closeLdapContext(systemContext);
 		}
+		LOG.info("Configured LDAP identity provider with the following options: {}", options);
 	}
 	
 	@Override
 	public String getInfo() {
-		return String.join("@", TYPE, conf.getUri());
+		return String.join("@", TYPE, getConfiguration().getUri());
+	}
+	
+	@Override
+	protected String getType() {
+		return TYPE;
 	}
 	
 	@Override
@@ -158,6 +158,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		Preconditions.checkNotNull(context, "Directory context is null.");
 		Preconditions.checkNotNull(username, "Username is null.");
 
+		final LdapIdentityProviderConfig conf = getConfiguration();
 		final String userFilterWithUsername = String.format("(&%s(%s=%s))", conf.getUserFilter(), conf.getUserIdProperty(), username);
 
 		NamingEnumeration<SearchResult> searchResultEnumeration = null;
@@ -193,6 +194,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 
 	@Override
 	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
+		final LdapIdentityProviderConfig conf = getConfiguration();
 		final ImmutableList.Builder<User> resultBuilder = ImmutableList.builder();
 		final String uidProp = conf.getUserIdProperty();
 		
@@ -236,6 +238,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 	}
 	
 	protected Collection<LdapRole> getAllLdapRoles(InitialLdapContext context) throws NamingException {
+		final LdapIdentityProviderConfig conf = getConfiguration();
 		NamingEnumeration<SearchResult> enumeration = null;
 		try {
 			final ImmutableList.Builder<LdapRole> results = ImmutableList.builder();
@@ -290,6 +293,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 	 * @return a Hashtable of properties in a format required by InitialLdapContext's constructor
 	 */
 	private Hashtable<String, Object> createLdapEnvironment() {
+		final LdapIdentityProviderConfig conf = getConfiguration();
 		final Hashtable<String, Object> env = new Hashtable<String, Object>();
 
 		env.put(Context.INITIAL_CONTEXT_FACTORY, LDAP_CTX_FACTORY);

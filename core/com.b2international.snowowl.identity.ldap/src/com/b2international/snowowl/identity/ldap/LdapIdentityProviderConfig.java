@@ -18,7 +18,7 @@ package com.b2international.snowowl.identity.ldap;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.TokenReplacer;
-import com.b2international.snowowl.core.identity.IdentityProviderConfig;
+import com.b2international.snowowl.core.identity.JWTCapableIdentityProviderConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
  * @since 5.11
  */
 @JsonTypeName("ldap")
-public class LdapIdentityProviderConfig implements IdentityProviderConfig {
+public class LdapIdentityProviderConfig extends JWTCapableIdentityProviderConfig {
 
 	@NotEmpty private String uri;
 	@NotEmpty private String baseDn = "dc=snowowl,dc=b2international,dc=com";

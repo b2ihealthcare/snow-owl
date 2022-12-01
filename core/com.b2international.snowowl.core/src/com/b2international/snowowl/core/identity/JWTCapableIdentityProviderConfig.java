@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.identity.file;
+package com.b2international.snowowl.core.identity;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.b2international.snowowl.core.identity.JWTCapableIdentityProviderConfig;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 5.11
+ * @since 8.8.0
  */
-@JsonTypeName(FileIdentityProvider.TYPE)
-public class FileIdentityProviderConfig extends JWTCapableIdentityProviderConfig {
+public abstract class JWTCapableIdentityProviderConfig implements IdentityProviderConfig {
+
+	private JWTConfiguration jwt;
 	
-	@NotEmpty
-	private String name;
-	
-	public String getName() {
-		return name;
+	@JsonProperty("jwt")
+	public JWTConfiguration getJWTConfiguration() {
+		return jwt;
 	}
 	
-	public void setName(String name) {
-		this.name = name;
+	@JsonProperty("jwt")
+	public void setJWTConfiguration(JWTConfiguration jwt) {
+		this.jwt = jwt;
 	}
 	
 }

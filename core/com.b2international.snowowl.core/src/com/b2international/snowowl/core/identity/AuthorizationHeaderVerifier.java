@@ -23,10 +23,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.UnauthorizedException;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 
 /**
@@ -37,34 +35,12 @@ import com.google.common.base.Charsets;
  */
 public final class AuthorizationHeaderVerifier {
 
-	private final JWTVerifier verifier;
 	private final IdentityProvider identityProvider;
-	private final String emailClaimProperty;
-	private final String permissionsClaimProperty;
 
-	public AuthorizationHeaderVerifier(JWTVerifier verifier, IdentityProvider identityProvider, String emailClaimProperty,
-			String permissionsClaimProperty) {
-		this.verifier = verifier;
+	public AuthorizationHeaderVerifier(IdentityProvider identityProvider) {
 		this.identityProvider = identityProvider;
-		this.emailClaimProperty = emailClaimProperty;
-		this.permissionsClaimProperty = permissionsClaimProperty;
 	}
 	
-	@VisibleForTesting
-	public JWTVerifier getVerifier() {
-		return verifier;
-	}
-	
-	@VisibleForTesting
-	public String getEmailClaimProperty() {
-		return emailClaimProperty;
-	}
-	
-	@VisibleForTesting
-	public String getPermissionsClaimProperty() {
-		return permissionsClaimProperty;
-	}
-
 	/**
 	 * Authenticates an authorization token. 
 	 * Supported formats are: - Basic: Base64 encoded username:password 
@@ -107,7 +83,8 @@ public final class AuthorizationHeaderVerifier {
 	 */
 	public User authJWT(final String token) {
 		try {
-			final DecodedJWT jwt = verifier.verify(token);
+			final DecodedJWT decodedJWT = JWT.decode(token);
+			final DecodedJWT jwt = identityProvider.jwt(decodedJWT.getIssuer()).verify(token);
 			return toUser(jwt);
 		} catch (JWTVerificationException e) {
 			throw new UnauthorizedException("Incorrect authorization token");
@@ -136,11 +113,13 @@ public final class AuthorizationHeaderVerifier {
 	 *             - if either the configured email or permissions property is missing from the given JWT
 	 */
 	public User toUser(DecodedJWT jwt) {
+		final String emailClaimProperty = identityProvider.jwt(jwt.getIssuer()).config().getEmailClaimProperty();
 		final Claim emailClaim = jwt.getClaim(emailClaimProperty);
 		if (emailClaim == null || emailClaim.isNull()) {
 			throw new BadRequestException("'%s' JWT access token field is required for email access, but it was missing.", emailClaimProperty);
 		}
 
+		final String permissionsClaimProperty = identityProvider.jwt(jwt.getIssuer()).config().getPermissionsClaimProperty();
 		Claim permissionsClaim = jwt.getClaim(permissionsClaimProperty);
 		if (permissionsClaim == null || permissionsClaim.isNull()) {
 			throw new BadRequestException("'%s' JWT access token field is required for permissions access, but it was missing.",

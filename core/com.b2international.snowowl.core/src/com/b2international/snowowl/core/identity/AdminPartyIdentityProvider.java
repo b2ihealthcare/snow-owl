@@ -48,6 +48,11 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 	public User auth(String username, String token) {
 		return overrideUserRoles(delegate.auth(username, token));
 	}
+	
+	@Override
+	public JWTSupport jwt(String issuer) {
+		return delegate.jwt(issuer);
+	}
 
 	@Override
 	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
@@ -71,8 +76,4 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 		return String.format("adminParty[%s]", delegate.getInfo());
 	}
 
-	@Override
-	public void validateSettings() {
-		// Nothing to do
-	}
 }

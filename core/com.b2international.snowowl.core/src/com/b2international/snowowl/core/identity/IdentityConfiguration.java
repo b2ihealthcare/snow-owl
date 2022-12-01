@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.identity;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -28,15 +27,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class IdentityConfiguration {
 
-	private static final String SNOW_OWL_ISSUER = "Snow Owl";
+	private static final String OLD_SNOW_OWL_ISSUER = "Snow Owl (pre-8.8.0)";
 
 	private boolean adminParty = false;
 	
 	// JWT configuration
-	private String issuer = SNOW_OWL_ISSUER;
+	private String issuer = OLD_SNOW_OWL_ISSUER;
+	private String jwksUrl;
 	
 	private String jws;
-	private String jwksUrl;
 	private String secret;
 	private String signingKey;
 	private String verificationKey;
@@ -126,9 +125,4 @@ public class IdentityConfiguration {
 		this.permissionsClaimProperty = permissionsClaimProperty;
 	}
 
-	@JsonIgnore
-	public boolean isExternalIssuer() {
-		return !SNOW_OWL_ISSUER.equals(getIssuer());
-	}
-	
 }
