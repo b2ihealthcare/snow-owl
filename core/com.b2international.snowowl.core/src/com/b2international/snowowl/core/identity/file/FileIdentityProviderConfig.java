@@ -17,14 +17,14 @@ package com.b2international.snowowl.core.identity.file;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.identity.JWTCapableIdentityProviderConfig;
+import com.b2international.snowowl.core.identity.IdentityProviderConfig;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * @since 5.11
  */
 @JsonTypeName(FileIdentityProvider.TYPE)
-public class FileIdentityProviderConfig extends JWTCapableIdentityProviderConfig {
+public class FileIdentityProviderConfig implements IdentityProviderConfig {
 	
 	@NotEmpty
 	private String name;

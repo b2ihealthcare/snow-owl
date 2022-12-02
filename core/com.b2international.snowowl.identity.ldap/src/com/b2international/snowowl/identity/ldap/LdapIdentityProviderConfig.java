@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.identity.ldap;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.TokenReplacer;
-import com.b2international.snowowl.core.identity.JWTCapableIdentityProviderConfig;
+import com.b2international.snowowl.core.identity.IdentityProviderConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
  * @since 5.11
  */
 @JsonTypeName("ldap")
-public class LdapIdentityProviderConfig extends JWTCapableIdentityProviderConfig {
+public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 
 	@NotEmpty private String uri;
 	@NotEmpty private String baseDn = "dc=snowowl,dc=b2international,dc=com";

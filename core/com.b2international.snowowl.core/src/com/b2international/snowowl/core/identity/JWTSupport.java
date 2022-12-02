@@ -15,22 +15,62 @@
  */
 package com.b2international.snowowl.core.identity;
 
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.auth0.jwt.interfaces.RSAKeyProvider;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.SnowOwl;
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.hash.Hashing;
 
 /**
  * @since 8.8.0
  */
-public interface JWTSupport extends JWTGenerator, JWTVerifier {
+public class JWTSupport implements JWTGenerator {
 
-	/**
-	 * @since 8.8.0
-	 */
-	JWTSupport DISABLED = new JWTSupport() {
+	// known public/private RSA key pair headers (PEM file format, Base64 encoded DER keys)
+	private static final String PUBLIC_HEADER = "-----BEGIN PUBLIC KEY-----";
+	private static final String PUBLIC_FOOTER = "-----END PUBLIC KEY-----";
+	private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
+	private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
+	
+	// Configuration Map that create supported JWT token signing/verification algorithms
+	public static final Map<String, BiFunction<JWTConfiguration, RSAKeyProvider, Algorithm>> SUPPORTED_JWS_ALGORITHMS = Map.of(
+		"HS256", (config, keyProvider) -> Optional.ofNullable(config.getSecret())
+			.map(Algorithm::HMAC256)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'secret' is required to configure '%s' for JWT token signing/verification.", config.getJws()))),
+		"HS512", (config, keyProvider) -> Optional.ofNullable(config.getSecret())
+			.map(Algorithm::HMAC512)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'secret' is required to configure '%s' for JWT token signing/verification.", config.getJws()))),
+		"RS256", (config, keyProvider) -> Optional.ofNullable(keyProvider)
+			.map(Algorithm::RSA256)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws()))),
+		"RS512", (config, keyProvider) -> Optional.ofNullable(keyProvider)
+			.map(Algorithm::RSA512)
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws())))
+	);
+	
+	// Disabled JWT Verifier implementation that throws an exception if any verification related logic would be required
+	private static final JWTVerifier JWT_VERIFIER_DISABLED = new JWTVerifier() {
 		@Override
 		public DecodedJWT verify(DecodedJWT arg0) throws JWTVerificationException {
 			throw new BadRequestException("JWT token verification is not configured.");
@@ -40,7 +80,10 @@ public interface JWTSupport extends JWTGenerator, JWTVerifier {
 		public DecodedJWT verify(String arg0) throws JWTVerificationException {
 			throw new BadRequestException("JWT token verification is not configured.");
 		}
-		
+	};
+
+	// Disabled JWT Generator implementation that throws an exception if any token signing related logic would be required
+	private static final JWTGenerator JWT_GENERATOR_DISABLED = new JWTGenerator() {
 		@Override
 		public String generate(User user) {
 			throw new BadRequestException("JWT token signing is not configured.");
@@ -50,13 +93,183 @@ public interface JWTSupport extends JWTGenerator, JWTVerifier {
 		public String generate(String email, Map<String, Object> claims) {
 			throw new BadRequestException("JWT token signing is not configured.");
 		}
-		
-		@Override
-		public JWTConfiguration config() {
-			throw new BadRequestException("JWT token signing and verification is not configured.");
-		}
 	};
+	
+	private final JWTConfiguration config;
+	
+	private JWTGenerator generator;
+	private JWTVerifier verifier;
+	
+	JWTSupport(JWTConfiguration config) {
+		this.config = config;
+	}
+	
+	public void init() throws Exception {
+		RSAKeyProvider rsaKeyProvider = createRSAKeyProvider(config);
+		Algorithm algorithm;
+		if (!Strings.isNullOrEmpty(config.getJws())) {
+			algorithm = SUPPORTED_JWS_ALGORITHMS.getOrDefault(config.getJws(), JWTSupport::throwUnsupportedJws).apply(config, rsaKeyProvider);
+		} else {
+			IdentityProvider.LOG.warn("'identity.jws' configuration is missing, disabling JWT authorization token signing and verification.");
+			algorithm = null;
+		}
+		
+		if (algorithm == null) {
+			// both signing and verification is disabled
+			generator = JWT_GENERATOR_DISABLED;
+			verifier = JWT_VERIFIER_DISABLED;
+		} else if (rsaKeyProvider != null && rsaKeyProvider.getPrivateKey() == null) {
+			generator = JWT_GENERATOR_DISABLED;
+			verifier = createJWTVerifier(algorithm, config);
+		} else {
+			generator = new DefaultJWTGenerator(algorithm, config.getIssuer(), config.getEmailClaimProperty(), config.getPermissionsClaimProperty());
+			verifier = createJWTVerifier(algorithm, config);
+		}
+	}
+	
+	public User authJWT(String token) {
+		return toUser(verifier.verify(token), config);
+	}
+	
+	/**
+	 * Converts the given JWT access token to a {@link User} representation using the configured email and permission claims. This method does not
+	 * verify the given access token, it only decodes it and uses the publicly available claims to construct the {@link User} object. To verify a
+	 * token and create a user object use the {@link #authJWT(String)} method.
+	 * 
+	 * @param token
+	 * @return a {@link User} instance created from the given token
+	 */
+	public User toUser(String token) {
+		return toUser(JWT.decode(token), config);
+	}
 
-	JWTConfiguration config();
+	@Override
+	public String generate(String email, Map<String, Object> claims) {
+		return generator.generate(email, claims);
+	}
+	
+	@Override
+	public String generate(User user) {
+		return generator.generate(user);
+	}
+	
+	private RSAKeyProvider createRSAKeyProvider(JWTConfiguration conf) throws Exception {
+		final String privateKeyId;
+		final RSAPrivateKey privateKey;
+		
+		// read private key if provided
+		if (!Strings.isNullOrEmpty(conf.getSigningKey())) {
+			privateKeyId = Hashing.goodFastHash(16).hashString(conf.getSigningKey(), Charsets.UTF_8).toString();
+			privateKey = readPrivateKey(conf.getSigningKey());
+		} else {
+			privateKeyId = null;
+			privateKey = null;
+		}
+		
+		if (!Strings.isNullOrEmpty(conf.getVerificationKey())) {
+			RSAPublicKey publicKey = readPublicKey(conf.getVerificationKey());
+			return new RSAKeyProvider() {
+				
+				@Override
+				public RSAPublicKey getPublicKeyById(String kid) {
+					return publicKey;
+				}
+				
+				@Override
+				public String getPrivateKeyId() {
+					return privateKeyId;
+				}
+				
+				@Override
+				public RSAPrivateKey getPrivateKey() {
+					return privateKey;
+				}
+	
+			};			
+		} else {
+			// if verification key is not configured then this not an RSA configuration (or an invalid configuration raised when creating the algorithm instance)
+			// token signing on its own cannot be configured
+			return null;
+		}
+	}
+
+	private RSAPrivateKey readPrivateKey(String value) {
+		if (value.startsWith(PKCS8_HEADER)) {
+			try {
+				String extractedKey = value
+						// replace header
+						.replace(PKCS8_HEADER, "")
+						// replace any line endings if present
+						.replaceAll("\\r", "")
+						.replaceAll("\\n", "")
+						// replace footer
+						.replace(PKCS8_FOOTER, "");
+				PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(extractedKey));
+				return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+			} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+				throw new SnowOwl.InitializationException("Invalid signingKey. Only Base64 encoded PKCS#1, PKCS#8 or JWK keys are supported. Error: " + e.getMessage());
+			}			
+		} else {
+			// TODO support PKCS#1
+			// TODO support JWK strings
+			throw new SnowOwl.InitializationException(String.format(""));
+		}
+	}
+
+	private RSAPublicKey readPublicKey(String value) {
+	    try {
+	    	String extractedKey = value
+					// replace header
+					.replace(PUBLIC_HEADER, "")
+					// replace any line endings if present
+					.replaceAll("\\r", "")
+					.replaceAll("\\n", "")
+					// replace footer
+					.replace(PUBLIC_FOOTER, "");
+	    	X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(extractedKey));
+			return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(keySpec);
+		} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+			throw new SnowOwl.InitializationException("Invalid verificationKey. Only Base64 encoded X509 Certificate keys are supported. Error: " + e.getMessage());
+		}
+	}
+	
+	public static final com.auth0.jwt.JWTVerifier createJWTVerifier(Algorithm algorithm, final JWTConfiguration conf) {
+		return JWT.require(algorithm)
+				.withIssuer(conf.getIssuer())
+				.acceptLeeway(3L) // 3 seconds
+				.build();
+	}
+	
+	public static final Algorithm throwUnsupportedJws(JWTConfiguration config, RSAKeyProvider keyProvider) {
+		throw new SnowOwl.InitializationException(String.format("Unsupported JWT token signing algorithm: %s", config.getJws()));
+	}
+	
+	/**
+	 * Converts the given JWT access token to a {@link User} representation using the configured email and permission claims.
+	 * 
+	 * @param jwt
+	 *            - the JWT to convert to a {@link User} object
+	 * @return
+	 * @throws BadRequestException
+	 *             - if either the configured email or permissions property is missing from the given JWT
+	 */
+	public static User toUser(DecodedJWT jwt, JWTConfiguration config) {
+		final String emailClaimProperty = config.getEmailClaimProperty();
+		final Claim emailClaim = jwt.getClaim(emailClaimProperty);
+		if (emailClaim == null || emailClaim.isNull()) {
+			throw new BadRequestException("'%s' JWT access token field is required for email access, but it was missing.", emailClaimProperty);
+		}
+
+		final String permissionsClaimProperty = config.getPermissionsClaimProperty();
+		Claim permissionsClaim = jwt.getClaim(permissionsClaimProperty);
+		if (permissionsClaim == null || permissionsClaim.isNull()) {
+			throw new BadRequestException("'%s' JWT access token field is required for permissions access, but it was missing.",
+					permissionsClaimProperty);
+		}
+
+		final List<Permission> permissions = jwt.getClaim(permissionsClaimProperty).asList(String.class).stream().map(Permission::valueOf)
+				.collect(Collectors.toList());
+		return new User(emailClaim.asString(), permissions);
+	}
 
 }

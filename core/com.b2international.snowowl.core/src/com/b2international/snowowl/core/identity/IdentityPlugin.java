@@ -49,10 +49,13 @@ public final class IdentityPlugin extends Plugin {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
 		IdentityProvider identityProvider = initializeIdentityProvider(env, conf);
 		
+		// attach global JWT support to the current identity provider configured via snowowl.yml
+		final JWTSupport jwtSupport = new JWTSupport(conf);
+		
 		IdentityProvider.LOG.info("Configured identity providers [{}]", identityProvider.getInfo());
 		env.services().registerService(IdentityProvider.class, identityProvider);
 		// always configure a JWTGenerator, a JWTVerifier and an AuthorizationHeader verifier
-		env.services().registerService(AuthorizationHeaderVerifier.class, new AuthorizationHeaderVerifier(identityProvider));
+		env.services().registerService(AuthorizationHeaderVerifier.class, new AuthorizationHeaderVerifier(jwtSupport, identityProvider));
 	}
 
 	@VisibleForTesting

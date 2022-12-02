@@ -17,14 +17,15 @@ package com.b2international.snowowl.core.identity.jwks;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.identity.JWTCapableIdentityProviderConfig;
+import com.b2international.snowowl.core.identity.IdentityProviderConfig;
+import com.b2international.snowowl.core.identity.JWTConfiguration;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * @since 8.8.0
  */
 @JsonTypeName(JwksIdentityProvider.TYPE)
-public class JwksIdentityProviderConfig extends JWTCapableIdentityProviderConfig {
+public class JwksIdentityProviderConfig implements IdentityProviderConfig {
 
 	@NotEmpty
 	private String issuer;
@@ -35,6 +36,7 @@ public class JwksIdentityProviderConfig extends JWTCapableIdentityProviderConfig
 	@NotEmpty
 	private String jwksUrl;
 	
+	private String emailClaimProperty;
 	private String permissionsClaimProperty;
 	
 	public String getIssuer() {
@@ -53,6 +55,10 @@ public class JwksIdentityProviderConfig extends JWTCapableIdentityProviderConfig
 		return permissionsClaimProperty;
 	}
 	
+	public String getEmailClaimProperty() {
+		return emailClaimProperty;
+	}
+	
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
 	}
@@ -67,6 +73,19 @@ public class JwksIdentityProviderConfig extends JWTCapableIdentityProviderConfig
 	
 	public void setPermissionsClaimProperty(String permissionsClaimProperty) {
 		this.permissionsClaimProperty = permissionsClaimProperty;
+	}
+	
+	public void setEmailClaimProperty(String emailClaimProperty) {
+		this.emailClaimProperty = emailClaimProperty;
+	}
+
+	public JWTConfiguration toJWTConfiguration() {
+		final JWTConfiguration jwtConfiguration = new JWTConfiguration();
+		jwtConfiguration.setJws(jws);
+		jwtConfiguration.setIssuer(issuer);
+		jwtConfiguration.setEmailClaimProperty(emailClaimProperty);
+		jwtConfiguration.setPermissionsClaimProperty(permissionsClaimProperty);
+		return jwtConfiguration;
 	}
 
 }

@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.exceptions.BadRequestException;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.setup.Environment;
 
@@ -47,6 +48,12 @@ public interface IdentityProvider {
 		}
 
 		@Override
+		public User authJWT(String token) {
+			final DecodedJWT decodedToken = JWT.decode(token);
+			return new User(decodedToken.getSubject(), List.of(Permission.ADMIN));
+		}
+
+		@Override
 		public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 			// generate fake Users for given usernames with admin permission
 			final List<User> users = usernames.stream().limit(limit).map(username -> new User(username, List.of(Permission.ADMIN)))
@@ -58,12 +65,7 @@ public interface IdentityProvider {
 		public String getInfo() {
 			return "unprotected";
 		}
-		
-		@Override
-		public JWTSupport jwt(String issuer) {
-			return JWTSupport.DISABLED;
-		}
-		
+
 	};
 
 	/**
@@ -76,7 +78,21 @@ public interface IdentityProvider {
 	 * @return an authenticated {@link User} and its permissions or <code>null</code> if the username or password is incorrect or authentication is
 	 *         not supported by this provider
 	 */
-	User auth(String username, String password);
+	default User auth(String username, String password) {
+		return null;
+	}
+
+	/**
+	 * Authenticates an incoming web token.
+	 * 
+	 * @param token
+	 *            - the Json Web Token to verify
+	 * @return an authenticated {@link User} and its permissions or <code>null</code> if the token is incorrect or authentication using JWTs is not
+	 *         supported by this provider
+	 */
+	default User authJWT(String token) {
+		return null;
+	}
 
 	/**
 	 * Filters and return users based on the given filters. In case of no filters returns all users (paged response).
@@ -102,17 +118,10 @@ public interface IdentityProvider {
 	 * should be ready to receive authentication and token generation/verification requests. By default this method is no-op.
 	 * 
 	 * @param env
-	 * @throws Exception - if an initialization error occurs
+	 * @throws Exception
+	 *             - if an initialization error occurs
 	 */
 	default void init(Environment env) throws Exception {
 	}
-
-	/**
-	 * Return the {@link JWTSupport} instance that can handle tokens issues by the given issuer.
-	 * @param issuer
-	 * @return
-	 * @throws BadRequestException - if there is no {@link JWTSupport} associated with the given issuer value
-	 */
-	JWTSupport jwt(String issuer);
 
 }

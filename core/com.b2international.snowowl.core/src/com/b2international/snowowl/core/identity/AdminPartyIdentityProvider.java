@@ -50,10 +50,10 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 	}
 	
 	@Override
-	public JWTSupport jwt(String issuer) {
-		return delegate.jwt(issuer);
+	public User authJWT(String token) {
+		return overrideUserRoles(delegate.authJWT(token));
 	}
-
+	
 	@Override
 	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 		return delegate.searchUsers(usernames, limit)
@@ -68,7 +68,11 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 	}
 
 	private User overrideUserRoles(User user) {
-		return new User(user.getUserId(), ADMINPARTY_ROLES);
+		if (user == null) {
+			return null;
+		} else {
+			return new User(user.getUserId(), ADMINPARTY_ROLES);
+		}
 	}
 	
 	@Override

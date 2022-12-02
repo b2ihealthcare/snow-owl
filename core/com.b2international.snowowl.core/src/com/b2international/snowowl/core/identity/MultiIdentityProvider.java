@@ -47,10 +47,10 @@ public final class MultiIdentityProvider implements IdentityProvider, IdentityWr
 	}
 
 	@Override
-	public User auth(String username, String token) {
+	public User auth(String username, String password) {
 		for (IdentityProvider identityProvider : providers) {
 			try {
-				User user = identityProvider.auth(username, token);
+				User user = identityProvider.auth(username, password);
 				if (user != null) {
 					return user;
 				}
@@ -58,7 +58,22 @@ public final class MultiIdentityProvider implements IdentityProvider, IdentityWr
 				// ignore bad request exceptions coming from providers
 			}
 		}
-		return null;
+		return IdentityProvider.super.auth(username, password);
+	}
+	
+	@Override
+	public User authJWT(String token) {
+		for (IdentityProvider identityProvider : providers) {
+			try {
+				User user = identityProvider.authJWT(token);
+				if (user != null) {
+					return user;
+				}
+			} catch (BadRequestException e) {
+				// ignore bad request exceptions coming from providers
+			}
+		}
+		return IdentityProvider.super.authJWT(token);
 	}
 
 	@Override
@@ -86,18 +101,6 @@ public final class MultiIdentityProvider implements IdentityProvider, IdentityWr
 			provider.init(env);
 		}
 		// validate multi-identity provider configuration that each JWT support has its own issuer configured
-	}
-	
-	@Override
-	public JWTSupport jwt(String issuer) {
-		for (final IdentityProvider provider : providers) {
-			try {
-				return provider.jwt(issuer);
-			} catch (BadRequestException e) {
-				// ignore this provider when looking for the right JWT support
-			}
-		}
-		throw new BadRequestException("");
 	}
 	
 	public List<IdentityProvider> getProviders() {

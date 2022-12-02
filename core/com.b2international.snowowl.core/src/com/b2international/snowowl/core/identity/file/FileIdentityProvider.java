@@ -43,25 +43,26 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 5.11
  */
-final class FileIdentityProvider extends JWTCapableIdentityProvider<FileIdentityProviderConfig> implements IdentityWriter {
+final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 
 	static final String TYPE = "file";
 	private static final String USER_ENTRY_SEPARATOR = ":";
 	private static final Splitter USER_ENTRY_SPLITTER = Splitter.on(USER_ENTRY_SEPARATOR);
 	private static final Joiner USER_ENTRY_JOINER = Joiner.on(USER_ENTRY_SEPARATOR);
 	
+	private final FileIdentityProviderConfig configuration;
+	
 	private Path usersFile;
 	private Map<String, FileUser> users;
 	private Map<String, String> verifiedTokens;
 	
 	public FileIdentityProvider(FileIdentityProviderConfig configuration) throws IOException {
-		super(configuration);
+		this.configuration = configuration;
 	}
 	
 	@Override
 	public void init(Environment env) throws Exception {
-		super.init(env);
-		final Path usersFile = env.getConfigPath().resolve(getConfiguration().getName());
+		final Path usersFile = env.getConfigPath().resolve(configuration.getName());
 		final File file = usersFile.toFile();
 		if (!file.exists()) {
 			file.createNewFile();
@@ -71,11 +72,6 @@ final class FileIdentityProvider extends JWTCapableIdentityProvider<FileIdentity
 		this.verifiedTokens = newHashMap();
 	}
 
-	@Override
-	protected String getType() {
-		return TYPE;
-	}
-	
 	@Override
 	public User auth(String username, String token) {
 		if (verifiedTokens.containsKey(username) && Objects.equals(token, verifiedTokens.get(username))) {
