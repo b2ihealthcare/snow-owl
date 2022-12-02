@@ -119,6 +119,10 @@ public final class User implements Serializable {
 	public boolean hasPermission(Permission permissionRequirement) {
 		return getPermissions().stream().anyMatch(permission -> permission.implies(permissionRequirement));
 	}
+	
+	public User withAccessToken(String accessToken) {
+		return new User(userId, permissions, accessToken);
+	}
 
 	/**
 	 * @param userId

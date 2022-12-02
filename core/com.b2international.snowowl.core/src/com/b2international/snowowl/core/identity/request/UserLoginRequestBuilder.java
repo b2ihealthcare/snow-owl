@@ -28,6 +28,7 @@ public final class UserLoginRequestBuilder extends BaseRequestBuilder<UserLoginR
 
 	private String username;
 	private String password;
+	private String token;
 	
 	public UserLoginRequestBuilder setUsername(String username) {
 		this.username = username;
@@ -39,9 +40,14 @@ public final class UserLoginRequestBuilder extends BaseRequestBuilder<UserLoginR
 		return getSelf();
 	}
 	
+	public UserLoginRequestBuilder setToken(String token) {
+		this.token = token;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<ServiceProvider, User> doBuild() {
-		return new UserLoginRequest(username, password);
+		return new UserLoginRequest(username, password, token);
 	}
 
 }

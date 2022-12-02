@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.identity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -39,19 +40,26 @@ public final class UserLoginRequest implements Request<ServiceProvider, User> {
 	
 	@NotEmpty
 	private String password;
+	
+	private String token;
 
-	UserLoginRequest(String username, String password) {
+	UserLoginRequest(String username, String password, String token) {
 		this.username = username;
 		this.password = password;
+		this.token = token;
 	}
 	
 	@Override
 	public User execute(ServiceProvider context) {
-		final User user = context.service(IdentityProvider.class).auth(username, password);
+		User user = context.service(IdentityProvider.class).auth(username, password);
+		if (user == null) {
+			user = context.service(IdentityProvider.class).authJWT(token);
+		}
 		if (user == null) {
 			throw new UnauthorizedException("Incorrect username or password.");
 		}
-		return user;
+		// generate and attach a token
+		return user.withAccessToken(context.service(JWTSupport.class).generate(user));
 	}
 	
 }

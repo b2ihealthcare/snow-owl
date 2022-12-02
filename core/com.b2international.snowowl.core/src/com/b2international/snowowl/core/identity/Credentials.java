@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class Credentials implements Serializable {
 
+	private static final long serialVersionUID = 2L;
+	
 	private final String username;
 	private final String password;
+	private final String token;
 
 	@JsonCreator
 	public Credentials(
 			@JsonProperty("username") final String username, 
-			@JsonProperty("password") final String password) {
+			@JsonProperty("password") final String password,
+			@JsonProperty("token") final String token) {
 		this.username = username;
 		this.password = password;
+		this.token = token;
 	}
 
 	public String getUsername() {
@@ -44,6 +49,10 @@ public final class Credentials implements Serializable {
 
 	public String getPassword() {
 		return password;
+	}
+	
+	public String getToken() {
+		return token;
 	}
 
 }
