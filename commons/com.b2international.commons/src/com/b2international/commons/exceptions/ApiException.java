@@ -17,6 +17,7 @@ package com.b2international.commons.exceptions;
 
 import java.util.Map;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 /**
@@ -87,7 +88,9 @@ public abstract class ApiException extends FormattedRuntimeException {
 	 * @return this instance for method chaining
 	 */
 	public final ApiException withDeveloperMessage(String message, Object...args) {
-		this.developerMessage = String.format(message, args);
+		if (!Strings.isNullOrEmpty(message)) {
+			this.developerMessage = String.format(message, args);
+		}
 		return this;
 	}
 
