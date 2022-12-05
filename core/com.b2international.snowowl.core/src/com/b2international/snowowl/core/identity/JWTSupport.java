@@ -38,6 +38,7 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.SnowOwl;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
@@ -127,8 +128,13 @@ public class JWTSupport implements JWTGenerator {
 		}
 	}
 	
+	@VisibleForTesting
+	/*package*/ DecodedJWT verify(String token) {
+		return verifier.verify(token);
+	}
+	
 	public User authJWT(String token) {
-		return toUser(verifier.verify(token), config);
+		return toUser(verify(token), config);
 	}
 	
 	/**

@@ -47,19 +47,28 @@ public final class IdentityPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
-		IdentityProvider identityProvider = initializeIdentityProvider(env, conf);
-		
-		// attach global JWT support to the current identity provider configured via snowowl.yml
-		final JWTSupport jwtSupport = new JWTSupport(conf);
+		IdentityProvider identityProvider = initIdentityProvider(env, conf);
+		JWTSupport jwtSupport = initJWT(env, conf);
+		// JWTSupport for token generation and verification on a global level
+		env.services().registerService(JWTSupport.class, jwtSupport);
 		
 		IdentityProvider.LOG.info("Configured identity providers [{}]", identityProvider.getInfo());
+		// the main identity provider instance
 		env.services().registerService(IdentityProvider.class, identityProvider);
-		// always configure a JWTGenerator, a JWTVerifier and an AuthorizationHeader verifier
+		// HTTP Authorization header verification using global and identity specific JWT support
 		env.services().registerService(AuthorizationHeaderVerifier.class, new AuthorizationHeaderVerifier(jwtSupport, identityProvider));
 	}
 
 	@VisibleForTesting
-	/*package*/ IdentityProvider initializeIdentityProvider(Environment env, final IdentityConfiguration conf) {
+	/*package*/ JWTSupport initJWT(Environment env, final IdentityConfiguration conf) throws Exception {
+		// attach global JWT support to the current identity provider configured via snowowl.yml
+		JWTSupport jwtSupport = new JWTSupport(conf);
+		jwtSupport.init();
+		return jwtSupport;
+	}
+
+	@VisibleForTesting
+	/*package*/ IdentityProvider initIdentityProvider(Environment env, final IdentityConfiguration conf) {
 		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations() == null ? List.of() : conf.getProviderConfigurations());
 		
 		IdentityProvider identityProvider = null;
