@@ -25,10 +25,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.identity.Credentials;
+import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.cis.rest.model.EmptyJsonResponse;
@@ -50,7 +51,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class CisAuthenticationService extends AbstractRestService {
 
 	@Autowired
-	private JWTVerifier jwtVerifier;
+	private JWTSupport jwtSupport;
 	
 	@Operation(summary="Creates a session, obtaining a token for next operations.")
 	@ApiResponses({
@@ -92,19 +93,19 @@ public class CisAuthenticationService extends AbstractRestService {
 			@Parameter(description = "The security access token.", required = true)
 			@RequestBody 
 			Token token) {
-		String username = verify(token.getToken());
-		if (Strings.isNullOrEmpty(username)) {
+		User user = verify(token.getToken());
+		if (user == null || Strings.isNullOrEmpty(user.getUserId())) {
 			throw new UnauthorizedException("Token does not validate.");
 		} else {
 			final UserData userData = new UserData();
-			userData.setUsername(username);
+			userData.setUsername(user.getUserId());
 			return userData;
 		}
 	}
 
-	private String verify(String token) {
+	private User verify(String token) {
 		try {
-		    return jwtVerifier.verify(token).getSubject();
+		    return jwtSupport.authJWT(token);
 		} catch (JWTVerificationException exception){
 		    // Invalid signature/claims
 			return null;
