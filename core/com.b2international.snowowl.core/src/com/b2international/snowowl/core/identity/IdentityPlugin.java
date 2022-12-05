@@ -68,7 +68,7 @@ public final class IdentityPlugin extends Plugin {
 	}
 
 	@VisibleForTesting
-	/*package*/ IdentityProvider initIdentityProvider(Environment env, final IdentityConfiguration conf) {
+	/*package*/ IdentityProvider initIdentityProvider(Environment env, final IdentityConfiguration conf) throws Exception {
 		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations() == null ? List.of() : conf.getProviderConfigurations());
 		
 		IdentityProvider identityProvider = null;
@@ -83,6 +83,10 @@ public final class IdentityPlugin extends Plugin {
 		if (conf.isAdminParty()) {
 			identityProvider = new AdminPartyIdentityProvider(identityProvider);
 		}
+		
+		// ensure that identity providers are initialized
+		identityProvider.init(env);
+		
 		return identityProvider;
 	}
 
