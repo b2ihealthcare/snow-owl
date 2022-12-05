@@ -71,6 +71,22 @@ public final class Bundle extends Resource {
 				.setBundleId(getBundleId())
 				.setSettings(getSettings());
 	}
+	
+	public BundleUpdateRequestBuilder toUpdateRequest() {
+		return ResourceRequests.bundles().prepareUpdate(getId())
+				.setUrl(getUrl())
+				.setTitle(getTitle())
+				.setLanguage(getLanguage())
+				.setDescription(getDescription())
+				.setStatus(getStatus())
+				.setCopyright(getCopyright())
+				.setOwner(getOwner())
+				.setContact(getContact())
+				.setUsage(getUsage())
+				.setPurpose(getPurpose())
+				.setBundleId(getBundleId())
+				.setSettings(getSettings());
+	}
 
 	@Override
 	public Builder toDocumentBuilder() {
