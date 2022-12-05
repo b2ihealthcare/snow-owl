@@ -51,6 +51,7 @@ Export-Package: com.b2international.index,
  org.elasticsearch.common.unit,
  org.elasticsearch.core,
  org.elasticsearch.index.query,
+ org.elasticsearch.index.reindex,
  org.tartarus.snowball,
  org.tartarus.snowball.ext
 Import-Package: javax.management,

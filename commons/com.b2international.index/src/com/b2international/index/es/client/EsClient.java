@@ -31,6 +31,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.RemoteInfo;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
@@ -78,6 +79,8 @@ public interface EsClient extends AutoCloseable {
 	BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, QueryBuilder query) throws IOException;
 	
 	BulkByScrollResponse deleteByQuery(String index, int batchSize, QueryBuilder query) throws IOException;
+	
+	BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo) throws IOException;
 	
 	static EsClient create(final EsClientConfiguration configuration) {
 		return ClientPool.create(configuration);
