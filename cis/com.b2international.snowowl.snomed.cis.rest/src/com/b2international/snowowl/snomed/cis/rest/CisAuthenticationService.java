@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.core.identity.JWTSupport;
@@ -104,12 +103,7 @@ public class CisAuthenticationService extends AbstractRestService {
 	}
 
 	private User verify(String token) {
-		try {
-		    return jwtSupport.authJWT(token);
-		} catch (JWTVerificationException exception){
-		    // Invalid signature/claims
-			return null;
-		}
+	    return jwtSupport.authJWT(token);
 	}
 
 	
