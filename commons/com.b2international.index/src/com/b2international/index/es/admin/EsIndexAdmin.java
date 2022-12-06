@@ -48,6 +48,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.RemoteInfo;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.xcontent.XContentType;
@@ -647,6 +648,16 @@ public final class EsIndexAdmin implements IndexAdmin {
 		return es8Client;
 	}
 	
+	@Override
+	public RefreshResponse refresh(String...indices) throws IOException {
+		return client().indices().refresh(new RefreshRequest(indices));
+	}
+	
+	@Override
+	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+		return client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
+	}
+	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
 			final String[] indicesToRefresh;
@@ -664,10 +675,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			try {
 			
-				final RefreshRequest refreshRequest = new RefreshRequest(indicesToRefresh);
-				final RefreshResponse refreshResponse = client()
-						.indices()
-						.refresh(refreshRequest);
+				final RefreshResponse refreshResponse = refresh(indicesToRefresh);
 				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
 					log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indicesToRefresh), refreshResponse.getStatus());
 				}

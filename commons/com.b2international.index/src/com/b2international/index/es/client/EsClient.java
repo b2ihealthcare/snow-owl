@@ -80,7 +80,7 @@ public interface EsClient extends AutoCloseable {
 	
 	BulkByScrollResponse deleteByQuery(String index, int batchSize, QueryBuilder query) throws IOException;
 	
-	BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo) throws IOException;
+	BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException;
 	
 	static EsClient create(final EsClientConfiguration configuration) {
 		return ClientPool.create(configuration);

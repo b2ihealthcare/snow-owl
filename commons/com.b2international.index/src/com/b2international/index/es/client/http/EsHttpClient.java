@@ -191,13 +191,15 @@ public final class EsHttpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo) throws IOException {
+	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
 		
 		ReindexRequest reindexRequest = new ReindexRequest();
 		
 		reindexRequest.setSourceIndices(sourceIndex);
 		reindexRequest.setDestIndex(destinationIndex);
 		reindexRequest.setRemoteInfo(remoteInfo);
+		reindexRequest.setRefresh(refresh);
+		reindexRequest.setAbortOnVersionConflict(false);
 		
 		return client.reindex(reindexRequest, EXTENDED_DEFAULT);
 		

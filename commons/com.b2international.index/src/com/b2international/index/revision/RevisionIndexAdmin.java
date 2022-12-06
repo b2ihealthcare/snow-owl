@@ -15,10 +15,14 @@
  */
 package com.b2international.index.revision;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.RemoteInfo;
 import org.slf4j.Logger;
 
 import com.b2international.index.admin.IndexAdmin;
@@ -119,6 +123,16 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	@Override
 	public void optimize(int maxSegments) {
 		rawIndexAdmin.optimize(maxSegments);
+	}
+	
+	@Override
+	public RefreshResponse refresh(String... indices) throws IOException {
+		return rawIndexAdmin.refresh(indices);
+	}
+	
+	@Override
+	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+		return rawIndexAdmin.reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
 	}
 	
 }
