@@ -196,11 +196,11 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
 		final List<ValidationIssue> conceptIssues = issues.stream()
-				.filter(issue -> SnomedConcept.TYPE == issue.getAffectedComponent().getComponentType())
+				.filter(issue -> SnomedConcept.TYPE.equals(issue.getAffectedComponent().getComponentType()))
 				.collect(Collectors.toList());
 
 		final Map<String, ValidationIssue> memberIssues = issues.stream()
-				.filter(issue ->  SnomedReferenceSetMember.TYPE == issue.getAffectedComponent().getComponentType())
+				.filter(issue ->  SnomedReferenceSetMember.TYPE.equals(issue.getAffectedComponent().getComponentType()))
 				.collect(Collectors.toMap(issue -> issue.getAffectedComponent().getComponentId(), issue -> issue, (issue1, issue2) -> issue1));
 		
 		if (conceptIssues.isEmpty() && memberIssues.isEmpty()) {
@@ -287,7 +287,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
 		final List<ValidationIssue> relationshipIssues = issues.stream()
-				.filter(issue -> SnomedRelationship.TYPE == issue.getAffectedComponent().getComponentType())
+				.filter(issue -> SnomedRelationship.TYPE.equals(issue.getAffectedComponent().getComponentType()))
 				.collect(Collectors.toList());
 		
 		if (relationshipIssues.isEmpty()) {

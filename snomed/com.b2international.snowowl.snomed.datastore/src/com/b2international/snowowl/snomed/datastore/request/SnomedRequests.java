@@ -386,5 +386,13 @@ public abstract class SnomedRequests {
 	public static SnomedConceptSearchRequestBuilder prepareGetSynonyms() {
 		return prepareSearchConcept().all().filterByActive(true).filterByEcl("<<"+Concepts.SYNONYM);
 	}
-
+	
+	public static SnomedMrcmTypeRequestBuilder prepareGetMrcmTypeRules() {
+		return new SnomedMrcmTypeRequestBuilder();
+	}
+	
+	public static SnomedMrcmRangeRequestBuilder prepareGetMrcmRangeRules() {
+		return new SnomedMrcmRangeRequestBuilder();
+	}	
+	
 }
