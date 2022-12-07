@@ -48,7 +48,7 @@ public class SnomedMrcmRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 		@ApiResponse(responseCode = "404", description = "Not found"),
 	})
-	@GetMapping(value = "/{path:**}/mrcm/attribute/domains", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping(value = "/{path:**}/mrcm/types", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedReferenceSetMembers> getApplicableTypes(
 			@Parameter(description = "The resource path", required = true)
 			@PathVariable(name ="path")
@@ -102,7 +102,7 @@ public class SnomedMrcmRestService extends AbstractRestService {
 			@ApiResponse(responseCode = "400", description = "Bad Request"),
 			@ApiResponse(responseCode = "404", description = "Not found"),
 		})
-		@GetMapping(value = "/{path:**}/mrcm/attribute/ranges", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+		@GetMapping(value = "/{path:**}/mrcm/ranges", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 		public @ResponseBody Promise<SnomedReferenceSetMembers> getApplicableRanges(
 				@Parameter(description = "The resource path", required = true)
 				@PathVariable(name ="path")
