@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -98,7 +99,7 @@ final class SnomedMrcmTypeRequest extends SearchResourceRequest<BranchContext, S
 			eclConstraint = String.format("<%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE );
 			break;
 		default: 
-			eclConstraint = "*";
+			eclConstraint = Ecl.ANY;
 		};
 		
 		final Set<String> typeIds = SnomedRequests.prepareSearchConcept()
