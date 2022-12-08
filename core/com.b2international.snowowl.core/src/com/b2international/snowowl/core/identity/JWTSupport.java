@@ -206,7 +206,7 @@ public class JWTSupport implements JWTGenerator {
 		} else {
 			// TODO support PKCS#1
 			// TODO support JWK strings
-			throw new SnowOwl.InitializationException(String.format("Unsupported private key header. Snow Owl supports the PKCS8 private key format."));
+			throw new SnowOwl.InitializationException("Unsupported private key header in 'identity.jws.signingKey'. Snow Owl supports the PKCS8 private key format.");
 		}
 	}
 
