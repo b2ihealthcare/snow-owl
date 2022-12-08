@@ -49,6 +49,7 @@ public interface IdentityProvider {
 
 		@Override
 		public User authJWT(String token) {
+			// this identity provider has no means of verifying the incoming JWT token, it just extracts the user sub if available and uses that to create a User object
 			final DecodedJWT decodedToken = JWT.decode(token);
 			return new User(decodedToken.getSubject(), List.of(Permission.ADMIN));
 		}
