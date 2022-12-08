@@ -137,18 +137,6 @@ public class JWTSupport implements JWTGenerator {
 		return toUser(verify(token), config);
 	}
 	
-	/**
-	 * Converts the given JWT access token to a {@link User} representation using the configured email and permission claims. This method does not
-	 * verify the given access token, it only decodes it and uses the publicly available claims to construct the {@link User} object. To verify a
-	 * token and create a user object use the {@link #authJWT(String)} method.
-	 * 
-	 * @param token
-	 * @return a {@link User} instance created from the given token
-	 */
-	public User toUser(String token) {
-		return toUser(JWT.decode(token), config);
-	}
-
 	@Override
 	public String generate(String email, Map<String, Object> claims) {
 		return generator.generate(email, claims);
