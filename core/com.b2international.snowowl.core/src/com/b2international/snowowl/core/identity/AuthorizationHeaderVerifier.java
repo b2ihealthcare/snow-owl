@@ -85,8 +85,9 @@ public final class AuthorizationHeaderVerifier {
 		try {
 			return identityProvider.authJWT(token);
 		} catch (Exception e) {
-			
+			// if this fails as well, then log an invalid login attempt in the log and respond back with 401
 		}
+		IdentityProvider.LOG.warn("Failed login attempt with an invalid authorization token");
 		throw new UnauthorizedException("Incorrect authorization token");
 	}
 	
