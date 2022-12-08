@@ -56,7 +56,7 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	private Map<String, FileUser> users;
 	private Map<String, String> verifiedTokens;
 	
-	public FileIdentityProvider(FileIdentityProviderConfig configuration) throws IOException {
+	public FileIdentityProvider(FileIdentityProviderConfig configuration) {
 		this.configuration = configuration;
 	}
 	
