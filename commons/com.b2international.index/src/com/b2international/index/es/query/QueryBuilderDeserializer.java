@@ -1,0 +1,50 @@
+/*******************************************************************************
+ * Copyright (c) 2022 B2i Healthcare. All rights reserved.
+ *******************************************************************************/
+package com.b2international.index.es.query;
+
+import java.io.IOException;
+import java.util.Collections;
+
+import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+import org.elasticsearch.common.xcontent.XContentHelper;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchModule;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.xcontent.NamedXContentRegistry;
+import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentType;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+
+/**
+ * @since 8.8
+ */
+public class QueryBuilderDeserializer extends StdDeserializer<QueryBuilder> {
+
+	private static final long serialVersionUID = 8179941099961112852L;
+
+	private static final NamedXContentRegistry registry;
+
+	static {
+		final SearchModule module = new SearchModule(Settings.EMPTY, false, Collections.emptyList());
+		registry = new NamedXContentRegistry(module.getNamedXContents());
+	}
+
+	protected QueryBuilderDeserializer() {
+		super(QueryBuilder.class);
+	}
+
+	@Override
+	public QueryBuilder deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		final XContentParser parser = XContentHelper.createParser(registry, LoggingDeprecationHandler.INSTANCE, new BytesArray(p.getValueAsString()), XContentType.JSON);
+		return SearchSourceBuilder.fromXContent(parser).query();
+	}
+
+
+}
