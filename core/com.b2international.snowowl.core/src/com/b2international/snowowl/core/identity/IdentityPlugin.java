@@ -22,14 +22,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import com.b2international.snowowl.core.DeprecationLogger;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.identity.jwks.JwksIdentityProvider;
+import com.b2international.snowowl.core.identity.jwks.JwksIdentityProviderConfig;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -70,6 +75,27 @@ public final class IdentityPlugin extends Plugin {
 	@VisibleForTesting
 	/*package*/ IdentityProvider initIdentityProvider(Environment env, final IdentityConfiguration conf) throws Exception {
 		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations() == null ? List.of() : conf.getProviderConfigurations());
+
+		if (!Strings.isNullOrEmpty(conf.getJwksUrl())) {
+			// if jwks identity provider is present amongst the configured ones, fail startup with clear error message
+			if (isJwksIdentityProviderSet(providers)) {
+				throw new SnowOwl.InitializationException("Both 'identity.jwksUrl' and 'identity.providers.jwks' are configured. Remove the deprecated 'identity.jwksUrl' in favor of the dedicated 'jwks' identity provider.");
+			}
+			
+			// if only the old deprecated JWKS URL is set, raise deprecation warning message
+			env.service(DeprecationLogger.class).log("'identity.jwksUrl' configuration option is deprecated. Change your configuration setting to use the new 'jwks' identity provider configuration.");
+			
+			// prepare backward compatible JWKS URL configuration
+			JwksIdentityProviderConfig jwksConfig = new JwksIdentityProviderConfig();
+			jwksConfig.setJwksUrl(conf.getJwksUrl());
+			jwksConfig.setJws(conf.getJws());
+			jwksConfig.setIssuer(conf.getIssuer());
+			jwksConfig.setEmailClaimProperty(conf.getEmailClaimProperty());
+			jwksConfig.setPermissionsClaimProperty(conf.getPermissionsClaimProperty());
+			
+			// add a JWKS URL identity provider
+			providers.add(new JwksIdentityProvider(jwksConfig));
+		}
 		
 		IdentityProvider identityProvider = null;
 		if (providers.isEmpty()) {
@@ -88,6 +114,10 @@ public final class IdentityPlugin extends Plugin {
 		identityProvider.init(env);
 		
 		return identityProvider;
+	}
+
+	private boolean isJwksIdentityProviderSet(Collection<IdentityProvider> identityProviders) {
+		return identityProviders.stream().anyMatch(ip -> ip instanceof JwksIdentityProvider);
 	}
 
 	private List<IdentityProvider> createProviders(Environment env, List<IdentityProviderConfig> providerConfigurations) {
