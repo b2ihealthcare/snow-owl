@@ -1,4 +1,8 @@
 identity:
+# Token signing and verification configuration
+#  jws: HS256
+#  issuer: Snow Owl
+#  secret: my-secure-secret-key
   providers:
     - file:
         name: users
@@ -9,6 +13,12 @@ identity:
 #        rootDnPassword: <adminpwd>
 #        userIdProperty: uid
 #        usePool: false
+#   - jwks:
+#        jws: RS256
+#        jwksUrl: https://my-external-idp/.well-known/jwks.json
+#        issue: External JWT Issuer
+#        emailClaimProperty: custom-email-claim
+#        permissionsClaimProperty: custom-permissions-claim
 
 snomed:
   languages:
