@@ -1,55 +1,50 @@
-# Import SNOMED CT Content from RF2
+# Import RF2 distribution
 
-Now let's import an official SNOMED CT RF2 `SNAPSHOT` distribution archive so that we can further explore the available SNOMED CT APIs. 
-
-To import an RF2 archive you must first create an import configuration using the [SNOMED CT Import API](../api/snomed.md) as follows:
+Let's import an RF2 release in `SNAPSHOT` mode so that we can further explore the available SNOMED CT APIs! To do so, use the appropriate request from the [SNOMED CT Import API](../../api/snomed/import.md) as follows (the second `SNOMEDCT` in the request path represents the code system identifier):
 
 ```bash
-curl -X POST http://localhost:8080/snowowl/snomedct/imports -d
-{
-  "type": "SNAPSHOT",
-  "branchPath": "MAIN"
-}
+curl -v http://localhost:8080/snowowl/snomedct/SNOMEDCT/import?type=snapshot\&createVersions=false \
+-F file=@SnomedCT_RF2Release_INT_20170731.zip
 ```
 
-And the response:
+Curl will display the entire interaction between it and the server, including many request and response headers. We are interested in these two (response) rows in particular:
+
 ```
-HTTP 204 No Content
-Location: "http://localhost:8080/snowowl/snomedct/imports/96406e91-84a0-49d3-9e6a-c5c652a36eba"
+< HTTP/1.1 201 Created
+< Location: http://localhost:8080/snowowl/snomedct/SNOMEDCT/import/107f6efa69886bfdd73db5586dcf0e15f738efed
 ```
 
-The import configuration specifies the `type` of the RF2 release (in this case `SNAPSHOT`) and the target `branchPath` where the content should imported.
-The response returns an empty body along with a `Location` header with a URL pointing to the created import configuration. You can extract the last part of the URL to get the import configuration ID which can be used to retrieve the configuration and to upload the actual archive and start the import.
+The first one indicates that the file was uploaded successfully and a resource has been created to track import progress, while the second row indicates the location of this resource.
 
-{% hint style="warn" %}
-Depending on the size and type of the RF2 package, hardware and Snow Owl configuration, RF2 imports might take hours to complete.
-Official SNAPSHOT distributions can be imported in less than 30 minutes by allocating 6 GB of heap size to Snow Owl and configuring Snow Owl to use a solid state disk for its data directory. 
+{% hint style="info" %}
+Depending on the size and type of the RF2 package, hardware and Snow Owl configuration, RF2 imports might take hours to complete. Official SNAPSHOT distributions can be imported in less than 30 minutes by allocating 6 GB of heap size to Snow Owl and configuring it to use a solid state disk for the data directory.
 {% endhint %}
 
-The import will start automatically when you upload the archive to the `/imports/:id/archive` endpoint:
+The process itself is asynchronous and its status can be checked by periodically sending a GET request to the location indicated by the response header:
 
-```
-curl -X POST -F file=@SnomedCT_RF2Release_INT_20170731.zip 'http://localhost:8080/snowowl/snomedct/imports/96406e91-84a0-49d3-9e6a-c5c652a36eba/archive'
-```
-
-The import process is asynchronous and its status can be checked by sending a GET request to the `/imports/:id` endpoint with the extracted import identifier as follows:
-
-```
-curl TODO
+```bash
+curl http://localhost:8080/snowowl/snomedct/SNOMEDCT/import/107f6efa69886bfdd73db5586dcf0e15f738efed?pretty
 ```
 
-And the response:
+The expected response while the import is running:
 
 ```json
 {
-  "type": "SNAPSHOT",
-  "branchPath": "MAIN",
-  "createVersions": false,
-  "codeSystemShortName": "SNOMEDCT",
-  "id": "ec702c17-88b7-454b-9ebc-d2d1e338658e",
-  "status": "RUNNING",
-  "startDate": "2018-10-10T10:01:08Z"
+  "id" : "107f6efa69886bfdd73db5586dcf0e15f738efed",
+  "status" : "RUNNING"
 }
 ```
 
-The `status` field describes the current state of the import, while the `startDate` and `completionDate` fields specify `start` and `completion` timestamps.
+Upon completion, you should receive a different response which lists component identifiers visited during the import as well as any defects encountered in uploaded release files:
+
+```json
+{
+  "id" : "107f6efa69886bfdd73db5586dcf0e15f738efed",
+  "status" : "FINISHED",
+  "response" : {
+    "visitedComponents" : [ ... ],
+    "defects" : [ ],
+    "success" : true
+  }
+}
+```
