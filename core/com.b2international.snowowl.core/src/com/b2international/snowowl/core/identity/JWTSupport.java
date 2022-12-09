@@ -64,10 +64,10 @@ public class JWTSupport implements JWTGenerator {
 			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'secret' is required to configure '%s' for JWT token signing/verification.", config.getJws()))),
 		"RS256", (config, keyProvider) -> Optional.ofNullable(keyProvider)
 			.map(Algorithm::RSA256)
-			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws()))),
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'verificationKey' and optionally 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws()))),
 		"RS512", (config, keyProvider) -> Optional.ofNullable(keyProvider)
 			.map(Algorithm::RSA512)
-			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("Either a 'jwksUrl' or 'verificationKey' and optionally the 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws())))
+			.orElseThrow(() -> new SnowOwl.InitializationException(String.format("'verificationKey' and optionally 'signingKey' (PKCS#8 PEM) configuration settings are required to use '%s' for JWT token signing/verification.", config.getJws())))
 	);
 	
 	// Disabled JWT Verifier implementation that throws an exception if any verification related logic would be required
@@ -96,19 +96,22 @@ public class JWTSupport implements JWTGenerator {
 		}
 	};
 	
-	private final JWTConfiguration config;
+	private final IdentityConfiguration config;
 	
 	private JWTGenerator generator;
 	private JWTVerifier verifier;
 	
-	JWTSupport(JWTConfiguration config) {
+	JWTSupport(IdentityConfiguration config) {
 		this.config = config;
 	}
 	
 	public void init() throws Exception {
 		RSAKeyProvider rsaKeyProvider = createRSAKeyProvider(config);
 		Algorithm algorithm;
-		if (!Strings.isNullOrEmpty(config.getJws())) {
+		// if the old deprecated JWKS URL is set, then fall back to disabled mode without any warning
+		if (!Strings.isNullOrEmpty(config.getJwksUrl())) {
+			algorithm = null;
+		} else if (!Strings.isNullOrEmpty(config.getJws())) {
 			algorithm = SUPPORTED_JWS_ALGORITHMS.getOrDefault(config.getJws(), JWTSupport::throwUnsupportedJws).apply(config, rsaKeyProvider);
 		} else {
 			IdentityProvider.LOG.warn("'identity.jws' configuration is missing, disabling JWT authorization token signing and verification.");
