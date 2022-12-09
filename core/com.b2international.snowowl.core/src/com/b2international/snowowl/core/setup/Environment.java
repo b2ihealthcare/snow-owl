@@ -38,7 +38,7 @@ public final class Environment implements ServiceProvider {
 	private final Path configPath;
 	private final Path dataPath;
 	
-	public Environment(final Path homePath, final Path configPath, final Path dataPath) throws Exception {
+	public Environment(final Path homePath, final Path configPath, final Path dataPath) {
 		this.homePath = homePath;
 		this.configPath = configPath;
 		this.dataPath = dataPath; 

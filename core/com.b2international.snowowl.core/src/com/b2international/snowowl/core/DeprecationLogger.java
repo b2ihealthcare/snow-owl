@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.identity;
+package com.b2international.snowowl.core;
 
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * @since 8.1.0
+ * @since 8.8.0
  */
-interface JWTGenerator {
+public final class DeprecationLogger {
 
-	String generate(String email, Map<String, Object> claims);
-
+	private static final Logger LOG = LoggerFactory.getLogger("deprecation");
+	
 	/**
-	 * Generate a JWT security token from the information available in the given {@link User} object.
-	 * @param user
-	 * @return
+	 * Log a deprecation warning message to the log files regarding a deprecated feature/functionality.
+	 * 
+	 * @param message - the message describing the deprecated functionality
+	 * @param params - optional 
 	 */
-	String generate(User user);
-
+	public void log(String message, Object...params) {
+		LOG.warn(message, params);
+	}
+	
 }

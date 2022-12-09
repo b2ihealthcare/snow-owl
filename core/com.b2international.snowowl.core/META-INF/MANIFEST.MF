@@ -27,11 +27,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.github.f4b6a3.uuid;bundle-version="4.6.1";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Export-Package: com.auth0.jwt,
- com.auth0.jwt.algorithms,
- com.auth0.jwt.exceptions,
- com.auth0.jwt.interfaces,
- com.b2international.snowowl.core,
+Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.api,
  com.b2international.snowowl.core.api.component,
  com.b2international.snowowl.core.attachments,

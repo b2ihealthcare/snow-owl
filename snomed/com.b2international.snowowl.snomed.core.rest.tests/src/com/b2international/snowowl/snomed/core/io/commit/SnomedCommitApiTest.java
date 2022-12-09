@@ -16,7 +16,8 @@
 package com.b2international.snowowl.snomed.core.io.commit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +37,7 @@ import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
@@ -229,7 +230,7 @@ public class SnomedCommitApiTest {
 	private String generateAccessTokenForResourceAccess(String...resourcesToGrantAccess) {
 		final List<Permission> permissions = List.of(resourcesToGrantAccess).stream().map(res -> Permission.requireAll(Permission.OPERATION_BROWSE, res)).collect(Collectors.toList());
 		final User user =  new User(USER_ID, permissions);
-		return Services.service(JWTGenerator.class).generate(user);
+		return Services.service(JWTSupport.class).generate(user);
 	}
 	
 }

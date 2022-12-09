@@ -61,7 +61,7 @@ public class AttachmentRegistryTest {
 		final ServiceProvider context = ServiceProvider.EMPTY
 			.inject()
 			.bind(MeterRegistry.class, new SimpleMeterRegistry())
-			.bind(IdentityProvider.class, IdentityProvider.NOOP)
+			.bind(IdentityProvider.class, IdentityProvider.UNPROTECTED)
 			.bind(AttachmentRegistry.class, registry)
 			.bind(IEventBus.class, bus)
 			.build();

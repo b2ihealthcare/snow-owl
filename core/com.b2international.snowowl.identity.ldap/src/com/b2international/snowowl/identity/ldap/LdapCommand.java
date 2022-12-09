@@ -63,7 +63,7 @@ public class LdapCommand extends Command {
 
 			final IdentityProvider provider = getIdentityProvider();
 
-			if (provider == IdentityProvider.NOOP) {
+			if (provider == IdentityProvider.UNPROTECTED) {
 				out.println("LDAP based authentication is not configured for Snow Owl");
 				return;
 			}
@@ -105,7 +105,7 @@ public class LdapCommand extends Command {
 
 			final IdentityProvider provider = getIdentityProvider();
 
-			if (provider == IdentityProvider.NOOP) {
+			if (provider == IdentityProvider.UNPROTECTED) {
 				out.println("LDAP based authentication is not configured for Snow Owl");
 				return;
 			}
@@ -158,7 +158,7 @@ public class LdapCommand extends Command {
 
 			final IdentityProvider provider = getIdentityProvider();
 
-			if (provider == IdentityProvider.NOOP) {
+			if (provider == IdentityProvider.UNPROTECTED) {
 				out.println("LDAP based authentication is not configured for Snow Owl");
 				return;
 			}
@@ -204,7 +204,7 @@ public class LdapCommand extends Command {
 
 		}
 
-		return IdentityProvider.NOOP;
+		return IdentityProvider.UNPROTECTED;
 
 	}
 

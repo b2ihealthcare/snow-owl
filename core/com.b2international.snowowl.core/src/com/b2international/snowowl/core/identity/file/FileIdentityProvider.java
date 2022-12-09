@@ -34,6 +34,7 @@ import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.*;
+import com.b2international.snowowl.core.setup.Environment;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -49,11 +50,19 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	private static final Splitter USER_ENTRY_SPLITTER = Splitter.on(USER_ENTRY_SEPARATOR);
 	private static final Joiner USER_ENTRY_JOINER = Joiner.on(USER_ENTRY_SEPARATOR);
 	
-	private final Map<String, FileUser> users;
-	private final Path usersFile;
-	private final Map<String, String> verifiedTokens;
+	private final FileIdentityProviderConfig configuration;
 	
-	public FileIdentityProvider(Path usersFile) throws IOException {
+	private Path usersFile;
+	private Map<String, FileUser> users;
+	private Map<String, String> verifiedTokens;
+	
+	public FileIdentityProvider(FileIdentityProviderConfig configuration) {
+		this.configuration = configuration;
+	}
+	
+	@Override
+	public void init(Environment env) throws Exception {
+		final Path usersFile = env.getConfigPath().resolve(configuration.getName());
 		final File file = usersFile.toFile();
 		if (!file.exists()) {
 			file.createNewFile();
@@ -71,7 +80,9 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 			final FileUser user = getFileUser(username);
 			boolean success = user != null && BCrypt.checkpw(token, user.getHashedPassword());
 			if (success) {
-				verifiedTokens.put(username, token);
+				synchronized (verifiedTokens) {
+					verifiedTokens.put(username, token);
+				}
 				return new User(username, List.of(Permission.ADMIN));
 			} else {
 				return null;
@@ -104,11 +115,6 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	@Override
 	public String getInfo() {
 		return String.join("@", TYPE, usersFile.toString());
-	}
-	
-	@Override
-	public void validateSettings() {
-		// File access/creation had to be done earlier in the constructor, so nothing to check here
 	}
 	
 	private FileUser getFileUser(String username) {

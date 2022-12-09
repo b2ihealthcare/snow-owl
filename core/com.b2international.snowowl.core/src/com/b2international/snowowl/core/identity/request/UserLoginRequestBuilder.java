@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@ package com.b2international.snowowl.core.identity.request;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 7.2
  */
-public final class UserLoginRequestBuilder extends BaseRequestBuilder<UserLoginRequestBuilder, ServiceProvider, Token> implements SystemRequestBuilder<Token> {
+public final class UserLoginRequestBuilder extends BaseRequestBuilder<UserLoginRequestBuilder, ServiceProvider, User> implements SystemRequestBuilder<User> {
 
 	private String username;
 	private String password;
+	private String token;
 	
 	public UserLoginRequestBuilder setUsername(String username) {
 		this.username = username;
@@ -39,9 +40,14 @@ public final class UserLoginRequestBuilder extends BaseRequestBuilder<UserLoginR
 		return getSelf();
 	}
 	
+	public UserLoginRequestBuilder setToken(String token) {
+		this.token = token;
+		return getSelf();
+	}
+	
 	@Override
-	protected Request<ServiceProvider, Token> doBuild() {
-		return new UserLoginRequest(username, password);
+	protected Request<ServiceProvider, User> doBuild() {
+		return new UserLoginRequest(username, password, token);
 	}
 
 }
