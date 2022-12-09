@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import com.b2international.snowowl.core.DeprecationLogger;
 import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -83,7 +82,7 @@ public final class IdentityPlugin extends Plugin {
 			}
 			
 			// if only the old deprecated JWKS URL is set, raise deprecation warning message
-			env.service(DeprecationLogger.class).log("'identity.jwksUrl' configuration option is deprecated. Change your configuration setting to use the new 'jwks' identity provider configuration.");
+			env.deprecationLog().log("'identity.jwksUrl' configuration option is deprecated. Change your configuration setting to use the new 'jwks' identity provider configuration.");
 			
 			// prepare backward compatible JWKS URL configuration
 			JwksIdentityProviderConfig jwksConfig = new JwksIdentityProviderConfig();

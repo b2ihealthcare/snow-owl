@@ -20,10 +20,7 @@ import java.util.Optional;
 
 import org.osgi.service.prefs.PreferencesService;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreActivator;
-import com.b2international.snowowl.core.Mode;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.google.inject.Provider;
 
