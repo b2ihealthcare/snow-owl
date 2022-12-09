@@ -115,11 +115,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		options.put("userIdProperty", conf.getUserIdProperty());
 		options.put("memberProperty", conf.getMemberProperty());
 		options.put("permissionProperty", conf.getPermissionProperty());
-		LOG.info("Configured LDAP identity provider with the following options: {}", options);
-	}
-	
-	@Override
-	public void validateSettings() throws Exception {
+		LOG.info("Verifying LDAP identity provider options: {}", options);
 		InitialLdapContext systemContext = null;
 		try {
 			systemContext = createLdapContext();
@@ -129,6 +125,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		} finally {
 			closeLdapContext(systemContext);
 		}
+		LOG.info("Configured LDAP identity provider with the following options: {}", options);
 	}
 	
 	@Override

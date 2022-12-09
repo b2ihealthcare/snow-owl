@@ -66,7 +66,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 
 			final IdentityProvider identityProvider = context.service(IdentityProvider.class);
 			// if there is no authentication configured
-			if (IdentityProvider.NOOP == identityProvider) {
+			if (IdentityProvider.UNPROTECTED == identityProvider) {
 				// allow execution as SYSTEM user
 				user = User.SYSTEM;
 			} else if (Strings.isNullOrEmpty(authorizationToken)) {

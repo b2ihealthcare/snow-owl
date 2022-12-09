@@ -1,21 +1,21 @@
-# Check SNOMED CT Content
+# SNOMED CT
 
-Now that we have a SNOMED CT Code System, let's take a look at its content. We can query its content using either the [SNOMED CT API](../api/snomed/index.md) or the [FHIR API](../api/fhir/index.md). 
+Now that we have a code system, let's take a look at its content! We can list concepts using either the [SNOMED CT API](../../api/snomed/index.md) tailored to this tooling, or the [FHIR API](../../api/fhir/index.md) for a representation that is uniform across different kinds of code systems. For the sake of simplicity, we will use the former in this example.
 
-For sake of simplicity, let's search for the available concepts using the [SNOMED CT API](../api/snomed/index.md). For that we will need the branch we would like to query, but fortunately we already know the value from our previous call to the Code Systems API, it was `MAIN`. To list all available concepts in a SNOMED CT Code System, use the following command:
+To list all available concepts in a code system, use the following command (just as with importing, the second `SNOMEDCT` in the request path represents the code system identifier):
 
 ```bash
-curl http://localhost:8080/snowowl/snomedct/MAIN/concepts
+curl http://localhost:8080/snowowl/snomedct/SNOMEDCT/concepts?pretty
 ```
 
-And the response is:
+The expected response is:
 
 ```json
 {
-  "items": [],
+  "items": [ ],
   "limit": 50,
   "total": 0
 }
 ```
 
-Which simply means we have no SNOMED CT concepts yet in our instance.
+The concept list is empty, indicating that we haven't imported anything into Snow Owl - yet.

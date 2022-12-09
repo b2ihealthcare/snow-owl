@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.Credentials;
-import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
@@ -39,12 +39,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class AuthorizationService extends AbstractRestService {
 
 	@PostMapping("/login")
-	public Promise<Token> login(
+	public Promise<User> login(
 			@Parameter(name = "credentials", description = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
 		return UserRequests.prepareLogin()
 				.setUsername(credentials.getUsername())
 				.setPassword(credentials.getPassword())
+				.setToken(credentials.getToken())
 				.buildAsync()
 				.execute(getBus());
 	}

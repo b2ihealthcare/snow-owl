@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.IdentityProvider;
-import com.b2international.snowowl.core.identity.JWTGenerator;
-import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.identity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,7 +30,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 7.2
  */
 @Unprotected
-public final class UserLoginRequest implements Request<ServiceProvider, Token> {
+public final class UserLoginRequest implements Request<ServiceProvider, User> {
+
+	private static final long serialVersionUID = 2L;
 
 	@NotEmpty
 	@JsonProperty
@@ -39,19 +40,26 @@ public final class UserLoginRequest implements Request<ServiceProvider, Token> {
 	
 	@NotEmpty
 	private String password;
+	
+	private String token;
 
-	UserLoginRequest(String username, String password) {
+	UserLoginRequest(String username, String password, String token) {
 		this.username = username;
 		this.password = password;
+		this.token = token;
 	}
 	
 	@Override
-	public Token execute(ServiceProvider context) {
-		final User user = context.service(IdentityProvider.class).auth(username, password);
+	public User execute(ServiceProvider context) {
+		User user = context.service(IdentityProvider.class).auth(username, password);
+		if (user == null) {
+			user = context.service(IdentityProvider.class).authJWT(token);
+		}
 		if (user == null) {
 			throw new UnauthorizedException("Incorrect username or password.");
 		}
-		return new Token(context.service(JWTGenerator.class).generate(user));
+		// generate and attach a token
+		return user.withAccessToken(context.service(JWTSupport.class).generate(user));
 	}
 	
 }

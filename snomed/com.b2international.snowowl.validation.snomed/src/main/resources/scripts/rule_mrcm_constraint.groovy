@@ -1,6 +1,7 @@
 package scripts 
 
 import static com.b2international.index.query.Expressions.*;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ALL_PRECOORDINATED_CONTENT;
 
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
@@ -9,6 +10,7 @@ import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.ecl.EclParser
+import com.b2international.snowowl.snomed.common.SnomedConstants
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
@@ -28,13 +30,32 @@ import com.google.common.collect.Sets
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 
-final String allPrecoordinatedContent = "723594008";
+final String integerTypeRangePrefix = "int";
+final String decimalTypeRangePrefix = "dec";
 
 Map<String, String> allowedRanges = Maps.newHashMap();
 
+List<String> moduleIds = SnomedRequests.prepareSearchConcept()
+	.filterByEcl(params.modules)
+	.filterByActive(true)
+	.all()
+	.build()
+	.execute(ctx)
+	.collect({it.getId()})
+
+List<String> inScopeRefSets = SnomedRequests.prepareSearchMember()
+	.all()
+	.filterByActive(true)
+	.filterByRefSet(Concepts.REFSET_MRCM_MODULE_SCOPE)
+	.filterByReferencedComponent(moduleIds)
+	.build()
+	.execute(ctx)
+	.collect { SnomedReferenceSetMember m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)}
+
 final ExpressionBuilder mrcmRangeMemberQueryBuilder = Expressions.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-	.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.MRCM_ATTRIBUTE_RANGE]))
+	.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(inScopeRefSets))
+	.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.MRCM_ATTRIBUTE_RANGE]))	
 
 final Query<String[]> mrcmRangeMemberQuery = Query.select(String[].class)
 	.from(SnomedRefSetMemberIndexEntry.class)
@@ -50,14 +71,18 @@ searcher.search(mrcmRangeMemberQuery).each { hit ->
 	String typeId = hit[1];
 	String rangeConstraint = hit[2];
 	
-	if (allowedRanges.containsKey(typeId)) {
-		if (allPrecoordinatedContent.equals(contentType)) {
-			allowedRanges.put(typeId, rangeConstraint);
-		} else {
-			//Do nothing, the already mapped member should be chosen over this
-		}
+	if (rangeConstraint.startsWith(integerTypeRangePrefix) || rangeConstraint.startsWith(decimalTypeRangePrefix)) {
+		//Do nothing, skip concrete value type range validation for now
 	} else {
-		allowedRanges.put(typeId, rangeConstraint);
+		if (allowedRanges.containsKey(typeId)) {
+			if (ALL_PRECOORDINATED_CONTENT.equals(contentType)) {
+				allowedRanges.put(typeId, rangeConstraint);
+			} else {
+				//Do nothing, the already mapped member should be chosen over this
+			}
+		} else {
+			allowedRanges.put(typeId, rangeConstraint);
+		}
 	}
 }
 

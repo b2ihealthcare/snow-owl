@@ -121,6 +121,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedReferenceSetDeletionPerformanceTest.class,
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
+	SnomedMrcmTest.class
 })
 public class AllSnomedApiTests {
 
