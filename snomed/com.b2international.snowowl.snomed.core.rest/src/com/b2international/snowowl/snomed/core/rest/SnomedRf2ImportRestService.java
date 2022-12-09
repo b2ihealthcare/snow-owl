@@ -62,10 +62,8 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 	private AttachmentRegistry attachments;
 	
 	@Operation(
-		summary="Import SNOMED CT content", 
-		description="Configures processes to import RF2 based archives. The configured process will wait until the archive actually uploaded via the <em>/archive</em> endpoint. "
-				+ "The actual import process will start after the file upload completed. Note: unpublished components (with no value entered in the 'effectiveTime' column) are "
-				+ "only allowed in DELTA import mode."
+		summary="Import SNOMED CT content from an RF2 release", 
+		description="Initiates an RF2 import process on the selected path using the given configuration. File should be uploaded as part of this request using the file multipart formdata field."
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "Created"),
