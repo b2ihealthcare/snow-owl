@@ -32,6 +32,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
+import com.b2international.snowowl.core.DeprecationLogger;
 import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.config.IndexSettings;
@@ -77,6 +78,8 @@ public final class SnowOwlPlugin extends Plugin {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
+		env.services().registerService(DeprecationLogger.class, new DeprecationLogger());
+		
 		final ClassPathScanner scanner = env.service(ClassPathScanner.class);
 		
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
