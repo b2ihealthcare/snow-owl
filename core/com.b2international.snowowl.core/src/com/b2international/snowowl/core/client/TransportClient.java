@@ -33,8 +33,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
-import com.b2international.snowowl.core.identity.Token;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.setup.Environment;
@@ -226,7 +224,7 @@ public final class TransportClient implements IDisposableService {
 			initConnection();
 			
 			// try to log in with the specified username and password using the non-authorized bus instance
-			final Token token = UserRequests.prepareLogin()
+			final User user = UserRequests.prepareLogin()
 				.setUsername(username)
 				.setPassword(password)
 				.buildAsync()
@@ -234,9 +232,9 @@ public final class TransportClient implements IDisposableService {
 				.getSync(3L, TimeUnit.SECONDS);
 			
 			// if successfully logged in replace the event bus with an authorized one
-			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", token.getToken())));
+			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", user.getAccessToken())));
 			
-			return env.service(AuthorizationHeaderVerifier.class).toUser(token.getToken());
+			return user;
 		} catch (UnauthorizedException e) {
 			throw new SnowowlServiceException(e.getMessage());
 		} catch (final Throwable t) {

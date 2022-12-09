@@ -30,7 +30,7 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.CoreMatchers;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.util.PlatformUtil;
@@ -224,7 +224,7 @@ public class RestExtensions {
 	}
 	
 	public static String generateToken(String userId, Permission...permissions) {
-		return ApplicationContext.getServiceForClass(JWTGenerator.class).generate(new User(userId, List.of(permissions)));
+		return ApplicationContext.getServiceForClass(JWTSupport.class).generate(new User(userId, List.of(permissions)));
 	}
 
 }

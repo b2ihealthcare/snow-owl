@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.identity;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -26,22 +25,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 5.11
  */
-public class IdentityConfiguration {
-
-	private static final String SNOW_OWL_ISSUER = "Snow Owl";
+public class IdentityConfiguration extends JWTConfiguration {
 
 	private boolean adminParty = false;
 	
-	// JWT configuration
-	private String issuer = SNOW_OWL_ISSUER;
-	
-	private String jws;
+	@Deprecated
 	private String jwksUrl;
-	private String secret;
-	private String signingKey;
-	private String verificationKey;
-	private String emailClaimProperty = "sub";
-	private String permissionsClaimProperty = "permissions";
 	
 	private List<IdentityProviderConfig> providerConfigurations = Collections.emptyList();
 	
@@ -62,73 +51,20 @@ public class IdentityConfiguration {
 		this.providerConfigurations = providerConfigurations;
 	}
 	
-	public String getSecret() {
-		return secret;
-	}
-	
-	public void setSecret(String secret) {
-		this.secret = secret;
-	}
-	
-	public String getIssuer() {
-		return issuer;
-	}
-	
-	public void setIssuer(String issuer) {
-		this.issuer = issuer;
-	}
-	
-	public String getJws() {
-		return jws;
-	}
-	
+	/**
+	 * @return
+	 * @deprecated - use dedicated jwks identity provider to configure external JWKS based authentication
+	 */
 	public String getJwksUrl() {
 		return jwksUrl;
 	}
 	
-	public String getSigningKey() {
-		return signingKey;
-	}
-	
-	public String getVerificationKey() {
-		return verificationKey;
-	}
-	
-	public void setJws(String jws) {
-		this.jws = jws;
-	}
-	
+	/**
+	 * @param jwksUrl
+	 * @deprecated - use dedicated jwks identity provider to configure external JWKS based authentication
+	 */
 	public void setJwksUrl(String jwksUrl) {
 		this.jwksUrl = jwksUrl;
-	}
-	
-	public void setSigningKey(String signingKey) {
-		this.signingKey = signingKey;
-	}
-	
-	public void setVerificationKey(String verificationKey) {
-		this.verificationKey = verificationKey;
-	}
-	
-	public String getEmailClaimProperty() {
-		return emailClaimProperty;
-	}
-	
-	public String getPermissionsClaimProperty() {
-		return permissionsClaimProperty;
-	}
-	
-	public void setEmailClaimProperty(String emailClaimProperty) {
-		this.emailClaimProperty = emailClaimProperty;
-	}
-	
-	public void setPermissionsClaimProperty(String permissionsClaimProperty) {
-		this.permissionsClaimProperty = permissionsClaimProperty;
-	}
-
-	@JsonIgnore
-	public boolean isExternalIssuer() {
-		return !SNOW_OWL_ISSUER.equals(getIssuer());
 	}
 	
 }

@@ -36,7 +36,6 @@ import com.b2international.index.Fixtures.DataWithUpdateScript;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -158,12 +157,12 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexDocumentWithMapType() throws Exception {
-		final DataWithMap data = new DataWithMap(KEY1, ImmutableMap.<String, Object>of("field1", "field1Value", "field2", "field2Value"));
+		final DataWithMap data = new DataWithMap(KEY1, Map.of("field1", "field1Value", "field2", "field2Value"));
 		indexDocument(data);
 		assertEquals(data, getDocument(DataWithMap.class, KEY1));
 		
 		final Query<DataWithMap> query = Query.select(DataWithMap.class)
-				.where(Expressions.exactMatch("field1", "field1Value"))
+				.where(Expressions.exactMatch("properties.field1", "field1Value"))
 				.build();
 		
 		final Iterable<DataWithMap> matches = search(query);
