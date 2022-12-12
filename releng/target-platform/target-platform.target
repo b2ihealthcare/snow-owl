@@ -13,11 +13,6 @@
 		<repository location="https://download.eclipse.org/eclipse/updates/4.17/R-4.17-202009021800/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<unit id="org.eclipse.net4j.feature.group" version="4.9.0.v20200311-1912"/>
-		<unit id="org.eclipse.net4j.util.feature.group" version="4.9.0.v20200311-1912"/>
-		<repository location="https://download.eclipse.org/modeling/emf/cdo/drops/R20200311-1513/"/>
-	</location>
-	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="javax.el" version="2.2.0.v201303151357"/>
 		<unit id="javax.el.source" version="2.2.0.v201303151357"/>
 		<unit id="org.antlr.runtime" version="3.2.0.v201101311130"/>
