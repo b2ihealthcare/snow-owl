@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.8.1
+
+### Bugs/Improvements
+- [auth] add default configuration values for JWKS claim settings (76f5234)
+- [auth] fix(auth): ensure we fall back properly to `sub` property when decoding a JWT to a User object (79ed4c5)
+
 ## 8.8.0
 
 ### Core
