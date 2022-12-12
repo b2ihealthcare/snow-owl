@@ -266,7 +266,7 @@ public class JWTSupport implements JWTGenerator {
 
 		final List<Permission> permissions = permissionsClaim.asList(String.class).stream().map(Permission::valueOf)
 				.collect(Collectors.toList());
-		return new User(emailClaim.asString(), permissions);
+		return new User(emailClaim.asString(), permissions, jwt.getToken());
 	}
 
 }
