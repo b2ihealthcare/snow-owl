@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
@@ -39,15 +40,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class AuthorizationService extends AbstractRestService {
 
 	@PostMapping("/login")
-	public Promise<User> login(
+	public User login(
 			@Parameter(name = "credentials", description = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
-		return UserRequests.prepareLogin()
-				.setUsername(credentials.getUsername())
-				.setPassword(credentials.getPassword())
-				.setToken(credentials.getToken())
-				.buildAsync()
-				.execute(getBus());
+		try {
+			return UserRequests.prepareLogin()
+					.setUsername(credentials.getUsername())
+					.setPassword(credentials.getPassword())
+					.setToken(credentials.getToken())
+					.buildAsync()
+					.execute(getBus())
+					.getSync();
+		} catch (UnauthorizedException e) {
+			// convert HTTP 401 to HTTP 404 in this endpoint
+			throw new BadRequestException(e.getMessage());
+		}
 	}
 	
 }
