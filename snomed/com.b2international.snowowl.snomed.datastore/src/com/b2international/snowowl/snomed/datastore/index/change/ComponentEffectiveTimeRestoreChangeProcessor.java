@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,13 +127,11 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 	}
 
 	private boolean canRestoreEffectiveTime(SnomedDocument componentToRestore, SnomedDocument previousVersion) {
-		if (componentToRestore.isActive() != previousVersion.isActive()) {
+		if (!canRestoreEffectiveTime(componentToRestore, previousVersion, 
+				SnomedDocument::isActive, 
+				SnomedDocument::getModuleId)) {
 			return false;
 		}
-		
-		if (!Objects.equals(componentToRestore.getModuleId(), previousVersion.getModuleId())) {
-			return false;
-		} 
 		
 		if (componentToRestore instanceof SnomedConceptDocument && previousVersion instanceof SnomedConceptDocument) {
 			final SnomedConceptDocument conceptToRestore = (SnomedConceptDocument) componentToRestore;
