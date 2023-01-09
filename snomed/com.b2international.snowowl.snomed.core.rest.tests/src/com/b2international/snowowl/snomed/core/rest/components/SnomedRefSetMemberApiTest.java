@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,10 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.executeMemberAction;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConcreteDomainParentConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConcreteDomainRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
@@ -39,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Ignore;
@@ -930,6 +929,66 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		final String memberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequest));
 		
 		assertEquals(specificId, memberId);
+	}
+	
+	@Test
+	public void restoreEffectiveTimeOnReleasedMember() throws Exception {
+		final String simpleRefSetId = createNewRefSet(branchPath);
+		final String memberId = UUID.randomUUID().toString();
+
+		SnomedRequests.prepareNewMember()
+			.setId(memberId)
+			.setModuleId(Concepts.MODULE_SCT_CORE)
+			.setReferenceSetId(simpleRefSetId)
+			.setReferencedComponentId(simpleRefSetId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Create refset member")
+			.execute(getBus())
+			.getSync();
+		
+		final String shortName = "SNOMEDCT-REF-1";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		final String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		// After versioning, the reference set member should be released and have an effective time set on it
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body("active", equalTo(true))
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveDate));
+		
+		Json inactivationRequestBody = Json.object(
+			"active", false,
+			"commitComment", "Inactivate refset member"
+		);
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, inactivationRequestBody, false).statusCode(204);
+
+		// An inactivation should unset the effective time field
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body("active", equalTo(false))
+			.body("released", equalTo(true))
+	 		.body("effectiveTime", nullValue());
+
+		SnomedReferenceSetMember member = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.extract().as(SnomedReferenceSetMember.class);
+
+		// XXX: Explicitly create a new Boolean object to simulate deserialization bug
+		member.setActive(new Boolean(true));
+		
+		SnomedRequests.prepareCommit()
+			.setAuthor(RestExtensions.USER)
+			.setCommitComment("Reactivate refset member")
+			.setBody(member.toUpdateRequest())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES);
+
+		// Getting the member back to its originally released state should restore the effective time
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body("active", equalTo(true))
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveDate));
 	}
 
 	private void executeSyncAction(final String memberId) {
