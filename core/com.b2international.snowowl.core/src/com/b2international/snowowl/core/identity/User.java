@@ -103,6 +103,7 @@ public final class User implements Serializable {
 	/**
 	 * @return <code>true</code> if this user has a permission that implies all other permissions, <code>false</code> otherwise.
 	 */
+	@JsonIgnore
 	public boolean isAdministrator() {
 		return getPermissions().stream()
 				.filter(Permission::isAdmin)

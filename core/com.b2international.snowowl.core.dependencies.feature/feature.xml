@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.core.dependencies.feature"
       label="Snow Owl Core Dependencies"
-      version="8.7.3.qualifier"
+      version="8.8.2.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">

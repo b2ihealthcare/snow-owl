@@ -1,6 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.8.1
+
+### Bugs/Improvements
+- [auth] add default configuration values for JWKS claim settings (76f5234)
+- [auth] fix(auth): ensure we fall back properly to `sub` property when decoding a JWT to a User object (79ed4c5)
+
+## 8.8.0
+
+### Core
+- JSON Web Token signing and verification improvements (#1095)
+  * Allow configuration of a local JWT token signer/verifier and multiple external JWKS based verifiers
+  * Allow token refresh when sending a request to `POST /login`
+  * Deprecate `identity.jwksUrl` configuration in favor of a dedicated `jwks` identity provider
+
+### SNOMED
+- Handle the official Machine Readable Concept Model in both validation and API requests (#1068)
+  * New `GET /mrcm/types` and `GET /mrcm/ranges` endpoints to request applicable types and ranges based on certain criteria
+  * Improved MRCM based validation rules to properly select the applicable MRCM constraints
+
+### Bugs/Improvements
+- [auth] ensure when authenticating through admin party wrapper user gets admin privileges properly (64738e6)
+- [docs] improve RF2 distribution loading documentation page (#1093)
+- [api] remove obsolete RF2 import API notes (e480331)
+
 ## 8.7.2
 
 ### Bugs/Improvements

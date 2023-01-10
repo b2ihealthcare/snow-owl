@@ -36,8 +36,8 @@ public class JwksIdentityProviderConfig implements IdentityProviderConfig {
 	@NotEmpty
 	private String jwksUrl;
 	
-	private String emailClaimProperty;
-	private String permissionsClaimProperty;
+	private String emailClaimProperty = "sub";
+	private String permissionsClaimProperty = "permissions";
 	
 	public String getIssuer() {
 		return issuer;
