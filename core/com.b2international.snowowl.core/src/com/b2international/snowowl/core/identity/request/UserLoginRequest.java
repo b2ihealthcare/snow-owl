@@ -15,16 +15,18 @@
  */
 package com.b2international.snowowl.core.identity.request;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.RequestHeaders;
+import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.identity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 /**
  * @since 7.2
@@ -34,11 +36,9 @@ public final class UserLoginRequest implements Request<ServiceProvider, User> {
 
 	private static final long serialVersionUID = 2L;
 
-	@NotEmpty
 	@JsonProperty
 	private String username;
 	
-	@NotEmpty
 	private String password;
 	
 	private String token;
@@ -51,13 +51,22 @@ public final class UserLoginRequest implements Request<ServiceProvider, User> {
 	
 	@Override
 	public User execute(ServiceProvider context) {
-		User user = context.service(IdentityProvider.class).auth(username, password);
-		if (user == null) {
-			user = context.service(IdentityProvider.class).authJWT(token);
+		
+		User user = Strings.isNullOrEmpty(username) || Strings.isNullOrEmpty(password) ? null : context.service(IdentityProvider.class).auth(username, password);
+		if (user == null && !Strings.isNullOrEmpty(token)) {
+			user = context.service(AuthorizationHeaderVerifier.class).authJWT(token);
 		}
 		if (user == null) {
-			throw new UnauthorizedException("Incorrect username or password.");
+			// check if there is an authorization token header and use that to login the user 
+			final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
+			final String authorizationToken = requestHeaders.header(AuthorizedRequest.AUTHORIZATION_HEADER);
+			user = context.service(AuthorizationHeaderVerifier.class).auth(authorizationToken);
 		}
+		
+		if (user == null) {
+			throw new BadRequestException("Incorrect username or password.");
+		}
+		
 		// generate and attach a token
 		return user.withAccessToken(context.service(JWTSupport.class).generate(user));
 	}
