@@ -535,6 +535,24 @@
   				<version>4.6.1</version>
   				<type>jar</type>
 			</dependency>
+			<dependency>
+				<groupId>com.b2international.snowowl</groupId>
+				<artifactId>protege-common</artifactId>
+				<version>5.0.6-b2i</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.b2international.snowowl</groupId>
+				<artifactId>protege-editor-core</artifactId>
+				<version>5.0.6-b2i</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.b2international.snowowl</groupId>
+				<artifactId>protege-editor-owl</artifactId>
+				<version>5.0.6-b2i</version>
+				<type>jar</type>
+			</dependency>
 		</dependencies>
 		<repositories>
 			<repository>
@@ -549,24 +567,6 @@
 	</location>
 	<location includeSource="true" missingManifest="error" type="Maven">
 		<dependencies>
-			<dependency>
-				<groupId>com.b2international.snowowl</groupId>
-				<artifactId>protege-common</artifactId>
-				<version>5.0.5-b2i</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>com.b2international.snowowl</groupId>
-				<artifactId>protege-editor-core</artifactId>
-				<version>5.0.5-b2i</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>com.b2international.snowowl</groupId>
-				<artifactId>protege-editor-owl</artifactId>
-				<version>5.0.5-b2i</version>
-				<type>jar</type>
-			</dependency>
 			<dependency>
 				<groupId>com.b2international</groupId>
 				<artifactId>owlapi-osgidistribution</artifactId>
