@@ -553,24 +553,10 @@
 				<version>5.0.6-b2i</version>
 				<type>jar</type>
 			</dependency>
-		</dependencies>
-		<repositories>
-			<repository>
-				<id>b2i-releases</id>
-				<url>https://nexus.b2i.sg/repository/maven-releases</url>
-			</repository>
-			<repository>
-				<id>b2i-snapshots</id>
-				<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
-			</repository>
-		</repositories>
-	</location>
-	<location includeSource="true" missingManifest="error" type="Maven">
-		<dependencies>
 			<dependency>
-				<groupId>com.b2international</groupId>
+				<groupId>com.b2international.snowowl</groupId>
 				<artifactId>owlapi-osgidistribution</artifactId>
-				<version>4.5.24</version>
+				<version>4.5.16-b2i</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
@@ -582,12 +568,12 @@
 		</dependencies>
 		<repositories>
 			<repository>
-				<id>owlapi-mvn-repo</id>
-				<url>https://b2ihealthcare.github.io/owlapi/</url>
+				<id>b2i-releases</id>
+				<url>https://nexus.b2i.sg/repository/maven-releases</url>
 			</repository>
 			<repository>
-				<id>protege-mvn-repo</id>
-				<url>https://b2ihealthcare.github.io/protege/</url>
+				<id>b2i-snapshots</id>
+				<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
 			</repository>
 		</repositories>
 	</location>
