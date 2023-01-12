@@ -44,9 +44,9 @@
 		<repository location="https://download.eclipse.org/modeling/m2t/xpand/updates/releases/R201605260315"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<unit id="org.eclipse.emf.mwe.sdk.feature.group" version="1.5.3.v20200520-0756"/>
-		<unit id="org.eclipse.emf.mwe2.language.sdk.feature.group" version="2.11.3.v20200520-0756"/>
-		<repository location="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/"/>
+		<unit id="org.eclipse.emf.mwe.sdk.feature.group" version="1.6.1.v20210218-2134"/>
+		<unit id="org.eclipse.emf.mwe2.language.sdk.feature.group" version="2.12.1.v20210218-2134"/>
+		<repository location="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.12.1/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="mvn:com.b2international:com.b2international.snomed.ecl.update:2.1.2:zip"/>
