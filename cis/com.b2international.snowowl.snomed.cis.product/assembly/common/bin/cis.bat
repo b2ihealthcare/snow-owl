@@ -37,9 +37,9 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.classloader.type=nonparallel
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+AlwaysLockClassLoader
 
 REM Jetty configuration 
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.port=9090
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.http.port=9090
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.home="%KERNEL_HOME%/configuration"
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deploy.xml
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog
 
 REM GC configuration

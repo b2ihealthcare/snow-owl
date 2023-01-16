@@ -174,10 +174,10 @@ public class RestExtensions {
 	}
 
 	/**
-	 * Returns the port used in the test environment, this is equivalent with the jetty.port configuration parameter, or with 8080 if no jetty.port parameter found.
+	 * Returns the port used in the test environment, this is equivalent with the jetty.http.port configuration parameter, or with 8080 if no jetty.http.port parameter found.
 	 */
 	public static int getPort() {
-		final String jettyPortProp = System.getProperty("jetty.port");
+		final String jettyPortProp = System.getProperty("jetty.http.port");
 		return jettyPortProp != null ? Integer.valueOf(jettyPortProp) : 8080;
 	}
 	

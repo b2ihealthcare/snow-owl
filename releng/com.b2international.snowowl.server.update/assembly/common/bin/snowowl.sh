@@ -55,7 +55,7 @@ SO_JAVA_OPTS="-Xms6g \
                 -Dosgi.noShutdown=true \
                 -Dosgi.classloader.type=nonparallel \
                 -Dosgi.console=2501 \
-                -Djetty.port=8080 \
+                -Djetty.http.port=8080 \
                 -XX:+HeapDumpOnOutOfMemoryError \
                 --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
                 --add-opens java.base/java.lang=ALL-UNNAMED \

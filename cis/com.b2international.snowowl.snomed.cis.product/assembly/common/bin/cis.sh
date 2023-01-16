@@ -58,9 +58,9 @@ SO_JAVA_OPTS="-Xms2g \
                 -Dosgi.classloader.type=nonparallel \
                 -Dosgi.console=2501 \
                 -XX:+AlwaysLockClassLoader \
-                -Djetty.port=9090 \
+                -Djetty.http.port=9090 \
                 -Djetty.home=$KERNEL_HOME/configuration \
-                -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml \
+                -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deploy.xml \
                 -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
                 -XX:+HeapDumpOnOutOfMemoryError \
                 --add-opens java.base/java.lang.reflect=ALL-UNNAMED \

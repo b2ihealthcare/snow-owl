@@ -34,7 +34,7 @@ REM Parallel classloader configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.classloader.type=nonparallel
 
 REM Jetty configuration
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.port=8080
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.http.port=8080
 
 REM GC configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
