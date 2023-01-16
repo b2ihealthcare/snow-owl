@@ -20,7 +20,7 @@
 		<jackson.databind.version>2.12.7</jackson.databind.version>
 		<jackson.version>2.12.7</jackson.version>
 		<logback.versionRange>[1.2.10,1.2.11)</logback.versionRange>
-		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
+		<osgi.versionRange>[3.16.0,3.17.1)</osgi.versionRange>
 		<slf4j.version>1.7.32</slf4j.version>
 		
 		<!-- Build tool/compiler versions -->
@@ -110,10 +110,10 @@
 						<!-- Removes the extension bundle from the available bundles for the 
 							javax.servlet package -->
 						<filter>
-            				<type>p2-installable-unit</type>
-            				<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
-            				<removeAll />
-         				</filter>
+							<type>p2-installable-unit</type>
+							<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
+							<removeAll />
+						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.codehaus.groovy</id>
