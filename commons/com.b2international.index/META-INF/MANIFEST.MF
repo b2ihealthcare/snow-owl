@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Search Indexing
+Bundle-Name: Elasticsearch focused object store with revision capabilities
 Bundle-SymbolicName: com.b2international.index;singleton:=true
 Bundle-Version: 8.8.2.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
@@ -111,3 +111,4 @@ Bundle-ClassPath: .,
  lib/transport-netty4-client-7.17.2.jar,
  lib/lz4-java-1.8.0.jar
 Bundle-Activator: com.b2international.index.Activator
+Bundle-Vendor: B2i Healthcare
