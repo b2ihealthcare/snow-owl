@@ -60,11 +60,11 @@
         <setEntry value="com.sun.xml.bind.jaxb-impl@default:default"/>
         <setEntry value="io.github.classgraph.classgraph@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
+        <setEntry value="jakarta.servlet-api@default:default"/>
         <setEntry value="javax.activation-api@default:default"/>
         <setEntry value="javax.annotation@default:default"/>
         <setEntry value="javax.el@default:default"/>
         <setEntry value="javax.inject@default:default"/>
-        <setEntry value="javax.servlet-api@default:default"/>
         <setEntry value="jaxb-api@default:default"/>
         <setEntry value="jcl.over.slf4j@default:default"/>
         <setEntry value="jul.to.slf4j@default:default"/>
@@ -74,6 +74,7 @@
         <setEntry value="net.jodah.typetools@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
         <setEntry value="org.apache.felix.gogo.runtime@default:default"/>
+        <setEntry value="org.apache.felix.gogo.shell@default:default"/>
         <setEntry value="org.apache.lucene.core@default:default"/>
         <setEntry value="org.eclipse.core.contenttype@default:default"/>
         <setEntry value="org.eclipse.core.databinding.observable@default:default"/>
