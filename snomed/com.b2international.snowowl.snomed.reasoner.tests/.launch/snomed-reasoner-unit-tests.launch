@@ -76,10 +76,10 @@
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
+        <setEntry value="jakarta.servlet-api@default:default"/>
         <setEntry value="javax.activation-api@default:default"/>
         <setEntry value="javax.el@default:default"/>
         <setEntry value="javax.inject@default:default"/>
-        <setEntry value="javax.servlet@default:default"/>
         <setEntry value="jaxb-api@default:default"/>
         <setEntry value="jcl.over.slf4j@default:default"/>
         <setEntry value="jul.to.slf4j@default:default"/>
@@ -97,8 +97,8 @@
         <setEntry value="org.apache.commons.lang@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
-        <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpclient*4.5.10@default:default"/>
+        <setEntry value="org.apache.httpcomponents.httpcore*4.4.12@default:default"/>
         <setEntry value="org.eclipse.core.commands@default:default"/>
         <setEntry value="org.eclipse.core.contenttype@default:default"/>
         <setEntry value="org.eclipse.core.databinding.observable@default:default"/>
@@ -124,10 +124,6 @@
         <setEntry value="org.eclipse.equinox.transforms.hook@default:false"/>
         <setEntry value="org.eclipse.equinox.weaving.hook@default:false"/>
         <setEntry value="org.eclipse.jdt.junit.runtime@default:default"/>
-        <setEntry value="org.eclipse.net4j.jvm@default:default"/>
-        <setEntry value="org.eclipse.net4j.tcp@default:default"/>
-        <setEntry value="org.eclipse.net4j.util@default:default"/>
-        <setEntry value="org.eclipse.net4j@default:default"/>
         <setEntry value="org.eclipse.osgi.compatibility.state@default:false"/>
         <setEntry value="org.eclipse.osgi.services@default:default"/>
         <setEntry value="org.eclipse.osgi.util@default:default"/>
@@ -166,6 +162,7 @@
         <setEntry value="com.b2international.collections.jackson@default:default"/>
         <setEntry value="com.b2international.commons@default:default"/>
         <setEntry value="com.b2international.groovy@default:default"/>
+        <setEntry value="com.b2international.index.es8@default:default"/>
         <setEntry value="com.b2international.index.test.tools@default:default"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>

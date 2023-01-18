@@ -55,7 +55,7 @@ SO_JAVA_OPTS="-Xms6g \
                 -Dosgi.noShutdown=true \
                 -Dosgi.classloader.type=nonparallel \
                 -Dosgi.console=2501 \
-                -Djetty.port=8080 \
+                -Djetty.http.port=8080 \
                 -XX:+HeapDumpOnOutOfMemoryError \
                 --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
                 --add-opens java.base/java.lang=ALL-UNNAMED \
@@ -73,6 +73,6 @@ exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.5.800.v20200727-1323.jar
+  -jar plugins/org.eclipse.equinox.launcher_1.6.300.v20210813-1054.jar
 
 popd
