@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.eventbus;singleton:=true
 Bundle-Version: 8.8.2.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: com.google.guava;bundle-version="[27.1.0,28.0.0)",
+Require-Bundle: com.google.guava;bundle-version="[30.1.0,30.1.1)",
  io.netty.common;visibility:=reexport,
  io.netty.handler;visibility:=reexport,
  io.netty.codec;visibility:=reexport,

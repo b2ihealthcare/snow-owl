@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Search Indexing
+Bundle-Name: Elasticsearch focused object store with revision capabilities
 Bundle-SymbolicName: com.b2international.index;singleton:=true
 Bundle-Version: 8.8.2.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
@@ -14,15 +14,15 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  io.netty.resolver;bundle-version="4.1.45",
  io.netty.transport;bundle-version="4.1.45",
  org.apache.commons.codec;bundle-version="1.11.0",
- org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.2.0)",
- org.apache.httpcomponents.httpclient;bundle-version="[4.5.10,4.6.0)",
- org.apache.httpcomponents.httpcore;bundle-version="[4.4.12,4.5.0)",
+ org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.1.5)",
+ org.apache.httpcomponents.httpclient;bundle-version="[4.5.10,4.5.11)",
+ org.apache.httpcomponents.httpcore;bundle-version="[4.4.12,4.4.13)",
  org.hdrhistogram.HdrHistogram;bundle-version="2.1.10",
  com.b2international.commons;visibility:=reexport,
  com.fasterxml.jackson.dataformat.jackson-dataformat-smile;bundle-version="[2.9.9,3.0.0)",
  com.fasterxml.jackson.dataformat.jackson-dataformat-cbor;bundle-version="[2.9.9,3.0.0)",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.9.9,3.0.0)",
- com.google.guava;bundle-version="[27.1.0,28.0.0)",
+ com.google.guava;bundle-version="[30.1.0,30.1.1)",
  net.jodah.failsafe;bundle-version="2.3.1",
  com.b2international.index.es8;visibility:=reexport
 Export-Package: com.b2international.index,
@@ -114,3 +114,4 @@ Bundle-ClassPath: .,
  lib/transport-netty4-client-7.17.2.jar,
  lib/lz4-java-1.8.0.jar
 Bundle-Activator: com.b2international.index.Activator
+Bundle-Vendor: B2i Healthcare

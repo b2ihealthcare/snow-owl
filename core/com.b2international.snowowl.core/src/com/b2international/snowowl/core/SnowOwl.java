@@ -99,7 +99,7 @@ public final class SnowOwl {
 		// configure Jetty sysprops if not configured via jetty.home nor via jetty.home.bundle
 		if (System.getProperty("jetty.home", "").isBlank() && System.getProperty("jetty.home.bundle", "").isBlank()) {
 			System.setProperty("jetty.home", confPath.toAbsolutePath().toString());
-			System.setProperty("jetty.etc.config.urls", "jetty.xml,jetty-http.xml,jetty-deployer.xml");
+			System.setProperty("jetty.etc.config.urls", "jetty.xml,jetty-http.xml,jetty-deploy.xml");
 		}
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.Slf4jLog");
 		

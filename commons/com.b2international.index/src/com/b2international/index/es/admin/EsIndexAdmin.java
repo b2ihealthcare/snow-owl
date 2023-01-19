@@ -512,7 +512,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public void delete() {
 		if (exists()) {
-			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(name + "*");
+			final String[] indexesToDelete = mappings().getMappings().stream().map(this::getTypeIndex).toArray(i -> new String[i]);
+			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest().indices(indexesToDelete);
 			try {
 				final AcknowledgedResponse deleteIndexResponse = client()
 						.indices()

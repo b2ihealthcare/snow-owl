@@ -34,7 +34,7 @@ REM Parallel classloader configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.classloader.type=nonparallel
 
 REM Jetty configuration
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.port=8080
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.http.port=8080
 
 REM GC configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
@@ -51,5 +51,5 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
 
 REM Run Snow Owl
 PUSHD %KERNEL_HOME%
-"%JAVA_EXECUTABLE%" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.800.v20200727-1323.jar
+"%JAVA_EXECUTABLE%" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.6.300.v20210813-1054.jar
 POPD
