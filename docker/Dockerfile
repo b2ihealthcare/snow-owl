@@ -37,6 +37,20 @@ RUN chmod g=u /etc/passwd && \
 # Expose necessary ports used by Snow Owl
 EXPOSE 2036 8080
 
+LABEL org.label-schema.license="Apache-2.0" \
+    org.label-schema.name="Snow Owl OSS" \
+    org.label-schema.schema-version="1.0" \
+    org.label-schema.url="https://github.com/b2ihealthcare/snow-owl" \
+    org.label-schema.usage="https://docs.b2i.sg/snow-owl" \
+    org.label-schema.vcs-url="https://github.com/b2ihealthcare/snow-owl/tree/7.x" \
+    org.label-schema.vendor="B2i Healthcare" \
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.title="Snow Owl OSS" \
+    org.opencontainers.image.url="https://github.com/b2ihealthcare/snow-owl" \
+    org.opencontainers.image.documentation="https://docs.b2i.sg/snow-owl" \
+    org.opencontainers.image.source="https://github.com/b2ihealthcare/snow-owl/tree/7.x" \
+    org.opencontainers.image.vendor="B2i Healthcare"
+
 USER snowowl:root
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
