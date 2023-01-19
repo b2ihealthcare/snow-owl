@@ -9,7 +9,7 @@
    <launcherArgs>
       <programArgs>-console -consoleLog
       </programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms2g -Xmx2g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=9090 -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms2g -Xmx2g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.http.port=9090 -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
       </vmArgsMac>
@@ -38,10 +38,9 @@
    </features>
 
    <configurations>
-   	  <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="com.b2international.snowowl.server.product" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.jetty.osgi.boot" autoStart="true" startLevel="5" />

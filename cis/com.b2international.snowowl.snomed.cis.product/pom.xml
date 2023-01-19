@@ -78,6 +78,7 @@
 							<appendAssemblyId>false</appendAssemblyId>
 							<workDirectory>${project.build.directory}/assembly</workDirectory>
 							<descriptor>${basedir}/assembly/cis.xml</descriptor>
+							<tarLongFileMode>gnu</tarLongFileMode>
 						</configuration>
 					</execution>
 				</executions>

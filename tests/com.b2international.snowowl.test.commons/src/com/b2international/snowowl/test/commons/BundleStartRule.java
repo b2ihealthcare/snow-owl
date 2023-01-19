@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,15 +34,18 @@ import org.slf4j.LoggerFactory;
 public class BundleStartRule extends ExternalResource {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BundleStartRule.class);
+	private final String symbolicName;
+	
 	private Bundle bundle;
 
 	public BundleStartRule(String symbolicName) {
-		this.bundle = checkNotNull(Platform.getBundle(symbolicName), "Bundle not found for %s", symbolicName);
+		this.symbolicName = symbolicName;
 	}
 
 	@Override
 	protected void before() throws Throwable {
 		super.before();
+		this.bundle = checkNotNull(Platform.getBundle(symbolicName), "Bundle not found for name '%s'. This can indicate resolution errors. Check it by manually trying to start it in the console after setting a breakpoint here.", symbolicName); 
 		LOG.info("Starting bundle: {}", this.bundle.getSymbolicName());
 		bundle.start();
 	}
@@ -51,8 +54,10 @@ public class BundleStartRule extends ExternalResource {
 	protected void after() {
 		super.after();
 		try {
-			LOG.info("Stopping bundle: {}", this.bundle.getSymbolicName());
-			bundle.stop();
+			if (bundle != null) {
+				LOG.info("Stopping bundle: {}", this.bundle.getSymbolicName());
+				bundle.stop();
+			}
 		} catch (BundleException e) {
 			throw new RuntimeException(e);
 		}
