@@ -147,7 +147,11 @@ public class RestExtensions {
 	}
 	
 	public static RequestSpecification givenRequestWithToken(String api, String token) {
-		return givenUnauthenticatedRequest(api).auth().preemptive().oauth2(token);
+		return givenRequestWithToken(getPort(), api, token);
+	}
+	
+	public static RequestSpecification givenRequestWithToken(int port, String api, String token) {
+		return givenUnauthenticatedRequest(port, api).auth().preemptive().oauth2(token);
 	}
 
 	public static String asPath(List<? extends String> values) {
