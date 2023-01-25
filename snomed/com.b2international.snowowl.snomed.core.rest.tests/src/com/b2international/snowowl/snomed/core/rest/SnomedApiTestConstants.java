@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -29,11 +28,6 @@ import com.google.common.collect.ImmutableMap;
  * @since 2.0
  */
 public abstract class SnomedApiTestConstants implements ApiTestConstants {
-
-	/**
-	 * The context-relative base URL for SNOMED CT-related controllers.
-	 */
-	public static final String SCT_API = "/snomedct";
 
 	/**
 	 * An acceptability map which specifies that the corresponding description is acceptable in the UK language reference set.
@@ -59,10 +53,6 @@ public abstract class SnomedApiTestConstants implements ApiTestConstants {
 	 * An acceptability map with an invalid language reference set identifier.
 	 */
 	public static final Map<String, Acceptability> INVALID_PREFERRED_MAP = ImmutableMap.of("11110000", Acceptability.PREFERRED);
-
-	public static final long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
-
-	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(60L);
 
 	public static final String EXTENSION_PATH = "MAIN/2020-01-31/SNOMEDCT-B2I";
 

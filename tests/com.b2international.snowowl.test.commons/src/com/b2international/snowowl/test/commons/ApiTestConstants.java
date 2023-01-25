@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.test.commons;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @since 7.15
  */
@@ -49,5 +51,29 @@ public interface ApiTestConstants {
 	 * The context-relative base URL for the suggest controller.
 	 */
 	String SUGGEST_API = "/suggest";
+	
+	/**
+	 * The context-relative base URL for the valueset controller.
+	 */
+	String VALUESET_API = "/valuesets";
+	
+	/**
+	 * The context-relative base URL for the valueset controller.
+	 */
+	String CONCEPTMAP_API = "/conceptmaps";
+	
+	/**
+	 * The context-relative base URL for the lcs controller.
+	 */
+	String LCS_API = "/lcs";
+	
+	/**
+	 * The context-relative base URL for SNOMED CT-related controllers.
+	 */
+	String SCT_API = "/snomedct";
+
+	long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
+
+	long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(60L);
 	
 }
