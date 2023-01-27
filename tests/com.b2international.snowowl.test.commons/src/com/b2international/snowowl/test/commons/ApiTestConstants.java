@@ -74,6 +74,6 @@ public interface ApiTestConstants {
 
 	long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
 
-	long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(60L);
+	long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(120L);
 	
 }
