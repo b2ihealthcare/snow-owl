@@ -25,12 +25,13 @@ import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVers
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -47,7 +48,6 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.Merge;
@@ -942,11 +942,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
 		
-		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getId())
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
+		completeExtensionUpgrade(upgradeCodeSystem.getResourceURI());
 		
 		// after upgrade completion, the upgrade Code System is no longer available
 		CodeSystemRestRequests.assertGetCodeSystem(upgradeCodeSystem.getId())
@@ -1217,11 +1213,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		IBranchPath upgradeBranch = BranchPathUtils.createPath(upgradeCodeSystem.getBranchPath());
 		merge(extensionBranch, upgradeBranch, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));	
 		
-		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extension.getResourceURI())
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES);
-		assertTrue(result);
+		syncExtensionUpgrade(upgradeCodeSystem.getResourceURI(), extension.getResourceURI());
 		
 		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).isEmpty();
@@ -1274,11 +1266,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).contains(extensionVersion2);
 		
-		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extensionVersion2)
-				.buildAsync()
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(result);
+		syncExtensionUpgrade(upgradeCodeSystem.getResourceURI(), extensionVersion2);
 		
 		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()");
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).containsOnly(extensionVersion3);
@@ -1320,23 +1308,14 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
 		
-		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extension.getResourceURI())
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES);
-		
-		assertTrue(result);
+		syncExtensionUpgrade(upgradeCodeSystem.getResourceURI(), extension.getResourceURI());
 		
 		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
 		
-		Boolean successComplete = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getId())
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES);
-		
-		assertTrue(successComplete);
+		completeExtensionUpgrade(upgradeCodeSystem.getResourceURI());
 		
 		getComponent(extension.getResourceURI(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+		
 	}
 	
 	@Test
@@ -1385,11 +1364,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		LocalDate firstExtensionVersion = getNextAvailableEffectiveDate(extension.getId());
 		createVersion(extension.getId(), firstExtensionVersion).statusCode(201);
 
-		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extension.getResourceURI())
-				.buildAsync()
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(result);
+		syncExtensionUpgrade(upgradeCodeSystem.getResourceURI(), extension.getResourceURI());
 		
 		// verify that after sync everything looks normal
 		SnomedConcept extensionConceptOnUpgradeAfterSync = getConcept(upgradeCodeSystem.getResourceURI(), extensionConceptId);
@@ -1451,11 +1426,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertThat(conceptOnUpgradeBranch.getAncestorIdsAsString())
 			.containsOnly(IComponent.ROOT_ID, "41146007", "81325006", "106237007", Concepts.ROOT_CONCEPT, "246061005", "409822003", "410607006", Concepts.CONCEPT_MODEL_ATTRIBUTE, "900000000000441003");
 		
-		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getId())
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
+		completeExtensionUpgrade(upgradeCodeSystem.getResourceURI());
 		
 		String secondInferredIntRelationship = createRelationship(SNOMEDCT_URI, createRelationshipRequestBody("409852006", Concepts.IS_A, Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE, Concepts.INFERRED_RELATIONSHIP));
 		

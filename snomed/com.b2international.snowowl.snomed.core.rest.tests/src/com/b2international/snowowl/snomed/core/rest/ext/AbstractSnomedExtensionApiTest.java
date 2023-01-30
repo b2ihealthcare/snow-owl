@@ -78,5 +78,13 @@ public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTe
 		final String upgradeCodeSystemId = RestExtensions.lastPathSegment(assertCodeSystemUpgrade(upgradeOf, extensionOf).statusCode(201).extract().header("Location"));
 		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId);
 	}
+	
+	protected final void syncExtensionUpgrade(ResourceURI codeSystemUri, ResourceURI sourceUri) {
+		CodeSystemRestRequests.assertCodeSystemUpgradeSync(codeSystemUri, sourceUri).statusCode(204);
+	}
+	
+	protected final void completeExtensionUpgrade(ResourceURI upgradedCodeSystemUri) {
+		CodeSystemRestRequests.assertCodeSystemUpgradeComplete(upgradedCodeSystemUri).statusCode(204);
+	}
 
 }
