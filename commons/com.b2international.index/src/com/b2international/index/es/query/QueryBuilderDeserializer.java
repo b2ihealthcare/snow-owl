@@ -10,7 +10,6 @@ import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.XContentHelper;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchModule;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
@@ -25,7 +24,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 /**
  * @since 8.8
  */
-public class QueryBuilderDeserializer extends StdDeserializer<QueryBuilder> {
+public class QueryBuilderDeserializer extends StdDeserializer<org.elasticsearch.index.query.QueryBuilder> {
 
 	private static final long serialVersionUID = 8179941099961112852L;
 
@@ -37,11 +36,11 @@ public class QueryBuilderDeserializer extends StdDeserializer<QueryBuilder> {
 	}
 
 	protected QueryBuilderDeserializer() {
-		super(QueryBuilder.class);
+		super(org.elasticsearch.index.query.QueryBuilder.class);
 	}
 
 	@Override
-	public QueryBuilder deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public org.elasticsearch.index.query.QueryBuilder deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		final XContentParser parser = XContentHelper.createParser(registry, LoggingDeprecationHandler.INSTANCE, new BytesArray(p.getValueAsString()), XContentType.JSON);
 		return SearchSourceBuilder.fromXContent(parser).query();
 	}

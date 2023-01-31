@@ -5,8 +5,6 @@ package com.b2international.snowowl.core.domain;
 
 import java.io.Serializable;
 
-import org.elasticsearch.index.query.QueryBuilder;
-
 import com.b2international.index.es.query.QueryBuilderDeserializer;
 import com.b2international.index.es.query.QueryBuilderSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -21,7 +19,7 @@ public class ReindexQuery implements Serializable {
 
 	private String index;
 
-	private QueryBuilder query;
+	private org.elasticsearch.index.query.QueryBuilder query;
 
 	public String getIndex() {
 		return index;
@@ -32,12 +30,12 @@ public class ReindexQuery implements Serializable {
 	}
 
 	@JsonSerialize(using = QueryBuilderSerializer.class)
-	public QueryBuilder getQuery() {
+	public org.elasticsearch.index.query.QueryBuilder getQuery() {
 		return query;
 	}
 
 	@JsonDeserialize(using = QueryBuilderDeserializer.class)
-	public void setQuery(final QueryBuilder query) {
+	public void setQuery(final org.elasticsearch.index.query.QueryBuilder query) {
 		this.query = query;
 	}
 
