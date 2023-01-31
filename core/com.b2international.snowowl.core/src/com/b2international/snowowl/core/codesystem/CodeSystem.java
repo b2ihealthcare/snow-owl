@@ -95,7 +95,7 @@ public final class CodeSystem extends TerminologyResource {
 		return codeSystem;
 	}
 
-	public CodeSystemCreateRequestBuilder toCreateRequest() {
+	public CodeSystemCreateRequestBuilder toCreateRequestBuilder() {
 		return CodeSystemRequests.prepareNewCodeSystem()
 				.setId(getId())
 				.setUrl(getUrl())
@@ -114,6 +114,25 @@ public final class CodeSystem extends TerminologyResource {
 				.setToolingId(getToolingId())
 				.setExtensionOf(getExtensionOf())
 				.setUpgradeOf(getUpgradeOf())
+				.setSettings(getSettings());
+	}
+	
+	public CodeSystemUpdateRequestBuilder toUpdateRequestBuilder() {
+		return CodeSystemRequests.prepareUpdateCodeSystem(getId())
+				.setUrl(getUrl())
+				.setTitle(getTitle())
+				.setLanguage(getLanguage())
+				.setDescription(getDescription())
+				.setStatus(getStatus())
+				.setCopyright(getCopyright())
+				.setOwner(getOwner())
+				.setContact(getContact())
+				.setUsage(getUsage())
+				.setPurpose(getPurpose())
+				.setBundleId(getBundleId())
+				.setOid(getOid())
+				.setBranchPath(getBranchPath())
+				.setExtensionOf(getExtensionOf())
 				.setSettings(getSettings());
 	}
 
