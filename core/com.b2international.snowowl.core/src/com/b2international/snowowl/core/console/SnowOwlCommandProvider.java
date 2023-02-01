@@ -148,7 +148,7 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 					.buildAsync()
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync()
-					.version()
+					.getVersion()
 			};
 		}
 		

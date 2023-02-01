@@ -17,13 +17,17 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import com.b2international.index.es.client.EsIndexStatus;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * @since 5.8
  */
+@JsonDeserialize(as = RepositoryInfo.Default.class)
 public interface RepositoryInfo {
 
 	/**
@@ -68,7 +72,13 @@ public interface RepositoryInfo {
 		private final String diagnosis;
 		private final List<EsIndexStatus> indices;
 
-		private Default(String id, Health health, String diagnosis, List<EsIndexStatus> indices) {
+		@JsonCreator
+		private Default(
+			@JsonProperty("id") String id,
+			@JsonProperty("health") Health health,
+			@JsonProperty("diagnosis") String diagnosis,
+			@JsonProperty("indices") List<EsIndexStatus> indices
+		) {
 			this.id = id;
 			this.health = health;
 			this.diagnosis = diagnosis;
@@ -93,6 +103,24 @@ public interface RepositoryInfo {
 		@Override
 		public List<EsIndexStatus> indices() {
 			return indices;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(diagnosis, health, id, indices);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Default other = (Default) obj;
+			return Objects.equals(diagnosis, other.diagnosis) && health == other.health && Objects.equals(id, other.id)
+					&& Objects.equals(indices, other.indices);
 		}
 		
 	}

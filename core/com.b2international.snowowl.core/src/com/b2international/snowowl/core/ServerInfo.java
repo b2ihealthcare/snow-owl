@@ -16,8 +16,10 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.b2international.index.es.client.EsClusterStatus;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -32,31 +34,51 @@ public final class ServerInfo implements Serializable {
 	private final Repositories repositories;
 	private final EsClusterStatus cluster;
 	
-	public ServerInfo(String version, String description, Repositories repositories, EsClusterStatus cluster) {
+	@JsonCreator
+	public ServerInfo(
+		@JsonProperty("version") String version,
+		@JsonProperty("description") String description,
+		@JsonProperty("repositories") Repositories repositories,
+		@JsonProperty("cluster") EsClusterStatus cluster
+	) {
 		this.version = version;
 		this.description = description;
 		this.repositories = repositories;
 		this.cluster = cluster;
 	}
 
-	@JsonProperty
-	public String version() {
+	public String getVersion() {
 		return version;
 	}
 
-	@JsonProperty
-	public String description() {
+	public String getDescription() {
 		return description;
 	}
 	
-	@JsonProperty
-	public Repositories repositories() {
+	public Repositories getRepositories() {
 		return repositories;
 	}
 	
-	@JsonProperty
-	public EsClusterStatus cluster() {
+	public EsClusterStatus getCluster() {
 		return cluster;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(cluster, description, repositories.getItems(), version);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ServerInfo other = (ServerInfo) obj;
+		return Objects.equals(cluster, other.cluster) && Objects.equals(description, other.description)
+				&& Objects.equals(repositories.getItems(), other.repositories.getItems()) && Objects.equals(version, other.version);
 	}
 	
 }

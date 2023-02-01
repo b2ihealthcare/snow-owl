@@ -20,9 +20,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
@@ -32,11 +34,17 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class EsClusterStatus implements Serializable {
 
+	private static final long serialVersionUID = -3560248499127530462L;
+	
 	private final boolean available;
 	private final String diagnosis;
 	private final List<EsIndexStatus> indices;
 	
-	public EsClusterStatus(final boolean available, final String diagnosis, final List<EsIndexStatus> indices) {
+	@JsonCreator
+	public EsClusterStatus(
+			@JsonProperty("available") final boolean available,
+			@JsonProperty("diagnosis") final String diagnosis,
+			@JsonProperty("indices") final List<EsIndexStatus> indices) {
 		this.available = available;
 		this.diagnosis = diagnosis;
 		this.indices = Collections.unmodifiableList(newArrayList(indices));
@@ -52,6 +60,7 @@ public final class EsClusterStatus implements Serializable {
 	/**
 	 * @return <code>true</code> if all indices report back GREEN healthy state, <code>false</code> if at least one index reports back non-GREEN status.
 	 */
+	@JsonIgnore
 	public boolean isHealthy() {
 		return isHealthy((String[]) null);
 	}
@@ -66,7 +75,6 @@ public final class EsClusterStatus implements Serializable {
 	/**
 	 * @return all index health states
 	 */
-	@JsonProperty("indices")
 	public List<EsIndexStatus> getIndices() {
 		return indices;
 	}
@@ -86,6 +94,23 @@ public final class EsClusterStatus implements Serializable {
 			stream = this.indices.stream();
 		}
 		return stream.allMatch(EsIndexStatus::isHealthy);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(available, diagnosis, indices);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EsClusterStatus other = (EsClusterStatus) obj;
+		return available == other.available && Objects.equals(diagnosis, other.diagnosis) && Objects.equals(indices, other.indices);
 	}
 
 }
