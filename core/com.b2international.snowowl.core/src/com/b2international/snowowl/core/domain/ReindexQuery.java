@@ -18,9 +18,15 @@ public class ReindexQuery implements Serializable {
 	private static final long serialVersionUID = -1724713916733180036L;
 
 	private String index;
-
 	private org.elasticsearch.index.query.QueryBuilder query;
 
+	public static ReindexQuery of(String index, org.elasticsearch.index.query.QueryBuilder query) {
+		ReindexQuery rq = new ReindexQuery();
+		rq.setIndex(index);
+		rq.setQuery(query);
+		return rq;
+	}
+	
 	public String getIndex() {
 		return index;
 	}

@@ -21,6 +21,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
 import com.b2international.snowowl.core.codesystem.CodeSystemTest;
+import com.b2international.snowowl.core.domain.ReindexQuerySerializationTest;
 import com.b2international.snowowl.core.ecl.EclEvaluationRequestTest;
 import com.b2international.snowowl.core.ecl.EclRewriterTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
@@ -79,6 +80,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	EclRewriterTest.class,
 	RepositoryInfoSerializationTest.class,
 	ServerInfoSerializationTest.class,
+	ReindexQuerySerializationTest.class,
 	
 	// medium integration tests
 	JobRequestsTest.class,
