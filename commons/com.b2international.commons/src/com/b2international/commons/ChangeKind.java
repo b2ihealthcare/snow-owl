@@ -30,10 +30,10 @@ public enum ChangeKind {
 	DELETED("Deleted"),
 
 	/** Represent a creation or addition. */
-	ADDED("New"),
+	ADDED("Added"),
 	
 	/** Represents a modification. */
-	UPDATED("Changed"),
+	UPDATED("Updated"),
 	
 	/** Represents no modification. */
 	UNCHANGED("Unchanged");
