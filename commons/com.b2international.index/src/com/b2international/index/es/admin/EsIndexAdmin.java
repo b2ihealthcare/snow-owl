@@ -666,7 +666,52 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	@Override
 	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
-		return client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
+		
+		BulkByScrollResponse response = client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
+		
+		if (response.isTimedOut()) {
+			throw new IndexException(
+					String.format(
+						"Reindex operation of source index: '%s' and destination index '%s' timed out with remote host: '%s'",
+						sourceIndex,
+						destinationIndex,
+						remoteInfo.getHost()
+					), null);
+		}
+		
+		if (response.getSearchFailures().size() > 0) {
+			
+			response.getSearchFailures().forEach(failure -> {
+				log().error(
+					"There were search failures during reindex operation. Index: '{}', Status: '{}', Cause: {}",
+					failure.getIndex(),
+					failure.getStatus().getStatus(),
+					failure.getReason()
+				);
+			});
+			
+			throw new IndexException(String.format("There were search failures during the reindex operation (index '%s'). See logs for more details.", sourceIndex), null);
+			
+		}
+		
+		if (response.getBulkFailures().size() > 0) {
+			
+			response.getBulkFailures().forEach(failure -> {
+				log().error(
+					"There were bulk failures during reindex operation. Index: '{}', Message: '{}', Status: '{}', Cause: {}",
+					failure.getIndex(),
+					failure.getMessage(),
+					failure.getStatus(),
+					failure.getCause()
+				);
+			});
+
+			throw new IndexException(String.format("There were bulk failures during the reindex operation (index '%s'). See logs for more details.", destinationIndex), null);
+			
+		}
+		
+		return response;
+		
 	}
 	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
