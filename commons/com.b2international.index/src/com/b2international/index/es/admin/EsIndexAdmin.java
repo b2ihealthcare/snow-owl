@@ -61,6 +61,7 @@ import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
+import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.FieldAlias;
@@ -665,14 +666,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 	
 	@Override
-	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
 		
 		BulkByScrollResponse response = client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
 		
 		if (response.isTimedOut()) {
 			throw new IndexException(
 					String.format(
-						"Reindex operation of source index: '%s' and destination index '%s' timed out with remote host: '%s'",
+						"Reindex operation of source index: '%s' and destination index '%s' timed out at remote host: '%s'",
 						sourceIndex,
 						destinationIndex,
 						remoteInfo.getHost()
@@ -710,7 +711,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 		}
 		
-		return response;
+		return ReindexResult.builder()
+			.elapsedNanos(response.getTook().nanos())
+			.createdDocuments(response.getCreated())
+			.updatedDocuments(response.getUpdated())
+			.deletedDocuments(response.getDeleted())
+			.noops(response.getNoops())
+			.totalDocuments(response.getTotal())
+			.sourceIndex(sourceIndex)
+			.destinationIndex(destinationIndex)
+			.remoteAddress(response.remoteAddress().getAddress())
+			.refresh(refresh)
+			.build();
 		
 	}
 	

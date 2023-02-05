@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.RemoteInfo;
 import org.slf4j.Logger;
 
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
@@ -131,7 +131,7 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	}
 	
 	@Override
-	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
 		return rawIndexAdmin.reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
 	}
 	

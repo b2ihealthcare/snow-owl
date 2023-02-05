@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
@@ -155,7 +156,7 @@ public interface IndexAdmin {
 	 * @param remoteInfo - configuration for the remote Elasticsearch instance (scheme, host, port, credentials and query)
 	 * @param refresh - whether to refresh the destination index at the end of the process or not
 	 */
-	BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException;
+	ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException;
 	
 	/**
 	 * @return the indices maintained by this {@link IndexAdmin}
