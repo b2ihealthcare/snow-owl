@@ -31,7 +31,7 @@ public class ReindexResultSerializationTest {
 		mapper.setSerializationInclusion(Include.NON_NULL);
 
 		reindexResult = ReindexResult.builder()
-				.elapsedNanos(1L)
+				.took("123 ns")
 				.createdDocuments(1L)
 				.updatedDocuments(1L)
 				.deletedDocuments(1L)
@@ -44,7 +44,7 @@ public class ReindexResultSerializationTest {
 				.build();
 
 		simpleReindexResult = ReindexResult.builder()
-				.elapsedNanos(1L)
+				.took("123 ns")
 				.totalDocuments(1L)
 				.sourceIndex("sourceIndex")
 				.destinationIndex("destinationIndex")
@@ -53,8 +53,8 @@ public class ReindexResultSerializationTest {
 				.build();
 
 
-		serializedResponse = "{\"elapsedNanos\":1,\"createdDocuments\":1,\"updatedDocuments\":1,\"deletedDocuments\":1,\"noops\":1,\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":true}";
-		simpleSerializedResponse = "{\"elapsedNanos\":1,\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":false}";
+		serializedResponse = "{\"took\":\"123 ns\",\"createdDocuments\":1,\"updatedDocuments\":1,\"deletedDocuments\":1,\"noops\":1,\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":true}";
+		simpleSerializedResponse = "{\"took\":\"123 ns\",\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":false}";
 
 	}
 

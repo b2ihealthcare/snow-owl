@@ -57,6 +57,7 @@ import org.slf4j.Logger;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.commons.json.Json;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
@@ -712,7 +713,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 		
 		return ReindexResult.builder()
-			.elapsedNanos(response.getTook().nanos())
+			.took(TimeUtil.nanoToReadableString(response.getTook().nanos()))
 			.createdDocuments(response.getCreated())
 			.updatedDocuments(response.getUpdated())
 			.deletedDocuments(response.getDeleted())
@@ -720,7 +721,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			.totalDocuments(response.getTotal())
 			.sourceIndex(sourceIndex)
 			.destinationIndex(destinationIndex)
-			.remoteAddress(response.remoteAddress().getAddress())
+			.remoteAddress(String.format("%s://%s:%s", remoteInfo.getScheme(), remoteInfo.getHost(), remoteInfo.getPort()))
 			.refresh(refresh)
 			.build();
 		

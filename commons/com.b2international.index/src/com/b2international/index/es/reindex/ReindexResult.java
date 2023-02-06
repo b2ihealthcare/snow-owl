@@ -17,8 +17,7 @@ public class ReindexResult implements Serializable {
 
 	private static final long serialVersionUID = 4201052194859583099L;
 
-	// use primitve long to always show elapsed time
-	private final long elapsedNanos;
+	private final String took;
 
 	// use boxed Long for values where numbers higher than 0 matter the most (this is also to compact the result object)
 	private final Long createdDocuments;
@@ -43,7 +42,7 @@ public class ReindexResult implements Serializable {
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder {
 
-		private long elapsedNanos;
+		private String took;
 
 		private Long createdDocuments;
 		private Long updatedDocuments;
@@ -61,8 +60,8 @@ public class ReindexResult implements Serializable {
 
 		private Builder() {}
 
-		public Builder elapsedNanos(long elapsedNanos) {
-			this.elapsedNanos = elapsedNanos;
+		public Builder took(String took) {
+			this.took = took;
 			return this;
 		}
 
@@ -112,14 +111,14 @@ public class ReindexResult implements Serializable {
 		}
 
 		public ReindexResult build() {
-			return new ReindexResult(elapsedNanos, createdDocuments, updatedDocuments, deletedDocuments, noops, totalDocuments, sourceIndex,
+			return new ReindexResult(took, createdDocuments, updatedDocuments, deletedDocuments, noops, totalDocuments, sourceIndex,
 					destinationIndex, remoteAddress, refresh);
 		}
 
 	}
 
 	private ReindexResult(
-			long elapsedNanos,
+			String took,
 			Long createdDocuments,
 			Long updatedDocuments,
 			Long deletedDocuments,
@@ -129,7 +128,7 @@ public class ReindexResult implements Serializable {
 			String destinationIndex,
 			String remoteAddress,
 			boolean refresh) {
-		this.elapsedNanos = elapsedNanos;
+		this.took = took;
 		this.createdDocuments = createdDocuments;
 		this.updatedDocuments = updatedDocuments;
 		this.deletedDocuments = deletedDocuments;
@@ -141,8 +140,8 @@ public class ReindexResult implements Serializable {
 		this.refresh = refresh;
 	}
 
-	public long getElapsedNanos() {
-		return elapsedNanos;
+	public String getTook() {
+		return took;
 	}
 
 	public Long getCreatedDocuments() {
@@ -183,32 +182,35 @@ public class ReindexResult implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ReindexResult [elapsedNanos=" + elapsedNanos + ", createdDocuments=" + createdDocuments + ", updatedDocuments=" + updatedDocuments
-				+ ", deletedDocuments=" + deletedDocuments + ", noops=" + noops + ", totalDocuments=" + totalDocuments + ", "
-				+ (sourceIndex != null ? "sourceIndex=" + sourceIndex + ", " : "")
+		return "ReindexResult [" + (took != null ? "took=" + took + ", " : "")
+				+ (createdDocuments != null ? "createdDocuments=" + createdDocuments + ", " : "")
+				+ (updatedDocuments != null ? "updatedDocuments=" + updatedDocuments + ", " : "")
+				+ (deletedDocuments != null ? "deletedDocuments=" + deletedDocuments + ", " : "") + (noops != null ? "noops=" + noops + ", " : "")
+				+ "totalDocuments=" + totalDocuments + ", " + (sourceIndex != null ? "sourceIndex=" + sourceIndex + ", " : "")
 				+ (destinationIndex != null ? "destinationIndex=" + destinationIndex + ", " : "")
 				+ (remoteAddress != null ? "remoteAddress=" + remoteAddress + ", " : "") + "refresh=" + refresh + "]";
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(createdDocuments, deletedDocuments, destinationIndex, elapsedNanos, noops, refresh, remoteAddress, sourceIndex,
-				totalDocuments, updatedDocuments);
+		return Objects.hash(createdDocuments, deletedDocuments, destinationIndex, noops, refresh, remoteAddress, sourceIndex, took, totalDocuments,
+				updatedDocuments);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if ((obj == null) || (getClass() != obj.getClass())) {
+		if (obj == null)
 			return false;
-		}
-		final ReindexResult other = (ReindexResult) obj;
-		return createdDocuments == other.createdDocuments && deletedDocuments == other.deletedDocuments
-				&& Objects.equals(destinationIndex, other.destinationIndex) && elapsedNanos == other.elapsedNanos && noops == other.noops
-				&& refresh == other.refresh && Objects.equals(remoteAddress, other.remoteAddress) && Objects.equals(sourceIndex, other.sourceIndex)
-				&& totalDocuments == other.totalDocuments && updatedDocuments == other.updatedDocuments;
+		if (getClass() != obj.getClass())
+			return false;
+		ReindexResult other = (ReindexResult) obj;
+		return Objects.equals(createdDocuments, other.createdDocuments) && Objects.equals(deletedDocuments, other.deletedDocuments)
+				&& Objects.equals(destinationIndex, other.destinationIndex) && Objects.equals(noops, other.noops) && refresh == other.refresh
+				&& Objects.equals(remoteAddress, other.remoteAddress) && Objects.equals(sourceIndex, other.sourceIndex)
+				&& Objects.equals(took, other.took) && totalDocuments == other.totalDocuments
+				&& Objects.equals(updatedDocuments, other.updatedDocuments);
 	}
 
 }
