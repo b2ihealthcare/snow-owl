@@ -37,6 +37,7 @@ public class ReindexResultSerializationTest {
 				.deletedDocuments(1L)
 				.totalDocuments(1L)
 				.noops(1L)
+				.versionConflicts(2L)
 				.sourceIndex("sourceIndex")
 				.destinationIndex("destinationIndex")
 				.remoteAddress("remoteAddress")
@@ -53,7 +54,7 @@ public class ReindexResultSerializationTest {
 				.build();
 
 
-		serializedResponse = "{\"took\":\"123 ns\",\"createdDocuments\":1,\"updatedDocuments\":1,\"deletedDocuments\":1,\"noops\":1,\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":true}";
+		serializedResponse = "{\"took\":\"123 ns\",\"createdDocuments\":1,\"updatedDocuments\":1,\"deletedDocuments\":1,\"noops\":1,\"versionConflicts\":2,\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":true}";
 		simpleSerializedResponse = "{\"took\":\"123 ns\",\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":false}";
 
 	}

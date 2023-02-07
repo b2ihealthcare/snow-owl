@@ -24,6 +24,7 @@ public class ReindexResult implements Serializable {
 	private final Long updatedDocuments;
 	private final Long deletedDocuments;
 	private final Long noops;
+	private final Long versionConflicts;
 
 	// use primitve long to always show total number of affected documents
 	private final long totalDocuments;
@@ -48,6 +49,7 @@ public class ReindexResult implements Serializable {
 		private Long updatedDocuments;
 		private Long deletedDocuments;
 		private Long noops;
+		private Long versionConflicts;
 
 		private long totalDocuments;
 
@@ -85,6 +87,11 @@ public class ReindexResult implements Serializable {
 			return this;
 		}
 
+		public Builder versionConflicts(long versionConflicts) {
+			this.versionConflicts = versionConflicts > 0 ? Long.valueOf(versionConflicts) : null;
+			return this;
+		}
+
 		public Builder totalDocuments(long totalDocuments) {
 			this.totalDocuments = totalDocuments;
 			return this;
@@ -111,7 +118,7 @@ public class ReindexResult implements Serializable {
 		}
 
 		public ReindexResult build() {
-			return new ReindexResult(took, createdDocuments, updatedDocuments, deletedDocuments, noops, totalDocuments, sourceIndex,
+			return new ReindexResult(took, createdDocuments, updatedDocuments, deletedDocuments, noops, versionConflicts, totalDocuments, sourceIndex,
 					destinationIndex, remoteAddress, refresh);
 		}
 
@@ -123,6 +130,7 @@ public class ReindexResult implements Serializable {
 			Long updatedDocuments,
 			Long deletedDocuments,
 			Long noops,
+			Long versionConflicts,
 			long totalDocuments,
 			String sourceIndex,
 			String destinationIndex,
@@ -133,6 +141,7 @@ public class ReindexResult implements Serializable {
 		this.updatedDocuments = updatedDocuments;
 		this.deletedDocuments = deletedDocuments;
 		this.noops = noops;
+		this.versionConflicts = versionConflicts;
 		this.totalDocuments = totalDocuments;
 		this.sourceIndex = sourceIndex;
 		this.destinationIndex = destinationIndex;
@@ -160,6 +169,10 @@ public class ReindexResult implements Serializable {
 		return noops;
 	}
 
+	public Long getVersionConflicts() {
+		return versionConflicts;
+	}
+
 	public long getTotalDocuments() {
 		return totalDocuments;
 	}
@@ -182,35 +195,40 @@ public class ReindexResult implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ReindexResult [" + (took != null ? "took=" + took + ", " : "")
+		return "ReindexResult ["
+				+ (took != null ? "took=" + took + ", " : "")
 				+ (createdDocuments != null ? "createdDocuments=" + createdDocuments + ", " : "")
 				+ (updatedDocuments != null ? "updatedDocuments=" + updatedDocuments + ", " : "")
-				+ (deletedDocuments != null ? "deletedDocuments=" + deletedDocuments + ", " : "") + (noops != null ? "noops=" + noops + ", " : "")
-				+ "totalDocuments=" + totalDocuments + ", " + (sourceIndex != null ? "sourceIndex=" + sourceIndex + ", " : "")
+				+ (deletedDocuments != null ? "deletedDocuments=" + deletedDocuments + ", " : "")
+				+ (noops != null ? "noops=" + noops + ", " : "")
+				+ (versionConflicts != null ? "versionConflicts=" + versionConflicts + ", " : "")
+				+ "totalDocuments=" + totalDocuments + ", "
+				+ (sourceIndex != null ? "sourceIndex=" + sourceIndex + ", " : "")
 				+ (destinationIndex != null ? "destinationIndex=" + destinationIndex + ", " : "")
-				+ (remoteAddress != null ? "remoteAddress=" + remoteAddress + ", " : "") + "refresh=" + refresh + "]";
+				+ (remoteAddress != null ? "remoteAddress=" + remoteAddress + ", " : "")
+				+ "refresh=" + refresh + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(createdDocuments, deletedDocuments, destinationIndex, noops, refresh, remoteAddress, sourceIndex, took, totalDocuments,
-				updatedDocuments);
+				updatedDocuments, versionConflicts);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if ((obj == null) || (getClass() != obj.getClass())) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ReindexResult other = (ReindexResult) obj;
+		}
+		final ReindexResult other = (ReindexResult) obj;
 		return Objects.equals(createdDocuments, other.createdDocuments) && Objects.equals(deletedDocuments, other.deletedDocuments)
 				&& Objects.equals(destinationIndex, other.destinationIndex) && Objects.equals(noops, other.noops) && refresh == other.refresh
 				&& Objects.equals(remoteAddress, other.remoteAddress) && Objects.equals(sourceIndex, other.sourceIndex)
 				&& Objects.equals(took, other.took) && totalDocuments == other.totalDocuments
-				&& Objects.equals(updatedDocuments, other.updatedDocuments);
+				&& Objects.equals(updatedDocuments, other.updatedDocuments) && Objects.equals(versionConflicts, other.versionConflicts);
 	}
 
 }

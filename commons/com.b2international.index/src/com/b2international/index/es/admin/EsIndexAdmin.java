@@ -718,6 +718,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			.updatedDocuments(response.getUpdated())
 			.deletedDocuments(response.getDeleted())
 			.noops(response.getNoops())
+			.versionConflicts(response.getVersionConflicts())
 			.totalDocuments(response.getTotal())
 			.sourceIndex(sourceIndex)
 			.destinationIndex(destinationIndex)
