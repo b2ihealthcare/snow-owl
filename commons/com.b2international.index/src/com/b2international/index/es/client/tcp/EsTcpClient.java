@@ -142,6 +142,7 @@ public final class EsTcpClient extends EsClientBase {
 			.destination(destinationIndex)
 			.setRemoteInfo(remoteInfo)
 			.refresh(refresh)
+			.abortOnVersionConflict(false)
 			.get();
 		
 	}
