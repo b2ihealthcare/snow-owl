@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableList;
  */
 @JsonDeserialize(builder = ExpandValueSetRequest.Builder.class)
 @JsonPropertyOrder({"url", "valueSet", "valueSetVersion", "context", "contextDirection", "filter", "date", "offset", "count", "includeDesignations", "designation", "includeDefinition", "activeOnly", "excludeNested", 
-	"excludeNotForUI", "excludePostCoordinated", "displayLanguage", "excludeSystem", "systemVersion", "checkSystemVersion", "forceSystemVersion" })
+	"excludeNotForUI", "excludePostCoordinated", "displayLanguage", "excludeSystem", "systemVersion", "checkSystemVersion", "forceSystemVersion", "withHistorySupplements" })
 public class ExpandValueSetRequest {
 	
 	//Value set Canonical URL. The server must know the value set (e.g. it is defined explicitly in the server's value sets, or it is defined implicitly by some code system known to the server

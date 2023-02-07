@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public abstract class ImportRequest extends AbstractLockRequest<TransactionConte
 		} catch (ApiException e) {
 			throw e;
 		} catch (Exception e) {
-			String error = "Unexpected error happened during the import of the source file: " + attachment.getFileName();
+			String error = String.format("Unexpected error happened during the import of the source file '%s'. Error: %s", attachment.getFileName(), e.getMessage());
 			context.log().error(error, e);
 			return ImportResponse.error(error);
 		} finally {

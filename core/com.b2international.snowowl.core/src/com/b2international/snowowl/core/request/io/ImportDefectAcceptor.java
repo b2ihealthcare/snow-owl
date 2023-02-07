@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,18 @@ public final class ImportDefectAcceptor {
 	
 	public void info(String message) {
 		new ImportDefectBuilder().info(message);
+	}
+	
+	public void error(String message, Object...args) {
+		new ImportDefectBuilder().error(message, args);
+	}
+	
+	public void warn(String message, Object...args) {
+		new ImportDefectBuilder().warn(message, args);
+	}
+	
+	public void info(String message, Object...args) {
+		new ImportDefectBuilder().info(message, args);
 	}
 	
 	public ImportDefectBuilder on(String location) {
