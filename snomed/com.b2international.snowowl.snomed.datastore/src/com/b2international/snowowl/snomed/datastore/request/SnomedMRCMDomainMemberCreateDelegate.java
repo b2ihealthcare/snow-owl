@@ -37,6 +37,12 @@ final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreat
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT);
 		
+		checkNonNullProperty(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN);
+		checkNonNullProperty(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT);
+		checkNonNullProperty(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT);
+		checkNonNullProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION);
+		checkNonNullProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION);
+		
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
