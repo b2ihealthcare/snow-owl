@@ -16,6 +16,9 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.bulkUpdateMembers;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
@@ -78,6 +81,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;
@@ -448,6 +452,132 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
 			.statusCode(200)
 			.body("pt.id", equalTo(ptDescriptionId));
+	}
+	
+	@Test
+	public void updateAcceptabilityWithMultipleAcceptaibilityMembersForSameRefset1() {
+		String moduleConceptId1 = createNewConcept(branchPath);
+		String moduleConceptId2 = createNewConcept(branchPath);
+		String conceptId = createNewConcept(branchPath);
+		String ptDescriptionId = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
+				.statusCode(200)
+				.extract().path("pt.id");
+		
+		// Case 1.1: No match for acceptability; use an existing member preferably an extension one
+		String member1 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, Concepts.MODULE_SCT_CORE);
+		String member2 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, moduleConceptId1);
+		String member3 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, moduleConceptId2);
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, member1).statusCode(200).body("active", equalTo(true));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member2).statusCode(200).body("active", equalTo(true));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member3).statusCode(200).body("active", equalTo(true));
+		
+		Json requestBody = Json.object(
+				"acceptability", Map.of(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED),
+				"defaultModuleId", moduleConceptId2,
+				"commitComment", "Updated description acceptability"
+			);
+		
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, ptDescriptionId, requestBody).statusCode(204);
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, member1).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, member2).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, member3).statusCode(200).body("active", equalTo(true));
+	}
+	
+	@Test
+	public void updateAcceptabilityWithMultipleAcceptaibilityMembersForSameRefset2() {
+		String moduleConceptId1 = createNewConcept(branchPath);
+		String moduleConceptId2 = createNewConcept(branchPath);
+		String conceptId = createNewConcept(branchPath);
+		String ptDescriptionId = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
+				.statusCode(200)
+				.extract().path("pt.id");
+		
+		// Case 1.2.2: There is at least one active match, keep the INT one if available
+		String member1 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, Concepts.MODULE_SCT_CORE);
+		String member2 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, moduleConceptId1);
+		String member3 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, moduleConceptId2);
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, member1).statusCode(200).body("active", equalTo(true));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member2).statusCode(200).body("active", equalTo(true));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member3).statusCode(200).body("active", equalTo(true));
+		
+		Json requestBody = Json.object(
+				"acceptability", Map.of(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE),
+				"defaultModuleId", moduleConceptId2,
+				"commitComment", "Updated description acceptability"
+				);
+		
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, ptDescriptionId, requestBody).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, member1).statusCode(200).body("active", equalTo(true));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member2).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, member3).statusCode(404);
+	}
+	
+	@Test
+	public void updateAcceptabilityWithMultipleAcceptaibilityMembersForSameRefset3() {
+		String moduleConceptId1 = createNewConcept(branchPath);
+		String moduleConceptId2 = createNewConcept(branchPath);
+		String conceptId = createNewConcept(branchPath);
+		String ptDescriptionId = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
+				.statusCode(200)
+				.extract().path("pt.id");
+		
+		// Case 1.2.1: There is no active match, reactivate one of the members, preferably an extension one
+		String member1 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, Concepts.MODULE_SCT_CORE, false);
+		String member2 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, moduleConceptId1, false);
+		String member3 = createNewLanguageRefSetMember(branchPath, ptDescriptionId, REFSET_LANGUAGE_TYPE_US, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, moduleConceptId2, false);
+				
+		getComponent(branchPath, SnomedComponentType.MEMBER, member1).statusCode(200).body("active", equalTo(false));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member2).statusCode(200).body("active", equalTo(false));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member3).statusCode(200).body("active", equalTo(false));
+		
+		Json requestBody = Json.object(
+				"acceptability", Map.of(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED),
+				"defaultModuleId", moduleConceptId2,
+				"commitComment", "Updated description acceptability"
+				);
+		
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, ptDescriptionId, requestBody).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, member1).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, member2).statusCode(200).body("active", equalTo(true));
+		getComponent(branchPath, SnomedComponentType.MEMBER, member3).statusCode(404);
+	}
+	
+	@Test
+	public void updateAcceptabilityWithAcceptabilityMembersInIrrelevantRefset() {
+		String conceptId = createNewConcept(branchPath);
+		String ptDescriptionId = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
+				.statusCode(200)
+				.extract().path("pt.id");
+		
+		// Case 2: No match exists for language reference set
+		String member = createNewLanguageRefSetMember(branchPath, ptDescriptionId, Concepts.REFSET_LANGUAGE_TYPE_UK, REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, Concepts.MODULE_SCT_CORE);
+		getComponent(branchPath, SnomedComponentType.MEMBER, member).statusCode(200).body("active", equalTo(true));
+		
+		Json requestBody = Json.object(
+				"acceptability", Map.of(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED),
+				"commitComment", "Updated description acceptability and inactivated it at the same time"
+				);
+		
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, ptDescriptionId, requestBody).statusCode(204);
+		
+		//Irrelevant member should be removed
+		getComponent(branchPath, SnomedComponentType.MEMBER, member).statusCode(404);
+		
+		//Active member in the correct language refset, pointing to this description should be added with the correct acceptability 
+		SnomedReferenceSetMembers members =
+		searchComponent(branchPath, SnomedComponentType.MEMBER, Map.of(
+				"active",  true,
+				"referencedComponentId",  ptDescriptionId,
+				"refsetId",  REFSET_LANGUAGE_TYPE_US
+				)).extract().as(SnomedReferenceSetMembers.class);
+		
+		assertEquals(members.getTotal(), 1);
+		assertEquals(members.first().get().getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID), REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 	}
 
 	@Test
