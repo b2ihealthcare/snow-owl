@@ -21,12 +21,12 @@ public class ReindexQuery implements Serializable {
 	private org.elasticsearch.index.query.QueryBuilder query;
 
 	public static ReindexQuery of(String index, org.elasticsearch.index.query.QueryBuilder query) {
-		ReindexQuery rq = new ReindexQuery();
+		final ReindexQuery rq = new ReindexQuery();
 		rq.setIndex(index);
 		rq.setQuery(query);
 		return rq;
 	}
-	
+
 	public String getIndex() {
 		return index;
 	}
