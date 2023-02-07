@@ -102,7 +102,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 					// Change acceptability, set status to active if required, place it in the supplied module
 					updatedMember.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, newAcceptability.getConceptId());
 					ensureMemberActive(context, existingMember, updatedMember);
-					updateModule(context, existingMember, updatedMember, moduleIdSupplier.apply(componentToUpdate));
+					updateModule(context, existingMember, updatedMember, moduleId);
 					unsetEffectiveTime(existingMember, updatedMember);
 					context.update(oldRevision, updatedMember.build());
 
