@@ -53,21 +53,6 @@ public interface ApiTestConstants {
 	String SUGGEST_API = "/suggest";
 	
 	/**
-	 * The context-relative base URL for the valueset controller.
-	 */
-	String VALUESET_API = "/valuesets";
-	
-	/**
-	 * The context-relative base URL for the valueset controller.
-	 */
-	String CONCEPTMAP_API = "/conceptmaps";
-	
-	/**
-	 * The context-relative base URL for the lcs controller.
-	 */
-	String LCS_API = "/lcs";
-	
-	/**
 	 * The context-relative base URL for SNOMED CT-related controllers.
 	 */
 	String SCT_API = "/snomedct";
