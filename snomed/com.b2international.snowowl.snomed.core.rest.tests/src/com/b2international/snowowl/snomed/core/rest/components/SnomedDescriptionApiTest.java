@@ -455,7 +455,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void updateAcceptabilityWithMultipleAcceptabilityMembersForSameRefset1() {
+	public void updateAcceptabilityMembersWhenNoMembersMatchTargetAcceptability() {
 		String moduleConceptId1 = createNewConcept(branchPath);
 		String moduleConceptId2 = createNewConcept(branchPath);
 		String conceptId = createNewConcept(branchPath);
@@ -486,7 +486,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void updateAcceptabilityWithMultipleAcceptabilityMembersForSameRefset2() {
+	public void updateAcceptabilityMembersInCaseOfMultipleActiveAcceptabilityMatches() {
 		String moduleConceptId1 = createNewConcept(branchPath);
 		String moduleConceptId2 = createNewConcept(branchPath);
 		String conceptId = createNewConcept(branchPath);
@@ -517,7 +517,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void updateAcceptabilityWithMultipleAcceptabilityMembersForSameRefset3() {
+	public void updateAcceptabilityMembersInCaseOfNoActiveAcceptabilityMatches() {
 		String moduleConceptId1 = createNewConcept(branchPath);
 		String moduleConceptId2 = createNewConcept(branchPath);
 		String conceptId = createNewConcept(branchPath);
