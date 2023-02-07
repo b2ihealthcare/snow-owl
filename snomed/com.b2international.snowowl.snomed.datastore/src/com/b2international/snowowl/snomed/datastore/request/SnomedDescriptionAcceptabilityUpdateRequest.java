@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collections;
@@ -108,7 +109,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 				} else {
 					// Case 1.2: There is at least one match for acceptability
 					final List<SnomedReferenceSetMember> activeMatches = acceptabilityMatches.stream()
-							.filter(m -> Objects.equal(newAcceptability.getConceptId(), m.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)))
+							.filter(m -> m.isActive())
 							.collect(Collectors.toList());
 					
 					if (activeMatches.isEmpty()) {
@@ -168,6 +169,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 	}
 	
 	private SnomedReferenceSetMember select(List<SnomedReferenceSetMember> members, final String modulePreference, final String secondaryModulePreference) {
+		checkArgument(!members.isEmpty(), "Cannot select language reference set member to keep from an empty list.");
 		return members.stream()
 			.filter(member -> member.getModuleId().equals(modulePreference))
 			.findFirst()
