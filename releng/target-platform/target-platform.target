@@ -7,7 +7,7 @@
 		<repository location="https://download.eclipse.org/eclipse/updates/4.17/R-4.17-202009021800/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<repository location="https://dist.springsource.org/release/GRECLIPSE/3.9.0/e4.17"/>
+		<repository location="https://groovy.jfrog.io/artifactory/plugins-release-local/org/codehaus/groovy/groovy-eclipse-integration/3.9.0/e4.17"/>
 		<unit id="org.codehaus.groovy.eclipse.feature.feature.group" version="3.9.0.v202009301344-e2009-RELEASE"/>
 		<unit id="org.codehaus.groovy.headless.feature.feature.group" version="3.9.0.v202009301344-e2009-RELEASE"/>
 		<unit id="org.codehaus.groovy24.feature.feature.group" version="3.9.0.v202009301344-e2009-RELEASE"/>
