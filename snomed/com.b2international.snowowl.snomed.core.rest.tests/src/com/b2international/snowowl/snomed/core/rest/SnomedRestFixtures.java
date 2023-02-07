@@ -349,6 +349,18 @@ public abstract class SnomedRestFixtures {
 
 		return assertCreated(createComponent(memberPath, SnomedComponentType.MEMBER, requestBody));
 	}
+	
+	public static String createNewLanguageRefSetMember(IBranchPath memberPath, String referencedDescriptionId, String refSetId, String acceptabilityId, String moduleId) {
+		return createNewLanguageRefSetMember(memberPath, referencedDescriptionId, refSetId, acceptabilityId, moduleId, true);
+	}
+	
+	public static String createNewLanguageRefSetMember(IBranchPath memberPath, String referencedDescriptionId, String refSetId, String acceptabilityId, String moduleId, boolean active) {
+		Map<?, ?> requestBody = Json.assign(createRefSetMemberRequestBody(refSetId, referencedDescriptionId, moduleId, active))
+				.with("acceptabilityId", acceptabilityId)
+				.with("commitComment", "Created new language reference set member");
+		
+		return assertCreated(createComponent(memberPath, SnomedComponentType.MEMBER, requestBody));
+	}
 
 	public static Json createRefSetMemberRequestBody(String refSetId, String referencedComponentId) {
 		return Json.object(
@@ -356,6 +368,15 @@ public abstract class SnomedRestFixtures {
 			"referenceSetId", refSetId,
 			"referencedComponentId", referencedComponentId
 		);
+	}
+	
+	public static Json createRefSetMemberRequestBody(String refSetId, String referencedComponentId, String moduleId, boolean active) {
+		return Json.object(
+				"active", active,
+				"moduleId", moduleId,
+				"referenceSetId", refSetId,
+				"referencedComponentId", referencedComponentId
+				);
 	}
 	
 	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment) {
@@ -400,6 +421,18 @@ public abstract class SnomedRestFixtures {
 				"commitComment", "Inactivated description"
 			)
 		).statusCode(204);
+	}
+	
+	public static void inactivateMember(IBranchPath memberPath, String memberId) {
+		updateComponent(
+				memberPath, 
+				SnomedComponentType.MEMBER, 
+				memberId,
+				Json.object(
+						"active", false,
+						"commitComment", "Inactivated member"
+						)
+				).statusCode(204);
 	}
 
 	public static void inactivateRelationship(IBranchPath relationshipPath, String relationshipId) {
