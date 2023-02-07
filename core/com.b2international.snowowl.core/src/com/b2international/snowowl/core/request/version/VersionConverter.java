@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2023 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.core.request.version;
 
@@ -17,7 +17,7 @@ import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
 
 /**
- * @since 8.8
+ * @since 8.9
  */
 public class VersionConverter extends BaseResourceConverter<VersionDocument, Version, Versions> {
 
