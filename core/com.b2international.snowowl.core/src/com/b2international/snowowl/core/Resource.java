@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,15 @@ public abstract class Resource implements Serializable {
 	public static final String RETIRED_STATUS = "retired";
 	public static final String DRAFT_STATUS = "draft";
 	public static final String SNOMED_FIRST = "snomedFirst";
+	
+	public static final String SETTINGS_DELIMITER = "#";
+	
+	public static final class Settings {
+		
+		public static final String PUBLISHER = "publisher";
+		public static final String DISTRIBUTABLE = "distributable"; // "true" or "false"
+		
+	}
 	
 	/**
 	 * @since 8.0

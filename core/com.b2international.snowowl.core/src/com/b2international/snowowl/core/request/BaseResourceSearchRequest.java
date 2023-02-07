@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,11 +114,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		if (containsKey(OptionKey.SETTINGS)) {
 			final Collection<String> properties = getCollection(OptionKey.SETTINGS, String.class);
 			properties.forEach( property -> {
-				if (property.contains("#")) {
-					final String propertyName = property.split("\\#")[0];
+				if (property.contains(Resource.SETTINGS_DELIMITER)) {
+					final String propertyName = property.split(Resource.SETTINGS_DELIMITER)[0];
 					final String propertyValue = property.substring(propertyName.length() + 1, property.length());
 					if (Strings.isNullOrEmpty(propertyValue)) {
-						throw new BadRequestException("Settings argument %s is not allowed. Expected format is propertyName#propertyValue.", property);
+						throw new BadRequestException("Settings argument %s is not allowed. Expected format is propertyName" + Resource.SETTINGS_DELIMITER + "propertyValue.", property);
 					}
 					//Check if property has specified value
 					if (propertyValue.endsWith("*")) {
