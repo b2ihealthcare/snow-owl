@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -61,7 +62,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	private static final long POLL_INTERVAL_MAX = 1000L;
 	
-	Collection<String> ruleIds;
+	Set<String> ruleIds;
 
 	private Map<String, Object> ruleParameters;
 	
@@ -87,6 +88,14 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 				.all()
 				.build()
 				.execute(context);
+		
+		// check whether the selected rules are present in the system and report if one is missing
+		if (!CompareUtils.isEmpty(ruleIds)) {
+			Set<String> missingRuleIds = Sets.difference(ruleIds, rules.stream().map(ValidationRule::getId).collect(Collectors.toSet()));
+			if (!missingRuleIds.isEmpty()) {
+				throw new BadRequestException("The following ruleIds are missing from the system: %s. Remove them from the query parameter list or load them into the system.", missingRuleIds);
+			}
+		}
 		
 		final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 		final BlockingQueue<IssuesToPersist> issuesToPersistQueue = Queues.newLinkedBlockingDeque();
@@ -236,7 +245,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 	
 	void setRuleIds(Collection<String> ruleIds) {
-		this.ruleIds = ruleIds;
+		this.ruleIds = ruleIds == null ? Collections.emptySet() : ImmutableSortedSet.copyOf(ruleIds);
 	}
 	
 	void setRuleParameters(Map<String, Object> ruleParameters) {
