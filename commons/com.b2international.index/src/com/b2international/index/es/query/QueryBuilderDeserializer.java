@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2023 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.index.es.query;
 
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 /**
- * @since 8.8
+ * @since 8.9
  */
 public class QueryBuilderDeserializer extends StdDeserializer<org.elasticsearch.index.query.QueryBuilder> {
 

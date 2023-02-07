@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2023 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.core.domain;
 
@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * @since 8.8
+ * @since 8.9
  */
 public class ReindexQuery implements Serializable {
 

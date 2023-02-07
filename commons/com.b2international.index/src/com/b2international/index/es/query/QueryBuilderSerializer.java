@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2023 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.index.es.query;
 
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
- * @since 8.8
+ * @since 8.9
  */
 public class QueryBuilderSerializer extends JsonSerializer<QueryBuilder> {
 

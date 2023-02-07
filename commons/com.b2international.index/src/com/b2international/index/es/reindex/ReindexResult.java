@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * @since 8.8
+ * @since 8.9
  */
 @JsonDeserialize(builder = ReindexResult.Builder.class)
 public class ReindexResult implements Serializable {

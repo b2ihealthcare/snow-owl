@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2023 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.core.domain;
 
@@ -8,7 +8,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 8.8
+ * @since 8.9
  */
 public class ReindexQueries extends ListCollectionResource<ReindexQuery> {
 

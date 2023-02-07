@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2023 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.index;
 
@@ -16,7 +16,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.RemoteInfo;
 
 /**
- * @since 8.8
+ * @since 8.9
  */
 public class RemoteInfoBuilder {
 
