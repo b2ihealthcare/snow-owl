@@ -197,6 +197,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		Json requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
 				.with(Json.object(
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "domainConstraint",
+					SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "parentDomain",
+					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement",
 					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination",
@@ -207,9 +209,9 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
 			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, equalTo("domainConstraint"))
-			.body(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, nullValue())
+			.body(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, equalTo("parentDomain"))
 			.body(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, equalTo("proximalPrimitiveConstraint"))
-			.body(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, nullValue())
+			.body(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, equalTo("proximalPrimitiveRefinement"))
 			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, equalTo("domainTemplateForPrecoordination"))
 			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, equalTo("domainTemplateForPostcoordination"))
 			.body(SnomedRf2Headers.FIELD_MRCM_GUIDEURL, nullValue());
@@ -488,6 +490,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		Json requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
 				.with(Json.object(
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "domainConstraint",
+					SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "parentDomain",
+					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement",
 					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination",
 					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination",
