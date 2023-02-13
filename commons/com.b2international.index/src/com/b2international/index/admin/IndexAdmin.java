@@ -148,7 +148,7 @@ public interface IndexAdmin {
 
 	/**
 	 * Issue a remote reindex of sourceIndex to destinationIndex using the parameters specified in remoteInfo. A selective
-	 * query can be pass inside the RemoteInfo object in a serialized form.
+	 * query can be passed inside the RemoteInfo object in a serialized form.
 	 * 
 	 * @return {@link BulkByScrollResponse}
 	 * @param sourceIndex - the source index
