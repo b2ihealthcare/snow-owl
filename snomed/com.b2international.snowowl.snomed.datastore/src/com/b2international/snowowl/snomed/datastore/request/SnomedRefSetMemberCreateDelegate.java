@@ -152,6 +152,13 @@ abstract class SnomedRefSetMemberCreateDelegate {
 			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, request.getReferenceSetId());
 		}
 	}
+	
+	protected final void checkNonNullProperty(String key) {
+		checkHasProperty(key);
+		if (getProperty(key, Object.class) == null) {
+			throw new BadRequestException("Property '%s' may not be null for '%s' reference set members.", key, request.getReferenceSetId());
+		}
+	}
 
 	/**
 	 * Subclasses may override to return additional required component IDs, like special IDs that are required to execute the delegate properly. 
