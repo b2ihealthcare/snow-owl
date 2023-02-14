@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 8.9
@@ -207,18 +208,20 @@ public class ReindexResult implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ReindexResult ["
-				+ (took != null ? "took=" + took + ", " : "")
-				+ (createdDocuments != null ? "createdDocuments=" + createdDocuments + ", " : "")
-				+ (updatedDocuments != null ? "updatedDocuments=" + updatedDocuments + ", " : "")
-				+ (deletedDocuments != null ? "deletedDocuments=" + deletedDocuments + ", " : "")
-				+ (noops != null ? "noops=" + noops + ", " : "")
-				+ (versionConflicts != null ? "versionConflicts=" + versionConflicts + ", " : "")
-				+ "totalDocuments=" + totalDocuments + ", "
-				+ (sourceIndex != null ? "sourceIndex=" + sourceIndex + ", " : "")
-				+ (destinationIndex != null ? "destinationIndex=" + destinationIndex + ", " : "")
-				+ (remoteAddress != null ? "remoteAddress=" + remoteAddress + ", " : "")
-				+ "refresh=" + refresh + "]";
+		return MoreObjects.toStringHelper(this)
+			.omitNullValues()
+			.add("took", took)
+			.add("createdDocuments", createdDocuments)
+			.add("updatedDocuments", updatedDocuments)
+			.add("deletedDocuments", deletedDocuments)
+			.add("noops", noops)
+			.add("versionConflicts", versionConflicts)
+			.add("totalDocuments", totalDocuments)
+			.add("sourceIndex", sourceIndex)
+			.add("destinationIndex", destinationIndex)
+			.add("remoteAddress", remoteAddress)
+			.add("refresh", refresh)
+			.toString();
 	}
 
 	@Override
