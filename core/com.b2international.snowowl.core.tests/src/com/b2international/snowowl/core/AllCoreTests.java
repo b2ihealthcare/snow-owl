@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
 import com.b2international.snowowl.core.codesystem.CodeSystemTest;
+import com.b2international.snowowl.core.domain.ReindexQuerySerializationTest;
 import com.b2international.snowowl.core.ecl.EclEvaluationRequestTest;
 import com.b2international.snowowl.core.ecl.EclRewriterTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
@@ -28,6 +29,8 @@ import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
 import com.b2international.snowowl.core.identity.JWTConfigurationTest;
 import com.b2international.snowowl.core.identity.PermissionTest;
+import com.b2international.snowowl.core.info.RepositoryInfoSerializationTest;
+import com.b2international.snowowl.core.info.ServerInfoSerializationTest;
 import com.b2international.snowowl.core.jobs.JobRequestsTest;
 import com.b2international.snowowl.core.locks.DatastoreLockTests;
 import com.b2international.snowowl.core.locks.LockIndexTests;
@@ -75,6 +78,9 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	CodeSystemTest.class,
 	GroovyScriptEngineTest.class,
 	EclRewriterTest.class,
+	RepositoryInfoSerializationTest.class,
+	ServerInfoSerializationTest.class,
+	ReindexQuerySerializationTest.class,
 	
 	// medium integration tests
 	JobRequestsTest.class,

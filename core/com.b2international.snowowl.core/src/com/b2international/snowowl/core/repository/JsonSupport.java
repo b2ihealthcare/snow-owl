@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,17 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.util.TimeZone;
+
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.commons.options.MetadataHolderMixin;
 import com.b2international.commons.options.MetadataMixin;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * @since 4.7
@@ -32,6 +37,16 @@ public class JsonSupport {
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		mapper.addMixIn(Metadata.class, MetadataMixin.class);
 		mapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
+		return mapper;
+	}
+	
+	public static ObjectMapper getRestObjectMapper() {
+		final ObjectMapper mapper = getDefaultObjectMapper();
+		mapper.registerModule(new JavaTimeModule());
+		final StdDateFormat dateFormat = new StdDateFormat();
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		mapper.setDateFormat(dateFormat);
+		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		return mapper;
 	}
 	

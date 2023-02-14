@@ -15,6 +15,8 @@
  */
 package com.b2international.commons.exceptions;
 
+import com.google.common.base.Strings;
+
 /**
  * @since 6.4
  */
@@ -26,7 +28,9 @@ public final class ApiErrorException extends ApiException {
 
 	public ApiErrorException(ApiError error) {
 		super(error.getMessage());
-		withDeveloperMessage(error.getDeveloperMessage());
+		if (!Strings.isNullOrEmpty(error.getDeveloperMessage())) {
+			withDeveloperMessage(error.getDeveloperMessage());
+		}
 		withAdditionalInfo(error.getAdditionalInfo());
 		this.error = error;
 	}

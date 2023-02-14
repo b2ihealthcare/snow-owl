@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,14 @@ public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTe
 	protected final CodeSystem createExtensionUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
 		final String upgradeCodeSystemId = RestExtensions.lastPathSegment(assertCodeSystemUpgrade(upgradeOf, extensionOf).statusCode(201).extract().header("Location"));
 		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId);
+	}
+	
+	protected final void syncExtensionUpgrade(ResourceURI codeSystemUri, ResourceURI sourceUri) {
+		CodeSystemRestRequests.assertCodeSystemUpgradeSync(codeSystemUri, sourceUri).statusCode(204);
+	}
+	
+	protected final void completeExtensionUpgrade(ResourceURI upgradedCodeSystemUri) {
+		CodeSystemRestRequests.assertCodeSystemUpgradeComplete(upgradedCodeSystemUri).statusCode(204);
 	}
 
 }

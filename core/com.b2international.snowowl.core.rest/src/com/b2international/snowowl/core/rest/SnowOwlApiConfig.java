@@ -17,7 +17,10 @@ package com.b2international.snowowl.core.rest;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -59,10 +62,6 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConf
 import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import com.b2international.commons.options.Metadata;
-import com.b2international.commons.options.MetadataHolder;
-import com.b2international.commons.options.MetadataHolderMixin;
-import com.b2international.commons.options.MetadataMixin;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
@@ -72,6 +71,7 @@ import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.rate.HttpConfig;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
@@ -122,7 +122,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	private final LoadingCache<BitSet, ObjectMapper> objectMappers = CacheBuilder.newBuilder().build(new CacheLoader<BitSet, ObjectMapper>() {
 		@Override
 		public ObjectMapper load(BitSet configuration) throws Exception {
-			ObjectMapper mapper = createObjectMapper();
+			ObjectMapper mapper = JsonSupport.getRestObjectMapper();
 			mapper.setSerializationInclusion(configuration.get(INCLUDE_NULL_IDX) ? Include.ALWAYS : Include.NON_NULL);
 			mapper.configure(SerializationFeature.INDENT_OUTPUT, configuration.get(PRETTY_IDX));
 			return mapper;
@@ -162,19 +162,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 			springSecurityOAuth2Provider, 
 			routerFunctionProvider, 
 			repositoryRestResourceProvider);
-	}
-	
-	public static ObjectMapper createObjectMapper() {
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.setSerializationInclusion(Include.NON_NULL);
-		final StdDateFormat dateFormat = new StdDateFormat();
-		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-		objectMapper.setDateFormat(dateFormat);
-		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		objectMapper.addMixIn(Metadata.class, MetadataMixin.class);
-		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
-		return objectMapper;
 	}
 	
 	@Bean

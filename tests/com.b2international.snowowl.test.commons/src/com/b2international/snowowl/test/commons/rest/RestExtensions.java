@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,8 +91,11 @@ public class RestExtensions {
 		}
 	}
 	
-
 	public static RequestSpecification givenUnauthenticatedRequest(String api) {
+		return givenUnauthenticatedRequest(getPort(), api);
+	}
+
+	public static RequestSpecification givenUnauthenticatedRequest(int port, String api) {
 		if (INITIALIZE_ONCE.compareAndSet(false, true)) {
 			
 			// change Base URI if defined as sysarg
@@ -120,11 +123,15 @@ public class RestExtensions {
 		}
 		
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'");
-		return given().port(getPort()).basePath(CONTEXT + api);
+		return given().port(port).basePath(CONTEXT + api);
 	}
 
 	public static RequestSpecification givenAuthenticatedRequest(String api) {
 		return givenRequestWithPassword(api, PASS);
+	}
+	
+	public static RequestSpecification givenAuthenticatedRequest(int port, String api) {
+		return givenRequestWithPassword(port, api, PASS);
 	}
 	
 	public static RequestSpecification givenInvalidPasswordRequest(String api) {
@@ -135,8 +142,16 @@ public class RestExtensions {
 		return givenUnauthenticatedRequest(api).auth().preemptive().basic(USER, password);
 	}
 	
+	private static RequestSpecification givenRequestWithPassword(int port, String api, String password) {
+		return givenUnauthenticatedRequest(port, api).auth().preemptive().basic(USER, password);
+	}
+	
 	public static RequestSpecification givenRequestWithToken(String api, String token) {
-		return givenUnauthenticatedRequest(api).auth().preemptive().oauth2(token);
+		return givenRequestWithToken(getPort(), api, token);
+	}
+	
+	public static RequestSpecification givenRequestWithToken(int port, String api, String token) {
+		return givenUnauthenticatedRequest(port, api).auth().preemptive().oauth2(token);
 	}
 
 	public static String asPath(List<? extends String> values) {

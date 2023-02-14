@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,11 +83,12 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "204", description = "Upgrade code system synchronized"),
 		@ApiResponse(responseCode = "400", description = "Code system could not be synchronized with the downstream code system")
 	})
-	@PostMapping(value = "/sync/", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PostMapping(value = "/sync", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void sync(
+	public Promise<ResponseEntity<Void>> sync(
 			@RequestBody
 			final CodeSystemUpgradeSyncRestInput body) {
+		
 		final String codeSystemId = body.getCodeSystemId();
 		final ResourceURI source = body.getSource();
 		
@@ -99,9 +100,11 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 			.first()
 			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
 		
-		 CodeSystemRequests.prepareUpgradeSynchronization(codeSystem.getResourceURI(), source)
+		 return CodeSystemRequests.prepareUpgradeSynchronization(codeSystem.getResourceURI(), source)
 			.buildAsync()
-			.execute(getBus());
+			.execute(getBus())
+			.then(success -> ResponseEntity.noContent().build());
+		 
 	}
 	
 	@Operation(
@@ -114,7 +117,7 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 	})
 	@PostMapping("/{id}/complete")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void complete(
+	public Promise<ResponseEntity<Void>> complete(
 			@Parameter(description = "Code System identifier", required = true)
 			@PathVariable("id") 
 			final String codeSystemId) {
@@ -127,8 +130,11 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 			.first()
 			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
 		
-		CodeSystemRequests.prepareComplete(codeSystemId)
+		return CodeSystemRequests.prepareComplete(codeSystemId)
 			.buildAsync()
-			.execute(getBus());		
+			.execute(getBus())
+			.then(success -> ResponseEntity.noContent().build());
+		
 	}
+	
 }
