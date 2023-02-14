@@ -68,7 +68,7 @@ public final class UserLoginRequest implements Request<ServiceProvider, User> {
 		}
 		
 		if (user == null) {
-			throw new BadRequestException("Incorrect username or password.");
+			throw new BadRequestException("Invalid authentication credentials provided.");
 		}
 		
 		// generate and attach a token
