@@ -48,6 +48,8 @@ public class ReindexResult implements Serializable {
 	private final String remoteAddress;
 
 	private final boolean refresh;
+	
+	private final Long retries;
 
 	public static Builder builder() {
 		return new Builder();
@@ -72,6 +74,8 @@ public class ReindexResult implements Serializable {
 		private String remoteAddress;
 
 		private boolean refresh;
+		
+		private Long retries;
 
 		private Builder() {}
 
@@ -129,10 +133,15 @@ public class ReindexResult implements Serializable {
 			this.refresh = refresh;
 			return this;
 		}
+		
+		public Builder retries(Long retries) {
+			this.retries = retries;
+			return this;
+		}
 
 		public ReindexResult build() {
 			return new ReindexResult(took, createdDocuments, updatedDocuments, deletedDocuments, noops, versionConflicts, totalDocuments, sourceIndex,
-					destinationIndex, remoteAddress, refresh);
+					destinationIndex, remoteAddress, refresh, retries);
 		}
 
 	}
@@ -148,7 +157,8 @@ public class ReindexResult implements Serializable {
 			String sourceIndex,
 			String destinationIndex,
 			String remoteAddress,
-			boolean refresh) {
+			boolean refresh,
+			Long retries) {
 		this.took = took;
 		this.createdDocuments = createdDocuments;
 		this.updatedDocuments = updatedDocuments;
@@ -160,6 +170,7 @@ public class ReindexResult implements Serializable {
 		this.destinationIndex = destinationIndex;
 		this.remoteAddress = remoteAddress;
 		this.refresh = refresh;
+		this.retries = retries;
 	}
 
 	public String getTook() {
@@ -205,6 +216,10 @@ public class ReindexResult implements Serializable {
 	public boolean isRefresh() {
 		return refresh;
 	}
+	
+	public Long getRetries() {
+		return retries;
+	}
 
 	@Override
 	public String toString() {
@@ -221,28 +236,29 @@ public class ReindexResult implements Serializable {
 			.add("destinationIndex", destinationIndex)
 			.add("remoteAddress", remoteAddress)
 			.add("refresh", refresh)
+			.add("retries", retries)
 			.toString();
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(createdDocuments, deletedDocuments, destinationIndex, noops, refresh, remoteAddress, sourceIndex, took, totalDocuments,
-				updatedDocuments, versionConflicts);
+		return Objects.hash(createdDocuments, deletedDocuments, destinationIndex, noops, refresh, remoteAddress, retries, sourceIndex, took,
+				totalDocuments, updatedDocuments, versionConflicts);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null || getClass() != obj.getClass()) {
+		if (obj == null)
 			return false;
-		}
-		final ReindexResult other = (ReindexResult) obj;
+		if (getClass() != obj.getClass())
+			return false;
+		ReindexResult other = (ReindexResult) obj;
 		return Objects.equals(createdDocuments, other.createdDocuments) && Objects.equals(deletedDocuments, other.deletedDocuments)
 				&& Objects.equals(destinationIndex, other.destinationIndex) && Objects.equals(noops, other.noops) && refresh == other.refresh
-				&& Objects.equals(remoteAddress, other.remoteAddress) && Objects.equals(sourceIndex, other.sourceIndex)
-				&& Objects.equals(took, other.took) && totalDocuments == other.totalDocuments
+				&& Objects.equals(remoteAddress, other.remoteAddress) && Objects.equals(retries, other.retries)
+				&& Objects.equals(sourceIndex, other.sourceIndex) && Objects.equals(took, other.took) && totalDocuments == other.totalDocuments
 				&& Objects.equals(updatedDocuments, other.updatedDocuments) && Objects.equals(versionConflicts, other.versionConflicts);
 	}
 

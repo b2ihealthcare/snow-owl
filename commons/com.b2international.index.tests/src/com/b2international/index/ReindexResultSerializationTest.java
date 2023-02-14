@@ -54,6 +54,7 @@ public class ReindexResultSerializationTest {
 				.destinationIndex("destinationIndex")
 				.remoteAddress("remoteAddress")
 				.refresh(true)
+				.retries(Long.valueOf(2L))
 				.build();
 
 		simpleReindexResult = ReindexResult.builder()
@@ -66,7 +67,7 @@ public class ReindexResultSerializationTest {
 				.build();
 
 
-		serializedResponse = "{\"took\":\"123 ns\",\"createdDocuments\":1,\"updatedDocuments\":1,\"deletedDocuments\":1,\"noops\":1,\"versionConflicts\":2,\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":true}";
+		serializedResponse = "{\"took\":\"123 ns\",\"createdDocuments\":1,\"updatedDocuments\":1,\"deletedDocuments\":1,\"noops\":1,\"versionConflicts\":2,\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":true,\"retries\":2}";
 		simpleSerializedResponse = "{\"took\":\"123 ns\",\"totalDocuments\":1,\"sourceIndex\":\"sourceIndex\",\"destinationIndex\":\"destinationIndex\",\"remoteAddress\":\"remoteAddress\",\"refresh\":false}";
 
 	}
