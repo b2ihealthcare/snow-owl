@@ -55,7 +55,7 @@ public final class Bundle extends Resource {
 		return RESOURCE_TYPE;
 	}
 
-	public BundleCreateRequestBuilder toCreateRequestBuilder() {
+	public BundleCreateRequestBuilder toCreateRequest() {
 		return ResourceRequests.bundles().prepareCreate()
 				.setId(getId())
 				.setUrl(getUrl())
@@ -72,7 +72,7 @@ public final class Bundle extends Resource {
 				.setSettings(getSettings());
 	}
 	
-	public BundleUpdateRequestBuilder toUpdateRequestBuilder() {
+	public BundleUpdateRequestBuilder toUpdateRequest() {
 		return ResourceRequests.bundles().prepareUpdate(getId())
 				.setUrl(getUrl())
 				.setTitle(getTitle())

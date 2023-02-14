@@ -95,7 +95,7 @@ public final class CodeSystem extends TerminologyResource {
 		return codeSystem;
 	}
 
-	public CodeSystemCreateRequestBuilder toCreateRequestBuilder() {
+	public CodeSystemCreateRequestBuilder toCreateRequest() {
 		return CodeSystemRequests.prepareNewCodeSystem()
 				.setId(getId())
 				.setUrl(getUrl())
@@ -117,7 +117,7 @@ public final class CodeSystem extends TerminologyResource {
 				.setSettings(getSettings());
 	}
 	
-	public CodeSystemUpdateRequestBuilder toUpdateRequestBuilder() {
+	public CodeSystemUpdateRequestBuilder toUpdateRequest() {
 		return CodeSystemRequests.prepareUpdateCodeSystem(getId())
 				.setUrl(getUrl())
 				.setTitle(getTitle())
