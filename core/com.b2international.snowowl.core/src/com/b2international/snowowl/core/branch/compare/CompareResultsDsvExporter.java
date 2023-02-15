@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,16 +36,11 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 /**
  * @since 6.5
@@ -217,11 +212,6 @@ public final class CompareResultsDsvExporter {
 		}
 	}
 			
-	
-	private String getComponentType(IComponent component) {
-		return TerminologyRegistry.INSTANCE.getTerminologyComponentById(component.getComponentType()).name();
-	}
-
 	/**
 	 * XXX: Convenience factory method for (non static) {@link CompareData} for groovy scripting. 
 	 * 
@@ -231,8 +221,7 @@ public final class CompareResultsDsvExporter {
 		return new CompareData(
 			ChangeKind.UPDATED,
 			
-			getComponentType(component),
-			component, 
+			component.getComponentType(),
 			labelResolvers.get(codeSystem).apply(component), 
 			
 			attribute, 
@@ -244,8 +233,7 @@ public final class CompareResultsDsvExporter {
 		return new CompareData(
 			ChangeKind.UPDATED,
 			
-			getComponentType(component),
-			component, 
+			component.getComponentType(),
 			labelResolvers.get(codeSystem).apply(component), 
 			
 			null, 
@@ -257,8 +245,7 @@ public final class CompareResultsDsvExporter {
 		return new CompareData(
 			ChangeKind.ADDED,
 
-			getComponentType(component),
-			component, 
+			component.getComponentType(),
 			labelResolvers.get(codeSystem).apply(component), 
 			
 			null, 
@@ -270,7 +257,6 @@ public final class CompareResultsDsvExporter {
 		ChangeKind changeKind,
 		
 		String componentType,
-		IComponent component,
 		String label,
 		
 		String attribute,
