@@ -26,10 +26,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
@@ -669,7 +671,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
 		
-		int retries = 1;
+		AtomicInteger retries = new AtomicInteger(1);
 		
 		BulkByScrollResponse response = executeReindex(
 			sourceIndex,
@@ -733,12 +735,12 @@ public final class EsIndexAdmin implements IndexAdmin {
 			.destinationIndex(destinationIndex)
 			.remoteAddress(String.format("%s://%s:%s", remoteInfo.getScheme(), remoteInfo.getHost(), remoteInfo.getPort()))
 			.refresh(refresh)
-			.retries(retries > 1 ? Long.valueOf(retries) : null) // do not track successful first attempts
+			.retries(retries.get() > 1 ? Long.valueOf(retries.get()) : null) // do not track successful first attempts
 			.build();
 		
 	}
 
-	private BulkByScrollResponse executeReindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize, int retries) throws IOException {
+	private BulkByScrollResponse executeReindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize, AtomicInteger retries) throws IOException {
 		
 		BulkByScrollResponse response = null;
 		
@@ -746,17 +748,19 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			response = client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize);
 			
-		} catch (org.elasticsearch.ElasticsearchStatusException e) {
+		} catch (IllegalArgumentException /* thrown by the transport client */ | ElasticsearchStatusException /* thrown by the http client */ e) {
 			
-			if (e.status().getStatus() == 400 && e.getMessage().contains("Remote responded with a chunk that was too large. Use a smaller batch size.")) {
+			if (!Strings.isNullOrEmpty(e.getMessage()) && e.getMessage().contains("Remote responded with a chunk that was too large. Use a smaller batch size.")) {
 				
 				if (batchSize == 1) {
 					throw new IndexException(e.getMessage(), e); // cannot minimize batch size any further
 				}
 				
 				log.info("Retrying reindex request of '{}' with smaller batch size '{}'", sourceIndex, batchSize / 2);
+
+				retries.incrementAndGet();
 				
-				return executeReindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize / 2, retries++);
+				return executeReindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize / 2, retries);
 				
 			}
 			
