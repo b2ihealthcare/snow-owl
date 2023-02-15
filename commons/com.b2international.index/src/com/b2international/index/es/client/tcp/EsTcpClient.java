@@ -133,9 +133,11 @@ public final class EsTcpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize) throws IOException {
 		
 		ReindexRequestBuilder rirb = new ReindexRequestBuilder(client, ReindexAction.INSTANCE);
+		
+		rirb.source().setSize(batchSize);
 		
 		return rirb
 			.source(sourceIndex)

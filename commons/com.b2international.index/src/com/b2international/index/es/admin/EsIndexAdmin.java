@@ -669,7 +669,16 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
 		
-		BulkByScrollResponse response = client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
+		int retries = 1;
+		
+		BulkByScrollResponse response = executeReindex(
+			sourceIndex,
+			destinationIndex,
+			remoteInfo,
+			refresh,
+			org.elasticsearch.index.reindex.AbstractBulkByScrollRequest.DEFAULT_SCROLL_SIZE,
+			retries
+		);
 		
 		if (response.isTimedOut()) {
 			throw new IndexException(
@@ -724,7 +733,36 @@ public final class EsIndexAdmin implements IndexAdmin {
 			.destinationIndex(destinationIndex)
 			.remoteAddress(String.format("%s://%s:%s", remoteInfo.getScheme(), remoteInfo.getHost(), remoteInfo.getPort()))
 			.refresh(refresh)
+			.retries(retries > 1 ? Long.valueOf(retries) : null) // do not track successful first attempts
 			.build();
+		
+	}
+
+	private BulkByScrollResponse executeReindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize, int retries) throws IOException {
+		
+		BulkByScrollResponse response = null;
+		
+		try {
+			
+			response = client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize);
+			
+		} catch (org.elasticsearch.ElasticsearchStatusException e) {
+			
+			if (e.status().getStatus() == 400 && e.getMessage().contains("Remote responded with a chunk that was too large. Use a smaller batch size.")) {
+				
+				if (batchSize == 1) {
+					throw new IndexException(e.getMessage(), e); // cannot minimize batch size any further
+				}
+				
+				log.info("Retrying reindex request of '{}' with smaller batch size '{}'", sourceIndex, batchSize / 2);
+				
+				return executeReindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize / 2, retries++);
+				
+			}
+			
+		}
+		
+		return response;
 		
 	}
 	
