@@ -762,7 +762,23 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 				return executeReindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize / 2, retries);
 				
+			} else {
+				throw new IndexException(
+						String.format("Reindex operation of source index: '%s' and destination index '%s' failed at remote host: '%s'",
+							sourceIndex,
+							destinationIndex,
+							remoteInfo.getHost()
+						), e);
 			}
+			
+		} catch (Exception e) {
+			
+			throw new IndexException(
+				String.format("Reindex operation of source index: '%s' and destination index '%s' failed at remote host: '%s'",
+					sourceIndex,
+					destinationIndex,
+					remoteInfo.getHost()
+				), e);
 			
 		}
 		
