@@ -69,7 +69,7 @@ public class VersionRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Invalid search config")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Versions> searchVersions(
+	public Promise<Versions> searchVersionsByGet(
 			@ParameterObject
 			VersionRestSearch params) {
 		return ResourceRequests.prepareSearchVersion()
@@ -87,6 +87,19 @@ public class VersionRestService extends AbstractRestService {
 				.buildAsync()
 				.execute(getBus());
 		
+	}
+	
+	@Operation(
+		summary="Retrieve all resource versions",
+		description="Returns a list containing all published resource versions."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Invalid search config")
+	})
+	@PostMapping(value = "/search", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<Versions> searchVersionsByPost(@RequestBody(required = false) VersionRestSearch params) {
+		return searchVersionsByGet(params);
 	}
 
 	@Operation(

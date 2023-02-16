@@ -75,6 +75,22 @@ public abstract class CodeSystemVersionRestRequests {
 				.as(Versions.class);
 	}
 	
+	public static Versions searchVersionByPost(String codeSystemId, String version, String expand) {
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
+				.contentType(ContentType.JSON)
+				.accept(ContentType.JSON)
+				.when()
+				.body(Json.object(
+					"id", Json.array(String.join(Branch.SEPARATOR, codeSystemId, version)),
+					"expand", Json.array(expand),
+					"limit", Integer.MAX_VALUE
+				))
+				.post("/search")
+				.then()
+				.extract()
+				.as(Versions.class);
+	}
+	
 	public static ValidatableResponse assertGetVersion(String codeSystemId, String version) {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.get("/{id}", String.join(Branch.SEPARATOR, codeSystemId, version))
