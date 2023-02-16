@@ -229,7 +229,7 @@ public final class TransportClient implements IDisposableService {
 				.setPassword(password)
 				.buildAsync()
 				.execute(bus)
-				.getSync(3L, TimeUnit.SECONDS);
+				.getSync(10L, TimeUnit.SECONDS);
 			
 			// if successfully logged in replace the event bus with an authorized one
 			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", user.getAccessToken())));
