@@ -107,7 +107,6 @@ final class SnomedMrcmRangeRequest extends SearchResourceRequest<BranchContext, 
 			.filterByReferencedComponent(typeIds)
 			.filterByRefSet(inScopeRefSetIds)
 			.setLimit(limit())
-			.setSearchAfter(searchAfter())
 			.build()
 			.execute(context)
 			.forEach(m -> {
