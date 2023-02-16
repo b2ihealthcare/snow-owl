@@ -20,7 +20,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.searchVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.searchVersionByPost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertNotNull;
@@ -58,7 +58,7 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 		LocalDate effectiveTime = LocalDate.now();
 		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 
-		Version version = searchVersion(codeSystemId, versionId, "updatedAtCommit()").first().get();
+		Version version = searchVersionByPost(codeSystemId, versionId, "updatedAtCommit()").first().get();
 		assertThat(version.getEffectiveTime()).isEqualTo(effectiveTime);
 		assertNotNull(version.getUpdatedAtCommit());
 		assertNotNull(version.getUrl());
