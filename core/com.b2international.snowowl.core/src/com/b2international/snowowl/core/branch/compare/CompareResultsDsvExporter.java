@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.b2international.commons.ChangeKind;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
@@ -51,16 +50,19 @@ public final class CompareResultsDsvExporter {
 	
 	private final Map<String, String> baseBranches;
 	private final Map<String, String> compareBranches;
+	private Map<String, CodeSystem> codeSystemsMap;
 	private final Path outputPath;
 	private final Map<String, BranchCompareResult> compareResultsProvider;
 	private final Map<String, BiFunction<String, Collection<String>, TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>>>> fetcherProvider;
 	private final Map<String, Function<IComponent, String>> labelResolvers;
 	private final Map<String, BiFunction<IComponent, IComponent, Collection<CompareData>>> componentCompareResultProviders;
 	private final char delimiter;
+
 	
 	public CompareResultsDsvExporter(
 		Map<String, String> baseBranches,
 		Map<String, String> compareBranch,
+		Map<String, CodeSystem> codeSystemsMap,
 		Path outputPath,
 		Map<String, BranchCompareResult> compareResults,
 		Map<String, BiFunction<String, Collection<String>, TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>>>> fetcherFunction,
@@ -70,6 +72,7 @@ public final class CompareResultsDsvExporter {
 	) {
 		this.baseBranches = baseBranches;
 		this.compareBranches = compareBranch;
+		this.codeSystemsMap = codeSystemsMap;
 		this.outputPath = outputPath;
 		this.compareResultsProvider = compareResults;
 		this.fetcherProvider = fetcherFunction;
@@ -133,7 +136,7 @@ public final class CompareResultsDsvExporter {
 					}
 					
 					CollectionResource<IComponent> components = componentFetchRequest
-						.build( compareBranch)
+						.build(compareBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync();
 					
@@ -159,13 +162,13 @@ public final class CompareResultsDsvExporter {
 					}
 					
 					componentFetchRequest
-						.build(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, codeSystem, baseBranch))
+						.build(codeSystemsMap.get(codeSystem).getResourceURI(baseBranch))
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync()
 						.forEach(c -> componentPairs.put(c.getId(), c));
 					
 					componentFetchRequest
-						.build(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, codeSystem, compareBranch))
+						.build(codeSystemsMap.get(codeSystem).getResourceURI(compareBranch))
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync()
 						.forEach(c -> componentPairs.put(c.getId(), c));
@@ -196,7 +199,7 @@ public final class CompareResultsDsvExporter {
 					}
 					
 					CollectionResource<IComponent> components = componentFetchRequest
-						.build(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, codeSystem, baseBranch))
+						.build(codeSystemsMap.get(codeSystem).getResourceURI(baseBranch))
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync();
 					
@@ -211,7 +214,7 @@ public final class CompareResultsDsvExporter {
 			throw new SnowowlRuntimeException(e);
 		}
 	}
-			
+
 	/**
 	 * XXX: Convenience factory method for (non static) {@link CompareData} for groovy scripting. 
 	 * 
