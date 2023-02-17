@@ -398,7 +398,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final Map<String, Object> prop = newHashMap();
 				prop.put("type", "object");
 				if (fieldAnnotation != null && !fieldAnnotation.index()) {
-					prop.put("enabled", "false");
+					prop.put("enabled", false);
 				} else {
 					prop.put("dynamic", "true");			
 				}
