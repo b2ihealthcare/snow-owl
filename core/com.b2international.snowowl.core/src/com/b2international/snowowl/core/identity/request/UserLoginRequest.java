@@ -51,20 +51,24 @@ public final class UserLoginRequest implements Request<ServiceProvider, User> {
 	
 	@Override
 	public User execute(ServiceProvider context) {
+		User user = null; 
 		
-		User user = Strings.isNullOrEmpty(username) || Strings.isNullOrEmpty(password) ? null : context.service(IdentityProvider.class).auth(username, password);
-		if (user == null && !Strings.isNullOrEmpty(token)) {
+		if (!Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(password)) {
+			user = context.service(IdentityProvider.class).auth(username, password);
+		} else if (!Strings.isNullOrEmpty(token)) {
 			user = context.service(AuthorizationHeaderVerifier.class).authJWT(token);
-		}
-		if (user == null) {
+		} else {
 			// check if there is an authorization token header and use that to login the user 
 			final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
 			final String authorizationToken = requestHeaders.header(AuthorizedRequest.AUTHORIZATION_HEADER);
-			user = context.service(AuthorizationHeaderVerifier.class).auth(authorizationToken);
+			
+			if (!Strings.isNullOrEmpty(authorizationToken)) {
+				user = context.service(AuthorizationHeaderVerifier.class).auth(authorizationToken);
+			}
 		}
 		
 		if (user == null) {
-			throw new BadRequestException("Incorrect username or password.");
+			throw new BadRequestException("Invalid authentication credentials provided.");
 		}
 		
 		// generate and attach a token
