@@ -378,6 +378,9 @@ public final class VersionDocument implements Serializable {
 	private final String purpose;
 	private final String oid;
 	
+	// XXX derived field requires a mapping declaration to be present here
+	private String resourceBranchPath;
+	
 	@Field(index = false) 
 	private final Map<String, Object> settings;
 
