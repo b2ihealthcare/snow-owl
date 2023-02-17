@@ -1,6 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.9.0
+
+### Core
+- Support expanding `updatedAtCommit()` on version objects (#1108)
+- Support XML media type in REST controllers (#1091)
+
+### SNOMED CT
+- Support new MRCM type and range rule endpoints (#1105)
+
+### Bugs/Improvements
+- [index] expose reindex Elasticsearch API for third party plug-ins (#1108, #1111, #1112, #1113, #1114)
+- [core] check only one authentication method for each login attempt (#1110)
+- [api] ensure requests coming in without proper Accept header will be processed as JSON (f367b16)
+- [snomed] restore effective time following status changes (#1098)
+- [package] use ubuntu as base image for docker containers (#1100)
+
+### Dependencies
+- Upgrade Xtext to 2.25
+- Upgrade Guava to 30.1
+- Upgrade Eclipse Platform 4.21
+- Upgrade owlapi to 4.5.16
+- Upgrade Jetty to 10.0.6
+- 
+
 ## 8.8.1
 
 ### Bugs/Improvements
