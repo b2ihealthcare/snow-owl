@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.snomed.cis.feature"
       label="Snow Owl SNOMED CT CIS Feature"
-      version="8.7.1.qualifier"
+      version="8.8.2.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://www.example.com/description">
@@ -18,17 +18,34 @@
    </license>
 
    <requires>
-      <import plugin="org.eclipse.jetty.continuation" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.deploy" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.http" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.io" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.osgi.boot" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.security" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.server" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.servlet" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.util" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.webapp" version="9.4.5"/>
-      <import plugin="org.eclipse.jetty.xml" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.deploy"/>
+      <import plugin="org.eclipse.jetty.http"/>
+      <import plugin="org.eclipse.jetty.io"/>
+      <import plugin="org.eclipse.jetty.osgi.boot"/>
+      <import plugin="org.eclipse.jetty.security"/>
+      <import plugin="org.eclipse.jetty.server"/>
+      <import plugin="org.eclipse.jetty.servlet"/>
+      <import plugin="org.eclipse.jetty.util"/>
+      <import plugin="org.eclipse.jetty.webapp"/>
+      <import plugin="org.eclipse.jetty.xml"/>
+      <import plugin="org.eclipse.jetty.alpn.client"/>
+      <import plugin="org.eclipse.jetty.annotations"/>
+      <import plugin="org.eclipse.jetty.client"/>
+      <import plugin="org.eclipse.jetty.jmx"/>
+      <import plugin="org.eclipse.jetty.jndi"/>
+      <import plugin="org.eclipse.jetty.plus"/>
+      <import plugin="org.eclipse.jetty.servlet-api"/>
+      <import plugin="org.eclipse.jetty.websocket-api"/>
+      <import plugin="org.eclipse.jetty.websocket.api"/>
+      <import plugin="org.eclipse.jetty.websocket.common"/>
+      <import plugin="org.eclipse.jetty.websocket.core.client"/>
+      <import plugin="org.eclipse.jetty.websocket.core.common"/>
+      <import plugin="org.eclipse.jetty.websocket.core.server"/>
+      <import plugin="org.eclipse.jetty.websocket.javax.client"/>
+      <import plugin="org.eclipse.jetty.websocket.javax.common"/>
+      <import plugin="org.eclipse.jetty.websocket.javax.server"/>
+      <import plugin="org.eclipse.jetty.websocket.server"/>
+      <import plugin="org.eclipse.jetty.websocket.servlet"/>
    </requires>
 
    <plugin

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package com.b2international.snowowl.core.request.version;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -25,7 +23,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
 
@@ -84,8 +81,7 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 		CREATED_AT_TO,
 	}
 
-	VersionSearchRequest() {
-	}
+	VersionSearchRequest() {}
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
@@ -124,26 +120,12 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 
 	@Override
 	protected Versions toCollectionResource(RepositoryContext context, Hits<VersionDocument> hits) {
-		return new Versions(toResource(hits), hits.getSearchAfter(), limit(), hits.getTotal());
-	}
-
-	private List<Version> toResource(Hits<VersionDocument> hits) {
-		return hits.stream()
-				.map(this::toResource)
-				.collect(Collectors.toList());
-	}
-
-	private Version toResource(VersionDocument doc) {
-		Version version = new Version();
-		version.setId(doc.getId());
-		version.setVersion(doc.getVersion());
-		version.setDescription(doc.getDescription());
-		version.setEffectiveTime(doc.getEffectiveTimeAsLocalDate());
-		version.setResource(doc.getResource());
-		version.setBranchPath(doc.getBranchPath());
-		version.setCreatedAt(doc.getCreatedAt());
-		version.setAuthor(doc.getAuthor());
-		return version;
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new Versions(Collections.emptyList(), null, limit(), hits.getTotal());
+		} else {
+			return new VersionConverter(context, expand(), locales())
+					.convert(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
+		}
 	}
 
 	@Override

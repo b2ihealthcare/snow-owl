@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,22 +30,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.b2international.commons.ChangeKind;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 /**
  * @since 6.5
@@ -56,16 +50,19 @@ public final class CompareResultsDsvExporter {
 	
 	private final Map<String, String> baseBranches;
 	private final Map<String, String> compareBranches;
+	private Map<String, CodeSystem> codeSystemsMap;
 	private final Path outputPath;
 	private final Map<String, BranchCompareResult> compareResultsProvider;
 	private final Map<String, BiFunction<String, Collection<String>, TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>>>> fetcherProvider;
 	private final Map<String, Function<IComponent, String>> labelResolvers;
 	private final Map<String, BiFunction<IComponent, IComponent, Collection<CompareData>>> componentCompareResultProviders;
 	private final char delimiter;
+
 	
 	public CompareResultsDsvExporter(
 		Map<String, String> baseBranches,
 		Map<String, String> compareBranch,
+		Map<String, CodeSystem> codeSystemsMap,
 		Path outputPath,
 		Map<String, BranchCompareResult> compareResults,
 		Map<String, BiFunction<String, Collection<String>, TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>>>> fetcherFunction,
@@ -75,6 +72,7 @@ public final class CompareResultsDsvExporter {
 	) {
 		this.baseBranches = baseBranches;
 		this.compareBranches = compareBranch;
+		this.codeSystemsMap = codeSystemsMap;
 		this.outputPath = outputPath;
 		this.compareResultsProvider = compareResults;
 		this.fetcherProvider = fetcherFunction;
@@ -138,7 +136,7 @@ public final class CompareResultsDsvExporter {
 					}
 					
 					CollectionResource<IComponent> components = componentFetchRequest
-						.build( compareBranch)
+						.build(compareBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync();
 					
@@ -164,13 +162,13 @@ public final class CompareResultsDsvExporter {
 					}
 					
 					componentFetchRequest
-						.build(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, codeSystem, baseBranch))
+						.build(codeSystemsMap.get(codeSystem).getResourceURI(baseBranch))
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync()
 						.forEach(c -> componentPairs.put(c.getId(), c));
 					
 					componentFetchRequest
-						.build(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, codeSystem, compareBranch))
+						.build(codeSystemsMap.get(codeSystem).getResourceURI(compareBranch))
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync()
 						.forEach(c -> componentPairs.put(c.getId(), c));
@@ -201,7 +199,7 @@ public final class CompareResultsDsvExporter {
 					}
 					
 					CollectionResource<IComponent> components = componentFetchRequest
-						.build(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, codeSystem, baseBranch))
+						.build(codeSystemsMap.get(codeSystem).getResourceURI(baseBranch))
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync();
 					
@@ -216,11 +214,6 @@ public final class CompareResultsDsvExporter {
 			throw new SnowowlRuntimeException(e);
 		}
 	}
-			
-	
-	private String getComponentType(IComponent component) {
-		return TerminologyRegistry.INSTANCE.getTerminologyComponentById(component.getComponentType()).name();
-	}
 
 	/**
 	 * XXX: Convenience factory method for (non static) {@link CompareData} for groovy scripting. 
@@ -231,8 +224,7 @@ public final class CompareResultsDsvExporter {
 		return new CompareData(
 			ChangeKind.UPDATED,
 			
-			getComponentType(component),
-			component, 
+			component.getComponentType(),
 			labelResolvers.get(codeSystem).apply(component), 
 			
 			attribute, 
@@ -244,8 +236,7 @@ public final class CompareResultsDsvExporter {
 		return new CompareData(
 			ChangeKind.UPDATED,
 			
-			getComponentType(component),
-			component, 
+			component.getComponentType(),
 			labelResolvers.get(codeSystem).apply(component), 
 			
 			null, 
@@ -257,8 +248,7 @@ public final class CompareResultsDsvExporter {
 		return new CompareData(
 			ChangeKind.ADDED,
 
-			getComponentType(component),
-			component, 
+			component.getComponentType(),
 			labelResolvers.get(codeSystem).apply(component), 
 			
 			null, 
@@ -270,7 +260,6 @@ public final class CompareResultsDsvExporter {
 		ChangeKind changeKind,
 		
 		String componentType,
-		IComponent component,
 		String label,
 		
 		String attribute,

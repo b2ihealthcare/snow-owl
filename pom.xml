@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>8.7.1-SNAPSHOT</version>
+	<version>8.8.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -16,11 +16,11 @@
 		<!-- Dependency versions for Tycho's target platform filter -->
 		<elk.version>0.4.3</elk.version>
 		<groovy.version>3.0.9</groovy.version>
-		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
+		<guava.versionRange>[30.1.0,30.1.1)</guava.versionRange>
 		<jackson.databind.version>2.12.7</jackson.databind.version>
 		<jackson.version>2.12.7</jackson.version>
 		<logback.versionRange>[1.2.10,1.2.11)</logback.versionRange>
-		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
+		<osgi.versionRange>[3.16.0,3.17.1)</osgi.versionRange>
 		<slf4j.version>1.7.32</slf4j.version>
 		
 		<!-- Build tool/compiler versions -->
@@ -34,7 +34,7 @@
 		
 		<!-- Testing -->
 		<testHeapSize>1g</testHeapSize>
-		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+AlwaysPreTouch --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
+		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.http.port=9090 -XX:+AlwaysPreTouch --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
 
 		<!-- Artifact distribution -->
 		<maven.repository.id>nexus_deployment</maven.repository.id>
@@ -110,10 +110,10 @@
 						<!-- Removes the extension bundle from the available bundles for the 
 							javax.servlet package -->
 						<filter>
-            				<type>p2-installable-unit</type>
-            				<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
-            				<removeAll />
-         				</filter>
+							<type>p2-installable-unit</type>
+							<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
+							<removeAll />
+						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.codehaus.groovy</id>
@@ -328,6 +328,20 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>3.1.0</version>
+					<configuration>
+						<installAtEnd>true</installAtEnd>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>3.0.0</version>
+					<configuration>
+						<deployAtEnd>true</deployAtEnd>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>

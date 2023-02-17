@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,12 +261,8 @@ public class MappingMigrationTest extends BaseIndexTest {
 	
 	@After
 	public void teardown() {
-		// clear the custom indices
-		Mappings mappings = new Mappings(Schema.class);
-		// disable class overrides after running the test(s)
-		mappings.enableRuntimeMappingOverrides = false;
-		admin().updateMappings(mappings);
-		admin().clear(List.of(Schema.class));
+		// delete the indexes completely
+		admin().delete();
 	}
 	
 	/*

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
@@ -48,6 +50,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.RemoteInfo;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.xcontent.XContentType;
@@ -56,10 +59,12 @@ import org.slf4j.Logger;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.commons.json.Json;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
+import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.FieldAlias;
@@ -215,11 +220,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.getSourceAsMap());
 					SortedSet<String> compatibleChanges = Sets.newTreeSet();
 					SortedSet<String> incompatibleChanges = Sets.newTreeSet();
-					JsonDiff.diff(currentTypeMapping, newTypeMapping).forEach(change -> {
+					final JsonDiff schemaChanges = JsonDiff.diff(currentTypeMapping, newTypeMapping);
+					schemaChanges.forEach(change -> {
 						if (change.isAdd()) {
 							compatibleChanges.add(change.getFieldPath());
 						} else if (change.isMove() || change.isReplace()) {
 							incompatibleChanges.add(change.getFieldPath());
+						} else if (change.isRemove()) {
+							// XXX while remove is bad it is hard to detect true incompatibility where we try to support dynamic fields (like Maps)
+							// raise the incompatibility warning only when the root field is being reported, not a nested property under the root property
+							if (!change.getFieldPath().contains("/properties")) {
+								incompatibleChanges.add(change.getFieldPath());
+							}
 						}
 					});
 					if (!incompatibleChanges.isEmpty()) {
@@ -504,7 +516,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public void delete() {
 		if (exists()) {
-			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(name + "*");
+			final String[] indexesToDelete = mappings().getMappings().stream().map(this::getTypeIndex).toArray(i -> new String[i]);
+			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest().indices(indexesToDelete);
 			try {
 				final AcknowledgedResponse deleteIndexResponse = client()
 						.indices()
@@ -525,8 +538,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 		final Set<DocumentMapping> typesToRefresh = Collections.synchronizedSet(newHashSetWithExpectedSize(types.size()));
 		
 		for (Class<?> type : types) {
-			if (bulkDelete(new BulkDelete<>(type, Expressions.matchAll()))) {
-				typesToRefresh.add(mappings.getMapping(type));
+			DocumentMapping mapping = mappings.getMapping(type);
+			if (exists(mapping)) {
+				if (bulkDelete(new BulkDelete<>(type, Expressions.matchAll()))) {
+					typesToRefresh.add(mapping);
+				}
 			}
 		}
 		
@@ -647,6 +663,129 @@ public final class EsIndexAdmin implements IndexAdmin {
 		return es8Client;
 	}
 	
+	@Override
+	public RefreshResponse refresh(String...indices) throws IOException {
+		return client().indices().refresh(new RefreshRequest(indices));
+	}
+	
+	@Override
+	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+		
+		AtomicInteger retries = new AtomicInteger(1);
+		
+		BulkByScrollResponse response = executeReindex(
+			sourceIndex,
+			destinationIndex,
+			remoteInfo,
+			refresh,
+			org.elasticsearch.index.reindex.AbstractBulkByScrollRequest.DEFAULT_SCROLL_SIZE,
+			retries
+		);
+		
+		if (response.isTimedOut()) {
+			throw new IndexException(
+					String.format(
+						"Reindex operation of source index: '%s' and destination index '%s' timed out at remote host: '%s'",
+						sourceIndex,
+						destinationIndex,
+						remoteInfo.getHost()
+					), null);
+		}
+		
+		if (response.getSearchFailures().size() > 0) {
+			
+			response.getSearchFailures().forEach(failure -> {
+				log().error(
+					"There were search failures during reindex operation. Index: '{}', Status: '{}', Cause: {}",
+					failure.getIndex(),
+					failure.getStatus().getStatus(),
+					failure.getReason()
+				);
+			});
+			
+			throw new IndexException(String.format("There were search failures during the reindex operation (index '%s'). See logs for more details.", sourceIndex), null);
+			
+		}
+		
+		if (response.getBulkFailures().size() > 0) {
+			
+			response.getBulkFailures().forEach(failure -> {
+				log().error(
+					"There were bulk failures during reindex operation. Index: '{}', Message: '{}', Status: '{}', Cause: {}",
+					failure.getIndex(),
+					failure.getMessage(),
+					failure.getStatus(),
+					failure.getCause()
+				);
+			});
+
+			throw new IndexException(String.format("There were bulk failures during the reindex operation (index '%s'). See logs for more details.", destinationIndex), null);
+			
+		}
+		
+		return ReindexResult.builder()
+			.took(TimeUtil.nanoToReadableString(response.getTook().nanos()))
+			.createdDocuments(response.getCreated())
+			.updatedDocuments(response.getUpdated())
+			.deletedDocuments(response.getDeleted())
+			.noops(response.getNoops())
+			.versionConflicts(response.getVersionConflicts())
+			.totalDocuments(response.getTotal())
+			.sourceIndex(sourceIndex)
+			.destinationIndex(destinationIndex)
+			.remoteAddress(String.format("%s://%s:%s", remoteInfo.getScheme(), remoteInfo.getHost(), remoteInfo.getPort()))
+			.refresh(refresh)
+			.retries(retries.get() > 1 ? Long.valueOf(retries.get()) : null) // do not track successful first attempts
+			.build();
+		
+	}
+
+	private BulkByScrollResponse executeReindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize, AtomicInteger retries) throws IOException {
+		
+		BulkByScrollResponse response = null;
+		
+		try {
+			
+			response = client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize);
+			
+		} catch (IllegalArgumentException /* thrown by the transport client */ | ElasticsearchStatusException /* thrown by the http client */ e) {
+			
+			if (!Strings.isNullOrEmpty(e.getMessage()) && e.getMessage().contains("Remote responded with a chunk that was too large. Use a smaller batch size.")) {
+				
+				if (batchSize == 1) {
+					throw new IndexException(e.getMessage(), e); // cannot minimize batch size any further
+				}
+				
+				log.info("Retrying reindex request of '{}' with smaller batch size '{}'", sourceIndex, batchSize / 2);
+
+				retries.incrementAndGet();
+				
+				return executeReindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize / 2, retries);
+				
+			} else {
+				throw new IndexException(
+						String.format("Reindex operation of source index: '%s' and destination index '%s' failed at remote host: '%s'",
+							sourceIndex,
+							destinationIndex,
+							remoteInfo.getHost()
+						), e);
+			}
+			
+		} catch (Exception e) {
+			
+			throw new IndexException(
+				String.format("Reindex operation of source index: '%s' and destination index '%s' failed at remote host: '%s'",
+					sourceIndex,
+					destinationIndex,
+					remoteInfo.getHost()
+				), e);
+			
+		}
+		
+		return response;
+		
+	}
+	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
 			final String[] indicesToRefresh;
@@ -664,10 +803,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			try {
 			
-				final RefreshRequest refreshRequest = new RefreshRequest(indicesToRefresh);
-				final RefreshResponse refreshResponse = client()
-						.indices()
-						.refresh(refreshRequest);
+				final RefreshResponse refreshResponse = refresh(indicesToRefresh);
 				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
 					log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indicesToRefresh), refreshResponse.getStatus());
 				}

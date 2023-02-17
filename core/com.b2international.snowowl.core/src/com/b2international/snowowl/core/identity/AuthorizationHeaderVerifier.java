@@ -16,17 +16,8 @@
 package com.b2international.snowowl.core.identity;
 
 import java.util.Base64;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.Claim;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.auth0.jwt.interfaces.JWTVerifier;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.UnauthorizedException;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 
 /**
@@ -37,34 +28,14 @@ import com.google.common.base.Charsets;
  */
 public final class AuthorizationHeaderVerifier {
 
-	private final JWTVerifier verifier;
+	private final JWTSupport jwtSupport;
 	private final IdentityProvider identityProvider;
-	private final String emailClaimProperty;
-	private final String permissionsClaimProperty;
 
-	public AuthorizationHeaderVerifier(JWTVerifier verifier, IdentityProvider identityProvider, String emailClaimProperty,
-			String permissionsClaimProperty) {
-		this.verifier = verifier;
+	public AuthorizationHeaderVerifier(JWTSupport jwtSupport, IdentityProvider identityProvider) {
+		this.jwtSupport = jwtSupport;
 		this.identityProvider = identityProvider;
-		this.emailClaimProperty = emailClaimProperty;
-		this.permissionsClaimProperty = permissionsClaimProperty;
 	}
 	
-	@VisibleForTesting
-	public JWTVerifier getVerifier() {
-		return verifier;
-	}
-	
-	@VisibleForTesting
-	public String getEmailClaimProperty() {
-		return emailClaimProperty;
-	}
-	
-	@VisibleForTesting
-	public String getPermissionsClaimProperty() {
-		return permissionsClaimProperty;
-	}
-
 	/**
 	 * Authenticates an authorization token. 
 	 * Supported formats are: - Basic: Base64 encoded username:password 
@@ -107,51 +78,19 @@ public final class AuthorizationHeaderVerifier {
 	 */
 	public User authJWT(final String token) {
 		try {
-			final DecodedJWT jwt = verifier.verify(token);
-			return toUser(jwt);
-		} catch (JWTVerificationException e) {
-			throw new UnauthorizedException("Incorrect authorization token");
+			return jwtSupport.authJWT(token);
+		} catch (Exception e) {
+			// try to authorize JWT using the global provider first, then fall back to the dedicated identity provider specific JWT authentication
 		}
-	}
-
-	/**
-	 * Converts the given JWT access token to a {@link User} representation using the configured email and permission claims. This method does not
-	 * verify the given access token, it only decodes it and uses the publicly available claims to construct the {@link User} object. To verify a
-	 * token and create a user object use the {@link #authJWT(String)} method.
-	 * 
-	 * @param token
-	 * @return a {@link User} instance created from the given token
-	 */
-	public User toUser(String token) {
-		return toUser(JWT.decode(token));
-	}
-
-	/**
-	 * Converts the given JWT access token to a {@link User} representation using the configured email and permission claims.
-	 * 
-	 * @param jwt
-	 *            - the JWT to convert to a {@link User} object
-	 * @return
-	 * @throws BadRequestException
-	 *             - if either the configured email or permissions property is missing from the given JWT
-	 */
-	public User toUser(DecodedJWT jwt) {
-		final Claim emailClaim = jwt.getClaim(emailClaimProperty);
-		if (emailClaim == null || emailClaim.isNull()) {
-			throw new BadRequestException("'%s' JWT access token field is required for email access, but it was missing.", emailClaimProperty);
+		try {
+			return identityProvider.authJWT(token);
+		} catch (Exception e) {
+			// if this fails as well, then log an invalid login attempt in the log and respond back with 401
 		}
-
-		Claim permissionsClaim = jwt.getClaim(permissionsClaimProperty);
-		if (permissionsClaim == null || permissionsClaim.isNull()) {
-			throw new BadRequestException("'%s' JWT access token field is required for permissions access, but it was missing.",
-					permissionsClaimProperty);
-		}
-
-		final List<Permission> permissions = jwt.getClaim(permissionsClaimProperty).asList(String.class).stream().map(Permission::valueOf)
-				.collect(Collectors.toList());
-		return new User(emailClaim.asString(), permissions);
+		IdentityProvider.LOG.warn("Failed login attempt with an invalid authorization token");
+		throw new UnauthorizedException("Incorrect authorization token");
 	}
-
+	
 	/**
 	 * Authenticates a token as Base64 encoded user:pass String (HTTP Basic) and returns a {@link User} object or throws an
 	 * {@link UnauthorizedException}.

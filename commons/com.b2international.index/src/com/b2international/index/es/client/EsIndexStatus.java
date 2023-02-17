@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,20 @@ package com.b2international.index.es.client;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.Objects;
 
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.2
  */
 public final class EsIndexStatus implements Comparable<EsIndexStatus>, Serializable {
+
+	private static final long serialVersionUID = 7289986267950353922L;
 
 	// first by status then by name
 	private static final Comparator<EsIndexStatus> COMPARATOR = Comparator.comparing(EsIndexStatus::getStatus).thenComparing(Comparator.comparing(EsIndexStatus::getIndex));
@@ -34,7 +39,12 @@ public final class EsIndexStatus implements Comparable<EsIndexStatus>, Serializa
 	private final ClusterHealthStatus status;
 	private final String diagnosis;
 
-	public EsIndexStatus(String index, ClusterHealthStatus status, String diagnosis) {
+	@JsonCreator
+	public EsIndexStatus(
+		@JsonProperty("index") String index,
+		@JsonProperty("status") ClusterHealthStatus status,
+		@JsonProperty("diagnosis") String diagnosis
+	) {
 		this.index = index;
 		this.status = status;
 		this.diagnosis = diagnosis;
@@ -65,6 +75,23 @@ public final class EsIndexStatus implements Comparable<EsIndexStatus>, Serializa
 	@Override
 	public String toString() {
 		return String.format("%s[status: '%s', diagnosis: '%s']", index, status, diagnosis);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(diagnosis, index, status);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EsIndexStatus other = (EsIndexStatus) obj;
+		return Objects.equals(diagnosis, other.diagnosis) && Objects.equals(index, other.index) && status == other.status;
 	}
 
 }

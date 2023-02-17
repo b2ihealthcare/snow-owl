@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>8.7.1-SNAPSHOT</version>
+		<version>8.8.2-SNAPSHOT</version>
 	</parent>
 
 	<build>
@@ -24,6 +24,26 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>org.eclipse.jetty.osgi.boot</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.jetty.annotations</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.jetty.plus</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.jetty.websocket.server</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.jetty.websocket.javax.server</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>

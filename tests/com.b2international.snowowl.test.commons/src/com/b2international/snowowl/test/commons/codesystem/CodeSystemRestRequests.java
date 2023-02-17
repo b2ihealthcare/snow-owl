@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,14 +149,37 @@ public abstract class CodeSystemRestRequests {
 	}
 	
 	public static ValidatableResponse assertCodeSystemUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
-		return givenAuthenticatedRequest("/upgrade")
+		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
 					"extensionOf", extensionOf.toString(),
 					"upgradeOf", upgradeOf.toString()
 				))
 				.post()
-				.then().assertThat();
+				.then()
+				.assertThat();
+	}
+	
+	public static ValidatableResponse assertCodeSystemUpgradeSync(ResourceURI codeSystemUri, ResourceURI sourceUri) {
+		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API + "/sync")
+				.contentType(ContentType.JSON)
+				.accept(ContentType.JSON)
+				.body(Map.of(
+					"codeSystemId", codeSystemUri.getResourceId(),
+					"source", sourceUri
+				))
+				.post()
+				.then()
+				.assertThat();
+	}
+	
+	public static ValidatableResponse assertCodeSystemUpgradeComplete(ResourceURI upgradedCodeSystemUri) {
+		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API + "/" + upgradedCodeSystemUri.getResourceId() + "/complete")
+				.contentType(ContentType.JSON)
+				.accept(ContentType.JSON)
+				.post()
+				.then()
+				.assertThat();
 	}
 	
 	public static CodeSystems search(String id, String...expand) {

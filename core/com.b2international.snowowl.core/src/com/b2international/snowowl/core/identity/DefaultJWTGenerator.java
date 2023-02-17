@@ -37,11 +37,11 @@ final class DefaultJWTGenerator implements JWTGenerator {
 	private final String emailClaimProperty;
 	private final String permissionsClaimProperty;
 
-	public DefaultJWTGenerator(final Algorithm algorithm, final IdentityConfiguration conf) {
+	public DefaultJWTGenerator(final Algorithm algorithm, final String issuer, final String emailClaimProperty, final String permissionsClaimProperty) {
 		this.algorithm = checkNotNull(algorithm);
-		this.issuer = conf.getIssuer();
-		this.emailClaimProperty = conf.getEmailClaimProperty();
-		this.permissionsClaimProperty = conf.getPermissionsClaimProperty();
+		this.issuer = issuer;
+		this.emailClaimProperty = emailClaimProperty;
+		this.permissionsClaimProperty = permissionsClaimProperty;
 	}
 	
 	@Override

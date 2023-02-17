@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Elasticsearch 8 Index Client Module
 Bundle-SymbolicName: com.b2international.index.es8;singleton:=true
-Bundle-Version: 8.7.1.qualifier
+Bundle-Version: 8.8.2.qualifier
 Bundle-Vendor: B2i Healthcare
 Automatic-Module-Name: com.b2international.index.es8
 Bundle-RequiredExecutionEnvironment: JavaSE-17
@@ -10,9 +10,9 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.apache.commons.codec;bundle-version="1.11.0",
  com.b2international.commons;visibility:=reexport,
- org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.2.0)",
- org.apache.httpcomponents.httpclient;bundle-version="[4.5.10,4.6.0)",
- org.apache.httpcomponents.httpcore;bundle-version="[4.4.12,4.5.0)"
+ org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.1.5)",
+ org.apache.httpcomponents.httpclient;bundle-version="[4.5.10,4.5.11)",
+ org.apache.httpcomponents.httpcore;bundle-version="[4.4.12,4.4.13)"
 Bundle-ClassPath: .,
  lib/elasticsearch-java-8.3.2.jar,
  lib/elasticsearch-rest-client-8.3.2.jar,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
  */
 package com.b2international.index.admin;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.RemoteInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
@@ -133,7 +138,26 @@ public interface IndexAdmin {
 	 * @throws UnsupportedOperationException - if es8Client is not available
 	 */
 	Es8Client es8Client() throws UnsupportedOperationException;
+	
+	/**
+	 * Issue a refresh on the specified indices
+	 * @return {@link RefreshResponse}
+	 * @param indices
+	 */
+	RefreshResponse refresh(String...indices) throws IOException;
 
+	/**
+	 * Issue a remote reindex of sourceIndex to destinationIndex using the parameters specified in remoteInfo. A selective
+	 * query can be passed inside the RemoteInfo object in a serialized form.
+	 * 
+	 * @return {@link BulkByScrollResponse}
+	 * @param sourceIndex - the source index
+	 * @param destinationIndex - the destination index
+	 * @param remoteInfo - configuration for the remote Elasticsearch instance (scheme, host, port, credentials and query)
+	 * @param refresh - whether to refresh the destination index at the end of the process or not
+	 */
+	ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException;
+	
 	/**
 	 * @return the indices maintained by this {@link IndexAdmin}
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,36 @@ public abstract class CodeSystemVersionRestRequests {
 				.statusCode(200)
 				.extract()
 				.as(Version.class);
+	}
+	
+	public static Versions searchVersion(String codeSystemId, String version, String expand) {
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
+				.when()
+				.queryParams(Map.of(
+					"id", String.join(Branch.SEPARATOR, codeSystemId, version),
+					"expand", expand,
+					"limit", Integer.MAX_VALUE
+				))
+				.get()
+				.then()
+				.extract()
+				.as(Versions.class);
+	}
+	
+	public static Versions searchVersionByPost(String codeSystemId, String version, String expand) {
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
+				.contentType(ContentType.JSON)
+				.accept(ContentType.JSON)
+				.when()
+				.body(Json.object(
+					"id", Json.array(String.join(Branch.SEPARATOR, codeSystemId, version)),
+					"expand", Json.array(expand),
+					"limit", Integer.MAX_VALUE
+				))
+				.post("/search")
+				.then()
+				.extract()
+				.as(Versions.class);
 	}
 	
 	public static ValidatableResponse assertGetVersion(String codeSystemId, String version) {

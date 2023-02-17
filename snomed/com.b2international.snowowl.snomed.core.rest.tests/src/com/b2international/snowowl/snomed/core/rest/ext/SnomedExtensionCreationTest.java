@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.searchVersionByPost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -56,8 +58,10 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 		LocalDate effectiveTime = LocalDate.now();
 		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 
-		Version version = getVersion(codeSystemId, versionId);
+		Version version = searchVersionByPost(codeSystemId, versionId, "updatedAtCommit()").first().get();
 		assertThat(version.getEffectiveTime()).isEqualTo(effectiveTime);
+		assertNotNull(version.getUpdatedAtCommit());
+		assertNotNull(version.getUrl());
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("released", equalTo(true))

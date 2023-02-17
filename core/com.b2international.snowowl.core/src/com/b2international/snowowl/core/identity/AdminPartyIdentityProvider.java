@@ -46,20 +46,33 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 
 	@Override
 	public User auth(String username, String token) {
-		return delegate.auth(username, token);
+		return overrideUserRoles(delegate.auth(username, token));
 	}
-
+	
+	@Override
+	public User authJWT(String token) {
+		return overrideUserRoles(delegate.authJWT(token));
+	}
+	
 	@Override
 	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 		return delegate.searchUsers(usernames, limit)
 					.then(matches -> {
 						// override roles
 						return new Users(
-							matches.stream().map(user -> new User(user.getUserId(), ADMINPARTY_ROLES)).collect(Collectors.toList()), 
+							matches.stream().map(user -> overrideUserRoles(user)).collect(Collectors.toList()), 
 							matches.getLimit(), 
 							matches.getTotal()
 						);
 					});
+	}
+
+	private User overrideUserRoles(User user) {
+		if (user == null) {
+			return null;
+		} else {
+			return new User(user.getUserId(), ADMINPARTY_ROLES);
+		}
 	}
 	
 	@Override
@@ -67,8 +80,4 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 		return String.format("adminParty[%s]", delegate.getInfo());
 	}
 
-	@Override
-	public void validateSettings() {
-		// Nothing to do
-	}
 }

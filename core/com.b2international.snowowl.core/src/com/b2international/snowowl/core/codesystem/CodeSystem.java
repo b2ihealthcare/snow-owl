@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,25 @@ public final class CodeSystem extends TerminologyResource {
 				.setToolingId(getToolingId())
 				.setExtensionOf(getExtensionOf())
 				.setUpgradeOf(getUpgradeOf())
+				.setSettings(getSettings());
+	}
+	
+	public CodeSystemUpdateRequestBuilder toUpdateRequest() {
+		return CodeSystemRequests.prepareUpdateCodeSystem(getId())
+				.setUrl(getUrl())
+				.setTitle(getTitle())
+				.setLanguage(getLanguage())
+				.setDescription(getDescription())
+				.setStatus(getStatus())
+				.setCopyright(getCopyright())
+				.setOwner(getOwner())
+				.setContact(getContact())
+				.setUsage(getUsage())
+				.setPurpose(getPurpose())
+				.setBundleId(getBundleId())
+				.setOid(getOid())
+				.setBranchPath(getBranchPath())
+				.setExtensionOf(getExtensionOf())
 				.setSettings(getSettings());
 	}
 

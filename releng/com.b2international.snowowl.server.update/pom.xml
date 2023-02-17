@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>releng-parent</artifactId>
-		<version>8.7.1-SNAPSHOT</version>
+		<version>8.8.2-SNAPSHOT</version>
 	</parent>
 	
 	<properties>
@@ -64,6 +64,7 @@
 						<configuration>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
+							<tarLongFileMode>gnu</tarLongFileMode>
 						</configuration>
 					</execution>
 				</executions>

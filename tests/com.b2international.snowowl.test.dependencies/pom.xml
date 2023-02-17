@@ -6,13 +6,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
-		<version>8.7.1-SNAPSHOT</version>
+		<version>8.8.2-SNAPSHOT</version>
 		<artifactId>tests-parent</artifactId>
 	</parent>
 	<artifactId>com.b2international.snowowl.test.dependencies</artifactId>
 	<packaging>eclipse-plugin</packaging>
 	
 	<dependencies>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<version>1.17.3</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>elasticsearch</artifactId>

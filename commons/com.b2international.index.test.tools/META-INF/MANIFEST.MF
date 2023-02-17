@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test tools for tests based on Index API
 Bundle-SymbolicName: com.b2international.index.test.tools;singleton:=true
-Bundle-Version: 8.7.1.qualifier
+Bundle-Version: 8.8.2.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.index,
@@ -13,3 +13,4 @@ Require-Bundle: com.b2international.index,
 Export-Package: com.b2international.index,
  com.b2international.index.revision
 Import-Package: org.slf4j;version="1.7.30"
+Bundle-Vendor: B2i Healthcare

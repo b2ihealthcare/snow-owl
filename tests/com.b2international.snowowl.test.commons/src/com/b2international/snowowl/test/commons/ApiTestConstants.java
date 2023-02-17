@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.test.commons;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @since 7.15
@@ -49,5 +51,19 @@ public interface ApiTestConstants {
 	 * The context-relative base URL for the suggest controller.
 	 */
 	String SUGGEST_API = "/suggest";
+	
+	/**
+	 * The context-relative base URL for SNOMED CT-related controllers.
+	 */
+	String SCT_API = "/snomedct";
+	
+	/**
+	 * The context-relative base URL for code system upgrade controllers.
+	 */
+	String UPGRADE_API = "/upgrade";
+
+	long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
+
+	long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(120L);
 	
 }

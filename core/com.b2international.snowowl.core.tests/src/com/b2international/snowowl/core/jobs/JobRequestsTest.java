@@ -64,7 +64,7 @@ public class JobRequestsTest {
 		this.context = ServiceProvider.EMPTY.inject()
 				.bind(ObjectMapper.class, mapper)
 				.bind(RemoteJobTracker.class, tracker)
-				.bind(IdentityProvider.class, IdentityProvider.NOOP)
+				.bind(IdentityProvider.class, IdentityProvider.UNPROTECTED)
 				.bind(User.class, User.SYSTEM)
 				.build();
 		this.bus.registerHandler(SystemNotification.ADDRESS, message -> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@ package com.b2international.snowowl.core.rest;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -39,6 +42,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
@@ -58,27 +62,28 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConf
 import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import com.auth0.jwt.interfaces.JWTVerifier;
-import com.b2international.commons.options.Metadata;
-import com.b2international.commons.options.MetadataHolder;
-import com.b2international.commons.options.MetadataHolderMixin;
-import com.b2international.commons.options.MetadataMixin;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.JWTSupport;
 import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.rate.HttpConfig;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.dataformat.xml.XmlFactory;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
@@ -117,7 +122,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	private final LoadingCache<BitSet, ObjectMapper> objectMappers = CacheBuilder.newBuilder().build(new CacheLoader<BitSet, ObjectMapper>() {
 		@Override
 		public ObjectMapper load(BitSet configuration) throws Exception {
-			ObjectMapper mapper = createObjectMapper();
+			ObjectMapper mapper = JsonSupport.getRestObjectMapper();
 			mapper.setSerializationInclusion(configuration.get(INCLUDE_NULL_IDX) ? Include.ALWAYS : Include.NON_NULL);
 			mapper.configure(SerializationFeature.INDENT_OUTPUT, configuration.get(PRETTY_IDX));
 			return mapper;
@@ -157,19 +162,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 			springSecurityOAuth2Provider, 
 			routerFunctionProvider, 
 			repositoryRestResourceProvider);
-	}
-	
-	public static ObjectMapper createObjectMapper() {
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.setSerializationInclusion(Include.NON_NULL);
-		final StdDateFormat dateFormat = new StdDateFormat();
-		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-		objectMapper.setDateFormat(dateFormat);
-		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		objectMapper.addMixIn(Metadata.class, MetadataMixin.class);
-		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
-		return objectMapper;
 	}
 	
 	@Bean
@@ -267,8 +259,8 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	}
 	
 	@Bean
-	public JWTVerifier jwtVerifier() {
-		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(JWTVerifier.class);
+	public JWTSupport jwtSupport() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(JWTSupport.class);
 	}
 	
 	@Override
@@ -292,12 +284,33 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
 		converters.add(new CsvMessageConverter());
-		// XXX using null value here as Spring calls a proxied method anyway which returns an already configured instance, see mapping2JacksonHttpMessageConverter Bean method
-		converters.add(mapping2JacksonHttpMessageConverter(null));
+		// XXX using null value here as Spring calls a proxied method anyway which returns an already configured instance, see objectMapper Bean method above
+		converters.add(mappingJackson2HttpMessageConverter(null));
+		// XXX using null value here to allow custom XmlFactory implementations to be injected through other configuration classes
+		converters.add(mappingJackson2XmlHttpMessageConverter(null));
 	}
 
 	@Bean
-	public MappingJackson2HttpMessageConverter mapping2JacksonHttpMessageConverter(ObjectMapper mapper) {
+	public MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter(@Autowired Optional<XmlFactory> xmlFactory) {
+		
+		MappingJackson2XmlHttpMessageConverter xmlConverter = new MappingJackson2XmlHttpMessageConverter();
+		
+		final XmlMapper mapper = xmlFactory.isPresent() ? new XmlMapper(xmlFactory.get()) : new XmlMapper();
+		
+		mapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+		mapper.registerModule(new JavaTimeModule());
+		mapper.setDateFormat(new StdDateFormat());
+		
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+		
+		xmlConverter.setObjectMapper(mapper);
+		
+		return xmlConverter;
+		
+	}
+	
+	@Bean
+	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper mapper) {
 		return new MappingJackson2HttpMessageConverter(mapper);
 	}
 	

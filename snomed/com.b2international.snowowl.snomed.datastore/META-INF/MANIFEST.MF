@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Datastore
 Bundle-SymbolicName: com.b2international.snowowl.snomed.datastore;singleton:=true
-Bundle-Version: 8.7.1.qualifier
+Bundle-Version: 8.8.2.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Import-Package: com.b2international.index.compat,
- org.slf4j;version="1.7.25"
+ org.slf4j;version="1.7.30"
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.resources;bundle-version="3.8.0",
@@ -17,7 +17,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.xtext.xbase.lib,
  com.b2international.snowowl.snomed.cis;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
- com.b2international.mapdb;bundle-version="[3.0.7,4.0.0)",
+ com.b2international.mapdb;bundle-version="[3.0.10,4.0.0)",
  com.b2international.snowowl.snomed.icons;bundle-version="6.15.0",
  com.b2international.snowowl.core;visibility:=reexport,
  com.b2international.snomed.ecl;bundle-version="[2.1.0,2.2.0)";visibility:=reexport

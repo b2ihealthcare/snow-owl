@@ -30,7 +30,7 @@ import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
  * 
  * @since 8.2.0
  */
-public interface FhirConceptMapWriteSupport {
+public interface FhirConceptMapWriteSupport extends FhirWriteSupport {
 
 	/**
 	 * Creates a new concept map based on the specified input, or updates an

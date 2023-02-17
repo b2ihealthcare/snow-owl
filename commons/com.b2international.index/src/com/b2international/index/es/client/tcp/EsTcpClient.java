@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,6 +130,23 @@ public final class EsTcpClient extends EsClientBase {
 		return dbqrb
 			.setSlices(DeleteByQueryRequest.AUTO_SLICES)
 			.get();
+	}
+	
+	@Override
+	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize) throws IOException {
+		
+		ReindexRequestBuilder rirb = new ReindexRequestBuilder(client, ReindexAction.INSTANCE);
+		
+		rirb.source().setSize(batchSize);
+		
+		return rirb
+			.source(sourceIndex)
+			.destination(destinationIndex)
+			.setRemoteInfo(remoteInfo)
+			.refresh(refresh)
+			.abortOnVersionConflict(false)
+			.get();
+		
 	}
 	
 	static final <T> T execute(ActionFuture<T> future) throws IOException {

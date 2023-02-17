@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,14 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * Represents a "union class" holder for all supported relationship value types.
  * 
  * @since 7.17
  */
+@JsonPropertyOrder({ "type", "numericValue", "stringValue"})
 public final class RelationshipValue implements Serializable {
 
 	private final RelationshipValueType type;

@@ -29,6 +29,7 @@ import net.jodah.typetools.TypeResolver;
  */
 public interface ResourceExpander<R> {
 
+	// The "default default" limit to use when no limit is given
 	int DEFAULT_LIMIT = 50;
 	
 	/**
@@ -39,7 +40,11 @@ public interface ResourceExpander<R> {
 	void expand(List<R> results);
 	
 	default int getLimit(final Options expandOptions) {
-		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : DEFAULT_LIMIT;
+		return getLimit(expandOptions, DEFAULT_LIMIT);
+	}
+	
+	default int getLimit(final Options expandOptions, final int defaultLimit) {
+		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : defaultLimit;
 	}
 	
 	/**

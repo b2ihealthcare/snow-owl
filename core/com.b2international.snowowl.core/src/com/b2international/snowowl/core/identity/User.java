@@ -39,13 +39,19 @@ public final class User implements Serializable {
 	
 	private final String userId;
 	private final List<Permission> permissions;
+	private final String accessToken;
 	
-	private Map<String, Object> authorizationContext = Collections.emptyMap(); 
+	private Map<String, Object> authorizationContext = Collections.emptyMap();
 	
 	public User(String userId, List<Permission> permissions) {
+		this(userId, permissions, null);
+	}
+	
+	public User(String userId, List<Permission> permissions, String accessToken) {
 		checkArgument(!Strings.isNullOrEmpty(userId), "userId may not be null or empty");
 		this.userId = userId;
 		this.permissions = Collections3.toImmutableList(permissions);
+		this.accessToken = accessToken;
 	}
 	
 	public String getUserId() {
@@ -55,6 +61,19 @@ public final class User implements Serializable {
 	@JsonIgnore
 	public List<Permission> getPermissions() {
 		return permissions;
+	}
+	
+	public String getAccessToken() {
+		return accessToken;
+	}
+	
+	/**
+	 * @return
+	 * @deprecated present only for backward compatibility reasons to return a token value in the login endpoint
+	 * @see #getAccessToken()
+	 */
+	public String getToken() {
+		return accessToken;
 	}
 	
 	@JsonIgnore
@@ -84,6 +103,7 @@ public final class User implements Serializable {
 	/**
 	 * @return <code>true</code> if this user has a permission that implies all other permissions, <code>false</code> otherwise.
 	 */
+	@JsonIgnore
 	public boolean isAdministrator() {
 		return getPermissions().stream()
 				.filter(Permission::isAdmin)
@@ -99,6 +119,10 @@ public final class User implements Serializable {
 	 */
 	public boolean hasPermission(Permission permissionRequirement) {
 		return getPermissions().stream().anyMatch(permission -> permission.implies(permissionRequirement));
+	}
+	
+	public User withAccessToken(String accessToken) {
+		return new User(userId, permissions, accessToken);
 	}
 
 	/**

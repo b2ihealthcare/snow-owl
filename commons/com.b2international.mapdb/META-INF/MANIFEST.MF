@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MapDB Wrapper Bundle
 Bundle-SymbolicName: com.b2international.mapdb;singleton:=true
-Bundle-Version: 3.0.9.b2i
+Bundle-Version: 3.0.10.b2i
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: lib/annotations-13.0.jar,
@@ -18,4 +18,4 @@ Export-Package: org.mapdb,
  org.mapdb.volume
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jetbrains.kotlin.osgi-bundle;bundle-version="1.2.71",
- com.google.guava;bundle-version="[27.1.0,28.0.0)"
+ com.google.guava;bundle-version="[30.1.0,30.1.1)"

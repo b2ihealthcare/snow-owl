@@ -58,9 +58,9 @@ SO_JAVA_OPTS="-Xms2g \
                 -Dosgi.classloader.type=nonparallel \
                 -Dosgi.console=2501 \
                 -XX:+AlwaysLockClassLoader \
-                -Djetty.port=9090 \
+                -Djetty.http.port=9090 \
                 -Djetty.home=$KERNEL_HOME/configuration \
-                -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml \
+                -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deploy.xml \
                 -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
                 -XX:+HeapDumpOnOutOfMemoryError \
                 --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
@@ -80,6 +80,6 @@ exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.5.800.v20200727-1323.jar -console 2501
+  -jar plugins/org.eclipse.equinox.launcher_1.6.300.v20210813-1054.jar -console 2501
   
 popd

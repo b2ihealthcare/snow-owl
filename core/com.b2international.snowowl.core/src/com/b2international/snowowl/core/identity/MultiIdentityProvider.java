@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.setup.Environment;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -46,10 +47,10 @@ public final class MultiIdentityProvider implements IdentityProvider, IdentityWr
 	}
 
 	@Override
-	public User auth(String username, String token) {
+	public User auth(String username, String password) {
 		for (IdentityProvider identityProvider : providers) {
 			try {
-				User user = identityProvider.auth(username, token);
+				User user = identityProvider.auth(username, password);
 				if (user != null) {
 					return user;
 				}
@@ -57,7 +58,22 @@ public final class MultiIdentityProvider implements IdentityProvider, IdentityWr
 				// ignore bad request exceptions coming from providers
 			}
 		}
-		return null;
+		return IdentityProvider.super.auth(username, password);
+	}
+	
+	@Override
+	public User authJWT(String token) {
+		for (IdentityProvider identityProvider : providers) {
+			try {
+				User user = identityProvider.authJWT(token);
+				if (user != null) {
+					return user;
+				}
+			} catch (BadRequestException e) {
+				// ignore bad request exceptions coming from providers
+			}
+		}
+		return IdentityProvider.super.authJWT(token);
 	}
 
 	@Override
@@ -78,13 +94,13 @@ public final class MultiIdentityProvider implements IdentityProvider, IdentityWr
 	public String getInfo() {
 		return String.format("multi[%s]", providers.stream().map(IdentityProvider::getInfo).collect(Collectors.joining(",")));
 	}
-
+	
 	@Override
-	public void validateSettings() throws Exception {
-		// Throws exception at the first failing provider
+	public void init(Environment env) throws Exception {
 		for (final IdentityProvider provider : providers) {
-			provider.validateSettings();
+			provider.init(env);
 		}
+		// validate multi-identity provider configuration that each JWT support has its own issuer configured
 	}
 	
 	public List<IdentityProvider> getProviders() {

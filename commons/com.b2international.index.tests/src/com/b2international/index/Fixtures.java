@@ -26,9 +26,9 @@ import com.b2international.collections.longs.LongSortedSet;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
@@ -409,16 +409,10 @@ public class Fixtures {
 		@ID
 		private final String id;
 		
-		@JsonIgnore
-		Map<String, Object> properties;
+		private final Map<String, Object> properties;
 
-		/*JSON deserialization*/
 		@JsonCreator
-		DataWithMap(@JsonProperty("id") String id) {
-			this.id = id;
-		}
-		
-		public DataWithMap(String id, Map<String, Object> properties) {
+		public DataWithMap(@JsonProperty("id") String id, @JsonProperty("properties") Map<String, Object> properties) {
 			this.id = id;
 			this.properties = properties;
 		}
@@ -427,17 +421,8 @@ public class Fixtures {
 			return id;
 		}
 		
-		@JsonAnyGetter
 		public Map<String, Object> getProperties() {
 			return properties;
-		}
-		
-		@JsonAnySetter
-		void setProperties(String key, Object value) {
-			if (properties == null) {
-				properties = Maps.newHashMap();
-			}
-			properties.put(key, value);
 		}
 		
 		@Override

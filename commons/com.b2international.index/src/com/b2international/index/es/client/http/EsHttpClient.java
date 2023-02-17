@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,7 @@ import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedRes
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryRequest;
-import org.elasticsearch.index.reindex.UpdateByQueryRequest;
+import org.elasticsearch.index.reindex.*;
 import org.elasticsearch.script.Script;
 
 import com.b2international.index.Activator;
@@ -190,5 +188,21 @@ public final class EsHttpClient extends EsClientBase {
 				.setAbortOnVersionConflict(false);
 			
 		return client.deleteByQuery(deleteByQueryRequest, EXTENDED_DEFAULT);
+	}
+	
+	@Override
+	public BulkByScrollResponse reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize) throws IOException {
+		
+		ReindexRequest reindexRequest = new ReindexRequest();
+		
+		reindexRequest.setSourceIndices(sourceIndex);
+		reindexRequest.setDestIndex(destinationIndex);
+		reindexRequest.setRemoteInfo(remoteInfo);
+		reindexRequest.setRefresh(refresh);
+		reindexRequest.setSourceBatchSize(batchSize);
+		reindexRequest.setAbortOnVersionConflict(false);
+		
+		return client.reindex(reindexRequest, EXTENDED_DEFAULT);
+		
 	}
 }
