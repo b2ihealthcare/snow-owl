@@ -71,6 +71,10 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			@RequestParam(value = "includeDesignations", required = false)
 			final Boolean includeDesignations,
 			
+			@Parameter(description = "Include historical association components when generating the Value Set expansion response") 
+			@RequestParam(value = "withHistorySupplements", required = false)
+			final Boolean withHistorySupplements,
+			
 			@Parameter(description = "The number of codes to return in a page") 
 			@RequestParam(value = "count", required = false, defaultValue = "10")
 			final Integer count,
@@ -86,6 +90,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 						.activeOnly(activeOnly)
 						.count(count)
 						.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
+						.withHistorySupplements(withHistorySupplements)
 						.build())
 				.buildAsync()
 				.execute(getBus());
@@ -122,6 +127,10 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			@RequestParam(value = "includeDesignations", required = false)
 			final Boolean includeDesignations,
 			
+			@Parameter(description = "Include historical association components when generating the Value Set expansion response") 
+			@RequestParam(value = "withHistorySupplements", required = false)
+			final Boolean withHistorySupplements,
+			
 			@Parameter(description = "The number of codes to return in a page") 
 			@RequestParam(value = "count", required = false, defaultValue = "10")
 			final Integer count,
@@ -138,6 +147,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 						.count(count)
 						.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
 						.includeDesignations(includeDesignations)
+						.withHistorySupplements(withHistorySupplements)
 						.build())
 				.buildAsync()
 				.execute(getBus());
