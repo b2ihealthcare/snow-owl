@@ -211,7 +211,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	public void whenCreatingBranchWithMetadata_ThenItShouldBeStored() throws Exception {
 		final Metadata metadata = new MetadataImpl();
 		metadata.put("key", "value");
-		final String b = branching().createBranch(MAIN, "b", metadata);
+		final String b = branching().createBranch(MAIN, "b", metadata, false);
 		assertEquals("value", getBranch(b).metadata().get("key"));
 	}
 	
@@ -254,7 +254,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	@Test
 	public void updateMetadata() throws Exception {
 		final BaseRevisionBranching branching = branching();
-		final String branchA = branching.createBranch(MAIN, "a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)));
+		final String branchA = branching.createBranch(MAIN, "a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)), false);
 		final long commitTimestamp = currentTime();
 		final IndexWrite<Void> timestampUpdate = branching.update(branchA, RevisionBranch.Scripts.COMMIT, ImmutableMap.of("headTimestamp", commitTimestamp));
 		final IndexWrite<Void> metadataUpdate = branching.update(branchA, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", new MetadataImpl(ImmutableMap.<String, Object>of("test", 1))));
@@ -285,7 +285,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	}
 	
 	private ObjectAssert<RevisionBranch> assertBranchCreate(String branchName) {
-		final String branchPath = branching().createBranch(MAIN, branchName, null);
+		final String branchPath = branching().createBranch(MAIN, branchName, null, false);
 		return assertThat(branching().get(branchPath));
 	}
 	
