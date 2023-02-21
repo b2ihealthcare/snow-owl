@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,23 @@ import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVers
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDate;
 import java.util.Map;
 
+import org.elasticsearch.core.List;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.commit.CommitInfos;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
@@ -106,8 +112,75 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		final String versionName = "forceCreateVersionWithDifferentEffectiveDate";
 		LocalDate versionEffectiveDate = getNextAvailableEffectiveDate(INT_CODESYSTEM);
 		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate).statusCode(201);
+		
+		Branch branchToVerify = RepositoryRequests.branching()
+				.prepareSearch()
+				.filterByParent("MAIN")
+				.filterByName(List.of(versionName))
+				.setLimit(1)
+				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.execute(getBus())
+				.getSync()
+				.first()
+				.get();
+		
 		LocalDate nextEffectiveDate = getNextAvailableEffectiveDate(INT_CODESYSTEM);
 		createVersion(INT_CODESYSTEM, versionName, nextEffectiveDate, true).statusCode(201);
+		
+		Branch branchAfterForceRecreate = RepositoryRequests.branching()
+				.prepareSearch()
+				.filterByParent("MAIN")
+				.filterByName(List.of(versionName))
+				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.execute(getBus())
+				.getSync()
+				.first()
+				.get();
+		
+		// successful force recreation will recreate the branch with new data, should not keep the branch timestamps
+		assertThat(branchAfterForceRecreate.baseTimestamp()).isGreaterThan(branchToVerify.baseTimestamp());
+		assertThat(branchAfterForceRecreate.headTimestamp()).isNotEqualTo(branchToVerify.headTimestamp());
+	}
+	
+	@Test
+	public void forceCreateOlderVersionShouldFail() throws Exception {
+		final String olderVersionName = "OldVersion";
+		final String newerVersionName = "NewVersion";
+		LocalDate oldVersionEffectiveDate = getNextAvailableEffectiveDate(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, olderVersionName, oldVersionEffectiveDate).statusCode(201);
+		LocalDate nextEffectiveDate = getNextAvailableEffectiveDate(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, newerVersionName, nextEffectiveDate).statusCode(201);
+		
+		// get both version branch states for assertion
+		Branches branchesToVerify = RepositoryRequests.branching()
+			.prepareSearch()
+			.filterByParent("MAIN")
+			.filterByName(List.of(olderVersionName, newerVersionName))
+			.setLimit(2)
+			.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.execute(getBus())
+			.getSync();
+		
+		assertThat(branchesToVerify.getTotal()).isEqualTo(2);
+		
+		// force creating an older version should fail
+		createVersion(INT_CODESYSTEM, olderVersionName, oldVersionEffectiveDate, true)
+			.statusCode(400)
+			.body("message", containsString("Force creating the latest version requires the same versionId ('NewVersion') to be used."));
+		
+		Branches branchesAfterForceRecreateAttempt = RepositoryRequests.branching()
+				.prepareSearch()
+				.filterByParent("MAIN")
+				.filterByName(List.of(olderVersionName, newerVersionName))
+				.setLimit(2)
+				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.execute(getBus())
+				.getSync();
+		
+		// after force recreate attempt, there should be 2 version branches still and with the same attributes (not deleted)
+		assertThat(branchesAfterForceRecreateAttempt)
+			.usingRecursiveFieldByFieldElementComparator()
+			.containsAll(branchesToVerify.getItems());
 	}
 	
 	@Test

@@ -141,6 +141,9 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			});
 		
 		for (TerminologyResource terminologyResource : resourcesToVersion) {
+			// check that the specified effective time is valid in this code system
+			// XXX ensure we verify version on all codesystems first before we delete any branches
+			validateVersion(context, resourceToVersion);
 			// check that the new versionId does not conflict with any other currently available branch
 			final String newVersionPath = String.join(Branch.SEPARATOR, terminologyResource.getBranchPath(), version);
 			final String repositoryId = terminologyResource.getToolingId();
@@ -161,10 +164,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				} catch (NotFoundException e) {
 					// branch does not exist, ignore
 				}
-			} else {
-				
-				// if there is no conflict, delete the branch (the request also ignores non-existent branches)
-				deleteBranch(context, newVersionPath, repositoryId);
 			}
 		}
 		
@@ -174,8 +173,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		try {
 			
 //			resourcesToVersion.forEach(resourceToVersion -> {
-				// check that the specified effective time is valid in this code system
-				validateVersion(context, resourceToVersion);
 				// version components in the given repository
 				new RepositoryRequest<>(resourceToVersion.getToolingId(),
 					new BranchRequest<>(resourceToVersion.getBranchPath(),
@@ -188,7 +185,16 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				).execute(context);
 				
 				// tag the repository
-				doTag(context, resourceToVersion, monitor);
+				RepositoryRequests
+					.branching()
+					.prepareCreate()
+					.setParent(resourceToVersion.getBranchPath())
+					.setName(version)
+					// delete the branch if force requested and we get to this point
+					.force(force)
+					.build(resourceToVersion.getToolingId())
+					.execute(context);
+				monitor.worked(1);
 //			});
 			
 			// create a version for the resource
@@ -231,13 +237,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		return new RepositoryRequest<>(resourceToVersion.getToolingId(), withVersionReq).execute(context);
 	}
 
-	private boolean deleteBranch(ServiceProvider context, String path, String repositoryId) {
-		return RepositoryRequests.branching()
-				.prepareDelete(path)
-				.build(repositoryId)
-				.execute(context);
-	}
-	
 	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
 		return ResourceRequests.prepareSearch()
 			.one()
@@ -262,7 +261,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 
 			if (force) {
 				if (!Objects.equals(version, mrv.getVersion())) {
-					throw new BadRequestException("Force creating version requires the same versionId ('%s') to be used", version);
+					throw new BadRequestException("Force creating the latest version requires the same versionId ('%s') to be used.", mrv.getVersion());
 				}
 				
 				// force recreating an existing version should use the same or later effective date value, allow same here
@@ -272,7 +271,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			}
 			
 			if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
-				throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'", effectiveTime, mostRecentVersionEffectiveTime);
+				throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
 			}
 		});
 		
@@ -306,17 +305,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		for (Entry<DatastoreLockContext, DatastoreLockTarget> entry : lockTargetsByContext.entries()) {
 			context.service(IOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
 		}
-	}
-	
-	private void doTag(ServiceProvider context, TerminologyResource codeSystem, IProgressMonitor monitor) {
-		RepositoryRequests
-			.branching()
-			.prepareCreate()
-			.setParent(codeSystem.getBranchPath())
-			.setName(version)
-			.build(codeSystem.getToolingId())
-			.execute(context);
-		monitor.worked(1);
 	}
 	
 	@Override
