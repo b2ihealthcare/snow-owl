@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.repository.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class RepositoryInfoSerializationTest {
 

@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class ReindexResultSerializationTest {
 

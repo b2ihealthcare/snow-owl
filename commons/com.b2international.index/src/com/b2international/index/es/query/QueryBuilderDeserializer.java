@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class QueryBuilderDeserializer extends StdDeserializer<org.elasticsearch.index.query.QueryBuilder> {
 

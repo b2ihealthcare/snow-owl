@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class QueryBuilderSerializer extends JsonSerializer<QueryBuilder> {
 

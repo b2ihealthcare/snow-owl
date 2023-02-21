@@ -20,7 +20,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class ReindexQueries extends ListCollectionResource<ReindexQuery> {
 

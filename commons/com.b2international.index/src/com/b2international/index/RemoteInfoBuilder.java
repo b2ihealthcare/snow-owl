@@ -28,7 +28,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.RemoteInfo;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class RemoteInfoBuilder {
 

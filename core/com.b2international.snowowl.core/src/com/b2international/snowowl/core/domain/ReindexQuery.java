@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class ReindexQuery implements Serializable {
 

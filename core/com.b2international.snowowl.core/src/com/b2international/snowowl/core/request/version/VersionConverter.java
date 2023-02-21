@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 public class VersionConverter extends BaseResourceConverter<VersionDocument, Version, Versions> {
 

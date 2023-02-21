@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects;
 
 /**
- * @since 8.9
+ * @since 8.9.0
  */
 @JsonDeserialize(builder = ReindexResult.Builder.class)
 public class ReindexResult implements Serializable {
