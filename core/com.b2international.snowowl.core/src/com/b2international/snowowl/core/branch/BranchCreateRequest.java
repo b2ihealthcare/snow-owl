@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,19 @@ import com.b2international.snowowl.core.identity.Permission;
  */
 public final class BranchCreateRequest extends BranchBaseRequest<String> implements AccessControl {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final String parent;
 	private final String name;
 	private final Metadata metadata;
+	private final boolean force;
 
-	public BranchCreateRequest(final String parent, final String name, final Metadata metadata) {
+	public BranchCreateRequest(final String parent, final String name, final Metadata metadata, final boolean force) {
 		super(path(parent, name));
 		this.parent = parent;
 		this.name = name;
 		this.metadata = nullToEmpty(metadata);
+		this.force = force;
 	}
 
 	private static Metadata nullToEmpty(Metadata metadata) {
@@ -60,10 +64,14 @@ public final class BranchCreateRequest extends BranchBaseRequest<String> impleme
 		return metadata;
 	}
 	
+	public boolean isForce() {
+		return force;
+	}
+	
 	@Override
 	public String execute(RepositoryContext context) {
 		try {
-			return context.service(BaseRevisionBranching.class).createBranch(getParent(), getName(), getMetadata());
+			return context.service(BaseRevisionBranching.class).createBranch(getParent(), getName(), getMetadata(), force);
 		} catch (NotFoundException e) {
 			// if parent not found, convert it to BadRequestException
 			throw e.toBadRequestException();
