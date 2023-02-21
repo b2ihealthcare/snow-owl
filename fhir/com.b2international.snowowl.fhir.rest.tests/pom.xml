@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>fhir-parent</artifactId>
-		<version>8.8.2-SNAPSHOT</version>
+		<version>8.9.0</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.fhir.rest.tests</artifactId>
