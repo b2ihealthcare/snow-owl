@@ -104,9 +104,11 @@ Required Eclipse plug-ins (install the listed features via `Help` -> `Install Ne
 * MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/)
   * MWE SDK	1.5.3 (MWE)
   * MWE 2 language SDK 2.11.3 (MWE)
-* Groovy Development Tools (https://dist.springsource.org/release/GRECLIPSE/3.9.0/e4.17)
-  * Eclipse Groovy Development Tools 3.9.0 (Main Package)
-* M2Eclipse (https://download.eclipse.org/technology/m2e/releases/latest/)
+* Groovy Development Tools (https://groovy.jfrog.io/artifactory/plugins-release-local/org/codehaus/groovy/groovy-eclipse-integration/3.9.0/e4.17/org.codehaus.groovy-3.9.0.v202009301344-e2009-RELEASE-updatesite.zip)
+  * Eclipse Groovy Development Tools - 3.9.0
+  * Groovy-Eclipse M2E integration - 3.9.0
+  * Groovy Compiler 2.5 - 3.9.0
+* M2Eclipse (https://archive.eclipse.org/technology/m2e/releases/1.17.2/)
   * m2e 1.17.2
   * m2e PDE 1.17.2
  
@@ -155,6 +157,6 @@ This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) fo
 
 In March 2015, [SNOMED International](http://snomed.org) generously licensed the Snow Owl Terminology Server components supporting SNOMED CT. They subsequently made the licensed code available to their [members](https://www.snomed.org/our-stakeholders/members) and the global community under an open-source license.
 
-In March 2017, [NHS Digital](https://digital.nhs.uk) licensed the Snow Owl Terminology Server to support the mandatory adoption of SNOMED CT throughout all care settings in the United Kingdom by April 2020. In addition to driving the UKâ€™s clinical terminology efforts by providing a platform to author national clinical codes, Snow Owl will support the maintenance and improvement of the dm+d drug extension which alone is used in over 156 million electronic prescriptions per month. Improvements to the terminology server made under this agreement will be made available to the global community. 
+In March 2017, [NHS Digital](https://digital.nhs.uk) licensed the Snow Owl Terminology Server to support the mandatory adoption of SNOMED CT throughout all care settings in the United Kingdom by April 2020. In addition to driving the UK’s clinical terminology efforts by providing a platform to author national clinical codes, Snow Owl will support the maintenance and improvement of the dm+d drug extension which alone is used in over 156 million electronic prescriptions per month. Improvements to the terminology server made under this agreement will be made available to the global community. 
 
 Many other organizations have directly and indirectly contributed to Snow Owl, including: Singapore Ministry of Health; American Dental Association; University of Nebraska Medical Center (USA); Federal Public Service of Public Health (Belgium); Danish Health Data Authority; Health and Welfare Information Systems Centre (Estonia); Department of Health (Ireland); New Zealand Ministry of Health; Norwegian Directorate of eHealth; Integrated Health Information Systems (Singapore); National Board of Health and Welfare (Sweden); eHealth Suisse (Switzerland); and the National Library of Medicine (USA).
