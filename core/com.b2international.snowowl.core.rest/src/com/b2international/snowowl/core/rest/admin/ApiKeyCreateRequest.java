@@ -23,7 +23,7 @@ public class ApiKeyCreateRequest {
 	private String username;
 	private String password;
 	private String token;
-	private String expiration;
+	private String expiration = "1d";
 
 	public String getUsername() {
 		return username;
