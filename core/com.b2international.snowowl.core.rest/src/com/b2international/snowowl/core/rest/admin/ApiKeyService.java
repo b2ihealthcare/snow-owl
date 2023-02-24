@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,23 +28,25 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.2
  */
-@Tag(description = "Authorization", name = "authorization")
+@Tag(description = "API Key", name = "apikey")
 @RestController
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
-public class AuthorizationService extends AbstractRestService {
+public class ApiKeyService extends AbstractRestService {
 
+	@Operation(deprecated = true, description = "Use the `POST /token` endpoint instead")
 	@PostMapping("/login")
 	public User login(
 			@Parameter(name = "credentials", description = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
 		try {
-			return UserRequests.prepareLogin()
+			return UserRequests.prepareGenerateApiKey()
 					.setUsername(credentials.getUsername())
 					.setPassword(credentials.getPassword())
 					.setToken(credentials.getToken())
@@ -52,9 +54,30 @@ public class AuthorizationService extends AbstractRestService {
 					.execute(getBus())
 					.getSync();
 		} catch (UnauthorizedException e) {
-			// convert HTTP 401 to HTTP 404 in this endpoint
+			// convert HTTP 401 to HTTP 400 in this endpoint
 			throw new BadRequestException(e.getMessage());
 		}
 	}
+	
+	@Operation(description = "Generates a new API key using the given configuration.")
+	@PostMapping("/token")
+	public User token(
+			@Parameter(name = "credentials", description = "The user credentials.", required = true) 
+			@RequestBody ApiKeyCreateRequest request) {
+		try {
+			return UserRequests.prepareGenerateApiKey()
+					.setUsername(request.getUsername())
+					.setPassword(request.getPassword())
+					.setToken(request.getToken())
+					.setExpiration(request.getExpiration())
+					.buildAsync()
+					.execute(getBus())
+					.getSync();
+		} catch (UnauthorizedException e) {
+			// convert HTTP 401 to HTTP 400 in this endpoint
+			throw new BadRequestException(e.getMessage());
+		}
+	}
+	
 	
 }

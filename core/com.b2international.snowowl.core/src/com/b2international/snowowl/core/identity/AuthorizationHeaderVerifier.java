@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.identity;
 
 import java.util.Base64;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.google.common.base.Charsets;
 
@@ -74,18 +75,24 @@ public final class AuthorizationHeaderVerifier {
 	 * @param context
 	 * @param token
 	 * @return
-	 * @throws UnauthorizedException
+	 * @throws UnauthorizedException - with an error message indicating whether the token is invalid or expired 
 	 */
 	public User authJWT(final String token) {
 		try {
 			return jwtSupport.authJWT(token);
+		} catch (TokenExpiredException e) {
+			IdentityProvider.LOG.warn("Failed login attempt with an expired authorization token");
+			throw new UnauthorizedException("Expired authorization token");
 		} catch (Exception e) {
-			// try to authorize JWT using the global provider first, then fall back to the dedicated identity provider specific JWT authentication
+			// for any other error, be it invalid token or anything try to authorize using the next available provider after the global provider
 		}
 		try {
 			return identityProvider.authJWT(token);
+		} catch (TokenExpiredException e) {
+			IdentityProvider.LOG.warn("Failed login attempt with an expired authorization token");
+			throw new UnauthorizedException("Expired authorization token");
 		} catch (Exception e) {
-			// if this fails as well, then log an invalid login attempt in the log and respond back with 401
+			// if this fails as well, then log a generic invalid login attempt in the log and respond back with 401
 		}
 		IdentityProvider.LOG.warn("Failed login attempt with an invalid authorization token");
 		throw new UnauthorizedException("Incorrect authorization token");

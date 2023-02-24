@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.identity;
 
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
+import java.time.InstantSource;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -65,8 +66,13 @@ public final class IdentityPlugin extends Plugin {
 
 	@VisibleForTesting
 	/*package*/ JWTSupport initJWT(Environment env, final IdentityConfiguration conf) throws Exception {
+		return initJWT(env, conf, InstantSource.system());
+	}
+	
+	@VisibleForTesting
+	/*package*/ JWTSupport initJWT(Environment env, final IdentityConfiguration conf, InstantSource instantSource) throws Exception {
 		// attach global JWT support to the current identity provider configured via snowowl.yml
-		JWTSupport jwtSupport = new JWTSupport(conf);
+		JWTSupport jwtSupport = new JWTSupport(conf, instantSource);
 		jwtSupport.init();
 		return jwtSupport;
 	}

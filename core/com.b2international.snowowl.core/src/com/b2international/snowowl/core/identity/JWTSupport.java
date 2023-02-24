@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.InstantSource;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -88,23 +89,25 @@ public class JWTSupport implements JWTGenerator {
 	// Disabled JWT Generator implementation that throws an exception if any token signing related logic would be required
 	private static final JWTGenerator JWT_GENERATOR_DISABLED = new JWTGenerator() {
 		@Override
-		public String generate(User user) {
+		public String generate(User user, String expiration) {
 			throw new BadRequestException("JWT token signing is not configured.");
 		}
 
 		@Override
-		public String generate(String email, Map<String, Object> claims) {
+		public String generate(String email, Map<String, Object> claims, String expiration) {
 			throw new BadRequestException("JWT token signing is not configured.");
 		}
 	};
 
 	private final IdentityConfiguration config;
+	private final InstantSource instantSource;
 
 	private JWTGenerator generator;
 	private JWTVerifier verifier;
 
-	JWTSupport(IdentityConfiguration config) {
+	JWTSupport(IdentityConfiguration config, InstantSource instantSource) {
 		this.config = config;
+		this.instantSource = instantSource;
 	}
 
 	public void init() throws Exception {
@@ -128,7 +131,7 @@ public class JWTSupport implements JWTGenerator {
 			generator = JWT_GENERATOR_DISABLED;
 			verifier = createJWTVerifier(algorithm, config);
 		} else {
-			generator = new DefaultJWTGenerator(algorithm, config.getIssuer(), config.getEmailClaimProperty(), config.getPermissionsClaimProperty());
+			generator = new DefaultJWTGenerator(algorithm, config.getIssuer(), config.getEmailClaimProperty(), config.getPermissionsClaimProperty(), instantSource);
 			verifier = createJWTVerifier(algorithm, config);
 		}
 	}
@@ -142,14 +145,22 @@ public class JWTSupport implements JWTGenerator {
 		return toUser(verify(token), config);
 	}
 
-	@Override
 	public String generate(String email, Map<String, Object> claims) {
-		return generator.generate(email, claims);
+		return generator.generate(email, claims, null /*no expiration*/);
+	}
+	
+	@Override
+	public String generate(String email, Map<String, Object> claims, String expiration) {
+		return generator.generate(email, claims, expiration);
 	}
 
-	@Override
 	public String generate(User user) {
-		return generator.generate(user);
+		return generator.generate(user, null /*no expiration*/);
+	}
+	
+	@Override
+	public String generate(User user, String expiration) {
+		return generator.generate(user, expiration);
 	}
 
 	private RSAKeyProvider createRSAKeyProvider(JWTConfiguration conf) throws Exception {
