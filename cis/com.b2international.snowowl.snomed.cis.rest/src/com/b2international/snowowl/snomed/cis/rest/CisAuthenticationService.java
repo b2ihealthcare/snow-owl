@@ -61,7 +61,7 @@ public class CisAuthenticationService extends AbstractRestService {
 	public Token login(
 			@Parameter(description = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
-		return new Token(UserRequests.prepareLogin()
+		return new Token(UserRequests.prepareGenerateApiKey()
 				.setUsername(credentials.getUsername())
 				.setPassword(credentials.getPassword())
 				.buildAsync()

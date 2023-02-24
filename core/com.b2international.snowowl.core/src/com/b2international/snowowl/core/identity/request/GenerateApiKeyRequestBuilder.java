@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,30 +24,38 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
 /**
  * @since 7.2
  */
-public final class UserLoginRequestBuilder extends BaseRequestBuilder<UserLoginRequestBuilder, ServiceProvider, User> implements SystemRequestBuilder<User> {
+public final class GenerateApiKeyRequestBuilder extends BaseRequestBuilder<GenerateApiKeyRequestBuilder, ServiceProvider, User> implements SystemRequestBuilder<User> {
 
 	private String username;
 	private String password;
 	private String token;
+	private String expiration;
 	
-	public UserLoginRequestBuilder setUsername(String username) {
+	public GenerateApiKeyRequestBuilder setUsername(String username) {
 		this.username = username;
 		return getSelf();
 	}
 	
-	public UserLoginRequestBuilder setPassword(String password) {
+	public GenerateApiKeyRequestBuilder setPassword(String password) {
 		this.password = password;
 		return getSelf();
 	}
 	
-	public UserLoginRequestBuilder setToken(String token) {
+	public GenerateApiKeyRequestBuilder setToken(String token) {
 		this.token = token;
+		return getSelf();
+	}
+	
+	public GenerateApiKeyRequestBuilder setExpiration(String expiration) {
+		this.expiration = expiration;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, User> doBuild() {
-		return new UserLoginRequest(username, password, token);
+		GenerateApiKeyRequest req = new GenerateApiKeyRequest(username, password, token);
+		req.setExpiration(expiration);
+		return req;
 	}
 
 }

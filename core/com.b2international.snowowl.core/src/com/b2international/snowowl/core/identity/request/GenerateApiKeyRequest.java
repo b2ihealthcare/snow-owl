@@ -32,7 +32,7 @@ import com.google.common.base.Strings;
  * @since 7.2
  */
 @Unprotected
-public final class UserLoginRequest implements Request<ServiceProvider, User> {
+final class GenerateApiKeyRequest implements Request<ServiceProvider, User> {
 
 	private static final long serialVersionUID = 2L;
 
@@ -43,10 +43,17 @@ public final class UserLoginRequest implements Request<ServiceProvider, User> {
 	
 	private String token;
 
-	UserLoginRequest(String username, String password, String token) {
+	@JsonProperty
+	private String expiration;
+	
+	GenerateApiKeyRequest(String username, String password, String token) {
 		this.username = username;
 		this.password = password;
 		this.token = token;
+	}
+	
+	void setExpiration(String expiration) {
+		this.expiration = expiration;
 	}
 	
 	@Override
@@ -72,7 +79,7 @@ public final class UserLoginRequest implements Request<ServiceProvider, User> {
 		}
 		
 		// generate and attach a token
-		return user.withAccessToken(context.service(JWTSupport.class).generate(user));
+		return user.withAccessToken(context.service(JWTSupport.class).generate(user, expiration));
 	}
-	
+
 }

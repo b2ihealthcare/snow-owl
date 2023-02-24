@@ -224,7 +224,7 @@ public final class TransportClient implements IDisposableService {
 			initConnection();
 			
 			// try to log in with the specified username and password using the non-authorized bus instance
-			final User user = UserRequests.prepareLogin()
+			final User user = UserRequests.prepareGenerateApiKey()
 				.setUsername(username)
 				.setPassword(password)
 				.buildAsync()
