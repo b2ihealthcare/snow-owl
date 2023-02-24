@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.rest.admin;
 
 /**
- * @since 8.9
+ * @since 8.9.1
  */
 public class ApiKeyCreateRequest {
 
