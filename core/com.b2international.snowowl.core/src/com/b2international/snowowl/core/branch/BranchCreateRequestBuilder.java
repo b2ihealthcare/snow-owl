@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package com.b2international.snowowl.core.branch;
 
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 
 /**
@@ -30,6 +32,7 @@ public final class BranchCreateRequestBuilder extends BaseRequestBuilder<BranchC
 	private String parent;
 	private String name;
 	private Metadata metadata = new MetadataImpl();
+	private boolean force = false;
 	
 	BranchCreateRequestBuilder() {}
 	
@@ -40,17 +43,22 @@ public final class BranchCreateRequestBuilder extends BaseRequestBuilder<BranchC
 	
 	public BranchCreateRequestBuilder setName(String name) {
 		this.name = name;
-		return this;
+		return getSelf();
 	}
 	
 	public BranchCreateRequestBuilder setParent(String parent) {
 		this.parent = parent;
-		return this;
+		return getSelf();
+	}
+	
+	public BranchCreateRequestBuilder force(boolean force) {
+		this.force = force;
+		return getSelf();
 	}
 	
 	@Override
 	protected Request<RepositoryContext, String> doBuild() {
-		return new BranchCreateRequest(parent, name, metadata);
+		return new BranchCreateRequest(parent, name, metadata, force);
 	}
-	
+
 }

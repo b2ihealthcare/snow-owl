@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected String createBranch(String parent, String child) {
-		return branching().createBranch(parent, child, new MetadataImpl());
+		return branching().createBranch(parent, child, new MetadataImpl(), false);
 	}
 	
 	protected long currentTime() {

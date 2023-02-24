@@ -236,4 +236,24 @@ public final class Branch implements MetadataHolder, Serializable {
 	public static final List<String> split(String path) {
 		return BRANCH_PATH_SPLITTER.splitToList(path);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder
+			.append("Branch [branchId=").append(branchId)
+			.append(", isDeleted=").append(isDeleted)
+			.append(", metadata=").append(metadata)
+			.append(", name=").append(name)
+			.append(", parentPath=").append(parentPath)
+			.append(", baseTimestamp=").append(baseTimestamp)
+			.append(", headTimestamp=").append(headTimestamp)
+			.append(", state=").append(state)
+			.append(", branchPath=").append(branchPath)
+			.append(", mergeSources=").append(mergeSources)
+			.append(", children=").append(children).append("]");
+		return builder.toString();
+	}
+	
+		
 }

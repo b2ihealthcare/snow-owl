@@ -213,33 +213,34 @@ public abstract class BaseRevisionBranching {
 	 *            - the name of the new child branch, may not be <code>null</code>
 	 * @param metadata
 	 *            - optional metadata map
+	 * @param force - to override an existing non-deleted branch instead of reporting an error 
 	 * @return
 	 * @throws AlreadyExistsException
 	 *             - if the child branch already exists
 	 */
-	public final String createBranch(final String parent, final String name, final Metadata metadata) {
+	public final String createBranch(final String parent, final String name, final Metadata metadata, boolean force) {
 		RevisionBranch parentBranch = getBranch(parent);
 		if (parentBranch.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parentBranch.getPath());
 		}
 		final String path = toAbsolutePath(parent, name);
 		RevisionBranch existingBranch = get(path);
-		if (existingBranch != null && !existingBranch.isDeleted()) {
+		if (!force  && existingBranch != null && !existingBranch.isDeleted()) {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
 			throw new AlreadyExistsException("Branch", path);
 		} else {
-			return create(parentBranch, name, metadata);
+			return create(parentBranch, name, metadata, force);
 		}
 	}
 	
-	private String create(final RevisionBranch parent, final String name, final Metadata metadata) {
+	private String create(final RevisionBranch parent, final String name, final Metadata metadata, boolean force) {
 		// prevents problematic branch creation from multiple threads, but allows them 
 		// to respond back successfully if branch did not exist before creation and it does now
 		final String parentPath = parent.getPath();
 		return locked(parentPath, () -> {
 			// check again and return if exists, otherwise open the child branch
 			final RevisionBranch existingBranch = get(toAbsolutePath(parentPath, name));
-			if (existingBranch != null && !existingBranch.isDeleted()) {
+			if (!force && existingBranch != null && !existingBranch.isDeleted()) {
 				return existingBranch.getPath();
 			} else {
 				final RevisionBranch createdBranch = doReopen(parent, name, metadata);
