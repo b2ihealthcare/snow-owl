@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.InstantSource;
 import java.util.Map;
 
 import org.junit.After;
@@ -52,7 +55,6 @@ public class JWTConfigurationTest {
 	public void after() {
 	}
 	
-	
 	@Test
 	public void defaultConfig() throws Exception {
 		IdentityConfiguration conf = readConfig("default.yml");
@@ -80,6 +82,20 @@ public class JWTConfigurationTest {
 		String jwt = jwtSupport.generate("test@example.com", Map.of());
 		DecodedJWT token = jwtSupport.verify(jwt);
 		assertThat(token.getAlgorithm()).isEqualTo("HS256");
+		assertThat(token.getExpiresAt()).isNull();
+	}
+	
+	@Test
+	public void hs256_withExpiresAt() throws Exception {
+		IdentityConfiguration conf = readConfig("hs256.yml");
+		InstantSource instantSource = InstantSource.tick(InstantSource.system(), Duration.ofSeconds(1));
+		JWTSupport jwtSupport = new IdentityPlugin().initJWT(env, conf, instantSource);
+		// generate a key then verify it without errors
+		Instant beforeGenerationTime = instantSource.instant();
+		String jwt = jwtSupport.generate("test@example.com", Map.of(), "5s");
+		DecodedJWT token = jwtSupport.verify(jwt);
+		assertThat(token.getAlgorithm()).isEqualTo("HS256");
+		assertThat(token.getExpiresAt()).isEqualTo(beforeGenerationTime.plusSeconds(5));
 	}
 	
 	@Test(expected = SnowOwl.InitializationException.class)
@@ -151,7 +167,7 @@ public class JWTConfigurationTest {
 	}
 	
 	private IdentityConfiguration readConfig(String configFile) throws Exception {
-		return new ConfigurationFactory<>(IdentityConfiguration.class, ApiValidation.getValidator()).build(PlatformUtil.toAbsolutePath(getClass(), configFile).toFile());
+		return new ConfigurationFactory<>(IdentityConfiguration.class, ApiValidation.getValidator()).build(PlatformUtil.toAbsolutePath(JWTConfigurationTest.class, configFile).toFile());
 	}
 	
 }

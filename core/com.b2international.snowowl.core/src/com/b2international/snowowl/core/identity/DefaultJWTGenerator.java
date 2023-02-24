@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,18 @@ package com.b2international.snowowl.core.identity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.time.InstantSource;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.core.TimeValue;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 /**
@@ -36,21 +40,29 @@ final class DefaultJWTGenerator implements JWTGenerator {
 	private final String issuer;
 	private final String emailClaimProperty;
 	private final String permissionsClaimProperty;
+	private final InstantSource instantSource;
 
-	public DefaultJWTGenerator(final Algorithm algorithm, final String issuer, final String emailClaimProperty, final String permissionsClaimProperty) {
+	public DefaultJWTGenerator(final Algorithm algorithm, final String issuer, final String emailClaimProperty, final String permissionsClaimProperty, InstantSource instantSource) {
 		this.algorithm = checkNotNull(algorithm);
 		this.issuer = issuer;
 		this.emailClaimProperty = emailClaimProperty;
 		this.permissionsClaimProperty = permissionsClaimProperty;
+		this.instantSource = checkNotNull(instantSource);
 	}
 	
 	@Override
-	public String generate(String email, Map<String, Object> claims) {
+	public String generate(String email, Map<String, Object> claims, String expiration) {
+		
 		Builder builder = JWT.create()
 				.withIssuer(issuer)
 				.withSubject(email)
 				.withIssuedAt(new Date())
 				.withClaim(emailClaimProperty, email);
+		
+		if (!Strings.isNullOrEmpty(expiration)) {
+			TimeValue expirationTimeValue = TimeValue.parseTimeValue(expiration, "expiration");
+			builder.withExpiresAt(Date.from(instantSource.instant().plusSeconds(expirationTimeValue.getSeconds())));
+		}
 		
 		// add claims
 		claims.forEach((key, value) -> {
@@ -72,9 +84,9 @@ final class DefaultJWTGenerator implements JWTGenerator {
 	}
 
 	@Override
-	public String generate(User user) {
+	public String generate(User user, String expiration) {
 		final List<String> permissions = user.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
-		return generate(user.getUserId(), Map.of(permissionsClaimProperty, permissions));
+		return generate(user.getUserId(), Map.of(permissionsClaimProperty, permissions), expiration);
 	}
 	
 }

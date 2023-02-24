@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,23 @@ import java.util.Map;
  */
 interface JWTGenerator {
 
-	String generate(String email, Map<String, Object> claims);
+	/**
+	 * Generates a JWT access token based on the given email, claims and expiration value.
+	 * 
+	 * @param email - the email address to associate with the generated key, may not be <code>null</code>
+	 * @param claims - any additional claims to set for the generated key
+	 * @param expiration - expiration to use for the generated key, if <code>null</code> or empty the token will never expire
+	 * @return
+	 */
+	String generate(String email, Map<String, Object> claims, String expiration);
 
 	/**
 	 * Generate a JWT security token from the information available in the given {@link User} object.
-	 * @param user
+	 * 
+	 * @param user - the user information to gather from this {@link User} object
+	 * @param expiration - expiration to use for the generated key, if <code>null</code> or empty the token will never expire
 	 * @return
 	 */
-	String generate(User user);
+	String generate(User user, String expiration);
 
 }
