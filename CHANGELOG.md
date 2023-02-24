@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.9.1
+
+### Bugs/Improvements
+- [core] fix minor issues around force version creation with invalid configuration (#1116)
+- [auth] support expiration parameter when generating API keys using a new `POST /login` endpoint (#1118)
+
 ## 8.9.0
 
 ### Core
