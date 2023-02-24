@@ -70,6 +70,7 @@ public class ApiKeyService extends AbstractRestService {
 					.setPassword(request.getPassword())
 					.setToken(request.getToken())
 					.setExpiration(request.getExpiration())
+					.setPermissions(request.getPermissions())
 					.buildAsync()
 					.execute(getBus())
 					.getSync();

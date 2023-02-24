@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.core.identity.request;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.2
@@ -30,6 +33,7 @@ public final class GenerateApiKeyRequestBuilder extends BaseRequestBuilder<Gener
 	private String password;
 	private String token;
 	private String expiration;
+	private List<String> permissions;
 	
 	public GenerateApiKeyRequestBuilder setUsername(String username) {
 		this.username = username;
@@ -50,11 +54,17 @@ public final class GenerateApiKeyRequestBuilder extends BaseRequestBuilder<Gener
 		this.expiration = expiration;
 		return getSelf();
 	}
+
+	public GenerateApiKeyRequestBuilder setPermissions(Iterable<String> permissions) {
+		this.permissions = permissions == null ? null : ImmutableList.copyOf(permissions);
+		return getSelf();
+	}
 	
 	@Override
 	protected Request<ServiceProvider, User> doBuild() {
 		GenerateApiKeyRequest req = new GenerateApiKeyRequest(username, password, token);
 		req.setExpiration(expiration);
+		req.setExpressions(permissions);
 		return req;
 	}
 

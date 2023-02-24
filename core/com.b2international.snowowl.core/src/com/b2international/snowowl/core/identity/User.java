@@ -124,6 +124,11 @@ public final class User implements Serializable {
 	public User withAccessToken(String accessToken) {
 		return new User(userId, permissions, accessToken);
 	}
+	
+	public User withPermissions(List<Permission> permissions) {
+		// TODO fix null accessToken here
+		return new User(userId, permissions, null);
+	}
 
 	/**
 	 * @param userId

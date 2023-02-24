@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.rest.admin;
 
+import java.util.List;
+
 /**
  * @since 8.9.1
  */
@@ -24,6 +26,7 @@ public class ApiKeyCreateRequest {
 	private String password;
 	private String token;
 	private String expiration = "1d";
+	private List<String> permissions;
 
 	public String getUsername() {
 		return username;
@@ -57,5 +60,12 @@ public class ApiKeyCreateRequest {
 		this.username = username;
 	}
 
+	public List<String> getPermissions() {
+		return permissions;
+	}
+	
+	public void setPermissions(List<String> permissions) {
+		this.permissions = permissions;
+	}
 	
 }

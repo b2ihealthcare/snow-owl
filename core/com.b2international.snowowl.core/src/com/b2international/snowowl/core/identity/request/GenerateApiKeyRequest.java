@@ -15,16 +15,16 @@
  */
 package com.b2international.snowowl.core.identity.request;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
-import com.b2international.snowowl.core.identity.AuthorizationHeaderVerifier;
-import com.b2international.snowowl.core.identity.IdentityProvider;
-import com.b2international.snowowl.core.identity.JWTSupport;
-import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
@@ -46,6 +46,9 @@ final class GenerateApiKeyRequest implements Request<ServiceProvider, User> {
 	@JsonProperty
 	private String expiration;
 	
+	@JsonProperty
+	private List<String> permissions;
+	
 	GenerateApiKeyRequest(String username, String password, String token) {
 		this.username = username;
 		this.password = password;
@@ -54,6 +57,10 @@ final class GenerateApiKeyRequest implements Request<ServiceProvider, User> {
 	
 	void setExpiration(String expiration) {
 		this.expiration = expiration;
+	}
+	
+	void setExpressions(List<String> permissions) {
+		this.permissions = permissions;
 	}
 	
 	@Override
@@ -79,6 +86,7 @@ final class GenerateApiKeyRequest implements Request<ServiceProvider, User> {
 		}
 		
 		// generate and attach a token
+		user = user.withPermissions(permissions == null ? user.getPermissions() : permissions.stream().map(Permission::valueOf).collect(Collectors.toList()));
 		return user.withAccessToken(context.service(JWTSupport.class).generate(user, expiration));
 	}
 
