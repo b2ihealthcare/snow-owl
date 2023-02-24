@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.9.2
+
+### Bugs/Improvements
+- [auth] support `permissions` parameter when generating API keys (e15e40f)
+
 ## 8.9.1
 
 ### Bugs/Improvements
