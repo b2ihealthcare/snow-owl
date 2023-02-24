@@ -59,16 +59,17 @@ public class ApiKeyService extends AbstractRestService {
 		}
 	}
 	
-	@Operation(deprecated = true, description = "Use the `POST /token` endpoint instead")
+	@Operation(description = "Generates a new API key using the given configuration.")
 	@PostMapping("/token")
 	public User token(
 			@Parameter(name = "credentials", description = "The user credentials.", required = true) 
-			@RequestBody Credentials credentials) {
+			@RequestBody ApiKeyCreateRequest request) {
 		try {
 			return UserRequests.prepareGenerateApiKey()
-					.setUsername(credentials.getUsername())
-					.setPassword(credentials.getPassword())
-					.setToken(credentials.getToken())
+					.setUsername(request.getUsername())
+					.setPassword(request.getPassword())
+					.setToken(request.getToken())
+					.setExpiration(request.getExpiration())
 					.buildAsync()
 					.execute(getBus())
 					.getSync();
