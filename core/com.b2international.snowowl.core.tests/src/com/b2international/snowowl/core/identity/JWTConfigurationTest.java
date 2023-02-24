@@ -98,6 +98,14 @@ public class JWTConfigurationTest {
 		assertThat(token.getExpiresAt()).isEqualTo(beforeGenerationTime.plusSeconds(5));
 	}
 	
+	@Test(expected = BadRequestException.class)
+	public void hs256_withNegativeExpiresAt() throws Exception {
+		IdentityConfiguration conf = readConfig("hs256.yml");
+		JWTSupport jwtSupport = new IdentityPlugin().initJWT(env, conf);
+		// generate a key with an invalid expiration value
+		jwtSupport.generate("test@example.com", Map.of(), "-5s");
+	}
+	
 	@Test(expected = SnowOwl.InitializationException.class)
 	public void hs512_NoSecret() throws Exception {
 		IdentityConfiguration conf = readConfig("hs512_nosecret.yml");

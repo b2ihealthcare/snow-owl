@@ -28,6 +28,7 @@ import org.elasticsearch.core.TimeValue;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
@@ -60,8 +61,12 @@ final class DefaultJWTGenerator implements JWTGenerator {
 				.withClaim(emailClaimProperty, email);
 		
 		if (!Strings.isNullOrEmpty(expiration)) {
-			TimeValue expirationTimeValue = TimeValue.parseTimeValue(expiration, "expiration");
-			builder.withExpiresAt(Date.from(instantSource.instant().plusSeconds(expirationTimeValue.getSeconds())));
+			try {
+				TimeValue expirationTimeValue = TimeValue.parseTimeValue(expiration, "expiration");
+				builder.withExpiresAt(Date.from(instantSource.instant().plusSeconds(expirationTimeValue.getSeconds())));
+ 			} catch (IllegalArgumentException e) {
+ 				throw new BadRequestException("Invalid 'expiration' value: %s", expiration).withDeveloperMessage(e.getMessage());
+ 			}
 		}
 		
 		// add claims
