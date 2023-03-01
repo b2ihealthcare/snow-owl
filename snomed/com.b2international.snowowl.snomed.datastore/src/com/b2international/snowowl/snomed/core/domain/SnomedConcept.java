@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 		public static final String PREFERRED_TERM = "pt";
 		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 		public static final String DEFINITION_STATUS = "definitionStatus";
-		public static final String SEMANTIC_TAGS = "semanticTags";
+		public static final String SEMANTIC_TAGS = SnomedConceptDocument.Fields.SEMANTIC_TAGS;
 
 	}
 	
@@ -132,6 +132,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 
 		public static final String DEFINITION_STATUS_ID = SnomedRf2Headers.FIELD_DEFINITION_STATUS_ID;
 		public static final String TERM_SORT = SnomedConceptDocument.Fields.TERM_SORT;
+		public static final String SEMANTIC_TAGS = SnomedConceptDocument.Fields.SEMANTIC_TAGS;
 		
 		public static final Set<String> ALL = Set.of(
 			// RF2 properties
@@ -142,7 +143,8 @@ public final class SnomedConcept extends SnomedCoreComponent {
 			DEFINITION_STATUS_ID,
 			// additional fields
 			RELEASED,
-			TERM_SORT
+			TERM_SORT,
+			SEMANTIC_TAGS
 		);
 		
 	}
