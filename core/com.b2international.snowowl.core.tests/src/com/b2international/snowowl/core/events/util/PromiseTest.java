@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.core.events.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.elasticsearch.core.Map;
 import org.junit.Test;
 
 import com.b2international.commons.collections.Procedure;
@@ -95,6 +98,32 @@ public class PromiseTest {
 			.then(input -> input + 2)
 			.getSync();
 		assertEquals(Long.valueOf(4L), finalValue);
+	}
+	
+	@Test
+	public void thenRespond() throws Exception {
+		Response<Long> r = Promise.immediateResponse(1L, Map.of("test", "value"))
+			.thenRespond(response -> Response.of(2L, Map.of("success", response.getHeaders().get("test"))))
+			.getSyncResponse();
+		
+		assertEquals(Long.valueOf(2L), r.getBody());
+		assertEquals(Map.of("success", "value"), r.getHeaders());
+	}
+	
+	@Test
+	public void thenRespondWith() throws Exception {
+		Response<Long> r = Promise.immediateResponse(1L, Map.of("test", "value"))
+			.thenRespondWith(response -> Promise.immediateResponse(2L, Map.of("success", response.getHeaders().get("test"))))
+			.getSyncResponse();
+		
+		assertEquals(Long.valueOf(2L), r.getBody());
+		assertEquals(Map.of("success", "value"), r.getHeaders());
+	}
+	
+	@Test
+	public void all() throws Exception {
+		List<Object> waitForAll = Promise.all(Promise.immediate(1L), Promise.immediate(2L)).getSync();
+		assertThat(waitForAll).containsExactlyInAnyOrder(1L, 2L);
 	}
 	
 }

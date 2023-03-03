@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public final class Response<T> {
 	private final Map<String, String> headers;
 	private final T body;
 
-	public Response(T body, Map<String, String> headers) {
+	private Response(T body, Map<String, String> headers) {
 		this.body = body;
 		this.headers = ImmutableMap.copyOf(headers);
 	}
@@ -38,6 +38,10 @@ public final class Response<T> {
 	
 	public T getBody() {
 		return body;
+	}
+	
+	public static <T> Response<T> of(T body, Map<String, String> headers) {
+		return new Response<T>(body, headers);
 	}
 	
 }

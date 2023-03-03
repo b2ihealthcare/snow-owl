@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.google.common.annotations.Beta;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.*;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -51,14 +43,34 @@ public final class Promise<T> extends Observable<T> {
 
 	final SettableFuture<Response<T>> delegate = SettableFuture.create();
 	
+	// optionally attachable headers to pass down the promise chain to all listeners
+	private Map<String, String> headers;
+	
 	/**
-	 * @return
+	 * @return the response body when this Promise becomes resolved.
 	 * @since 4.6
 	 */
-	@Beta
 	public T getSync() {
+		return getSyncResponse().getBody();
+	}
+	
+	/**
+	 * @param timeout
+	 * @param unit
+	 * @return the response body when this Promise becomes resolved or throw an error if the specified timeout expires.
+	 * @since 4.6
+	 */
+	public T getSync(final long timeout, final TimeUnit unit) {
+		return getSyncResponse(timeout, unit).getBody();
+	}
+	
+	/**
+	 * @return the response when this Promise becomes resolved.
+	 * @since 8.10
+	 */
+	public Response<T> getSyncResponse() {
 		try {
-			return delegate.get().getBody();
+			return delegate.get();
 		} catch (final InterruptedException e) {
 			throw new SnowowlRuntimeException(e);
 		} catch (final ExecutionException e) {
@@ -76,13 +88,12 @@ public final class Promise<T> extends Observable<T> {
 	/**
 	 * @param timeout
 	 * @param unit
-	 * @return
-	 * @since 4.6
+	 * @return the response when this Promise becomes resolved or throw an error if the specified timeout expires.
+	 * @since 8.10
 	 */
-	@Beta
-	public T getSync(final long timeout, final TimeUnit unit) {
+	public Response<T> getSyncResponse(final long timeout, final TimeUnit unit) {
 		try {
-			return delegate.get(timeout, unit).getBody();
+			return delegate.get(timeout, unit);
 		} catch (final TimeoutException e) {
 			throw new RequestTimeoutException("Request timeout", e);
 		} catch (final InterruptedException e) {
@@ -211,6 +222,46 @@ public final class Promise<T> extends Observable<T> {
 		}, MoreExecutors.directExecutor());
 		return transformed;
 	}
+	
+	public final <U> Promise<U> thenRespond(final Function<Response<T>, Response<U>> then) {
+		final Promise<U> transformed = new Promise<>();
+		Futures.addCallback(delegate, new FutureCallback<Response<T>>() {
+			@Override
+			public void onSuccess(final Response<T> result) {
+				try {
+					transformed.resolveResponse(then.apply(result));
+				} catch (final Throwable t) {
+					onFailure(t);
+				}
+			}
+
+			@Override
+			public void onFailure(final Throwable t) {
+				transformed.reject(t);
+			}
+		}, MoreExecutors.directExecutor());
+		return transformed;
+	}
+	
+	public final <U> Promise<U> thenRespondWith(final Function<Response<T>, Promise<U>> then) {
+		final Promise<U> transformed = new Promise<>();
+		Futures.addCallback(delegate, new FutureCallback<Response<T>>() {
+			@Override
+			public void onSuccess(final Response<T> result) {
+				try {
+					transformed.resolveWith(then.apply(result));
+				} catch (final Throwable t) {
+					onFailure(t);
+				}
+			}
+
+			@Override
+			public void onFailure(final Throwable t) {
+				transformed.reject(t);
+			}
+		}, MoreExecutors.directExecutor());
+		return transformed;
+	}
 
 	/**
 	 * Resolves the promise by sending the given result object to all then listeners.
@@ -230,26 +281,29 @@ public final class Promise<T> extends Observable<T> {
 	 * @param headers
 	 */
 	public final void resolve(T result, final Map<String, String> headers) {
-		delegate.set(new Response<>(result, headers));
+		resolveResponse(Response.of(result, headers));
+	}
+	
+	public final void resolveResponse(Response<T> response) {
+		if (CompareUtils.isEmpty(response.getHeaders()) && !CompareUtils.isEmpty(this.headers)) {
+			delegate.set(Response.of(response.getBody(), this.headers));
+		} else {
+			delegate.set(response);
+		}
 	}
 	
 	final void resolveWith(final Promise<T> t) {
-		t.then(new Function<T, Void>() {
-			@Override
-			public Void apply(final T input) {
-				resolve(input);
+		t
+			.thenRespond(response -> {
+				resolveResponse(response);
 				return null;
-			}
-		})
-		.fail(new Function<Throwable, Void>() {
-			@Override
-			public Void apply(final Throwable input) {
-				reject(input);
+			})
+			.fail(error -> {
+				reject(error);
 				return null;
-			}
-		});
+			});
 	}
-
+	
 	/**
 	 * Rejects the promise by sending the {@link Throwable} to all failure listeners.
 	 * 
@@ -326,10 +380,22 @@ public final class Promise<T> extends Observable<T> {
 	 * @return
 	 * @since 4.6
 	 */
-	@Beta
 	public static final <T> Promise<T> immediate(final T value) {
 		final Promise<T> promise = new Promise<>();
 		promise.resolve(value);
+		return promise;
+	}
+	
+	/**
+	 * Provides a promise object with type T that is available immediately. Support specifying additional headers to be associated with the {@link Promise}.
+	 * 
+	 * @param value
+	 * @return
+	 * @since 8.10
+	 */
+	public static final <T> Promise<T> immediateResponse(final T value, final Map<String, String> headers) {
+		final Promise<T> promise = new Promise<>();
+		promise.resolve(value, headers);
 		return promise;
 	}
 	
@@ -364,5 +430,5 @@ public final class Promise<T> extends Observable<T> {
 	public boolean isCancelled() {
 		return delegate.isCancelled();
 	}
-	
+
 }
