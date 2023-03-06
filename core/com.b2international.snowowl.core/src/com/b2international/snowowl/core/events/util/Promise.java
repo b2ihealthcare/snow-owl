@@ -24,7 +24,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -41,9 +40,6 @@ import io.reactivex.Observer;
 public final class Promise<T> extends Observable<T> {
 
 	final SettableFuture<Response<T>> delegate = SettableFuture.create();
-	
-	// optionally attachable headers to pass down the promise chain to all listeners
-	private Map<String, String> headers;
 	
 	/**
 	 * @return the response body when this Promise becomes resolved.
@@ -121,7 +117,7 @@ public final class Promise<T> extends Observable<T> {
 
 			@Override
 			public void onSuccess(final Response<T> result) {
-				promise.resolve(result.getBody());
+				promise.resolveResponse(result);
 			}
 
 			@Override
@@ -148,7 +144,7 @@ public final class Promise<T> extends Observable<T> {
 
 			@Override
 			public void onSuccess(final Response<T> result) {
-				promise.resolve(result.getBody());
+				promise.resolveResponse(result);
 			}
 
 			@Override
@@ -284,11 +280,7 @@ public final class Promise<T> extends Observable<T> {
 	}
 	
 	public final void resolveResponse(Response<T> response) {
-		if (CompareUtils.isEmpty(response.getHeaders()) && !CompareUtils.isEmpty(this.headers)) {
-			delegate.set(Response.of(response.getBody(), this.headers));
-		} else {
-			delegate.set(response);
-		}
+		delegate.set(response);
 	}
 	
 	final void resolveWith(final Promise<T> t) {

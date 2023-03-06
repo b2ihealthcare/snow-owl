@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.core.events.util;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -40,8 +42,32 @@ public final class Response<T> {
 		return body;
 	}
 	
+	public Response<T> withHeader(String key, String value) {
+		final Map<String, String> newHeaders = new HashMap<>(this.headers);
+		newHeaders.put(key, value);
+		return of(this.body, newHeaders);
+	}
+	
+	public Response<T> withHeaders(Map<String, String> headers) {
+		return of(this.body, headers);
+	}
+	
 	public static <T> Response<T> of(T body, Map<String, String> headers) {
 		return new Response<T>(body, headers);
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(body, headers);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		Response<?> other = (Response<?>) obj;
+		return Objects.equals(body, other.body) && Objects.equals(headers, other.headers);
+	}
+
 }

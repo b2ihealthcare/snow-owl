@@ -216,4 +216,17 @@ public class PromiseTest {
 		p.getSync(1, TimeUnit.SECONDS);
 	}
 	
+	@Test
+	public void resolveWithPromiseHeaders() throws Exception {
+		Promise<Long> promiseWithoutHeader = Promise.immediate(1L)
+				.thenWith(num -> Promise.immediate(num + 2L));
+		Promise<Long> promiseWithHeader = promiseWithoutHeader.thenRespond(response -> response.withHeader("test", "value"));
+		
+		Response<Long> responseWithoutHeader = promiseWithoutHeader.getSyncResponse();
+		Response<Long> responseWithHeader = promiseWithHeader.getSyncResponse();
+		
+		assertThat(responseWithoutHeader).isEqualTo(Response.of(3L, Map.of()));
+		assertThat(responseWithHeader).isEqualTo(Response.of(3L, Map.of("test", "value")));
+	}
+	
 }
