@@ -28,7 +28,6 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.google.common.annotations.Beta;
 import com.google.common.util.concurrent.*;
 
 import io.reactivex.Observable;
@@ -318,7 +317,6 @@ public final class Promise<T> extends Observable<T> {
 	 * @return
 	 * @since 4.6
 	 */
-	@Beta
 	public static <T> Promise<T> wrap(final Callable<T> func) {
 		final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1));
 		final ListenableFuture<T> submit = executor.submit(func);
@@ -331,7 +329,6 @@ public final class Promise<T> extends Observable<T> {
 	 * @return
 	 * @since 4.6
 	 */
-	@Beta
 	public static Promise<List<Object>> all(final Collection<? extends Promise<?>> promises) {
 		return Promise.wrap(Futures.allAsList(promises.stream().map(p -> p.delegate).collect(Collectors.toList())))
 				.then(responses -> {
@@ -344,7 +341,6 @@ public final class Promise<T> extends Observable<T> {
 	 * @return
 	 * @since 4.6
 	 */
-	@Beta
 	public static Promise<List<Object>> all(final Promise<?>...promises) {
 		return Promise.wrap(Futures.allAsList(Stream.of(promises).map(p -> p.delegate).collect(Collectors.toList())))
 				.then(responses -> {
@@ -387,7 +383,7 @@ public final class Promise<T> extends Observable<T> {
 	}
 	
 	/**
-	 * Provides a promise object with type T that is available immediately. Support specifying additional headers to be associated with the {@link Promise}.
+	 * Provides a promise object with type T that is available immediately. It also allows specifying additional headers to be associated with the {@link Promise}.
 	 * 
 	 * @param value
 	 * @return
