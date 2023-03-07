@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.rest.rate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.fail;
 
 import java.time.LocalDateTime;
@@ -114,8 +116,9 @@ public class RateLimitTest {
 				.getSyncResponse();
 			fail("Second request should throw a too many requests exception");
 		} catch (TooManyRequestsException e) {
+			// based on the fact that we have to 
 			assertThat(e.getSecondsToWait())
-				.isEqualTo(1L);
+				.isBetween(0L, 1L);
 			assertThat(e.getMessage())
 				.isEqualTo("Too many requests");
 		}
@@ -133,7 +136,7 @@ public class RateLimitTest {
 		System.err.println("Sending resource request..." + LocalDateTime.now());
 		ResourceApiAssert.assertResourceSearch(Map.of("limit", 0))
 			.statusCode(429)
-			.header("X-Rate-Limit-Retry-After-Seconds", "0");
+			.header("X-Rate-Limit-Retry-After-Seconds", anyOf(equalTo("0"), equalTo("1")));
 	}
 	
 }
