@@ -37,7 +37,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-npm-:
     - name: Setup Maven settings.xml
-      uses: whelk-io/maven-settings-xml-action@v14
+      uses: whelk-io/maven-settings-xml-action@v21
       with:
         servers: '[{ "id": "b2i-releases", "username": "${env.NEXUS_DEPLOYMENT_USER}", "password": "${env.NEXUS_DEPLOYMENT_PASS}" }, { "id": "b2i-snapshots", "username": "${env.NEXUS_DEPLOYMENT_USER}", "password": "${env.NEXUS_DEPLOYMENT_PASS}" }, { "id": "nexus_deployment", "username": "${env.NEXUS_DEPLOYMENT_USER}", "password": "${env.NEXUS_DEPLOYMENT_PASS}" }]'
     # Initializes the CodeQL tools for scanning.
