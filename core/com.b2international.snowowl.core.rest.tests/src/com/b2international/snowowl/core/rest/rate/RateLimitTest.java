@@ -56,7 +56,7 @@ public class RateLimitTest {
 		// inject rate limit feature into the system until we run the rate limit tests
 		Environment env = ApplicationContext.getServiceForClass(Environment.class);
 		ApiConfiguration apiConfig = new ApiConfiguration();
-		// this means that the user is able to perform 2 requests at a time, with a three seconds refill rate
+		// this means that the user is able to perform 2 requests at a time, with one second refill rate (default value, but just in case fix it here as well)
 		apiConfig.setOverdraft(2L);
 		apiConfig.setRefillRate(1L);
 		new ApiPlugin().initRateLimiter(env, apiConfig);
