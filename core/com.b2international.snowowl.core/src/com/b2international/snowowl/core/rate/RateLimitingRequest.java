@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import com.b2international.snowowl.core.identity.User;
  * @param <R> - the response body type
  */
 public final class RateLimitingRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
+
+	private static final long serialVersionUID = 1L;
 
 	public RateLimitingRequest(Request<ServiceProvider, R> next) {
 		super(next);

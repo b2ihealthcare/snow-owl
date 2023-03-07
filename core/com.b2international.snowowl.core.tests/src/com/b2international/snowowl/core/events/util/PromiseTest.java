@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,21 @@
  */
 package com.b2international.snowowl.core.events.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.elasticsearch.core.Map;
 import org.junit.Test;
 
 import com.b2international.commons.collections.Procedure;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.RequestTimeoutException;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 
 /**
  * @since 4.2
@@ -33,9 +40,30 @@ public class PromiseTest {
 	Exception rejection = new Exception();
 	
 	@Test
-	public void resolveBeforeThenHandlerAdded() throws Exception {
+	public void unresolvedPromiseState() throws Exception {
 		final Promise<Object> p = new Promise<>();
-		p.resolve(resolution);
+		assertFalse(p.isDone());
+		assertFalse(p.isCancelled());
+	}
+	
+	@Test
+	public void resolvedPromiseState() throws Exception {
+		final Promise<Object> p = Promise.immediate(resolution);
+		assertTrue(p.isDone());
+		assertFalse(p.isCancelled());
+	}
+	
+	@Test
+	public void failedPromiseState() throws Exception {
+		final Promise<Object> p = Promise.fail(rejection);
+		assertTrue(p.isDone());
+		assertFalse(p.isCancelled());
+	}
+	
+	@Test
+	public void resolveImmediately() throws Exception {
+		final Promise<Object> p = Promise.immediate(resolution);
+		
 		final CountDownLatch latch = new CountDownLatch(1);
 		p.then(new Procedure<Object>() {
 			@Override
@@ -48,9 +76,8 @@ public class PromiseTest {
 	}
 	
 	@Test
-	public void rejectBeforeFailHandlerAdded() throws Exception {
-		final Promise<Object> p = new Promise<>();
-		p.reject(rejection);
+	public void rejectImmediately() throws Exception {
+		final Promise<Object> p = Promise.fail(rejection);
 		final CountDownLatch latch = new CountDownLatch(1);
 		p.fail(input -> {
 			assertEquals(rejection, input);
@@ -71,8 +98,13 @@ public class PromiseTest {
 				latch.countDown();
 			}
 		});
+		
+		assertFalse(p.isDone());
+		assertFalse(p.isCancelled());
 		p.resolve(resolution);
 		latch.await(100, TimeUnit.MILLISECONDS);
+		assertTrue(p.isDone());
+		assertFalse(p.isCancelled());
 	}
 	
 	@Test
@@ -84,8 +116,13 @@ public class PromiseTest {
 			latch.countDown();
 			return null;
 		});
+		
+		assertFalse(p.isDone());
+		assertFalse(p.isCancelled());
 		p.reject(rejection);
 		latch.await(100, TimeUnit.MILLISECONDS);
+		assertTrue(p.isDone());
+		assertFalse(p.isCancelled());
 	}
 	
 	@Test
@@ -95,6 +132,101 @@ public class PromiseTest {
 			.then(input -> input + 2)
 			.getSync();
 		assertEquals(Long.valueOf(4L), finalValue);
+	}
+	
+	@Test
+	public void failWith() throws Exception {
+		final Long finalValue = Promise.<Long>fail(rejection)
+			.failWith(error -> Promise.immediate(1L))
+			.getSync();
+		assertEquals(Long.valueOf(1L), finalValue);
+	}
+	
+	@Test
+	public void thenRespond() throws Exception {
+		Response<Long> r = Promise.immediateResponse(1L, Map.of("test", "value"))
+			.thenRespond(response -> Response.of(2L, Map.of("success", response.getHeaders().get("test"))))
+			.getSyncResponse();
+		
+		assertEquals(Long.valueOf(2L), r.getBody());
+		assertEquals(Map.of("success", "value"), r.getHeaders());
+	}
+	
+	@Test
+	public void thenRespondWith() throws Exception {
+		Response<Long> r = Promise.immediateResponse(1L, Map.of("test", "value"))
+			.thenRespondWith(response -> Promise.immediateResponse(2L, Map.of("success", response.getHeaders().get("test"))))
+			.getSyncResponse();
+		
+		assertEquals(Long.valueOf(2L), r.getBody());
+		assertEquals(Map.of("success", "value"), r.getHeaders());
+	}
+	
+	@Test
+	public void all() throws Exception {
+		List<Object> waitForAll = Promise.all(Promise.immediate(1L), Promise.immediate(2L)).getSync();
+		assertThat(waitForAll).containsExactlyInAnyOrder(1L, 2L);
+	}
+	
+	@Test(expected = RequestTimeoutException.class)
+	public void timeoutHandling() throws Exception {
+		Promise<Object> p = new Promise<>();
+		p.getSync(10, TimeUnit.MILLISECONDS);
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void handleApiException() throws Exception {
+		Promise<Object> p = new Promise<>();
+		p.reject(new BadRequestException("Invalid request params"));
+		p.getSync();
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void handleApiExceptionWithTimeout() throws Exception {
+		Promise<Object> p = new Promise<>();
+		p.reject(new BadRequestException("Invalid request params"));
+		p.getSync(1, TimeUnit.SECONDS);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void handleRuntimeException() throws Exception {
+		Promise<Object> p = new Promise<>();
+		p.reject(new IllegalArgumentException("Invalid request params"));
+		p.getSync();
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void handleRuntimeExceptionWithTimeout() throws Exception {
+		Promise<Object> p = new Promise<>();
+		p.reject(new IllegalArgumentException("Invalid request params"));
+		p.getSync(1, TimeUnit.SECONDS);
+	}
+	
+	@Test(expected = SnowowlRuntimeException.class)
+	public void handleAnyOtherException() throws Exception {
+		Promise<Object> p = new Promise<>();
+		p.reject(new IOException("Invalid request params"));
+		p.getSync();
+	}
+	
+	@Test(expected = SnowowlRuntimeException.class)
+	public void handleAnyOtherExceptionWithTimeout() throws Exception {
+		Promise<Object> p = new Promise<>();
+		p.reject(new IOException("Invalid request params"));
+		p.getSync(1, TimeUnit.SECONDS);
+	}
+	
+	@Test
+	public void resolveWithPromiseHeaders() throws Exception {
+		Promise<Long> promiseWithoutHeader = Promise.immediate(1L)
+				.thenWith(num -> Promise.immediate(num + 2L));
+		Promise<Long> promiseWithHeader = promiseWithoutHeader.thenRespond(response -> response.withHeader("test", "value"));
+		
+		Response<Long> responseWithoutHeader = promiseWithoutHeader.getSyncResponse();
+		Response<Long> responseWithHeader = promiseWithHeader.getSyncResponse();
+		
+		assertThat(responseWithoutHeader).isEqualTo(Response.of(3L, Map.of()));
+		assertThat(responseWithHeader).isEqualTo(Response.of(3L, Map.of("test", "value")));
 	}
 	
 }

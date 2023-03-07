@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.core.events.util;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -27,7 +29,7 @@ public final class Response<T> {
 	private final Map<String, String> headers;
 	private final T body;
 
-	public Response(T body, Map<String, String> headers) {
+	private Response(T body, Map<String, String> headers) {
 		this.body = body;
 		this.headers = ImmutableMap.copyOf(headers);
 	}
@@ -40,4 +42,32 @@ public final class Response<T> {
 		return body;
 	}
 	
+	public Response<T> withHeader(String key, String value) {
+		final Map<String, String> newHeaders = new HashMap<>(this.headers);
+		newHeaders.put(key, value);
+		return of(this.body, newHeaders);
+	}
+	
+	public Response<T> withHeaders(Map<String, String> headers) {
+		return of(this.body, headers);
+	}
+	
+	public static <T> Response<T> of(T body, Map<String, String> headers) {
+		return new Response<T>(body, headers);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(body, headers);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		Response<?> other = (Response<?>) obj;
+		return Objects.equals(body, other.body) && Objects.equals(headers, other.headers);
+	}
+
 }
