@@ -57,7 +57,7 @@ public class PromiseMethodReturnValueHandler implements HandlerMethodReturnValue
 				.thenRespond(promiseResponse -> setDeferredResult(result, promiseResponse))
 				.fail(err -> {
 					if (result.isSetOrExpired()) {
-						LOG.warn("Deferred result is already set or expired, could not deliver Throwable {}.", err);
+						LOG.warn("Deferred result is already set or expired, could not deliver Throwable.", err);
 					} else {
 						result.setErrorResult(err);
 					}
