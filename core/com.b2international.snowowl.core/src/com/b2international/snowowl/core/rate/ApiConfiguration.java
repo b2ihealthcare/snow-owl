@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,19 @@
 package com.b2international.snowowl.core.rate;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.2
  */
 public class ApiConfiguration {
 
-	@Min(0)
-	private long overdraft = 0L;
-	
-	@Min(1)
-	private long refillRate = 1L;
+	@Valid
+	private RateLimitConfig rateLimit = new RateLimitConfig();
 	
 	@Valid
 	private HttpConfig http = new HttpConfig();
-	
-	public long getOverdraft() {
-		return overdraft;
-	}
-	
-	public void setOverdraft(long overdraft) {
-		this.overdraft = overdraft;
-	}
-	
-	public long getRefillRate() {
-		return refillRate;
-	}
-	
-	public void setRefillRate(long refillRate) {
-		this.refillRate = refillRate;
-	}
 	
 	public HttpConfig getHttp() {
 		return http;
@@ -56,4 +38,23 @@ public class ApiConfiguration {
 		this.http = http;
 	}
 	
+	public RateLimitConfig getRateLimit() {
+		return rateLimit;
+	}
+	
+	public void setRateLimit(RateLimitConfig rateLimit) {
+		this.rateLimit = rateLimit;
+	}
+	
+	// backward compatible configuration methods
+	@JsonProperty
+	/*package*/ void setOverdraft(long overdraft) {
+		rateLimit.setOverdraft(overdraft);
+	}
+	
+	@JsonProperty
+	/*package*/ void setRefillRate(long refillRate) {
+		rateLimit.setRefillRate(refillRate);
+	}
+
 }

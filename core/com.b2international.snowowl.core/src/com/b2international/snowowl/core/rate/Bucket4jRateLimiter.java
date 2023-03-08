@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,17 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.MapMaker;
 
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
-import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.Refill;
+import io.github.bucket4j.*;
 
 /**
  * @since 7.2
  */
 final class Bucket4jRateLimiter implements RateLimiter {
 
-	private final ApiConfiguration configuration;
+	private final RateLimitConfig configuration;
 	private final ConcurrentMap<String, Bucket> bucketByUser;
 
-	public Bucket4jRateLimiter(ApiConfiguration configuration) {
+	public Bucket4jRateLimiter(RateLimitConfig configuration) {
 		this.configuration = configuration;
 		this.bucketByUser = new MapMaker().makeMap();
 	}
