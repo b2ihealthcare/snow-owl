@@ -36,14 +36,14 @@ public class ApiPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		ApiConfiguration apiConfig = configuration.getModuleConfig(ApiConfiguration.class);
-		initRateLimiter(env, apiConfig);
+		initRateLimiter(env, apiConfig.getRateLimit());
 	}
 
 	@VisibleForTesting
-	public void initRateLimiter(Environment env, ApiConfiguration apiConfig) {
+	public void initRateLimiter(Environment env, RateLimitConfig config) {
 		final RateLimiter limiter;
-		if (apiConfig.getOverdraft() > 0L) {
-			limiter = new Bucket4jRateLimiter(apiConfig);
+		if (config.getOverdraft() > 0L) {
+			limiter = new Bucket4jRateLimiter(config);
 		} else {
 			limiter = RateLimiter.NOOP;
 		}

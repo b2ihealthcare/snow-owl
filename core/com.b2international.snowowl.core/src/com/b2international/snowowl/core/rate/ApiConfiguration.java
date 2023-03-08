@@ -15,38 +15,20 @@
  */
 package com.b2international.snowowl.core.rate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 
 /**
  * @since 7.2
  */
 public class ApiConfiguration {
 
-	@Min(0)
-	private long overdraft = 0L;
-	
-	@Min(1)
-	private long refillRate = 1L;
+	@Valid
+	private RateLimitConfig rateLimit = new RateLimitConfig();
 	
 	@Valid
 	private HttpConfig http = new HttpConfig();
-	
-	public long getOverdraft() {
-		return overdraft;
-	}
-	
-	public void setOverdraft(long overdraft) {
-		this.overdraft = overdraft;
-	}
-	
-	public long getRefillRate() {
-		return refillRate;
-	}
-	
-	public void setRefillRate(long refillRate) {
-		this.refillRate = refillRate;
-	}
 	
 	public HttpConfig getHttp() {
 		return http;
@@ -56,4 +38,23 @@ public class ApiConfiguration {
 		this.http = http;
 	}
 	
+	public RateLimitConfig getRateLimit() {
+		return rateLimit;
+	}
+	
+	public void setRateLimit(RateLimitConfig rateLimit) {
+		this.rateLimit = rateLimit;
+	}
+	
+	// backward compatible configuration methods
+	@JsonProperty
+	/*package*/ void setOverdraft(long overdraft) {
+		rateLimit.setOverdraft(overdraft);
+	}
+	
+	@JsonProperty
+	/*package*/ void setRefillRate(long refillRate) {
+		rateLimit.setRefillRate(refillRate);
+	}
+
 }

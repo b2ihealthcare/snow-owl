@@ -30,10 +30,10 @@ import io.github.bucket4j.ConsumptionProbe;
  */
 final class Bucket4jRateLimiter implements RateLimiter {
 
-	private final ApiConfiguration configuration;
+	private final RateLimitConfig configuration;
 	private final ConcurrentMap<String, Bucket> bucketByUser;
 
-	public Bucket4jRateLimiter(ApiConfiguration configuration) {
+	public Bucket4jRateLimiter(RateLimitConfig configuration) {
 		this.configuration = configuration;
 		this.bucketByUser = new MapMaker().makeMap();
 	}
