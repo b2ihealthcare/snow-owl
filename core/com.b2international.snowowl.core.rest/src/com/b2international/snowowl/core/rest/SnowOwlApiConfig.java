@@ -234,14 +234,21 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
 	public Provider<IEventBus> eventBus(@Autowired HttpServletRequest request) {
 		final String authorization = extractAuthorizationToken(request);
-		return () -> new AuthorizedEventBus(ApplicationContext.getInstance().getServiceChecked(IEventBus.class), ImmutableMap.of(HttpHeaders.AUTHORIZATION, authorization));
+		ImmutableMap.Builder<String, String> headers = ImmutableMap.builder();
+		headers.put(HttpHeaders.AUTHORIZATION, authorization);
+		
+		if (!Strings.isNullOrEmpty(request.getHeader(ApiConfiguration.IF_NONE_MATCH_HEADER))) {
+			headers.put(ApiConfiguration.IF_NONE_MATCH_HEADER, request.getHeader(ApiConfiguration.IF_NONE_MATCH_HEADER));
+		}
+		
+		return () -> new AuthorizedEventBus(ApplicationContext.getInstance().getServiceChecked(IEventBus.class), headers.build());
 	}
 	
 	/*
 	 * Prefer Authorization header content, but allow token query parameter as well.
 	 */
 	private String extractAuthorizationToken(HttpServletRequest request) {
-		String authorizationToken = request.getHeader("Authorization");
+		String authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 		if (Strings.isNullOrEmpty(authorizationToken)) {
 			authorizationToken = request.getParameter("token");
 		}
