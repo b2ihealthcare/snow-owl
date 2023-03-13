@@ -28,10 +28,12 @@ import com.b2international.index.revision.RevisionBranchMergeSource;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.hash.Hashing;
 
 /**
  * Represents a {@link Branch} in a terminology repository. A {@link Branch} can be uniquely identified by using its {@link #path()} and
@@ -246,6 +248,10 @@ public final class Branch implements MetadataHolder, Serializable {
 			.append(", children=").append(children).append("]");
 		return builder.toString();
 	}
-	
+
+	public String eTag() {
+		// TODO temporary branch eTag value calculation, change to use branchRef instead
+		return Hashing.murmur3_128().hashString(path(), Charsets.UTF_8).toString();
+	}
 		
 }

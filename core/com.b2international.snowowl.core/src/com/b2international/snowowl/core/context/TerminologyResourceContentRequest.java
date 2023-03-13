@@ -15,16 +15,23 @@
  */
 package com.b2international.snowowl.core.context;
 
+import java.util.Objects;
+
+import com.b2international.commons.exceptions.NotModifiedException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.RequestHeaders;
+import com.b2international.snowowl.core.events.util.ResponseHeaders;
+import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.request.BranchRealtimeContentRequest;
 import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
+import com.google.common.base.Strings;
 
 /**
  * @since 7.5
@@ -52,7 +59,9 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 		final String path = branchPathWithVersion.getPath();
 		final ResourceURI versionResourceURI = branchPathWithVersion.getVersionResourceURI();
 		
-		if (versionResourceURI != null) {
+		final boolean versionedContentAccess = versionResourceURI != null;
+		
+		if (versionedContentAccess) {
 			context = context.inject()
 				.bind(ResourceURI.class, versionResourceURI)
 				.bind(PathWithVersion.class, branchPathWithVersion)
@@ -60,7 +69,26 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 		}
 		
 		return new RepositoryRequest<R>(resource.getToolingId(),
-			snapshot ? new BranchSnapshotContentRequest<>(path, next()) : new BranchRealtimeContentRequest<>(path, next())
+			snapshot ? new BranchSnapshotContentRequest<>(path, versionedContentAccess ? nextWithCaching() : next()) : new BranchRealtimeContentRequest<>(path, next())
 		).execute(context);
+	}
+
+	private Request<BranchContext, R> nextWithCaching() {
+		return ctx -> {
+			// before executing the request, check whether we have an IfNoneMatch header set in the incoming request, if yes, check the current ETag with any of the attached values, if none matches evaluate the query otherwise send back HTTP 304
+			String ifNoneMatchHeaderValue = ctx.service(RequestHeaders.class).header(ApiConfiguration.IF_NONE_MATCH_HEADER);
+			if (!Strings.isNullOrEmpty(ifNoneMatchHeaderValue) && Objects.equals(ifNoneMatchHeaderValue.replaceAll("\"", ""), ctx.branch().eTag())) {
+				throw new NotModifiedException();
+			}
+			
+			R response = next().execute(ctx);
+			// once we have the response ready calculate Cache-Control and ETag headers
+			final ApiConfiguration apiConfiguration = ctx.service(ApiConfiguration.class);
+			final ResponseHeaders responseHeaders = ctx.service(ResponseHeaders.class);
+			responseHeaders.set(ApiConfiguration.ETAG_HEADER, ctx.branch().eTag());
+			// configure HTTP Cache-Control headers here using the currently configured api.cache_control value
+			responseHeaders.set(ApiConfiguration.CACHE_CONTROL_HEADER, apiConfiguration.getCacheControl());
+			return response;
+		};
 	}
 }
