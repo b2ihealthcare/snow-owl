@@ -48,8 +48,8 @@ public final class Locks implements AutoCloseable {
 		public Builder(RepositoryContext context) {
 			this.context = checkNotNull(context, "Context is missing");
 			this.user = context.service(User.class).getUserId();
-			if (context instanceof BranchContext) {
-				this.branches = List.of(((BranchContext) context).branch().path()); 
+			if (context instanceof BranchContext ctx) {
+				this.branches = List.of(ctx.branch().path()); 
 			}
 		}
 		

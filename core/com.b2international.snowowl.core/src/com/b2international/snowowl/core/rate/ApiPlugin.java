@@ -36,6 +36,7 @@ public class ApiPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		ApiConfiguration apiConfig = configuration.getModuleConfig(ApiConfiguration.class);
+		env.services().registerService(ApiConfiguration.class, apiConfig);
 		initRateLimiter(env, apiConfig.getRateLimit());
 	}
 
