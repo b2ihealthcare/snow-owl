@@ -16,23 +16,15 @@
 package com.b2international.commons;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
-import static com.b2international.commons.StringUtils.isEmpty;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.UUID.randomUUID;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -40,16 +32,16 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import com.b2international.commons.io.PathUtils;
 import com.google.common.base.CharMatcher;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Files;
 
+/**
+ * @deprecated - Use {@link PathUtils} if possible
+ */
 public final class FileUtils {
 
 	private static final int DEFAULT_BUFFER_SIZE = 4096;
 
-	public static final String TEMP_DIR_PROPERTY = "java.io.tmpdir";
-	
 	public static final char[] INVALID_RESOURCE_CHARACTERS = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0' };
 	
 	public static final CharMatcher INVALID_RESOURCE_MATCHER = CharMatcher.whitespace()
