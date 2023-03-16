@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,10 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.request.*;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
+import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
@@ -856,7 +859,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private <R> R execute(RepositoryContext context, String branch, Request<BranchContext, R> next) {
-		return new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next)).execute(context);
+		return new BranchSnapshotContentRequest<>(branch, next).execute(context);
 	}
 	
 	private void exportRelationships(final Path releaseDirectory, 

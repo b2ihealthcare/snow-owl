@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -94,7 +93,7 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 			branchToQueryForDescriptions = RevisionIndex.getRevisionRangePaths(branch)[1];
 		}
 		
-		final Set<String> validDescriptionIds = new BranchRequest<>(branchToQueryForDescriptions, new RevisionIndexReadRequest<>(request))
+		final Set<String> validDescriptionIds = new BranchSnapshotContentRequest<>(branchToQueryForDescriptions, request)
 				.execute(context)
 				.stream()
 				.map(d -> d.getId())

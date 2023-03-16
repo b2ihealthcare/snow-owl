@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.CommitResult;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.request.TerminologyResourceCommitRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
@@ -41,10 +40,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResou
 	
 	@Override
 	public Request<BranchContext, CommitResult> wrap(Request<BranchContext, CommitResult> req) {
-		return new RevisionIndexReadRequest<>(
-			new ModuleRequest<>(req, defaultModuleId), 
-			snapshot()
-		);
+		return new ModuleRequest<>(req, defaultModuleId);
 	}
 	
 	@Override
