@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.context;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
 
@@ -29,7 +29,7 @@ public final class ResourceRepositoryCommitRequestBuilder extends RepositoryComm
 	public AsyncRequest<CommitResult> buildAsync() {
 		return new AsyncRequest<>(
 			new ResourceRepositoryRequest<>(
-				new BranchRequest<>(Branch.MAIN_PATH, 
+				new BranchSnapshotContentRequest<>(Branch.MAIN_PATH, 
 					build()
 				)
 			)

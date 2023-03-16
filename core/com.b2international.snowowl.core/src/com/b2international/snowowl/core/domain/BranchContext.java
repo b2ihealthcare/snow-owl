@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
+import java.util.List;
+
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 
 /**
@@ -25,30 +26,28 @@ import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 public interface BranchContext extends RepositoryContext {
 
 	/**
-	 * A snapshot state of the branch represented by the {@link #branchPath()}. This is where the request is going to be executed.
-	 * 
-	 * @return
-	 */
-	Branch branch();
-
-	/**
 	 * The requested branch path. BranchPath modifiers can be present on the value returned by this method. It is recommended to always pass the value
 	 * returned by this method to other requests, so they execute on the same requested path.
 	 * 
 	 * @return
 	 */
 	String path();
-
-	@Override
-	default Builder<? extends BranchContext> inject() {
-		return new DelegatingContext.Builder<BranchContext>(BranchContext.class, this);
+	
+	/**
+	 * @return all resolved branch path identifiers based on the accessed path expression. This can contain one or two actual branch path values depending on whether the expression is using a branch range expression or not.
+	 */
+	List<String> getAccessedBranchPaths();
+	
+	/**
+	 * @return the low-level index searcher associated with this {@link BranchContext} instance.
+	 */
+	default RevisionSearcher searcher() {
+		return service(RevisionSearcher.class);
 	}
 
-	/**
-	 * @return <code>true</code> if this context is opened on the {@link Branch#MAIN_PATH}, <code>false</code> otherwise.
-	 */
-	default boolean isMain() {
-		return Branch.MAIN_PATH.equals(branch().path());
+	@Override
+	default DelegatingContext.Builder<? extends BranchContext> inject() {
+		return new DelegatingContext.Builder<BranchContext>(BranchContext.class, this);
 	}
 
 	default TransactionContext openTransaction(BranchContext context) {

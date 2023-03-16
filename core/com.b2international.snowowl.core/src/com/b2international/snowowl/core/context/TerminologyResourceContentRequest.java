@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.BranchRealtimeContentRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
@@ -30,10 +31,17 @@ import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVers
  */
 public final class TerminologyResourceContentRequest<R> extends DelegatingRequest<TerminologyResourceContext, BranchContext, R> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
+	
+	private final boolean snapshot;
 	
 	public TerminologyResourceContentRequest(final Request<BranchContext, R> next) {
+		this(next, true);
+	}
+	
+	public TerminologyResourceContentRequest(final Request<BranchContext, R> next, final boolean snapshot) {
 		super(next);
+		this.snapshot = snapshot;
 	}
 
 	@Override
@@ -52,9 +60,7 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 		}
 		
 		return new RepositoryRequest<R>(resource.getToolingId(),
-			new BranchRequest<R>(path,
-				next()
-			)
+			snapshot ? new BranchSnapshotContentRequest<>(path, next()) : new BranchRealtimeContentRequest<>(path, next())
 		).execute(context);
 	}
 }
