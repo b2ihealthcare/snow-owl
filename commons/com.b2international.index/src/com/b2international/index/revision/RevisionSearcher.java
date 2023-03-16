@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,8 +69,15 @@ public interface RevisionSearcher extends Searcher {
 	<T> Hits<T> search(Query<T> query) throws IOException;
 
 	/**
-	 * @return the branch where this {@link RevisionSearcher} will execute all read operations
+	 * @return the branch where this {@link RevisionSearcher} will execute all read operations.
 	 */
 	String branch();
+
+	/**
+	 * Returns the actual branch reference being read which contains exact location and time information about the visible content of this searcher.
+	 * 
+	 * @return
+	 */
+	RevisionBranchRef ref();
 
 }

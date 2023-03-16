@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -388,7 +388,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		visibleSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
     	});
     	
-		return new RevisionBranchRef(getId(), getPath(), visibleSegments);
+		return new RevisionBranchRef(getId(), List.of(getPath()), visibleSegments, deleted);
 	}
 
     @JsonIgnore
@@ -412,7 +412,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		parentSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
     	});
 	
-		return new RevisionBranchRef(parentSegments.last().branchId(), getParentPath(), parentSegments);
+		return new RevisionBranchRef(parentSegments.last().branchId(), List.of(getParentPath()), parentSegments, deleted);
 	}
     
     /**
