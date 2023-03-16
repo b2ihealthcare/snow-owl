@@ -174,13 +174,11 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			
 //			resourcesToVersion.forEach(resourceToVersion -> {
 				// version components in the given repository
-				new RepositoryRequest<>(resourceToVersion.getToolingId(),
-					new BranchRequest<>(resourceToVersion.getBranchPath(),
-						new RevisionIndexReadRequest<CommitResult>(
+				new RepositoryRequest<CommitResult>(resourceToVersion.getToolingId(),
+					new BranchSnapshotContentRequest<CommitResult>(resourceToVersion.getBranchPath(),
 							context.service(RepositoryManager.class).get(resourceToVersion.getToolingId())
 								.service(VersioningRequestBuilder.class)
 								.build(new VersioningConfiguration(author, resourceToVersion.getResourceURI(), version, description, effectiveTime, force))
-						)
 					)
 				).execute(context);
 				
@@ -198,7 +196,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 //			});
 			
 			// create a version for the resource
-			return new BranchRequest<>(Branch.MAIN_PATH,
+			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
 				new ResourceRepositoryCommitRequestBuilder()
 				.setBody(tx -> {
 					tx.add(VersionDocument.builder()

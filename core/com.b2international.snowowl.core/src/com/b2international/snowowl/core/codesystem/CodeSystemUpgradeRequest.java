@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -143,7 +144,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 			}
 		
 			// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
-			return CodeSystemRequests.prepareNewCodeSystem()
+			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH, CodeSystemRequests.prepareNewCodeSystem()
 				.setId(upgradeResourceId)
 				.setBranchPath(upgradeBranch)
 				.setTitle(String.format("Upgrade of '%s' to '%s'", currentCodeSystem.getTitle(), extensionOf))
@@ -164,8 +165,8 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 				.setSettings(currentCodeSystem.getSettings())
 				.commit()
 				.setCommitComment(String.format("Start upgrade of '%s' to '%s'", resource, extensionOf))
-				.build()
-				.execute(context.openBranch(context, Branch.MAIN_PATH))
+				.build())
+				.execute(context)
 				.getResultAs(String.class);
 		} catch (Throwable e) {
 			// delete upgrade branch if any exception have been thrown during the upgrade

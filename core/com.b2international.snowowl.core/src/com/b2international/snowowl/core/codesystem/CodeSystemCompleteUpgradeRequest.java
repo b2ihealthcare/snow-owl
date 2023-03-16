@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 
 /**
  * @since 7.15.0
@@ -57,7 +57,7 @@ final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContex
 		}
 		
 		// mark the upgrade Code System completed by removing it from the index and updating the upgradeOf CodeSystem branch to the branch of the Upgrade
-		return new BranchRequest<>(Branch.MAIN_PATH,
+		return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
 			new ResourceRepositoryCommitRequestBuilder()
 				.setBody((tx) -> {
 					CodeSystemRequests.prepareUpdateCodeSystem(codeSystem.getUpgradeOf().getResourceId())
