@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import com.b2international.snowowl.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.ecl.EclSerializer;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
@@ -125,7 +125,7 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	}
 	
 	private Expression eval(String expression) {
-		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression).setExpressionForm(Trees.STATED_FORM).build())
+		return new BranchSnapshotContentRequest<>(MAIN, SnomedRequests.prepareEclEvaluation(expression).setExpressionForm(Trees.STATED_FORM).build())
 				.execute(context)
 				.getSync();		
 	}
