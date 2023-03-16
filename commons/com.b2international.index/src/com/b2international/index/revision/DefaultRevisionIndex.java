@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
@@ -172,11 +171,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		if (compareRef.segments().isEmpty()) {
 			return;
 		}
-		ExpressionBuilder compareCommitsQuery = Expressions.builder();
+		ExpressionBuilder compareCommitsQuery = Expressions.bool();
 		
 		for (RevisionSegment segment : compareRef.segments()) {
 			String segmentBranch = getBranchPath(searcher, segment.branchId());
-			compareCommitsQuery.should(Expressions.builder()
+			compareCommitsQuery.should(Expressions.bool()
 					.filter(Commit.Expressions.timestampRange(segment.start(), segment.end()))
 					.filter(Commit.Expressions.branches(Collections.singleton(segmentBranch)))
 					.build());
@@ -241,10 +240,10 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 			return;
 		}
 		
-		final ExpressionBuilder purgeQuery = Expressions.builder();
+		final ExpressionBuilder purgeQuery = Expressions.bool();
 		// purge only documents added to the selected branch
 		for (RevisionSegment segmentToPurge : refToPurge.segments()) {
-			purgeQuery.should(Expressions.builder()
+			purgeQuery.should(Expressions.bool()
 				.filter(segmentToPurge.toRangeExpression(Revision.Fields.CREATED))
 				.filter(segmentToPurge.toRangeExpression(Revision.Fields.REVISED))
 				.build());
@@ -301,7 +300,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	 * @return
 	 */
 	List<Hooks.Hook> getHooks() {
-		return ImmutableList.copyOf(hooks);
+		return List.copyOf(hooks);
 	}
 
 	private RevisionBranchRef getBranchRef(final String branchPath) {
