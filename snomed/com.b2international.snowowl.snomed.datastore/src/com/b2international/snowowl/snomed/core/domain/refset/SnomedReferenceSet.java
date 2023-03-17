@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
 
 import java.util.Set;
 
@@ -176,8 +176,8 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	}
 
 	public boolean hasSnomedTypeTargetComponents() {
-		return String.valueOf(CONCEPT_NUMBER).equals(getMapTargetComponentType())
-				|| String.valueOf(DESCRIPTION_NUMBER).equals(getMapTargetComponentType())
-				|| String.valueOf(RELATIONSHIP_NUMBER).equals(getMapTargetComponentType());
+		return CONCEPT.equals(getMapTargetComponentType())
+				|| DESCRIPTION.equals(getMapTargetComponentType())
+				|| RELATIONSHIP.equals(getMapTargetComponentType());
 	}
 }
