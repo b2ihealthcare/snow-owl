@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -87,30 +86,30 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 	@Override
 	public String execute(final BranchContext context) {
 		final String repositoryId = context.info().id();
-		final Branch branch = context.branch();
+		final String branch = context.path();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 		
-		tracker.classificationScheduled(classificationId, reasonerId, user, branch.path());
+		tracker.classificationScheduled(classificationId, reasonerId, user, branch);
 
 		final AsyncRequest<Boolean> jobRequest = new ClassificationJobRequestBuilder()
 				.setReasonerId(reasonerId)
 				.setParentLockContext(parentLockContext)
 				.addAllConcepts(additionalConcepts)
-				.build(branch.path());
+				.build(branch);
 		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
 				config.getMaxReasonerCount(), 
 				repositoryId, 
-				branch.path());
+				branch);
 
 		JobRequests.prepareSchedule()
 				.setKey(classificationId)
 				.setUser(user)
 				.setRequest(jobRequest)
-				.setDescription(String.format("Classifying the ontology on %s", branch.path()))
+				.setDescription(String.format("Classifying the ontology on %s", branch))
 				.setSchedulingRule(rule)
 				.buildAsync()
 				.get(context, SCHEDULE_TIMEOUT_MILLIS);

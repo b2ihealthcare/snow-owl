@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.branch.Branch;
-
 /**
  * @since 4.5
  */
@@ -26,11 +24,6 @@ public class DelegatingBranchContext extends DelegatingRepositoryContext impleme
 		super(context);
 	}
 
-	@Override
-	public Branch branch() {
-		return getDelegate().branch();
-	}
-	
 	@Override
 	public String path() {
 		return getDelegate().path();

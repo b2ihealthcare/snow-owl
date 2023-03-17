@@ -108,11 +108,10 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 				// enhance all branch context by attaching the Synonyms cache to it
 				if (context instanceof BranchContext) {
 					BranchContext branchContext = (BranchContext) context;
-					return (C) branchContext.inject()
-							.bind(Synonyms.class, new Synonyms(branchContext))
-							.bind(ModuleIdProvider.class, c -> c.getModuleId())
-							.bind(NamespaceIdProvider.class, NamespaceIdProvider.DEFAULT)
-							.build();
+					branchContext.bind(Synonyms.class, new Synonyms(branchContext));
+					branchContext.bind(ModuleIdProvider.class, c -> c.getModuleId());
+					branchContext.bind(NamespaceIdProvider.class, NamespaceIdProvider.DEFAULT);
+					return (C) branchContext;
 				} else {
 					return context;
 				}

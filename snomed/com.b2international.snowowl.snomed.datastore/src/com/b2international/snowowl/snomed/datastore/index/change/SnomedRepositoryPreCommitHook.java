@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
-import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -91,7 +91,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final int maxTermsCount = context.service(RepositoryConfiguration.class).getIndexConfiguration().getMaxTermsCount();
 		
 		// initialize OWL Expression converter on the current branch
-		final SnomedOWLExpressionConverter expressionConverter = new BranchRequest<>(staging.getBranchPath(), branchContext -> {
+		final SnomedOWLExpressionConverter expressionConverter = new BranchSnapshotContentRequest<>(staging.getBranchPath(), branchContext -> {
 			return new SnomedOWLExpressionConverter(branchContext.inject()
 					.bind(RevisionSearcher.class, index)
 					.build());

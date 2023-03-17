@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.context.TerminologyResourceContentReques
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -51,16 +50,14 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 	public void partialLoadingConceptApi() throws Exception {
 		PageableCollectionResource<String[]> hits = new TerminologyResourceRequest<>(SnomedTerminologyComponentConstants.TOOLING_ID, SnomedContentRule.SNOMEDCT.getResourceId(),
 			new TerminologyResourceContentRequest<>(
-				new RevisionIndexReadRequest<>(
-					context -> {
-						return SnomedRequests.prepareSearchConcept()
-								.all()
-								.setFields(SnomedRf2Headers.FIELD_ID, SnomedRf2Headers.FIELD_EFFECTIVE_TIME)
-								.toRawSearch(String[].class)
-								.build()
-								.execute(context);
-					}
-				)
+				context -> {
+					return SnomedRequests.prepareSearchConcept()
+							.all()
+							.setFields(SnomedRf2Headers.FIELD_ID, SnomedRf2Headers.FIELD_EFFECTIVE_TIME)
+							.toRawSearch(String[].class)
+							.build()
+							.execute(context);
+				}
 			)
 		).execute(ApplicationContext.getServiceForClass(Environment.class).inject()
 				.bind(User.class, User.SYSTEM)

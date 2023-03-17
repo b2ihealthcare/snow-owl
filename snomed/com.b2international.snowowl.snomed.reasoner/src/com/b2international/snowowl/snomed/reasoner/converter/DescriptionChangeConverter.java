@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
-import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -140,9 +139,7 @@ extends BaseResourceConverter<DescriptionChangeDocument, DescriptionChange, Desc
 						.setLocales(locales())
 						.build();
 	
-				final SnomedConcepts concepts = new BranchRequest<>(branch,
-						new RevisionIndexReadRequest<>(conceptSearchRequest))
-							.execute(context());
+				final SnomedConcepts concepts = new BranchSnapshotContentRequest<>(branch, conceptSearchRequest).execute(context());
 	
 				for (final SnomedConcept concept : concepts) {
 					final String conceptId = concept.getId();
@@ -170,9 +167,7 @@ extends BaseResourceConverter<DescriptionChangeDocument, DescriptionChange, Desc
 					.setLocales(locales())
 					.build();
 
-			final SnomedDescriptions descriptions = new BranchRequest<>(branch, 
-					new RevisionIndexReadRequest<>(descriptionSearchRequest))
-						.execute(context());
+			final SnomedDescriptions descriptions = new BranchSnapshotContentRequest<>(branch, descriptionSearchRequest).execute(context());
 
 			final Map<String, SnomedDescription> descriptionsById = Maps.uniqueIndex(descriptions, SnomedDescription::getId);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.request.AllowedHealthStates;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 
 /**
  * @since 8.0
@@ -32,7 +31,8 @@ public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuil
 		return new AsyncRequest<>(
 			new TerminologyResourceRequest<>(toolingId, resourcePath,
 				new TerminologyResourceContentRequest<>(
-					wrap(build())
+					wrap(build()),
+					snapshot()
 				)
 			)
 		);
@@ -47,7 +47,7 @@ public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuil
 	}
 	
 	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
-		return new RevisionIndexReadRequest<>(req, snapshot());
+		return req;
 	}
 	
 	default boolean snapshot() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -102,8 +101,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String classificationId = job.getKey();
 
-		final Branch branch = context.branch();
-		final long headTimestamp = branch.headTimestamp();
+		final long headTimestamp = context.searcher().ref().head();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
 		tracker.classificationRunning(classificationId, headTimestamp);

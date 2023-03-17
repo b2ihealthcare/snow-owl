@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationRequests;
@@ -281,7 +281,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	}
 	
 	private ValidationIssues validate() {
-		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().build()).execute(context);
+		new BranchSnapshotContentRequest<>(MAIN, ValidationRequests.prepareValidate().build()).execute(context);
 		return ValidationRequests.issues().prepareSearch()
 			.all()
 			.filterByRule(TEST_RULE_ID)

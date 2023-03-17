@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.index.revision.RevisionSearcher;
 
 /**
  * @since 4.5
@@ -25,17 +24,17 @@ import com.b2international.snowowl.core.branch.Branch;
 public final class RepositoryBranchContext extends DelegatingRepositoryContext implements BranchContext {
 
 	private final String path;
-	private final Branch branch;
 
-	public RepositoryBranchContext(RepositoryContext context, String path, Branch branch) {
+	public RepositoryBranchContext(RepositoryContext context, String path, RevisionSearcher searcher) {
 		super(context);
+		
+		if (searcher.ref().isDeletedBranch()) {
+			throw new BadRequestException("Branch '%s' has been deleted and cannot accept search requests nor further modifications.", searcher.ref().path());
+		}
+		
 		this.path = path;
-		this.branch = checkNotNull(branch, "branch");
-	}
-	
-	@Override
-	public final Branch branch() {
-		return branch;
+		bind(RevisionSearcher.class, searcher);
+		context.optionalService(ContextConfigurer.class).ifPresent(configurer -> configurer.configure(RepositoryBranchContext.this));
 	}
 	
 	@Override
@@ -43,5 +42,5 @@ public final class RepositoryBranchContext extends DelegatingRepositoryContext i
 		// XXX make sure we return the original path expression requested by the client 
 		return path;
 	}
-
+	
 }

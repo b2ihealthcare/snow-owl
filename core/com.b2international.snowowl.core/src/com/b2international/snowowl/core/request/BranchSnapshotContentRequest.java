@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,39 @@ package com.b2international.snowowl.core.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.commons.exceptions.IllegalQueryParameterException;
+import com.b2international.index.query.QueryParseException;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryBranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * @since 4.5
+ * @since 8.10
  */
-public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext, BranchContext, B> {
+public final class BranchSnapshotContentRequest<B> extends DelegatingRequest<RepositoryContext, BranchContext, B> {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final String branchPath;
 	
-	public BranchRequest(String branchPath, Request<BranchContext, B> next) {
+	public BranchSnapshotContentRequest(String branchPath, Request<BranchContext, B> next) {
 		super(next);
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
 
-	public String getBranchPath() {
-		return branchPath;
-	}
-	
 	@Override
 	public B execute(RepositoryContext context) {
-		return next(context.openBranch(context, branchPath));
+		var index = context.service(RevisionIndex.class);
+		return index.read(branchPath, searcher -> {
+			try {
+				return next(new RepositoryBranchContext(context, branchPath, searcher));
+			} catch (QueryParseException e) {
+				throw new IllegalQueryParameterException(e.getMessage());
+			}
+		});
 	}
+	
 }

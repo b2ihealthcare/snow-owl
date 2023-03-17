@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
-import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -94,7 +94,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 		}
 
 		if (!codeSystem.getUpgradeOf().equals(source)) {
-			return new BranchRequest<>(Branch.MAIN_PATH,
+			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
 				new ResourceRepositoryCommitRequestBuilder()
 					.setBody((tx) -> {
 						ResourceDocument entry = tx.lookup(codeSystemId.getResourceId(), ResourceDocument.class);

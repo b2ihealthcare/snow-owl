@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,7 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
-import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -184,9 +183,7 @@ public final class ConcreteDomainChangeConverter
 					.setLocales(locales())
 					.build();
 
-			final SnomedReferenceSetMembers cdMembers = new BranchRequest<>(branch, 
-				new RevisionIndexReadRequest<>(cdMemberSearchRequest))
-					.execute(context());
+			final SnomedReferenceSetMembers cdMembers = new BranchSnapshotContentRequest<>(branch, cdMemberSearchRequest).execute(context());
 			
 			final Map<String, SnomedReferenceSetMember> cdMembersByUuid = Maps.uniqueIndex(cdMembers, SnomedReferenceSetMember::getId);
 
@@ -288,9 +285,7 @@ public final class ConcreteDomainChangeConverter
 			.setLocales(locales())
 			.setExpand(componentOptions.get("expand", Options.class));
 
-		final CollectionResource<? extends SnomedCoreComponent> referencedComponents = new BranchRequest<>(branch, 
-			new RevisionIndexReadRequest<>(searchRequestBuilder.build()))
-				.execute(context());
+		final CollectionResource<? extends SnomedCoreComponent> referencedComponents = new BranchSnapshotContentRequest<>(branch, searchRequestBuilder.build()).execute(context());
 
 		for (final SnomedCoreComponent referencedComponent : referencedComponents) {
 			for (final ReasonerConcreteDomainMember member : membersByReferencedComponent.get(referencedComponent.getId())) {

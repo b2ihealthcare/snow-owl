@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
@@ -143,10 +142,9 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				 * An effective time filter is always set, even if not in delta mode, to prevent
 				 * exporting unpublished content twice.
 				 */
-				new BranchRequest<R>(
-					branch, 
-					new RevisionIndexReadRequest<>(inner -> {
-
+				new BranchSnapshotContentRequest<R>(
+					branch,
+					inner -> {
 						createSearchRequestBuilder()
 							.filterByModules(modules) // null value will be ignored
 							.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
@@ -171,7 +169,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 							});
 						
 						return null;
-					})
+					}
 				).execute(context);
 			}
 		}

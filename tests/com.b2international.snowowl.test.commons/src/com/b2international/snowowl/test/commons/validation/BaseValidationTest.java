@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
@@ -126,7 +126,7 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 	protected final ValidationIssues validate(String ruleId) {
 		final ValidateRequestBuilder req = ValidationRequests.prepareValidate();
 		configureValidationRequest(req);
-		new RevisionIndexReadRequest<>(req.build()).execute(context);
+		new BranchSnapshotContentRequest<>(MAIN, req.build()).execute(context);
 		return ValidationRequests.issues().prepareSearch().all().filterByRule(ruleId).build().execute(context);
 	}
 	

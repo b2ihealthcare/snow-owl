@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,7 +204,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		String codeSystemWorkingBranchPath = context.service(TerminologyResource.class).getBranchPath();
 		
 		if (importConfig.isCreateVersions()) {
-			if (!codeSystemWorkingBranchPath.equals(context.branch().path())) {
+			if (!context.path().equals(codeSystemWorkingBranchPath)) {
 				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
 						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
 			} else {
