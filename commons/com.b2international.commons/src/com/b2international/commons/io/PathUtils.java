@@ -148,7 +148,9 @@ public class PathUtils {
 
                 final Path normalizedPath = normalizeZipEntryPath(entry, targetDirectory);
 
-                if (Files.isDirectory(normalizedPath)) {
+                // Files.isDirectory(normalizedPath) won't work here, because ZipFileSystem cannot determine attributes properly.
+                // ZipEntry.isDirectory() however uses a path based check, which works as expected. 
+                if (entry.isDirectory()) {
                     Files.createDirectories(normalizedPath);
                 } else {
 

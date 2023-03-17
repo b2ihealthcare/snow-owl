@@ -173,6 +173,73 @@ public class PathUtilsTests {
 		assertFalse(Files.exists(unzippedTempFile2));
 
 	}
+	
+	@Test
+	public void testCreateAndUnzipArchiveWithFolders() throws IOException {
+
+		tempDirectory = Files.createTempDirectory("commons-test");
+		
+		Path subDirectory = Files.createDirectory(tempDirectory.resolve("subdir"));
+		
+		final Path tempFile = Files.createFile(tempDirectory.resolve("test-file.txt"));
+		final Path tempFile2 = Files.createFile(subDirectory.resolve("test-file.zip"));
+
+		Files.write(tempFile, List.of("first line"), StandardOpenOption.APPEND);
+
+		final Path archive = tempDirectory.resolve("archive.zip");
+
+		PathUtils.createZipArchive(tempDirectory, archive);
+
+		assertTrue(Files.exists(archive));
+
+		tempDirectory2 = PathUtils.unzipArchive(archive);
+
+		final Path unzippedTempFile = tempDirectory2.resolve(tempFile.getFileName());
+		
+		final Path unzippedSubDirectory = tempDirectory2.resolve("subdir");
+		final Path unzippedTempFile2 = unzippedSubDirectory.resolve(tempFile2.getFileName());
+
+		assertTrue(Files.exists(unzippedTempFile));
+		assertTrue(Files.isRegularFile(unzippedTempFile));
+		assertTrue(Files.lines(unzippedTempFile).findFirst().get().equals("first line"));
+
+		assertTrue(Files.exists(unzippedSubDirectory));
+		assertTrue(Files.isDirectory(unzippedSubDirectory));
+		
+		assertTrue(Files.exists(unzippedTempFile2));
+		assertTrue(Files.isRegularFile(unzippedTempFile2));
+
+	}
+	
+	@Test
+	public void testUnzipArchiveWithoutFolders() throws Exception {
+
+		/*
+		 * This zip archive does not contain directory entries, just the following:
+		 *  subdir/test-file.zip
+         *  test-file.txt 
+		 */
+		Path archive = Paths.get(PathUtilsTests.class.getResource("test_wo_folders.zip").toURI());
+		
+		tempDirectory = PathUtils.unzipArchive(archive);
+
+		final Path unzippedTempFile = tempDirectory.resolve("test-file.txt");
+		
+		final Path subDirectory = tempDirectory.resolve("subdir");
+		final Path unzippedTempFile2 = subDirectory.resolve("test-file.zip");
+
+		assertTrue(Files.exists(unzippedTempFile));
+		assertTrue(Files.isRegularFile(unzippedTempFile));
+		
+		assertTrue(Files.lines(unzippedTempFile).findFirst().get().equals("line"));
+
+		assertTrue(Files.exists(subDirectory));
+		assertTrue(Files.isDirectory(subDirectory));
+		
+		assertTrue(Files.isRegularFile(unzippedTempFile2));
+		assertTrue(Files.exists(unzippedTempFile2));
+
+	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testUnzipArchiveFailWithInvalidFile() throws IOException {
