@@ -69,11 +69,6 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 	}
 	
 	@Override
-	public List<String> getAccessedBranchPaths() {
-		return List.of(path());
-	}
-	
-	@Override
 	public SnowOwlConfiguration config() {
 		return service(SnowOwlConfiguration.class);
 	}

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import java.util.List;
-
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 
@@ -32,11 +30,6 @@ public interface BranchContext extends RepositoryContext {
 	 * @return
 	 */
 	String path();
-	
-	/**
-	 * @return all resolved branch path identifiers based on the accessed path expression. This can contain one or two actual branch path values depending on whether the expression is using a branch range expression or not.
-	 */
-	List<String> getAccessedBranchPaths();
 	
 	/**
 	 * @return the low-level index searcher associated with this {@link BranchContext} instance.

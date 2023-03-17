@@ -388,7 +388,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		visibleSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
     	});
     	
-		return new RevisionBranchRef(getId(), List.of(getPath()), visibleSegments, deleted);
+		return new RevisionBranchRef(getId(), getPath(), visibleSegments, deleted);
 	}
 
     @JsonIgnore
@@ -412,7 +412,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		parentSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
     	});
 	
-		return new RevisionBranchRef(parentSegments.last().branchId(), List.of(getParentPath()), parentSegments, deleted);
+		return new RevisionBranchRef(parentSegments.last().branchId(), getParentPath(), parentSegments, deleted);
 	}
     
     /**

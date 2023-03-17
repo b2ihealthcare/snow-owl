@@ -18,7 +18,10 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newTreeSet;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
@@ -26,7 +29,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 
 /**
  * Reference to a set of revision branch segments to query the contents visible from the branch at a given time.
@@ -36,13 +38,13 @@ import com.google.common.collect.Iterables;
 public final class RevisionBranchRef {
 
 	private final long branchId;
-	private final List<String> branchPaths;
+	private final String branchPath;
 	private final SortedSet<RevisionSegment> segments;
 	private final boolean deletedBranch;
 
-	public RevisionBranchRef(long branchId, List<String> branchPaths, SortedSet<RevisionSegment> segments, boolean deletedBranch) {
+	public RevisionBranchRef(long branchId, String branchPath, SortedSet<RevisionSegment> segments, boolean deletedBranch) {
 		this.branchId = branchId;
-		this.branchPaths = branchPaths;
+		this.branchPath = branchPath;
 		this.segments = segments;
 		this.deletedBranch = deletedBranch;
 	}
@@ -52,13 +54,9 @@ public final class RevisionBranchRef {
 	}
 
 	public String path() {
-		return Iterables.getLast(branchPaths, null);
+		return branchPath;
 	}
 	
-	public List<String> paths() {
-		return branchPaths;
-	}
-
 	public SortedSet<RevisionSegment> segments() {
 		return segments;
 	}
@@ -165,7 +163,7 @@ public final class RevisionBranchRef {
 			}
 		}
 
-		return new RevisionBranchRef(branchId, branchPaths, differenceSegments, deletedBranch);
+		return new RevisionBranchRef(branchId, branchPath, differenceSegments, deletedBranch);
 	}
 
 	public RevisionBranchRef intersection(RevisionBranchRef other) {
@@ -183,7 +181,7 @@ public final class RevisionBranchRef {
 			intersectionSegments.add(nextSegment.intersection(otherSegment));
 		}
 
-		return new RevisionBranchRef(branchId, branchPaths, intersectionSegments, deletedBranch);
+		return new RevisionBranchRef(branchId, branchPath, intersectionSegments, deletedBranch);
 	}
 
 	/**
@@ -194,7 +192,7 @@ public final class RevisionBranchRef {
 	 */
 	public RevisionBranchRef lastRef() {
 		checkArgument(!isEmpty(), "Unable to generate last branch reference from an empty branch reference.");
-		return new RevisionBranchRef(branchId, branchPaths, ImmutableSortedSet.of(segments.last()), deletedBranch);
+		return new RevisionBranchRef(branchId, branchPath, ImmutableSortedSet.of(segments.last()), deletedBranch);
 	}
 
 	/**
@@ -205,7 +203,7 @@ public final class RevisionBranchRef {
 	 */
 	public RevisionBranchRef historyRef() {
 		checkArgument(!isEmpty(), "Unable to generate historical branch reference from an empty branch reference.");
-		return new RevisionBranchRef(branchId, branchPaths, ImmutableSortedSet.copyOf(segments.headSet(segments.last())), deletedBranch);
+		return new RevisionBranchRef(branchId, branchPath, ImmutableSortedSet.copyOf(segments.headSet(segments.last())), deletedBranch);
 	}
 
 	public boolean isEmpty() {
@@ -213,7 +211,7 @@ public final class RevisionBranchRef {
 	}
 
 	public RevisionBranchRef restrictTo(long timestamp) {
-		return new RevisionBranchRef(branchId, branchPaths, segments()
+		return new RevisionBranchRef(branchId, branchPath, segments()
 				.stream()
 				.filter(segment -> segment.isBefore(timestamp)) // consider segments that are before the currently desired timestamp
 				.map(segment -> segment.restrictEnd(timestamp))

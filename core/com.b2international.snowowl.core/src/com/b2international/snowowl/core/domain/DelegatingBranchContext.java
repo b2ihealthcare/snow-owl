@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import java.util.List;
-
 /**
  * @since 4.5
  */
@@ -26,11 +24,6 @@ public class DelegatingBranchContext extends DelegatingRepositoryContext impleme
 		super(context);
 	}
 
-	@Override
-	public List<String> getAccessedBranchPaths() {
-		return getDelegate().getAccessedBranchPaths();
-	}
-	
 	@Override
 	public String path() {
 		return getDelegate().path();

@@ -204,7 +204,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		String codeSystemWorkingBranchPath = context.service(TerminologyResource.class).getBranchPath();
 		
 		if (importConfig.isCreateVersions()) {
-			if (!context.getAccessedBranchPaths().contains(codeSystemWorkingBranchPath)) {
+			if (!context.path().equals(codeSystemWorkingBranchPath)) {
 				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
 						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
 			} else {

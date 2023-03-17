@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import java.util.List;
-
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionSearcher;
 
@@ -45,9 +43,4 @@ public final class RepositoryBranchContext extends DelegatingRepositoryContext i
 		return path;
 	}
 	
-	@Override
-	public List<String> getAccessedBranchPaths() {
-		return searcher().ref().paths();
-	}
-
 }
