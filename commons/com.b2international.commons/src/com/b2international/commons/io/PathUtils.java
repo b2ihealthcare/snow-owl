@@ -58,9 +58,9 @@ public class PathUtils {
 		checkArgument(Files.isDirectory(directory), "The specified path is not a directory");
 
 		final List<Path> filteredPaths = Files.walk(directory)
-										.sorted(Comparator.reverseOrder())
-										.filter(path -> exclusions.stream().noneMatch(p -> p.equals(path.toString())))
-										.collect(toList());
+				.sorted(Comparator.reverseOrder())
+				.filter(path -> exclusions.stream().noneMatch(p -> p.equals(path.toString())))
+				.collect(toList());
 
 		for (final Path path : filteredPaths) {
 
@@ -93,8 +93,8 @@ public class PathUtils {
 		try (FileSystem zipfs = FileSystems.newFileSystem(uri, Map.of("create", "true"))) {
 
 			List<Path> sortedPaths = Files.walk(directory)
-				.sorted() // directories are encountered first
-				.collect(toList());
+					.sorted() // directories are encountered first
+					.collect(toList());
 
 			if (!Strings.isNullOrEmpty(exclusionPathMatcherExpression)) {
 
@@ -140,35 +140,35 @@ public class PathUtils {
 		checkArgument(Files.isRegularFile(sourceFile), "Source file is not a regular file");
 		checkArgument(Files.isDirectory(targetDirectory), "Target directory is not a directory");
 
-        try (final FileInputStream fis = new FileInputStream(sourceFile.toFile()); ZipInputStream zis = new ZipInputStream(fis)) {
+		try (final FileInputStream fis = new FileInputStream(sourceFile.toFile()); ZipInputStream zis = new ZipInputStream(fis)) {
 
-            ZipEntry entry = zis.getNextEntry();
+			ZipEntry entry = zis.getNextEntry();
 
-            while (entry != null) {
+			while (entry != null) {
 
-                final Path normalizedPath = normalizeZipEntryPath(entry, targetDirectory);
+				final Path normalizedPath = normalizeZipEntryPath(entry, targetDirectory);
 
-                // Files.isDirectory(normalizedPath) won't work here, because ZipFileSystem cannot determine attributes properly.
-                // ZipEntry.isDirectory() however uses a path based check, which works as expected. 
-                if (entry.isDirectory()) {
-                    Files.createDirectories(normalizedPath);
-                } else {
+				// Files.isDirectory(normalizedPath) won't work here, because ZipFileSystem cannot determine attributes properly.
+				// ZipEntry.isDirectory() however uses a path based check, which works as expected.
+				if (entry.isDirectory()) {
+					Files.createDirectories(normalizedPath);
+				} else {
 
-                    if (normalizedPath.getParent() != null && Files.notExists(normalizedPath.getParent())) {
-                    	Files.createDirectories(normalizedPath.getParent());
-                    }
+					if (normalizedPath.getParent() != null && Files.notExists(normalizedPath.getParent())) {
+						Files.createDirectories(normalizedPath.getParent());
+					}
 
-                    Files.copy(zis, normalizedPath, StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(zis, normalizedPath, StandardCopyOption.REPLACE_EXISTING);
 
-                }
+				}
 
-                entry = zis.getNextEntry();
+				entry = zis.getNextEntry();
 
-            }
+			}
 
-        }
+		}
 
-    }
+	}
 
 	/**
 	 * Get the extension of the file specified
@@ -253,17 +253,17 @@ public class PathUtils {
 	/**
 	 * Protection against zip slip attack, see https://security.snyk.io/research/zip-slip-vulnerability
 	 */
-    private static Path normalizeZipEntryPath(ZipEntry zipEntry, Path targetDirectory) throws IOException {
+	private static Path normalizeZipEntryPath(ZipEntry zipEntry, Path targetDirectory) throws IOException {
 
-        final Path normalizedPath = targetDirectory.resolve(zipEntry.getName()).normalize();
+		final Path normalizedPath = targetDirectory.resolve(zipEntry.getName()).normalize();
 
-        if (!normalizedPath.startsWith(targetDirectory)) {
-            throw new IOException("Bad zip entry: " + zipEntry.getName());
-        }
+		if (!normalizedPath.startsWith(targetDirectory)) {
+			throw new IOException("Bad zip entry: " + zipEntry.getName());
+		}
 
-        return normalizedPath;
+		return normalizedPath;
 
-    }
+	}
 
 	private PathUtils() {}
 
