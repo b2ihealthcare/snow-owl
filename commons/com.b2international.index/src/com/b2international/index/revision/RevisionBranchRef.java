@@ -92,7 +92,12 @@ public final class RevisionBranchRef {
 
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper(this).add("branchId", branchId).add("segments", segments).toString();
+		return MoreObjects.toStringHelper(this)
+				.add("branchId", branchId)
+				.add("branchPath", branchPath)
+				.add("segments", segments)
+				.add("deletedBranch", deletedBranch)
+				.toString();
 	}
 
 	public Expression toRevisionFilter() {
