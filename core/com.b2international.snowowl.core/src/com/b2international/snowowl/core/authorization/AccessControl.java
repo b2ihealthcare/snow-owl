@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
@@ -71,12 +73,25 @@ public interface AccessControl {
 		// extract resourceUri format (new 8.x format)
 		TerminologyResourceRequest<?> terminologyResourceRequest = Request.getNestedRequest(req, TerminologyResourceRequest.class);
 		if (terminologyResourceRequest != null) {
-			// accept both full resourceURI as resource and without resource type (as ID/path is often enough)
-			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).toString()));
-			accessedResources.add(Permission.asResource(terminologyResourceRequest.getResourceURI(context).withoutResourceType()));
+			TerminologyResource resource = terminologyResourceRequest.getResource(context);
+			// fetch the currently accessed (versioned, branch or base resource URI) and the base resource URI
+			ResourceURI accessedResourceURI = terminologyResourceRequest.getResourceURI(context);
+			ResourceURI resourceURI = resource.getResourceURI();
+
+			// if the user is accessing a version branch or subbranch of the resource always check for authorization of the entire resource and then check for direct version/branch access only
+			if (!accessedResourceURI.equals(resourceURI)) {
+				// accept both full resourceURI as resource and without resource type (as ID/path is often enough), but always check the typeless ID first, then the full one
+				accessedResources.add(Permission.asResource(resourceURI.withoutResourceType()));
+				accessedResources.add(Permission.asResource(resourceURI.toString()));
+			}
+			// accept both full resourceURI as resource and without resource type (as ID/path is often enough), but always check the typeless ID first, then the full one
+			accessedResources.add(Permission.asResource(accessedResourceURI.withoutResourceType()));
+			accessedResources.add(Permission.asResource(accessedResourceURI.toString()));
+			
+			
 			// if a resource that is being accessed is part of a bundle and the user has access to that bundle then it has access to the resource as well
-			accessedResources.add(terminologyResourceRequest.getResource(context).getBundleId());
-			accessedResources.addAll(Collections3.toImmutableSet(terminologyResourceRequest.getResource(context).getBundleAncestorIds()));
+			accessedResources.add(resource.getBundleId());
+			accessedResources.addAll(Collections3.toImmutableSet(resource.getBundleAncestorIds()));
 			// ensure Root bundle is not present when checking access
 			accessedResources.remove(IComponent.ROOT_ID);
 		}
