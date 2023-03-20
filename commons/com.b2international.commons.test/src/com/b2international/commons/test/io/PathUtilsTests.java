@@ -29,10 +29,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.junit.After;
 import org.junit.Test;
 
 import com.b2international.commons.io.PathUtils;
+import com.google.common.io.Resources;
 
 /**
  * @since 7.22.0
@@ -243,7 +245,7 @@ public class PathUtilsTests {
 		 *  subdir/test-file.zip
 		 *  test-file.txt
 		 */
-		final Path archive = Paths.get(PathUtilsTests.class.getResource("test_wo_folders.zip").toURI());
+		final Path archive = Paths.get(FileLocator.toFileURL(Resources.getResource(PathUtilsTests.class, "test_wo_folders.zip")).toURI());
 
 		tempDirectory = PathUtils.unzipArchive(archive);
 
