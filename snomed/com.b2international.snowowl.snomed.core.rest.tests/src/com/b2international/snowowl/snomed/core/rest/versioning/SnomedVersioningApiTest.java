@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.snomed.core.rest.versioning;
 
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.INT_CODESYSTEM;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -27,7 +31,9 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -98,6 +104,32 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		SnomedConcept afterForceVersioning = getConcept(codeSystemVersionURI, conceptId);
 		assertEquals(versionEffectiveDate, EffectiveTimes.format(afterForceVersioning.getEffectiveTime(), DateFormats.SHORT));
 	}
+	
+	@Test
+	public void createVersionShouldPreserveDocumentPRoperties() {
+		String conceptId = createConcept(new CodeSystemURI(INT_CODESYSTEM), SnomedRestFixtures.childUnderRootWithDefaults());
+		createMember(new CodeSystemURI(INT_CODESYSTEM), Map.of(
+				"active", true,
+				"moduleId", Concepts.MODULE_SCT_CORE,
+				"referenceSetId", Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
+				"referencedComponentId", conceptId,
+				"valueId", Concepts.PENDING_MOVE
+			));
+		
+		SnomedConcepts conceptBeforeVersioning = searchConcept(new CodeSystemURI(INT_CODESYSTEM), Map.of(
+				"activeMemberOf", REFSET_CONCEPT_INACTIVITY_INDICATOR,
+				"id", conceptId), 1);
+		assertTrue(conceptBeforeVersioning.getTotal() == 1);
+		
+		createVersion(INT_CODESYSTEM, "versionToTestDocumentPreservation", getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(201);
+		getVersion(INT_CODESYSTEM, "versionToTestDocumentPreservation").statusCode(200);
+		
+		SnomedConcepts conceptAfterVersioning = searchConcept(new CodeSystemURI(INT_CODESYSTEM), Map.of(
+				"activeMemberOf", REFSET_CONCEPT_INACTIVITY_INDICATOR,
+				"id", conceptId), 1);
+		assertTrue(conceptAfterVersioning.getTotal() == 1);
+	}
+
 	
 	@Test
 	public void publishAssignedIdsOnVersionCreate() throws Exception {
