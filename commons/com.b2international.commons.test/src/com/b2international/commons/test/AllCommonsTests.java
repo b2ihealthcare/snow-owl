@@ -19,12 +19,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.commons.test.collect.BitSetTest;
-import com.b2international.commons.test.collect.ByteOpenHashSetTest;
-import com.b2international.commons.test.collect.EmptyLongListTest;
-import com.b2international.commons.test.collect.IntOpenHashSetTest;
-import com.b2international.commons.test.collect.LongOpenHashSetTest;
+import com.b2international.commons.test.collect.*;
 import com.b2international.commons.test.config.ConfigurationFactoryTest;
+import com.b2international.commons.test.io.PathUtilsTests;
 
 /**
  * @since 2.5
@@ -39,7 +36,8 @@ import com.b2international.commons.test.config.ConfigurationFactoryTest;
 	ByteOpenHashSetTest.class,
 	IntOpenHashSetTest.class,
 	LongOpenHashSetTest.class,
-	EmptyLongListTest.class
+	EmptyLongListTest.class,
+	PathUtilsTests.class
 })
 public class AllCommonsTests {
 	// Empty class body
