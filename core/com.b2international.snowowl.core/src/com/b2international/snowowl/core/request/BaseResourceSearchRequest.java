@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -164,8 +163,19 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 		
 		final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
-		final Set<String> accessibleResources = authz.getAccessibleResources(context, user);
 		
+		// special check for a single resource content access request to not lookup all the visible resources for the user but to check only the one needed for faster execution
+		if (!CompareUtils.isEmpty(componentIds()) && componentIds().size() == 1) {
+			try {
+				authz.checkPermission(context, user, List.of(Permission.requireAll(Permission.OPERATION_BROWSE, Iterables.getOnlyElement(componentIds()))));
+				return;
+			} catch (ForbiddenException e) {
+				// if this fails let the system carry on with the default execution path and check all visible resources, including bundles
+				// TODO remove when we have proper bundle management in the authorization subsystem
+			}
+		}
+		
+		final Set<String> accessibleResources = authz.getAccessibleResources(context, user);
 		final SortedSet<String> exactResourceIds = accessibleResources.stream()
 				.filter(resource -> !resource.endsWith("*"))
 				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
