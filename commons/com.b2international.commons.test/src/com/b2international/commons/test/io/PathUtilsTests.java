@@ -106,10 +106,34 @@ public class PathUtilsTests {
 		assertTrue(Files.exists(tempFile2));
 		assertTrue(Files.isRegularFile(tempFile2));
 
-		PathUtils.deleteDirectory(tempDirectory, Set.of(tempFile.toString()));
+		PathUtils.deleteDirectory(tempDirectory, Set.of(tempFile));
 		assertTrue(Files.exists(tempDirectory));
 		assertTrue(Files.exists(tempFile));
 		assertFalse(Files.exists(tempFile2));
+
+	}
+	
+	@Test
+	public void testDeleteDirectoryWithNestedFilter() throws IOException {
+
+		tempDirectory = Files.createTempDirectory("commons-test");
+		tempDirectory2 = Files.createDirectory(tempDirectory.resolve("inner-dir"));
+		
+		final Path tempFile = Files.createFile(tempDirectory.resolve("test-file.txt"));
+		final Path tempFile2 = Files.createFile(tempDirectory2.resolve("test-file.zip"));
+
+		assertTrue(Files.exists(tempFile));
+		assertTrue(Files.isRegularFile(tempFile));
+		assertTrue(Files.exists(tempFile2));
+		assertTrue(Files.isRegularFile(tempFile2));
+
+		PathUtils.deleteDirectory(tempDirectory, Set.of(tempFile2));
+		
+		assertTrue(Files.exists(tempDirectory));
+		assertTrue(Files.exists(tempDirectory2));
+		
+		assertFalse(Files.exists(tempFile));
+		assertTrue(Files.exists(tempFile2));
 
 	}
 

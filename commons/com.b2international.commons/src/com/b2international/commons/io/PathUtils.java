@@ -46,30 +46,31 @@ public class PathUtils {
 	 * Clean the specified directory but keep the directory itself
 	 */
 	public static void cleanDirectory(final Path directory) throws IOException {
-		deleteDirectory(directory, Set.of(directory.toString()));
+		deleteDirectory(directory, Set.of(directory));
 	}
 
 	/**
 	 * Delete all files within the specified directory except the exclusions specified. If there are none, the directory is deleted as well.
 	 * The exclusions must be declared as full paths.
 	 */
-	public static void deleteDirectory(final Path directory, Collection<String> exclusions) throws IOException {
+	public static void deleteDirectory(final Path directory, Collection<Path> exclusions) throws IOException {
 
 		checkArgument(Files.isDirectory(directory), "The specified path is not a directory");
 
 		final List<Path> filteredPaths = Files.walk(directory)
-				.sorted(Comparator.reverseOrder())
-				.filter(path -> exclusions.stream().noneMatch(p -> p.equals(path.toString())))
+				.sorted(Comparator.reverseOrder()) // directories are encountered last
+				.filter(path -> exclusions.stream().noneMatch(p -> p.equals(path)))
 				.collect(toList());
 
 		for (final Path path : filteredPaths) {
 
-			// do not try to delete the containing directory when there are excluded files present inside
-			if (path.equals(directory) && Files.list(directory).findFirst().isPresent()) {
+			// do not try to delete a directory which still contains files via exclusions
+			if (Files.isDirectory(path) && Files.list(directory).findFirst().isPresent()) {
 				continue;
 			}
 
 			Files.delete(path);
+			
 		}
 
 	}
