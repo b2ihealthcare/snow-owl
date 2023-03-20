@@ -121,7 +121,9 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.term(doc.getTerm())
 				.typeId(doc.getTypeId())
 				.caseSignificanceId(doc.getCaseSignificanceId())
-				.acceptabilityMap(doc.getAcceptabilityMap());
+				.acceptabilityMap(doc.getAcceptabilityMap())
+				.activeMemberOf(doc.getActiveMemberOf())
+				.memberOf(doc.getMemberOf());
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<SnomedDescription> descriptions) {
