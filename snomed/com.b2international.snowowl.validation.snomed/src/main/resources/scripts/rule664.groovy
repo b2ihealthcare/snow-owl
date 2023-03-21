@@ -76,7 +76,7 @@ if (params.isUnpublishedOnly) {
 	}
 	
 	// then scroll through all possible duplicates among published terms
-	searcher.search(Query.select(String[].class)
+	searcher.scroll(Query.select(String[].class)
 		.from(SnomedDescriptionIndexEntry.class)
 		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 		.where(
