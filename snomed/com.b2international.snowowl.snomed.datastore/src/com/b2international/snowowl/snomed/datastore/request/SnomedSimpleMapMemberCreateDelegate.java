@@ -44,7 +44,7 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
-		if (refSet.hasSnomedTypeTargetComponents()) {
+		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET)) && refSet.hasSnomedTypeTargetComponents()) {
 			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_TARGET);
 		}
 		
@@ -62,6 +62,7 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		
 		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MAP_TARGET);
 
 		Builder<String> requiredComponentIds = ImmutableSet.<String>builder();
@@ -71,6 +72,7 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 		}
 		
 		return requiredComponentIds.build();
+		
 	}
 	
 }
