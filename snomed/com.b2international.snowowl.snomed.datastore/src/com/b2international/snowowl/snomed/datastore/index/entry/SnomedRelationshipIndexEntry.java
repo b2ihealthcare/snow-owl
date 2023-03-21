@@ -101,6 +101,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			.effectiveTime(input.getEffectiveTime())
 			.released(input.isReleased())
 			.moduleId(input.getModuleId())
+			.activeMemberOf(input.getActiveMemberOf())
+			.memberOf(input.getActiveMemberOf())
 			.sourceId(input.getSourceId())
 			.typeId(input.getTypeId())
 			.destinationId(input.getDestinationId())
