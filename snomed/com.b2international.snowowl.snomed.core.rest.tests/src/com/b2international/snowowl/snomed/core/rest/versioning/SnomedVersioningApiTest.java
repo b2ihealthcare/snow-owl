@@ -20,8 +20,8 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstant
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -123,7 +123,7 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		SnomedConcepts conceptBeforeVersioning = searchConcept(codeSystemURI, Map.of(
 				"activeMemberOf", REFSET_CONCEPT_INACTIVITY_INDICATOR,
 				"id", conceptId), 1);
-		assertTrue(conceptBeforeVersioning.getTotal() == 1);
+		assertThat(conceptBeforeVersioning.getTotal()).isEqualTo(1);
 		
 		createVersion(INT_CODESYSTEM, versionName, getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(201);
 		getVersion(INT_CODESYSTEM, versionName).statusCode(200);
@@ -131,7 +131,7 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		SnomedConcepts conceptAfterVersioning = searchConcept(codeSystemVersionURI, Map.of(
 				"activeMemberOf", REFSET_CONCEPT_INACTIVITY_INDICATOR,
 				"id", conceptId), 1);
-		assertTrue(conceptAfterVersioning.getTotal() == 1);
+		assertThat(conceptAfterVersioning.getTotal()).isEqualTo(1);
 	}
 
 	
