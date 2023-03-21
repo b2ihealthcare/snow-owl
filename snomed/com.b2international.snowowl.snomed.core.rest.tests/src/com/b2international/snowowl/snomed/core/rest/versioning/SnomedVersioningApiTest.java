@@ -107,8 +107,12 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createVersionShouldPreserveDocumentPRoperties() {
-		String conceptId = createConcept(new CodeSystemURI(INT_CODESYSTEM), SnomedRestFixtures.childUnderRootWithDefaults());
-		createMember(new CodeSystemURI(INT_CODESYSTEM), Map.of(
+		final String versionName = "versionToTestDocumentPreservation";
+		CodeSystemURI codeSystemURI = new CodeSystemURI(INT_CODESYSTEM);
+		CodeSystemURI codeSystemVersionURI = CodeSystemURI.branch(INT_CODESYSTEM, versionName);
+		
+		String conceptId = createConcept(codeSystemURI, SnomedRestFixtures.childUnderRootWithDefaults());
+		createMember(codeSystemURI, Map.of(
 				"active", true,
 				"moduleId", Concepts.MODULE_SCT_CORE,
 				"referenceSetId", Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
@@ -116,15 +120,15 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 				"valueId", Concepts.PENDING_MOVE
 			));
 		
-		SnomedConcepts conceptBeforeVersioning = searchConcept(new CodeSystemURI(INT_CODESYSTEM), Map.of(
+		SnomedConcepts conceptBeforeVersioning = searchConcept(codeSystemURI, Map.of(
 				"activeMemberOf", REFSET_CONCEPT_INACTIVITY_INDICATOR,
 				"id", conceptId), 1);
 		assertTrue(conceptBeforeVersioning.getTotal() == 1);
 		
-		createVersion(INT_CODESYSTEM, "versionToTestDocumentPreservation", getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(201);
-		getVersion(INT_CODESYSTEM, "versionToTestDocumentPreservation").statusCode(200);
+		createVersion(INT_CODESYSTEM, versionName, getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(201);
+		getVersion(INT_CODESYSTEM, versionName).statusCode(200);
 		
-		SnomedConcepts conceptAfterVersioning = searchConcept(new CodeSystemURI(INT_CODESYSTEM), Map.of(
+		SnomedConcepts conceptAfterVersioning = searchConcept(codeSystemVersionURI, Map.of(
 				"activeMemberOf", REFSET_CONCEPT_INACTIVITY_INDICATOR,
 				"id", conceptId), 1);
 		assertTrue(conceptAfterVersioning.getTotal() == 1);
