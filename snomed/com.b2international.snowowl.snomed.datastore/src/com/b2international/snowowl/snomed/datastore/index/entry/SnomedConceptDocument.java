@@ -239,6 +239,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.ancestors(input.getAncestors())
 				.statedParents(input.getStatedParents())
 				.statedAncestors(input.getStatedAncestors())
+				.memberOf(input.getMemberOf())
+				.activeMemberOf(input.getActiveMemberOf())
 				.referencedComponentType(input.getReferencedComponentType())
 				.mapTargetComponentType(input.getMapTargetComponentType())
 				.preferredDescriptions(input.getPreferredDescriptions())
