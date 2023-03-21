@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
+
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -171,4 +175,9 @@ public final class SnomedReferenceSet extends SnomedComponent {
 		throw new UnsupportedOperationException("Reference sets does not support update operation yet");
 	}
 
+	public boolean hasSnomedTypeTargetComponents() {
+		return CONCEPT.equals(getMapTargetComponentType())
+				|| DESCRIPTION.equals(getMapTargetComponentType())
+				|| RELATIONSHIP.equals(getMapTargetComponentType());
+	}
 }
