@@ -96,31 +96,28 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 			);
 			
 			// Find concepts/descriptions with incomplete member of fields
+			SnomedConceptSearchRequestBuilder conceptMemberOfRequest = SnomedRequests.prepareSearchConcept().isMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
 			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> memberOfConceptIterator = 
-					new SearchResourceRequestIterator<>(
-							SnomedRequests.prepareSearchConcept().isMemberOf(referenceSetId).setFields(ID),
-							b -> b.setLimit(50_000).build().execute(context));
+					new SearchResourceRequestIterator<>(conceptMemberOfRequest, b -> b.build().execute(context));
 			memberOfConceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingMembersOf.removeAll(concept.getId())));
 			
-			SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> memberOfDescriptionIterator = new SearchResourceRequestIterator<>(
-					SnomedRequests.prepareSearchDescription().isMemberOf(referenceSetId).setFields(ID),
-					b -> b.setLimit(50_000).build().execute(context));
+			SnomedDescriptionSearchRequestBuilder descriptionMemberOfRequest = SnomedRequests.prepareSearchDescription().isMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
+			SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> memberOfDescriptionIterator = 
+					new SearchResourceRequestIterator<>(descriptionMemberOfRequest, b -> b.setLimit(50_000).build().execute(context));
 			memberOfDescriptionIterator.forEachRemaining(descriptions -> descriptions.forEach(description -> missingMembersOf.removeAll(description.getId())));
 			
 			missingMembersOfComponents.putAll(missingMembersOf);
 			log.info("Found {} components with missing member of entry for reference set {}", missingMembersOf.size(), referenceSetId);
 			
 			// Find concepts/descriptions with incomplete active member of fields
+			SnomedConceptSearchRequestBuilder conceptActiveMemberOfRequest = SnomedRequests.prepareSearchConcept().isActiveMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
 			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> activeMemberOfConceptIterator = 
-					new SearchResourceRequestIterator<>(
-							SnomedRequests.prepareSearchConcept().isActiveMemberOf(referenceSetId).setFields(ID),
-							b -> b.setLimit(50_000).build().execute(context));
+					new SearchResourceRequestIterator<>(conceptActiveMemberOfRequest, b -> b.build().execute(context));
 			activeMemberOfConceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingActiveMembersOf.removeAll(concept.getId())));
 	
+			SnomedDescriptionSearchRequestBuilder descriptionActiveMemberOfRequest = SnomedRequests.prepareSearchDescription().isActiveMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
 			SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> activeMemberOfDescriptionIterator = 
-					new SearchResourceRequestIterator<>(
-							SnomedRequests.prepareSearchDescription().isActiveMemberOf(referenceSetId).setFields(ID),
-							b -> b.setLimit(50_000).build().execute(context));
+					new SearchResourceRequestIterator<>(descriptionActiveMemberOfRequest, b -> b.build().execute(context));
 			activeMemberOfDescriptionIterator.forEachRemaining(descriptions -> descriptions.forEach(description -> missingActiveMembersOf.removeAll(description.getId())));
 			
 			missingActiveMembersOfComponents.putAll(missingActiveMembersOf);
