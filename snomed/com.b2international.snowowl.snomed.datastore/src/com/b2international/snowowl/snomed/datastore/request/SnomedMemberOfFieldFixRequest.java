@@ -96,11 +96,11 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 			);
 			
 			// Find concepts/descriptions with incomplete member of fields
-			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> memberOfonceptIterator = 
+			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> memberOfConceptIterator = 
 					new SearchResourceRequestIterator<>(
 							SnomedRequests.prepareSearchConcept().isMemberOf(referenceSetId).setFields(ID),
 							b -> b.setLimit(50_000).build().execute(context));
-			memberOfonceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingMembersOf.removeAll(concept.getId())));
+			memberOfConceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingMembersOf.removeAll(concept.getId())));
 			
 			SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> memberOfDescriptionIterator = new SearchResourceRequestIterator<>(
 					SnomedRequests.prepareSearchDescription().isMemberOf(referenceSetId).setFields(ID),
@@ -111,11 +111,11 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 			log.info("Found {} components with missing member of entry for reference set {}", missingMembersOf.size(), referenceSetId);
 			
 			// Find concepts/descriptions with incomplete active member of fields
-			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> activeMemberOfonceptIterator = 
+			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> activeMemberOfConceptIterator = 
 					new SearchResourceRequestIterator<>(
 							SnomedRequests.prepareSearchConcept().isActiveMemberOf(referenceSetId).setFields(ID),
 							b -> b.setLimit(50_000).build().execute(context));
-			activeMemberOfonceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingActiveMembersOf.removeAll(concept.getId())));
+			activeMemberOfConceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingActiveMembersOf.removeAll(concept.getId())));
 	
 			SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> activeMemberOfDescriptionIterator = 
 					new SearchResourceRequestIterator<>(
