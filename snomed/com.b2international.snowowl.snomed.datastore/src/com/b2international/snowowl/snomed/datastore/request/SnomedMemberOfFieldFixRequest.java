@@ -174,7 +174,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 				
 				modifiedComponentCount++;
 				if (modifiedComponentCount % LIMIT == 0) {
-					context.commit("Update memberOf/activeMemberOf fields on concepts");
+					context.commit("Update memberOf/activeMemberOf fields on components");
 				}
 				
 			} catch (ComponentNotFoundException exception) {
@@ -183,7 +183,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 		}
 		
 		//Commit any remaining concepts;
-		context.commit("Update memberOf/activeMemberOf fields on concepts");
+		context.commit("Update memberOf/activeMemberOf fields on components");
 		return Set.copyOf(allAffectedComponents);
 	}
 		
