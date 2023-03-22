@@ -184,7 +184,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 		
 		//Commit any remaining concepts;
 		context.commit("Update memberOf/activeMemberOf fields on concepts");
-		return allAffectedComponents;
+		return Set.copyOf(allAffectedComponents);
 	}
 		
 }
