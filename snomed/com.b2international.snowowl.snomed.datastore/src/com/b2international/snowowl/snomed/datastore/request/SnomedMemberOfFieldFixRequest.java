@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -151,7 +152,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 							.build();
 					context.update(concept, updatedDocument);
 					
-				} else {
+				} else if (ComponentCategory.DESCRIPTION.equals(SnomedIdentifiers.getComponentCategory(componentId))) {
 					
 					final SnomedDescriptionIndexEntry description = context.lookup(componentId, SnomedDescriptionIndexEntry.class);
 					
@@ -170,6 +171,8 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 							.activeMemberOf(activeMemberOf)
 							.build();
 					context.update(description, updatedDocument);
+				} else {
+					log.error("Found unsupported type for component {}", componentId);
 				}
 				
 				modifiedComponentCount++;
@@ -177,7 +180,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 					context.commit("Update memberOf/activeMemberOf fields on components");
 				}
 				
-			} catch (ComponentNotFoundException exception) {
+			} catch (ComponentNotFoundException | IllegalArgumentException exception) {
 				log.error(exception.getMessage());
 			}
 		}
