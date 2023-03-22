@@ -65,7 +65,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 				.map(SnomedReferenceSet::getId)
 				.collect(Collectors.toSet());
 		
-		log.info("Found a total of {} concept type reference sets", referenceSetIds.size());
+		log.info("Found a total of {} reference sets", referenceSetIds.size());
 
 		int counter = 0;
 		Multimap<String, String> missingMembersOfComponents = HashMultimap.create();
