@@ -400,6 +400,7 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(getApiBaseUrl())
 			.accept(JSON_UTF8)
 			.queryParams(Map.of("expand", "pt()"))
+			.header("Accept-Language", "*")
 			.get("/{path}/concepts/", branchPath.getPath())
 			.then()
 			.assertThat()
