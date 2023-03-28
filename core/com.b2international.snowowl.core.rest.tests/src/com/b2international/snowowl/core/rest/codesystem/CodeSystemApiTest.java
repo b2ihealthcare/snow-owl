@@ -405,7 +405,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		assertCodeSystemGet(codeSystemId).statusCode(404);
 		
-		// Check if the branch has been created
+		// Check if the branch has been deleted
 		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);
 		assertThat(RepositoryRequests.branching()
 			.prepareGet(branch)
@@ -443,7 +443,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			
 		CodeSystemVersionRestRequests.assertGetVersion(codeSystemId, "v1").statusCode(404);
 		
-		// Check if the branch has been created
+		// Check if the branch has been deleted
 		String versionBranch = Branch.get(Branch.MAIN_PATH, codeSystemId, "v1");
 		assertThat(RepositoryRequests.branching()
 				.prepareGet(versionBranch)
