@@ -24,6 +24,7 @@ import java.util.List;
  */
 public final class AcceptLanguageHeader {
 
+	public static final String WILDCARD = "*";
 	public static final String DEFAULT_ACCEPT_LANGUAGE_HEADER = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4";
 
 	/**
@@ -51,7 +52,7 @@ public final class AcceptLanguageHeader {
 	 */
 	public static final List<ExtendedLocale> parseHeader(final String acceptLanguageHeader, final String defaultAcceptLanguageHeader) {
 		// if the incoming value is a wildcard header value, then fall back to the specified defaultAcceptLanguageHeader parameter
-		try (StringReader reader = new StringReader("*".equals(acceptLanguageHeader) ? defaultAcceptLanguageHeader : acceptLanguageHeader)) {
+		try (StringReader reader = new StringReader(WILDCARD.equals(acceptLanguageHeader) ? defaultAcceptLanguageHeader : acceptLanguageHeader)) {
 			return AcceptHeader.parse(reader, ExtendedLocale::valueOf);
 		} catch (IOException e) {
 			throw new IllegalArgumentException(e.getMessage());
