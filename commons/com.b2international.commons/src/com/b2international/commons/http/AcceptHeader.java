@@ -50,7 +50,7 @@ public class AcceptHeader<T> implements Comparable<AcceptHeader<T>> {
 		return Doubles.compare(quality, other.quality);
 	}
 
-    private static <T> List<T> parse(StringReader input, Function<String, T> converterFunction) throws IOException {
+    /*package*/ static <T> List<T> parse(StringReader input, Function<String, T> converterFunction) throws IOException {
         final ImmutableList.Builder<AcceptHeader<T>> resultBuilder = ImmutableList.builder();
 
         do {
@@ -91,7 +91,4 @@ public class AcceptHeader<T> implements Comparable<AcceptHeader<T>> {
     	return parse(input, Long::valueOf);
     }
     
-    public static List<ExtendedLocale> parseExtendedLocales(StringReader input) throws IOException {
-    	return parse(input, ExtendedLocale::valueOf);
-    }
 }

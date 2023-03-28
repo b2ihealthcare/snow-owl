@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.List;
 
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.DescriptionKnnFilterSupport;
@@ -248,9 +249,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * 
 	 * @param acceptLanguage
 	 * @return
+	 * @see AcceptLanguageHeader#parseHeader(String)
 	 */
 	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(String acceptLanguage) {
-		return filterByDescriptionLanguageRefSet(ExtendedLocale.parseLocales(acceptLanguage));
+		return filterByDescriptionLanguageRefSet(AcceptLanguageHeader.parseHeader(acceptLanguage));
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -39,10 +40,11 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 	 * 
 	 * @param locales - the locale list in Accept-Language header format
 	 * @return ResourceRequestBuilder
+	 * @see AcceptLanguageHeader#parseHeader(String)
 	 */
 	public final B setLocales(String locales) {
 		if (locales != null) {
-			setLocales(ExtendedLocale.parseLocales(locales));
+			setLocales(AcceptLanguageHeader.parseHeader(locales));
 		}
 		return getSelf();
 	}
