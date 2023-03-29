@@ -133,9 +133,9 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 		}
 	}
 
-	public static void expandVersions(List<? extends Resource> results, Options options, Function<Options, Integer> limit, List<ExtendedLocale> locales, RepositoryContext context) {
-		if (options.containsKey(TerminologyResource.Expand.VERSIONS)) {
-			Options expandOptions = options.getOptions(TerminologyResource.Expand.VERSIONS);
+	public static void expandVersions(List<? extends Resource> results, Options expand, Function<Options, Integer> getLimit, List<ExtendedLocale> locales, RepositoryContext context) {
+		if (expand.containsKey(TerminologyResource.Expand.VERSIONS)) {
+			Options expandOptions = expand.getOptions(TerminologyResource.Expand.VERSIONS);
 			// version searches must be performed on individual terminology resources to provide correct results
 			results.stream()
 				.filter(TerminologyResource.class::isInstance)
@@ -143,7 +143,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 				.forEach(res -> {
 					Versions versions = ResourceRequests.prepareSearchVersion()
 						.filterByResource(res.getResourceURI())
-						.setLimit(limit.apply(expandOptions))
+						.setLimit(getLimit.apply(expandOptions))
 						.setFields(expandOptions.containsKey("fields") ? expandOptions.getList("fields", String.class) : null)
 						.sortBy(expandOptions.containsKey("sort") ? expandOptions.getString("sort") : null)
 						.setLocales(locales)
