@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class ValueSetFilterTest extends FhirTest {
 	
 	private void validate(ValueSetFilter filter) {
 		assertEquals(FilterOperator.EQUALS.getCode(), filter.getOperator());
-		assertEquals(new Code("1234567"), filter.getValue());
+		assertEquals("1234567", filter.getValue());
 		assertEquals(new Code("filterProperty"), filter.getProperty());
 	}
 
