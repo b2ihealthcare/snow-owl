@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
 
 /**
- * @since 7.21.1
+ * @since 7.22.0
  */
 public class SnomedMemberOfFieldFixRequestBuilder 
 	extends BaseRequestBuilder<SnomedMemberOfFieldFixRequestBuilder, TransactionContext, Set<String>>

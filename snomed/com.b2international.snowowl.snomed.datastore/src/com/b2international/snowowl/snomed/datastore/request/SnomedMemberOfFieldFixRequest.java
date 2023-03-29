@@ -45,7 +45,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
- * @since 7.21.1
+ * @since 7.22.0
  */
 public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext, Set<String>> {
 
