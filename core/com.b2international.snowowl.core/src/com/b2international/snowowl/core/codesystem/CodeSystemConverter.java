@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import static com.b2international.snowowl.core.request.ResourceConverter.expandVersions;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,11 +75,12 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		expandAvailableUpgrades(results);
 		expandExtensionOfBranchState(results);
 		expandUpgradeOfInfo(results);
+		expandVersions(results, expand(), options -> getLimit(options), locales(), context());
 		
 		// expand additional fields via pluggable converters
 		converters.expand(context(), expand(), locales(), results);
 	}
-
+	
 	private void expandExtensionOfBranchState(List<CodeSystem> results) {
 		if (!expand().containsKey(CodeSystem.Expand.EXTENSION_OF_BRANCH_INFO)) {
 			return;
