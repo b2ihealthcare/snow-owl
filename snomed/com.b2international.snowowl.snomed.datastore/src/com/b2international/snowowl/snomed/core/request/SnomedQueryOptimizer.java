@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.cache.CacheBuilder;
@@ -99,12 +98,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 
 		// Get number of referenced descendants (taking possible duplicates into account)
-		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(
-				membersByAncestor.asMap(), 
-				descendants -> descendants.stream()
-					.map(QueryExpression::getQuery)
-					.distinct()
-					.count()));
+		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(membersByAncestor.asMap(),
+				descendants -> descendants.stream().map(QueryExpression::getQuery).distinct().count()));
 		
 		final ImmutableList.Builder<QueryExpressionDiff> diffs = ImmutableList.builder();
 		
@@ -119,29 +114,41 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				continue;
 			}
 			
-			SnomedConcept parent = SnomedRequests.prepareGetConcept(parentId)
-				.setLocales(locales)
-				.setExpand("fsn(),descendants(direct:false,limit:0)")
-				.build()
-				.execute(context);
+			// optimization is a "net win" if we can remove at least two non-pinned clauses from the original (pinned clauses cannot be optimized)
+			final List<QueryExpression> nonPinnedMembersForParent = List.copyOf(membersByAncestor.get(parentId)
+					.stream()
+					.filter(ex -> !ex.isPinned())
+					.collect(Collectors.toList()));
 			
-			final int totalDescendants = parent.getDescendants().getTotal();
+			if (nonPinnedMembersForParent.size() <= 1) {
+				continue;
+			}
+			
+			var totalDescendants = SnomedRequests.prepareSearchConcept()
+				.filterByActive(true)
+				.filterByAncestor(parentId)
+				.setLimit(0)
+				.build()
+				.execute(context)
+				.getTotal();
+			
 			
 			if (totalDescendants == referencedDescendants) {
-				final List<QueryExpression> remove = List.copyOf(membersByAncestor.get(parentId)
-						.stream()
-						.filter(ex -> !ex.isPinned())
-						.collect(Collectors.toList()));
+				var label = locales.isEmpty() ? null : SnomedDisplayTermType.FSN.getLabel(SnomedRequests.prepareGetConcept(parentId)
+						.setLocales(locales)
+						.setExpand("fsn()")
+						.build()
+						.execute(context));
 				
-				// The optimization is a "net win" if we can remove at least two clauses from the original
-				if (remove.size() > 1) {
-					final QueryExpression replacement = new QueryExpression(IDs.base62UUID(), String.format("<%s", Concept.toConceptString(parentId, locales.isEmpty() ? null : SnomedDisplayTermType.FSN.getLabel(parent))), false);
-					final List<QueryExpression> addToInclusion = List.of(replacement);
-					final List<QueryExpression> addToExclusion = List.of();
+				final QueryExpression replacement = new QueryExpression(IDs.base62UUID(), String.format("<%s", Concept.toConceptString(parentId, label)), false);
+				final List<QueryExpression> addToInclusion = List.of(replacement);
+				final List<QueryExpression> addToExclusion = List.of();
 
-					final QueryExpressionDiff diff = new QueryExpressionDiff(addToInclusion, addToExclusion, remove);
-					diffs.add(diff);
-				}
+				final QueryExpressionDiff diff = new QueryExpressionDiff(addToInclusion, addToExclusion, nonPinnedMembersForParent);
+				diffs.add(diff);
+			} else {
+				// TODO support optimization of certain number of children is present in the VS and replace inclusions with <parent and add exclusion for the rest of the IDs
+//				System.err.println("Ratio of included children: " + ((double) referencedDescendants / totalDescendants) * 100);
 			}
 		}
 		
