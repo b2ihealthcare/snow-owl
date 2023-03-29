@@ -41,6 +41,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.TooCostlyException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.MatchNone;
@@ -452,6 +453,19 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 			.collect(Collectors.joining(" OR ")));
 	}
 
+	// XXX until we figure out how to process these effectively
+	@Test(expected = TooCostlyException.class)
+	public void largeEclOrOperatorOnly() throws Exception {
+		eval(IntStream.range(0, 10_000)
+			.mapToObj(i -> {
+				if (i % 10 == 0) {
+					return "<" + RandomSnomedIdentiferGenerator.generateConceptId();
+				} else {
+					return RandomSnomedIdentiferGenerator.generateConceptId();
+				}
+			})
+			.collect(Collectors.joining(" OR ")));
+	}
 	
 	@Test(expected = BadRequestException.class)
 	public void binaryOperatorAmbiguityOrAnd() throws Exception {
