@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,9 +46,9 @@ public class ValueSetFilter {
 	@Valid
 	@NotNull
 	@JsonProperty 
-	private final Code value;
+	private final String value;
 	
-	ValueSetFilter(Code property, Code operator, Code value) {
+	ValueSetFilter(Code property, Code operator, String value) {
 		this.property = property;
 		this.operator = operator;
 		this.value = value;
@@ -62,7 +62,7 @@ public class ValueSetFilter {
 		return operator;
 	}
 	
-	public Code getValue() {
+	public String getValue() {
 		return value;
 	}
 	
@@ -75,7 +75,7 @@ public class ValueSetFilter {
 		
 		private Code property;
 		private Code operator;
-		private Code value;
+		private String value;
 		
 		public Builder property(final String property) {
 			this.property = new Code(property);
@@ -89,7 +89,7 @@ public class ValueSetFilter {
 		}
 		
 		public Builder value(final String value) {
-			this.value = new Code(value);
+			this.value = value;
 			return this;
 		}
 		
@@ -101,7 +101,7 @@ public class ValueSetFilter {
 		public Builder refsetExpression(String id) {
 			property = new Code(FilterPropertyCode.EXPRESSION.getDisplayName());
 			operator = FilterOperator.EQUALS.getCode();
-			value = new Code("^"+ id);
+			value = "^"+ id;
 			return this;
 		}
 		
@@ -113,7 +113,7 @@ public class ValueSetFilter {
 		public Builder eclExpression(String eclExpression) {
 			property = new Code(FilterPropertyCode.EXPRESSION.getDisplayName());
 			operator = FilterOperator.EQUALS.getCode();
-			value = new Code(eclExpression);
+			value = eclExpression;
 			return this;
 		}
 
