@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -76,7 +77,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 		expandCommits(results);
 		expandUpdateAtCommit(results);
 		expandResourcePathLabels(results);
-		expandVersions(results);
+		expandVersions(results, expand(), options -> getLimit(options), locales(), context());
 		
 		// expand additional fields via pluggable converters
 		converters.expand(context(), expand(), locales(), results);
@@ -132,9 +133,9 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 		}
 	}
 
-	private void expandVersions(List<Resource> results) {
-		if (expand().containsKey(TerminologyResource.Expand.VERSIONS)) {
-			Options expandOptions = expand().getOptions(TerminologyResource.Expand.VERSIONS);
+	public static void expandVersions(List<? extends Resource> results, Options options, Function<Options, Integer> limit, List<ExtendedLocale> locales, RepositoryContext context) {
+		if (options.containsKey(TerminologyResource.Expand.VERSIONS)) {
+			Options expandOptions = options.getOptions(TerminologyResource.Expand.VERSIONS);
 			// version searches must be performed on individual terminology resources to provide correct results
 			results.stream()
 				.filter(TerminologyResource.class::isInstance)
@@ -142,12 +143,12 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 				.forEach(res -> {
 					Versions versions = ResourceRequests.prepareSearchVersion()
 						.filterByResource(res.getResourceURI())
-						.setLimit(getLimit(expandOptions))
+						.setLimit(limit.apply(expandOptions))
 						.setFields(expandOptions.containsKey("fields") ? expandOptions.getList("fields", String.class) : null)
 						.sortBy(expandOptions.containsKey("sort") ? expandOptions.getString("sort") : null)
-						.setLocales(locales())
+						.setLocales(locales)
 						.build()
-						.execute(context());
+						.execute(context);
 					res.setVersions(versions);
 				});
 		}

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import static com.b2international.snowowl.core.request.ResourceConverter.expandVersions;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,7 +28,6 @@ import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -74,33 +75,12 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		expandAvailableUpgrades(results);
 		expandExtensionOfBranchState(results);
 		expandUpgradeOfInfo(results);
-		expandVersions(results);
+		expandVersions(results, expand(), options -> getLimit(options), locales(), context());
 		
 		// expand additional fields via pluggable converters
 		converters.expand(context(), expand(), locales(), results);
 	}
 	
-	private void expandVersions(List<CodeSystem> results) {
-		if (expand().containsKey(TerminologyResource.Expand.VERSIONS)) {
-			Options expandOptions = expand().getOptions(TerminologyResource.Expand.VERSIONS);
-			// version searches must be performed on individual terminology resources to provide correct results
-			results.stream()
-				.filter(TerminologyResource.class::isInstance)
-				.map(TerminologyResource.class::cast)
-				.forEach(res -> {
-					Versions versions = ResourceRequests.prepareSearchVersion()
-						.filterByResource(res.getResourceURI())
-						.setLimit(getLimit(expandOptions))
-						.setFields(expandOptions.containsKey("fields") ? expandOptions.getList("fields", String.class) : null)
-						.sortBy(expandOptions.containsKey("sort") ? expandOptions.getString("sort") : null)
-						.setLocales(locales())
-						.build()
-						.execute(context());
-					res.setVersions(versions);
-				});
-		}
-	}
-
 	private void expandExtensionOfBranchState(List<CodeSystem> results) {
 		if (!expand().containsKey(CodeSystem.Expand.EXTENSION_OF_BRANCH_INFO)) {
 			return;
