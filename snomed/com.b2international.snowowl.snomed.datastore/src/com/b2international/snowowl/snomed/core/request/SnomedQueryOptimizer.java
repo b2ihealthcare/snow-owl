@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.request;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -36,7 +38,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.*;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
@@ -100,25 +101,42 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		final ImmutableList.Builder<QueryExpressionDiff> diffs = ImmutableList.builder();
 
 		boolean hasMoreOptimizations = false;
+		AtomicInteger numberOfOptimizationsFound = new AtomicInteger(0);
 		
-		hasMoreOptimizations |= processAncestors(context, membersByParent, diffs, numberOfOptimizationsToOffer, locales);
-		hasMoreOptimizations |= processAncestors(context, membersByAncestor, diffs, numberOfOptimizationsToOffer, locales);
+		hasMoreOptimizations |= processAncestors(context, membersByParent, locales, (parentId, diff) -> {
+			// register optimization
+			diffs.add(diff);
+			// remove from ancestor optimization if we have found a way to use direct parents
+			membersByAncestor.removeAll(parentId);
+			// check if we should continue processing or not
+			int optimizationsFound = numberOfOptimizationsFound.incrementAndGet();
+			return optimizationsFound < numberOfOptimizationsToOffer;
+		});
+
+		if (numberOfOptimizationsFound.get() < numberOfOptimizationsToOffer) {
+			hasMoreOptimizations |= processAncestors(context, membersByAncestor, locales, (parentId, diff) -> {
+				// register optimization
+				diffs.add(diff);
+				// check if we should continue processing or not
+				int optimizationsFound = numberOfOptimizationsFound.incrementAndGet();
+				return optimizationsFound < numberOfOptimizationsToOffer;
+			});
+		}
 		
 		return new QueryExpressionDiffs(diffs.build(), hasMoreOptimizations);
 	}
 
-	private boolean processAncestors(BranchContext context, Multimap<String, QueryExpression> membersByAncestor, Builder<QueryExpressionDiff> diffs, int numberOfOptimizationsToOffer, List<ExtendedLocale> locales) {
+	private boolean processAncestors(BranchContext context, Multimap<String, QueryExpression> membersByAncestor, List<ExtendedLocale> locales, BiFunction<String, QueryExpressionDiff, Boolean> onOptimizedClauseDetected) {
 		// Get number of referenced descendants (taking possible duplicates into account)
 		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(membersByAncestor.asMap(),
 				descendants -> descendants.stream().map(QueryExpression::getQuery).distinct().count()));
 		
-		int numberOfOptimizationsFound = 0;
 		// Retrieve descendant counts for parents; if the two numbers match, the single concept
 		// references can be replaced with a single << expression.
 		Iterator<Map.Entry<String,Long>> sortedByLargestDescendantCountFirst = uniqueDescendantsByParent.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).iterator();
 		
 		// end the loop when we don't have more entries to process or we have found the desired amount of optimizations
-		while (sortedByLargestDescendantCountFirst.hasNext() && numberOfOptimizationsFound < numberOfOptimizationsToOffer) {
+		while (sortedByLargestDescendantCountFirst.hasNext()) {
 			Entry<String, Long> sortedByLargestDescendantCountFirstNextEntry = sortedByLargestDescendantCountFirst.next();
 			final String parentId = sortedByLargestDescendantCountFirstNextEntry.getKey();
 			final int referencedDescendants = Ints.checkedCast(uniqueDescendantsByParent.get(parentId));
@@ -158,8 +176,9 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final List<QueryExpression> addToExclusion = List.of();
 
 				final QueryExpressionDiff diff = new QueryExpressionDiff(addToInclusion, addToExclusion, nonPinnedMembersForParent);
-				diffs.add(diff);
-				numberOfOptimizationsFound++;
+				if (!onOptimizedClauseDetected.apply(parentId, diff)) {
+					break;
+				}
 			} else {
 				// TODO support optimization of certain number of children is present in the VS and replace inclusions with <parent and add exclusion for the rest of the IDs
 //				var ratio = ((double) referencedDescendants / totalDescendants) * 100;
