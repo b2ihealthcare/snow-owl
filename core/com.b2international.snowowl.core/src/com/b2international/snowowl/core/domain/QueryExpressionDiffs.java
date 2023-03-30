@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,16 @@ public final class QueryExpressionDiffs extends ListCollectionResource<QueryExpr
 
 	private static final long serialVersionUID = 1L;
 	
-	public static final QueryExpressionDiffs EMPTY = new QueryExpressionDiffs(List.of());
+	public static final QueryExpressionDiffs EMPTY = new QueryExpressionDiffs(List.of(), false);
+	
+	private final boolean hasMoreOptimizations;
 
-	public QueryExpressionDiffs(List<QueryExpressionDiff> items) {
+	public QueryExpressionDiffs(List<QueryExpressionDiff> items, boolean hasMoreOptimizations) {
 		super(items);
+		this.hasMoreOptimizations = hasMoreOptimizations;
+	}
+	
+	public boolean isHasMoreOptimizations() {
+		return hasMoreOptimizations;
 	}
 }

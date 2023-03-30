@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.request;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -53,6 +50,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	public QueryExpressionDiffs optimize(BranchContext context, Options params) {
 		final Collection<QueryExpression> inclusions = params.getCollection(QueryOptimizer.OptionKey.INCLUSIONS, QueryExpression.class);
 		final List<ExtendedLocale> locales = params.getList(QueryOptimizer.OptionKey.LOCALES, ExtendedLocale.class);
+		final int numberOfOptimizationsToOffer = params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(Integer.MAX_VALUE);
 		
 		final EclParser eclParser = context.service(EclParser.class);
 		final LoadingCache<String, ExpressionConstraint> eclCache = CacheBuilder.newBuilder()
@@ -65,11 +63,12 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		
 		// if there are no single concept inclusions to optimize, exit early
 		if (singleConceptInclusions.isEmpty()) {
-			return new QueryExpressionDiffs(Collections.emptyList());
+			return QueryExpressionDiffs.EMPTY;
 		}
 		
 		// Record the ancestors (both direct and indirect) of each single concept inclusion
-		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
+		final Multimap<String, QueryExpression> membersByParent = HashMultimap.create();
+//		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
 		
 		Iterables.partition(singleConceptInclusions.keySet(), PAGE_SIZE).forEach(batchIds -> {
 			SnomedRequests.prepareSearchConcept()
@@ -80,33 +79,38 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				.forEach(child -> {
 					final Collection<QueryExpression> childExpressions = singleConceptInclusions.get(child.getId());
 					final List<String> parentIds = child.getParentIdsAsString();
-					final List<String> ancestorIds = child.getAncestorIdsAsString();
+//					final List<String> ancestorIds = child.getAncestorIdsAsString();
 					
 					parentIds.forEach(parentId -> {
 						if (!IComponent.ROOT_ID.equals(parentId) && !Concepts.ROOT_CONCEPT.equals(parentId)) {
-							membersByAncestor.putAll(parentId, childExpressions);
+							membersByParent.putAll(parentId, childExpressions);
 						}
 					});
 					
-					ancestorIds.forEach(ancestorId -> {
-						if (!IComponent.ROOT_ID.equals(ancestorId) && !Concepts.ROOT_CONCEPT.equals(ancestorId)) {
-							membersByAncestor.putAll(ancestorId, childExpressions);
-						}
-					});
+//					ancestorIds.forEach(ancestorId -> {
+//						if (!IComponent.ROOT_ID.equals(ancestorId) && !Concepts.ROOT_CONCEPT.equals(ancestorId)) {
+//							membersByAncestor.putAll(ancestorId, childExpressions);
+//						}
+//					});
 				});
 		});
 
 
 		// Get number of referenced descendants (taking possible duplicates into account)
-		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(membersByAncestor.asMap(),
+		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(membersByParent.asMap(),
 				descendants -> descendants.stream().map(QueryExpression::getQuery).distinct().count()));
 		
 		final ImmutableList.Builder<QueryExpressionDiff> diffs = ImmutableList.builder();
 		
+		int numberOfOptimizationsFound = 0;
 		// Retrieve descendant counts for parents; if the two numbers match, the single concept
 		// references can be replaced with a single << expression.
-		for (Entry<String, Long> uniqueDescendantsByParentEntry : uniqueDescendantsByParent.entrySet()) {
-			final String parentId = uniqueDescendantsByParentEntry.getKey();
+		Iterator<Map.Entry<String,Long>> sortedByLargestDescendantCountFirst = uniqueDescendantsByParent.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).iterator();
+		
+		// end the loop when we don't have more entries to process or we have found the desired amount of optimizations
+		while (sortedByLargestDescendantCountFirst.hasNext() && numberOfOptimizationsFound < numberOfOptimizationsToOffer) {
+			Entry<String, Long> sortedByLargestDescendantCountFirstNextEntry = sortedByLargestDescendantCountFirst.next();
+			final String parentId = sortedByLargestDescendantCountFirstNextEntry.getKey();
 			final int referencedDescendants = Ints.checkedCast(uniqueDescendantsByParent.get(parentId));
 			
 			// optimize if at least two descendants are referenced for a given parent, otherwise skip
@@ -115,7 +119,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			}
 			
 			// optimization is a "net win" if we can remove at least two non-pinned clauses from the original (pinned clauses cannot be optimized)
-			final List<QueryExpression> nonPinnedMembersForParent = List.copyOf(membersByAncestor.get(parentId)
+			final List<QueryExpression> nonPinnedMembersForParent = List.copyOf(membersByParent.get(parentId)
 					.stream()
 					.filter(ex -> !ex.isPinned())
 					.collect(Collectors.toList()));
@@ -132,7 +136,6 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				.execute(context)
 				.getTotal();
 			
-			
 			if (totalDescendants == referencedDescendants) {
 				var label = locales.isEmpty() ? null : SnomedDisplayTermType.FSN.getLabel(SnomedRequests.prepareGetConcept(parentId)
 						.setLocales(locales)
@@ -146,13 +149,17 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 				final QueryExpressionDiff diff = new QueryExpressionDiff(addToInclusion, addToExclusion, nonPinnedMembersForParent);
 				diffs.add(diff);
+				numberOfOptimizationsFound++;
 			} else {
 				// TODO support optimization of certain number of children is present in the VS and replace inclusions with <parent and add exclusion for the rest of the IDs
-//				System.err.println("Ratio of included children: " + ((double) referencedDescendants / totalDescendants) * 100);
+//				var ratio = ((double) referencedDescendants / totalDescendants) * 100;
+//				System.err.println(String.format("Ratio of included children for ancestor '%s' is '%s' (included: '%s', missing: '%s', total: '%s')  ", parentId, ratio, referencedDescendants, totalDescendants - referencedDescendants, totalDescendants));
 			}
 		}
 		
-		return new QueryExpressionDiffs(diffs.build());
+		// TODO process non-direct ancestors as well
+		
+		return new QueryExpressionDiffs(diffs.build(), sortedByLargestDescendantCountFirst.hasNext());
 	}
 
 	private boolean isSingleConceptExpression(LoadingCache<String, ExpressionConstraint> eclCache, String query) {

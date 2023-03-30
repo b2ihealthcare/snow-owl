@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,14 @@ import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
 /**
  * @since 7.7
  */
-public class QueryOptimizeRequestBuilder 
+public final class QueryOptimizeRequestBuilder 
 	extends ResourceRequestBuilder<QueryOptimizeRequestBuilder, BranchContext, QueryExpressionDiffs> 
 	implements TerminologyResourceContentRequestBuilder<QueryExpressionDiffs> {
 
 	private final List<QueryExpression> inclusions = newArrayList();
 	private final List<QueryExpression> exclusions = newArrayList();
+	
+	private Integer limit = 25;
 	
 	public QueryOptimizeRequestBuilder filterByInclusions(Collection<QueryExpression> inclusions) {
 		if (inclusions != null) {
@@ -49,6 +51,11 @@ public class QueryOptimizeRequestBuilder
 		return getSelf();
 	}
 	
+	public QueryOptimizeRequestBuilder setLimit(Integer limit) {
+		this.limit = limit;
+		return getSelf();
+	}
+	
 	@Override
 	protected QueryOptimizeRequest create() {
 		return new QueryOptimizeRequest();
@@ -61,5 +68,6 @@ public class QueryOptimizeRequestBuilder
 		final QueryOptimizeRequest req = (QueryOptimizeRequest) request;
 		req.setInclusions(inclusions);
 		req.setExclusions(exclusions);
+		req.setLimit(limit);
 	}
 }
