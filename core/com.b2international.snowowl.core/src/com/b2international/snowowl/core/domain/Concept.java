@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,20 @@ import java.util.SortedSet;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 /**
  * @since 7.5
  */
+@JsonIgnoreProperties(ignoreUnknown = true) // required to allow backward compatibility
 public final class Concept extends BaseComponent {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	private final ResourceURI codeSystemUri;
 	private final String componentType;
@@ -46,6 +50,27 @@ public final class Concept extends BaseComponent {
 	
 	private Object internalConcept;
 	
+	@JsonCreator
+	public Concept(
+			@JsonProperty("code") ComponentURI code, 
+			@JsonProperty("active") Boolean active, 
+			@JsonProperty("term") String term, 
+			@JsonProperty("alternativeTerms") SortedSet<String> alternativeTerms, 
+			@JsonProperty("iconId") String iconId, 
+			@JsonProperty("parentIds") List<String> parentIds, 
+			@JsonProperty("ancestorIds") List<String> ancestorIds,
+			@JsonProperty("score") Float score) {
+		this(code.resourceUri(), code.componentType());
+		setId(code.identifier());
+		setActive(active);
+		setTerm(term);
+		setAlternativeTerms(alternativeTerms);
+		setIconId(iconId);
+		setScore(score);
+		setParentIds(parentIds);
+		setAncestorIds(ancestorIds);
+	}
+	
 	public Concept(ResourceURI codeSystemUri, String componentType) {
 		this.codeSystemUri = codeSystemUri;
 		this.componentType = componentType;
@@ -55,6 +80,14 @@ public final class Concept extends BaseComponent {
 		return active;
 	}
 	
+	public ResourceURI getCodeSystem() {
+		return codeSystemUri;
+	}
+	
+	/**
+	 * @return the codeSystem URI this concept is coming from
+	 * @deprecated - since all code systems identifiable via URIs we can simplify the API and say {@link #getCodeSystem()} or in FHIR terms just system, but we don't go that far
+	 */
 	public ResourceURI getCodeSystemUri() {
 		return codeSystemUri;
 	}
@@ -130,12 +163,12 @@ public final class Concept extends BaseComponent {
 		return (T) internalConcept;
 	}
 	
+	@JsonIgnore
 	@Override
 	public String getComponentType() {
 		return componentType;
 	}
 
-	@JsonIgnore
 	public ComponentURI getCode() {
 		return ComponentURI.of(codeSystemUri, componentType, getId());
 	}
