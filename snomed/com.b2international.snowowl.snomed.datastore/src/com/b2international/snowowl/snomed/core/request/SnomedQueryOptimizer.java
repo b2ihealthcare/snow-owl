@@ -36,6 +36,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
@@ -68,7 +69,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		
 		// Record the ancestors (both direct and indirect) of each single concept inclusion
 		final Multimap<String, QueryExpression> membersByParent = HashMultimap.create();
-//		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
+		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
 		
 		Iterables.partition(singleConceptInclusions.keySet(), PAGE_SIZE).forEach(batchIds -> {
 			SnomedRequests.prepareSearchConcept()
@@ -79,28 +80,37 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				.forEach(child -> {
 					final Collection<QueryExpression> childExpressions = singleConceptInclusions.get(child.getId());
 					final List<String> parentIds = child.getParentIdsAsString();
-//					final List<String> ancestorIds = child.getAncestorIdsAsString();
+					final List<String> ancestorIds = child.getAncestorIdsAsString();
 					
 					parentIds.forEach(parentId -> {
 						if (!IComponent.ROOT_ID.equals(parentId) && !Concepts.ROOT_CONCEPT.equals(parentId)) {
 							membersByParent.putAll(parentId, childExpressions);
+							membersByAncestor.putAll(parentId, childExpressions);
 						}
 					});
 					
-//					ancestorIds.forEach(ancestorId -> {
-//						if (!IComponent.ROOT_ID.equals(ancestorId) && !Concepts.ROOT_CONCEPT.equals(ancestorId)) {
-//							membersByAncestor.putAll(ancestorId, childExpressions);
-//						}
-//					});
+					ancestorIds.forEach(ancestorId -> {
+						if (!IComponent.ROOT_ID.equals(ancestorId) && !Concepts.ROOT_CONCEPT.equals(ancestorId)) {
+							membersByAncestor.putAll(ancestorId, childExpressions);
+						}
+					});
 				});
 		});
 
-
-		// Get number of referenced descendants (taking possible duplicates into account)
-		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(membersByParent.asMap(),
-				descendants -> descendants.stream().map(QueryExpression::getQuery).distinct().count()));
-		
 		final ImmutableList.Builder<QueryExpressionDiff> diffs = ImmutableList.builder();
+
+		boolean hasMoreOptimizations = false;
+		
+		hasMoreOptimizations |= processAncestors(context, membersByParent, diffs, numberOfOptimizationsToOffer, locales);
+		hasMoreOptimizations |= processAncestors(context, membersByAncestor, diffs, numberOfOptimizationsToOffer, locales);
+		
+		return new QueryExpressionDiffs(diffs.build(), hasMoreOptimizations);
+	}
+
+	private boolean processAncestors(BranchContext context, Multimap<String, QueryExpression> membersByAncestor, Builder<QueryExpressionDiff> diffs, int numberOfOptimizationsToOffer, List<ExtendedLocale> locales) {
+		// Get number of referenced descendants (taking possible duplicates into account)
+		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(membersByAncestor.asMap(),
+				descendants -> descendants.stream().map(QueryExpression::getQuery).distinct().count()));
 		
 		int numberOfOptimizationsFound = 0;
 		// Retrieve descendant counts for parents; if the two numbers match, the single concept
@@ -119,7 +129,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			}
 			
 			// optimization is a "net win" if we can remove at least two non-pinned clauses from the original (pinned clauses cannot be optimized)
-			final List<QueryExpression> nonPinnedMembersForParent = List.copyOf(membersByParent.get(parentId)
+			final List<QueryExpression> nonPinnedMembersForParent = List.copyOf(membersByAncestor.get(parentId)
 					.stream()
 					.filter(ex -> !ex.isPinned())
 					.collect(Collectors.toList()));
@@ -157,9 +167,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			}
 		}
 		
-		// TODO process non-direct ancestors as well
-		
-		return new QueryExpressionDiffs(diffs.build(), sortedByLargestDescendantCountFirst.hasNext());
+		return sortedByLargestDescendantCountFirst.hasNext();
 	}
 
 	private boolean isSingleConceptExpression(LoadingCache<String, ExpressionConstraint> eclCache, String query) {

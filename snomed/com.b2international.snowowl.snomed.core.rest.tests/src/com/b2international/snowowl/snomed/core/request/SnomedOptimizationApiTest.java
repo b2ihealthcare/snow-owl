@@ -91,9 +91,9 @@ public class SnomedOptimizationApiTest {
 		final QueryExpressionDiffs diffs = CodeSystemRequests.prepareOptimizeQueries()
 				.setLocales("en-us")
 				.filterByInclusions(List.of(
-						new QueryExpression("1", "123|query with syntax error", false),
-						new QueryExpression("2", "^<321|query with invalid operator|", false)
-					))
+					new QueryExpression("1", "123|query with syntax error", false),
+					new QueryExpression("2", "^<321|query with invalid operator|", false)
+				))
 				.build(SNOMEDCT)
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
@@ -105,9 +105,9 @@ public class SnomedOptimizationApiTest {
 	public void optimizeComplexExpressions() {
 		final QueryExpressionDiffs diffs = CodeSystemRequests.prepareOptimizeQueries()
 				.filterByInclusions(List.of(
-						new QueryExpression("1", "(<<89155008 OR <<402713007) MINUS (<<403734005 OR <<443868006)", false),
-						new QueryExpression("2", "<19829001|Disorder of lung|:116676008|Associated morphology| = 79654002|Edema|", true)
-					))
+					new QueryExpression("1", "(<<89155008 OR <<402713007) MINUS (<<403734005 OR <<443868006)", false),
+					new QueryExpression("2", "<19829001|Disorder of lung|:116676008|Associated morphology| = 79654002|Edema|", true)
+				))
 				.build(SNOMEDCT)
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
@@ -120,9 +120,9 @@ public class SnomedOptimizationApiTest {
 		final QueryExpressionDiff diff = CodeSystemRequests.prepareOptimizeQueries()
 				.setLocales(LOCALES)
 				.filterByInclusions(List.of(
-						QUERY_FLUID_DISTURBANCE,
-						QUERY_EDEMA
-					))
+					QUERY_FLUID_DISTURBANCE,
+					QUERY_EDEMA
+				))
 				.build(SNOMEDCT)
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)
@@ -134,7 +134,7 @@ public class SnomedOptimizationApiTest {
 		assertThat(diff.getAddToInclusion()).extracting("query")
 			.containsOnly(descendantsOf(MECHANICAL_ABNORMALITY));
 		
-		assertThat(diff.getRemove()).extracting("query")
+		assertThat(diff.getRemove()).extracting(QueryExpression::getQuery)
 			.containsOnly(EDEMA, FLUID_DISTURBANCE);
 	}
 	
@@ -143,11 +143,11 @@ public class SnomedOptimizationApiTest {
 		final QueryExpressionDiff diff = CodeSystemRequests.prepareOptimizeQueries()
 				.setLocales(LOCALES)
 				.filterByInclusions(List.of(
-						QUERY_FLUID_DISTURBANCE,
-						QUERY_MECHANICAL_ABNORMALITY,
-						QUERY_LESION,
-						new QueryExpression(IDs.base62UUID(), EDEMA, true)
-					))
+					QUERY_FLUID_DISTURBANCE,
+					QUERY_MECHANICAL_ABNORMALITY,
+					QUERY_LESION,
+					new QueryExpression(IDs.base62UUID(), EDEMA, true)
+				))
 				.build(SNOMEDCT)
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)
@@ -156,7 +156,7 @@ public class SnomedOptimizationApiTest {
 		
 		assertThat(diff.getAddToExclusion()).isEmpty();
 		
-		assertThat(diff.getAddToInclusion()).extracting("query")
+		assertThat(diff.getAddToInclusion()).extracting(QueryExpression::getQuery)
 			.containsOnly(descendantsOf(MORPHOLOGICALLY_ABNORMAL_STRUCTURE));
 		
 		assertThat(diff.getRemove()).extracting("query")
@@ -169,9 +169,9 @@ public class SnomedOptimizationApiTest {
 	public void optimizeConceptReferencesWithoutLocales() {
 		final QueryExpressionDiff diff = CodeSystemRequests.prepareOptimizeQueries()
 				.filterByInclusions(List.of(
-						QUERY_FLUID_DISTURBANCE,
-						QUERY_EDEMA
-					))
+					QUERY_FLUID_DISTURBANCE,
+					QUERY_EDEMA
+				))
 				.build(SNOMEDCT)
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)
@@ -181,10 +181,10 @@ public class SnomedOptimizationApiTest {
 		assertThat(diff.getAddToExclusion()).isEmpty();
 		
 		//Only IDs are returned
-		assertThat(diff.getAddToInclusion()).extracting("query")
+		assertThat(diff.getAddToInclusion()).extracting(QueryExpression::getQuery)
 			.containsOnly(descendantsOf("107658001"));
 		
-		assertThat(diff.getRemove()).extracting("query")
+		assertThat(diff.getRemove()).extracting(QueryExpression::getQuery)
 			.containsOnly(FLUID_DISTURBANCE, EDEMA);
 	}
 	
