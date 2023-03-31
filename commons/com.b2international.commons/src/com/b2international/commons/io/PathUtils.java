@@ -31,7 +31,7 @@ import java.util.zip.ZipInputStream;
 import com.google.common.base.Strings;
 
 /**
- * @since 7.22.0
+ * @since 8.10.0
  */
 public class PathUtils {
 

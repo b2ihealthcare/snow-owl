@@ -37,7 +37,7 @@ import com.b2international.commons.io.PathUtils;
 import com.google.common.io.Resources;
 
 /**
- * @since 7.22.0
+ * @since 8.10.0
  */
 public class PathUtilsTests {
 

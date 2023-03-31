@@ -35,7 +35,7 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * @since 8.10
+ * @since 8.10.0
  * @param <B>
  */
 public final class BranchRealtimeContentRequest<B> extends DelegatingRequest<RepositoryContext, BranchContext, B> {

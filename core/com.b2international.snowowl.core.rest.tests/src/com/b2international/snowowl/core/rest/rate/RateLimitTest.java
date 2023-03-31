@@ -44,7 +44,7 @@ import com.b2international.snowowl.test.commons.rest.ResourceApiAssert;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
- * @since 8.10
+ * @since 8.10.0
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RateLimitTest {
