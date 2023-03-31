@@ -289,7 +289,6 @@ public interface ConceptSearchRequestEvaluator {
 		// in case of having more than a hundred individual expressions, try to run an early optimization
 		if (expressions.size() > 100) {
 			var parser = context.service(EclParser.class);
-			final SortedSet<String> singleConceptExpressions = new TreeSet<>();
 			final SortedSet<String> singleConceptIds = new TreeSet<>();
 			final SortedSet<String> remainingExpressions = new TreeSet<>();
 			
@@ -298,7 +297,6 @@ public interface ConceptSearchRequestEvaluator {
 				Optional<EclConceptReference> eclConceptReference = Ecl.extractEclConceptReference(expressionConstraint);
 				if (eclConceptReference.isPresent()) {
 					String conceptId = eclConceptReference.get().getId();
-					singleConceptExpressions.add(expression);
 					singleConceptIds.add(conceptId);
 				} else {
 					remainingExpressions.add(expression);
