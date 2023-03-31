@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -323,18 +323,6 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		return evaluate(context, type)
 			.then(resolveIds(context))
 			.then(SnomedDescriptionIndexEntry.Expressions::types);
-	}
-	
-	protected Promise<Expression> eval(BranchContext context, final IdFilter idFilter) {
-		final Operator op = Operator.fromString(idFilter.getOp());
-		Expression expression = SnomedDescriptionIndexEntry.Expressions.ids(idFilter.getIds());
-		if (op == Operator.NOT_EQUALS) {
-			expression = Expressions.bool()
-				.mustNot(expression)
-				.build();
-		}
-
-		return Promise.immediate(expression);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {

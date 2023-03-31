@@ -455,6 +455,18 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	protected Promise<Expression> evaluateFilterExpressionOnDomain(C context, Promise<Expression> filterExpression, Domain filterDomain) {
 		return filterExpression;
 	}
+	
+	protected Promise<Expression> eval(C context, final IdFilter idFilter) {
+		final Operator op = Operator.fromString(idFilter.getOp());
+		Expression expression = RevisionDocument.Expressions.ids(idFilter.getIds());
+		if (op == Operator.NOT_EQUALS) {
+			expression = Expressions.bool()
+				.mustNot(expression)
+				.build();
+		}
+
+		return Promise.immediate(expression);
+	}
 
 	protected Promise<Expression> eval(C context, final TermFilter termFilter) {
 		final List<TypedSearchTermClause> clauses;

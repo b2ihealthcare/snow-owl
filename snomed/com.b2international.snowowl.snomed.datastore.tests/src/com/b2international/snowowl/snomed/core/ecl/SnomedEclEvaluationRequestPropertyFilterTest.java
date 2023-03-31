@@ -258,6 +258,14 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	public void conceptId() throws Exception {
+		final String conceptId = Concepts.TEXT_DEFINITION;
+		final Expression actual = eval("* {{ C id = " + conceptId + " }}");
+		final Expression expected = SnomedDocument.Expressions.id(conceptId);
+		assertEquals(expected, actual);
+	}
+	
 	@Test(expected = BadRequestException.class)
 	public void conjunctionAmbiguity() throws Exception {
 		eval("* {{ active=true AND moduleId = " + Concepts.MODULE_SCT_CORE + " OR term=\"clinical finding\" }}");
