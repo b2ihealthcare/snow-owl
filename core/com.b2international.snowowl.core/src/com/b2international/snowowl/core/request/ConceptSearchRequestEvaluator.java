@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,19 @@ package com.b2international.snowowl.core.request;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.Ecl;
+import com.b2international.snomed.ecl.ecl.EclConceptReference;
+import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.request.ecl.AbstractComponentSearchRequestBuilder;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.request.search.TermFilterSupport;
@@ -239,10 +241,11 @@ public interface ConceptSearchRequestEvaluator {
 	/**
 	 * Appends an ECL filter to the given component search request filter when either a QUERY or MUST_NOT_QUERY part is present in the given options.
 	 * 
+	 * @param context
 	 * @param req
 	 * @param search
 	 */
-	default void evaluateQueryOptions(AbstractComponentSearchRequestBuilder<?, ?, ?> req, Options search) {
+	default void evaluateQueryOptions(ServiceProvider context, AbstractComponentSearchRequestBuilder<?, ?, ?> req, Options search) {
 		if (search == null) {
 			return;
 		}
@@ -251,25 +254,80 @@ public interface ConceptSearchRequestEvaluator {
 			StringBuilder query = new StringBuilder();
 			
 			if (search.containsKey(OptionKey.QUERY)) {
+				Collection<String> inclusions = search.getCollection(OptionKey.QUERY, String.class);
 				query
 					.append("(")
-					.append(Ecl.or(search.getCollection(OptionKey.QUERY, String.class)))
+					.append(joinEclExpressions(context, inclusions))
 					.append(")");
 			} else {
 				query.append(Ecl.ANY);
 			}
 			
 			if (search.containsKey(OptionKey.MUST_NOT_QUERY)) {
+				Collection<String> exclusions = search.getCollection(OptionKey.MUST_NOT_QUERY, String.class);
 				query
 					.append(" MINUS (")
-					.append(Ecl.or(search.getCollection(OptionKey.MUST_NOT_QUERY, String.class)))
+					.append(joinEclExpressions(context, exclusions))
 					.append(")");
 			}
 			
 			req.filterByEcl(query.toString());
 		}
 	}
+
+	/**
+	 * Join the given list of individual ECL expressions to a single ECL expression. Usually this uses OR boolean operator to generate the final
+	 * expression, but some implementations might offer optimized alternatives. When there are more than 100 expressions present in the given
+	 * collection the system will try to optimize single ID clauses into a proper ID filter so ECL evaluation is efficient.
+	 * 
+	 * @param context
+	 * @param expressions
+	 * @return
+	 * @see Ecl#or(Collection)
+	 */
+	default String joinEclExpressions(ServiceProvider context, Collection<String> expressions) {
+		// in case of having more than a hundred individual expressions, try to run an early optimization
+		if (expressions.size() > 100) {
+			var parser = context.service(EclParser.class);
+			final SortedSet<String> singleConceptExpressions = new TreeSet<>();
+			final SortedSet<String> singleConceptIds = new TreeSet<>();
+			final SortedSet<String> remainingExpressions = new TreeSet<>();
+			
+			for (String expression : expressions) {
+				ExpressionConstraint expressionConstraint = parser.parse(expression, getIgnoredSyntaxErrorCodes());
+				Optional<EclConceptReference> eclConceptReference = Ecl.extractEclConceptReference(expressionConstraint);
+				if (eclConceptReference.isPresent()) {
+					String conceptId = eclConceptReference.get().getId();
+					singleConceptExpressions.add(expression);
+					singleConceptIds.add(conceptId);
+				} else {
+					remainingExpressions.add(expression);
+				}
+			}
+			
+			if (!singleConceptIds.isEmpty()) {
+				final String individualConceptIdsEcl = String.format("(* {{ C id = %s }})", singleConceptIds.stream().collect(Collectors.joining(" ", "(", ")")));
+				if (!remainingExpressions.isEmpty()) {
+					return String.join(" OR ", individualConceptIdsEcl, Ecl.or(remainingExpressions));
+				} else {
+					return individualConceptIdsEcl;
+				}
+			}
+			
+		}
+		return Ecl.or(expressions);
+	}
 	
+	/**
+	 * A {@link Set} of syntax error codes to ignore when parsing ECL expressions. By default this method returns an empty set and considers
+	 * everything to be fully ECL compatible.
+	 * 
+	 * @return
+	 */
+	default Set<String> getIgnoredSyntaxErrorCodes() {
+		return Collections.emptySet();
+	}
+
 	/**
 	 * No-op request evaluator that returns zero results
 	 * 

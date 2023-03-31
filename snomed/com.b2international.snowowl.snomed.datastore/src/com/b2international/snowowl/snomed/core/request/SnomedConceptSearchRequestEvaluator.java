@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			req.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
 		}
 		
-		evaluateQueryOptions(req, search);
+		evaluateQueryOptions(context, req, search);
 		
 		boolean requestedExpand = search.containsKey(OptionKey.EXPAND);
 		// make sure preferredDescriptions() and displayTermType expansion data are always loaded
