@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test Dependencies
 Bundle-SymbolicName: com.b2international.snowowl.test.dependencies;singleton:=true
-Bundle-Version: 8.10.0
+Bundle-Version: 8.10.1.qualifier
 Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .,
