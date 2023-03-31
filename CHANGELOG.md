@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs/Improvements
 - [core] fix superfluous branch document fetch for each terminology content request (#1122)
-- [ecl] fix expression validation performance issue for large ID enumaration lists (57e90d7)
+- [ecl] fix expression validation performance issue for large ID enumeration lists (57e90d7)
 - [ecl] resolve performance issues when evaluating large ID enumeration lists (5271bcc)
 - [authz] improve performance of single resource content access requests by 50% by using direct resource permission checks instead of fetching all accessible resources (#1124)
 - [snomed] speed up snomed query optimizer by 60% (29afb26)
