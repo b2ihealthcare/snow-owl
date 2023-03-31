@@ -23,6 +23,7 @@ import com.b2international.commons.graph.LongTarjanTest;
 import com.b2international.commons.http.AcceptLanguageHeaderTest;
 import com.b2international.commons.test.collect.*;
 import com.b2international.commons.test.config.ConfigurationFactoryTest;
+import com.b2international.commons.test.io.PathUtilsTests;
 
 /**
  * @since 2.5
@@ -40,6 +41,7 @@ import com.b2international.commons.test.config.ConfigurationFactoryTest;
 	EmptyLongListTest.class,
 	OrderedSetTest.class,
 	LongOrderedSetTest.class,
+	PathUtilsTests.class,
 	LongTarjanTest.class,
 	AcceptLanguageHeaderTest.class
 })
