@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public interface AuthorizationService {
 	 * Implementors should fall back to this algorithm to provide the default authorization checks for automated scripts and other tokens that carry
 	 * the permission information inside them.
 	 * 
+	 * @param context
 	 * @param user
 	 *            - the user who is currently executing a request
 	 * @param requiredPermissions
@@ -59,7 +60,7 @@ public interface AuthorizationService {
 	 *             - this method must throw a {@link ForbiddenException} in order to reject execution of the request when the user does not have
 	 *             sufficient privileges
 	 */
-	default User checkPermission(User user, List<Permission> requiredPermissions) {
+	default User checkPermission(ServiceProvider context, User user, List<Permission> requiredPermissions) {
 		requiredPermissions.forEach(requiredPermission -> {
 			if (!user.hasPermission(requiredPermission)) {
 				throwForbiddenException(requiredPermission);
@@ -107,7 +108,7 @@ public interface AuthorizationService {
 		
 		return new AuthorizationService() {
 			@Override
-			public User checkPermission(User user, List<Permission> requiredPermissions) {
+			public User checkPermission(ServiceProvider context, User user, List<Permission> requiredPermissions) {
 				if (subject.equals(user)) {
 					final ImmutableSet<Permission> temporaryPermissions = ImmutableSet.<Permission>builder()
 						.addAll(user.getPermissions())
@@ -115,10 +116,10 @@ public interface AuthorizationService {
 						.build();
 					
 					final User temporaryUser = new User(user.getUserId(), temporaryPermissions.asList());
-					delegate.checkPermission(temporaryUser, requiredPermissions);
+					delegate.checkPermission(context, temporaryUser, requiredPermissions);
 					return user;
 				} else {
-					return delegate.checkPermission(user, requiredPermissions);
+					return delegate.checkPermission(context, user, requiredPermissions);
 				}
 			}
 			

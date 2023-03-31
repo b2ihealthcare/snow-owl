@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.TooCostlyException;
 import com.b2international.index.query.*;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
@@ -100,7 +101,11 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 	}
 	
 	protected final Promise<Expression> evaluate(C context, EObject expression) {
-		return dispatcher.invoke(context, expression);
+		try {
+			return dispatcher.invoke(context, expression);
+		} catch (StackOverflowError e) {
+			throw new TooCostlyException("ECL expression contains too many clauses and the server is unable to process it.");
+		}
 	}
 
 	protected Promise<Expression> eval(C context, EObject eObject) {

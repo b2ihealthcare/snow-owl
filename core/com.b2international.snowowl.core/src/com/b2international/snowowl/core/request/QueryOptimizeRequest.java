@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,18 @@ import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
 /**
  * @since 7.7
  */
-public class QueryOptimizeRequest extends ResourceRequest<BranchContext, QueryExpressionDiffs> {
+public final class QueryOptimizeRequest extends ResourceRequest<BranchContext, QueryExpressionDiffs> {
+
+	private static final long serialVersionUID = 1L;
 
 	@NotNull
 	private List<QueryExpression> inclusions;
 	
 	@NotNull
 	private List<QueryExpression> exclusions;
-
+	
+	private Integer limit;
+	
 	void setInclusions(List<QueryExpression> inclusions) {
 		this.inclusions = inclusions;
 	}
@@ -43,12 +47,17 @@ public class QueryOptimizeRequest extends ResourceRequest<BranchContext, QueryEx
 		this.exclusions = exclusions;
 	}
 	
+	void setLimit(Integer limit) {
+		this.limit = limit;
+	}
+	
 	@Override
 	public QueryExpressionDiffs execute(BranchContext context) {
 		final Options params = Options.builder()
 				.put(QueryOptimizer.OptionKey.INCLUSIONS, inclusions)
 				.put(QueryOptimizer.OptionKey.EXCLUSIONS, exclusions)
 				.put(QueryOptimizer.OptionKey.LOCALES, locales())
+				.put(QueryOptimizer.OptionKey.LIMIT, limit)
 				.build();
 		
 		return context.service(QueryOptimizer.class).optimize(context, params);

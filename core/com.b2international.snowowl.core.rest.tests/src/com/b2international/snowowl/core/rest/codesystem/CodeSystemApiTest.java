@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,7 +38,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
@@ -340,7 +341,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemCreated(Json.assign(
 			prepareCodeSystemCreateRequestBody(codeSystemId), 
 			Json.object("settings", Json.object(
-				CodeSystem.CommonSettings.LOCALES, ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107")
+				CodeSystem.CommonSettings.LOCALES, AcceptLanguageHeader.parseHeader("en-x-123456781000198103,en-x-876543211000198107")
 			))
 		));
 		
@@ -404,7 +405,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		assertCodeSystemGet(codeSystemId).statusCode(404);
 		
-		// Check if the branch has been created
+		// Check if the branch has been deleted
 		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);
 		assertThat(RepositoryRequests.branching()
 			.prepareGet(branch)
@@ -442,7 +443,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			
 		CodeSystemVersionRestRequests.assertGetVersion(codeSystemId, "v1").statusCode(404);
 		
-		// Check if the branch has been created
+		// Check if the branch has been deleted
 		String versionBranch = Branch.get(Branch.MAIN_PATH, codeSystemId, "v1");
 		assertThat(RepositoryRequests.branching()
 				.prepareGet(versionBranch)

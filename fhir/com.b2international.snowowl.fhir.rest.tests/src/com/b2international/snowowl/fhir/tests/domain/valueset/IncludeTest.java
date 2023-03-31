@@ -82,7 +82,7 @@ public class IncludeTest extends FhirTest {
 		ValueSetFilter filter = include.getFilters().iterator().next();
 		assertEquals(new Code("filterProperty"), filter.getProperty());
 		assertEquals(FilterOperator.EQUALS.getCode(), filter.getOperator());
-		assertEquals(new Code("1234567"), filter.getValue());
+		assertEquals("1234567", filter.getValue());
 		
 		ValueSetConcept concept = include.getConcepts().iterator().next();
 		assertEquals("code", concept.getCode().getCodeValue());

@@ -1,6 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.10.0
+
+### Core
+- Support `Accept-Language: *` headers when accessing terminology content (#1130)
+- Support expanding versions in `GET /codesystems` endpoint (#1131)
+- Query Optimization improvements (152b212)
+  * Introduce `limit` argument when optimizing a set of ECL expressions to return early when the requested amount of optimizations have been found
+  * Respond with `hasMoreOptimizations` flag to indicate if there could be more applicable optimizations regarding the selected expressions but due to the configured `limit` they are undiscovered ()
+
+### SNOMED CT
+- Allow sorting SNOMED CT concepts by indexed semantic tag (89bfd31)
+
+### Bugs/Improvements
+- [core] fix superfluous branch document fetch for each terminology content request (#1122)
+- [ecl] fix expression validation performance issue for large ID enumaration lists (57e90d7)
+- [authz] improve performance of single resource content access requests by 50% by using direct resource permission checks instead of fetching all accessible resources (#1124)
+- [snomed] speed up snomed query optimizer by 60% (29afb26)
+- [api] report HTTP 400 when a too costly ECL expressions is encountered (77e20f0)
+- [api] fix missing `X-Rate-Limit-Remaining` headers from HTTP responses due to broken header propagation from internal system to REST layer (#1119)
+- [fhir] fix data type of `ValueSetFilter.value` (a60e25f)
+
+### Dependencies
+- Bump snomed-ecl to 2.1.3
+
 ## 8.9.2
 
 ### Bugs/Improvements

@@ -119,7 +119,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				// throw a Forbidden Exception if the user does not have permission to perform the request
 				context.optionalService(AuthorizationService.class)
 					.orElse(AuthorizationService.DEFAULT)
-					.checkPermission(user, requiredPermissionsToExecute);
+					.checkPermission(context, user, requiredPermissionsToExecute);
 			}
 		}
 		

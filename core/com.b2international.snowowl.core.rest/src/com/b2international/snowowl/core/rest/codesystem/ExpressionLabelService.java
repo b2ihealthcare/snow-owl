@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.rest.codesystem;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.ecl.LabeledEclExpressions;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -52,8 +53,8 @@ public class ExpressionLabelService extends AbstractRestService {
 			@RequestBody
 			final ExpressionLabelRestInput body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+			@RequestHeader(value="Accept-Language", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
 			final String acceptLanguage) {
 				return CodeSystemRequests.prepareEclLabeler(body.getCodeSystemUri(), body.getExpressions())
 						.setDescriptionType(body.getDescriptionType())

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
  */
 package com.b2international.commons.http;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -43,7 +40,7 @@ public final class ExtendedLocale implements Serializable {
 		if (matcher.matches()) {
 			return new ExtendedLocale(matcher.group(1), matcher.group(3), matcher.group(5));
 		} else {
-			throw new IllegalArgumentException("Couldn't convert input " + input + " to an extended locale.");
+			throw new IllegalArgumentException(String.format("Accept-Language header value '%s' is not supported.", input));
 		}
 	}
 	
@@ -101,20 +98,6 @@ public final class ExtendedLocale implements Serializable {
 			return getLanguageTag();
 		} else {
 			return getLanguageTag() + "-x-" + languageRefSetId;
-		}
-	}
-	
-	/**
-	 * Parses an Accept-Language header into a {@link List} of {@link ExtendedLocale} instances.
-	 * 
-	 * @param acceptLanguageHeader
-	 * @return
-	 */
-	public static final List<ExtendedLocale> parseLocales(final String acceptLanguageHeader) {
-		try {
-			return AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguageHeader));
-		} catch (IOException e) {
-			throw new IllegalArgumentException(e.getMessage());
 		}
 	}
 	

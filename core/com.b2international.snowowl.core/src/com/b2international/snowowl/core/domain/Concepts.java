@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package com.b2international.snowowl.core.domain;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @since 7.5
  */
@@ -29,7 +32,12 @@ public final class Concepts extends PageableCollectionResource<Concept> {
 		super(Collections.emptyList(), null, limit, total);
 	}
 	
-	public Concepts(List<Concept> items, String searchAfter, int limit, int total) {
+	@JsonCreator
+	public Concepts(
+			@JsonProperty("items") List<Concept> items,
+			@JsonProperty("searchAfter") String searchAfter,
+			@JsonProperty("limit") int limit,
+			@JsonProperty("total") int total) {
 		super(items, searchAfter, limit, total);
 	}
 

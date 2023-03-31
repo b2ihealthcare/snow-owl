@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -88,8 +89,8 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@ParameterObject
 			final SnomedReferenceSetRestSearch params,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
 			final String acceptLanguage) {
 		
 		List<Sort> sorts = extractSortFields(params.getSort());
@@ -131,8 +132,8 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@RequestBody(required = false)
 			final SnomedReferenceSetRestSearch body,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
 			final String acceptLanguage) {
 		
 		return searchByGet(path, body, acceptLanguage);
@@ -187,8 +188,8 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@ParameterObject
 			final ResourceSelectors selectors,
 
-			@Parameter(description = "Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
+			@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+			@RequestHeader(value="Accept-Language", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
 			final String acceptLanguage) {
 
 		return SnomedRequests

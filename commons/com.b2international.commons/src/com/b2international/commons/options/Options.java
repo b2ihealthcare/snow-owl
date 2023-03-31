@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,7 @@
  */
 package com.b2international.commons.options;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.commons.CompareUtils;
 
@@ -102,6 +98,10 @@ public interface Options {
 	 */
 	<T> T get(String key, Class<T> expectedType);
 	
+	default <T> Optional<T> getOptional(String key, Class<T> type) {
+		return Optional.ofNullable(get(key, type));
+	}
+	
 	/**
 	 * Returns the value to which the specified Enum key's name is mapped and it is an instance of the given expectedType, or {@code null} if this map contains no mapping for the key.
 	 * 
@@ -116,6 +116,10 @@ public interface Options {
 	 *             if the specified key is <code>null</code>
 	 */
 	<T> T get(Enum<?> key, Class<T> expectedType);
+
+	default <T> Optional<T> getOptional(Enum<?> key, Class<T> type) {
+		return Optional.ofNullable(get(key, type));
+	}
 
 	/**
 	 * Returns a boolean value from this options with the specified key. If the key contains another type of value, an
@@ -322,5 +326,5 @@ public interface Options {
 				.putAll(other)
 				.build();
 	}
-
+	
 }

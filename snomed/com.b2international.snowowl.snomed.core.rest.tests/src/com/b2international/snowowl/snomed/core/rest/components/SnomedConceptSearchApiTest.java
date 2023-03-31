@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
@@ -392,6 +393,19 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.body("total", equalTo(1))
 			.body("items[0].descriptions.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))))
 			.body("items[0].relationships.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))));
+	}
+	
+	@Test
+	public void wildcardAcceptLanguageHeader() throws Exception {
+		givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("expand", "pt()"))
+			.header("Accept-Language", "*")
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.body("items[0].pt.term", CoreMatchers.notNullValue());
 	}
 
 	private void assertHierarchyContains(String hierarchyField, String parentOrAncestorRole, Map<String, String> roleToId, Set<String> expectedRoles) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.domain;
-
-import java.util.List;
+package com.b2international.commons.exceptions;
 
 /**
- * @since 7.7
+ * @since 8.10
  */
-public final class QueryExpressionDiffs extends ListCollectionResource<QueryExpressionDiff> {
+public final class TooCostlyException extends BadRequestException {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static final QueryExpressionDiffs EMPTY = new QueryExpressionDiffs(List.of(), false);
-	
-	private final boolean hasMoreOptimizations;
+	public TooCostlyException(String developerMessage, Object...args) {
+		super("Request is too costly to execute. Alter your input parameters so that the system is able to process your request.");
+		withDeveloperMessage(developerMessage, args);
+	}
 
-	public QueryExpressionDiffs(List<QueryExpressionDiff> items, boolean hasMoreOptimizations) {
-		super(items);
-		this.hasMoreOptimizations = hasMoreOptimizations;
-	}
-	
-	public boolean isHasMoreOptimizations() {
-		return hasMoreOptimizations;
-	}
 }

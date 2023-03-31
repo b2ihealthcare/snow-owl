@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -177,8 +178,8 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 			
-			@Parameter(description ="Accepted language tags, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false) 
+			@Parameter(description ="Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+			@RequestHeader(value="Accept-Language", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
 			final String acceptLanguage) {
 
 		return ClassificationRequests.prepareSearchEquivalentConceptSet()
@@ -247,8 +248,8 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //			@PathVariable(value="conceptId")
 //			final String conceptId,
 //
-//			@Parameter(value ="Language codes and reference sets, in order of preference", example = "en-US;q=0.8,en-GB;q=0.6,en;q=0.4")
-//			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6,en;q=0.4", required=false)
+//			@Parameter(value ="Language codes and reference sets, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+//			@RequestHeader(value="Accept-Language", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false)
 //			final String languageSetting) {
 //
 //		final List<ExtendedLocale> extendedLocales = getExtendedLocales(languageSetting);
