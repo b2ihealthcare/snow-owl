@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.core.jobs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.*;
 import java.util.function.Predicate;
@@ -176,15 +173,9 @@ public class JobRequestsTest {
 			// expected exception
 		}
 		
-		// assert that the tracker will eventually delete the job entry
-		RemoteJobEntry entry = null;
-		int numberOfTries = 20; 
-		do {
-			entry = tracker.get(deletedJobId);
-			Thread.sleep(50);
-		} while (entry != null && --numberOfTries > 0);
-		assertNull("Entry couldn't be removed by tracker after marked for deletion", entry);
-		
+		// the job document should still exist, being marked as deletable
+		RemoteJobEntry entry = tracker.get(deletedJobId);
+		assertNotNull(entry);
 		assertTrue(entry.isDeleted());
 		
 		// verify job events
