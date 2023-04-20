@@ -17,24 +17,21 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.UUID;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 
 /**
  * @since 7.18.0
@@ -45,16 +42,16 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 	public void publishReleasedIdOnImport() throws Exception {
 		final String branch = branchPath.getPath();
 		final String importJobId = SnomedRf2Requests.importJobKey(branch);
-		final UUID archiveId = UUID.randomUUID();
-		final File importArchive = PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, "SnomedCT_Release_INT_20210502_concept_w_eff_time.zip").toFile();
-		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId, new FileInputStream(importArchive));
-
+		final String archiveName = "SnomedCT_Release_INT_20210502_concept_w_eff_time.zip";
+		final Path path = PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, archiveName);
+		Attachment attachment = Attachment.upload(Services.context(), path);
+		
 		String jobId = SnomedRequests.rf2().prepareImport()
-				.setRf2ArchiveId(archiveId)
+				.setRf2Archive(attachment)
 				.setReleaseType(Rf2ReleaseType.DELTA)
 				.setCreateVersions(false)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", importArchive.getName()))
+				.build(SnomedContentRule.SNOMEDCT_ID)
+				.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", archiveName))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 
@@ -75,16 +72,16 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 	public void registerNewIdOnImport() throws Exception {
 		final String branch = branchPath.getPath();
 		final String importJobId = SnomedRf2Requests.importJobKey(branch);
-		final UUID archiveId = UUID.randomUUID();
-		final File importArchive = PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, "SnomedCT_Release_INT_20150131_new_concept.zip").toFile();
-		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId, new FileInputStream(importArchive));
+		final String archiveName = "SnomedCT_Release_INT_20150131_new_concept.zip";
+		final Path path = PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, archiveName);
+		Attachment attachment = Attachment.upload(Services.context(), path);
 		
 		String jobId = SnomedRequests.rf2().prepareImport()
-				.setRf2ArchiveId(archiveId)
+				.setRf2Archive(attachment)
 				.setReleaseType(Rf2ReleaseType.DELTA)
 				.setCreateVersions(false)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", importArchive.getName()))
+				.build(SnomedContentRule.SNOMEDCT_ID)
+				.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", archiveName))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
@@ -101,16 +98,16 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 		assertEquals("Assigned", sctId.getStatus());
 		
 		final String importJobId2 = SnomedRf2Requests.importJobKey(branch);
-		final UUID archiveId2 = UUID.randomUUID();
-		final File importArchive2 = PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, "SnomedCT_Release_INT_20150131_release_unpublished_concept.zip").toFile();
-		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId2, new FileInputStream(importArchive2));
+		final String archiveName2 = "SnomedCT_Release_INT_20150131_release_unpublished_concept.zip";
+		final Path path2 = PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, archiveName2);
+		Attachment attachment2 = Attachment.upload(Services.context(), path2);		
 		
 		String jobId2 = SnomedRequests.rf2().prepareImport()
-				.setRf2ArchiveId(archiveId2)
+				.setRf2Archive(attachment2)
 				.setReleaseType(Rf2ReleaseType.DELTA)
 				.setCreateVersions(false)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.runAsJobWithRestart(importJobId2, String.format("Importing SNOMED CT RF2 file '%s'", importArchive2.getName()))
+				.build(SnomedContentRule.SNOMEDCT_ID)
+				.runAsJobWithRestart(importJobId2, String.format("Importing SNOMED CT RF2 file '%s'", archiveName2))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
