@@ -25,6 +25,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -49,10 +50,19 @@ final class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 	
 	@Override
 	public LongSet getDependencies(String[] values) {
-		return PrimitiveSets.newLongOpenHashSet(
-				Long.parseLong(values[3]),	
-				Long.parseLong(values[4])
-			);
+		
+		LongSet dependencies = PrimitiveSets.newLongOpenHashSet(
+			Long.parseLong(values[3]), // moduleId
+			Long.parseLong(values[4]) // refsetId
+		);
+		
+		SnomedOWLExpressionConverter.getIdsFromOwlExpression(values[6]) // owlExpression
+			.stream()
+			.map(id -> Long.parseLong(id))
+			.forEach(dependencies::add);
+		
+		return dependencies;
+		
 	}
 
 	@Override
