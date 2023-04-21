@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.math.BigDecimal;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -37,6 +40,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -58,7 +62,9 @@ import com.google.common.base.Suppliers;
 public final class SnomedOWLExpressionConverter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedOWLExpressionConverter.class);
-
+	
+	private static final Pattern DIGIT_PATTERN = Pattern.compile(":(?<id>\\d+)");
+	
 	private static final Set<String> AXIOM_TYPES = Set.of(
 		"SubClassOf", 
 		"EquivalentClasses", 
@@ -175,6 +181,30 @@ public final class SnomedOWLExpressionConverter {
 			case STRING: return new RelationshipValue(rawValue);
 			default: throw new IllegalStateException("Unexpected concrete value type '" + type + "'.");
 		}
+	}
+	
+	public static List<String> getIdsFromOwlExpression(String expression) {
+		
+		if (Strings.isNullOrEmpty(expression)) {
+			return List.of();
+		}
+		
+		Matcher matcher = DIGIT_PATTERN.matcher(expression);
+		
+		List<String> expressionIds = newArrayList();
+		
+		while (matcher.find()) {
+			
+			String id = matcher.group("id");
+			
+			if (SnomedIdentifiers.isValid(id)) {
+				expressionIds.add(id);
+			}
+			
+		}
+		
+		return expressionIds;
+		
 	}
 
 	private static Set<Long> getUngroupedAttributes(BranchContext context) {
