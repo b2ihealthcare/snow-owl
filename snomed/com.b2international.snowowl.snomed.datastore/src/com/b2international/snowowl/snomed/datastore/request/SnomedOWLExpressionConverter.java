@@ -62,7 +62,7 @@ public final class SnomedOWLExpressionConverter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedOWLExpressionConverter.class);
 	
-	private static final Pattern DIGIT_PATTERN = Pattern.compile("\\d+");
+	private static final Pattern DIGIT_PATTERN = Pattern.compile(":(?<id>\\d+)");
 	
 	private static final Set<String> AXIOM_TYPES = Set.of(
 		"SubClassOf", 
@@ -194,7 +194,7 @@ public final class SnomedOWLExpressionConverter {
 		
 		while (matcher.find()) {
 			
-			String id = matcher.group();
+			String id = matcher.group("id");
 			
 			if (SnomedIdentifiers.isValid(id)) {
 				expressionIds.add(id);
