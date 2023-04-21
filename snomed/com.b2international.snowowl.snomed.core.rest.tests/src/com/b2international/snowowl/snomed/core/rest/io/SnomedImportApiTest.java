@@ -33,10 +33,12 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -66,7 +68,7 @@ import io.restassured.response.ValidatableResponse;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
-	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
+	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:118654009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
 
 	@Before
 	public void before() {
@@ -558,6 +560,27 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 			SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
 		}
 	}
+  	
+  	@Test
+  	public void import37NewOwlParentInSecondImportBatch() {
+  		
+  		// the batch size must be lowered to 1000, so then the import will try to consume changes in two sets
+  		// the concept with id 10004011000154102 will get a new stated parent (2911000154100) via an OWL axiom which must be consumed in the same batch
+  		
+  		Map<String, Object> configuration = ImmutableMap.<String, Object>builder()
+			.put("type", Rf2ReleaseType.DELTA)
+			.put("createVersions", false)
+			.put("batchSize", 1000)
+			.build();
+  		
+  		importArchive(branchPath, configuration, "SnomedCT_RF2Release_INT_20230421T120000Z_new_owl_parent_in_second_import_batch.zip");
+  		
+  		getComponent(branchPath, SnomedComponentType.CONCEPT, "10004011000154102")
+  			.statusCode(200)
+  			.body("statedParentIds", equalTo(List.of("2911000154100")))
+  			.body("statedAncestorIds", equalTo(List.of(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT, "404684003")));
+  		
+  	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
