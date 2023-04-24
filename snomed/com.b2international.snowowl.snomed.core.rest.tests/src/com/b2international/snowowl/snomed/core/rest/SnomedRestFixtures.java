@@ -411,7 +411,7 @@ public abstract class SnomedRestFixtures {
 		return Json.object(
 				"active", active,
 				"moduleId", moduleId,
-				"referenceSetId", refSetId,
+				"refsetId", refSetId,
 				"referencedComponentId", referencedComponentId
 				);
 	}
