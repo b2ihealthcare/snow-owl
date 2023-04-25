@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
@@ -49,7 +48,6 @@ import com.b2international.snowowl.snomed.core.store.SnomedMemberBuilder;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -63,6 +61,8 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 	private static final List<Class<? extends SnomedDocument>> IMPORT_ORDER = ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class);
 	
 	private Map<String, SnomedDocument> newComponents = newHashMap();
+	private Set<String> idsToPublish = newHashSet();
+	private Set<String> idsToRegister = newHashSet();
 	private boolean loadOnDemand;
 	
 	Rf2TransactionContext(TransactionContext context, boolean loadOnDemand, Rf2ImportConfiguration importConfig) {
@@ -85,8 +85,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 	}
 	
 	@Override
-	public Optional<Commit> commit(String commitComment) {
-		final Set<String> idsToRegister = ImmutableSet.copyOf(newComponents.keySet().stream().filter(SnomedIdentifiers::isValid).iterator());
+	public Optional<Commit> commit(String commitComment) {		
 		// clear local cache before executing commit
 		newComponents = newHashMap();
 		LOG.info("Pushing changes: {}", commitComment);
@@ -95,7 +94,11 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 		final ISnomedIdentifierService cis = service(ISnomedIdentifierService.class);
 		if (cis.importSupported()) {
 			cis.register(idsToRegister);
+			cis.publish(idsToPublish);
 		}
+		// clear local id cache after commit
+		idsToPublish.clear();
+		idsToRegister.clear();
 		return commit;
 	}
 	
@@ -176,11 +179,21 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					// new component, add to new components and register row for import
 					newComponents.put(rf2Component.getId(), createIdOnlyDoc(rf2Component.getId(), type));
 					componentsToImport.add(rf2Component);
+					if (rf2Component instanceof SnomedCoreComponent) {
+						if (rf2Component.getEffectiveTime() == null) {
+							idsToRegister.add(rf2Component.getId());
+						} else {
+							idsToPublish.add(rf2Component.getId());
+						}
+					}
 				} else if (existingObject instanceof SnomedDocument && rf2Component instanceof SnomedComponent) {
 					final SnomedComponent rf2Row = (SnomedComponent) rf2Component;
 					final SnomedDocument existingRow = (SnomedDocument) existingObject;
 					if (rf2Row.getEffectiveTime() == null || EffectiveTimes.getEffectiveTime(rf2Row.getEffectiveTime()) > existingRow.getEffectiveTime()) {
 						componentsToImport.add(rf2Component);
+						if (existingRow instanceof SnomedComponentDocument && rf2Row.getEffectiveTime() !=null && !existingRow.isReleased()) {
+							idsToPublish.add(existingRow.getId());
+						}
 					}
 				}
 				
