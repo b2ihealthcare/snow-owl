@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.id.assigner;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 
@@ -43,8 +42,9 @@ public interface SnomedNamespaceAndModuleAssigner {
 	 * 
 	 * @param defaultNamespace
 	 * @param defaultModule
+	 * @param context
 	 */
-	void init(String defaultNamespace, String defaultModule);
+	void init(String defaultNamespace, String defaultModule, BranchContext context);
 
 	/**
 	 * Returns an SCTID to be registered to a relationship based on its source concept ID.
@@ -75,15 +75,13 @@ public interface SnomedNamespaceAndModuleAssigner {
 
 	/**
 	 * @param conceptIds
-	 * @param context
 	 */
-	void collectRelationshipNamespacesAndModules(Set<String> conceptIds, BranchContext context);
+	void collectRelationshipModules(Set<String> conceptIds);
 
 	/**
 	 * @param conceptIds
-	 * @param context
 	 */
-	void collectConcreteDomainModules(Set<String> conceptIds, BranchContext context);
+	void collectConcreteDomainModules(Set<String> conceptIds);
 
 	/**
 	 * Clears the internal maps of this assigner.
@@ -99,13 +97,15 @@ public interface SnomedNamespaceAndModuleAssigner {
 	 * @param namespace
 	 * @return
 	 */
-	static SnomedNamespaceAndModuleAssigner create(ServiceProvider context, String assignerType, String moduleId, String namespace) {
-		SnomedNamespaceAndModuleAssigner assigner = context.service(ClassPathScanner.class).getComponentsByInterface(SnomedNamespaceAndModuleAssigner.class)
-				.stream()
-				.filter(a -> assignerType.equals(a.getName()))
-				.findFirst()
-				.orElseThrow(() -> new FormattedRuntimeException("Couldn't find namespace and module assigner '%s'.", assignerType));
-		assigner.init(namespace, moduleId);
+	static SnomedNamespaceAndModuleAssigner create(BranchContext context, String assignerType, String moduleId, String namespace) {
+		final SnomedNamespaceAndModuleAssigner assigner = context.service(ClassPathScanner.class)
+			.getComponentsByInterface(SnomedNamespaceAndModuleAssigner.class)
+			.stream()
+			.filter(a -> assignerType.equals(a.getName()))
+			.findFirst()
+			.orElseThrow(() -> new FormattedRuntimeException("Couldn't find namespace and module assigner '%s'.", assignerType));
+		
+		assigner.init(namespace, moduleId, context);
 		return assigner;
 	}
 
