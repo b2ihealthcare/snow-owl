@@ -128,7 +128,9 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.typeId(doc.getTypeId())
 				.caseSignificanceId(doc.getCaseSignificanceId())
 				.acceptabilityMap(doc.getAcceptabilityMap())
-				.similarity(doc.getSimilarity());
+				.similarity(doc.getSimilarity())
+				.activeMemberOf(doc.getActiveMemberOf())
+				.memberOf(doc.getMemberOf());
 	}
 	
 	public final static class Fields extends SnomedComponentDocument.Fields {

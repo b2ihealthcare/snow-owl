@@ -199,7 +199,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		final ConceptChangeProcessor processor = process();
 		
 		assertEquals(1, processor.getChangedMappings().size());
-		final SnomedConceptDocument expected = docWithDefaults(concept).build();
+		final SnomedConceptDocument expected = docWithDefaults(concept).activeMemberOf(Collections.emptySet()).memberOf(Collections.emptySet()).build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
@@ -331,6 +331,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 				.statedParents(Long.parseLong(parentConcept.getId()))
 				.statedAncestors(IComponent.ROOT_IDL)
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
+				.activeMemberOf(Collections.emptySet())
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
