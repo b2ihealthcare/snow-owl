@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
-=======
  * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
->>>>>>> 69747d72ec... Merge pull request #1109 from b2ihealthcare/issue/SO-5616-description_acceptability_update_new_test_cases
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
