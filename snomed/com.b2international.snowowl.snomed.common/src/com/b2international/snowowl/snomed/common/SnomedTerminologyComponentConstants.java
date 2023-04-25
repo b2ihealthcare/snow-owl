@@ -22,9 +22,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.google.common.base.Strings;
 
 public abstract class SnomedTerminologyComponentConstants {
@@ -60,9 +57,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_URI_DEV = SNOMED_URI_BASE + "/xsct";
 	public static final String SNOMED_URI_ID = SNOMED_URI_BASE + "/id";
 	
-	public static final String SNOMED_CONCEPT_QUALIFIED_ID = TOOLING_ID + "." + SnomedConcept.TYPE;
-	public static final String SNOMED_DESCRIPTION_QUALIFIED_ID = TOOLING_ID + "." + SnomedDescription.TYPE;
-	public static final String SNOMED_RELATIONSHIP_QUALIFIED_ID = TOOLING_ID + "." + SnomedRelationship.TYPE;
 	
 	// known language dialect aliases, see more information at: https://confluence.ihtsdotools.org/display/DOCECL/Appendix+C+-+Dialect+Aliases
 	public static final Map<String, String> LANG_REFSET_DIALECT_ALIASES = Map.ofEntries(
