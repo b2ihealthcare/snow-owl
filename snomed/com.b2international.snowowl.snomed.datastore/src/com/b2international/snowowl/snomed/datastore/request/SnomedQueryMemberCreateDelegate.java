@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.cis.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -42,19 +45,21 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		checkRefSetType(refSet, SnomedRefSetType.QUERY);
 
 		if (Strings.isNullOrEmpty(getReferencedComponentId())) {
-			return createWithNewRefSet(refSet, context);
+			return createWithNewRefSet(context, refSet);
 		} else {
 			return createWithExistingRefSet(refSet, context);
 		}
 	}
 
-	private String createWithNewRefSet(SnomedReferenceSet refSet, TransactionContext context) {
+	private String createWithNewRefSet(TransactionContext context, SnomedReferenceSet refSet) {
 		checkNonEmptyProperty(REFERENCED_COMPONENT);
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 
 		// create new simple type reference set
 		final SnomedConcept referencedComponent = getProperty(REFERENCED_COMPONENT, SnomedConcept.class);
-		final String referencedComponentId = new IdRequest<>(referencedComponent.toCreateRequest()).execute(context);
+		final String referencedComponentId = referencedComponent.toCreateRequest().execute(context);
+		// make sure we register the ID
+		context.service(IdActionRecorder.class).register(Set.of(referencedComponentId));
 
 		// write the generated ID back to the request  
 		setReferencedComponentId(referencedComponentId);
