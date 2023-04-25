@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_CONCEPT_QUALIFIED_ID;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_DESCRIPTION_QUALIFIED_ID;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_RELATIONSHIP_QUALIFIED_ID;
 
 import java.util.Set;
 
@@ -187,10 +187,10 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
 		throw new UnsupportedOperationException("Reference sets does not support update operation yet");
 	}
-
+	
 	public boolean hasSnomedTypeTargetComponents() {
-		return CONCEPT.equals(getMapTargetComponentType())
-				|| DESCRIPTION.equals(getMapTargetComponentType())
-				|| RELATIONSHIP.equals(getMapTargetComponentType());
+		return SNOMED_CONCEPT_QUALIFIED_ID.equals(getMapTargetComponentType())
+				|| SNOMED_DESCRIPTION_QUALIFIED_ID.equals(getMapTargetComponentType())
+				|| SNOMED_RELATIONSHIP_QUALIFIED_ID.equals(getMapTargetComponentType());
 	}
 }
