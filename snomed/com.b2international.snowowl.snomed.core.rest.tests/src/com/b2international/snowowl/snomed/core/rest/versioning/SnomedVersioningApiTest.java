@@ -35,10 +35,13 @@ import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.google.common.collect.ImmutableMap;
 
@@ -199,6 +202,25 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate, true).statusCode(201);
 		SnomedConcept afterForceVersioning = getConcept(codeSystemVersionURI, conceptId);
 		assertEquals(versionEffectiveDate, afterForceVersioning.getEffectiveTime());
+	}
+	
+	@Test
+	public void publishAssignedIdsOnVersionCreate() throws Exception {
+		final String versionName = "publishAssignedIdsOnVersionCreate";
+		String conceptId = createConcept(SnomedContentRule.SNOMEDCT, SnomedRestFixtures.childUnderRootWithDefaults());
+		
+		LocalDate versionEffectiveDate = getNextAvailableEffectiveDate(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate).statusCode(201);
+		
+		SctId sctId = SnomedRequests.identifiers().prepareGet()
+				.setComponentId(conceptId)
+				.buildAsync()
+				.execute(Services.bus())
+				.getSync()
+				.first()
+				.get();
+			
+		assertEquals("Published", sctId.getStatus());
 	}
 	
 }
