@@ -1467,7 +1467,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 	 * same component, which is also incorrect).
 	 */
 	@Test
-	public void upgrade25UpgradeExtensionUsingExistingInternationalVersions() {
+	public void upgrade28UpgradeExtensionUsingExistingInternationalVersions() {
 		Versions allVersions = CodeSystemVersionRestRequests.getVersions(SNOMEDCT);
 		String secondLatestSIVersion = allVersions.getItems().get(allVersions.getItems().size() - 2).getVersion();
 		String latestSIVersion = Iterables.getLast(allVersions).getVersion();
