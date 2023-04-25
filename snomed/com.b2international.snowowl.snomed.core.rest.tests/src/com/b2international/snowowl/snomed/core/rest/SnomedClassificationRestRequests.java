@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
-=======
  * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
->>>>>>> f95ee05e12... Merge pull request #965 from b2ihealthcare/issue/SO-4985_namespace_module_assignment
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
