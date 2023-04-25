@@ -57,7 +57,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_URI_DEV = SNOMED_URI_BASE + "/xsct";
 	public static final String SNOMED_URI_ID = SNOMED_URI_BASE + "/id";
 	
-	
 	// known language dialect aliases, see more information at: https://confluence.ihtsdotools.org/display/DOCECL/Appendix+C+-+Dialect+Aliases
 	public static final Map<String, String> LANG_REFSET_DIALECT_ALIASES = Map.ofEntries(
 		Map.entry("554461000005103", "da-dk"),
