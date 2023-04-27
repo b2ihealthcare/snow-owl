@@ -118,6 +118,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
 			.setIgnoreMissingReferencesIn(ignoreMissingReferencesIn)
+			.setImportUntil(importUntil)
 			.setDryRun(dryRun)
 			.setImportUntil(importUntil)
 			.setBatchSize(batchSize)

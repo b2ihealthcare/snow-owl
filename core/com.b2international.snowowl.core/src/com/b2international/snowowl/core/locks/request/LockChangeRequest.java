@@ -36,6 +36,8 @@ import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
  */
 final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 
+	private static final long serialVersionUID = 414737555546463276L;
+
 	private static final long LOCK_TIMEOUT_MILLIS = 3000L;
 
 	private final boolean lock;

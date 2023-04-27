@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -34,11 +33,6 @@ public class EventBusSendPerformanceTest extends AbstractEventBusTest {
 
 	private static final int NUMBER_OF_WORKERS = 10;
 
-	@Override
-	protected EventBus createBus() {
-		return (EventBus) EventBusUtil.getBus("performance", NUMBER_OF_WORKERS);
-	}
-	
 	@Test
 	public void test_Send_ShouldWorkInMultiThreadedEnv() throws InterruptedException {
 		setWaitTime(60); // increase wait seconds just in case

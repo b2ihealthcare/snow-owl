@@ -176,6 +176,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void create() {
 		log.info("Preparing '{}' indexes...", name);

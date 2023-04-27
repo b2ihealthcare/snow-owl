@@ -101,7 +101,7 @@ public class RepositoryConfiguration {
 	public HostAndPort getHostAndPort() {
 		return HostAndPort.fromParts(getHost(), getPort());
 	}
-
+	
 	@JsonProperty
 	public String getCertificateChainPath() {
 		return certificateChainPath;

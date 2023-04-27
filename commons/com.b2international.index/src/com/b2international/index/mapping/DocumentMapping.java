@@ -56,7 +56,7 @@ public final class DocumentMapping {
 	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
-	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
+	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);	
 	
 	private final Class<?> type;
 	private final String typeAsString;

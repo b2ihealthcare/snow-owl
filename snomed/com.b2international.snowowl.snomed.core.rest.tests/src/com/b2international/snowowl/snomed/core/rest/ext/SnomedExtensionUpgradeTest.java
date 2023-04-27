@@ -68,7 +68,6 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 
 /**

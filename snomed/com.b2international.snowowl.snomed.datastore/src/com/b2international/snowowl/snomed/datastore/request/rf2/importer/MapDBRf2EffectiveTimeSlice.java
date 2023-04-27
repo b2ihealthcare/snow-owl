@@ -68,6 +68,7 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 	private final boolean loadOnDemand;
 	private final int batchSize;
 	
+	@SuppressWarnings("unchecked")
 	public MapDBRf2EffectiveTimeSlice(String effectiveTime, DB db, boolean loadOnDemand, int batchSize) {
 		super(effectiveTime);
 		this.batchSize = batchSize;
@@ -83,6 +84,7 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 		return componentsById;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private <T extends SnomedComponent> T getComponent(String componentId) {
 		final String[] valuesWithType = componentsById.get(componentId);
 

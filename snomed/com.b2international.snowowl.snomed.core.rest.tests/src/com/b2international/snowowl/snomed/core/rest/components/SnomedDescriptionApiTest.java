@@ -1,5 +1,4 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -85,6 +84,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;

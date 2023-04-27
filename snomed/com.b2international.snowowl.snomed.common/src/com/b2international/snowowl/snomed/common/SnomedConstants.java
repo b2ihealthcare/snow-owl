@@ -119,6 +119,7 @@ public abstract class SnomedConstants {
 		public static final String REFSET_DESCRIPTION_TYPE = "900000000000538005";
 		public static final String REFSET_CONCRETE_DOMAIN_TYPE_AU = "50131000036100"; //AU release -> NEHTA_0856_2012_AMTImplentationKit_20120229
 		public static final String REFSET_MODULE_DEPENDENCY_TYPE = "900000000000534007";
+		public static final String REFSET_SIMPLE_MAP_TO_SNOMEDCT = "1187636009";
 		
 		public static final String REFSET_DESCRIPTOR_REFSET = "900000000000456007";
 

@@ -20,24 +20,54 @@ import static org.junit.Assert.assertEquals;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.attachments.Attachment;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
+import com.b2international.snowowl.test.commons.rest.BranchBase;
 
 /**
  * @since 7.18.0
  */
+@BranchBase(Branch.MAIN_PATH + "/2020-01-31") 
 public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 
+	@Before
+	public void setup() {
+		final String codeSystemId = SnomedRF2ImportIDManagementTest.class.getSimpleName();
+		
+		try {
+			CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+				.buildAsync()
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+
+		} catch (NotFoundException e) {
+			CodeSystemRequests.prepareNewCodeSystem()
+				.setBranchPath(Branch.MAIN_PATH + "/2020-01-31/" + codeSystemId)
+				.setId(codeSystemId)
+				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+				.setTitle(codeSystemId)
+				.build("info@b2international.com", "Created new code system " + codeSystemId)
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+		}
+	}
+	
 	@Test
 	public void publishReleasedIdOnImport() throws Exception {
 		final String branch = branchPath.getPath();
