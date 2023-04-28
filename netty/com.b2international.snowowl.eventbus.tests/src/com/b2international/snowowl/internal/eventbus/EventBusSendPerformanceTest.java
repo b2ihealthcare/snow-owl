@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.google.common.base.Stopwatch;
 
 /**
