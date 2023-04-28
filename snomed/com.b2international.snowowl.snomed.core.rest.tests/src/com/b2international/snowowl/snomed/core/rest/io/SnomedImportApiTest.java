@@ -76,7 +76,6 @@ import io.restassured.response.ValidatableResponse;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
-	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
 
 	@Before
 	public void before() {
@@ -362,6 +361,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void import26OWLExpressionReferenceSetMembers() throws Exception {
+		String owlExpression = "SubClassOf(ObjectIntersectionOf(:118654009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
 		
 		SnomedConcept oldRoot = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
 		assertTrue(oldRoot.getMembers().getItems().stream()
@@ -379,7 +379,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_SCT_CORE, axiomMember.get().getModuleId());
 		assertEquals(Concepts.REFSET_OWL_AXIOM, axiomMember.get().getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, axiomMember.get().getReferencedComponent().getId());
-		assertEquals(OWL_EXPRESSION, axiomMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
+		assertEquals(owlExpression, axiomMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 		
 		Optional<SnomedReferenceSetMember> ontologyMember = root.getMembers().getItems().stream()
 				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_OWL_ONTOLOGY))
