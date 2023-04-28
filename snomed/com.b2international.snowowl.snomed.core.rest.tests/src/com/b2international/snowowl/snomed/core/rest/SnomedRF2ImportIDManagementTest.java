@@ -21,7 +21,9 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.attachments.Attachment;
@@ -36,18 +38,20 @@ import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.test.commons.Services;
-import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.BranchBase;
 
 /**
  * @since 7.18.0
  */
 @BranchBase(Branch.MAIN_PATH + "/2020-01-31") 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
+
+	private String codeSystemId;
 
 	@Before
 	public void setup() {
-		final String codeSystemId = SnomedRF2ImportIDManagementTest.class.getSimpleName();
+		codeSystemId = SnomedRF2ImportIDManagementTest.class.getSimpleName();
 		
 		try {
 			CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
@@ -69,7 +73,7 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void publishReleasedIdOnImport() throws Exception {
+	public void test01PublishReleasedIdOnImport() throws Exception {
 		final String branch = branchPath.getPath();
 		final String importJobId = SnomedRf2Requests.importJobKey(branch);
 		final String archiveName = "SnomedCT_Release_INT_20210502_concept_w_eff_time.zip";
@@ -80,7 +84,7 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 				.setRf2Archive(attachment)
 				.setReleaseType(Rf2ReleaseType.DELTA)
 				.setCreateVersions(false)
-				.build(SnomedContentRule.SNOMEDCT_ID)
+				.build(codeSystemId)
 				.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", archiveName))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
@@ -99,7 +103,7 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void registerNewIdOnImport() throws Exception {
+	public void test02RegisterNewIdOnImport() throws Exception {
 		final String branch = branchPath.getPath();
 		final String importJobId = SnomedRf2Requests.importJobKey(branch);
 		final String archiveName = "SnomedCT_Release_INT_20150131_new_concept.zip";
@@ -110,7 +114,7 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 				.setRf2Archive(attachment)
 				.setReleaseType(Rf2ReleaseType.DELTA)
 				.setCreateVersions(false)
-				.build(SnomedContentRule.SNOMEDCT_ID)
+				.build(codeSystemId)
 				.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", archiveName))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
@@ -136,7 +140,7 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 				.setRf2Archive(attachment2)
 				.setReleaseType(Rf2ReleaseType.DELTA)
 				.setCreateVersions(false)
-				.build(SnomedContentRule.SNOMEDCT_ID)
+				.build(codeSystemId)
 				.runAsJobWithRestart(importJobId2, String.format("Importing SNOMED CT RF2 file '%s'", archiveName2))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
