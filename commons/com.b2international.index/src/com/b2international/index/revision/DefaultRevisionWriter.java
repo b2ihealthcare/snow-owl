@@ -134,7 +134,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 			if (!keysToUpdate.isEmpty()) {
 				final Map<String, Object> updateRevised = ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised);
 				for (List<String> keys : Lists.partition(List.copyOf(keysToUpdate), ((EsDocumentSearcher) index.searcher()).maxTermsCount())) {
-					final Expression filter = Expressions.builder()
+					final Expression filter = Expressions.bool()
 							.filter(Expressions.matchAny(Revision.Fields.ID, keys))
 							.filter(branchToUpdate.toRevisionFilter())
 							.build();

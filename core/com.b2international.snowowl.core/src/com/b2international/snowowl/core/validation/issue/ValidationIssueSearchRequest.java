@@ -98,7 +98,7 @@ final class ValidationIssueSearchRequest
 	
 	@Override
 	protected Expression prepareQuery(ServiceProvider context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationIssue.Fields.ID, ids));
 		
@@ -156,7 +156,7 @@ final class ValidationIssueSearchRequest
 				queryBuilder.must(Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_TEXT, searchTerm));
 			} else {
 				queryBuilder.must(
-					Expressions.builder()
+					Expressions.bool()
 						.should(Expressions.dismaxWithScoreCategories(
 							Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_TEXT, searchTerm),
 							Expressions.matchTextAll(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm)
@@ -178,7 +178,7 @@ final class ValidationIssueSearchRequest
 			}
 			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
 			final Options options = getOptions(OptionKey.DETAILS);
-			final ExpressionBuilder toolingQuery = Expressions.builder();
+			final ExpressionBuilder toolingQuery = Expressions.bool();
 			final Collection<ValidationIssueDetailExtension> extensions = context.service(ValidationIssueDetailExtensionProvider.class).getExtensions();
 			for (String toolingId : toolingIds) {
 				extensions
@@ -186,7 +186,7 @@ final class ValidationIssueSearchRequest
 						.filter(ext -> toolingId.equals(ext.getToolingId()))
 						.findFirst()
 						.ifPresent(extension -> {
-							final ExpressionBuilder extensionQuery = Expressions.builder(); 
+							final ExpressionBuilder extensionQuery = Expressions.bool(); 
 							extension.prepareQuery(extensionQuery, options);
 							toolingQuery.should(extensionQuery.build());
 						});

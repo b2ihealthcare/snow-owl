@@ -63,7 +63,7 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 
 	@Override
 	protected Expression prepareQuery(ServiceProvider context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		
 		addIdFilter(queryBuilder, RemoteJobEntry.Expressions::ids);
 
@@ -74,7 +74,7 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 		if (containsKey(OptionKey.TERM)) {
 			String searchTerm = getString(OptionKey.TERM);
 			queryBuilder.must(
-					Expressions.builder()
+					Expressions.bool()
 						.should(Expressions.prefixMatch(RemoteJobEntry.Fields.USER, searchTerm))
 						.should(Expressions.prefixMatch(RemoteJobEntry.Fields.STATE, searchTerm.toUpperCase()))
 						.should(Expressions.matchTextAll(RemoteJobEntry.Fields.DESCRIPTION_PREFIX, searchTerm))

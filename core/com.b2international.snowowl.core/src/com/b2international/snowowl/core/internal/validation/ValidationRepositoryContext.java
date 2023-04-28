@@ -86,9 +86,9 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 					.forEach(whitelist -> addToWhitelist.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
 				
 				if (!addToWhitelist.isEmpty()) {
-					ExpressionBuilder filter = Expressions.builder();
+					ExpressionBuilder filter = Expressions.bool();
 					for (String ruleId : addToWhitelist.keySet()) {
-						filter.should(Expressions.builder()
+						filter.should(Expressions.bool()
 							.filter(Expressions.exactMatch(ValidationIssue.Fields.RULE_ID, ruleId))
 							.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, addToWhitelist.get(ruleId).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet())))
 							.build());
@@ -105,10 +105,10 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 					.forEach(whitelist -> removeFromWhitelist.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
 				
 				if (!removeFromWhitelist.isEmpty()) {
-					ExpressionBuilder filter = Expressions.builder();
+					ExpressionBuilder filter = Expressions.bool();
 					for (String ruleId : removeFromWhitelist.keySet()) {
 						ruleIdsAffectedByDeletion.add(ruleId);
-						filter.should(Expressions.builder()
+						filter.should(Expressions.bool()
 							.filter(Expressions.exactMatch(ValidationIssue.Fields.RULE_ID, ruleId))
 							.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, removeFromWhitelist.get(ruleId).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet())))
 							.build());

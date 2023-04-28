@@ -46,7 +46,7 @@ class EquivalentConceptSetSearchRequest
 
 	@Override
 	protected Expression prepareQuery(final RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		addClassificationIdClause(queryBuilder);
 		addConceptIdClause(queryBuilder);
 		return queryBuilder.build();

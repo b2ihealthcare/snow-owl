@@ -46,7 +46,7 @@ class ConcreteDomainChangeSearchRequest
 
 	@Override
 	protected Expression prepareQuery(final RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		addClassificationIdClause(queryBuilder);
 		addReferencedComponentIdClause(queryBuilder);
 		return queryBuilder.build();

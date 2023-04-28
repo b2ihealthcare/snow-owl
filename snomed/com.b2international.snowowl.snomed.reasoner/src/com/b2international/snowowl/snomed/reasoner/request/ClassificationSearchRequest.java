@@ -52,7 +52,7 @@ final class ClassificationSearchRequest
 
 	@Override
 	protected Expression prepareQuery(final RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		addIdFilter(queryBuilder, ClassificationTaskDocument.Expressions::ids);
 		addBranchClause(queryBuilder);
 		addUserIdClause(queryBuilder);

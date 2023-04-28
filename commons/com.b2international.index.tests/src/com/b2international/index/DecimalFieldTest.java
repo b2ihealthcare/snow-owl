@@ -71,11 +71,10 @@ public class DecimalFieldTest extends BaseIndexTest {
 			.containsOnly(new DataWithDecimal(KEY1, VALUE_10));
 	}
 	
-	@SuppressWarnings("deprecation")
 	@Test
 	public void searchNotEquals() throws Exception {
 		final Hits<DataWithDecimal> hits = search(Query.select(DataWithDecimal.class)
-				.where(Expressions.builder()
+				.where(Expressions.bool()
 						.mustNot(Expressions.match("value", VALUE_10))
 						.build())
 				.build());

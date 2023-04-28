@@ -201,7 +201,7 @@ public final class Taxonomies {
 			Hits<String[]> possibleMissingRelationships = searcher.search(Query.select(String[].class)
 					.from(SnomedRelationshipIndexEntry.class)
 					.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
-					.where(Expressions.builder()
+					.where(Expressions.bool()
 							.filter(SnomedRelationshipIndexEntry.Expressions.active())
 							.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
 							.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
@@ -272,7 +272,7 @@ public final class Taxonomies {
 		
 		final Set<String> concepts = LongSets.toStringSet(conceptIds);
 		
-		ExpressionBuilder activeIsaRelationshipQuery = Expressions.builder()
+		ExpressionBuilder activeIsaRelationshipQuery = Expressions.bool()
 				.filter(active())
 				.filter(typeId(Concepts.IS_A))
 				.filter(characteristicTypeId(characteristicTypeId));
@@ -297,7 +297,7 @@ public final class Taxonomies {
 		
 		if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
 			// search existing axioms defined for the given set of conceptIds
-			ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.builder()
+			ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.bool()
 					.filter(active());
 			
 			if (filterByConceptIds) {
@@ -305,7 +305,7 @@ public final class Taxonomies {
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(concepts))
 					.filter(
 						Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
-							Expressions.builder()
+							Expressions.bool()
 								.filter(typeId(Concepts.IS_A))
 								.filter(destinationIds(concepts))
 							.build()
@@ -314,7 +314,7 @@ public final class Taxonomies {
 			} else {
 				activeOwlAxiomMemberQuery.filter(
 					Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
-						Expressions.builder()
+						Expressions.bool()
 							.filter(typeId(Concepts.IS_A))
 						.build()
 					)

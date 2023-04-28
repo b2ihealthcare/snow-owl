@@ -134,7 +134,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveConceptIds(final RevisionSearcher searcher) {
 		entering("Registering active concept IDs using revision searcher");
 
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder().filter(active());
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool().filter(active());
 		
 		if (!excludedModuleIds.isEmpty()) {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
@@ -214,7 +214,7 @@ public final class ReasonerTaxonomyBuilder {
 
 		fullySpecifiedNames = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptMap.size());
 		
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(SnomedDescriptionIndexEntry.Expressions.active())
 				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME));
 		
@@ -258,7 +258,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveStatedEdges(final RevisionSearcher searcher) {
 		entering("Registering active stated IS A graph edges using revision searcher");
 
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(active())
 				.filter(typeId(Concepts.IS_A))
 				.filter(characteristicTypeId(Concepts.STATED_RELATIONSHIP));
@@ -345,7 +345,7 @@ public final class ReasonerTaxonomyBuilder {
 	}
 
 	private void addConceptFlags(final RevisionSearcher searcher, final Expression expression, final InternalSctIdSet.Builder sctIdSet) {
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(active())
 				.filter(expression); 
 		
@@ -414,7 +414,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveStatedRelationships(final RevisionSearcher searcher) {
 		entering("Registering active stated relationships using revision searcher");
 
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(active())
 				.filter(characteristicTypeId(Concepts.STATED_RELATIONSHIP));
 		
@@ -444,7 +444,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveAdditionalGroupedRelationships(final RevisionSearcher searcher) {
 		entering("Registering active additional grouped relationships using revision searcher");
 	
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(active())
 				.filter(relationshipGroup(1, Integer.MAX_VALUE))
 				.filter(characteristicTypeId(Concepts.ADDITIONAL_RELATIONSHIP));
@@ -476,7 +476,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveInferredRelationships(final RevisionSearcher searcher) {
 		entering("Registering active inferred relationships using revision searcher");
 		
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(active())
 				.filter(characteristicTypeId(Concepts.INFERRED_RELATIONSHIP));
 		
@@ -662,7 +662,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveAxioms(final RevisionSearcher searcher) {
 		entering("Registering active stated OWL axioms using revision searcher");
 
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.OWL_AXIOM)));
 		
@@ -830,7 +830,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addNeverGroupedTypeIds(final RevisionSearcher searcher) {
 		entering("Registering 'never grouped' type IDs using revision searcher");
 		
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.mrcmGrouped(false));
@@ -868,7 +868,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final RevisionSearcher searcher) {
 		entering("Registering active concrete domain members using revision searcher");
 
-		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+		final ExpressionBuilder whereExpressionBuilder = Expressions.bool()
 				.filter(active())
 				.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
 				.filter(characteristicTypeIds(CD_CHARACTERISTIC_TYPE_IDS));

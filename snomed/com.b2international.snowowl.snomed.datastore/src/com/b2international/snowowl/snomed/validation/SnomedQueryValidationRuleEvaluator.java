@@ -83,7 +83,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 			
 		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
 		
-		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
+		final ExpressionBuilder expressionBuilder = Expressions.bool().filter(searchReq.toRawQuery(context));
 
 		if (params != null && params.containsKey(ValidationConfiguration.IS_UNPUBLISHED_ONLY) && Boolean.TRUE.equals(params.get(ValidationConfiguration.IS_UNPUBLISHED_ONLY))) {
 			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));

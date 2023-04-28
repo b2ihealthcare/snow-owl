@@ -63,7 +63,7 @@ public final class SearchMergeRequest extends SearchResourceRequest<RepositoryCo
 	
 	@Override
 	public Merges doExecute(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		// add mergerequest type filter
 		queryBuilder.filter(RemoteJobEntry.Expressions.matchRequestType(ImmutableSet.of(BranchRebaseRequest.class.getSimpleName(), BranchMergeRequest.class.getSimpleName())));
 		

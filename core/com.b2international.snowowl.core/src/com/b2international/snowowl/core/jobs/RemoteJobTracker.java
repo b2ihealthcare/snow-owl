@@ -101,7 +101,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			return searcher.search(
 					Query.select(RemoteJobEntry.class)
 					.fields(fields)
-					.where(Expressions.builder()
+					.where(Expressions.bool()
 							.filter(RemoteJobEntry.Expressions.deleted(false))
 							.filter(query)
 							.build())
@@ -194,7 +194,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			return searcher.search(
 				Query.select(RemoteJobEntry.class)
 					.fields(RemoteJobEntry.Fields.STATE)
-					.where(Expressions.builder()
+					.where(Expressions.bool()
 							.filter(RemoteJobEntry.Expressions.done())
 							.build())
 					.limit(0)
@@ -222,9 +222,9 @@ public final class RemoteJobTracker implements IDisposableService {
 			final Hits<RemoteJobEntry> hits = writer.searcher().search(Query.select(RemoteJobEntry.class)
 					.fields(RemoteJobEntry.Fields.ID, RemoteJobEntry.Fields.DELETED)
 					.where(
-						Expressions.builder()
+						Expressions.bool()
 							.must(RemoteJobEntry.Expressions.done())
-							.must(Expressions.builder()
+							.must(Expressions.bool()
 									.should(RemoteJobEntry.Expressions.deleted(true))
 									.should(RemoteJobEntry.Expressions.finishDate(0L, System.currentTimeMillis() - staleJobAge))
 									.build()

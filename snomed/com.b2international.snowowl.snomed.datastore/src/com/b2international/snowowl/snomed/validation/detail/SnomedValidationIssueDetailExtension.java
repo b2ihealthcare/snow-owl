@@ -214,7 +214,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				.from(SnomedRefSetMemberIndexEntry.class)
 				.fields(SnomedRefSetMemberIndexEntry.Fields.ID,
 						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
-				.where(Expressions.builder()
+				.where(Expressions.bool()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.ids(memberIssues.keySet()))
 					.build())

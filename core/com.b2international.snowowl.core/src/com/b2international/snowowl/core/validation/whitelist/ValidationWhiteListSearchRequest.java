@@ -80,7 +80,7 @@ final class ValidationWhiteListSearchRequest
 	
 	@Override
 	protected Expression prepareQuery(ServiceProvider context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationWhiteList.Fields.ID, ids));
 		
@@ -88,7 +88,7 @@ final class ValidationWhiteListSearchRequest
 			String searchTerm = getString(OptionKey.TERM);
 			
 			queryBuilder.must(
-					Expressions.builder()
+					Expressions.bool()
 						.should(Expressions.dismaxWithScoreCategories(
 							Expressions.matchTextPhrase(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS_TEXT, searchTerm),
 							Expressions.matchTextAll(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm)
