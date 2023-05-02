@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
+
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TOOLING_ID;
 
 import java.util.Set;
 
@@ -69,6 +71,10 @@ public final class SnomedReferenceSet extends SnomedComponent {
 
 	public static final SnomedReferenceSet DELETE = new SnomedReferenceSet();
 	public static final SnomedReferenceSet FORCE_DELETE = new SnomedReferenceSet();
+	
+	public static final String SNOMED_CONCEPT_QUALIFIED_ID = TOOLING_ID + "." + SnomedConcept.TYPE;
+	public static final String SNOMED_DESCRIPTION_QUALIFIED_ID = TOOLING_ID + "." + SnomedDescription.TYPE;
+	public static final String SNOMED_RELATIONSHIP_QUALIFIED_ID = TOOLING_ID + "." + SnomedRelationship.TYPE;
 
 	/**
 	 * @since 6.16 
@@ -183,5 +189,10 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
 		throw new UnsupportedOperationException("Reference sets does not support update operation yet");
 	}
-
+	
+	public boolean hasSnomedTypeTargetComponents() {
+		return SNOMED_CONCEPT_QUALIFIED_ID.equals(getMapTargetComponentType())
+				|| SNOMED_DESCRIPTION_QUALIFIED_ID.equals(getMapTargetComponentType())
+				|| SNOMED_RELATIONSHIP_QUALIFIED_ID.equals(getMapTargetComponentType());
+	}
 }

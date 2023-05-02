@@ -448,7 +448,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			if (isGci) {
 				return nestedQuery;
 			} else {
-				final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+				final ExpressionBuilder query = com.b2international.index.query.Expressions.bool();
 				query.mustNot(nestedQuery);
 				return query.build();
 			}
@@ -459,12 +459,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 		
 		public static Expression owlExpressionConcept(Iterable<String> conceptIds) {
-			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
-			query.should(nestedMatch("classAxiomRelationships", com.b2international.index.query.Expressions.builder()
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.bool();
+			query.should(nestedMatch("classAxiomRelationships", com.b2international.index.query.Expressions.bool()
 					.should(matchAny("typeId", conceptIds))
 					.should(matchAny("destinationId", conceptIds))
 					.build()));
-			query.should(nestedMatch("gciAxiomRelationships", com.b2international.index.query.Expressions.builder()
+			query.should(nestedMatch("gciAxiomRelationships", com.b2international.index.query.Expressions.bool()
 					.should(matchAny("typeId", conceptIds))
 					.should(matchAny("destinationId", conceptIds))
 					.build()));
@@ -472,21 +472,21 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 		
 		public static Expression owlExpressionHasDestinationId() {
-			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.bool();
 			query.should(nestedMatch("classAxiomRelationships", exists("destinationId")));
 			query.should(nestedMatch("gciAxiomRelationships", exists("destinationId")));
 			return query.build();
 		}
 		
 		public static Expression owlExpressionDestination(Iterable<String> destinationIds) {
-			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.bool();
 			query.should(nestedMatch("classAxiomRelationships", matchAny("destinationId", destinationIds)));
 			query.should(nestedMatch("gciAxiomRelationships", matchAny("destinationId", destinationIds)));
 			return query.build();
 		}
 		
 		public static Expression owlExpressionType(Iterable<String> typeIds) {
-			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.bool();
 			query.should(nestedMatch("classAxiomRelationships", matchAny("typeId", typeIds)));
 			query.should(nestedMatch("gciAxiomRelationships", matchAny("typeId", typeIds)));
 			return query.build();

@@ -19,7 +19,6 @@ package com.b2international.snowowl.snomed.core.domain.refset;
  * Enumeration for SNOMED CT reference set types. 
  */
 public enum SnomedRefSetType {
-
 	/*
 	 * XXX: The order of literals should not be relied upon, but in case some parts
 	 * of the code still do this, add new literals to the end.

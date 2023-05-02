@@ -51,7 +51,7 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
-		ExpressionBuilder query = Expressions.builder();
+		ExpressionBuilder query = Expressions.bool();
 		
 		if (!CompareUtils.isEmpty(resourceURIs)) {
 			query.filter(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, resourceURIs));

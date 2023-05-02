@@ -77,7 +77,7 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 	
 	@Override
 	protected Expression prepareQuery(BranchContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 		
 		addActiveClause(queryBuilder);
 		addReleasedClause(queryBuilder);

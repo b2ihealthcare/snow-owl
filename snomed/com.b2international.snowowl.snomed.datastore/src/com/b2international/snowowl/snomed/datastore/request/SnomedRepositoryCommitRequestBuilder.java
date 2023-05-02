@@ -40,12 +40,12 @@ public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResou
 	
 	@Override
 	public Request<BranchContext, CommitResult> wrap(Request<BranchContext, CommitResult> req) {
-		return new ModuleRequest<>(req, defaultModuleId);
+		return new ModuleRequest<>(new IdRequest<>(req), defaultModuleId); 
 	}
 	
 	@Override
 	protected Request<TransactionContext, ?> getBody() {
-		return new IdRequest<>(new SnomedBulkRequest<>(super.getBody()));
+		return new SnomedBulkRequest<>(super.getBody());
 	}
 	
 	@Override

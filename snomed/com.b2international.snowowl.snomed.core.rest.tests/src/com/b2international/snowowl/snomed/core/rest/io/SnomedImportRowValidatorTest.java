@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -41,7 +39,6 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
 import com.b2international.snowowl.test.commons.Services;
-import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.Iterables;
 
 /**
@@ -50,19 +47,6 @@ import com.google.common.collect.Iterables;
 public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	
 	// TODO: Implement tests for every reference set type
-	
-	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
-	private static String codeSystemShortName;
-	
-	@BeforeClass
-	public static void beforeClass() {
-		codeSystemShortName = "SNOMEDCT-TEST";
-	}
-	
-	@Before
-	public void init() {
-		createCodeSystemIfNotExists();
-	}
 	
 	@Test
 	public void importConceptWithDescriptionAsDefStatusId() throws FileNotFoundException {
@@ -132,30 +116,6 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		assertThat(issues).hasSize(1);
 		assertThat(issue).containsSequence(Rf2ValidationDefects.INVALID_ID.getLabel());
 		assertFalse(response.isSuccess());
-	}
-
-	private void createCodeSystemIfNotExists() {
-		try {
-			CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
-				.buildAsync()
-				.execute(getBus())
-				.getSync();
-		} catch (NotFoundException e) {
-			CodeSystemRequests.prepareNewCodeSystem()
-				.setId(codeSystemShortName)
-				.setOid("oid")
-				.setTitle(String.format("%s - title", codeSystemShortName))
-				.setLanguage("en")
-				.setBranchPath(branchPath.getPath())
-				.setDescription("description")
-				.setToolingId(REPOSITORY_ID)
-				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemShortName)
-				.build(RestExtensions.USER, String.format("New code system %s", codeSystemShortName))
-				.execute(getBus())
-				.getSync();
-				
-		}
-		
 	}
 	
 	private ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType) throws FileNotFoundException {

@@ -135,7 +135,7 @@ public final class ValidationPlugin extends Plugin {
 					final Set<String> issuesToDelete = newHashSet(writer.searcher().search(Query.select(String.class)
 							.from(ValidationIssue.class)
 							.fields(ValidationIssue.Fields.ID)
-							.where(Expressions.builder()
+							.where(Expressions.bool()
 									.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, rulesToDelete))
 									.build())
 							.limit(Integer.MAX_VALUE)

@@ -46,7 +46,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/lucene-sandbox-8.11.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial3d-8.11.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest-8.11.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lz4-java-1.8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/mapper-extras-client-7.17.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/parent-join-client-7.17.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/percolator-client-7.17.2.jar"/>
@@ -58,5 +57,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/t-digest-3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/transport-7.17.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-client-7.17.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lz4-java-1.8.0.jar"/>
 	<classpathentry kind="output" path="target/classes/"/>
 </classpath>

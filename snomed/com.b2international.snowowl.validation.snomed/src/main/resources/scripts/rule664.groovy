@@ -76,8 +76,7 @@ if (params.isUnpublishedOnly) {
 	}
 	
 	// then scroll through all possible duplicates among published terms
-	// FIXME: is "search" below meant to be "stream"? 
-	searcher.search(Query.select(String[].class)
+	searcher.stream(Query.select(String[].class)
 		.from(SnomedDescriptionIndexEntry.class)
 		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 		.where(

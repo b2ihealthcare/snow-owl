@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,9 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.typeId(doc.getTypeId())
 				.caseSignificanceId(doc.getCaseSignificanceId())
 				.acceptabilityMap(doc.getAcceptabilityMap())
-				.similarity(doc.getSimilarity());
+				.similarity(doc.getSimilarity())
+				.activeMemberOf(doc.getActiveMemberOf())
+				.memberOf(doc.getMemberOf());
 	}
 	
 	public final static class Fields extends SnomedComponentDocument.Fields {

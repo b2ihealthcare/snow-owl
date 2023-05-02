@@ -80,7 +80,7 @@ public final class ClassificationTracker implements IDisposableService {
 					final Query<String> deleteQuery = Query.select(String.class)
 							.from(ClassificationTaskDocument.class)
 							.fields(ClassificationTaskDocument.Fields.ID)
-							.where(Expressions.builder()
+							.where(Expressions.bool()
 									.filter(ClassificationTaskDocument.Expressions.deleted(true))
 									.build())
 							.limit(Integer.MAX_VALUE)
@@ -93,7 +93,7 @@ public final class ClassificationTracker implements IDisposableService {
 					 * tasks specified in the configuration file
 					 */
 					final Query<ClassificationTaskDocument> firstNQuery = Query.select(ClassificationTaskDocument.class)
-							.where(Expressions.builder()
+							.where(Expressions.bool()
 									.filter(ClassificationTaskDocument.Expressions.deleted(false))
 									.build())
 							.sortBy(SortBy.builder()

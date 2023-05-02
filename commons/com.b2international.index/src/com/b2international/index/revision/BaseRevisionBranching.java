@@ -183,7 +183,7 @@ public abstract class BaseRevisionBranching {
 	protected final boolean hasChanges(Set<String> branches, long from, long to, long mergeBranch) {
 		return index().read(searcher -> searcher.search(Query.select(Commit.class)
 				.where(
-					Expressions.builder()
+					Expressions.bool()
 						.filter(Commit.Expressions.branches(branches))
 						.filter(Commit.Expressions.timestampRange(from, to))
 						.mustNot(Commit.Expressions.mergeFrom(mergeBranch, from, to, false))

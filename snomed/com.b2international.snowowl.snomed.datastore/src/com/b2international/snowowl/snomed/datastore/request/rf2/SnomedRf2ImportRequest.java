@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -105,6 +106,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private static final long serialVersionUID = 1L;
 
 	private static final String TXT_EXT = ".txt";
+	
+	public static final AtomicBoolean disableVersionsOnChildBranches = new AtomicBoolean(true);
 	
 	@NotNull
 	@JsonProperty
@@ -201,29 +204,31 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					+ "Please perform either a Full or a Snapshot import instead.");
 		}
 		
-		String codeSystemWorkingBranchPath = context.service(TerminologyResource.class).getBranchPath();
 		
-		if (importConfig.isCreateVersions()) {
-			if (!context.path().equals(codeSystemWorkingBranchPath)) {
-				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
-						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
-			} else {
-				// importing into main development branch with create version enabled should be allowed only and only if the branch does not have any unpublished content present
-				for (Class<?> type : List.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
-					try {
-						int numberOfUnpublishedDocuments = context.service(RevisionSearcher.class).search(Query.select(type)
-							.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-							.limit(0)
-							.build()).getTotal();
-						if (numberOfUnpublishedDocuments > 0) {
-							throw new BadRequestException("Creating a version during RF2 import is prohibited when unpublished content is present on the target.");
+		if (disableVersionsOnChildBranches.get()) {
+			String codeSystemWorkingBranchPath = context.service(TerminologyResource.class).getBranchPath();
+			
+			if (!codeSystemWorkingBranchPath.equals(context.path()) && importConfig.isCreateVersions()) {
+				if (!codeSystemWorkingBranchPath.equals(context.path())) {
+					throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
+							+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+				} else {
+					// importing into main development branch with create version enabled should be allowed only and only if the branch does not have any unpublished content present
+					for (Class<?> type : List.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
+						try {
+							int numberOfUnpublishedDocuments = context.service(RevisionSearcher.class).search(Query.select(type)
+								.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+								.limit(0)
+								.build()).getTotal();
+							if (numberOfUnpublishedDocuments > 0) {
+								throw new BadRequestException("Creating a version during RF2 import is prohibited when unpublished content is present on the target.");
+							}
+						} catch (IOException e) {
+							throw new RuntimeException("Failed to check unpublished content presence for type: " + type.getSimpleName(), e);
 						}
-					} catch (IOException e) {
-						throw new RuntimeException("Failed to check unpublished content presence for type: " + type.getSimpleName(), e);
 					}
 				}
 			}
-			
 		}
 	}
 
@@ -421,6 +426,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	private void updateCodeSystemSettings(final BranchContext context, final ResourceURI codeSystemUri) throws Exception {
 		SnomedReferenceSets languageReferenceSets = SnomedRequests.prepareSearchRefSet()
 			.all()

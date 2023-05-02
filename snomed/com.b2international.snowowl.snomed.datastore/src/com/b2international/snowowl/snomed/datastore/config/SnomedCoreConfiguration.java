@@ -64,7 +64,6 @@ public class SnomedCoreConfiguration {
 	
 	private boolean concreteDomainSupport = false;
 	
-	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */

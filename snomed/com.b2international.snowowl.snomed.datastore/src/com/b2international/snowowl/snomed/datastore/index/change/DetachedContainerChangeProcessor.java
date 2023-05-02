@@ -77,7 +77,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 			});
 		
 		Query.select(SnomedRelationshipIndexEntry.class)
-			.where(Expressions.builder()
+			.where(Expressions.bool()
 				.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(deletedConceptIds))
 				.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(deletedConceptIds))
 				.build())
@@ -91,7 +91,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 			});
 		
 		// deleting core components should delete all referring members as well
-		ExpressionBuilder referringMembersQuery = Expressions.builder()
+		ExpressionBuilder referringMembersQuery = Expressions.bool()
 				.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(deletedCoreComponentIds))
 				.should(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(deletedConceptIds));
 		

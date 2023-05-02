@@ -319,7 +319,7 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 			final String repositoryId = target.getRepositoryId();
 			final String branchPath = target.getBranchPath();
 			
-			final Expression searchExpression = Expressions.builder()
+			final Expression searchExpression = Expressions.bool()
 					.filter(DatastoreLockIndexEntry.Expressions.repositoryId(repositoryId))
 					.filter(DatastoreLockIndexEntry.Expressions.branchPath(branchPath))
 					.build();
@@ -424,7 +424,7 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 			return searcher.search(
 					Query.select(DatastoreLockIndexEntry.class)
 					.fields(fields)
-					.where(Expressions.builder()
+					.where(Expressions.bool()
 							.filter(query)
 							.build())
 					.sortBy(sortBy)

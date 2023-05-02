@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -41,16 +42,20 @@ import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.json.Json;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.index.revision.RevisionSegment;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -62,6 +67,8 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.7
@@ -1443,6 +1450,52 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertThat(conceptOnUpgradeBranch.getAncestorIdsAsString())
 			.containsOnly(IComponent.ROOT_ID, "41146007", "81325006", "106237007", Concepts.ROOT_CONCEPT, "246061005", "409822003", "410607006", Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE, "900000000000441003");
 		
+	}
+	
+	/**
+	 * This test is to detect and verify a bug in the
+	 * {@link RevisionBranch#difference(RevisionBranch)} (more precisely in the
+	 * RevisionBranchRef#difference method). The problem was that the system used
+	 * SortedSet for {@link RevisionSegment} and built on the fact that branches can
+	 * be always sortable by both time and space. This is true most of the time, but
+	 * when synchronizing old content from earlier branches this might result in
+	 * incorrect conflict reporting behavior due to incorrect branch segment
+	 * diffing. The resulting branch diff contains incorrect branch segments, thus
+	 * the branch compare algorithm fetches irrelevant, already merged commits,
+	 * which are being reported as conflicts in the system (both sides added the
+	 * same component, which is also incorrect).
+	 */
+	@Test
+	public void upgrade28UpgradeExtensionUsingExistingInternationalVersions() {
+		Versions allVersions = CodeSystemVersionRestRequests.getVersions(SNOMEDCT);
+		String secondLatestSIVersion = allVersions.getItems().get(allVersions.getItems().size() - 2).getVersion();
+		String latestSIVersion = Iterables.getLast(allVersions).getVersion();
+		
+		// Create extension with one before latest SI version
+		CodeSystem extension = createExtension(ResourceURI.branch(CodeSystem.RESOURCE_TYPE, SNOMEDCT, secondLatestSIVersion), branchPath.lastSegment());
+		String extensionModuleId = createModule(extension);
+		
+		// Version extension
+		LocalDate firstExtensionVersion = getNextAvailableEffectiveDate(extension.getId());
+		createVersion(extension.getId(), firstExtensionVersion).statusCode(201);
+		
+		// start upgrade to the newer SI version
+		ResourceURI upgradeVersion = ResourceURI.branch(CodeSystem.RESOURCE_TYPE, SNOMEDCT, latestSIVersion);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
+		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
+		
+		//Create new concept on the extension code system
+		String newEXTConceptId2 = createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+
+		//Create concept on UPL
+		String newUPLConceptId1 = createConcept(upgradeCodeSystem.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+
+		//Sync
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extension.getResourceURI())
+				.buildAsync()
+				.execute(getBus())
+				.getSync(100, TimeUnit.MINUTES);
+		assertTrue(result);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {

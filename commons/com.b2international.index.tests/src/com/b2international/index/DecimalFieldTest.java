@@ -74,7 +74,7 @@ public class DecimalFieldTest extends BaseIndexTest {
 	@Test
 	public void searchNotEquals() throws Exception {
 		final Hits<DataWithDecimal> hits = search(Query.select(DataWithDecimal.class)
-				.where(Expressions.builder()
+				.where(Expressions.bool()
 						.mustNot(Expressions.match("value", VALUE_10))
 						.build())
 				.build());

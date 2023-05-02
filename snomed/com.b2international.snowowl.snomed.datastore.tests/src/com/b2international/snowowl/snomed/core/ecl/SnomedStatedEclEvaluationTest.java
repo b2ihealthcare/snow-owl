@@ -138,14 +138,14 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	}
 	
 	private Expression descendantsOrSelfOf(String...conceptIds) {
-		return Expressions.builder()
+		return Expressions.bool()
 				.should(ids(ImmutableSet.copyOf(conceptIds)))
 				.should(statedParents(ImmutableSet.copyOf(conceptIds)))
 				.should(statedAncestors(ImmutableSet.copyOf(conceptIds))).build();
 	}
 	
 	private static Expression and(Expression left, Expression right) {
-		return Expressions.builder().filter(left).filter(right).build();
+		return Expressions.bool().filter(left).filter(right).build();
 	}
 
 }

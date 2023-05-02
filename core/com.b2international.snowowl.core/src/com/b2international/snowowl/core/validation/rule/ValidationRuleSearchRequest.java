@@ -53,7 +53,7 @@ final class ValidationRuleSearchRequest extends SearchIndexResourceRequest<Servi
 	
 	@Override
 	protected Expression prepareQuery(ServiceProvider context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.bool();
 
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationRule.Fields.ID, ids));
 		

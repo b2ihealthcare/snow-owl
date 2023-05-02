@@ -64,7 +64,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
-		ExpressionBuilder queryBuilder = Expressions.builder();
+		ExpressionBuilder queryBuilder = Expressions.bool();
 				
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(RevisionBranch.Fields.PATH, ids));
 		

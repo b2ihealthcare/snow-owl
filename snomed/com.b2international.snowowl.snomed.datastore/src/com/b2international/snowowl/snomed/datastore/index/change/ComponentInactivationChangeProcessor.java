@@ -108,7 +108,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				Query.select(SnomedDescriptionIndexEntry.class)
 					.from(SnomedDescriptionIndexEntry.class)
 					.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
-					.where(Expressions.builder()
+					.where(Expressions.bool()
 						.filter(SnomedDescriptionIndexEntry.Expressions.active())
 						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
 						.build())
@@ -131,7 +131,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			
 			// Inactivate active relationships on inactive concepts
 			Query.select(SnomedRelationshipIndexEntry.class)
-				.where(Expressions.builder()
+				.where(Expressions.bool()
 					.filter(SnomedRelationshipIndexEntry.Expressions.active())
 					.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
 					.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactivatedConceptIds))
@@ -150,7 +150,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		// inactivate referring members of all inactivated core component, and all members of inactivated refsets
 		final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 		Query.select(SnomedRefSetMemberIndexEntry.class)
-			.where(Expressions.builder()
+			.where(Expressions.bool()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 				.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
 				.should(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(inactivatedComponentIds))
@@ -174,7 +174,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		// load existing indicator reference set members from index
 		final Multimap<String, SnomedRefSetMemberIndexEntry> existingIndicatorReferenceSetMembers = HashMultimap.create();
 		searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
-				.where(Expressions.builder()
+				.where(Expressions.bool()
 						.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 						.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
 						.build())
@@ -286,7 +286,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.ID)
 				// active descriptions, with active membership in the indicator refset on reactivated concepts
-				.where(Expressions.builder()
+				.where(Expressions.bool()
 					.filter(SnomedDescriptionIndexEntry.Expressions.active())
 					.filter(SnomedDescriptionIndexEntry.Expressions.concepts(reactivatedConceptIds))
 					.filter(SnomedDescriptionIndexEntry.Expressions.activeMemberOf(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
@@ -323,7 +323,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		
 		// search for all active indicator refset members with concept non-current
 		Hits<SnomedRefSetMemberIndexEntry> members = searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
-			.where(Expressions.builder()
+			.where(Expressions.bool()
 				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.ids(stagedDescriptionIndicators))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))

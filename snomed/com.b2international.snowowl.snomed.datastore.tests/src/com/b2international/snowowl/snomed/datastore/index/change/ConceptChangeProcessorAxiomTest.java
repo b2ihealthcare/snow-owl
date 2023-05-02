@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,7 +199,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		final ConceptChangeProcessor processor = process();
 		
 		assertEquals(1, processor.getChangedMappings().size());
-		final SnomedConceptDocument expected = docWithDefaults(concept).build();
+		final SnomedConceptDocument expected = docWithDefaults(concept).activeMemberOf(Collections.emptySet()).memberOf(Collections.emptySet()).build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
@@ -331,6 +331,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 				.statedParents(Long.parseLong(parentConcept.getId()))
 				.statedAncestors(IComponent.ROOT_IDL)
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
+				.activeMemberOf(Collections.emptySet())
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
