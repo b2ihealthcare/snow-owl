@@ -214,6 +214,40 @@ public class PathUtilsTests {
 		assertFalse(Files.exists(tempDirectory2));
 
 	}
+	
+	@Test
+	public void testDeleteDirectoryWithNestedFilter3() throws IOException {
+
+		tempDirectory = Files.createTempDirectory("commons-test");
+		
+		tempDirectory2 = Files.createDirectory(tempDirectory.resolve("inner-dir"));
+		tempDirectory3 = Files.createDirectory(tempDirectory2.resolve("inner-dir2"));
+		
+		final Path tempFile = Files.createFile(tempDirectory2.resolve("test-file.txt"));
+		final Path tempFile2 = Files.createFile(tempDirectory3.resolve("test-file.zip"));
+
+		assertTrue(Files.exists(tempFile));
+		assertTrue(Files.isRegularFile(tempFile));
+		assertTrue(Files.exists(tempFile2));
+		assertTrue(Files.isRegularFile(tempFile2));
+
+		PathUtils.deleteDirectory(tempDirectory, Set.of(tempFile));
+		
+		// assert root dir exist
+		assertTrue(Files.exists(tempDirectory));
+		
+		// assert parent dir of excluded file exists 
+		assertTrue(Files.exists(tempDirectory2));
+		
+		// assert excluded file exists
+		assertTrue(Files.exists(tempFile));
+		
+		// assert everything else is deleted
+		assertFalse(Files.exists(tempFile2));
+		assertFalse(Files.exists(tempDirectory3));
+
+	}
+
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testCreateZipArchiveFail() throws IOException {
