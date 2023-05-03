@@ -59,7 +59,7 @@ public class PathUtils {
 
 		final List<Path> filteredPaths = Files.walk(directory)
 				.sorted(Comparator.reverseOrder()) // directories are encountered last
-				.filter(path -> exclusions.stream().noneMatch(p -> p.equals(path) || p.startsWith(path)))
+				.filter(path -> exclusions.stream().noneMatch(p -> p.startsWith(path)))
 				.collect(toList());
 
 		for (final Path path : filteredPaths) {
