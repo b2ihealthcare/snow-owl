@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -109,7 +110,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				.setKey(classificationId)
 				.setUser(user)
 				.setRequest(jobRequest)
-				.setDescription(String.format("Classifying the ontology on %s", branch))
+				.setDescription(String.format("Classifying ontology '%s'...", context.service(ResourceURI.class).withoutResourceType()))
 				.setSchedulingRule(rule)
 				.buildAsync()
 				.get(context, SCHEDULE_TIMEOUT_MILLIS);
