@@ -120,13 +120,23 @@ public class PathUtilsTests {
 	public void testCleanDirectoryWithContent() throws IOException {
 
 		tempDirectory = Files.createTempDirectory("commons-test");
+		tempDirectory2 = Files.createDirectory(tempDirectory.resolve("inner-dir"));
+		
 		final Path tempFile = Files.createFile(tempDirectory.resolve("test-file.txt"));
+		final Path tempFile2 = Files.createFile(tempDirectory2.resolve("test-file.zip"));
 
 		assertTrue(Files.exists(tempFile));
+		assertTrue(Files.isRegularFile(tempFile));
+		assertTrue(Files.exists(tempFile2));
+		assertTrue(Files.isRegularFile(tempFile2));
 
 		PathUtils.cleanDirectory(tempDirectory);
+		
 		assertTrue(Files.exists(tempDirectory));
+		
 		assertFalse(Files.exists(tempFile));
+		assertFalse(Files.exists(tempFile2));
+		assertFalse(Files.exists(tempDirectory2));
 
 	}
 
