@@ -52,6 +52,7 @@ List<String> inScopeRefSets = SnomedRequests.prepareSearchMember()
 	.collect { SnomedReferenceSetMember m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)}
 
 def getApplicableConcepts = { String conceptSetExpression ->
+	ctx.log().info("Evaluating MRCM ECL expression: '${conceptSetExpression}'...")
 	def expression = EclExpression.of(conceptSetExpression, Trees.INFERRED_FORM).resolveToExpression(ctx).getSync(1, TimeUnit.MINUTES);
 	
 	Query<String> conceptSetQuery = Query.select(String.class)
