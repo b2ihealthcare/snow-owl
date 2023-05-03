@@ -43,6 +43,7 @@ public class PathUtilsTests {
 
 	private Path tempDirectory;
 	private Path tempDirectory2;
+	private Path tempDirectory3;
 
 	@After
 	public void after() throws IOException {
@@ -53,6 +54,10 @@ public class PathUtilsTests {
 
 		if (tempDirectory2 != null && Files.exists(tempDirectory2)) {
 			PathUtils.deleteDirectory(tempDirectory2);
+		}
+		
+		if (tempDirectory3 != null && Files.exists(tempDirectory3)) {
+			PathUtils.deleteDirectory(tempDirectory3);
 		}
 
 	}
@@ -80,6 +85,34 @@ public class PathUtilsTests {
 		PathUtils.deleteDirectory(tempDirectory);
 		assertFalse(Files.exists(tempDirectory));
 		assertFalse(Files.exists(tempFile));
+
+	}
+	
+	@Test
+	public void testDeleteDirectoryWithNestedContent() throws IOException {
+
+		tempDirectory = Files.createTempDirectory("commons-test");
+		tempDirectory2 = Files.createDirectory(tempDirectory.resolve("inner-dir"));
+		tempDirectory3 = Files.createDirectory(tempDirectory.resolve("inner-dir2"));
+		
+		final Path tempFile = Files.createFile(tempDirectory2.resolve("test-file.txt"));
+		final Path tempFile2 = Files.createFile(tempDirectory3.resolve("test-file.zip"));
+
+		assertTrue(Files.exists(tempFile));
+		assertTrue(Files.isRegularFile(tempFile));
+		assertTrue(Files.exists(tempFile2));
+		assertTrue(Files.isRegularFile(tempFile2));
+
+		PathUtils.deleteDirectory(tempDirectory);
+		
+		// assert everything is deleted including root directory and all sub-directories
+		assertFalse(Files.exists(tempFile));
+		assertFalse(Files.exists(tempDirectory2));
+		
+		assertFalse(Files.exists(tempFile2));
+		assertFalse(Files.exists(tempDirectory3));
+		
+		assertFalse(Files.exists(tempDirectory));
 
 	}
 
@@ -136,6 +169,39 @@ public class PathUtilsTests {
 		
 		assertFalse(Files.exists(tempFile));
 		assertTrue(Files.exists(tempFile2));
+
+	}
+	
+	@Test
+	public void testDeleteDirectoryWithNestedFilter2() throws IOException {
+
+		tempDirectory = Files.createTempDirectory("commons-test");
+		
+		tempDirectory2 = Files.createDirectory(tempDirectory.resolve("inner-dir"));
+		tempDirectory3 = Files.createDirectory(tempDirectory.resolve("inner-dir2"));
+		
+		final Path tempFile = Files.createFile(tempDirectory2.resolve("test-file.txt"));
+		final Path tempFile2 = Files.createFile(tempDirectory3.resolve("test-file.zip"));
+
+		assertTrue(Files.exists(tempFile));
+		assertTrue(Files.isRegularFile(tempFile));
+		assertTrue(Files.exists(tempFile2));
+		assertTrue(Files.isRegularFile(tempFile2));
+
+		PathUtils.deleteDirectory(tempDirectory, Set.of(tempFile2));
+		
+		// assert root dir exist
+		assertTrue(Files.exists(tempDirectory));
+		
+		// assert parent dir of excluded file exists 
+		assertTrue(Files.exists(tempDirectory3));
+		
+		// assert excluded file exists
+		assertTrue(Files.exists(tempFile2));
+		
+		// assert everything else is deleted
+		assertFalse(Files.exists(tempFile));
+		assertFalse(Files.exists(tempDirectory2));
 
 	}
 
