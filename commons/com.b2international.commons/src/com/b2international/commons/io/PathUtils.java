@@ -59,18 +59,11 @@ public class PathUtils {
 
 		final List<Path> filteredPaths = Files.walk(directory)
 				.sorted(Comparator.reverseOrder()) // directories are encountered last
-				.filter(path -> exclusions.stream().noneMatch(p -> p.equals(path)))
+				.filter(path -> exclusions.stream().noneMatch(p -> p.equals(path) || p.startsWith(path)))
 				.collect(toList());
 
 		for (final Path path : filteredPaths) {
-
-			// do not try to delete a directory which still contains files via exclusions
-			if (Files.isDirectory(path) && Files.list(directory).findFirst().isPresent()) {
-				continue;
-			}
-
 			Files.delete(path);
-			
 		}
 
 	}
