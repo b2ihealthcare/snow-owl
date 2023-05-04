@@ -58,14 +58,17 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
  */
 public final class TransportClient implements IDisposableService {
 	
+
 	private static final String TCP_PREFIX = "tcp://";
 
 	private static final Logger LOG = LoggerFactory.getLogger(TransportClient.class);
 	
-	private static final String COULD_NOT_ACTIVATE_PREFIX = "Could not activate TCPClientConnector";
-	private static final String ALREADY_LOGGED_IN_PREFIX = "Already logged in";
+	// expected error messages thrown by the server when connecting via TCP
+	private static final String NO_SUCH_HOST = "No such host is known";
+	
 	private static final String INCORRECT_USER_NAME_OR_PASSWORD = "Incorrect user name or password.";
-	private static final String LOGIN_DISABLED = "Logging in for non-administrator users is temporarily disabled.";
+	private static final String INVALID_AUTHENTICATION_CREDENTIALS = "Invalid authentication credentials";
+	
 	private static final String LDAP_CONNECTION_REFUSED = "Connection refused: connect";
 
 	private final Environment env;
@@ -245,18 +248,14 @@ public final class TransportClient implements IDisposableService {
 			LOG.error("Exception caught while connecting to the server.", t);
 			
 			// FIXME: "Sentiment analysis" for exception messages (might be outdated)
-			if (message.startsWith(COULD_NOT_ACTIVATE_PREFIX)) {
+			if (message.startsWith(NO_SUCH_HOST)) {
 				throw new SnowowlServiceException("The server could not be reached. Please verify the connection URL.");
-			} else if (message.startsWith(ALREADY_LOGGED_IN_PREFIX)) {
-				throw new SnowowlServiceException("Another client with the same user is already connected to the server.");
-			} else if (message.startsWith(INCORRECT_USER_NAME_OR_PASSWORD)) {
-				throw new SnowowlServiceException(message);
-			} else if (message.startsWith(LOGIN_DISABLED)) {
+			} else if (message.startsWith(INCORRECT_USER_NAME_OR_PASSWORD) || message.startsWith(INVALID_AUTHENTICATION_CREDENTIALS)) {
 				throw new SnowowlServiceException(message);
 			} else if (message.startsWith(LDAP_CONNECTION_REFUSED)) {
 				throw new SnowowlServiceException("The LDAP server could not be reached for authentication. Please contact the administrator.");
 			} else {
-				throw new SnowowlServiceException("An unexpected error occurred while connecting to the server. Please contact the administrator.");
+				throw new SnowowlServiceException("An unexpected error occurred while connecting to the server. Please contact the administrator.", t);
 			}
 		}
 	}
