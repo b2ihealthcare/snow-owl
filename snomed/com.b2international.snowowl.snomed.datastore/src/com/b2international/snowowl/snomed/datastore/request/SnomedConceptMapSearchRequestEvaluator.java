@@ -279,7 +279,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final SnomedDisplayTermType snomedDisplayTermType, 
 		final SnomedConcept identifierConcept) {
 
-		final String conceptMapTerm = identifierConcept.getPt().getTerm();
+		final String conceptMapTerm = snomedDisplayTermType.getLabel(identifierConcept);
 		final String conceptMapIconId = identifierConcept.getIconId();
 		
 		final ConceptMapMapping.Builder mappingBuilder = ConceptMapMapping.builder()
