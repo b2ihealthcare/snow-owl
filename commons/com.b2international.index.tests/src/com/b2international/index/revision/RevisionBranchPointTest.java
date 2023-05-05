@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,20 @@ import org.junit.Test;
 public class RevisionBranchPointTest {
 
 	@Test
+	public void serializeNull() throws Exception {
+		assertNull(RevisionBranchPoint.valueOf(null));
+	}
+	
+	@Test
 	public void serialization() throws Exception {
 		RevisionBranchPoint original = new RevisionBranchPoint(1024, 2048);
 		assertEquals(original, RevisionBranchPoint.valueOf(original.toIpAddress()));
+	}
+	
+	@Test
+	public void deserShortIPv6Address() throws Exception {
+		RevisionBranchPoint addr = RevisionBranchPoint.valueOf("::1:0:187:eb43:177e");
+		assertEquals(1, addr.getBranchId());
 	}
 	
 }

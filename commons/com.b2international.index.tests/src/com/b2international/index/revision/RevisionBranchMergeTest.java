@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
@@ -185,7 +186,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// after commit child branch becomes FORWARD
 		assertState(child, MAIN, BranchState.FORWARD);
 		// do the merge
-		branching().prepareMerge(child, MAIN).merge();
+		Commit mergeCommit = branching().prepareMerge(child, MAIN).merge();
 		// after fast-forward merge
 		// 1. MAIN should be in UP_TO_DATE state compared to the child
 		assertState(MAIN, child, BranchState.UP_TO_DATE);
@@ -193,6 +194,11 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(child, MAIN, BranchState.UP_TO_DATE);
 		// 3. revision should be visible from MAIN branch
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+		// 4. verify merge commit details, especially merge source value (this verifies deserialization and proper loading of IP fields via field selection)
+		Commit mergeCommitFromIndex = rawIndex().read(searcher -> Query.select(Commit.class)
+				.fields(Commit.Fields.ID, Commit.Fields.MERGE_SOURCE)
+				.where(Commit.Expressions.id(mergeCommit.getId())).build().search(searcher).first());
+		assertEquals(mergeCommit.getMergeSource(), mergeCommitFromIndex.getMergeSource());
 	}
 	
 	@Test

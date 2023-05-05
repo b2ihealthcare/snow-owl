@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.b2international.index.IP;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.net.InetAddresses;
 
 /**
  * @since 6.5
@@ -90,22 +91,34 @@ public final class RevisionBranchPoint implements Comparable<RevisionBranchPoint
 	
 	@JsonCreator
 	public static RevisionBranchPoint valueOf(String value) {
-		String[] addrArray = value.split(":");//a IPv6 adress is of form 2607:f0d0:1002:0051:0000:0000:0000:0004
-	    long[] num = new long[addrArray.length];
-
-	    for (int i=0; i<addrArray.length; i++) {
-	        num[i] = Long.parseLong(addrArray[i], 16);
-	    }
-	    long branchId = num[0];
-	    for (int i=1;i<4;i++) {
-	        branchId = (branchId<<16) + num[i];
-	    }
-	    long timestamp = num[4];
-	    for (int i=5;i<8;i++) {
-	        timestamp = (timestamp<<16) + num[i];
-	    }
-
-	    return new RevisionBranchPoint(branchId, timestamp); 
+		if (value == null) return null;
+		
+		try {
+			// quick hack to parse short form of IPv6 addresses by passing it through the java InetAddress first then back to String and parsing the long values
+			if (value.contains("::")) {
+				return valueOf(InetAddresses.forString(value).getHostAddress());
+			}
+			
+			// a IPv6 adress is of form 2607:f0d0:1002:0051:0000:0000:0000:0004
+			String[] addrArray = value.split(":");
+			long[] num = new long[addrArray.length];
+			
+			for (int i=0; i<addrArray.length; i++) {
+				num[i] = Long.parseLong(addrArray[i], 16);
+			}
+			long branchId = num[0];
+			for (int i=1;i<4;i++) {
+				branchId = (branchId<<16) + num[i];
+			}
+			long timestamp = num[4];
+			for (int i=5;i<8;i++) {
+				timestamp = (timestamp<<16) + num[i];
+			}
+			
+			return new RevisionBranchPoint(branchId, timestamp); 
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException(String.format("Couldn't convert IPv6 value '%s' to RevisionBranchPoint instance", value), e);
+		}
 	}
 	
 	@Override
