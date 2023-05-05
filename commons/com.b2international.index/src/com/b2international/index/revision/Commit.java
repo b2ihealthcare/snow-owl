@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public final class Commit implements WithScore {
 		private String branch;
 		private String author;
 		private String comment;
-		private long timestamp;
+		private Long timestamp;
 		private List<CommitDetail> details;
 		private String groupId;
 		private RevisionBranchPoint mergeSource;
@@ -86,7 +86,7 @@ public final class Commit implements WithScore {
 			return this;
 		}
 
-		public Builder timestamp(final long timestamp) {
+		public Builder timestamp(final Long timestamp) {
 			this.timestamp = timestamp;
 			return this;
 		}
@@ -222,7 +222,7 @@ public final class Commit implements WithScore {
 		}
 	)
 	private final String comment;
-	private final long timestamp;
+	private final Long timestamp;
 	private final String groupId;
 	private final List<CommitDetail> details;
 	private final RevisionBranchPoint mergeSource;
@@ -238,7 +238,7 @@ public final class Commit implements WithScore {
 			final String branch,
 			final String author,
 			final String comment,
-			final long timestamp,
+			final Long timestamp,
 			final String groupId,
 			final List<CommitDetail> details, 
 			final RevisionBranchPoint mergeSource,
@@ -281,7 +281,7 @@ public final class Commit implements WithScore {
 		return comment;
 	}
 
-	public long getTimestamp() {
+	public Long getTimestamp() {
 		return timestamp;
 	}
 	
