@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,7 +190,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 
 		assertEquals(1, conceptMaps.getTotal());
 		final ConceptMapMapping conceptMapMapping = conceptMaps.first().get();
-		assertEquals(ID, conceptMapMapping.getSourceTerm());
+		assertEquals(PT, conceptMapMapping.getSourceTerm());
 		assertEquals(testName.getMethodName(), conceptMapMapping.getConceptMapTerm());
 	}
 	
@@ -231,7 +231,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		assertEquals(1, conceptMaps.getTotal());
 		final ConceptMapMapping conceptMapMapping = conceptMaps.first().get();
 		assertEquals(FSN, conceptMapMapping.getSourceTerm());
-			assertEquals(testName.getMethodName(), conceptMapMapping.getConceptMapTerm());
+			assertEquals(testName.getMethodName() + " (foundation metadata concept)", conceptMapMapping.getConceptMapTerm());
 	}
 	
 	@Test
