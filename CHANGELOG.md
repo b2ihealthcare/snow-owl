@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.10.1
+
+### Bugs/Improvements
+- [index] properly resolve short IPv6 addresses when deserializing commit documents with the `mergeSource` field from docvalues (#1154)
+- [api] properly expand FSN when fetching relevant mappings for a given concept (6371764)
+- [client] improve error handling and reporting when connecting to server via tcp (b51895c)
+- [util] fix issue when deleting directories with multiple sub-directories (#1149)
+- [maintenance] migrated all fixes from the 7.x stream to the 8.x stream ([PRs](https://github.com/b2ihealthcare/snow-owl/pulls?q=is%3Apr+label%3Aport-to-8.x+sort%3Acreated-asc), [commits](https://github.com/b2ihealthcare/snow-owl/compare/v7.17.6...7.x))
+
 ## 8.10.0
 
 ### Core
