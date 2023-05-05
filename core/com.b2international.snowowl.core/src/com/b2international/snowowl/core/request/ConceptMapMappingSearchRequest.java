@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,11 @@ public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<
 		final int limit = limit();
 		
 		Options options = Options.builder()
+				// ensure default values are set
+				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.DISPLAY, "PT")
+				// override defaults with options coming from request
 				.putAll(options())
+				// attach additional options to form a single request config
 				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
 				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.LIMIT, limit())
 				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.LOCALES, locales())

@@ -146,7 +146,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			.all()
 			.filterByIds(refSetIds)
 			.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
-			.setExpand("pt(),referenceSet()")
+			.setExpand("referenceSet()".concat(!Strings.isNullOrEmpty(snomedDisplayTermType.getExpand()) ? ",".concat(snomedDisplayTermType.getExpand()) : ""))
 			.build(uri)
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES)
