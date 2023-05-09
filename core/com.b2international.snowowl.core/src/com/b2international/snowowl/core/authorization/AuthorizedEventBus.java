@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,13 @@ public class AuthorizedEventBus implements IEventBus {
 	}
 	
 	private Map<String, String> merged(Map<String, String> headers) {
-		final Map<String, String> mergedHeaders = newHashMap(this.headers);
-		mergedHeaders.putAll(headers);
-		return ImmutableMap.copyOf(mergedHeaders);
+		if (headers == null) {
+			return this.headers;
+		} else {
+			final Map<String, String> mergedHeaders = newHashMap(this.headers);
+			mergedHeaders.putAll(headers);
+			return ImmutableMap.copyOf(mergedHeaders);
+		}
 	}
 	
 	@Override
@@ -123,7 +127,7 @@ public class AuthorizedEventBus implements IEventBus {
 
 	@Override
 	public long getSucceededMessages(String tag) {
-		return 0;
+		return bus.getSucceededMessages(tag);
 	}
 
 }
