@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
@@ -364,7 +365,9 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public <T extends Revision> void ensureUnique(Class<T> documentType, Iterable<String> ids) {
-		ensureUnique.putAll(documentType, ids);
+		if (!CompareUtils.isEmpty(ids)) {
+			ensureUnique.putAll(documentType, ids);
+		}
 	}
 	
 	@Override
@@ -374,7 +377,9 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public <T extends Revision> void ensurePresent(Class<T> documentType, Iterable<String> ids) {
-		ensurePresent.putAll(documentType, ids);
+		if (!CompareUtils.isEmpty(ids)) {
+			ensurePresent.putAll(documentType, ids);
+		}
 	}
 	
 	private static DatastoreLockContext createLockContext(String userId, String parentContextDescription) {
