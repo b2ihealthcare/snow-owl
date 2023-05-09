@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,6 +190,42 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @return the parent lock context for any commits that made outside of the current context 
 	 */
 	String parentLock();
+	
+	/**
+	 * Register an ID in the transaction and ensure its presence before committing the transaction changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param id - the id that is required to be present in the system before committing
+	 */
+	<T extends Revision> void ensurePresent(Class<T> documentType, String id);
+	
+	/**
+	 * Register a collection of IDs in the transaction and ensure their presence before committing the transaction changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param ids - the ids that are required to be present in the system before committing
+	 */
+	<T extends Revision> void ensurePresent(Class<T> documentType, Iterable<String> ids);
+	
+	/**
+	 * Register an ID in the transaction and ensure its uniqueness before committing the changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param id - the id that is required to be unique before committing the transaction
+	 */
+	<T extends Revision> void ensureUnique(Class<T> documentType, String id);
+	
+	/**
+	 * Register a collection of IDs in the transaction and ensure their uniqueness before committing the changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param ids - the ids that are required to be unique before committing the transaction
+	 */
+	<T extends Revision> void ensureUnique(Class<T> documentType, Iterable<String> ids);
 	
 	@Override
 	default Builder<? extends TransactionContext> inject() {

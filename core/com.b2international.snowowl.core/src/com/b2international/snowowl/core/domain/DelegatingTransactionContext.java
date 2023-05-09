@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,6 +130,26 @@ public class DelegatingTransactionContext extends DelegatingBranchContext implem
 	@Override
 	public String parentLock() {
 		return getDelegate().parentLock();
+	}
+
+	@Override
+	public <T extends Revision> void ensurePresent(Class<T> documentType, String id) {
+		getDelegate().ensurePresent(documentType, id);
+	}
+	
+	@Override
+	public <T extends Revision> void ensurePresent(Class<T> documentType, Iterable<String> ids) {
+		getDelegate().ensurePresent(documentType, ids);	
+	}
+	
+	@Override
+	public <T extends Revision> void ensureUnique(Class<T> documentType, String id) {
+		getDelegate().ensureUnique(documentType, id);
+	}
+	
+	@Override
+	public <T extends Revision> void ensureUnique(Class<T> documentType, Iterable<String> ids) {
+		getDelegate().ensureUnique(documentType, ids);
 	}
 
 }
