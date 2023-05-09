@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,6 +190,11 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @return the parent lock context for any commits that made outside of the current context 
 	 */
 	String parentLock();
+	
+	<T extends Revision> void ensurePresent(Class<T> documentType, String id);
+	<T extends Revision> void ensurePresent(Class<T> documentType, Iterable<String> ids);
+	<T extends Revision> void ensureUnique(Class<T> documentType, String id);
+	<T extends Revision> void ensureUnique(Class<T> documentType, Iterable<String> ids);
 	
 	@Override
 	default Builder<? extends TransactionContext> inject() {

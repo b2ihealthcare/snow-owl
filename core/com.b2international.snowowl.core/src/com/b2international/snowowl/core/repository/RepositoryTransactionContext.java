@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import java.util.stream.Stream;
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.index.Index;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -50,6 +52,9 @@ import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 4.5
@@ -67,6 +72,9 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@JsonIgnore
 	private transient final StagingArea staging;
+	
+	private transient final Multimap<Class<? extends Revision>, String> ensureUnique = LinkedHashMultimap.create();
+	private transient final Multimap<Class<? extends Revision>, String> ensurePresent = LinkedHashMultimap.create();
 
 	public RepositoryTransactionContext(BranchContext context, String author, String commitComment, String parentLockContext) {
 		super(context);
@@ -250,6 +258,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		try {
 			locks.lock(lockContext, 1000L, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
+			log().info("Checking transaction content before commit to to {}@{}", path(), timestamp);
+			checkTransaction();
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
 			log().info("Changes have been successfully persisted to {}@{}.", path(), timestamp);
@@ -269,6 +279,34 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		}
 	}
 
+	private void checkTransaction() {
+		if (!ensureUnique.isEmpty()) {
+			// check if any of the listed IDs are already present in the index and if so, report AlreadyExistsException for the first registered ID (same behavior as before with explicit checks)
+			for (Class<? extends Revision> type : ensureUnique.keySet()) {
+				final Collection<String> idsToCheck = ensureUnique.get(type);
+				final Map<String, ?> existingComponents = Maps.uniqueIndex(fetchComponents(idsToCheck, type), Revision::getId);
+				for (String idToCheck : idsToCheck) {
+					if (existingComponents.containsKey(idToCheck)) {
+						throw new AlreadyExistsException(DocumentMapping.getDocType(type), idToCheck);
+					}
+				}
+			}
+		}
+		
+		if (!ensurePresent.isEmpty()) {
+			// check if any of the listed IDs are already present in the index and if NOT, report ComponentNotFoundException for the first registered ID (same behavior as before with explicit checks)
+			for (Class<? extends Revision> type : ensurePresent.keySet()) {
+				final Collection<String> idsToCheck = ensurePresent.get(type);
+				final Map<String, ?> existingComponents = Maps.uniqueIndex(fetchComponents(idsToCheck, type), Revision::getId);
+				for (String idToCheck : idsToCheck) {
+					if (!existingComponents.containsKey(idToCheck)) {
+						throw new ComponentNotFoundException(DocumentMapping.getDocType(type), idToCheck).toBadRequestException();
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	public void rollback() {
 		staging.rollback();
@@ -277,6 +315,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	private void clear() {
 		resolvedObjectsById.clear();
+		ensureUnique.clear();
+		ensurePresent.clear();
 	}
 
 	@Override
@@ -315,6 +355,26 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 					});
 				});
 		});
+	}
+	
+	@Override
+	public <T extends Revision> void ensureUnique(Class<T> documentType, String id) {
+		ensureUnique.put(documentType, id);
+	}
+	
+	@Override
+	public <T extends Revision> void ensureUnique(Class<T> documentType, Iterable<String> ids) {
+		ensureUnique.putAll(documentType, ids);
+	}
+	
+	@Override
+	public <T extends Revision> void ensurePresent(Class<T> documentType, String id) {
+		ensurePresent.put(documentType, id);
+	}
+	
+	@Override
+	public <T extends Revision> void ensurePresent(Class<T> documentType, Iterable<String> ids) {
+		ensurePresent.putAll(documentType, ids);
 	}
 	
 	private static DatastoreLockContext createLockContext(String userId, String parentContextDescription) {
