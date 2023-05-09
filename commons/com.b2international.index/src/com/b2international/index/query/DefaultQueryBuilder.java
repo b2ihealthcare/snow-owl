@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		this.cached = cached;
 		return this;
 	}
-
+	
 	@Override
 	public Query<T> build() {
 		IndexSelection<T> selection = this.selection.build();

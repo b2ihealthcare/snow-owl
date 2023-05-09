@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.lucene.search.TotalHits;
@@ -55,6 +56,7 @@ import com.b2international.collections.floats.FloatIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.*;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -95,6 +97,8 @@ public class EsDocumentSearcher implements Searcher {
 	private final int resultWindow;
 	private final int maxTermsCount;
 
+	private Metrics metrics = Metrics.NOOP;
+
 	public EsDocumentSearcher(EsIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
@@ -102,6 +106,11 @@ public class EsDocumentSearcher implements Searcher {
 		this.maxTermsCount = Integer.parseInt((String) admin.settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
 	}
 
+	@Override
+	public void setMetrics(Metrics metrics) {
+		this.metrics = metrics;
+	}
+	
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
 		checkArgument(!Strings.isNullOrEmpty(key), "Key cannot be empty");
@@ -150,7 +159,8 @@ public class EsDocumentSearcher implements Searcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(primaryMapping, admin.settings(), admin.log());
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
-		final SearchRequest req = new SearchRequest(admin.getTypeIndexes(mappings).toArray(length -> new String[length]));
+		final String[] indicesToQuery = admin.getTypeIndexes(mappings).toArray(length -> new String[length]);
+		final SearchRequest req = new SearchRequest(indicesToQuery);
 		
 		// configure caching
 		req.requestCache(query.isCached());
@@ -245,7 +255,9 @@ public class EsDocumentSearcher implements Searcher {
 		final Class<T> select = query.getSelection().getSelect();
 		final List<Class<?>> from = query.getSelection().getFrom();
 		
-		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, query.getSortBy(), allHits.build());
+		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, allHits.build());
+		metrics.withLongMetric(String.format("%s.search_response_time", Arrays.toString(indicesToQuery)), w.elapsed(TimeUnit.MINUTES));
+		metrics.withIntegerMetric(String.format("%s.search_call_count", Arrays.toString(indicesToQuery)), 1);
 		admin.log().trace("Executed query '{}' in '{}'", query, w);
 		return hits;
 	}
@@ -298,7 +310,6 @@ public class EsDocumentSearcher implements Searcher {
 			final boolean fetchSource,
 			final int limit, 
 			final int totalHits, 
-			final SortBy sortBy,
 			final Iterable<SearchHit> hits) throws IOException {
 		final HitConverter<T> hitConverter = HitConverter.getConverter(mapper, select, from, fetchSource, fields);
 		Object[] searchAfterSortValues = null;
@@ -467,7 +478,7 @@ public class EsDocumentSearcher implements Searcher {
 			}
 			Hits<T> hits;
 			if (topHits != null) {
-				hits = toHits(aggregation.getSelect(), List.of(aggregation.getFrom()), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), null, topHits.getHits()); 
+				hits = toHits(aggregation.getSelect(), List.of(aggregation.getFrom()), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), topHits.getHits()); 
 			} else {
 				hits = new Hits<>(Collections.emptyList(), null, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount());
 			}

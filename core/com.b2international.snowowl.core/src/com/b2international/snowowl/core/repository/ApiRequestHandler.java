@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestWithContext;
-import com.b2international.snowowl.core.events.util.RequestHeaders;
-import com.b2international.snowowl.core.events.util.ResponseHeaders;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
 import com.b2international.snowowl.core.rate.RateLimitingRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -63,11 +61,9 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 				initialContext = Map.of();
 			}
 			
-			final ResponseHeaders responseHeaders = new ResponseHeaders();
 			// prepare the request execution context
-			final RequestContext executionContext = new RequestContext(context);
-			executionContext.bind(RequestHeaders.class, new RequestHeaders(message.headers()));
-			executionContext.bind(ResponseHeaders.class, responseHeaders);
+			final RequestContext executionContext = new RequestContext(context, message.headers());
+			// bind all externally defined context items
 			executionContext.bindAll(initialContext);
 			
 			// monitor each request execution
@@ -86,7 +82,7 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 				LoggerFactory.getLogger(ApiRequestHandler.class).error("No response was returned from request: " + req.getClass());
 			}
 					
-			message.reply(body, responseHeaders.headers());
+			message.reply(body, executionContext.responseHeaders());
 		} catch (WrappedException e) {
 			message.fail(e.getCause());
 		} catch (ApiException e) {

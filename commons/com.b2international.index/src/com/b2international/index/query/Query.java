@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ package com.b2international.index.query;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.Hits;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
@@ -34,7 +36,7 @@ import com.google.common.collect.ImmutableList;
  * 
  * @since 4.7
  */
-public final class Query<T> {
+public final class Query<T> implements Metrics {
 
 	private static final Joiner COMMA_JOINER = Joiner.on(",");
 	
@@ -103,6 +105,7 @@ public final class Query<T> {
 		 * @return
 		 */
 		AfterWhereBuilder<T> cached(boolean cached);
+		
 	}
 
 	private String searchAfter;
@@ -113,6 +116,7 @@ public final class Query<T> {
 	private boolean withScores = false;
 	private List<String> fields;
 	private boolean cached = false;
+	private Metrics metrics;
 
 	Query() {}
 
@@ -178,6 +182,24 @@ public final class Query<T> {
 	
 	void setCached(boolean cached) {
 		this.cached = cached;
+	}
+	
+	public Metrics getMetrics() {
+		return metrics;
+	}
+	
+	void setMetrics(Metrics metrics) {
+		this.metrics = metrics;
+	}
+	
+	@Override
+	public <U> void withMetric(String metricKey, U value, BiFunction<U,U,U> merge) {
+		metrics.withMetric(metricKey, value, merge);
+	}
+	
+	@Override
+	public Map<String, Object> getMeasurements() {
+		return metrics.getMeasurements();
 	}
 	
 	@Override
@@ -292,4 +314,8 @@ public final class Query<T> {
 		return withWhere(altered.build());
 	}
 
+	public boolean isMeasured() {
+		return getMetrics() != null;
+	}
+	
 }

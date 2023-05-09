@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.core.RequestContext;
+import com.b2international.commons.metric.Metrics;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.RequestHeaders;
+import com.b2international.snowowl.core.events.util.ResponseHeaders;
 import com.b2international.snowowl.core.identity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
@@ -66,7 +68,7 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			);
 			
 			// append all externally measured request specific metrics
-			metrics = metrics.merge(context.optionalService(RequestContext.class).map(RequestContext::getMetrics).orElse(Map.of()));
+			metrics = metrics.merge(context.service(Metrics.class).getMeasurements());
 			
 			// register metrics
 			additionalInfo.put("metrics", metrics);
@@ -76,7 +78,20 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 					"sub", user.getUserId()
 				));
 			});
+			// report metrics to log 
 			LOG.info(toJson(context, next(), additionalInfo));
+			// and also append them as response headers if requested via X-Profile request header
+			if (context.service(RequestHeaders.class).has("X-Profile")) {
+				String metricsValue;
+				try {
+					final ObjectMapper mapper = context.service(ObjectMapper.class);
+					metricsValue = mapper.writeValueAsString(metrics);
+				} catch (Throwable e) {
+					metricsValue = "Unable to get request metrics: " + e.getMessage();
+				}
+				context.service(ResponseHeaders.class).set("X-Metrics", metricsValue);
+			}
+			
 		}
 	}
 

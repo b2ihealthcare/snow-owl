@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,10 @@ public final class RequestHeaders {
 
 	public RequestHeaders(Map<String, String> headers) {
 		this.headers = headers == null ? Collections.emptyMap() : ImmutableMap.copyOf(headers);
+	}
+	
+	public boolean has(String header) {
+		return headers.containsKey(header);
 	}
 	
 	public String header(String name) {

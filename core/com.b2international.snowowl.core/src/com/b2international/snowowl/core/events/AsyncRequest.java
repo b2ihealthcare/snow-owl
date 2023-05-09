@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.events;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.jobs.ScheduleJobRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 5.0
@@ -35,8 +36,23 @@ public final class AsyncRequest<R> {
 
 	private final Request<ServiceProvider, R> request;
 	
+	private Map<String, String> requestHeaders;
+	
 	public AsyncRequest(Request<ServiceProvider, R> request) {
 		this.request = request;
+	}
+	
+	public AsyncRequest<R> withHeader(String headerName, String headerValue) {
+		if (this.requestHeaders == null) {
+			this.requestHeaders = new HashMap<>(2);
+		}
+		this.requestHeaders.put(headerName, headerValue);
+		return this;
+	}
+	
+	public AsyncRequest<R> withHeaders(Map<String, String> requestHeaders) {
+		this.requestHeaders = requestHeaders == null ? null : ImmutableMap.copyOf(requestHeaders);
+		return this;
 	}
 	
 	public AsyncRequest<R> withContext(Map<Class<?>, Object> context) {
@@ -60,7 +76,7 @@ public final class AsyncRequest<R> {
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
-		bus.send(Request.ADDRESS, request, Request.TAG, Collections.emptyMap(), new IHandler<IMessage>() {
+		bus.send(Request.ADDRESS, request, Request.TAG, requestHeaders, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {

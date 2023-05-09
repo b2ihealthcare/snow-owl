@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
@@ -52,6 +53,11 @@ public final class DefaultRevisionSearcher implements RevisionSearcher {
 	@Override
 	public Searcher searcher() {
 		return searcher;
+	}
+	
+	@Override
+	public void setMetrics(Metrics metrics) {
+		searcher.setMetrics(metrics);
 	}
 	
 	@Override

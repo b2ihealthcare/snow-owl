@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import com.b2international.commons.metric.Metrics;
 import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.core.events.util.RequestHeaders;
+import com.b2international.snowowl.core.events.util.ResponseHeaders;
 
 /**
  * Request scoped execution context. Can be used to register request scoped services, caches, etc.
@@ -28,15 +31,19 @@ import com.b2international.snowowl.core.domain.DelegatingContext;
  * @param <C>
  * @param <R>
  */
-public final class RequestContext extends DelegatingContext {
+public final class RequestContext extends DelegatingContext implements Metrics {
 
 	private Map<String, Object> metrics;
 	
-	public RequestContext(ServiceProvider delegate) {
+	public RequestContext(ServiceProvider delegate, Map<String, String> requestHeaders) {
 		super(delegate);
 		bind(RequestContext.class, this);
+		bind(Metrics.class, this);
+		bind(RequestHeaders.class, new RequestHeaders(requestHeaders));
+		bind(ResponseHeaders.class, new ResponseHeaders());
 	}
 	
+	@Override
 	public <T> void withMetric(String metricKey, T value, BiFunction<T, T, T> merge) {
 		if (this.metrics == null) {
 			this.metrics = new HashMap<>(2);
@@ -44,8 +51,17 @@ public final class RequestContext extends DelegatingContext {
 		this.metrics.merge(metricKey, value, (BiFunction<? super Object, ? super Object, ? extends Object>) merge);
 	}
 	
-	public Map<String, Object> getMetrics() {
+	@Override
+	public Map<String, Object> getMeasurements() {
 		return metrics;
 	}
 
+	public Map<String, String> requestHeaders() {
+		return service(RequestHeaders.class).headers();
+	}
+	
+	public Map<String, String> responseHeaders() {
+		return service(ResponseHeaders.class).headers();
+	}
+	
 }

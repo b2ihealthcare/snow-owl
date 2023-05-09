@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,6 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 					.cached(cacheHits(context))
 					.build());
 		}
-		
 		
 		return toCollectionResource(context, hits);
 	}
