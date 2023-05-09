@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.index;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Knn;
@@ -95,4 +96,13 @@ public interface Searcher {
 	default <T> Stream<Hits<T>> stream(Query<T> query) {
 		return Streams.stream(new SearchAfterIterator<T>(this, query)); 
 	}
+	
+	/**
+	 * Optionally injectable {@link Metrics} to measure query performance.
+	 * 
+	 * @param metrics
+	 */
+	default void setMetrics(Metrics metrics) {
+	} 
+	
 }

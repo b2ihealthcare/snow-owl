@@ -17,11 +17,9 @@ package com.b2international.index.query;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.metric.Metrics;
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.Revision;
@@ -41,7 +39,6 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private SortBy sortBy = SortBy.DEFAULT;
 	private boolean withScores = false;
 	private boolean cached = false;
-	private Metrics metrics;
 
 	private List<String> fields = Collections.emptyList();
 
@@ -110,12 +107,6 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	}
 	
 	@Override
-	public AfterWhereBuilder<T> measured(Metrics metrics) {
-		this.metrics = metrics;
-		return this;
-	}
-
-	@Override
 	public Query<T> build() {
 		IndexSelection<T> selection = this.selection.build();
 		if (Revision.class.isAssignableFrom(selection.getSelect()) && !CompareUtils.isEmpty(fields) && !fields.contains(Revision.Fields.ID)) {
@@ -130,7 +121,6 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		query.setWithScores(withScores);
 		query.setFields(fields);
 		query.setCached(cached);
-		query.setMetrics(Optional.ofNullable(metrics).orElse(Metrics.NOOP));
 		return query;
 	}
 

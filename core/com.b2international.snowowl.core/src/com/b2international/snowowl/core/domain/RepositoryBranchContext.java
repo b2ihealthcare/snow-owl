@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.domain;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.revision.RevisionSearcher;
 
 /**
@@ -33,6 +34,8 @@ public final class RepositoryBranchContext extends DelegatingRepositoryContext i
 		}
 		
 		this.path = path;
+		// configure query performance profiling
+		searcher.setMetrics(service(Metrics.class));
 		bind(RevisionSearcher.class, searcher);
 		context.optionalService(ContextConfigurer.class).ifPresent(configurer -> configurer.configure(RepositoryBranchContext.this));
 	}

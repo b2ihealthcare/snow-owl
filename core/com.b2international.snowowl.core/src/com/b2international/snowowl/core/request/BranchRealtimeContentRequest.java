@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
@@ -54,46 +55,74 @@ public final class BranchRealtimeContentRequest<B> extends DelegatingRequest<Rep
 		RevisionIndex index = context.service(RevisionIndex.class);
 		return next(new RepositoryBranchContext(context, branchPath, new RevisionSearcher() {
 
+			private Metrics metrics = Metrics.NOOP;
+
 			@Override
 			public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
-				return index.read(branchPath, searcher -> searcher.aggregate(aggregation));
+				return index.read(branchPath, searcher -> {
+					searcher.setMetrics(metrics);
+					return searcher.aggregate(aggregation);
+				});
 			}
 
 			@Override
 			public Searcher searcher() {
-				return index.read(branchPath, searcher -> searcher.searcher());
+				return index.read(branchPath, searcher -> {
+					searcher.setMetrics(metrics);
+					return searcher.searcher();
+				});
 			}
 
 			@Override
 			public <T> Hits<T> search(Query<T> query) throws IOException {
-				return index.read(branchPath, searcher -> searcher.search(query));
+				return index.read(branchPath, searcher -> {
+					searcher.setMetrics(metrics);
+					return searcher.search(query);
+				});
 			}
 
 			@Override
 			public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
-				return index.read(branchPath, searcher -> searcher.get(type, keys));
+				return index.read(branchPath, searcher -> {
+					searcher.setMetrics(metrics);
+					return searcher.get(type, keys);
+				});
 			}
 
 			@Override
 			public <T> T get(Class<T> type, String key) throws IOException {
-				return index.read(branchPath, searcher -> searcher.get(type, key));
+				return index.read(branchPath, searcher -> {
+					searcher.setMetrics(metrics);
+					return searcher.get(type, key);
+				});
 			}
 
 			@Override
 			public <T> Hits<T> knn(Knn<T> knn) throws IOException {
-				return index.read(branchPath, searcher -> searcher.knn(knn));
-			}
-
-			@Override
-			public String branch() {
-				return branchPath;
+				return index.read(branchPath, searcher -> {
+					searcher.setMetrics(metrics);
+					return searcher.knn(knn);
+				});
 			}
 
 			@Override
 			public RevisionBranchRef ref() {
-				return index.read(branchPath, searcher -> searcher.ref());
+				return index.read(branchPath, searcher -> {
+					searcher.setMetrics(metrics);
+					return searcher.ref();
+				});
 			}
-
+			
+			@Override
+			public String branch() {
+				return branchPath;
+			}
+			
+			@Override
+			public void setMetrics(Metrics metrics) {
+				this.metrics = metrics;
+			}
+			
 		}));
 	}
 

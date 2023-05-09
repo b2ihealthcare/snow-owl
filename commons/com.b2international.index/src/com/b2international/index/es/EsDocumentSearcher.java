@@ -56,6 +56,7 @@ import com.b2international.collections.floats.FloatIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.*;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -96,11 +97,18 @@ public class EsDocumentSearcher implements Searcher {
 	private final int resultWindow;
 	private final int maxTermsCount;
 
+	private Metrics metrics = Metrics.NOOP;
+
 	public EsDocumentSearcher(EsIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
 		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
 		this.maxTermsCount = Integer.parseInt((String) admin.settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
+	}
+
+	@Override
+	public void setMetrics(Metrics metrics) {
+		this.metrics = metrics;
 	}
 	
 	@Override
@@ -248,8 +256,8 @@ public class EsDocumentSearcher implements Searcher {
 		final List<Class<?>> from = query.getSelection().getFrom();
 		
 		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, allHits.build());
-		query.withLongMetric(String.format("%s.search_response_time", Arrays.toString(indicesToQuery)), w.elapsed(TimeUnit.MINUTES));
-		query.withIntegerMetric(String.format("%s.search_call_count", Arrays.toString(indicesToQuery)), 1);
+		metrics.withLongMetric(String.format("%s.search_response_time", Arrays.toString(indicesToQuery)), w.elapsed(TimeUnit.MINUTES));
+		metrics.withIntegerMetric(String.format("%s.search_call_count", Arrays.toString(indicesToQuery)), 1);
 		admin.log().trace("Executed query '{}' in '{}'", query, w);
 		return hits;
 	}

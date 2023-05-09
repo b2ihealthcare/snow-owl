@@ -106,14 +106,6 @@ public final class Query<T> implements Metrics {
 		 */
 		AfterWhereBuilder<T> cached(boolean cached);
 		
-		/**
-		 * Configures the {@link Query} instance to be measured and statistics will be added to the given {@link Metrics} instance.
-		 * @param metrics
-		 * @return
-		 * @since 8.11.0
-		 */
-		AfterWhereBuilder<T> measured(Metrics metrics);
-		
 	}
 
 	private String searchAfter;
@@ -259,8 +251,7 @@ public final class Query<T> implements Metrics {
 			.limit(getLimit())
 			.searchAfter(getSearchAfter())
 			.withScores(isWithScores())
-			.cached(isCached())
-			.measured(getMetrics());
+			.cached(isCached());
 	}
 	
 	public AfterWhereBuilder<T> withSearchAfter(String searchAfter) {
@@ -271,8 +262,7 @@ public final class Query<T> implements Metrics {
 				.limit(getLimit())
 				.searchAfter(searchAfter)
 				.withScores(isWithScores())
-				.cached(isCached())
-				.measured(getMetrics());
+				.cached(isCached());
 	}
 
 	/**
