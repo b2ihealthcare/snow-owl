@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.elasticsearch.core.Set;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -107,6 +108,9 @@ public final class SnowOwlPlugin extends Plugin {
 		));
 		
 		// configure monitoring support
+		// add default global implementation of no-op request metrics, in case of some request needs it too early
+		env.services().registerService(Metrics.class, Metrics.NOOP);
+		
 		final MonitoringConfiguration monitoringConfig = configuration.getModuleConfig(MonitoringConfiguration.class);
 		if (monitoringConfig.isEnabled()) {
 			final PrometheusMeterRegistry registry = createRegistry(monitoringConfig);

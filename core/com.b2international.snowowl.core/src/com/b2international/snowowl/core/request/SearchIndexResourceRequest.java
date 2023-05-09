@@ -21,6 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.commons.metric.Metrics;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.*;
@@ -81,9 +82,9 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 					.sortBy(querySortBy(context))
 					.withScores(trackScores())
 					.cached(cacheHits(context))
+					.measured(context.service(Metrics.class))
 					.build());
 		}
-		
 		
 		return toCollectionResource(context, hits);
 	}
