@@ -258,7 +258,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		try {
 			locks.lock(lockContext, 1000L, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
-			log().info("Checking transaction content before commit to to {}@{}", path(), timestamp);
+			log().info("Checking transaction content before commit to {}@{}", path(), timestamp);
 			checkTransaction();
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
