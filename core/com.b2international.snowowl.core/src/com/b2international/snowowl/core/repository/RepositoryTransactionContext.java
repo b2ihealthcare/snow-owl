@@ -41,6 +41,7 @@ import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.identity.User;
@@ -284,7 +285,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		if (!ensureUnique.isEmpty()) {
 			// check if any of the listed IDs are already present in the index and if so, report AlreadyExistsException for the first registered ID (same behavior as before with explicit checks)
 			for (Class<? extends Revision> type : ensureUnique.keySet()) {
-				final Collection<String> idsToCheck = ensureUnique.get(type);
+				final Collection<String> idsToCheck = ensureUnique.get(type).stream().filter(id -> !IComponent.ROOT_ID.equals(id)).toList();
 				final Map<String, ?> existingComponents = Maps.uniqueIndex(fetchComponents(idsToCheck, type), Revision::getId);
 				for (String idToCheck : idsToCheck) {
 					if (existingComponents.containsKey(idToCheck)) {
@@ -297,7 +298,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		if (!ensurePresent.isEmpty()) {
 			// check if any of the listed IDs are already present in the index and if NOT, report ComponentNotFoundException for the first registered ID (same behavior as before with explicit checks)
 			for (Class<? extends Revision> type : ensurePresent.keySet()) {
-				final Collection<String> idsToCheck = ensurePresent.get(type);
+				final Collection<String> idsToCheck = ensurePresent.get(type).stream().filter(id -> !IComponent.ROOT_ID.equals(id)).toList();
 				final Map<String, ?> existingComponents = Maps.uniqueIndex(fetchComponents(idsToCheck, type), Revision::getId);
 				for (String idToCheck : idsToCheck) {
 					if (!existingComponents.containsKey(idToCheck)) {
