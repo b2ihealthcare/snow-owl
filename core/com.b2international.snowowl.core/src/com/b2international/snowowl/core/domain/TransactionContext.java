@@ -191,9 +191,40 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 */
 	String parentLock();
 	
+	/**
+	 * Register an ID in the transaction and ensure its presence before committing the transaction changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param id - the id that is required to be present in the system before committing
+	 */
 	<T extends Revision> void ensurePresent(Class<T> documentType, String id);
+	
+	/**
+	 * Register a collection of IDs in the transaction and ensure their presence before committing the transaction changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param ids - the ids that are required to be present in the system before committing
+	 */
 	<T extends Revision> void ensurePresent(Class<T> documentType, Iterable<String> ids);
+	
+	/**
+	 * Register an ID in the transaction and ensure its uniqueness before committing the changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param id - the id that is required to be unique before committing the transaction
+	 */
 	<T extends Revision> void ensureUnique(Class<T> documentType, String id);
+	
+	/**
+	 * Register a collection of IDs in the transaction and ensure their uniqueness before committing the changes upon the next {@link #commit()} call.
+	 * 
+	 * @param <T>
+	 * @param documentType - the document type to check
+	 * @param ids - the ids that are required to be unique before committing the transaction
+	 */
 	<T extends Revision> void ensureUnique(Class<T> documentType, Iterable<String> ids);
 	
 	@Override
