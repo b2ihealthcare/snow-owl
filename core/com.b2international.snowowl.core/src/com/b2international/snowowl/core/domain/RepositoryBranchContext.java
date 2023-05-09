@@ -35,7 +35,7 @@ public final class RepositoryBranchContext extends DelegatingRepositoryContext i
 		
 		this.path = path;
 		// configure query performance profiling
-		searcher.setMetrics(service(Metrics.class));
+		searcher.setMetrics(optionalService(Metrics.class).orElse(Metrics.NOOP));
 		bind(RevisionSearcher.class, searcher);
 		context.optionalService(ContextConfigurer.class).ifPresent(configurer -> configurer.configure(RepositoryBranchContext.this));
 	}
