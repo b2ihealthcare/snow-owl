@@ -255,73 +255,73 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void import12OnlyPubContentWithVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", true);
 	}
 
 	@Test
 	public void import13OnlyPubContentWithOutVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", false);
 	}
 
 	@Test
 	public void import14PubAndUnpubContentWithVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", true);
 	}
 
 	@Test
 	public void import15PubAndUnpubContentWithOutVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", false);
 	}
 
 	@Test
 	public void import16OnlyUnpubContentWithoutVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", false);
 	}
 
 	@Test
 	public void import17OnlyUnpubContentWithVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", true);
 	}
 
 	@Test
 	public void import18OnlyPubRefsetMembersWithVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", true);
 	}
 
 	@Test
 	public void import19OnlyPubRefsetMembersWithoutVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", false);
 	}
 
 	@Test
 	public void import20PubAndUnpubRefsetMembersWithVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", true);
 	}
 
 	@Test
 	public void import21PubAndUnpubRefsetMembersWithoutVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", false);
 	}
 
 	@Test
 	public void import22OnlyUnpubRefsetMembersWithoutVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", false);
 	}
 
 	@Test
 	public void import23OnlyUnpubRefsetMembersWithVersioning() throws Exception {
-		validateBranchHeadtimestampUpdate(branchPath,
+		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", true);
 	}
 
@@ -581,8 +581,8 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
   			.body("statedAncestorIds", equalTo(List.of(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT, "404684003")));
   		
   	}
-	
-	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
+  	
+	private void importAndValidateBranchHeadTimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
 
 		ValidatableResponse response = branching.getBranch(branch);
