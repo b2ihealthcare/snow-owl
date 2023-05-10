@@ -583,12 +583,12 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
   	}
   	
   	@Test
-	public void import38SnapshotContentWithUnpublishedReferences() throws Exception {
+	public void import38SnapshotWithReferencesBetweenVersionedAndUnversionedContent() throws Exception {
   		importAndValidateBranchHeadTimestampUpdate(branchPath, "SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time_mix.zip", false, Rf2ReleaseType.SNAPSHOT);
 	}
   	
   	@Test
-	public void import39SnapshotContentWithUnpublishedReferences() throws Exception {
+	public void import39DeltaWithReferencesBetweenVersionedAndUnversionedContent() throws Exception {
   		var codeSystemId = branchPath.lastSegment();
   		CodeSystemRequests.prepareNewCodeSystem()
 			.setBranchPath(branchPath.getPath())
@@ -606,7 +606,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
   		
   		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time_mix.zip").statusCode(201)
 				.extract().header("Location"));
-		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
+		waitForImportJob(branchPath, importId)
+			.statusCode(200)
+			.body("status", equalTo(RemoteJobState.FINISHED.name()))
+			.body("response.error", equalTo("There are '1' issues with the import file."));
 	}
   	
 	private void importDeltaAndValidateBranchHeadTimestampUpdate(IBranchPath branch, String importArchiveFileName,
