@@ -260,7 +260,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import13OnlyPubContentWithOutVersioning() throws Exception {
+	public void import13OnlyPubContentWithoutVersioning() throws Exception {
 		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", false);
 	}
@@ -272,7 +272,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import15PubAndUnpubContentWithOutVersioning() throws Exception {
+	public void import15PubAndUnpubContentWithoutVersioning() throws Exception {
 		importAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", false);
 	}
