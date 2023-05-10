@@ -58,7 +58,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2ImportRequestBuilder;
-import com.google.common.collect.ImmutableMap;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 import io.restassured.response.ValidatableResponse;
 
@@ -89,11 +89,11 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private void importArchive(IBranchPath path, List<String> ignoreMissingReferencesIn, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
-		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-				.put("type", releaseType.name())
-				.put("createVersions", createVersion)
-				.put("ignoreMissingReferencesIn", ignoreMissingReferencesIn)
-				.build();
+		var importConfiguration = Map.of(
+			"type", releaseType.name(),
+			"createVersions", createVersion,
+			"ignoreMissingReferencesIn", ignoreMissingReferencesIn
+		);
 		importArchive(path, importConfiguration, fileName);
 	}
 
@@ -113,7 +113,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.setName(codeSystemId)
 				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, "info@b2international.com", "Created new code system " + codeSystemId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, RestExtensions.USER, "Created new code system " + codeSystemId)
 				.execute(getBus())
 				.getSync(1L, TimeUnit.MINUTES);
 		}
@@ -126,10 +126,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void import01InvalidBranchPath() throws Exception {
 		final IBranchPath branchPath = BranchPathUtils.createPath("MAIN/notfound");
-		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("createVersions", false)
-				.build();
+		var importConfiguration = Map.of(
+			"type", Rf2ReleaseType.DELTA.name(),
+			"createVersions", false
+		);
 		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20150131_new_concept.zip").statusCode(201)
 				.extract().header("Location"));
 		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
@@ -243,10 +243,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		createCodeSystem(branchPath, "SNOMEDCT-NE").statusCode(201);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(404);
 
-		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("createVersions", true)
-				.build();
+		var importConfiguration = Map.of(
+			"type", Rf2ReleaseType.DELTA.name(),
+			"createVersions", true
+		);
 
 		importArchive(branchPath, importConfiguration, "SnomedCT_Release_INT_20150205_new_extension_concept.zip");
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
@@ -255,73 +255,73 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void import12OnlyPubContentWithVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", true);
 	}
 
 	@Test
 	public void import13OnlyPubContentWithoutVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", false);
 	}
 
 	@Test
 	public void import14PubAndUnpubContentWithVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", true);
 	}
 
 	@Test
 	public void import15PubAndUnpubContentWithoutVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", false);
 	}
 
 	@Test
 	public void import16OnlyUnpubContentWithoutVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", false);
 	}
 
 	@Test
 	public void import17OnlyUnpubContentWithVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", true);
 	}
 
 	@Test
 	public void import18OnlyPubRefsetMembersWithVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", true);
 	}
 
 	@Test
 	public void import19OnlyPubRefsetMembersWithoutVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", false);
 	}
 
 	@Test
 	public void import20PubAndUnpubRefsetMembersWithVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", true);
 	}
 
 	@Test
 	public void import21PubAndUnpubRefsetMembersWithoutVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", false);
 	}
 
 	@Test
 	public void import22OnlyUnpubRefsetMembersWithoutVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", false);
 	}
 
 	@Test
 	public void import23OnlyUnpubRefsetMembersWithVersioning() throws Exception {
-		importAndValidateBranchHeadTimestampUpdate(branchPath,
+		importDeltaAndValidateBranchHeadTimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", true);
 	}
 
@@ -549,10 +549,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	public void import33CreateVersionFromBranch() throws Exception {
 		try {
 			SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
-			final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-					.put("type", Rf2ReleaseType.DELTA.name())
-					.put("createVersions", true)
-					.build();
+			var importConfiguration = Map.of(
+				"type", Rf2ReleaseType.DELTA.name(),
+				"createVersions", true
+			);
 			final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
 					.extract().header("Location"));
 			waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
@@ -567,11 +567,11 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
   		// the batch size must be lowered to 1000, so then the import will try to consume changes in two sets
   		// the concept with id 10004011000154102 will get a new stated parent (2911000154100) via an OWL axiom which must be consumed in the same batch
   		
-  		Map<String, Object> configuration = ImmutableMap.<String, Object>builder()
-			.put("type", Rf2ReleaseType.DELTA)
-			.put("createVersions", false)
-			.put("batchSize", 1000)
-			.build();
+  		var configuration = Map.of(
+  			"type", Rf2ReleaseType.DELTA.name(),
+  			"createVersions", false,
+  			"batchSize", 1000
+  		);
   		
   		importArchive(branchPath, configuration, "SnomedCT_RF2Release_INT_20230421T120000Z_new_owl_parent_in_second_import_batch.zip");
   		
@@ -582,9 +582,40 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
   		
   	}
   	
-	private void importAndValidateBranchHeadTimestampUpdate(IBranchPath branch, String importArchiveFileName,
+  	@Test
+	public void import38SnapshotContentWithUnpublishedReferences() throws Exception {
+  		importAndValidateBranchHeadTimestampUpdate(branchPath, "SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time_mix.zip", false, Rf2ReleaseType.SNAPSHOT);
+	}
+  	
+  	@Test
+	public void import39SnapshotContentWithUnpublishedReferences() throws Exception {
+  		var codeSystemId = branchPath.lastSegment();
+  		CodeSystemRequests.prepareNewCodeSystem()
+			.setBranchPath(branchPath.getPath())
+			.setShortName(codeSystemId)
+			.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.setName(codeSystemId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, RestExtensions.USER, "Created new code system " + codeSystemId)
+			.execute(getBus())
+			.getSync(1L, TimeUnit.MINUTES);
+  		
+  		var importConfiguration = Map.of(
+			"type", Rf2ReleaseType.DELTA.name(),
+			"createVersions", false
+		);
+  		
+  		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time_mix.zip").statusCode(201)
+				.extract().header("Location"));
+		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
+	}
+  	
+	private void importDeltaAndValidateBranchHeadTimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
+		importAndValidateBranchHeadTimestampUpdate(branchPath, importArchiveFileName, createVersions, Rf2ReleaseType.DELTA);
+	}
 
+		
+	private void importAndValidateBranchHeadTimestampUpdate(IBranchPath branch, String importArchiveFileName, boolean createVersions, Rf2ReleaseType rf2ReleaseType) {
 		ValidatableResponse response = branching.getBranch(branch);
 
 		String baseTimestamp = response.extract().jsonPath().getString("baseTimestamp");
@@ -604,11 +635,18 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 //					.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 //					.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
 //					.setTitle(codeSystemId)
-//					.build("info@b2international.com", "Created new code system " + codeSystemId)
+//					.build(RestExtensions.USER, "Created new code system " + codeSystemId)
 //					.execute(getBus())
 //					.getSync(1L, TimeUnit.MINUTES);
 		
-		importArchive(branch, createVersions, Rf2ReleaseType.DELTA, importArchiveFileName);
+		var importConfiguration = Map.of(
+			"type", rf2ReleaseType.name(),
+			"createVersions", createVersions
+		);
+		
+		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), importArchiveFileName).statusCode(201)
+				.extract().header("Location"));
+		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
 
 		ValidatableResponse response2 = branching.getBranch(branch);
 

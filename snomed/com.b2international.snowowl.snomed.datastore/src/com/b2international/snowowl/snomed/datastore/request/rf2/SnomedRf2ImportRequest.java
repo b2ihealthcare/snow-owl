@@ -353,14 +353,14 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	}
 
 	private String getEffectiveTimeKey(final String effectiveTime) {
-		if (Strings.isNullOrEmpty(effectiveTime)) {
-			// Unset effective time rows are getting their own time slice in all import modes 
-			return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL;
-		} else if (Rf2ReleaseType.SNAPSHOT == releaseType) {
-			// All other rows are imported in a single run in snapshot mode
+		if (Rf2ReleaseType.SNAPSHOT == releaseType) {
+			// in case of Snapshot import treat all rows as a single slice
 			return Rf2EffectiveTimeSlice.SNAPSHOT_SLICE;
+		} if (Strings.isNullOrEmpty(effectiveTime)) {
+			// Otherwise if there is not effective time in the current row use the unset effective time label slice 
+			return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL;
 		} else {
-			// Delta and full modes, however, import each "chronological layer" in order 
+			// if there is a valid effectiveTime, then use it to import each "chronological layer" in order 
 			return effectiveTime;
 		}
 	}
