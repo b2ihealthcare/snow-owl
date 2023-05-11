@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -535,10 +536,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			
 		final File exportArchive = doExport(taskBranch, config);
 		
-		String refsetMemberLine = getComponentLine(List.<String>of(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
-		String invalidRefsetMemberLine = getComponentLine(List.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String refsetMemberLine = getComponentLine(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId);
+		String invalidRefsetMemberLine = getComponentLine(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId);
 		
-		String newRefsetMemberLine = getComponentLine(List.<String>of(unpublishedMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String newRefsetMemberLine = getComponentLine(unpublishedMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId);
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
@@ -597,10 +598,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			
 		final File exportArchive = doExport(taskBranch, config);
 		
-		String refsetMemberLine = getComponentLine(List.<String>of(memberId, versionEffectiveTime, "0", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
-		String invalidRefsetMemberLine = getComponentLine(List.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String refsetMemberLine = getComponentLine(memberId, versionEffectiveTime, "0", MODULE_SCT_CORE, createdRefSetId, createdConceptId);
+		String invalidRefsetMemberLine = getComponentLine(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId);
 		
-		String newRefsetMemberLine = getComponentLine(List.<String>of(newMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String newRefsetMemberLine = getComponentLine(newMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId);
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
@@ -641,11 +642,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			
 		final File exportArchive = doExport(branchPath, config);
 		
-		String textDefinitionLine = getComponentLine(List.<String> of(textDefinitionId, versionEffectiveTime, "1", MODULE_SCT_CORE, conceptId, "en",
-				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
+		String textDefinitionLine = getComponentLine(textDefinitionId, versionEffectiveTime, "1", MODULE_SCT_CORE, conceptId, "en",
+				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE);
 		
-		String unpublishedTextDefinitionLine = getComponentLine(List.<String> of(unpublishedTextDefinitionId, "", "1", MODULE_SCT_CORE, conceptId, "en",
-				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
+		String unpublishedTextDefinitionLine = getComponentLine(unpublishedTextDefinitionId, "", "1", MODULE_SCT_CORE, conceptId, "en",
+				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE);
 
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 				
@@ -1499,7 +1500,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final String relationshipId = commitResult.getResultAs(String.class);
 		
 		// id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId
-		final String relationshipLine = getComponentLine(List.of(
+		final String relationshipLine = getComponentLine(
 			relationshipId, 
 			"", 
 			"1", 
@@ -1509,7 +1510,8 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			"0", 
 			Concepts.IS_A, 
 			Concepts.INFERRED_RELATIONSHIP, 
-			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER
+		);
 		
 		final Map<String, Object> config = Map.of(
 			"type", Rf2ReleaseType.SNAPSHOT.name(),
@@ -1581,10 +1583,77 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		assertArchiveContainsLines(exportArchiveWithBranchRange, fileToLinesMap);
 	}
+	
+	@Test
+	public void exportSnapshotContentFromBranchWithUnpublishedComponents() throws Exception {
+		
+		// treat the current branch as an extension branch
+		String codeSystemId = "SNOMEDCT-exportSnapshotContentFromBranchWithUnpublishedComponents";
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
+		
+		// create a component and version it
+		final String relationshipToExport = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP, 0);
+		
+		LocalDate todayEffectiveTime = LocalDate.now();
+		createVersion(codeSystemId, "v1", todayEffectiveTime).statusCode(201);
+		
+		// inactivate the relationship
+		var inactivate = Map.of(
+			"active", false, 
+			"commitComment", "Inactivate relationship to generate an unpublished entry"
+		);
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipToExport, inactivate)
+			.statusCode(204);
+		
+		var exportConfig = Map.of(
+			"type", Rf2ReleaseType.SNAPSHOT,
+			"includeUnpublished", false
+		);
+		
+		final File exportArchive = doExport(branchPath, exportConfig);
+		
+		final String relationshipFileName = "sct2_Relationship_Snapshot";
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+
+		// the release should contain the published version of the relationship
+		fileToLinesMap.put(relationshipFileName, Pair.of(true, getComponentLine(
+			relationshipToExport, 
+			EffectiveTimes.format(todayEffectiveTime, DateFormats.SHORT), 
+			"1", 
+			Concepts.MODULE_SCT_CORE, 
+			Concepts.ROOT_CONCEPT, 
+			Concepts.NAMESPACE_ROOT, 
+			"0", 
+			Concepts.PART_OF, 
+			Concepts.INFERRED_RELATIONSHIP, 
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER
+		)));
+		// but it should not contain the unpublished version of the relationship
+		fileToLinesMap.put(relationshipFileName, Pair.of(false, getComponentLine(
+			relationshipToExport, 
+			"", 
+			"0", 
+			Concepts.MODULE_SCT_CORE, 
+			Concepts.ROOT_CONCEPT, 
+			Concepts.NAMESPACE_ROOT, 
+			"0", 
+			Concepts.PART_OF, 
+			Concepts.INFERRED_RELATIONSHIP, 
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER
+		)));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
 
 	private String createRelationshipLine(final String relationshipId) {
 		// id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId
-		return getComponentLine(List.of(
+		return createRelationshipLine(relationshipId, Concepts.STATED_RELATIONSHIP);
+	}
+	
+	private String createRelationshipLine(final String relationshipId, final String characteristicTypeId) {
+		// id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId
+		return getComponentLine(
 			relationshipId, 
 			"", 
 			"1", 
@@ -1593,8 +1662,9 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			Concepts.NAMESPACE_ROOT, 
 			"0", 
 			Concepts.PART_OF, 
-			Concepts.STATED_RELATIONSHIP, 
-			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
+			characteristicTypeId, 
+			Concepts.EXISTENTIAL_RESTRICTION_MODIFIER
+		);
 	}
 	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {
@@ -1607,20 +1677,19 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term, String caseSignificance) {
-		return getComponentLine(List.of(id, effectiveTime, "1", MODULE_SCT_CORE, conceptId, languageCode, type, term, caseSignificance));
+		return getComponentLine(id, effectiveTime, "1", MODULE_SCT_CORE, conceptId, languageCode, type, term, caseSignificance);
 	}
 	
 	private static String createLanguageRefsetMemberLine(IBranchPath branchPath, String descriptionId, String effectiveTime, String languageRefsetId, String acceptabilityId) {
-		return getComponentLine(List.of(getLanguageRefsetMemberId(branchPath, descriptionId, languageRefsetId), effectiveTime, "1", MODULE_SCT_CORE, languageRefsetId, descriptionId,
-				acceptabilityId));
+		return getComponentLine(getLanguageRefsetMemberId(branchPath, descriptionId, languageRefsetId), effectiveTime, "1", MODULE_SCT_CORE, languageRefsetId, descriptionId, acceptabilityId);
 	}
 	
 	private static String createAcceptableUKLanguageRefsetMemberLine(IBranchPath branchPath, String descriptionId, String effectiveTime) {
 		return createLanguageRefsetMemberLine(branchPath, descriptionId, effectiveTime, Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE.getConceptId());
 	}
 
-	private static String getComponentLine(final List<String> lineElements) {
-		return Joiner.on("\t").join(lineElements);
+	private static String getComponentLine(final String...lineElements) {
+		return TAB_JOINER.join(lineElements);
 	}
 	
 }
