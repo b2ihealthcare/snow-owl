@@ -88,6 +88,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSe
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.collect.ImmutableList.Builder;
@@ -403,6 +404,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private boolean containsSpecialCharacter(final String referenceBranch) {
+		Preconditions.checkState(includePreReleaseContent, "Special branch path characters can only be used when requesting pre-release content.");
 		return referenceBranch.contains(RevisionIndex.AT_CHAR) || referenceBranch.contains(RevisionIndex.REV_RANGE);
 	}
 
@@ -484,7 +486,15 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				}
 				break;
 			case SNAPSHOT:
-				branchesToExport.add(referenceBranch);
+				// in case we are exporting published content only use the version branch instead of the reference branch
+				if (!this.includePreReleaseContent) {
+					if (versionsToExport.isEmpty()) {
+						throw new BadRequestException("Snapshot export without unpublished components requires at least one version.");
+					}
+					branchesToExport.add(versionsToExport.first().getBranchPath());
+				} else {
+					branchesToExport.add(referenceBranch);
+				}
 				break;
 		}
 		
@@ -616,6 +626,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		
 		// XXX: Versions do not need to be calculated for special path exports
 		if (Rf2ReleaseType.SNAPSHOT != releaseType && !containsSpecialCharacter(referenceBranch)) {
+			collectExportableCodeSystemVersions(context, versionsToExport, codeSystem, referenceBranch);
+		} else if (Rf2ReleaseType.SNAPSHOT == releaseType && !includePreReleaseContent) {
 			collectExportableCodeSystemVersions(context, versionsToExport, codeSystem, referenceBranch);
 		}
 		
