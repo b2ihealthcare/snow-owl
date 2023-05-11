@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -933,11 +933,24 @@ public final class StagingArea {
 		for (Class<? extends Revision> type : ImmutableSet.copyOf(Iterables.concat(fromChangeSet.getAddedTypes(), toChangeSet.getAddedTypes()))) {
 			final Set<String> newRevisionIdsOnSource = fromChangeSet.getAddedIds(type);
 			final Set<String> newRevisionIdsOnTarget = toChangeSet.getAddedIds(type);
-			final Set<String> addedInSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
+			final Set<String> newRevisionIdsAddedInBothSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
 			// check for added in both source and target conflicts
-			if (!addedInSourceAndTarget.isEmpty()) {
-				addedInSourceAndTarget.forEach(revisionId -> {
-					conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(type, revisionId)));
+			if (!newRevisionIdsAddedInBothSourceAndTarget.isEmpty()) {
+				// fetch both source and target to check if the same object (same values) 
+				final Map<String, ? extends Revision> addedRevisionsOnSource = fromChangeSet.read(searcher -> Maps.uniqueIndex(searcher.get(type, newRevisionIdsAddedInBothSourceAndTarget), Revision::getId));
+				final Map<String, ? extends Revision> addedRevisionsOnTarget = toChangeSet.read(searcher -> Maps.uniqueIndex(searcher.get(type, newRevisionIdsAddedInBothSourceAndTarget), Revision::getId));
+				
+				newRevisionIdsAddedInBothSourceAndTarget.forEach(revisionId -> {
+					Revision addedOnSourceObject = addedRevisionsOnSource.get(revisionId);
+					Revision addedOnTargetObject = addedRevisionsOnTarget.get(revisionId);
+					
+					RevisionDiff diff = new RevisionDiff(addedOnTargetObject, addedOnSourceObject);
+					if (diff.hasChanges()) {
+						conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(type, revisionId)));
+					} else {
+						// ensure we revise the one coming from source (or target?)
+						revisionsToReviseOnMergeSource.put(type, revisionId);
+					}
 				});
 			}
 			// check deleted containers on target and report them as conflicts
