@@ -27,6 +27,9 @@ import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,6 +63,24 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		} catch (BranchMergeConflictException e) {
 			fail("Adding an object with a key on both sides with same properties should NOT be reported as an added vs added conflict.");
 		}
+		
+		// check if after merge we only see a single object for the key on both ends (no accidental deletion from source, etc.)
+		Hits<RevisionData> revisionOnMain = search(MAIN, 
+			Query.select(RevisionData.class)
+				.where(Expressions.exactMatch(Revision.Fields.ID, STORAGE_KEY1))
+				.limit(50)
+				.build()
+		);
+		Hits<RevisionData> revisionOnBranch = search(branchA, 
+			Query.select(RevisionData.class)
+				.where(Expressions.exactMatch(Revision.Fields.ID, STORAGE_KEY1))
+				.limit(50)
+				.build()
+		);
+		assertThat(revisionOnMain)
+			.hasSize(1);
+		assertThat(revisionOnBranch)
+			.hasSize(1);
 	}
 	
 	@Test
