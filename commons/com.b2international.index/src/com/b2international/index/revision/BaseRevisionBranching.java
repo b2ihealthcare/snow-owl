@@ -430,7 +430,7 @@ public abstract class BaseRevisionBranching {
 		return new BranchMergeOperation(this, fromPath, toPath);
 	}
 	
-	Commit doMerge(BranchMergeOperation operation) {
+	Commit doMerge(BranchMergeOperation operation) throws BranchMergeConflictException {
 		String source = operation.fromPath;
 		String target = operation.toPath;
 		if (target.equals(source)) {

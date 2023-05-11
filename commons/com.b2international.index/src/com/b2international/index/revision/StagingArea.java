@@ -822,7 +822,7 @@ public final class StagingArea {
 		externalRevisionsToReviseOnMergeSource.put(type, id);
 	}
 	
-	/*package*/ void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
+	/*package*/ void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) throws BranchMergeConflictException {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
 		this.mergeFromBranchRef = fromRef.difference(toRef);
 		this.mergeSources = this.mergeFromBranchRef
