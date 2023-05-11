@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package com.b2international.index.revision;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,7 +30,6 @@ import com.b2international.index.Fixtures.Data;
 import com.b2international.index.revision.RevisionFixtures.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.10
@@ -39,7 +40,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class, ObjectPropertyData.class, ObjectListPropertyData.class, ObjectSetPropertyData.class, ContainerRevisionData.class, ComponentRevisionData.class, ObjectUniqueListPropertyData.class);
+		return List.<Class<?>>of(RevisionData.class, NestedRevisionData.class, ObjectPropertyData.class, ObjectListPropertyData.class, ObjectSetPropertyData.class, ContainerRevisionData.class, ComponentRevisionData.class, ObjectUniqueListPropertyData.class);
 	}
 	
 	@Override
@@ -48,13 +49,32 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		mapper.setSerializationInclusion(Include.NON_NULL);
 	}
 	
-	@Test(expected = BranchMergeConflictException.class)
-	public void rebaseAddedOnSourceAndTarget() throws Exception {
+	@Test
+	public void rebaseAddedOnSourceAndTarget_SameObjectSameId() throws Exception {
 		final String branchA = createBranch(MAIN, "a");
-		indexRevision(MAIN, NEW_DATA);
-		indexRevision(branchA, NEW_DATA);
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(branchA, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		
-		branching().prepareMerge(MAIN, branchA).merge();
+		try {
+			branching().prepareMerge(MAIN, branchA).merge();
+		} catch (BranchMergeConflictException e) {
+			fail("Adding an object with a key on both sides with same properties should NOT be reported as an added vs added conflict.");
+		}
+	}
+	
+	@Test
+	public void rebaseAddedOnSourceAndTarget_DifferentObjectSameId() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(branchA, new RevisionData(STORAGE_KEY1, "field3", "field4"));
+		
+		try {
+			branching().prepareMerge(MAIN, branchA).merge();
+			fail("Adding an object with a key on both sides but with different properties should be reported as an added vs added conflict.");
+		} catch (BranchMergeConflictException e) {
+			assertThat(e.getConflicts())
+				.contains(new AddedInSourceAndTargetConflict(ObjectId.of(RevisionData.class, STORAGE_KEY1)));
+		}
 	}
 	
 	@Test
