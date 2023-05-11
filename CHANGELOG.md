@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.10.2
+
+### Bugs/Improvements
+- [snomed] fixed an issue when importing an RF2 Snapshot archive with xrefs between unversioned and versioned content resulted in an error (#1157)
+- [api] adding `X-Profile` header with any value to any request will include an `X-Metrics` response header with a JSON object containing information about all measured metrics (#1155)
+- [api] generic uniqueness and component presence checks have been added to transaction API for third party plug-ins (#1156)
+- [monitoring] support measuring Elasticsearch query performance and include metrics information in each request log entry (#1155)
+
+
 ## 8.10.1
 
 ### Bugs/Improvements
