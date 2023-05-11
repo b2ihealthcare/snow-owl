@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -593,9 +593,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
   		CodeSystemRequests.prepareNewCodeSystem()
 			.setBranchPath(branchPath.getPath())
 			.setShortName(codeSystemId)
+			.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 			.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.setName(codeSystemId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, RestExtensions.USER, "Created new code system " + codeSystemId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, RestExtensions.USER, "Created new code system " + codeSystemId)
 			.execute(getBus())
 			.getSync(1L, TimeUnit.MINUTES);
   		
@@ -630,27 +631,19 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals("Base and head timestamp must be equal after branch creation", baseTimestamp, headTimestamp);
 
 		// always create a new code system for each test that uses this method with the test branch path as its working branch
-//				final String codeSystemId = branch.lastSegment();
-//
-//				CodeSystemRequests.prepareNewCodeSystem()
-//					.setBranchPath(branch.getPath())
-//					.setId(codeSystemId)
-//					.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
-//					.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
-//					.setTitle(codeSystemId)
-//					.build(RestExtensions.USER, "Created new code system " + codeSystemId)
-//					.execute(getBus())
-//					.getSync(1L, TimeUnit.MINUTES);
-		
-		var importConfiguration = Map.of(
-			"type", rf2ReleaseType.name(),
-			"createVersions", createVersions
-		);
-		
-		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), importArchiveFileName).statusCode(201)
-				.extract().header("Location"));
-		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
+//		final String codeSystemId = branch.lastSegment();
 
+//		CodeSystemRequests.prepareNewCodeSystem()
+//			.setBranchPath(branch.getPath())
+//			.setShortName(codeSystemId)
+//			.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+//			.setName(codeSystemId)
+//			.build(SnomedDatastoreActivator.REPOSITORY_UUID, RestExtensions.USER, "Created new code system " + codeSystemId)
+//			.execute(getBus())
+//			.getSync(1L, TimeUnit.MINUTES);
+		
+		importArchive(branch, createVersions, rf2ReleaseType, importArchiveFileName);
+		
 		ValidatableResponse response2 = branching.getBranch(branch);
 
 		String baseTimestampAfterImport = response2.extract().jsonPath().getString("baseTimestamp");
