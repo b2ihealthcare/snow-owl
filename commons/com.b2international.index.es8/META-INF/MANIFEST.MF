@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Elasticsearch 8 Index Client Module
 Bundle-SymbolicName: com.b2international.index.es8;singleton:=true
-Bundle-Version: 8.10.3
+Bundle-Version: 8.10.4.qualifier
 Bundle-Vendor: B2i Healthcare
 Automatic-Module-Name: com.b2international.index.es8
 Bundle-RequiredExecutionEnvironment: JavaSE-17
