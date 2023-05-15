@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ public class ReflectionUtils {
 
 	public static class Parameter<T> extends Pair<Class<T>, T> {
 		
-		public Parameter() {
-		}
-		
+		private static final long serialVersionUID = 1L;
+
 		public Parameter(Class<T> clazz, T value) {
 			super(clazz, value);
 		}
