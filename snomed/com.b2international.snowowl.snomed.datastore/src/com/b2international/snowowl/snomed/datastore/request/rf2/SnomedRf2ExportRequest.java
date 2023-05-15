@@ -88,7 +88,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSe
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.collect.ImmutableList.Builder;
@@ -327,10 +326,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 		
 		// Step 2: retrieve code system versions that are visible from the reference branch
-		final TreeSet<Version> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
+		final TreeSet<Version> versionsToExportInChronologicalOrder = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
 		
 		// Step 3: compute branches to export
-		final List<String> branchesToExport = computeBranchesToExport(referenceBranch, versionsToExport);
+		final List<String> branchesToExport = computeBranchesToExport(referenceBranch, versionsToExportInChronologicalOrder);
 			
 		// Step 4: compute possible language codes
 		Multimap<String, String> availableLanguageCodes = getLanguageCodes(context, branchesToExport);
@@ -345,7 +344,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			exportDirectory = createExportDirectory(exportId);
 
 			// get archive effective time based on latest version effective / transient effective time / current date
-			final LocalDateTime archiveEffectiveDate = getArchiveEffectiveTime(context, versionsToExport);
+			final LocalDateTime archiveEffectiveDate = getArchiveEffectiveTime(context, versionsToExportInChronologicalOrder);
 			final String archiveEffectiveDateShort = EffectiveTimes.format(archiveEffectiveDate.toLocalDate(), DateFormats.SHORT);
 			
 			// create main folder including release status and archive effective date
@@ -404,7 +403,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private boolean containsSpecialCharacter(final String referenceBranch) {
-		Preconditions.checkState(includePreReleaseContent, "Special branch path characters can only be used when requesting pre-release content.");
 		return referenceBranch.contains(RevisionIndex.AT_CHAR) || referenceBranch.contains(RevisionIndex.REV_RANGE);
 	}
 
@@ -491,7 +489,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 					if (versionsToExport.isEmpty()) {
 						throw new BadRequestException("Snapshot export without unpublished components requires at least one version.");
 					}
-					branchesToExport.add(versionsToExport.first().getBranchPath());
+					branchesToExport.add(versionsToExport.last().getBranchPath());
 				} else {
 					branchesToExport.add(referenceBranch);
 				}
