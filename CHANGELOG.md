@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## 8.10.2
+## 8.10.3
 
 ### Bugs/Improvements
 - [index] scoring issue when searching text field inside nested documents (#1162)
