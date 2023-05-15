@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -319,17 +319,28 @@ public class Fixtures {
 	}
 	
 	@Doc
-	public static class MultipleNestedData {
+	public static class MultipleNestedData implements WithScore {
 		
 		@ID
 		String id;
 		String field1 = "field1";
 		Collection<NestedData> nestedDatas = newHashSet();
+		float score;
 		
 		@JsonCreator
 		public MultipleNestedData(@JsonProperty("id") String id, @JsonProperty("nestedDatas") Collection<NestedData> nestedDatas) {
 			this.id = id;
 			this.nestedDatas.addAll(nestedDatas);
+		}
+		
+		@Override
+		public float getScore() {
+			return score;
+		}
+		
+		@Override
+		public void setScore(float score) {
+			this.score = score;
 		}
 		
 		@Override
@@ -352,10 +363,18 @@ public class Fixtures {
 	public static class NestedData {
 		
 		String field2;
+		
+		@Field(aliases = @FieldAlias(name = "text", analyzer = Analyzers.TOKENIZED, type = FieldAliasType.TEXT))
+		String analyzedField;
 
+		public NestedData(String field2) {
+			this(field2, null);
+		}
+		
 		@JsonCreator
-		public NestedData(@JsonProperty("field2") String field2) {
+		public NestedData(@JsonProperty("field2") String field2, @JsonProperty("analyzedField") String analyzedField) {
 			this.field2 = field2;
+			this.analyzedField = analyzedField;
 		}
 		
 		@Override
@@ -364,12 +383,12 @@ public class Fixtures {
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
 			NestedData other = (NestedData) obj;
-			return Objects.equals(field2, other.field2);
+			return Objects.equals(field2, other.field2) && Objects.equals(analyzedField, other.analyzedField);
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(field2);
+			return Objects.hash(field2, analyzedField);
 		}
 		
 	}

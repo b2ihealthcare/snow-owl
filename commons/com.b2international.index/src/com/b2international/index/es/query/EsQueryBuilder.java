@@ -261,7 +261,7 @@ public final class EsQueryBuilder {
 		nestedQueryBuilder.visit(predicate.getExpression());
 		needsScoring = nestedQueryBuilder.needsScoring;
 		final QueryBuilder nestedQuery = nestedQueryBuilder.deque.pop();
-		deque.push(QueryBuilders.nestedQuery(nestedPath, nestedQuery, ScoreMode.None));
+		deque.push(QueryBuilders.nestedQuery(nestedPath, nestedQuery, nestedQueryBuilder.needsScoring ? ScoreMode.Max : ScoreMode.None));
 	}
 
 	private String toFieldPath(Predicate predicate) {

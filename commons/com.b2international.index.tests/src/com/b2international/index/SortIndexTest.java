@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.index;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newTreeSet;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.math.BigDecimal;
@@ -24,14 +25,20 @@ import java.util.*;
 import java.util.function.Function;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
+import com.b2international.index.Fixtures.MultipleNestedData;
+import com.b2international.index.Fixtures.NestedData;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
-import com.google.common.collect.*;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.4
@@ -42,7 +49,7 @@ public class SortIndexTest extends BaseIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return List.<Class<?>>of(Data.class);
+		return List.<Class<?>>of(Data.class, MultipleNestedData.class);
 	}
 
 	@Test
@@ -332,6 +339,26 @@ public class SortIndexTest extends BaseIndexTest {
 				.build();
 		
 		checkDocumentOrder(ascendingQuery, data -> data.getId(), Sets.newLinkedHashSet(Lists.reverse(orderedKeys)), String.class);
+	}
+	
+	@Test
+	public void sortNestedFieldWithScores() throws Exception {
+		indexDocuments(
+			new MultipleNestedData(KEY1, List.of(new NestedData("unused", "abdominal knee pain"))),
+			new MultipleNestedData(KEY2, List.of(new NestedData("unused", "knee pain"))),
+			new MultipleNestedData(UUIDs.randomBase64UUID(), List.of(new NestedData("unused", "pain")))
+		);
+		
+		Hits<MultipleNestedData> hits = search(Query.select(MultipleNestedData.class)
+			.where(Expressions.nestedMatch("nestedDatas", Expressions.matchTextAll("analyzedField.text", "knee pain")))
+			.build());
+		
+		assertThat(hits)
+			.extracting(m -> m.id)
+			.containsOnly(KEY1, KEY2);
+		assertThat(hits)
+			.extracting(m -> m.score)
+			.allSatisfy(score -> assertThat(score).isGreaterThan(0.0f));
 	}
 
 	private <T> void checkDocumentOrder(Query<Data> query, Function<? super Data, T> hitFunction, Set<T> keySet, Class<T> clazz) {
