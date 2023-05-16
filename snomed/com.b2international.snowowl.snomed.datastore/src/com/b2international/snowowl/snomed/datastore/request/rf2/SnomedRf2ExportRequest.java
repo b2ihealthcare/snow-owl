@@ -326,10 +326,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 		
 		// Step 2: retrieve code system versions that are visible from the reference branch
-		final TreeSet<Version> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
+		final TreeSet<Version> versionsToExportInChronologicalOrder = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
 		
 		// Step 3: compute branches to export
-		final List<String> branchesToExport = computeBranchesToExport(referenceBranch, versionsToExport);
+		final List<String> branchesToExport = computeBranchesToExport(referenceBranch, versionsToExportInChronologicalOrder);
 			
 		// Step 4: compute possible language codes
 		Multimap<String, String> availableLanguageCodes = getLanguageCodes(context, branchesToExport);
@@ -344,7 +344,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			exportDirectory = createExportDirectory(exportId);
 
 			// get archive effective time based on latest version effective / transient effective time / current date
-			final LocalDateTime archiveEffectiveDate = getArchiveEffectiveTime(context, versionsToExport);
+			final LocalDateTime archiveEffectiveDate = getArchiveEffectiveTime(context, versionsToExportInChronologicalOrder);
 			final String archiveEffectiveDateShort = EffectiveTimes.format(archiveEffectiveDate.toLocalDate(), DateFormats.SHORT);
 			
 			// create main folder including release status and archive effective date
@@ -484,7 +484,15 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				}
 				break;
 			case SNAPSHOT:
-				branchesToExport.add(referenceBranch);
+				// in case we are exporting published content only use the version branch instead of the reference branch
+				if (!this.includePreReleaseContent) {
+					if (versionsToExport.isEmpty()) {
+						throw new BadRequestException("Snapshot export without unpublished components requires at least one version.");
+					}
+					branchesToExport.add(versionsToExport.last().getBranchPath());
+				} else {
+					branchesToExport.add(referenceBranch);
+				}
 				break;
 		}
 		
@@ -616,6 +624,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		
 		// XXX: Versions do not need to be calculated for special path exports
 		if (Rf2ReleaseType.SNAPSHOT != releaseType && !containsSpecialCharacter(referenceBranch)) {
+			collectExportableCodeSystemVersions(context, versionsToExport, codeSystem, referenceBranch);
+		} else if (Rf2ReleaseType.SNAPSHOT == releaseType && !includePreReleaseContent) {
 			collectExportableCodeSystemVersions(context, versionsToExport, codeSystem, referenceBranch);
 		}
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public final class SequentialItemIdGenerationStrategy implements ItemIdGeneratio
 	}
 	
 	public ItemIdCounter getOrCreateCounter(String namespace, ComponentCategory category) {
-		return lastItemIds.getUnchecked(Pair.identicalPairOf(Strings.nullToEmpty(namespace), category));
+		return lastItemIds.getUnchecked(Pair.of(Strings.nullToEmpty(namespace), category));
 	}
 	
 	@Override

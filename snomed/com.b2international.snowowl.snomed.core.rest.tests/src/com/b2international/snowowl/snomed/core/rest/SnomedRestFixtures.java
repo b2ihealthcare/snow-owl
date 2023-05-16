@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.commons.Pair;
-import com.b2international.commons.Pair.IdenticalPair;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -59,7 +58,7 @@ public abstract class SnomedRestFixtures {
 	public static final String DEFAULT_TERM = "Description term";
 	public static final String DEFAULT_LANGUAGE_CODE = "en";
 
-	private static final Map<IdenticalPair<String, String>, String> REFERENCED_COMPONENT_CACHE = newHashMap();
+	private static final Map<Pair<String, String>, String> REFERENCED_COMPONENT_CACHE = newHashMap();
 	
 	public static String createNewConcept(IBranchPath conceptPath) {
 		return createNewConcept(conceptPath, Concepts.ROOT_CONCEPT);
@@ -619,7 +618,7 @@ public abstract class SnomedRestFixtures {
 	}
 	
 	public static String getFirstMatchingComponent(IBranchPath branchPath, String referencedComponentType) {
-		IdenticalPair<String, String> key = Pair.identicalPairOf(branchPath.getPath(), referencedComponentType);
+		Pair<String, String> key = Pair.of(branchPath.getPath(), referencedComponentType);
 		if (!REFERENCED_COMPONENT_CACHE.containsKey(key)) {
 			final String referencedComponentId = Iterables.getFirst(searchComponent(branchPath, getSnomedComponentType(referencedComponentType), Json.object("limit", 1))
 					.extract()
