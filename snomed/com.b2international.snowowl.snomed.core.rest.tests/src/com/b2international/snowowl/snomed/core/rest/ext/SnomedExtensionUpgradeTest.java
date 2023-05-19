@@ -64,6 +64,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
@@ -1496,6 +1497,42 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				.execute(getBus())
 				.getSync(100, TimeUnit.MINUTES);
 		assertTrue(result);
+	}
+	
+	@Test
+	public void upgrade29AcceptableSynonymChangeVSRevertedInferredOnlyAncestorChange() throws Exception {
+		// prepare extension on the second latest int version
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+		
+		// alphaproteobacteria
+		String intConceptId = "413858005";
+		String inferredExtensionRelationship = createRelationship(extension.getResourceURI(), createRelationshipRequestBody(intConceptId, Concepts.IS_A, Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE, Concepts.INFERRED_RELATIONSHIP));
+		
+		// then immediately delete it on the extension
+		SnomedComponentRestRequests.deleteComponent(
+			extension.getResourceURI().withoutResourceType(), 
+			SnomedComponentType.RELATIONSHIP, 
+			inferredExtensionRelationship,
+			false
+		).assertThat().statusCode(204);
+		
+		// create an acceptable synonym on the international edition and version it
+		String acceptableSynonymId = createDescription(SNOMEDCT_URI, createDescriptionRequestBody(intConceptId));
+		
+		// version INT
+		LocalDate newSIVersion = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, newSIVersion).statusCode(201);
+
+		// create upgrade to the latest SI version
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), SNOMEDCT_URI.withPath(newSIVersion.toString()));
+		
+		// on the upgrade branch, the INT concept should be visible
+		SnomedConcept conceptOnUpgradeBranch = getConcept(upgradeCodeSystem.getResourceURI(), intConceptId, "descriptions()");
+		assertThat(conceptOnUpgradeBranch.getParentIdsAsString())
+			.doesNotContain(Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+		assertThat(conceptOnUpgradeBranch.getDescriptions())
+			.extracting(SnomedDescription::getId)
+			.contains(acceptableSynonymId);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
