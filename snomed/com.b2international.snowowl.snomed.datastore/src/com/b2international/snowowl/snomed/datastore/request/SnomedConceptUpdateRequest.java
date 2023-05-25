@@ -113,8 +113,10 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		changed |= updateDefinitionStatus(context, concept, updatedConcept);
 		changed |= updateEffectiveTime(concept, updatedConcept);
 		
+		boolean componentChanged = false;
+		
 		if (descriptions != null) {
-			updateComponents(
+			componentChanged |= updateComponents(
 				context, 
 				concept.getId(), 
 				getDescriptionIds(context, concept.getId()),
@@ -124,7 +126,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 		
 		if (relationships != null) {
-			updateComponents(
+			componentChanged |= updateComponents(
 				context, 
 				concept.getId(), 
 				getRelationshipIds(context, concept.getId()), 
@@ -133,7 +135,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 		
 		if (members != null) {
-			updateComponents(
+			componentChanged |= updateComponents(
 				context, 
 				concept.getId(), 
 				getPreviousMemberIds(concept.getId(), context), 
@@ -161,8 +163,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (changed) {
 			context.update(concept, updatedConcept.build());
 		}
-		
-		return changed;
+
+		// Changes on related components should be reported but not use "unset effective time" logic nor update the document in any way
+		return changed || componentChanged;
 	}
 	
 	@Override
@@ -325,9 +328,20 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 					throw new IllegalStateException("Invalid case, should not happen");
 				}
 			})
-			.map(req -> req.execute(context))
-			.filter(Boolean.class::isInstance)
-			.map(Boolean.class::cast)
+			.map(req -> {
+				final Object response = req.execute(context);
+				
+				if (response instanceof String) {
+					// Strings are a sign of successful additions
+					return Boolean.TRUE;
+				} else if (response instanceof Boolean b) {
+					// Updates can go either way
+					return b;
+				} else {
+					// Any other return value will be considered a failure
+					return Boolean.FALSE;
+				}
+			})
 			.reduce(Boolean.FALSE, (r1, r2) -> r1 || r2);
 	}
 	
