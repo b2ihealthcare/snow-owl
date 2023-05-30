@@ -360,7 +360,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		final Iterable<String> namespaceConceptsOrNull = getIterableOrNull(SnomedComponentSearchRequest.OptionKey.NAMESPACE_CONCEPT_ID);
 		final Iterable<String> namespacesOrNull = getIterableOrNull(SnomedComponentSearchRequest.OptionKey.NAMESPACE);
 		final Iterable<String> parentsOrNull = getIterableOrNull(OptionKey.PARENT);
-
 		final Iterable<String> semanticTagsOrNull = getIterableOrNull(OptionKey.SEMANTIC_TAG);
 		final Iterable<String> statedAncestorsOrNull = getIterableOrNull(OptionKey.STATED_ANCESTOR);
 		final Iterable<String> statedParentsOrNull = getIterableOrNull(OptionKey.STATED_PARENT);
