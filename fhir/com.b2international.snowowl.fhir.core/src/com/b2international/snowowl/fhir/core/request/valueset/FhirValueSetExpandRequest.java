@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,8 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		try {
 			valueSet = FhirRequests.valueSets().prepareGet(uri)
 					.setElements(ImmutableList.<String>builder()
-							.addAll(ValueSet.Fields.MANDATORY)
+							.addAll(ValueSet.Fields.SUMMARY)
+							.add(ValueSet.Fields.STATUS)
 							.add(ValueSet.Fields.COMPOSE)
 							.build())
 					.buildAsync()
