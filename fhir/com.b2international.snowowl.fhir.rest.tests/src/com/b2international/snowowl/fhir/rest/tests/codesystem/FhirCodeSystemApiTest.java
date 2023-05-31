@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 
@@ -151,8 +152,10 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(1))
-			.body("entry.resource.property", notNullValue())
-			.body("entry.resource.filter", notNullValue())
+			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
+			.body("entry[0].resource.title", equalTo("Title of " + getTestCodeSystemId()))
+			.body("entry[0].resource.property", notNullValue())
+			.body("entry[0].resource.filter", notNullValue())
 			//no concept definitions are part of the summary
 			.body("entry.resource", not(hasItem("concept")));
 	}
@@ -262,6 +265,31 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			// requested fields
 			.body("entry[0].resource.name", equalTo(getTestCodeSystemId()))
 			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()));
+	}
+	
+	@Test
+	public void GET_CodeSystem_ElementsMixedWithSummaryFields() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_id", getTestCodeSystemId())
+			.queryParam("_elements", CodeSystem.Fields.ID, CodeSystem.Fields.META, CodeSystem.Fields.URL, CodeSystem.Fields.VERSION, CodeSystem.Fields.NAME, CodeSystem.Fields.TITLE, CodeSystem.Fields.DATE, CodeSystem.Fields.PUBLISHER)
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			// mandatory fields
+			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
+			.body("entry[0].resource.status", equalTo("draft"))
+			.body("entry[0].resource.content", equalTo("not-present"))
+			// requested fields
+			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()))
+			.body("entry[0].resource.version", nullValue())
+			.body("entry[0].resource.name", equalTo(getTestCodeSystemId()))
+			.body("entry[0].resource.title", equalTo("Title of " + getTestCodeSystemId()))
+			.body("entry[0].resource.date", nullValue())
+			.body("entry[0].resource.publisher", equalTo("SNOMED International"));
 	}
 	
 	@Test
