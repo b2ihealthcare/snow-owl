@@ -822,7 +822,7 @@ public final class StagingArea {
 		externalRevisionsToReviseOnMergeSource.put(type, id);
 	}
 	
-	/*package*/ void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
+	/*package*/ void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) throws BranchMergeConflictException {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
 		this.mergeFromBranchRef = fromRef.difference(toRef);
 		this.mergeSources = this.mergeFromBranchRef
@@ -933,11 +933,24 @@ public final class StagingArea {
 		for (Class<? extends Revision> type : ImmutableSet.copyOf(Iterables.concat(fromChangeSet.getAddedTypes(), toChangeSet.getAddedTypes()))) {
 			final Set<String> newRevisionIdsOnSource = fromChangeSet.getAddedIds(type);
 			final Set<String> newRevisionIdsOnTarget = toChangeSet.getAddedIds(type);
-			final Set<String> addedInSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
+			final Set<String> newRevisionIdsAddedInBothSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
 			// check for added in both source and target conflicts
-			if (!addedInSourceAndTarget.isEmpty()) {
-				addedInSourceAndTarget.forEach(revisionId -> {
-					conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(type, revisionId)));
+			if (!newRevisionIdsAddedInBothSourceAndTarget.isEmpty()) {
+				// fetch both source and target to check if the same object (same values) 
+				final Map<String, ? extends Revision> addedRevisionsOnSource = fromChangeSet.read(searcher -> Maps.uniqueIndex(searcher.get(type, newRevisionIdsAddedInBothSourceAndTarget), Revision::getId));
+				final Map<String, ? extends Revision> addedRevisionsOnTarget = toChangeSet.read(searcher -> Maps.uniqueIndex(searcher.get(type, newRevisionIdsAddedInBothSourceAndTarget), Revision::getId));
+				
+				newRevisionIdsAddedInBothSourceAndTarget.forEach(revisionId -> {
+					Revision addedOnSourceObject = addedRevisionsOnSource.get(revisionId);
+					Revision addedOnTargetObject = addedRevisionsOnTarget.get(revisionId);
+					
+					RevisionDiff diff = new RevisionDiff(addedOnTargetObject, addedOnSourceObject);
+					if (diff.hasChanges()) {
+						conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(type, revisionId)));
+					} else {
+						// ensure we revise the one coming from source (or target?)
+						revisionsToReviseOnMergeSource.put(type, revisionId);
+					}
 				});
 			}
 			// check deleted containers on target and report them as conflicts

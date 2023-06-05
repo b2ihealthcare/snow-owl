@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,11 @@ public final class BranchMergeOperation {
 		return this;
 	}
 	
-	public Commit merge() {
+	/**
+	 * @return the commit associated with the merge
+	 * @throws BranchMergeConflictException - if there is a conflict which client can optionally handle if they would like to
+	 */
+	public Commit merge() throws BranchMergeConflictException {
 		return branching.doMerge(this);
 	}
 
