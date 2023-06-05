@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.commons.exceptions.ConflictException;
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.exceptions.NotImplementedException;
-import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.commons.exceptions.*;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -92,6 +89,14 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	}
 	
 	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody OperationOutcome handle(final ValidationException ex) {
+		FhirException error = FhirException.createFhirError("Validation error", OperationOutcomeCode.MSG_BAD_SYNTAX);
+		error.withAdditionalInfo(ex.getAdditionalInfo());
+    	return error.toOperationOutcome();
+	}
+	
+	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
 	public @ResponseBody ResponseEntity<OperationOutcome> handle(final UnauthorizedException ex) {
 		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_AUTH_REQUIRED);
@@ -107,7 +112,6 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	public @ResponseBody OperationOutcome handle(final BadRequestException ex) {
 		return ex.toOperationOutcome();
 	}
-
 	
 	/**
 	 * Exception handler converting any {@link JsonMappingException} to an <em>HTTP 400</em>.
