@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.request;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
@@ -108,8 +109,11 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			expand = ExpandParser.parse(displayTermType.getExpand()).merge(expand);
 		}
 		
+		final List<ExtendedLocale> locales = search.getList(OptionKey.LOCALES, ExtendedLocale.class);
+		
 		SnomedConcepts matches = req
-				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
+				.filterByDescriptionLanguageRefSet(locales)
+				.setLocales(locales)
 				.setSearchAfter(search.getString(OptionKey.AFTER))
 				.setLimit(search.get(OptionKey.LIMIT, Integer.class))
 				.setFields(search.getList(OptionKey.FIELDS, String.class))

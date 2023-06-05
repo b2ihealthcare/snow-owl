@@ -252,7 +252,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @see AcceptLanguageHeader#parseHeader(String)
 	 */
 	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(String acceptLanguage) {
-		return filterByDescriptionLanguageRefSet(AcceptLanguageHeader.parseHeader(acceptLanguage));
+		return filterByDescriptionLanguageRefSet(AcceptLanguageHeader.WILDCARD.equals(acceptLanguage) ? null : AcceptLanguageHeader.parseHeader(acceptLanguage));
 	}
 
 	/**
