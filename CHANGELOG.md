@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.10.4
+
+### Bugs/Improvements
+- [index] ignore identical component conflicts when merging content from one branch to another (#1160)
+- [snomed] fix an RF2 Snapshot export issue when exporting a component with both published and unpublished revisions from the reference branch (#1161)
+- [snomed] use consistent locale based filtering when searching for SNOMED Concepts via the generic and the snomed specific concept search APIs (#1169)
+- [fhir] fix invalid Bad Request response when sending an invalid FHIR ValueSet representation to the `POST /fhir/ValueSet` endpoint (#1165)
+- [fhir] properly select `publisher` field via `_elements` (#1166)
+- [fhir] ensure we return the full ValueSet resource when expanding its members (#1167)
+
 ## 8.10.3
 
 ### Bugs/Improvements
@@ -32,7 +42,7 @@ All notable changes to this project will be documented in this file.
 - Support expanding versions in `GET /codesystems` endpoint (#1131)
 - Query Optimization improvements (152b212)
   * Introduce `limit` argument when optimizing a set of ECL expressions to return early when the requested amount of optimizations have been found
-  * Respond with `hasMoreOptimizations` flag to indicate if there could be more applicable optimizations regarding the selected expressions but due to the configured `limit` they are undiscovered ()
+  * Respond with `hasMoreOptimizations` flag to indicate if there could be more applicable optimizations regarding the selected expressions but due to the configured `limit` they are undiscovered
 
 ### SNOMED CT
 - Support ECL concept and member `id` property filtering (a24e2c7)
