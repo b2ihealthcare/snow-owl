@@ -22,7 +22,7 @@ import java.util.function.BiFunction;
 /**
  * Simple interface with metric registration and retrieval capabilities. Can be used to adapt to any metric collection framework or library.
  * 
- * @since 8.11.0
+ * @since 8.10.4
  */
 public interface Metrics {
 
