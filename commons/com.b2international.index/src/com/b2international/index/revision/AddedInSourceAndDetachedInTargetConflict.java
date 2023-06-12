@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.index.revision;
+
+import java.util.Objects;
 
 /**
  * @since 7.0
@@ -50,5 +52,17 @@ public final class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 		this.featureName = featureName;
 		return this;
 	}
-
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getObjectId(), getMessage(), getFeatureName(), getDetachedOnTarget());
+	}
+	
+	@Override
+	protected boolean doEquals(Conflict obj) {
+		AddedInSourceAndDetachedInTargetConflict other = (AddedInSourceAndDetachedInTargetConflict) obj;
+		return Objects.equals(featureName, other.featureName)
+				&& Objects.equals(detachedOnTarget, other.detachedOnTarget);
+	}
+	
 }

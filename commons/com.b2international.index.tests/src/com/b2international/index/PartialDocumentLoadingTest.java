@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
+import com.b2international.index.Fixtures.DataWithMap;
 import com.b2international.index.Fixtures.PartialData;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -43,7 +44,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(Data.class);
+		return ImmutableSet.<Class<?>>of(Data.class, DataWithMap.class);
 	}
 	
 	private void checkHits(final Hits<?> hits, int limit, int total, int returned) {
@@ -382,6 +383,27 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getIntField(), hits.getHits().get(0).intValue());
 		assertEquals(data2.getIntField(), hits.getHits().get(1).intValue());
+	}
+	
+	@Test
+	public void selectPartialMapField() throws Exception {
+		final DataWithMap data1 = new DataWithMap(KEY1, Map.of("key1", "value1", "key2", "value2"));
+		
+		final DataWithMap data2 = new DataWithMap(KEY2, Map.of("key1", "value3", "key2", "value4"));
+
+		indexDocuments(data1, data2);
+		
+		final Query<Map> query = Query.select(Map.class)
+				.from(DataWithMap.class)
+				.fields("properties")
+				.where(Expressions.matchAll())
+				.build();
+		
+		final Hits<Map> hits = search(query);
+		
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
+		assertEquals(Map.of("properties", data1.getProperties()), hits.getHits().get(0));
+		assertEquals(Map.of("properties", data2.getProperties()), hits.getHits().get(1));
 	}
 	
 	@Test

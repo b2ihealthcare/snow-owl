@@ -91,7 +91,7 @@ public abstract class CodeSystemRestRequests {
 	public static Json createCodeSystemBody(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {
 		Json requestBody = Json.object(
 				"id", codeSystemId,
-				"title", codeSystemId,
+				"title", "Title of " + codeSystemId,
 				"url", getCodeSystemUrl(codeSystemId),
 				"description", "<div>Markdown supported</div>",
 				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,

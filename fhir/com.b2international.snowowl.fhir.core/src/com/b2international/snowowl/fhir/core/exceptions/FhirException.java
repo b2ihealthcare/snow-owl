@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 6.3
@@ -101,6 +102,23 @@ public class FhirException extends ApiException {
 	 * @return {@link OperationOutcome} representation of this {@link FhirException}, never <code>null</code>.
 	 */
 	public OperationOutcome toOperationOutcome() {
+		
+		// additional info should be appended to the end as a series of issues
+		if (getAdditionalInfo() != null) {
+			for (String key : ImmutableSortedSet.copyOf(getAdditionalInfo().keySet())) {
+				Object value = getAdditionalInfo().get(key);
+				if (value instanceof String) {
+					Issue issue = Issue.builder()
+							.severity(IssueSeverity.ERROR)
+							.code(IssueType.INFORMATIONAL)
+							.outcomeDetails(operationOutcomeCode)
+							.diagnostics((String) value)
+							.build();
+					operationOutcomeBuilder.addIssue(issue);
+				}
+			}
+		}
+		
 		return operationOutcomeBuilder.build();
 	}
 

@@ -309,6 +309,11 @@ public final class DocumentMapping {
 		final Class<?> fieldType = getFieldType(field);
 		return Set.class.isAssignableFrom(fieldType) || PrimitiveSet.class.isAssignableFrom(fieldType);
 	}
+	
+	public boolean isMap(String field) {
+		final Class<?> fieldType = getFieldType(field);
+		return Map.class.isAssignableFrom(fieldType);
+	}
 
 	private static boolean isCollection(Class<?> fieldType) {
 		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.isArray();

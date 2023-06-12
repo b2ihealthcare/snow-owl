@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.index.revision;
+
+import java.util.Objects;
 
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 
@@ -39,4 +41,16 @@ public final class ChangedInSourceAndTargetConflict extends Conflict {
 		return targetChange;
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(getObjectId(), getMessage(), getSourceChange(), getTargetChange());
+	}
+	
+	@Override
+	protected boolean doEquals(Conflict obj) {
+		ChangedInSourceAndTargetConflict other = (ChangedInSourceAndTargetConflict) obj;
+		return Objects.equals(sourceChange, other.sourceChange)
+				&& Objects.equals(targetChange, other.targetChange);
+	}
+	
 }

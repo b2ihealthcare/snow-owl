@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,19 +50,19 @@ public final class Json extends ForwardingMap<String, Object> {
 	}
 	
 	public Json with(String property, Object value) {
-		final Map<String, Object> newJson = Maps.newHashMap(source);
+		final Map<String, Object> newJson = Maps.newLinkedHashMap(source);
 		newJson.put(property, value);
 		return new Json(newJson);
 	}
 	
 	public Json without(String property) {
-		final Map<String, Object> newJson = Maps.newHashMap(source);
+		final Map<String, Object> newJson = Maps.newLinkedHashMap(source);
 		newJson.remove(property);
 		return new Json(newJson);
 	}
 	
 	public Json with(Map<String, Object> object) {
-		final Map<String, Object> newJson = Maps.newHashMap(source);
+		final Map<String, Object> newJson = Maps.newLinkedHashMap(source);
 		newJson.putAll(object);
 		return new Json(newJson);
 	}
@@ -76,7 +76,7 @@ public final class Json extends ForwardingMap<String, Object> {
 	}
 	
 	private static <K, V> Map<K, V> deepMerge(Map<K, V> target, Map<K, V> source) {
-		final Map<K, V> updatedTarget = Maps.newHashMap(target);
+		final Map<K, V> updatedTarget = Maps.newLinkedHashMap(target);
 		source.forEach((key, value) -> {
 			updatedTarget.merge(key, value, (oldValue, newValue) -> {
 				if (oldValue instanceof Map<?, ?> && newValue instanceof Map<?, ?>) {

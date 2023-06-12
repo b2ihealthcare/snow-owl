@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 package com.b2international.index.revision;
 
 import java.util.List;
+import java.util.Objects;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 
 /**
@@ -28,11 +30,22 @@ public final class ChangedInSourceAndDetachedInTargetConflict extends Conflict {
 
 	public ChangedInSourceAndDetachedInTargetConflict(ObjectId objectId, List<RevisionPropertyDiff> changes) {
 		super(objectId, "");
-		this.changes = changes;
+		this.changes = Collections3.toImmutableList(changes);
 	}
 	
 	public List<RevisionPropertyDiff> getChanges() {
 		return changes;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getObjectId(), getMessage(), getChanges());
+	}
+	
+	@Override
+	protected boolean doEquals(Conflict obj) {
+		ChangedInSourceAndDetachedInTargetConflict other = (ChangedInSourceAndDetachedInTargetConflict) obj;
+		return Objects.equals(changes, other.changes);
 	}
 
 }
