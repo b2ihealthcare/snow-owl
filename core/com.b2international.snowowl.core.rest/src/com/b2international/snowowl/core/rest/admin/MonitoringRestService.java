@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
@@ -31,7 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 7.0
  */
-@Tag(description = "Monitoring", name = "monitoring")
+@Tag(description="Administration", name = CoreApiConfig.ADMINISTRATION)
 @RestController
 public class MonitoringRestService extends AbstractRestService {
 	

@@ -44,7 +44,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 1.0
  */
-@Tag(description = "Resources", name = "resources")
+@Tag(description = "CodeSystems", name = "codesystems")
 @RestController
 @RequestMapping("/codesystems")
 public class CodeSystemRestService extends AbstractRestService {

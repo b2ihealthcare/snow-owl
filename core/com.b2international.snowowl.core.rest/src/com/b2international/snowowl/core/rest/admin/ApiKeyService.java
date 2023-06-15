@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,7 +36,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 7.2
  */
-@Tag(description = "API Key", name = "apikey")
+@Tag(description = "API Key", name = CoreApiConfig.API_KEY)
 @RestController
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class ApiKeyService extends AbstractRestService {

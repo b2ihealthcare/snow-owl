@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.request.suggest.ConceptSuggestionRequest
 import com.b2international.snowowl.core.request.suggest.Suggester;
 import com.b2international.snowowl.core.request.suggest.Suggestions;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,7 +43,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 8.0
  */
-@Tag(description = "Suggest", name = "suggest")
+@Tag(description = "Concepts", name = CoreApiConfig.CONCEPTS)
 @RestController
 @RequestMapping(value = "/suggest", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 public class SuggestRestService extends AbstractRestService {

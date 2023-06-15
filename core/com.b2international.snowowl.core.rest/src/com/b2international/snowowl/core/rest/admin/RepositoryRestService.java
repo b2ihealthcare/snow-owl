@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +48,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @since 7.0
  */
 @Hidden
-@Tag(description = "Repositories", name = "repositories")
+@Tag(description="Administration", name = CoreApiConfig.ADMINISTRATION)
 @RestController
 @RequestMapping(value = "/repositories") 
 public class RepositoryRestService extends AbstractRestService {

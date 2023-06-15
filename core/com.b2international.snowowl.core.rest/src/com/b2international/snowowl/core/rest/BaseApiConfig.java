@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
+import io.swagger.v3.oas.models.tags.Tag;
 
 /**
  * Abstract configuration superclass to aid in providing Swagger documentation
@@ -80,6 +81,24 @@ public abstract class BaseApiConfig {
 			final String apiLicense,
 			final String apiLicenseUrl,
 			final String apiDescription) {
+		return docs(apiBaseUrl, apiGroup, apiVersion, apiTitle, apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl, apiDescription, null);
+	}
+	
+	/**
+	 * Expose this as @Bean annotated component in the implementation configuration class.
+	 * @return a configured docket for this API module
+	 */
+	protected final GroupedOpenApi docs(
+			final String apiBaseUrl,
+			final String apiGroup,
+			final String apiVersion,
+			final String apiTitle,
+			final String apiTermsOfServiceUrl,
+			final String apiContact,
+			final String apiLicense,
+			final String apiLicenseUrl,
+			final String apiDescription,
+			final List<String> tags) {
 		return GroupedOpenApi.builder()
 				.group(apiGroup)
 				.pathsToMatch(apiBaseUrl.endsWith("/") ? apiBaseUrl + "**" : apiBaseUrl + "/**")
@@ -107,31 +126,17 @@ public abstract class BaseApiConfig {
 						.addSecuritySchemes("bearer", new SecurityScheme().type(SecurityScheme.Type.APIKEY).scheme("bearer").in(In.HEADER).bearerFormat("JWT"));
 					
 					// disable servers prop
-					api.setServers(List.of()); 
+					api.setServers(List.of());
+					
+					// configure tag ordering
+					if (tags != null) {
+						api.tags(tags.stream().map(tagName -> new Tag().name(tagName)).toList());
+					}
 				})
 				.addOperationCustomizer((operation, method) -> {
 					return operation.addSecurityItem(new SecurityRequirement().addList("basic").addList("bearer"));
 				})
 				.build();
-//				.useDefaultResponseMessages(false)
-//				.alternateTypeRules(getAlternateTypeRules(resolver));
 	}
 
-//	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
-//		return new AlternateTypeRule[] {
-//			newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
-//			newRule(resolver.resolve(ResourceURI.class), resolver.resolve(String.class)),
-//			newRule(resolver.resolve(ComponentIdentifier.class), resolver.resolve(String.class)),
-//			newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
-//			newRule(
-//				resolver.resolve(List.class, resolver.resolve(ResourceURI.class)),
-//				resolver.resolve(List.class, resolver.resolve(String.class))
-//	        ),
-//			newRule(
-//				resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
-//				resolver.resolve(List.class, resolver.resolve(String.class))
-//	        ),
-//		};
-//	}
-	
 }
