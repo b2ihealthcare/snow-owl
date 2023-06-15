@@ -16,8 +16,8 @@
 		<spring.security.version>5.6.3</spring.security.version>
 		<springdoc.version>1.5.9</springdoc.version>
 		<!-- Node.js version to use for building the API docs site -->
-		<node.version>v16.15.0</node.version>
-		<npm.version>8.8.0</npm.version>
+		<node.version>v18.16.0</node.version>
+		<npm.version>8.13.1</npm.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
