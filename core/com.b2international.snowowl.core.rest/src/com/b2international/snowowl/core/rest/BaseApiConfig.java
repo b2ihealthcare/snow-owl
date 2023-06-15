@@ -50,6 +50,8 @@ import io.swagger.v3.oas.models.tags.Tag;
  */
 public abstract class BaseApiConfig {
 
+	protected final static String B2I_SITE = "https://b2ihealthcare.com/";
+	
 	/**
 	 * @return the api base url for all services grouped by this configuration class
 	 */

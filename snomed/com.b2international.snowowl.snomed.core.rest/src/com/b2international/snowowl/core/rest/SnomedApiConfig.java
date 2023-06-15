@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,10 @@ public class SnomedApiConfig extends BaseApiConfig {
 			"snomedct",
 			"3.0",
 			"SNOMED CT API",
-			"https://b2i.sg",
+			B2I_SITE,
 			"support@b2i.sg",
 			"API License",
-			"https://b2i.sg",
+			B2I_SITE,
 			"This describes the resources that make up the official Snow Owl® SNOMED CT Terminology API.\n" + 
 			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/snomed)."
 		);

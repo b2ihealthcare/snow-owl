@@ -99,7 +99,7 @@ public abstract class CodeSystemRestRequests {
 				"language", "ENG",
 				"branchPath", branchPath,
 				"owner", "owner",
-				"contact", "https://b2i.sg",
+				"contact", "https://b2ihealthcare.com",
 				"settings", configureLanguageAndPublisher(settings)
 			);
 

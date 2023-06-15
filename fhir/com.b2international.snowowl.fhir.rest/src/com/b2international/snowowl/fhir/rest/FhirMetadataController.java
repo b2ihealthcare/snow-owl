@@ -180,7 +180,7 @@ public class FhirMetadataController extends AbstractFhirController {
 				.version(serverVersion)
 			.build()) 
 			.implementation(Implementation.builder()
-				.url("https://b2i.sg")
+				.url("https://b2ihealthcare.com")
 				.description(description)
 			.build())
 			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_JSON))
