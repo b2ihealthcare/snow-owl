@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
@@ -44,7 +45,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  * @since 8.0.0
  */
-@Tag(name = "Bundle", description="Bundle Resource and batch operations")
+@Tag(name = FhirApiConfig.BUNDLE, description="Bundle Resource and batch operations")
 @RestController
 @RequestMapping(value="/", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirBundleController extends AbstractFhirController {

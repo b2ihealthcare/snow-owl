@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import org.elasticsearch.core.List;
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -29,6 +30,13 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan("com.b2international.snowowl.fhir.rest")
 public class FhirApiConfig extends BaseApiConfig {
 
+	public static final String CODESYSTEM = "CodeSystem";
+	public static final String CONCEPTMAP = "ConceptMap";
+	public static final String VALUESET = "ValueSet";
+	public static final String BUNDLE = "Bundle";
+	public static final String CAPABILITY_STATEMENT = "CapabilityStatement";
+	public static final String STRUCTURE_DEFINITION = "StructureDefinition";
+	
 	@Override
 	public String getApiBaseUrl() {
 		return "/fhir";
@@ -46,7 +54,8 @@ public class FhirApiConfig extends BaseApiConfig {
 			"API License", 
 			B2I_SITE, 
 			"This describes the resources that make up the official Snow Owl® Snow Owl® <a href=\\\"http://hl7.org/fhir/\\\">FHIR®</a> API.\r\n" + 
-			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir)."
+			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir).",
+			List.of(CAPABILITY_STATEMENT, CODESYSTEM, VALUESET, CONCEPTMAP, BUNDLE, STRUCTURE_DEFINITION)
 		);
 	}
 	
