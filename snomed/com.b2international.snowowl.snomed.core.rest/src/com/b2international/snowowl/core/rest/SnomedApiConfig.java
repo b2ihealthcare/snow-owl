@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import org.elasticsearch.core.List;
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -32,6 +33,19 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 public class SnomedApiConfig extends BaseApiConfig {
 	
 	public static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
+	
+	public static final String CLASSIFICATIONS = "classifications";
+	
+	public static final String CONCEPTS = "concepts";
+	public static final String DESCRIPTIONS = "descriptions";
+	public static final String RELATIONSHIPS = "relationships";
+	public static final String MEMBERS = "members";
+	public static final String REFSETS = "refSets";
+	
+	public static final String IMPORT = "import";
+	public static final String EXPORT = "export";
+	
+	public static final String MRCM = "mrcm";
 
 	@Override
 	public String getApiBaseUrl() {
@@ -50,7 +64,8 @@ public class SnomedApiConfig extends BaseApiConfig {
 			"API License",
 			B2I_SITE,
 			"This describes the resources that make up the official Snow Owl® SNOMED CT Terminology API.\n" + 
-			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/snomed)."
+			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/snomed).",
+			List.of(CONCEPTS, DESCRIPTIONS, RELATIONSHIPS, REFSETS, MEMBERS, IMPORT, EXPORT, CoreApiConfig.VALIDATIONS)
 		);
 	}
 	

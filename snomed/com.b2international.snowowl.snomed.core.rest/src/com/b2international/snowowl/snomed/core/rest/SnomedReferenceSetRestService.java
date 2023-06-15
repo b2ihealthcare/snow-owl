@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -59,7 +60,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 4.5
  */
-@Tag(description="RefSets", name = "refSets")
+@Tag(description="RefSets", name = SnomedApiConfig.REFSETS)
 @Controller
 @RequestMapping(value = "/{path:**}/refsets")		
 public class SnomedReferenceSetRestService extends AbstractRestService {

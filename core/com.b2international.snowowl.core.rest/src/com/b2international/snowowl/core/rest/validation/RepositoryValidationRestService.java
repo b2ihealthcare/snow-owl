@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -56,7 +57,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  * @since 6.13
  */
-@Tag(description = "Validations", name = "validations")
+@Tag(description = "Validations", name = CoreApiConfig.VALIDATIONS)
 @RequestMapping(value = "/validations", produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public abstract class RepositoryValidationRestService extends AbstractRestService {
 	

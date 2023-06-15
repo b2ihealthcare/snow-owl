@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.snomed.core.MrcmAttributeType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -36,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 8.8.0
  */
-@Tag(description="MRCM Rules", name = "mrcm")
+@Tag(description="MRCM Rules", name = SnomedApiConfig.MRCM)
 @RestController
 public class SnomedMrcmRestService extends AbstractRestService {
 	

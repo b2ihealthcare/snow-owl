@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -49,7 +50,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 7.5
  */
-@Tag(description="Export", name = "export")
+@Tag(name = SnomedApiConfig.EXPORT)
 @Controller
 @RequestMapping(value="/{path:**}/export")
 public class SnomedRf2ExportRestService extends AbstractRestService {

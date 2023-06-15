@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -44,7 +45,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 1.0
  */
-@Tag(description="Relationships", name = "relationships")
+@Tag(description="Relationships", name = SnomedApiConfig.RELATIONSHIPS)
 @RestController
 @RequestMapping(value = "/{path:**}/relationships")		
 public class SnomedRelationshipRestService extends AbstractRestService {

@@ -34,6 +34,8 @@ public class CoreApiConfig extends BaseApiConfig {
 	public static final String CONCEPTS = "concepts";
 	public static final String MISC = "misc";
 	
+	public static final String VALIDATIONS = "validations";
+	
 	@Override
 	public String getApiBaseUrl() {
 		return "/";
