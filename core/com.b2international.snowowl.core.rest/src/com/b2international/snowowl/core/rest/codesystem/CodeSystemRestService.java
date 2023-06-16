@@ -44,7 +44,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 1.0
  */
-@Tag(description = "CodeSystems", name = "codesystems")
+@Tag(description = "CodeSystems", name = CoreApiConfig.CODESYSTEMS)
 @RestController
 @RequestMapping("/codesystems")
 public class CodeSystemRestService extends AbstractRestService {
