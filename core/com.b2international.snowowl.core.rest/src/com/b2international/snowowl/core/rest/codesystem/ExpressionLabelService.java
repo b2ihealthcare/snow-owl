@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.ecl.LabeledEclExpressions;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 7.17.0
  */
-@Tag(description="Label ECL Expressions", name = "label-expressions")
+@Tag(description="Misc", name = CoreApiConfig.MISC)
 @RestController
 @RequestMapping(value = "/label-expressions") 
 public class ExpressionLabelService extends AbstractRestService {

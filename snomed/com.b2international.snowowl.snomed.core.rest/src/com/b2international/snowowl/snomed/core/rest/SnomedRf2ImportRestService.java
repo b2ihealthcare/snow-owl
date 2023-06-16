@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ImportConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -53,7 +54,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 7.5
  */
-@Tag(description="Import", name = "import")
+@Tag(name = SnomedApiConfig.IMPORT)
 @RestController
 @RequestMapping(value = "/{path:**}/import")
 public class SnomedRf2ImportRestService extends AbstractRestService {

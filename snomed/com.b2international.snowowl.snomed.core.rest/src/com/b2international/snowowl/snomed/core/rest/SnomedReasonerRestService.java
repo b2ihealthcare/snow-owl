@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
@@ -34,7 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 6.16
  */
-@Tag(description="Reasoners", name = "reasoners")
+@Tag(name = SnomedApiConfig.CLASSIFICATIONS)
 @Controller
 @RequestMapping(value="/reasoners", produces={ AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReasonerRestService extends AbstractRestService {

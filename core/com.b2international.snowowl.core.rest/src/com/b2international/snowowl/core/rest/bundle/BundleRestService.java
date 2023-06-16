@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
@@ -42,7 +43,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 8.0
  */
-@Tag(description = "Resources", name = "resources")
+@Tag(description = "Bundles", name = CoreApiConfig.BUNDLES)
 @RestController
 @RequestMapping("/bundles")
 public class BundleRestService extends AbstractRestService {

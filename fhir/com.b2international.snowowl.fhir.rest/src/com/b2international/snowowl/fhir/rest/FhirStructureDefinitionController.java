@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
@@ -38,7 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @see <a href="https://www.hl7.org/fhir/structuredefinition.html">StructureDefinition</a>
  * @since 7.1
  */
-@Tag(description = "StructureDefinition", name = "StructureDefinition")
+@Tag(description = "StructureDefinition", name = FhirApiConfig.STRUCTURE_DEFINITION)
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/StructureDefinition", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirStructureDefinitionController extends AbstractFhirController {

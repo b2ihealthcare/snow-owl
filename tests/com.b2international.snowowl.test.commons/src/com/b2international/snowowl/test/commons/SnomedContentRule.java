@@ -152,7 +152,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setTitle(codeSystemId.getResourceId())
 			.setOid("oid:" + codeSystemId)
 			.setOwner("owner")
-			.setContact("https://b2i.sg")
+			.setContact("https://b2ihealthcare.com")
 			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.setSettings(Map.of(
 				"publisher", "SNOMED International",

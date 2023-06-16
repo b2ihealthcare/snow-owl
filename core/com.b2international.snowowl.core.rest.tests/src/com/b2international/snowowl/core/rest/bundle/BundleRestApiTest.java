@@ -214,7 +214,7 @@ public class BundleRestApiTest {
 			.setTitle("Bundle " + id)
 			.setDescription("description")
 			.setLanguage("en")
-			.setUrl("https://b2i.sg/" + id)
+			.setUrl("https://b2ihealthcare.com/" + id)
 			.setBundleId(IComponent.ROOT_ID)
 			.build(RestExtensions.USER, "Created bundle " + id)
 			.execute(Services.bus())

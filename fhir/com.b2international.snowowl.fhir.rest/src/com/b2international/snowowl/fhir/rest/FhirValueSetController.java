@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
+import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -55,7 +56,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @see <a href="https://www.hl7.org/fhir/valueset.html">FHIR:ValueSet</a>
  * @since 6.4
  */
-@Tag(description = "ValueSet", name = "ValueSet")
+@Tag(description = "ValueSet", name = FhirApiConfig.VALUESET)
 @RestController
 @RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirValueSetController extends AbstractFhirController {

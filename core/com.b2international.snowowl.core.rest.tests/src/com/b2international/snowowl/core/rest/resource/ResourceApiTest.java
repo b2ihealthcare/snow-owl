@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Map;
@@ -113,9 +113,9 @@ public class ResourceApiTest {
 	@Test
 	public void filterByOid() {
 		final String id1 = IDs.base62UUID();
-		final String oid1 = "https://b2i.sg/" + id1;
+		final String oid1 = "https://b2ihealthcare.com/" + id1;
 		final String id2 = IDs.base62UUID();
-		final String oid2 = "https://b2i.sg/" + id2;
+		final String oid2 = "https://b2ihealthcare.com/" + id2;
 		createCodeSystemWithOid(id1, oid1);
 		createCodeSystemWithOid(id2, oid2);
 
@@ -189,7 +189,7 @@ public class ResourceApiTest {
 	public void filterBySettings() {
 		final String codesystemId1 = IDs.base62UUID();
 		final String codesystemId2 = IDs.base62UUID();
-		final String oid2 = "https://b2i.sg/" + codesystemId2;
+		final String oid2 = "https://b2ihealthcare.com/" + codesystemId2;
 
 		final String namespace = "1000198";
 		final String module1 = "1234567891000198103";
@@ -214,7 +214,7 @@ public class ResourceApiTest {
 	@Test(expected = BadRequestException.class)
 	public void searchAfter() throws Exception {
 		final String id1 = IDs.base62UUID();
-		final String oid1 = "https://b2i.sg/" + id1;
+		final String oid1 = "https://b2ihealthcare.com/" + id1;
 		createCodeSystemWithOid(id1, oid1);
 
 		CodeSystemRequests.prepareSearchCodeSystem()
@@ -235,7 +235,7 @@ public class ResourceApiTest {
 			.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
 			.setStatus(status)
 			.setOwner(owner)
-			.setOid("https://b2i.sg/" + codeSystemId)
+			.setOid("https://b2ihealthcare.com/" + codeSystemId)
 			.build(RestExtensions.USER, String.format("New code system %s", codeSystemId))
 			.execute(bus)
 			.getSync();
@@ -268,7 +268,7 @@ public class ResourceApiTest {
 				.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
 				.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
 				.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
-				.setOid("https://b2i.sg/" + codeSystemId)
+				.setOid("https://b2ihealthcare.com/" + codeSystemId)
 				.setSettings( Map.of(
 					CODESYSTEM_NAMESPACE_CONFIG_KEY, namespace,
 					CODESYSTEM_MODULES_CONFIG_KEY, List.of(module1, module2),

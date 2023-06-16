@@ -29,6 +29,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -51,7 +52,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 4.5
  */
-@Tag(description="Members", name = "members")
+@Tag(description="Members", name = SnomedApiConfig.MEMBERS)
 @Controller
 @RequestMapping(value="/{path:**}/members")
 public class SnomedReferenceSetMemberRestService extends AbstractRestService {

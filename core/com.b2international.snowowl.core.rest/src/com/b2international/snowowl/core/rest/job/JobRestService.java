@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 7.1
  */
-@Tag(description="Jobs", name = "jobs")
+@Tag(description="Administration", name = CoreApiConfig.ADMINISTRATION)
 @RestController
 @RequestMapping(value = "/jobs")
 public class JobRestService extends AbstractRestService {

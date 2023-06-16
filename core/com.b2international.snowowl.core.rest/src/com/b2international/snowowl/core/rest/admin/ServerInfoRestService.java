@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.ServerInfo;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 5.8
  */
-@Tag(description = "Server info", name = "info")
+@Tag(description="Administration", name = CoreApiConfig.ADMINISTRATION)
 @Controller
 @RequestMapping(value = "/info") 
 public class ServerInfoRestService extends AbstractRestService {

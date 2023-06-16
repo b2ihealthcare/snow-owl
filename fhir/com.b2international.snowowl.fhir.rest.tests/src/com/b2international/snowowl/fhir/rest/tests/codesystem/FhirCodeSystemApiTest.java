@@ -483,7 +483,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("language", equalTo("ENG"))
 			.body("publisher", equalTo("SNOMED International"))
 			.body("contact[0].telecom[0].system", equalTo("url"))
-			.body("contact[0].telecom[0].value", equalTo("https://b2i.sg"));
+			.body("contact[0].telecom[0].value", equalTo("https://b2ihealthcare.com"));
 	}
 	
 	//Summary-count should not be allowed for non-search type operations?

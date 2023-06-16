@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -51,7 +52,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * @since 1.0
  */
-@Tag(description="Concepts", name = "concepts")
+@Tag(description="Concepts", name = SnomedApiConfig.CONCEPTS)
 @Controller
 @RequestMapping(value = "/{path:**}/concepts")
 public class SnomedConceptRestService extends AbstractRestService {

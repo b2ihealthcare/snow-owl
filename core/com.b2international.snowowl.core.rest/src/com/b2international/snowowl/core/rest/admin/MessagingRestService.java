@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.messaging.MessagingRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  * @since 7.0 
  */
-@Tag(description="Administration", name = "administration")
+@Tag(description="Administration", name = CoreApiConfig.ADMINISTRATION)
 @RestController
 @RequestMapping(value = "/messages")
 public class MessagingRestService extends AbstractRestService {

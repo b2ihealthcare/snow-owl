@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.rest;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
@@ -35,7 +36,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @see <a href="https://www.hl7.org/fhir/valueset-operations.html">FHIR:ValueSet:Operations</a>
  * @since 8.0
  */
-@Tag(description = "ValueSet", name = "ValueSet")
+@Tag(description = "ValueSet", name = FhirApiConfig.VALUESET)
 @RestController
 @RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirValueSetExpandOperationController extends AbstractFhirController {

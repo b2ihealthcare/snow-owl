@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import org.elasticsearch.core.List;
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CoreApiConfig extends BaseApiConfig {
 
+	public static final String ADMINISTRATION = "administration";
+	public static final String BUNDLES = "bundles";
+	public static final String RESOURCES = "resources";
+	public static final String CODESYSTEMS = "codesystems";
+	public static final String API_KEY = "apikey";
+	public static final String CONCEPTS = "concepts";
+	public static final String MISC = "misc";
+	
+	public static final String VALIDATIONS = "validations";
+	
 	@Override
 	public String getApiBaseUrl() {
 		return "/";
@@ -37,11 +48,12 @@ public class CoreApiConfig extends BaseApiConfig {
 			"core",
 			"2.0",
 			"Core API",
-			"https://b2i.sg",
+			B2I_SITE,
 			"support@b2i.sg",
 			"API License",
-			"https://b2i.sg",
-			"This describes the resources that make up the official Snow Owl® Core API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/core)."
+			B2I_SITE,
+			"This describes the resources that make up the official Snow Owl® Core API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/core).",
+			List.of(API_KEY, RESOURCES, CODESYSTEMS, CONCEPTS, BUNDLES, ADMINISTRATION, MISC)
 		);
 	}
 

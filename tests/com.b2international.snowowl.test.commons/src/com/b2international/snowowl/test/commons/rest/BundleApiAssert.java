@@ -98,7 +98,7 @@ public class BundleApiAssert {
 			"title", "Bundle " + resourceId,
 			"description", "description",
 			"language", "en",
-			"url", "https://b2i.sg/" + resourceId,
+			"url", "https://b2ihealthcare.com/" + resourceId,
 			"bundleId", bundleParentId
 		);
 	}

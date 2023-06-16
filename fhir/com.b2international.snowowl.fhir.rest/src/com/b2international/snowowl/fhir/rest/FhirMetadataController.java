@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ import io.swagger.v3.oas.models.media.Schema;
  * REST end-point for serving content describing the server's capabilities.
  * @since 8.0.0
  */
-@Tag(description="CapabilityStatement", name = "CapabilityStatement", extensions = { 
+@Tag(description="CapabilityStatement", name = FhirApiConfig.CAPABILITY_STATEMENT, extensions = { 
 	@Extension(name = B2I_OPENAPI_X_NAME, properties = { 
 		@ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CapabilityStatement")
 	})
@@ -180,7 +180,7 @@ public class FhirMetadataController extends AbstractFhirController {
 				.version(serverVersion)
 			.build()) 
 			.implementation(Implementation.builder()
-				.url("https://b2i.sg")
+				.url("https://b2ihealthcare.com")
 				.description(description)
 			.build())
 			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_JSON))
