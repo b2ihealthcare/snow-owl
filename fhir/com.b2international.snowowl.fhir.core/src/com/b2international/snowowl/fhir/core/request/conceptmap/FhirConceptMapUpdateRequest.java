@@ -26,8 +26,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
+import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateRequest;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
 /**
@@ -36,7 +36,7 @@ import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
  * @see <a href="https://hl7.org/fhir/http.html#update">Update interaction</a>
  * @since 8.2.0
  */
-final class FhirConceptMapUpdateRequest implements Request<RepositoryContext, FhirResourceUpdateResult> {
+final class FhirConceptMapUpdateRequest extends FhirResourceUpdateRequest {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -71,6 +71,7 @@ final class FhirConceptMapUpdateRequest implements Request<RepositoryContext, Fh
 	
 	@Override
 	public FhirResourceUpdateResult execute(final RepositoryContext context) {
+		checkAuthorization(context, bundleId);
 		final Optional<FhirConceptMapWriteSupport> conceptMapWriteSupport = context.optionalService(FhirConceptMapWriteSupport.class);
 		
 		return conceptMapWriteSupport
