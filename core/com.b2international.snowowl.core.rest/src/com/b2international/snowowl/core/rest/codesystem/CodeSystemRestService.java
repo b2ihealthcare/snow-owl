@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.CoreApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.core.rest.resource.TerminologyResourceRestSearch;
