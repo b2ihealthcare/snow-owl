@@ -255,9 +255,9 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			.filterByActive(expandOptions.get("active", Boolean.class))
 			.filterByType(expandOptions.get("typeId", String.class))
 			.filterByConcepts(conceptIds)
-			.setFields(expandOptions.containsKey("field") ? expandOptions.getList("field", String.class) : null)
+			.setFields(expandOptions.containsKey(FIELD_OPTION_KEY) ? expandOptions.getList(FIELD_OPTION_KEY, String.class) : null)
 			.setLocales(locales())
-			.sortBy(expandOptions.get("sort", String.class))
+			.sortBy(expandOptions.get(SORT_OPTION_KEY, String.class))
 			.build()
 			.execute(context());
 		
@@ -284,10 +284,10 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 				.filterByTypes(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
 				.filterByDestinations(expandOptions.containsKey("destinationId") ? expandOptions.getCollection("destinationId", String.class) : null)
 				.filterBySources(conceptIds)
-				.setFields(expandOptions.containsKey("field") ? expandOptions.getList("field", String.class) : null)
-				.setExpand(expandOptions.get("expand", Options.class))
+				.setFields(expandOptions.containsKey(FIELD_OPTION_KEY) ? expandOptions.getList(FIELD_OPTION_KEY, String.class) : null)
+				.setExpand(expandOptions.get(EXPAND_OPTION_KEY, Options.class))
 				.setLocales(locales())
-				.sortBy(expandOptions.get("sort", String.class))
+				.sortBy(expandOptions.get(SORT_OPTION_KEY, String.class))
 				.build()
 				.execute(context());
 		
@@ -316,10 +316,10 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			.filterByActive(expandOptions.get("active", Boolean.class))
 			.filterByCharacteristicType(expandOptions.get("characteristicTypeId", String.class))
 			.filterByDestinations(conceptIds)
-			.setFields(expandOptions.containsKey("field") ? expandOptions.getList("field", String.class) : null)
-			.setExpand(expandOptions.get("expand", Options.class))
+			.setFields(expandOptions.containsKey(FIELD_OPTION_KEY) ? expandOptions.getList(FIELD_OPTION_KEY, String.class) : null)
+			.setExpand(expandOptions.get(EXPAND_OPTION_KEY, Options.class))
 			.setLocales(locales())
-			.sortBy(expandOptions.get("sort", String.class))
+			.sortBy(expandOptions.get(SORT_OPTION_KEY, String.class))
 			.build()
 			.execute(context());
 		
@@ -373,7 +373,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 					.all()
 					.filterByIds(componentIds)
 					.setLocales(locales())
-					.setExpand(expandOptions.get("expand", Options.class))
+					.setExpand(expandOptions.get(EXPAND_OPTION_KEY, Options.class))
 					.build().execute(context());
 			
 			final Map<String, SnomedConcept> ancestorsById = newHashMap();

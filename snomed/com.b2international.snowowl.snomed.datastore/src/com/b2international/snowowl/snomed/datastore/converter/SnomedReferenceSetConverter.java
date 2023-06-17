@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
+import com.b2international.snowowl.core.request.expand.BaseResourceExpander;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -56,12 +57,9 @@ public final class SnomedReferenceSetConverter extends BaseRevisionResourceConve
 				SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareSearchMember()
 						.filterByRefSet(refSet.getId())
 						.setLocales(locales())
-						.setExpand(expandOptions.get("expand", Options.class));
+						.setExpand(expandOptions.get(EXPAND_OPTION_KEY, Options.class))
+						.setLimit(BaseResourceExpander.getLimit(expandOptions));
 				
-				if (expandOptions.containsKey("limit")) {
-					req.setLimit(expandOptions.get("limit", Integer.class));
-				}
-
 				refSet.setMembers(req.build().execute(context()));
 			}
 		}

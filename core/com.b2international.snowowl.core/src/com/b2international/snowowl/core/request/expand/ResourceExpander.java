@@ -19,8 +19,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 
-import com.b2international.commons.options.Options;
-
 import net.jodah.typetools.TypeResolver;
 
 /**
@@ -32,20 +30,17 @@ public interface ResourceExpander<R> {
 	// The "default default" limit to use when no limit is given
 	int DEFAULT_LIMIT = 50;
 	
+	String LIMIT_OPTION_KEY = "limit";
+	String FIELD_OPTION_KEY = "field";
+	String SORT_OPTION_KEY = "sort";
+	String EXPAND_OPTION_KEY = "expand";
+	
 	/**
 	 * Expands resources with additional fields.
 	 * 
 	 * @param results - the list of results to expand
 	 */
 	void expand(List<R> results);
-	
-	default int getLimit(final Options expandOptions) {
-		return getLimit(expandOptions, DEFAULT_LIMIT);
-	}
-	
-	default int getLimit(final Options expandOptions, final int defaultLimit) {
-		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : defaultLimit;
-	}
 	
 	/**
 	 * @return the class of the target type this expander can expand

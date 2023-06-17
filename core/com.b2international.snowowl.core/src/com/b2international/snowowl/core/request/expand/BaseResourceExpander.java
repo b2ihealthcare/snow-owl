@@ -51,5 +51,13 @@ public abstract class BaseResourceExpander<R> implements ResourceExpander<R> {
 	protected final List<ExtendedLocale> locales() {
 		return locales;
 	}
+	
+	public static final int getLimit(final Options expandOptions) {
+		return getLimit(expandOptions, DEFAULT_LIMIT);
+	}
+	
+	public static final int getLimit(final Options expandOptions, final int defaultLimit) {
+		return expandOptions.containsKey(LIMIT_OPTION_KEY) ? expandOptions.get(LIMIT_OPTION_KEY, Integer.class) : defaultLimit;
+	}
 
 }
