@@ -245,7 +245,8 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		if (terms.size() == 1) {
 			final ExpressionBuilder expressionBuilder = Expressions.bool();
 			expressionBuilder.should(titleQuery);
-			expressionBuilder.should(Expressions.boost(ResourceDocument.Expressions.id(Iterables.getOnlyElement(terms)), 1000.0f));
+			final String termFilterValue = Iterables.getOnlyElement(terms);
+			expressionBuilder.should(Expressions.boost(ResourceDocument.Expressions.ids(List.of(termFilterValue, termFilterValue.toUpperCase())), 100.0f));
 			queryBuilder.must(expressionBuilder.build());
 		} else {
 			queryBuilder.must(titleQuery);
