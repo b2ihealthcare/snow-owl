@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,18 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		addFilter(resourcesQuery, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		
 		if (containsKey(OptionKey.TITLE)) {
-			resourcesQuery.must(TermFilter.match().term(getString(OptionKey.TITLE)).build().toExpression(ResourceDocument.Fields.TITLE));
+			final String titleFilterValue = getString(OptionKey.TITLE);
+			if (containsKey(OptionKey.NAME)) {
+				// if there is a name filter as well, just add the title filter as is
+				resourcesQuery.must(TermFilter.match().term(titleFilterValue).build().toExpression(ResourceDocument.Fields.TITLE));
+			} else {
+				// if there is no name filter
+				resourcesQuery.must(Expressions.bool()
+					.should(TermFilter.match().term(titleFilterValue).build().toExpression(ResourceDocument.Fields.TITLE))
+					// apply the title filter value in both as is an full UPPERCASE form as an exact name filter with a boost of 1000 score
+					.should(Expressions.boost(Expressions.matchAny(ResourceDocument.Fields.ID, List.of(titleFilterValue, titleFilterValue.toUpperCase())), 100f))
+				.build());
+			}
 		}
 		
 		Hits<ResourceFragment> internalResources = context.service(RevisionSearcher.class)
