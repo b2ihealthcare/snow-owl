@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
@@ -26,6 +27,10 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 	
 	public static final String TYPE_RANK = "typeRank";
 
+	public ResourceSearchRequestBuilder() {
+		sortBy(Resource.SNOMED_FIRST); // by default put snomed resources to the beginning of response items list
+	}
+	
 	/**
 	 * Filters matches by the given resource type.
 	 * 
