@@ -113,7 +113,7 @@ public final class Version implements Serializable {
 	void setResourceBranchPath(String resourceBranchPath) {}
 	
 	public String getResourceBranchPath() {
-		return BranchPathUtils.createPath(branchPath).getParentPath();
+		return branchPath == null ? null : BranchPathUtils.createPath(branchPath).getParentPath();
 	}
 	
 	public void setId(String id) {
