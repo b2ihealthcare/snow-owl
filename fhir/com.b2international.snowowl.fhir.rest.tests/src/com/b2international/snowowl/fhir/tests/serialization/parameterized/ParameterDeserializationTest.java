@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,7 +210,7 @@ public class ParameterDeserializationTest extends FhirTest {
 					+ "{\"name\":\"code\",\"valueCode\":\"1234\"},"
 					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct/version/20180131\"},"
 					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21.000+01:00\"},"
-					+ "{\"name\":\"displayLanguage\",\"valueCode\":\"us-en\"},"
+					+ "{\"name\":\"displayLanguage\",\"valueCode\":\"en-us\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop1\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop2\"},"
 					+ "{\"name\":\"coding\", \"valueCoding\":"
@@ -228,7 +228,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		
 		assertEquals(FhirDates.parse("2018-03-09T20:50:21.000+01:00"), lookupRequest.getDate());
 		
-		assertEquals("us-en", lookupRequest.getDisplayLanguage().getCodeValue());
+		assertEquals("en-us", lookupRequest.getDisplayLanguage().getCodeValue());
 		
 		Coding coding = lookupRequest.getCoding();
 		assertEquals("1234", coding.getCodeValue());

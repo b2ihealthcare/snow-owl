@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
@@ -29,7 +30,7 @@ import com.b2international.snowowl.fhir.core.search.Summary;
  * @since 8.0
  * @param <R>
  */
-abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
+public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -81,10 +82,10 @@ abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 		return Summary.TRUE;
 	}
 
-	protected String extractLocales(Code displayLanguage) {
+	public static final String extractLocales(Code displayLanguage) {
 		String locales = displayLanguage != null ? displayLanguage.getCodeValue() : null;
 		if (CompareUtils.isEmpty(locales)) {
-			locales = "en";
+			locales = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER;
 		}
 		return locales;
 	}

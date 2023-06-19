@@ -43,6 +43,7 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
+import com.b2international.snowowl.fhir.core.request.codesystem.FhirRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.base.Charsets;
@@ -148,6 +149,7 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 				.setSearchAfter(request.getAfter())
 				// SNOMED only preferred display support (VS should always use FSN)
 				.setPreferredDisplay("FSN") 
+				.setLocales(FhirRequest.extractLocales(request.getDisplayLanguage()))
 				// always return sorted results for consistency, in case of term filtering return by score otherwise by ID
 				.sortBy(!CompareUtils.isEmpty(request.getFilter()) ? SearchIndexResourceRequest.SCORE : SearchResourceRequest.Sort.fieldAsc("id"));
 

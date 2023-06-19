@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
@@ -81,7 +82,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		final Optional<String> date,
 		
 		@Parameter(description = "Language code for display") 
-		@RequestParam(value="displayLanguage") 
+		@RequestParam(value="displayLanguage", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
 		final Optional<String> displayLanguage,
 		
 		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
