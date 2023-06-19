@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
+
+import org.elasticsearch.core.List;
 
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -38,7 +40,9 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, T
 	
 	@Override
 	public TranslateResult execute(ServiceProvider context) {
-		ConceptMap conceptMap = FhirRequests.conceptMaps().prepareGet(request.getUrlValue()).buildAsync().execute(context);
+		ConceptMap conceptMap = FhirRequests.conceptMaps().prepareGet(request.getUrlValue())
+				.setElements(List.copyOf(ConceptMap.Fields.MANDATORY))
+				.buildAsync().execute(context);
 		return context.service(RepositoryManager.class)
 				.get(conceptMap.getToolingId())
 				.optionalService(FhirConceptMapTranslator.class)
