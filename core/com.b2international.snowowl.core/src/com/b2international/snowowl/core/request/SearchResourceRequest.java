@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -448,9 +448,19 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			}
 			return sortBuilder.build();
 		}		
-		return SortBy.DEFAULT;
+		return getDefaultSortBy();
 	}
 	
+	/**
+	 * Subclasses may optionally provide a default fall back {@link SortBy} instance to sort the result set.
+	 * 
+	 * @return
+	 * @see SortBy#DEFAULT
+	 */
+	protected SortBy getDefaultSortBy() {
+		return SortBy.DEFAULT;
+	}
+
 	/**
 	 * Search requests may alter the default sortBy construction. By default it creates field and script sorts, but special sorts can be constructed using special sort keys.
 	 * @param context - the context to access if needed

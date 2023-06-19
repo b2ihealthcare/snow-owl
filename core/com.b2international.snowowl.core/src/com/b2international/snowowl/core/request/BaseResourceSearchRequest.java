@@ -23,6 +23,7 @@ import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.Resource;
@@ -268,6 +269,11 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			}
 		}
 		super.toQuerySortBy(context, sortBuilder, sort);
+	}
+	
+	@Override
+	protected SortBy getDefaultSortBy() {
+		return SortBy.builder().sortByScript("snomedFirst", Map.of(), Order.ASC).build();
 	}
 	
 }

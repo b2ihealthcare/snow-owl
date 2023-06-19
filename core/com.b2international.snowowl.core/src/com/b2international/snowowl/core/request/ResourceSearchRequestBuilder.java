@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request;
 
-import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
@@ -27,10 +26,6 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 	
 	public static final String TYPE_RANK = "typeRank";
 
-	public ResourceSearchRequestBuilder() {
-		sortBy(Resource.SNOMED_FIRST); // by default put snomed resources to the beginning of response items list
-	}
-	
 	/**
 	 * Filters matches by the given resource type.
 	 * 
