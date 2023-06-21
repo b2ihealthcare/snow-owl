@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -350,4 +350,66 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		return conceptMap;
 	}
 
+	/**
+	 * @return the search request decomposed into an instance of {@link SnomedConceptSearchRequestBuilder}
+	 */
+	public SnomedConceptSearchRequestBuilder toRequestBuilder() {
+		final Iterable<String> ancestorsOrNull = getIterableOrNull(OptionKey.ANCESTOR);
+		final List<ExtendedLocale> languageRefsetsOrNull = getListOrNull(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, ExtendedLocale.class);
+		final Iterable<String> modulesOrNull = getIterableOrNull(SnomedSearchRequest.OptionKey.MODULE);
+		final Iterable<String> namespaceConceptsOrNull = getIterableOrNull(SnomedComponentSearchRequest.OptionKey.NAMESPACE_CONCEPT_ID);
+		final Iterable<String> namespacesOrNull = getIterableOrNull(SnomedComponentSearchRequest.OptionKey.NAMESPACE);
+		final Iterable<String> parentsOrNull = getIterableOrNull(OptionKey.PARENT);
+		final Iterable<String> semanticTagsOrNull = getIterableOrNull(OptionKey.SEMANTIC_TAG);
+		final Iterable<String> statedAncestorsOrNull = getIterableOrNull(OptionKey.STATED_ANCESTOR);
+		final Iterable<String> statedParentsOrNull = getIterableOrNull(OptionKey.STATED_PARENT);
+		
+		final SnomedConceptSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchConcept()
+			.filterByActive(get(SnomedSearchRequest.OptionKey.ACTIVE, Boolean.class))
+			.filterByAncestors(ancestorsOrNull)
+			.filterByDefinitionStatus(getString(OptionKey.DEFINITION_STATUS))
+			.filterByDescriptionKnn(get(OptionKey.DESCRIPTION_KNN, KnnFilter.class))
+			.filterByDescriptionLanguageRefSet(languageRefsetsOrNull)
+			.filterByDescriptionType(getString(OptionKey.DESCRIPTION_TYPE))
+			.filterByEcl(getString(AbstractComponentSearchRequest.OptionKey.ECL))
+			.filterByIds(componentIds())
+			.filterByKnn(getKnnFilter())
+			.filterByModules(modulesOrNull)
+			.filterByNamespaceConcepts(namespaceConceptsOrNull)
+			.filterByNamespaces(namespacesOrNull)
+			.filterByParents(parentsOrNull)
+			.filterByReleased(get(SnomedSearchRequest.OptionKey.RELEASED, Boolean.class))
+			.filterBySemanticTags(semanticTagsOrNull)
+			.filterByStatedAncestors(statedAncestorsOrNull)
+			.filterByStatedEcl(getString(OptionKey.STATED_ECL))
+			.filterByStatedParents(statedParentsOrNull)
+			.filterByTerm(get(OptionKey.TERM, TermFilter.class));
+		
+		if (containsKey(SnomedSearchRequest.OptionKey.EFFECTIVE_TIME_START) || containsKey(SnomedSearchRequest.OptionKey.EFFECTIVE_TIME_END)) {
+			final long from = containsKey(SnomedSearchRequest.OptionKey.EFFECTIVE_TIME_START) 
+				? get(SnomedSearchRequest.OptionKey.EFFECTIVE_TIME_START, Long.class) 
+				: 0L;
+			
+			final long to = containsKey(SnomedSearchRequest.OptionKey.EFFECTIVE_TIME_END) 
+				? get(SnomedSearchRequest.OptionKey.EFFECTIVE_TIME_END, Long.class) 
+				: Long.MAX_VALUE;
+			
+			requestBuilder.filterByEffectiveTime(from, to);
+		}
+		
+		return requestBuilder.setEclExpressionForm(getString(SnomedSearchRequest.OptionKey.ECL_EXPRESSION_FORM))
+			.setExpand(expand())
+			.setFields(fields())
+			.setLimit(limit())
+			.setLocales(locales())
+			.setSearchAfter(searchAfter());
+	}
+
+	private Iterable<String> getIterableOrNull(Enum<?> key) {
+		return containsKey(key) ? getCollection(key, String.class) : null;
+	}
+	
+	private <T> List<T> getListOrNull(Enum<?> key, Class<T> type) {
+		return containsKey(key) ? getList(key, type) : null;
+	}
 }
