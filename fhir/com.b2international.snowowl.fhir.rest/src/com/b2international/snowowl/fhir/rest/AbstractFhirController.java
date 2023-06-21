@@ -113,6 +113,18 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		return ex.toOperationOutcome();
 	}
 	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	public @ResponseBody OperationOutcome handle(final ForbiddenException ex) {
+		return OperationOutcome.builder()
+			.addIssue(Issue.builder()
+				.severity(IssueSeverity.ERROR)
+				.code(IssueType.FORBIDDEN)
+				.diagnostics(ex.getMessage())
+				.build())
+			.build();
+	}
+	
 	/**
 	 * Exception handler converting any {@link JsonMappingException} to an <em>HTTP 400</em>.
 	 * 

@@ -145,7 +145,7 @@ public class Issue {
 			
 			String outcomeCodeString = operationOutcomeCode.getDisplayName();
 			if (outcomeCodeString.contains("%s")) {
-				String.format(outcomeCodeString, Arrays.toString(locations.toArray()));
+				outcomeCodeString = String.format(outcomeCodeString, Arrays.toString(locations.toArray()));
 			}
 			
 			Coding coding = Coding.builder()
