@@ -288,6 +288,9 @@ public abstract class SnomedConstants {
 		public static final String CONCEPT_MODEL_OBJECT_ATTRIBUTE = "762705008";
 		public static final String CONCEPT_MODEL_DATA_ATTRIBUTE = "762706009";
 		
+		//Unapproved attribute hierarchy root
+		public static final String UNAPPROVED_ATTRIBUTE = "408739003";		
+		
 		// Concepts that require special care when classifying
 		public static final String ROLE_GROUP = "609096000";
 		public static final String PART_OF = "123005000";
