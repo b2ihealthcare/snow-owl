@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.index.revision.Revision.Fields.ID;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.UNAPPROVED_ATTRIBUTE;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID;
 
@@ -93,10 +94,10 @@ final class SnomedMrcmTypeRequest extends SearchResourceRequest<BranchContext, S
 			eclConstraint = String.format("<%s", CONCEPT_MODEL_DATA_ATTRIBUTE);
 			break;
 		case OBJECT: 
-			eclConstraint = String.format("<%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+			eclConstraint = String.format("<%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, UNAPPROVED_ATTRIBUTE);
 			break;
 		case ALL: 
-			eclConstraint = String.format("<%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE );
+			eclConstraint = String.format("<%s OR <%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, UNAPPROVED_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE);
 			break;
 		default: 
 			eclConstraint = Ecl.ANY;
