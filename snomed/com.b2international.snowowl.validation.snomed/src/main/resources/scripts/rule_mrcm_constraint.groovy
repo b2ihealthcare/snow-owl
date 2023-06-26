@@ -51,6 +51,10 @@ List<String> inScopeRefSets = SnomedRequests.prepareSearchMember()
 	.build()
 	.execute(ctx)
 	.collect { SnomedReferenceSetMember m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)}
+	
+if (inScopeRefSets.isEmpty()) {
+	return issues as List;
+}
 
 final ExpressionBuilder mrcmRangeMemberQueryBuilder = Expressions.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
