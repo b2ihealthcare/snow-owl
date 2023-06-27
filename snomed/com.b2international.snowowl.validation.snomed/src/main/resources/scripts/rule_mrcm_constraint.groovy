@@ -3,6 +3,7 @@ package scripts
 import static com.b2international.index.query.Expressions.*;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ALL_PRECOORDINATED_CONTENT;
 
+import com.b2international.commons.exceptions.SyntaxException
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
 import com.b2international.index.query.Expressions.ExpressionBuilder
@@ -95,20 +96,20 @@ for (String typeId : allowedRanges.keySet()) {
 	final Set<String> clauses = Sets.newHashSet();
 	
 	for (String rangeClause : rangeClauses) {
+		try {
+			eclParser.parse(rangeClause);
+		} catch (SyntaxException e) {
+			ctx.log().warn("Could not parse clause ${rangeClause}");
+			ctx.log().warn(e.getMessage());
+			continue;
+		}
+		
 		String clause = rangeClause;
 		
 		if (clause.contains("|")) {
 			clause = rangeClause.substring(0, rangeClause.indexOf('|')).strip();
 		}
-		
-		try {
-			eclParser.parse(clause);
-		} catch (Exception e) {
-			ctx.log().warn("Could not parse clause ${clause}");
-			ctx.log().warn(e.getMessage());
-			continue;
-		}
-		
+				
 		clauses.add(clause);
 	}
 	
