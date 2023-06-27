@@ -43,14 +43,18 @@ List<String> moduleIds = SnomedRequests.prepareSearchConcept()
 	.execute(ctx)
 	.collect({it.getId()})
 
-List<String> inScopeRefSets = SnomedRequests.prepareSearchMember()
+Set<String> inScopeRefSets = SnomedRequests.prepareSearchMember()
 	.all()
 	.filterByActive(true)
 	.filterByRefSet(Concepts.REFSET_MRCM_MODULE_SCOPE)
 	.filterByReferencedComponent(moduleIds)
 	.build()
 	.execute(ctx)
-	.collect { SnomedReferenceSetMember m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)}
+	.collect { SnomedReferenceSetMember m -> m.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)} as Set
+	
+if (inScopeRefSets.isEmpty()) {
+	return issues as List;
+}
 
 final ExpressionBuilder mrcmRangeMemberQueryBuilder = Expressions.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
