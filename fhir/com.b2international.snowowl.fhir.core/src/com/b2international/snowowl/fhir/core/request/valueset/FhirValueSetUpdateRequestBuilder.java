@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public final class FhirValueSetUpdateRequestBuilder implements ResourceRepositor
 
 	private ValueSet fhirValueSet;
 	private Map<String, ResourceURI> systemUriOverrides = Map.of();
+	private String author;
 	private String owner;
 	private String ownerProfileName;
 	private LocalDate defaultEffectiveDate;
@@ -50,6 +51,11 @@ public final class FhirValueSetUpdateRequestBuilder implements ResourceRepositor
 		} else {
 			this.systemUriOverrides = systemUriOverrides;
 		}
+		return this;
+	}
+	
+	public FhirValueSetUpdateRequestBuilder setAuthor(String author) {
+		this.author = author;
 		return this;
 	}
 	
@@ -82,6 +88,7 @@ public final class FhirValueSetUpdateRequestBuilder implements ResourceRepositor
 		return new FhirValueSetUpdateRequest(
 			fhirValueSet, 
 			systemUriOverrides, 
+			author,
 			owner, 
 			ownerProfileName, 
 			defaultEffectiveDate, 

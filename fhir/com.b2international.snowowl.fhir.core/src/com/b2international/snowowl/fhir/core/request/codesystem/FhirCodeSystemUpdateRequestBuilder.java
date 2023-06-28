@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 public final class FhirCodeSystemUpdateRequestBuilder implements ResourceRepositoryRequestBuilder<FhirResourceUpdateResult> {
 
 	private CodeSystem fhirCodeSystem;
+	private String author;
 	private String owner;
 	private String ownerProfileName;
 	private LocalDate defaultEffectiveDate;
@@ -41,6 +42,11 @@ public final class FhirCodeSystemUpdateRequestBuilder implements ResourceReposit
 		return this;
 	}
 
+	public FhirCodeSystemUpdateRequestBuilder setAuthor(String author) {
+		this.author = author;
+		return this;
+	}
+	
 	public FhirCodeSystemUpdateRequestBuilder setOwner(final String owner) {
 		this.owner = owner;
 		return this;
@@ -67,6 +73,6 @@ public final class FhirCodeSystemUpdateRequestBuilder implements ResourceReposit
 
 	@Override
 	public Request<RepositoryContext, FhirResourceUpdateResult> build() {
-		return new FhirCodeSystemUpdateRequest(fhirCodeSystem, owner, ownerProfileName, defaultEffectiveDate, bundleId);
+		return new FhirCodeSystemUpdateRequest(fhirCodeSystem, author, owner, ownerProfileName, defaultEffectiveDate, bundleId);
 	}
 }

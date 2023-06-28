@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ final class FhirCodeSystemUpdateRequest extends FhirResourceUpdateRequest {
 	@NotNull
 	private final CodeSystem fhirCodeSystem;
 	
+	private final String author;
 	private final String owner;
 	private final String ownerProfileName;
 	private final LocalDate defaultEffectiveDate;
@@ -53,13 +54,15 @@ final class FhirCodeSystemUpdateRequest extends FhirResourceUpdateRequest {
 	private final String bundleId;
 
 	public FhirCodeSystemUpdateRequest(
-		final CodeSystem fhirCodeSystem, 
+		final CodeSystem fhirCodeSystem,
+		final String author,
 		final String owner, 
 		final String ownerProfileName,
 		final LocalDate defaultEffectiveDate, 
 		final String bundleId) {
 		
 		this.fhirCodeSystem = fhirCodeSystem;
+		this.author = author;
 		this.owner = owner;
 		this.ownerProfileName = ownerProfileName;
 		this.defaultEffectiveDate = defaultEffectiveDate;
@@ -81,6 +84,6 @@ final class FhirCodeSystemUpdateRequest extends FhirResourceUpdateRequest {
 
 		return codeSystemOperations
 			.orElseThrow(() -> new NotImplementedException("FHIR CodeSystem resource creation is not configured."))
-			.update(context, fhirCodeSystem, owner, ownerProfileName, defaultEffectiveDate, bundleId);
+			.update(context, fhirCodeSystem, author, owner, ownerProfileName, defaultEffectiveDate, bundleId);
 	}
 }
