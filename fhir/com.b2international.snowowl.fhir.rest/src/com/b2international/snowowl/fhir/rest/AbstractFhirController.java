@@ -56,7 +56,8 @@ public abstract class AbstractFhirController extends AbstractRestService {
 
 	// Headers used in resource creation/udpate requests 
 	protected static final String X_EFFECTIVE_DATE = "X-Effective-Date";
-	protected static final String X_AUTHOR_PROFILE_NAME = "X-Author-Profile-Name";
+	protected static final String X_OWNER = "X-Owner";
+	protected static final String X_OWNER_PROFILE_NAME = "X-Owner-Profile-Name";
 	protected static final String X_BUNDLE_ID = "X-Bundle-Id";
 	
 	@Autowired

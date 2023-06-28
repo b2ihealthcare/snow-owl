@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ final class FhirValueSetUpdateRequest extends FhirResourceUpdateRequest {
 	@NotNull
 	private final Map<String, ResourceURI> systemUriOverrides;
 	
+	private final String author;
 	private final String owner;
 	private final String ownerProfileName;
 	private final LocalDate defaultEffectiveDate;
@@ -56,6 +57,7 @@ final class FhirValueSetUpdateRequest extends FhirResourceUpdateRequest {
 	public FhirValueSetUpdateRequest(
 		final ValueSet fhirValueSet,
 		final Map<String, ResourceURI> systemUriOverrides,
+		final String author,
 		final String owner, 
 		final String ownerProfileName,
 		final LocalDate defaultEffectiveDate, 
@@ -63,6 +65,7 @@ final class FhirValueSetUpdateRequest extends FhirResourceUpdateRequest {
 		
 		this.fhirValueSet = fhirValueSet;
 		this.systemUriOverrides = systemUriOverrides;
+		this.author = author;
 		this.owner = owner;
 		this.ownerProfileName = ownerProfileName;
 		this.defaultEffectiveDate = defaultEffectiveDate;
@@ -76,6 +79,6 @@ final class FhirValueSetUpdateRequest extends FhirResourceUpdateRequest {
 		
 		return valueSetWriteSupport
 			.orElseThrow(() -> new NotImplementedException("FHIR ValueSet resource creation is not configured."))
-			.update(context, fhirValueSet, systemUriOverrides, owner, ownerProfileName, defaultEffectiveDate, bundleId);
+			.update(context, fhirValueSet, systemUriOverrides, author, owner, ownerProfileName, defaultEffectiveDate, bundleId);
 	}
 }

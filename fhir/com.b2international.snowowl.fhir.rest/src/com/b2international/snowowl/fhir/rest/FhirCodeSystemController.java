@@ -100,13 +100,17 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@DateTimeFormat(iso = ISO.DATE)
 		final LocalDate defaultEffectiveDate,
 		
-		@Parameter(description = "The user identifier used for commits and set as the resource owner")
+		@Parameter(description = "The user identifier used for committing the change")
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author,
 		
-		@Parameter(description = "The user profile name to add to resource settings")
-		@RequestHeader(value = X_AUTHOR_PROFILE_NAME, required = false)
-		final String authorProfileName,
+		@Parameter(description = "The resource owner (if not set it will fall back to the X-Author header then to the current authenticated user id)")
+		@RequestHeader(value = X_OWNER, required = false)
+		final String owner,
+		
+		@Parameter(description = "The user profile name to add to resource settings for client purposes")
+		@RequestHeader(value = X_OWNER_PROFILE_NAME, required = false)
+		final String ownerProfileName,
 		
 		@Parameter(description = "The parent bundle's identifier (defaults to root if not present)")
 		@RequestHeader(value = X_BUNDLE_ID, required = false)
@@ -154,7 +158,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			.build();
 		
 		codeSystem.setChange(fhirCodeSystemWithId);
-		return update(generatedId, codeSystem, defaultEffectiveDate, author, authorProfileName, bundleId);
+		return update(generatedId, codeSystem, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
 		
 	}
 	
@@ -198,13 +202,17 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@DateTimeFormat(iso = ISO.DATE)
 		final LocalDate defaultEffectiveDate,
 		
-		@Parameter(description = "The user identifier used for commits and set as the resource owner")
+		@Parameter(description = "The user identifier used for committing the change")
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author,
 		
-		@Parameter(description = "The user profile name to add to resource settings")
-		@RequestHeader(value = X_AUTHOR_PROFILE_NAME, required = false)
-		final String authorProfileName,
+		@Parameter(description = "The resource owner (if not set it will fall back to the X-Author header then to the current authenticated user id)")
+		@RequestHeader(value = X_OWNER, required = false)
+		final String owner,
+		
+		@Parameter(description = "The user profile name to add to resource settings for client purposes")
+		@RequestHeader(value = X_OWNER_PROFILE_NAME, required = false)
+		final String ownerProfileName,
 		
 		@Parameter(description = "The parent bundle's identifier (defaults to root if not present)")
 		@RequestHeader(value = X_BUNDLE_ID, required = false)
@@ -224,8 +232,9 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		final FhirResourceUpdateResult updateResult = FhirRequests.codeSystems()
 			.prepareUpdate()
 			.setFhirCodeSystem(fhirCodeSystem)
-			.setOwner(author)
-			.setOwnerProfileName(authorProfileName)
+			.setAuthor(author)
+			.setOwner(owner)
+			.setOwnerProfileName(ownerProfileName)
 			.setBundleId(bundleId)
 			.setDefaultEffectiveDate(defaultEffectiveDate)
 			.buildAsync()
