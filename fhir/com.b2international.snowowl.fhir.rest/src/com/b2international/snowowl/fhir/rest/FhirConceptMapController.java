@@ -100,7 +100,7 @@ public class FhirConceptMapController extends AbstractFhirController {
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author,
 		
-		@Parameter(description = "The resource owner (if not set it will fall back to the current authenticated user id)")
+		@Parameter(description = "The resource owner (if not set it will fall back to the X-Author header then to the current authenticated user id)")
 		@RequestHeader(value = X_OWNER, required = false)
 		final String owner,
 		
@@ -197,7 +197,7 @@ public class FhirConceptMapController extends AbstractFhirController {
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author,
 		
-		@Parameter(description = "The resource owner (if not set it will fall back to the current authenticated user id)")
+		@Parameter(description = "The resource owner (if not set it will fall back to the X-Author header then to the current authenticated user id)")
 		@RequestHeader(value = X_OWNER, required = false)
 		final String owner,
 		
