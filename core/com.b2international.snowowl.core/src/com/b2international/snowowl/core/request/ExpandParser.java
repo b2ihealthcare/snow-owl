@@ -37,7 +37,41 @@ public class ExpandParser {
 
 	public static Options parse(final String expand) {
 		
-		String jsonizedOptionPart = String.format("{%s}", expand.replace("(", ":{").replace(')', '}'));
+		boolean inQuote = false;
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < expand.length(); i++) {
+			final char c = expand.charAt(i);
+			
+			switch (c) {
+				case '\"':
+					inQuote = !inQuote;
+					builder.append(c);
+					break;
+				
+				case '(':
+					if (!inQuote) {
+						builder.append(":{");
+					} else {
+						builder.append(c);
+					}
+					break;
+					
+				case ')':
+					if (!inQuote) {
+						builder.append("}");
+					} else {
+						builder.append(c);
+					}
+					break;
+					
+				default:
+					builder.append(c);
+					break;
+			}
+		}
+		
+		String jsonizedOptionPart = String.format("{%s}", builder.toString());
 
 		try {
 			JsonParser parser = JSON_FACTORY.createParser(jsonizedOptionPart);
