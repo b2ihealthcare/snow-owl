@@ -38,15 +38,26 @@ public class ExpandParser {
 	public static Options parse(final String expand) {
 		
 		boolean inQuote = false;
+		boolean backslash = false;
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < expand.length(); i++) {
 			final char c = expand.charAt(i);
 			
 			switch (c) {
-				case '\"':
-					inQuote = !inQuote;
+				case '\\':
+					backslash = !backslash;
 					builder.append(c);
+					break;
+			
+				case '\"':
+					if (!backslash) {
+						inQuote = !inQuote;
+					}
+					
+					builder.append(c);
+					
+					backslash = false;
 					break;
 				
 				case '(':
@@ -55,6 +66,8 @@ public class ExpandParser {
 					} else {
 						builder.append(c);
 					}
+					
+					backslash = false;
 					break;
 					
 				case ')':
@@ -63,9 +76,12 @@ public class ExpandParser {
 					} else {
 						builder.append(c);
 					}
+					
+					backslash = false;
 					break;
 					
 				default:
+					backslash = false;
 					builder.append(c);
 					break;
 			}

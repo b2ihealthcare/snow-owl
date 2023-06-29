@@ -50,6 +50,22 @@ public class ExpandParserTest {
 		assertEquals("(1234 OR 3425)", actualRefsets.getString("ecl"));
 	}
 	
+	@Test
+	public void parseEscapedQuote() throws Exception {
+		final Options actual = ExpandParser.parse("refsets(limit: 100, ecl: \"(1234 |Concept \\\"A(6)\\\"| OR 3425)\")");
+		final Options actualRefsets = actual.getOptions("refsets");
+		assertEquals(100, actualRefsets.get("limit"));
+		assertEquals("(1234 |Concept \"A(6)\"| OR 3425)", actualRefsets.getString("ecl"));
+	}
+	
+	@Test
+	public void parseLiteralBackslash() throws Exception {
+		final Options actual = ExpandParser.parse("refsets(limit: 100, ecl: \"(1234 |Concept \\\\7| OR 3425)\")");
+		final Options actualRefsets = actual.getOptions("refsets");
+		assertEquals(100, actualRefsets.get("limit"));
+		assertEquals("(1234 |Concept \\7| OR 3425)", actualRefsets.getString("ecl"));
+	}
+	
 	@Test(expected = BadRequestException.class)
 	public void parseNonJson() throws Exception {
 		ExpandParser.parse("refsets");
