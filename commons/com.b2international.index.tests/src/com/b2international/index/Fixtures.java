@@ -68,6 +68,9 @@ public class Fixtures {
 		private short shortField;
 		private Short shortWrapper;
 		
+		@Field(index = false)
+		private String unindexedValue;
+		
 		private LongSortedSet longSortedSet;
 
 		@JsonCreator
@@ -181,6 +184,14 @@ public class Fixtures {
 		
 		public void setLongSortedSet(LongSortedSet longSortedSet) {
 			this.longSortedSet = longSortedSet;
+		}
+		
+		public String getUnindexedValue() {
+			return unindexedValue;
+		}
+		
+		public void setUnindexedValue(String unindexedValue) {
+			this.unindexedValue = unindexedValue;
 		}
 
 		@Override

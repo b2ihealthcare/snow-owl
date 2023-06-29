@@ -314,6 +314,12 @@ public final class DocumentMapping {
 		final Class<?> fieldType = getFieldType(field);
 		return Map.class.isAssignableFrom(fieldType);
 	}
+	
+	public boolean isDocValuesEnabled(String field) {
+		Field f = getField(field);
+		com.b2international.index.mapping.Field fieldAnnotation = f.getAnnotation(com.b2international.index.mapping.Field.class);
+		return fieldAnnotation == null || fieldAnnotation.index() == true;
+	}
 
 	private static boolean isCollection(Class<?> fieldType) {
 		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.isArray();
