@@ -128,5 +128,14 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 			});
 		}
 	}
-	
+
+	@Override
+	public Collection<Request<?, ?>> getNestedRequests() {
+		// XXX: this method is primarily used for permission checking and so does not dig deeper into the nested request hierarchy
+		return ImmutableList.<Request<?, ?>>builder()
+			.add(this)
+			.addAll(super.getNestedRequests())
+			.build();
+
+	}
 }
