@@ -105,7 +105,10 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	@JsonIgnore
 	@Override
 	public Collection<Request<?, ?>> getNestedRequests() {
-		return ImmutableList.of(this, getNext());
+		return ImmutableList.<Request<?, ?>>builder()
+			.add(this)
+			.addAll(next.getNestedRequests())
+			.build();
 	}
 	
 	/**
