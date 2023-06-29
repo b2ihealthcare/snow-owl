@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.locks.DatastoreLockTests;
 import com.b2international.snowowl.core.locks.LockIndexTests;
 import com.b2international.snowowl.core.merge.MergeConflictSerializationTest;
 import com.b2international.snowowl.core.monitoring.ConsoleProgressMonitorTest;
+import com.b2international.snowowl.core.request.ExpandParserTest;
 import com.b2international.snowowl.core.request.SearchResourceRequestTest;
 import com.b2international.snowowl.core.request.SortParserTest;
 import com.b2international.snowowl.core.request.io.ImportResponseSerializationTest;
@@ -70,6 +71,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	PromiseTest.class,
 	RequestTest.class,
 	AttachmentRegistryTest.class,
+	ExpandParserTest.class,
 	SortParserTest.class,
 	MergeConflictSerializationTest.class,
 	ImportResponseSerializationTest.class,
