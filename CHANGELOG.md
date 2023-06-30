@@ -1,6 +1,28 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.11.0
+
+### Core
+- Support ECL expressions inside expand parameters (#1183)
+
+### FHIR
+- Add new `X-Owner` and `X-OwnerProfileAttribute` headers to specify ownership properly and allow a different user to commit the change via the `X-Author` header (#1181)
+
+### Bugs/Improvements
+- [mrcm] include unapproved attributes when validating concepts via MRCM (#1179)
+- [snomed] fix invalid Elasticsearch query when exporting query type reference sets (#1184)
+- [api] list SNOMED CT CodeSystems first when listing resources (e0ff6b0)
+- [api] prevent returning empty path segments in resource API when field is not selected (5d2502d)
+- [api] apply boost when filtering resources by title (5880ea5)
+- [api] fix incorrect `fields` parameter when expanding partial version objects (fb6f2c0)
+- [api] ensure we fall back to the server default `en` locale in FHIR API calls (54827a1)
+- [api] fix serialization issue when selecting fields for version objects (0728b78)
+- [fhir] ensure create and update operations are not allowed for ready-only API keys (#1174)
+- [authz] ensure nested requests are being checked when committing a bulk request (#1182)
+- [performance] load only the mandatory resource fields when translating concepts between codesystems (a3abfd4) 
+- [docs] upgrade API docs site to new rapidoc version (#1171)
+
 ## 8.10.4
 
 ### Bugs/Improvements
