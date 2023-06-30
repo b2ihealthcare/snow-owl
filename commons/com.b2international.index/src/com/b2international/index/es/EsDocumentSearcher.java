@@ -298,7 +298,7 @@ public class EsDocumentSearcher implements Searcher {
 	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
 		return fields
 			.stream()
-			.filter(field -> mapping.isCollection(field) || mapping.isMap(field))
+			.filter(field -> mapping.isCollection(field) || mapping.isMap(field) || !mapping.isDocValuesEnabled(field))
 			.findFirst()
 			.isPresent();
 	}

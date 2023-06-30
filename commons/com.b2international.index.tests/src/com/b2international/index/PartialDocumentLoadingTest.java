@@ -426,4 +426,26 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		assertEquals("field2_1", hit.get("field2").asText());
 	}
 	
+	@Test
+	public void selectNotIndexedFieldViaStringArray() {
+		final Data data1 = new Data(KEY1);
+		data1.setUnindexedValue("test");
+		final Data data2 = new Data(KEY2);
+		// second value is unset to test null value loading
+		data2.setUnindexedValue(null);
+		indexDocuments(data1, data2);
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(Data.class)
+				.fields("id", "unindexedValue")
+				.where(Expressions.matchAll())
+				.build();
+
+		final Hits<String[]> hits = search(query);
+		
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
+		assertEquals("test", hits.getHits().get(0)[1]);
+		assertEquals(null, hits.getHits().get(1)[1]);
+	}
+	
 }
