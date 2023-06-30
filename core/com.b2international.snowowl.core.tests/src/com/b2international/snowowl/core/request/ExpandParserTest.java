@@ -23,7 +23,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 
 /**
- * @since 8.11
+ * @since 8.11.0
  */
 public class ExpandParserTest {
 
