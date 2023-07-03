@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,5 +44,10 @@ public final class QueryExpression implements Serializable {
 
 	public boolean isPinned() {
 		return pinned;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("[%s]: %s (%b)", id, query, pinned);
 	}
 }
