@@ -678,14 +678,14 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 						optimizedInclusions.remove(idx);
 					}
 				}
-			}
-
-			// Did we manage to get under the limit?
-			if (optimizedInclusions.size() > maxClauseCount) {
-				log.info("Compaction could not decrease inclusion count {} below the maximum allowed {}", optimizedInclusions.size(), maxClauseCount);
-				canceled = true;
-			} else {
-				log.info("Compaction changed inclusion count from {} to {}", optimizedInclusions.size(), maxClauseCount);
+				
+				// Did we manage to get under the limit?
+				if (optimizedInclusions.size() > maxClauseCount) {
+					log.info("Compaction could not decrease inclusion count {} below the maximum allowed {}", optimizedInclusions.size(), maxClauseCount);
+					canceled = true;
+				} else {
+					log.info("Compaction changed inclusion count from {} to {}", optimizedInclusions.size(), maxClauseCount);
+				}
 			}
 
 			if (iteration > maxIteration) {
