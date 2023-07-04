@@ -339,7 +339,11 @@ public final class SimpleTaxonomyGraph {
 		final int ancestorIdx = getNodeIdx(ancestorId);
 		final SparseFixedBitSet descendantsOfAncestor = descendants[ancestorIdx];
 		
-		return descendantsOfAncestor.get(descendantIdx);
+		if (CompareUtils.isEmpty(descendantsOfAncestor)) {
+			return false;
+		} else {
+			return descendantsOfAncestor.get(descendantIdx);
+		}
 	}
 
 	public Set<String> getParentIds(final String nodeId) {
