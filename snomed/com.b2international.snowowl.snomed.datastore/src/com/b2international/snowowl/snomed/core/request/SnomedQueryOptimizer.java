@@ -67,9 +67,44 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 	public enum OptimizerStrategy {
 		DEFAULT,
-		SCORE_BOOST_1,
-		SCORE_BOOST_2,
-		LOSSY,
+		
+		SCORE_BOOST_1 {
+			// Boost scores with the fraction of the precision of direct children, for selected candidates
+			@Override
+			public float adjustScore(final float score, final int totalChildren, final float childPrecision) {
+				if (score < 0.4f && totalChildren > 6 && childPrecision > 0.8f) {
+					return score + childPrecision / 2.0f;
+				} else {
+					return super.adjustScore(score, totalChildren, childPrecision);
+				}
+			}
+		},
+		
+		SCORE_BOOST_2 {
+			// Boost scores with the precision of direct children for all candidates
+			@Override
+			public float adjustScore(float score, final int totalChildren, final float childPrecision) {
+				return score + childPrecision;
+			}
+		},
+		
+		LOSSY {
+			// Allow some false positives in lossy optimization mode
+			@Override 
+			public float getFalsePositiveThreshold(float value) { 
+				return value; 
+			}
+		};
+		
+		public float getFalsePositiveThreshold(final float value) {
+			// Default behavior is to disallow false positives
+			return 0.0f;
+		}
+
+		public float adjustScore(final float score, final int totalChildren, final float childPrecision) {
+			// Default behavior is to not modify scoring
+			return score;
+		}
 	}
 
 	@FunctionalInterface
@@ -222,7 +257,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		optimizeExclusions(context, exclusions, inclusionAncestors);
 
 		/* 
-		 * TODO: final compaction steps
+		 * TODO: final compaction steps are still missing:
 		 * 
 		 * - merge < and = clauses targeting the same concept to a single << clause
 		 * - remove = clause if a corresponding << clause exists  
@@ -232,6 +267,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		 * - remove duplicate clauses
 		 * - remove <X and <<X clauses if a corresponding <Y or <<Y clause exists and Y is an ancestor of X
 		 */
+		
 		final QueryExpressionDiff diff = QueryExpressionDiff.create(
 			context, 
 			inclusions, 
@@ -262,7 +298,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// See if concepts still to be processed can be converted to "* : c1 = c2" expressions
 		final SnomedRelationshipStats inclusionRelationshipStats = SnomedRelationshipStats.create(
 			context, 
-			conceptSet, 
+			conceptsToInclude, 
 			relationshipSearchBySource, 
 			relationshipSearchByTypeAndDestination);
 
@@ -271,7 +307,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		log.info("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
 		applyInclusions(context, refinementInclusions);
 
-		// Collect information about the concepts to include and their ancestors
+		// Collect information about the entire original concept set (ie. not the remaining set) and their ancestors
 		final SnomedHierarchyStats inclusionHierarchyStats = SnomedHierarchyStats.create(
 			context, 
 			conceptSet,
@@ -280,17 +316,26 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			conceptDescendantCountById);
 
 		// Save collected ancestors for comparing with exclusion ancestors later
-		final Set<String> inclusionAncestors =  ImmutableSet.copyOf(inclusionHierarchyStats.getAllAncestors());
-		inclusionHierarchyStats.filterAncestorsForInclusion(minimumClusterSize, conceptSet, optimizerStrategy, falsePositiveThreshold);
+		final Set<String> inclusionAncestors =  inclusionHierarchyStats.getAllAncestors();
+		// Exclude candidates that did not meet certain criteria
+		filterAncestorsForInclusion(inclusionHierarchyStats);
 
 		// Gather ancestors without any false positives
-		final List<QueryExpression> noFalsePositiveInclusions = inclusionHierarchyStats.optimizeNoFalsePositives(context, conceptSet, optimizerStrategy, falsePositiveThreshold);
+		final List<QueryExpression> noFalsePositiveInclusions = inclusionHierarchyStats.optimizeNoFalsePositives(
+			context, 
+			conceptSet, 
+			optimizerStrategy.getFalsePositiveThreshold(falsePositiveThreshold));
+		
 		log.info("Found {} inclusion(s) with a '<</<' expression that evaluate to existing members only", noFalsePositiveInclusions.size());
 		applyInclusions(context, noFalsePositiveInclusions, false);
 
-		// TODO: In lossy mode pinned exclusions should be removed when a "no false positive" inclusion covers them
+		/*
+		 * TODO: In lossy optimization mode pinned exclusions should be removed when a
+		 * "no false positive" inclusion (that, contrary to its name, _can_ include
+		 * false positives) covers them
+		 */
 
-		optimizeAncestors(context, inclusionHierarchyStats);
+		optimizeAncestorInclusions(context, inclusionHierarchyStats);
 
 		// Remaining concepts in "conceptsToInclude" are added as '=' inclusions
 		if (!conceptsToInclude.isEmpty()) {
@@ -300,7 +345,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final QueryExpression singleInclusion = new QueryExpression(IDs.base62UUID(), id, false);
 				optimizedInclusions.add(singleInclusion);
 
-				// Remove these concepts on the way out
+				// Remove these on the way out
 				return true;
 			});
 		}
@@ -333,7 +378,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			edgeSearchBySourceId,
 			conceptDescendantCountById);
 
-		exclusionHierarchyStats.filterAncestorsForExclusion(inclusionAncestors, minimumClusterSize, conceptsToExclude);
+		filterAncestorsForExclusion(exclusionHierarchyStats, inclusionAncestors);
 
 		// For exclusions, only ancestors without any false positives can be accepted
 		final List<QueryExpression> noFalsePositiveExclusions = exclusionHierarchyStats.optimizeNoFalsePositives(context, conceptsToExclude);
@@ -342,7 +387,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		// Remaining concepts in "conceptsToExclude" are added as '=' exclusions, or '<<' if the concept is a leaf (for future-proofing)
 		if (!conceptsToExclude.isEmpty()) {
-			log.info("Adding {} remaining concept(s) as a simple exclusion", conceptsToInclude.size());
+			log.info("Adding {} remaining concept(s) as a simple exclusion", conceptsToExclude.size());
 
 			conceptsToExclude.removeIf(id -> {
 				final String operator = exclusionHierarchyStats.totalChildren().count(id) == 0 ? "<<" : "=";
@@ -428,19 +473,50 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private void filterRefinementsForInclusion(final SnomedRelationshipStats relationshipStats) {
 		// a) Less than 95% precision
 		relationshipStats.filterByPrecision(0.95f);
-		// b) Less than ten true positive matches
+		// b) Less than ten true positive matches (a bit redundant as you need at least 19 true positive concepts to reach 95% above)
 		relationshipStats.filterByMinTruePositives(10);
 		// c) More than two false positive matches
 		relationshipStats.filterByMaxFalsePositives(2);
 	}
 	
-	public void filterRefinementsForExclusion(final SnomedRelationshipStats relationshipStats) {
-		// a) Less than 100% precision (we can not re-include things covered by an exclusion expression)
+	private void filterRefinementsForExclusion(final SnomedRelationshipStats relationshipStats) {
+		// a) Less than 100% precision (as we can not re-include things that are thrown out by an exclusion expression)
 		relationshipStats.filterByPrecision(1.0f);
 	}
+	
+	private void filterAncestorsForInclusion(final SnomedHierarchyStats hierarchyStats) {
+		// a) ancestor does not cover the minimum required members of the set
+		hierarchyStats.filterByClusterSize(minimumClusterSize);
+		// b) a non-member with a single member as its child -- there is no reason to replace "=child" with "<parent" in this case
+		hierarchyStats.filterSingleChildMember();
+
+		if (!OptimizerStrategy.LOSSY.equals(optimizerStrategy) || falsePositiveThreshold < 0.75f) {
+			// c) more false positive children than true positive children
+			hierarchyStats.filterByChildren();
+			// d) 10 or more children but less than 60% precision across children
+			hierarchyStats.filterByChildrenAndPrecision(9, 0.6f);
+		}
+
+		// e) ancestor has no false positives, but it has an _ancestor_ which has no false positives either (or at most 1 and is a non-member)
+		hierarchyStats.filterRedundantNoFalsePositives(conceptSet);
+	}
+
+	private void filterAncestorsForExclusion(final SnomedHierarchyStats hierarchyStats, final Set<String> inclusionAncestors) { 
+		// No ancestor of an included concept can be used for exclusions -- it would remove at least one concept we want to keep in the set. 
+		hierarchyStats.removeCandidates(inclusionAncestors);
+
+		// a) ancestor does not cover the minimum required members of the set
+		hierarchyStats.filterByClusterSize(minimumClusterSize);
+		// b) a non-member with a single member as its child -- there is no reason to replace "=child" with "<parent" in this case
+		hierarchyStats.filterSingleChildMember();
+		// c) more false positive children than true positive children
+		hierarchyStats.filterByChildren();
+		// d) ancestor has no false positives, but it has an _ancestor_ which has no false positives either (or at most 1 and is a non-member)
+		hierarchyStats.filterRedundantNoFalsePositives(conceptsToExclude);
+	}	
 
 	// Compute scores, then iterate over the best candidates with an acceptable fit in decreasing order
-	private void optimizeAncestors(final BranchContext context, final SnomedHierarchyStats inclusionHierarchyStats) {
+	private void optimizeAncestorInclusions(final BranchContext context, final SnomedHierarchyStats inclusionHierarchyStats) {
 
 		final LongKeyFloatMap ancestorScores = inclusionHierarchyStats.initAncestorScores(
 			context, 

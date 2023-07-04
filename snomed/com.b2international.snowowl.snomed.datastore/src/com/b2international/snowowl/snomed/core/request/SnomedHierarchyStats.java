@@ -39,8 +39,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
 
 /**
  * @since 8.11.0
@@ -113,9 +113,25 @@ public record SnomedHierarchyStats(
 	) {
 		// How many member concepts do we find if we use this ancestor in a descendant-of or descendant-or-self-of expression?
 		final Multiset<String> positiveDescendantsAndSelf = HashMultiset.create();
-
 		// The same counter, but restricted to direct children only (at the moment this only guides optimization)
 		final Multiset<String> positiveChildren = HashMultiset.create();
+		// How many descendants does each ancestor have in total (relevant and irrelevant ones)?
+		final Multiset<String> totalDescendantsAndSelf = HashMultiset.create();
+		// How many direct children does each ancestor have in total (relevant and irrelevant ones)?
+		final Multiset<String> totalChildren = HashMultiset.create();
+
+		if (conceptIds.isEmpty()) {
+			// No input concepts
+			final SimpleTaxonomyGraph emptyGraph = new SimpleTaxonomyGraph(1, 1);
+			emptyGraph.build();
+			
+			return new SnomedHierarchyStats(
+				emptyGraph, 
+				positiveDescendantsAndSelf, 
+				positiveChildren, 
+				totalDescendantsAndSelf, 
+				totalChildren);	
+		}
 
 		conceptSearchById.findConceptsById(context, conceptIds)
 			.forEachOrdered(c -> {
@@ -144,16 +160,11 @@ public record SnomedHierarchyStats(
 
 		graph.build();
 
-		// How many descendants does each ancestor have in total (relevant and irrelevant ones)?
-		final Multiset<String> totalDescendantsAndSelf = HashMultiset.create();
-
-		// +1 is added to the descendants count for the "and self" part
+		// +1 is added to the total descendants count for the "and self" part
 		conceptDescendantCountById.findConceptDescendantCountById(context, positiveDescendantsAndSelf.elementSet(), false)
 			.forEachOrdered(c -> totalDescendantsAndSelf.setCount(c.getId(), c.getDescendants().getTotal() + 1));
 
-		final Multiset<String> totalChildren = HashMultiset.create();
-
-		// No +1 for the child concept counter
+		// No +1 for the total children counter however
 		conceptDescendantCountById.findConceptDescendantCountById(context, positiveChildren.elementSet(), true)
 			.forEachOrdered(c -> totalChildren.setCount(c.getId(), c.getDescendants().getTotal()));
 
@@ -166,108 +177,64 @@ public record SnomedHierarchyStats(
 	}
 
 	public Set<String> getAllAncestors() {
-		return totalDescendantsAndSelf.elementSet();
+		return ImmutableSet.copyOf(positiveDescendantsAndSelf.elementSet());
 	}
 
-	public void filterAncestorsForInclusion(
-		final int minimumClusterSize, 
-		final Set<String> conceptIds, 
-		final OptimizerStrategy optimizerStrategy, 
-		final float falsePositiveThreshold
-	) {
-		final Set<Entry<String>> positiveEntrySet = positiveDescendantsAndSelf.entrySet();
-
-		filterByClusterSize(minimumClusterSize, positiveEntrySet);
-		filterSingleChildren(positiveEntrySet);
-
-		if (!OptimizerStrategy.LOSSY.equals(optimizerStrategy) || falsePositiveThreshold < 0.75f) {
-			filterByChildren(positiveEntrySet);
-			filterByChildrenAndScore(positiveEntrySet);
-		}
-
-		filterRedundantNoFalsePositives(conceptIds, positiveEntrySet);
-	}
-
-	public void filterAncestorsForExclusion(
-		final Set<String> inclusionAncestors, 
-		final int minimumClusterSize, 
-		final Set<String> conceptIds
-	) {
-		// No ancestor of an included concept can be used for exclusions -- it would remove at least one concept we want to keep in the set. 
-		removeCandidates(inclusionAncestors);
-
-		final Set<Entry<String>> positiveEntrySet = positiveDescendantsAndSelf.entrySet();
-
-		filterByClusterSize(minimumClusterSize, positiveEntrySet);
-		filterSingleChildren(positiveEntrySet);
-		filterByChildren(positiveEntrySet);
-		filterRedundantNoFalsePositives(conceptIds, positiveEntrySet);
-	}
-
-	// a) ancestor does not cover the minimum required members of the set
-	private void filterByClusterSize(final int minimumClusterSize, final Set<Entry<String>> positiveEntrySet) {
-		positiveEntrySet.removeIf(e -> {
-			final int truepos = e.getCount();
-			return truepos < minimumClusterSize;	
+	public void filterByClusterSize(final int minimumClusterSize) {
+		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
+			final int truePositives = e.getCount();
+			return truePositives < minimumClusterSize;	
 		});
 	}
 
-	// b) a non-member with a single member as its child -- there is no reason to replace "=child" with "<parent" in this case
-	private void filterSingleChildren(final Set<Entry<String>> positiveEntrySet) {
-		positiveEntrySet.removeIf(e -> {
-			final int truepos = e.getCount();
-			final int children = totalChildren.count(e.getElement());
-			// "truepos" would be 2 if the concept itself is also a member
-			return children == 1 && truepos == 1;
+	public void filterSingleChildMember() {
+		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
+			final int truePositives = e.getCount();
+			final int total = totalDescendantsAndSelf.count(e.getElement());
+			// "truePositives" would be 2 if the concept itself is also a member
+			return total == 2 && truePositives == 1;
 		});
 	}
 
-	// c) more false positive children than true positive children
-	private void filterByChildren(final Set<Entry<String>> positiveEntrySet) {
-		positiveEntrySet.removeIf(e -> {
+	public void filterByChildren() {
+		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
+			final int truePositives = positiveChildren.count(e.getElement());
 			final int total = totalChildren.count(e.getElement());
-			final int truepos = positiveChildren.count(e.getElement());
-			final int falsepos = total - truepos;
-			return falsepos > truepos;
+			final int falsePositives = total - truePositives;
+			return falsePositives > truePositives;
 		});
 	}
-
-	// d) 10 or more children but less than 60% precision across children
-	private void filterByChildrenAndScore(final Set<Entry<String>> positiveEntrySet) {
-		positiveEntrySet.removeIf(e -> {
+	
+	public void filterByChildrenAndPrecision(final int childLimit, final float precisionThreshold) {
+		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
+			final int trueposPositives = positiveChildren.count(e.getElement());
 			final int total = totalChildren.count(e.getElement());
-			final int truepos = positiveChildren.count(e.getElement());
-			final float score = ((float) truepos) / total;
-			return total > 9 && score < 0.6f;
+			final float precision = ((float) trueposPositives) / total;
+			return total > childLimit && precision < precisionThreshold;
 		});
 	}
 
-	// e) ancestor has no false positives, but it has an _ancestor_ which has no false positives either (or at most 1 and is a non-member)
-	private void filterRedundantNoFalsePositives(final Set<String> conceptIds, final Set<Entry<String>> positiveEntrySet) {
-		@SuppressWarnings("unchecked")
-		final Entry<String>[] positiveArray = positiveEntrySet.toArray(Entry[]::new);
+	public void filterRedundantNoFalsePositives(final Set<String> memberIds) {
+		final Set<String> allAncestors = getAllAncestors();
 		final Set<String> redundantIds = newHashSet();
 
-		for (int i = 0; i < positiveArray.length; i++) {
-			for (int j = 0; j < positiveArray.length; j++) {
-				if (i == j) { continue; }
+		for (String conceptId1 : allAncestors) {
+			for (String conceptId2 : allAncestors) {
+				if (conceptId1.equals(conceptId2)) { continue; }
 
-				final Entry<String> pos1 = positiveArray[i];
-				final String conceptId1 = pos1.getElement();
-				final int truepos1 = pos1.getCount(); 
+				final int truePositives1 = positiveDescendantsAndSelf.count(conceptId1); 
 				final int total1 = totalDescendantsAndSelf.count(conceptId1);
-				final int trueneg1 = total1 - truepos1;
+				final int falsePositives1 = total1 - truePositives1;
 
-				final Entry<String> pos2 = positiveArray[j];
-				final String conceptId2 = pos2.getElement();
-				final int truepos2 = pos2.getCount(); 
+				final int truePositives2 = positiveDescendantsAndSelf.count(conceptId2); 
 				final int total2 = totalDescendantsAndSelf.count(conceptId2);
-				final int trueneg2 = total2 - truepos2;
+				final int falsePositives2 = total2 - truePositives2;
 
-				if (trueneg1 == 0 && (trueneg2 == 0 || (trueneg2 == 1 && !conceptIds.contains(conceptId2)))) {
-					if (graph.subsumes(conceptId1, conceptId2)) {
-						redundantIds.add(conceptId1);
-					}
+				if (falsePositives1 == 0 
+					&& falsePositives2 == (memberIds.contains(conceptId2) ? 0 : 1)
+					&& graph.subsumes(conceptId1, conceptId2)) {
+
+					redundantIds.add(conceptId1);
 				}
 			}
 		}
@@ -276,30 +243,41 @@ public record SnomedHierarchyStats(
 		redundantIds.clear();
 	}
 
-	public List<QueryExpression> optimizeNoFalsePositives(
-		final BranchContext context,
-		final Set<String> conceptIds, 
-		final OptimizerStrategy optimizerStrategy, 
-		final float falsePositiveThreshold
-	) {
+	public void removeCandidates(final Set<String> conceptIds) {
+		// Remove counters from the first Multimap...
+		final Set<String> positiveElementSet = positiveDescendantsAndSelf.elementSet();
+		positiveElementSet.removeAll(conceptIds);
+
+		// ...then retain the same set of keys across all Multimaps
+		totalDescendantsAndSelf.elementSet().retainAll(positiveElementSet);
+		positiveChildren.elementSet().retainAll(positiveElementSet);
+		totalChildren.elementSet().retainAll(positiveElementSet);
+	}
+
+	public List<QueryExpression> optimizeNoFalsePositives(final BranchContext context, final Set<String> memberIds) {
+		return optimizeNoFalsePositives(context, memberIds, 0.0f);
+	}
+
+	public List<QueryExpression> optimizeNoFalsePositives(final BranchContext context, final Set<String> memberIds, final float falsePositiveThreshold) {
 		final Set<String> noFalsePositives = positiveDescendantsAndSelf.entrySet()
 			.stream()
 			.filter(e -> {
 				final String conceptId = e.getElement();
-				final int truepos = e.getCount();
+				final int truePositives = e.getCount();
 				final int total = totalDescendantsAndSelf.count(conceptId);
-				final int falsepos = total - truepos; 
+				final int falsePositives = total - truePositives; 
 
-				// Accept some false positives if lossy optimizer is enabled
-				if (OptimizerStrategy.LOSSY.equals(optimizerStrategy)) {
-					final float ratio = ((float) falsepos) / total;
-					if (ratio < falsePositiveThreshold) {
+				// Accept some false positives if allowed
+				if (falsePositiveThreshold > 0.0f) {
+					final float falsePositiveRate = ((float) falsePositives) / total;
+					if (falsePositiveRate < falsePositiveThreshold) {
 						return true;
 					}
 				}
 
-				final boolean member = conceptIds.contains(conceptId);
-				return falsepos == (member ? 0 : 1);
+				// Otherwise check if the concept is the only false positive (if not a member), or there are no false positives at all
+				final boolean member = memberIds.contains(conceptId);
+				return falsePositives == (member ? 0 : 1);
 			})
 			.map(e -> e.getElement())
 			.collect(Collectors.toSet());
@@ -309,29 +287,11 @@ public record SnomedHierarchyStats(
 
 		return noFalsePositives.stream()
 			.map(ancestorId -> {
-				final boolean member = conceptIds.contains(ancestorId);
+				final boolean member = memberIds.contains(ancestorId);
 				final String operator = member ? "<<" : "<";
 				return new QueryExpression(IDs.base62UUID(), String.format("%s %s", operator, ancestorId), false);
 			})
-			.toList();
-	}
-
-	public List<QueryExpression> optimizeNoFalsePositives(
-		final BranchContext context, 
-		final Set<String> conceptIds
-	) {
-		return optimizeNoFalsePositives(context, conceptIds, OptimizerStrategy.DEFAULT, 0.0f);
-	}
-
-	private void removeCandidates(final Set<String> conceptIds) {
-		// Remove counters from the first Multimap...
-		final Set<String> positiveElementSet = positiveDescendantsAndSelf.elementSet();
-		positiveElementSet.removeAll(conceptIds);
-
-		// ...then retain the same set of keys across all Multimaps
-		positiveChildren.elementSet().retainAll(positiveElementSet);
-		totalChildren.elementSet().retainAll(positiveElementSet);
-		totalDescendantsAndSelf.elementSet().retainAll(positiveElementSet);
+			.collect(Collectors.toList());
 	}
 
 	public LongKeyFloatMap initAncestorScores(
@@ -346,53 +306,36 @@ public record SnomedHierarchyStats(
 
 		positiveDescendantsAndSelf.entrySet().forEach(e -> {
 			final String id = e.getElement();
-			final long idAsLong = Long.parseLong(id);
 
-			final int truepos = e.getCount();
+			final int truePositives = e.getCount();
 			final int total = totalDescendantsAndSelf.count(id);
-			float score = ((float) truepos) / total;
+			float precision = ((float) truePositives) / total;
 
-			final int truechildren = positiveChildren.count(id); 
-			final int allchildren = totalChildren.count(id); 
-			final float childScore = ((float) truechildren) / allchildren;
+			final int truePositiveChildren = positiveChildren.count(id); 
+			final int allChildren = totalChildren.count(id); 
+			final float childPrecision = ((float) truePositiveChildren) / allChildren;
 
-			switch (optimizerStrategy) {
-			case DEFAULT:
-				// Nothing to do
-				break;
-
-			case SCORE_BOOST_1:
-				// Boost scores with the fraction of the precision of direct children, for selected candidates
-				if (score < 0.4f && allchildren > 6 && childScore > 0.8f) {
-					score += childScore / 2.0f;
-				}
-				break;
-
-			case SCORE_BOOST_2:
-				// Boost scores with the precision of direct children for all candidates
-				score += childScore;
-				break;
-
-			case LOSSY:
-				// Nothing to do here either
-				break;
-
-			default:
-				throw new IllegalArgumentException("Unexpected optimizer strategy: " + optimizerStrategy);
-			}
+			// Apply boost based on the currently selected strategy
+			precision = optimizerStrategy.adjustScore(precision, allChildren, childPrecision);
 
 			// Slightly lower the rating of non-member ancestors
 			if (!conceptSet.contains(id)) {
-				score *= 0.95f;
+				precision *= 0.95f;
 			}
 
-			// How many clauses would we get for the original concept set if we take the coverage of this ancestor?
-			if (score > 0.0f && score < 0.7f) {
-				final float numClauses = ((float) conceptSet.size()) / truepos;
-				score *= Math.pow(1.0 / Math.abs(numClauses - zoom + 1), clauseCountWeighting);
+			if (precision > 0.0f && precision < 0.7f) {
+				/*
+				 * How many clauses would we get for the original concept set if we assume that
+				 * all clauses cover the number of concepts taken care of by this ancestor?
+				 */
+				final float numClauses = ((float) conceptSet.size()) / truePositives;
+				
+				// Reflect this information in the ancestor score with exponential weighting
+				precision *= Math.pow(1.0 / Math.abs(numClauses - zoom + 1), clauseCountWeighting);
 			}
 
-			ancestorScore.put(idAsLong, score);
+			final long idAsLong = Long.parseLong(id);
+			ancestorScore.put(idAsLong, precision);
 		});
 
 		return ancestorScore;
