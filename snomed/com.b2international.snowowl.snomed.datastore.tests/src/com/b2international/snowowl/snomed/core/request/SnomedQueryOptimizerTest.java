@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.request;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -29,6 +28,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.eclipse.xtext.parser.IParser;
@@ -56,11 +57,17 @@ import com.b2international.snowowl.core.ecl.EclSerializer;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.core.request.ecl.EclRewriter;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptDescendantCountById;
+import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptSearchById;
+import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.EdgeSearchBySourceId;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer.EclEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.RelationshipSearchBySource;
 import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.RelationshipSearchByTypeAndDestination;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
+import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.google.common.collect.Iterables;
 import com.google.inject.Injector;
 
@@ -75,6 +82,11 @@ public class SnomedQueryOptimizerTest {
 		@Override
 		protected void starting(final Description description) {
 			System.out.println("============== " + description + " ================");
+		}
+		
+		@Override
+		protected void finished(final Description description) {
+			System.out.println();
 		}
 	};
 
@@ -109,8 +121,8 @@ public class SnomedQueryOptimizerTest {
 
 		optimizer.setConceptSearchById((context, conceptIds) -> Stream.empty());
 		optimizer.setConceptDescendantCountById((context, conceptIds, direct) -> Stream.empty());
-
 		optimizer.setEdgeSearchBySourceId((context, sourceIds) -> Stream.empty());
+
 		optimizer.setRelationshipSearchBySource((context, sourceIds) -> Stream.empty());
 		optimizer.setRelationshipSearchByTypeAndDestination((context, typeIds, destinationIds) -> Stream.empty());
 	}
@@ -135,6 +147,9 @@ public class SnomedQueryOptimizerTest {
 
 		final QueryExpression inclusion = new QueryExpression(IDs.base62UUID(), "131148009", false); // Bleeding
 
+		final EclEvaluator evaluator = (context, expression, pageSize) -> Stream.of(expression);
+		optimizer.setEvaluator(evaluator);
+		
 		final Options optimizeOptions = Options.builder()
 			.put(QueryOptimizer.OptionKey.INCLUSIONS, List.<QueryExpression>of(inclusion))
 			.put(QueryOptimizer.OptionKey.EXCLUSIONS, List.<QueryExpression>of())
@@ -148,7 +163,7 @@ public class SnomedQueryOptimizerTest {
 	}
 
 	@Test
-	public void testPinnedInclusions() throws Exception {
+	public void testRedundantPinnedInclusions() throws Exception {
 
 		final QueryExpression pinned1 = new QueryExpression(IDs.base62UUID(), "< 80631005", true); // Clinical stage finding
 		final QueryExpression pinned2 = new QueryExpression(IDs.base62UUID(), "13104003 OR 60333009 OR 50283003 OR 2640006", true); // Children of "Clinical stage finding"
@@ -174,58 +189,61 @@ public class SnomedQueryOptimizerTest {
 	}
 
 	@Test
-	public void testRelationshipRefinement() throws Exception {
+	public void testOptimizeToRefinement() throws Exception {
 
-		final Set<String> calculusFindings = Set.of(
-			"833292002", // Calcium oxalate calculus of bladder (disorder)
-			"833291009", // Calcium oxalate calculus of kidney (disorder)
-			"444717006", // Calcium oxalate urolithiasis (disorder)
-			"427649000", // Calcium renal calculus (disorder)
-			"23754003",  // Calculous pyelonephritis (disorder)
-			"313413008", // Calculus finding (finding)
-			"266474003", // Calculus in biliary tract (disorder)
-			"236709004", // Calculus in calyceal diverticulum (disorder)
-			"18109005",  // Calculus in diverticulum of bladder (disorder)
-			"236711008"  // Calculus in pelviureteric junction (disorder)
-		);
+		// 57 members + 3 non-members = 60 total (0.95 precision)
+		final Set<String> members = IntStream.range(0, 57)
+			.mapToObj(i -> RandomSnomedIdentiferGenerator.generateConceptId())
+			.collect(Collectors.toSet());
 
 		final Set<String> nonMembers = Set.of(
 			"396717008", // Crow
-			"74353003"   // Egret
+			"74353003",  // Egret
+			"33964005"   // Wild bird
 		);
 
-		final List<QueryExpression> inclusions = calculusFindings.stream()
+		final List<QueryExpression> inclusions = members.stream()
 			.map(id -> new QueryExpression(IDs.base62UUID(), id, false))
 			.toList();
 
+		// The ECL evaluator should respond to the refinement query, but otherwise assume that all other ECL expressions are single-concept ones
 		final EclEvaluator evaluator = mock(EclEvaluator.class, i -> Stream.of(i.getArgument(1, String.class)));
-		when(evaluator.evaluateEcl(any(), eq("* : 116676008 = 56381008"), anyInt())).thenAnswer(i -> calculusFindings.stream());
+		when(evaluator.evaluateEcl(any(), eq("* : 116676008 = 56381008"), anyInt())).thenAnswer(i -> members.stream());
 
-		// All concepts will have an "Associated morphology = Calculus" relationship
 		final RelationshipSearchBySource relationshipSearchBySource = mock(RelationshipSearchBySource.class, i -> Stream.of());
-		when(relationshipSearchBySource.findRelationshipsBySource(any(), eq(calculusFindings)))
+		when(relationshipSearchBySource.findRelationshipsBySource(any(), eq(members)))
 			.thenAnswer(i -> {
 				final Set<String> sourceIds = i.getArgument(1); 
 				final List<SnomedRelationship> relationships = newArrayList();
 	
 				int idx = 0;
 				for (final String id : sourceIds) {
+					
+					// All members will have an "Associated morphology = Calculus" relationship
 					final SnomedRelationship r1 = new SnomedRelationship();
 					r1.setSourceId(id);
 					r1.setTypeId("116676008"); // Associated morphology
 					r1.setDestinationId("56381008"); // Calculus
 					r1.setRelationshipGroup(0);
-	
 					relationships.add(r1);
 	
+					// Same for "Severity = Severe"
+					final SnomedRelationship r2 = new SnomedRelationship();
+					r2.setSourceId(id);
+					r2.setTypeId("246112005"); // Severity
+					r2.setDestinationId("24484000"); // Severe
+					r2.setRelationshipGroup(0);
+					relationships.add(r2);
+					
 					if (idx % 2 == 0) {
-						final SnomedRelationship r2 = new SnomedRelationship();
-						r2.setSourceId(id);
-						r2.setTypeId("363698007"); // Finding site
-						r2.setDestinationId("123037004"); // Body structure
-						r2.setRelationshipGroup(0);
-	
-						relationships.add(r2);
+						
+						// Only half of them will have a "Finding site = Body structure" relationship however
+						final SnomedRelationship r3 = new SnomedRelationship();
+						r3.setSourceId(id);
+						r3.setTypeId("363698007"); // Finding site
+						r3.setDestinationId("123037004"); // Body structure
+						r3.setRelationshipGroup(0);
+						relationships.add(r3);
 					}
 	
 					idx++;
@@ -235,55 +253,63 @@ public class SnomedQueryOptimizerTest {
 			});
 
 		final RelationshipSearchByTypeAndDestination relationshipSearchByTypeAndDestination = mock(RelationshipSearchByTypeAndDestination.class, i -> Stream.of());
-		when(relationshipSearchByTypeAndDestination.findRelationshipsByTypeAndDestination(any(), eq(Set.of("116676008", "363698007")), eq(Set.of("56381008", "123037004"))))
+		final Set<String> typeIds = Set.of("116676008", "246112005", "363698007");
+		final Set<String> destinationIds = Set.of("56381008", "24484000", "123037004");
+		when(relationshipSearchByTypeAndDestination.findRelationshipsByTypeAndDestination(any(), eq(typeIds), eq(destinationIds)))
 			.thenAnswer(i -> {
-				final Set<String> sourceIds = newHashSet(calculusFindings);
 				final List<SnomedRelationship> relationships = newArrayList();
 	
 				int idx = 0;
-				for (final String id : sourceIds) {
+				for (final String id : members) {
 	
 					// Achieve 100% precision on this type-destination pair by using all calculus finding concepts
 					final SnomedRelationship r1 = new SnomedRelationship();
-					
 					r1.setSourceId(id);
 					r1.setTypeId("116676008"); // Associated morphology
 					r1.setDestinationId("56381008"); // Calculus
 					r1.setRelationshipGroup(0);
-	
 					relationships.add(r1);
 	
+					final SnomedRelationship r2 = new SnomedRelationship();
+					r2.setSourceId(id);
+					r2.setTypeId("246112005"); // Severity
+					r2.setDestinationId("24484000"); // Severe
+					r2.setRelationshipGroup(0);
+					relationships.add(r2);
+
 					if (idx % 2 == 0) {
-						// Achieve 71% precision (5 good, 7 total) on this type-destination pair by including two non-member concepts
-						final SnomedRelationship r2 = new SnomedRelationship();
-						
-						r2.setSourceId(id);
-						r2.setTypeId("363698007"); // Finding site
-						r2.setDestinationId("123037004"); // Body structure
-						r2.setRelationshipGroup(0);
-	
-						relationships.add(r2);
+						final SnomedRelationship r3 = new SnomedRelationship();
+						r3.setSourceId(id);
+						r3.setTypeId("363698007"); // Finding site
+						r3.setDestinationId("123037004"); // Body structure
+						r3.setRelationshipGroup(0);
+						relationships.add(r3);
 					}
 	
 					idx++;
 				}
 	
 				for (final String id : nonMembers) {
-					final SnomedRelationship r2 = new SnomedRelationship();
 					
+					// With three non-member concepts, the 95% stage is passed but the "less than 3 false positives" isn't
+					final SnomedRelationship r2 = new SnomedRelationship();
 					r2.setSourceId(id);
-					r2.setTypeId("363698007"); // Finding site
-					r2.setDestinationId("123037004"); // Body structure
+					r2.setTypeId("246112005"); // Severity
+					r2.setDestinationId("24484000"); // Severe
 					r2.setRelationshipGroup(0);
-	
 					relationships.add(r2);
+
+					// Non-member concepts brings precision down to 90% (27/30)
+					final SnomedRelationship r3 = new SnomedRelationship();
+					r3.setSourceId(id);
+					r3.setTypeId("363698007"); // Finding site
+					r3.setDestinationId("123037004"); // Body structure
+					r3.setRelationshipGroup(0);
+					relationships.add(r3);
 				}
 	
 				return relationships.stream();
 			});
-
-		// We will not test the "less than 10 true positives" filter as 19 concepts are needed to pass the 95% bar (19 / (19 + 1) = 0.95))
-		// We will not test the "more than 2 non-members" filter as 38 concepts are needed to pass the 95% bar (38 / (38 + 2) = 0.95))
 
 		optimizer.setEvaluator(evaluator);
 		optimizer.setRelationshipSearchBySource(relationshipSearchBySource);
@@ -305,7 +331,85 @@ public class SnomedQueryOptimizerTest {
 			.extracting(QueryExpression::getQuery)
 			.containsExactly("* : 116676008 = 56381008");
 
+		assertThat(diff.getAddToExclusion())
+			.isEmpty();
+		
 		assertThat(diff.getRemove())
 			.containsAll(inclusions);
+	}
+	
+	@Test
+	public void testOptimizeToDescendantOrSelf() throws Exception {
+		final QueryExpression include = new QueryExpression(IDs.base62UUID(), "80631005 OR 13104003 OR 60333009 OR 50283003 OR 2640006", false); // "Clinical stage finding" and children
+
+		final EclEvaluator evaluator = mock(EclEvaluator.class, i -> Stream.empty());
+		when(evaluator.evaluateEcl(any(), eq("<< 80631005"), anyInt())).thenAnswer(i -> Stream.of("80631005", "13104003", "60333009", "50283003", "2640006"));
+		when(evaluator.evaluateEcl(any(), eq("80631005 OR 13104003 OR 60333009 OR 50283003 OR 2640006"), anyInt())).thenAnswer(i -> Stream.of("80631005", "13104003", "60333009", "50283003", "2640006"));
+		optimizer.setEvaluator(evaluator);
+
+		final ConceptSearchById conceptSearchById = (context, conceptIds) -> conceptIds.stream()
+			.map(id -> {
+				final SnomedConcept c = new SnomedConcept(id);
+				c.setAncestorIds(List.of(SnomedConcept.ROOT_ID));
+				
+				if ("80631005".equals(id)) {
+					c.setParentIds(List.of(SnomedConcept.ROOT_ID));
+				} else {
+					c.setParentIds(List.of("80631005"));
+				}
+				
+				return c;
+			});
+		
+		final ConceptDescendantCountById conceptDescendantCountById = (context, conceptIds, direct) -> conceptIds.stream()
+			.map(id -> {
+				final SnomedConcept c = new SnomedConcept(id);
+
+				if ("80631005".equals(id)) {
+					// 4 children and descendants
+					c.setDescendants(new SnomedConcepts(0, 4));
+				} else {
+					// All other concepts are leaves
+					c.setDescendants(new SnomedConcepts(0, 0));
+				}
+				
+				return c;
+			});
+		
+		final EdgeSearchBySourceId edgeSearchBySourceId = (context, sourceIds) -> sourceIds.stream()
+			.filter(id -> !"80631005".equals(id))
+			.map(id -> {
+				// Relationships point from children to the parent
+				final SnomedRelationship r = new SnomedRelationship();
+				r.setSourceId(id);
+				r.setDestinationId("80631005");
+				return r;
+			});
+				
+		optimizer.setConceptSearchById(conceptSearchById);
+		optimizer.setConceptDescendantCountById(conceptDescendantCountById);
+		optimizer.setEdgeSearchBySourceId(edgeSearchBySourceId);
+		
+		final Options optimizeOptions = Options.builder()
+			.put(QueryOptimizer.OptionKey.INCLUSIONS, List.<QueryExpression>of(include))
+			.put(QueryOptimizer.OptionKey.EXCLUSIONS, List.<QueryExpression>of())
+			.put(QueryOptimizer.OptionKey.LOCALES, null)
+			.put(QueryOptimizer.OptionKey.LIMIT, 100)
+			.build();
+
+		final QueryExpressionDiffs diffs = optimizer.optimize(context, optimizeOptions);
+		assertThat(diffs.getItems()).hasSize(1);
+		assertThat(diffs.isHasMoreOptimizations()).isFalse();
+
+		final QueryExpressionDiff diff = Iterables.getOnlyElement(diffs);
+		assertThat(diff.getAddToInclusion())
+			.extracting(QueryExpression::getQuery)
+			.containsExactly("<< 80631005");
+
+		assertThat(diff.getAddToExclusion())
+			.isEmpty();
+		
+		assertThat(diff.getRemove())
+			.containsExactly(include);
 	}
 }
