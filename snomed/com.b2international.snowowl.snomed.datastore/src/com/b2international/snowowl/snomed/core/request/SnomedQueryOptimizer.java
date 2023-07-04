@@ -266,8 +266,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			relationshipSearchBySource, 
 			relationshipSearchByTypeAndDestination);
 
-		inclusionRelationshipStats.filterRefinementsForInclusion();
-		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements(context, conceptSet);
+		filterRefinementsForInclusion(inclusionRelationshipStats);
+		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements(context);
 		log.info("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
 		applyInclusions(context, refinementInclusions);
 
@@ -321,8 +321,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			relationshipSearchBySource,
 			relationshipSearchByTypeAndDestination);
 
-		exclusionRelationshipStats.filterRefinementsForExclusion();
-		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements(context, conceptsToExclude);
+		filterRefinementsForExclusion(exclusionRelationshipStats);
+		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements(context);
 		log.info("Found {} exclusion(s) using a refinement expression", refinementExclusions.size());
 		applyExclusions(context, refinementExclusions);
 
@@ -423,6 +423,20 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		});
 
 		newInclusions.clear();
+	}
+
+	private void filterRefinementsForInclusion(final SnomedRelationshipStats relationshipStats) {
+		// a) Less than 95% precision
+		relationshipStats.filterByPrecision(0.95f);
+		// b) Less than ten true positive matches
+		relationshipStats.filterByMinTruePositives(10);
+		// c) More than two false positive matches
+		relationshipStats.filterByMaxFalsePositives(2);
+	}
+	
+	public void filterRefinementsForExclusion(final SnomedRelationshipStats relationshipStats) {
+		// a) Less than 100% precision (we can not re-include things covered by an exclusion expression)
+		relationshipStats.filterByPrecision(1.0f);
 	}
 
 	// Compute scores, then iterate over the best candidates with an acceptable fit in decreasing order

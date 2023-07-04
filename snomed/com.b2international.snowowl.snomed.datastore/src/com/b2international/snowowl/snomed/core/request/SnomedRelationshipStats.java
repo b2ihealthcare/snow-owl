@@ -31,7 +31,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.google.common.collect.Table.Cell;
 
 /**
  * @since 8.11.0
@@ -55,7 +54,8 @@ public record SnomedRelationshipStats(
 				SnomedRelationshipIndexEntry.Fields.TYPE_ID, 
 				SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 			.stream(context)
-			.flatMap(SnomedRelationships::stream);
+			.flatMap(SnomedRelationships::stream)
+			.filter(r -> !Concepts.IS_A.equals(r.getTypeId())); // Exclude IS_A relationships
 
 		Stream<SnomedRelationship> findRelationshipsBySource(BranchContext context, Set<String> sourceIds);
 	}
@@ -87,90 +87,74 @@ public record SnomedRelationshipStats(
 	) {
 		// How many member concepts are there for a particular type-destination pair?
 		final Table<String, String, Integer> positiveSources = HashBasedTable.create();
-
+		// How many source concepts are there in total for a particular type-destination pair?
+		final Table<String, String, Integer> totalSources = HashBasedTable.create();
+		
+		if (conceptIds.isEmpty()) {
+			// No input concepts
+			return new SnomedRelationshipStats(positiveSources, totalSources);	
+		}
+		
 		searchBySource.findRelationshipsBySource(context, conceptIds)
 			.forEachOrdered(r -> incrementTableCount(positiveSources, r));
 
+		if (positiveSources.isEmpty()) {
+			// No relevant relationships collected
+			return new SnomedRelationshipStats(positiveSources, totalSources);
+		}
+		
 		final Set<String> typeIds = positiveSources.rowKeySet();
 		final Set<String> destinationIds = positiveSources.columnKeySet();
 
-		// How many source concepts are there in total for a particular type-destination pair?
-		final Table<String, String, Integer> totalSources = HashBasedTable.create();
-
-		// XXX: This request may return irrelevant type-destination pairs, these need to be filtered out here
 		searchByTypeAndDestination.findRelationshipsByTypeAndDestination(context, typeIds, destinationIds)
+			// XXX: This request may return any combination of the given type-destination pairs, which need to be filtered here
 			.filter(r -> positiveSources.contains(r.getTypeId(), r.getDestinationId()))
 			.forEachOrdered(r -> incrementTableCount(totalSources, r));
 
 		return new SnomedRelationshipStats(positiveSources, totalSources);
 	}
 
-	private static void incrementTableCount(final Table<String, String, Integer> tableCount, final SnomedRelationship relationship) {
-		final Map<String, Integer> countByDestination = tableCount.row(relationship.getTypeId());
+	private static void incrementTableCount(final Table<String, String, Integer> countByTypeAndDestination, final SnomedRelationship relationship) {
+		final Map<String, Integer> countByDestination = countByTypeAndDestination.row(relationship.getTypeId());
 		countByDestination.merge(relationship.getDestinationId(), 1, (oldCount, newCount) -> oldCount + newCount);
 	}
 
-	public void filterRefinementsForInclusion() {
-		final Set<Cell<String, String, Integer>> positiveCellSet = positiveSources.cellSet();
-		if (positiveCellSet.isEmpty()) {
-			return;
-		}
-		
-		filterPrecision95(positiveCellSet);
-		filterByTruePositiveMatches();
-		filterByFalsePositiveMatches(positiveCellSet);
-	}
-
-	public void filterRefinementsForExclusion() {
-		final Set<Cell<String, String, Integer>> positiveCellSet = positiveSources.cellSet();
-		if (positiveCellSet.isEmpty()) {
-			return;
-		}
-
-		filterPrecision100(positiveCellSet);
-	}
-
-	// a) Less than 95% precision
-	private void filterPrecision95(final Set<Cell<String, String, Integer>> positiveCellSet) {
-		positiveCellSet.removeIf(cell -> {
-			final int truepos = cell.getValue();
+	public void filterByPrecision(final float precisionThreshold) {
+		positiveSources.cellSet().removeIf(cell -> {
+			final int truePositives = cell.getValue();
 			final int total = totalSources.get(cell.getRowKey(), cell.getColumnKey());
-			final float score = ((float) truepos) / total;
-			return score < 0.95f;
+			
+			if (precisionThreshold >= 1.0f) {
+				return truePositives < total;	
+			} else {
+				final float precision = ((float) truePositives) / total;
+				return precision < precisionThreshold;
+			}
 		});
 	}
 
-	// b) Less than ten true positive matches
-	private void filterByTruePositiveMatches() {
-		positiveSources.values().removeIf(truepos -> truepos < 10);
-	}
-
-	// c) More than two false positive matches
-	private void filterByFalsePositiveMatches(final Set<Cell<String, String, Integer>> positiveCellSet) {
-		positiveCellSet.removeIf(cell -> {
-			final int truepos = cell.getValue();
-			final int total = totalSources.get(cell.getRowKey(), cell.getColumnKey());
-			final int falsepos = total - truepos;
-			return falsepos > 2;
+	public void filterByMinTruePositives(final int minTruePositives) {
+		positiveSources.values().removeIf(truePositives -> {
+			return truePositives < minTruePositives;
 		});
 	}
 
-	// d) Less than 100% precision
-	private void filterPrecision100(final Set<Cell<String, String, Integer>> positiveCellSet) {
-		positiveCellSet.removeIf(cell -> {
-			final int truepos = cell.getValue();
+	public void filterByMaxFalsePositives(final int maxFalsePositives) {
+		positiveSources.cellSet().removeIf(cell -> {
+			final int truePositives = cell.getValue();
 			final int total = totalSources.get(cell.getRowKey(), cell.getColumnKey());
-			return truepos < total;
+			final int falsePositives = total - truePositives;
+			return falsePositives > maxFalsePositives;
 		});
 	}
 
-	public List<QueryExpression> optimizeRefinements(final BranchContext context, final Set<String> conceptIds) {
-		if (conceptIds.isEmpty() || positiveSources.isEmpty()) {
+	public List<QueryExpression> optimizeRefinements(final BranchContext context) {
+		if (positiveSources.isEmpty()) {
 			return List.of();
 		}
 
-		final Set<Cell<String, String, Integer>> positiveCellSet = positiveSources.cellSet();
-		return positiveCellSet.stream()
+		return positiveSources.cellSet()
+			.stream()
 			.map(cell -> new QueryExpression(IDs.base62UUID(), String.format("* : %s = %s", cell.getRowKey(), cell.getColumnKey()), false))
 			.collect(Collectors.toList());
 	}
