@@ -32,6 +32,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyFloatMap;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ResourceURI;
@@ -237,7 +238,13 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// Don't exceed maximum clause count set initially
 		maxClauseCount = Ints.min(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
 
+		try {
 		conceptSet = evaluateConceptSet(context, inclusions, exclusions);
+		} catch (SyntaxException e) {
+			log.info("Evaluation resulted in syntax error, returning empty diff");
+			return new QueryExpressionDiffs(List.of(), false);
+		}
+		
 		log.info("{} inclusion(s) and {} exclusion(s) evaluated to {} concept(s)", inclusions.size(), exclusions.size(), conceptSet.size());
 
 		if (conceptSet.isEmpty()) {

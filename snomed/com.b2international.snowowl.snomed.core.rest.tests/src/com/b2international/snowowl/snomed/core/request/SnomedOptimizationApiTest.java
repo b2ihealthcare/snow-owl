@@ -51,11 +51,11 @@ public class SnomedOptimizationApiTest {
 	 * 			|_EDEMA
 	 */
 	
-	private static final String MORPHOLOGICALLY_ABNORMAL_STRUCTURE = "49755003|Morphologically abnormal structure (morphologic abnormality)|";
-	private static final String LESION = "52988006|Lesion (morphologic abnormality)|";
-	private static final String MECHANICAL_ABNORMALITY = "107658001|Mechanical abnormality (morphologic abnormality)|";
-	private static final String FLUID_DISTURBANCE = "107666005|Fluid disturbance (morphologic abnormality)|";
-	private static final String EDEMA = "79654002|Edema (morphologic abnormality)|";
+	private static final String MORPHOLOGICALLY_ABNORMAL_STRUCTURE = "49755003 |Morphologically abnormal structure (morphologic abnormality)|";
+	private static final String LESION = "52988006 |Lesion (morphologic abnormality)|";
+	private static final String MECHANICAL_ABNORMALITY = "107658001 |Mechanical abnormality (morphologic abnormality)|";
+	private static final String FLUID_DISTURBANCE = "107666005 |Fluid disturbance (morphologic abnormality)|";
+	private static final String EDEMA = "79654002 |Edema (morphologic abnormality)|";
 	
 	private static final QueryExpression QUERY_LESION = new QueryExpression(IDs.base62UUID(), LESION, false);
 	private static final QueryExpression QUERY_MECHANICAL_ABNORMALITY = new QueryExpression(IDs.base62UUID(), MECHANICAL_ABNORMALITY, false);
@@ -180,15 +180,15 @@ public class SnomedOptimizationApiTest {
 		
 		assertThat(diff.getAddToExclusion()).isEmpty();
 		
-		//Only IDs are returned
+		// An FSN is returned even though we pass no locale to the ECL labeler
 		assertThat(diff.getAddToInclusion()).extracting(QueryExpression::getQuery)
-			.containsOnly(descendantsOf("107658001"));
+			.containsOnly(descendantsOf(MECHANICAL_ABNORMALITY));
 		
 		assertThat(diff.getRemove()).extracting(QueryExpression::getQuery)
 			.containsOnly(FLUID_DISTURBANCE, EDEMA);
 	}
 	
 	private String descendantsOf(final String query) {
-		return String.join("", "<", query);
+		return String.join(" ", "<", query);
 	}
 }
