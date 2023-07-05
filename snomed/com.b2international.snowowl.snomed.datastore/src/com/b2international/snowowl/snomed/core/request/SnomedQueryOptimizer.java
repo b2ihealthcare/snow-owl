@@ -239,7 +239,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		maxClauseCount = Ints.min(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
 
 		try {
-		conceptSet = evaluateConceptSet(context, inclusions, exclusions);
+			conceptSet = evaluateConceptSet(context, inclusions, exclusions);
 		} catch (SyntaxException e) {
 			log.info("Evaluation resulted in syntax error, returning empty diff");
 			return new QueryExpressionDiffs(List.of(), false);
@@ -579,12 +579,14 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 					if (newFitThreshold > minimumFitThreshold) {
 						fitThreshold = newFitThreshold;
 						zoom = idealClauseCount;
+						log.info("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
 					}
 				}
 
 				// Elevate strategy after using the same one for 100 iterations
 				if (iteration > optimizerStrategy.ordinal() * 100 && optimizerStrategy.ordinal() < OptimizerStrategy.values().length - 1) {
 					optimizerStrategy = OptimizerStrategy.values()[optimizerStrategy.ordinal() + 1];
+					log.info("Optimizer strategy changed to {} after {} iterations", optimizerStrategy, iteration);
 				}
 
 			} else {
@@ -593,6 +595,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				if (zoom <= maxClauseCount && zoom <= conceptSet.size() && zoom != Math.round(zoom * 1.1f)) {
 					// Try adjusting zoom first
 					zoom = Math.round(zoom * 1.1f);
+					log.info("Zoom changed to {}", zoom);
 				} else {
 					// With zoom at its limits, see if lowering the fitness threshold might work
 					final float newFitThreshold;
@@ -609,10 +612,12 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 						fitThreshold = newFitThreshold;
 						zoom = idealClauseCount;
 						ancestorFound = false;
+						log.info("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
 					} else {
 						canceled = true;
 					}
 				}
+				
 			}
 
 			iteration++;
