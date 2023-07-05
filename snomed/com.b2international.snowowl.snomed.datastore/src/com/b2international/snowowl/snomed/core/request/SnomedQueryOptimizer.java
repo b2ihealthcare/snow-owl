@@ -149,7 +149,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private ResourceURI resourceUri;
 	private Logger log;
 	
-	// Optimizer parameters (some are adjusted dynamically)
+	// Optimizer parameters (some of these are adjusted dynamically)
 	private final int minimumClusterSize       = 2;
 	private final float falsePositiveThreshold = 0.7f;
 	private final double weight                = 1.0d;
@@ -234,7 +234,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		final Collection<QueryExpression> inclusions = params.getCollection(QueryOptimizer.OptionKey.INCLUSIONS, QueryExpression.class);
 		final Collection<QueryExpression> exclusions = params.getCollection(QueryOptimizer.OptionKey.EXCLUSIONS, QueryExpression.class);
 		final List<ExtendedLocale> locales = params.getList(QueryOptimizer.OptionKey.LOCALES, ExtendedLocale.class);
-		maxClauseCount = params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount);
+		// Don't exceed maximum clause count set initially
+		maxClauseCount = Ints.max(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
 
 		conceptSet = evaluateConceptSet(context, inclusions, exclusions);
 		log.info("{} inclusion(s) and {} exclusion(s) evaluated to {} concept(s)", inclusions.size(), exclusions.size(), conceptSet.size());
@@ -316,7 +317,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			conceptDescendantCountById);
 
 		// Save collected ancestors for comparing with exclusion ancestors later
-		final Set<String> inclusionAncestors =  inclusionHierarchyStats.getAllAncestors();
+		final Set<String> inclusionAncestors =  inclusionHierarchyStats.conceptsAndAncestors();
 		// Exclude candidates that did not meet certain criteria
 		filterAncestorsForInclusion(inclusionHierarchyStats);
 
@@ -377,7 +378,12 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			conceptSearchById,
 			edgeSearchBySourceId,
 			conceptDescendantCountById);
-
+		
+		// Save the set of leaf concepts before elements are removed
+		final Set<String> leafExclusions = conceptsToExclude.stream()
+			.filter(id -> exclusionHierarchyStats.totalChildren().count(id) == 0)
+			.collect(Collectors.toSet());
+		
 		filterAncestorsForExclusion(exclusionHierarchyStats, inclusionAncestors);
 
 		// For exclusions, only ancestors without any false positives can be accepted
@@ -390,8 +396,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			log.info("Adding {} remaining concept(s) as a simple exclusion", conceptsToExclude.size());
 
 			conceptsToExclude.removeIf(id -> {
-				final String operator = exclusionHierarchyStats.totalChildren().count(id) == 0 ? "<<" : "=";
-				final QueryExpression singleInclusion = new QueryExpression(IDs.base62UUID(), String.format("%s %s", operator, id), false);
+				final String operator = leafExclusions.contains(id) ? "<< " : "";
+				final QueryExpression singleInclusion = new QueryExpression(IDs.base62UUID(), String.format("%s%s", operator, id), false);
 				optimizedExclusions.add(singleInclusion);
 
 				// Remove these concepts on the way out

@@ -161,11 +161,11 @@ public record SnomedHierarchyStats(
 		graph.build();
 
 		// +1 is added to the total descendants count for the "and self" part
-		conceptDescendantCountById.findConceptDescendantCountById(context, positiveDescendantsAndSelf.elementSet(), false)
+		conceptDescendantCountById.findConceptDescendantCountById(context, conceptsAndAncestors, false)
 			.forEachOrdered(c -> totalDescendantsAndSelf.setCount(c.getId(), c.getDescendants().getTotal() + 1));
 
 		// No +1 for the total children counter however
-		conceptDescendantCountById.findConceptDescendantCountById(context, positiveChildren.elementSet(), true)
+		conceptDescendantCountById.findConceptDescendantCountById(context, conceptsAndAncestors, true)
 			.forEachOrdered(c -> totalChildren.setCount(c.getId(), c.getDescendants().getTotal()));
 
 		return new SnomedHierarchyStats(
@@ -176,7 +176,7 @@ public record SnomedHierarchyStats(
 			totalChildren);
 	}
 
-	public Set<String> getAllAncestors() {
+	public Set<String> conceptsAndAncestors() {
 		return ImmutableSet.copyOf(positiveDescendantsAndSelf.elementSet());
 	}
 
@@ -215,7 +215,7 @@ public record SnomedHierarchyStats(
 	}
 
 	public void filterRedundantNoFalsePositives(final Set<String> memberIds) {
-		final Set<String> allAncestors = getAllAncestors();
+		final Set<String> allAncestors = conceptsAndAncestors();
 		final Set<String> redundantIds = newHashSet();
 
 		for (String conceptId1 : allAncestors) {
