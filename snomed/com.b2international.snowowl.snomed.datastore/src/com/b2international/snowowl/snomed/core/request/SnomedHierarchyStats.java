@@ -331,7 +331,7 @@ public record SnomedHierarchyStats(
 				final float numClauses = ((float) conceptSet.size()) / truePositives;
 				
 				// Reflect this information in the ancestor score with exponential weighting
-				precision *= Math.pow(1.0 / Math.abs(numClauses - zoom + 1), clauseCountWeighting);
+				precision *= ((float) Math.pow(1.0 / Math.abs(numClauses - zoom + 1), clauseCountWeighting));
 			}
 
 			final long idAsLong = Long.parseLong(id);
