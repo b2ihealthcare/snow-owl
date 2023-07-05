@@ -235,7 +235,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		final Collection<QueryExpression> exclusions = params.getCollection(QueryOptimizer.OptionKey.EXCLUSIONS, QueryExpression.class);
 		final List<ExtendedLocale> locales = params.getList(QueryOptimizer.OptionKey.LOCALES, ExtendedLocale.class);
 		// Don't exceed maximum clause count set initially
-		maxClauseCount = Ints.max(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
+		maxClauseCount = Ints.min(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
 
 		conceptSet = evaluateConceptSet(context, inclusions, exclusions);
 		log.info("{} inclusion(s) and {} exclusion(s) evaluated to {} concept(s)", inclusions.size(), exclusions.size(), conceptSet.size());
