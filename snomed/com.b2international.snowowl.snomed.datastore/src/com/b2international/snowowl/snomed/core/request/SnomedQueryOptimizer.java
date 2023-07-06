@@ -162,7 +162,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 	private OptimizerStrategy optimizerStrategy = OptimizerStrategy.DEFAULT;
 	private int zoom                            = 1;
-	private int maxClauseCount                  = 300;
+	private int maxClauseCount                  = 2000;
 
 	// Run-time fields
 	private Set<String> conceptSet;
