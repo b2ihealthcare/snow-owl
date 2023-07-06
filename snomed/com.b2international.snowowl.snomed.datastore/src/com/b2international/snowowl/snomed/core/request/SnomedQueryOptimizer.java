@@ -495,6 +495,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private void filterRefinementsForExclusion(final SnomedRelationshipStats relationshipStats) {
 		// a) Less than 100% precision (as we can not re-include things that are thrown out by an exclusion expression)
 		relationshipStats.filterByPrecision(1.0f);
+		// b) Less than five true positive matches
+		relationshipStats.filterByMinTruePositives(5);
 	}
 	
 	private void filterAncestorsForInclusion(final SnomedHierarchyStats hierarchyStats) {
