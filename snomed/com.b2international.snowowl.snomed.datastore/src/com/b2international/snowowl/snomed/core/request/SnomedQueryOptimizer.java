@@ -242,13 +242,13 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			conceptSet = evaluateConceptSet(context, inclusions, exclusions);
 		} catch (SyntaxException e) {
 			log.info("Evaluation resulted in syntax error, returning empty diff");
-			return new QueryExpressionDiffs(List.of(), false);
+			return QueryExpressionDiffs.EMPTY;
 		}
 		
 		log.info("{} inclusion(s) and {} exclusion(s) evaluated to {} concept(s)", inclusions.size(), exclusions.size(), conceptSet.size());
 
 		if (conceptSet.isEmpty()) {
-			return new QueryExpressionDiffs(List.of(), false);
+			return QueryExpressionDiffs.EMPTY;
 		}
 
 		// "conceptsToInclude" will shrink as we find query expressions of acceptable quality for inclusion 
@@ -289,7 +289,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			diff.getRemove().size());
 		
 		if (diff.getAddToExclusion().isEmpty() && diff.getAddToExclusion().isEmpty() && diff.getRemove().isEmpty()) {
-			return new QueryExpressionDiffs(List.of(), false);
+			return QueryExpressionDiffs.EMPTY;
 		}
 		
 		return addLabelsToDiff(context, locales, diff);
