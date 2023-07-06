@@ -584,7 +584,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				}
 
 				// Elevate strategy after using the same one for 100 iterations
-				if (iteration > optimizerStrategy.ordinal() * 100 && optimizerStrategy.ordinal() < OptimizerStrategy.values().length - 1) {
+				if (iteration > (optimizerStrategy.ordinal() + 1) * 100 && optimizerStrategy.ordinal() < OptimizerStrategy.values().length - 1) {
 					optimizerStrategy = OptimizerStrategy.values()[optimizerStrategy.ordinal() + 1];
 					log.info("Optimizer strategy changed to {} after {} iterations", optimizerStrategy, iteration);
 				}
@@ -728,7 +728,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 
 		final float maxScore = Floats.max(ancestorScore.values().toArray());
-		if (maxScore <= fitThreshold) {
+		if (maxScore < fitThreshold) {
 			return null;
 		}
 
