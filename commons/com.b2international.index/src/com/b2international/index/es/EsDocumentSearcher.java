@@ -223,7 +223,7 @@ public class EsDocumentSearcher implements Searcher {
 		
 		final SearchHit[] firstHits = responseHits.getHits();
 		final int firstCount = firstHits.length;
-		final int remainingCount = Math.min(limit, totalHitCount) - firstCount;
+		int remainingCount = Math.min(limit, totalHitCount) - firstCount;
 		
 		// Add the first set of results
 		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
@@ -240,7 +240,7 @@ public class EsDocumentSearcher implements Searcher {
 					limit, resultWindow, totalHitCount);
 			}
 			
-			while (true) {
+			while (remainingCount > 0) {
 				// Extract searchAfter values for the next set of results
 				final SearchHit lastHit = Iterables.getLast(responseHits, null);
 				if (lastHit == null) {
@@ -249,13 +249,19 @@ public class EsDocumentSearcher implements Searcher {
 				
 				reqSource.searchAfter(lastHit.getSortValues());
 				
-				// Move in "resultWindow" sized steps
-				reqSource.size(resultWindow);
+				// Read at most "resultWindow" sized blocks
+				final int toReadBatch = Math.min(remainingCount, resultWindow);
+				reqSource.size(toReadBatch);
 				
 				// Request more search results, adding them to the list builder
 				response = client.search(req);
 				responseHits = response.getHits();
 				allHits.addAll(responseHits);
+
+				// Update the number of requested documents remaining
+				final SearchHit[] nextHits = responseHits.getHits();
+				final int nextCount = nextHits.length;
+				remainingCount -= nextCount;
 			}
 		}
 
