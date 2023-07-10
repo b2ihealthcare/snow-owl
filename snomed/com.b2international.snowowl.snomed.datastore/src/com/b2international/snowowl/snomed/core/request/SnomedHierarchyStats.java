@@ -53,6 +53,8 @@ public record SnomedHierarchyStats(
 	Multiset<String> totalChildren
 ) { 
 
+	private static final String CLINICAL_FINDING = "404684003";
+
 	@FunctionalInterface
 	public interface ConceptSearchById {
 
@@ -160,6 +162,17 @@ public record SnomedHierarchyStats(
 
 		graph.build();
 
+		/*
+		 * Remove "SNOMED CT Concept" and "Clinical finding" as it is unlikely that they
+		 * will turn out to be good replacements (and computing descendant counts for
+		 * them is costly)
+		 */
+		positiveDescendantsAndSelf.elementSet().remove(Concepts.ROOT_CONCEPT);
+		positiveChildren.elementSet().remove(Concepts.ROOT_CONCEPT);
+		
+		positiveDescendantsAndSelf.elementSet().remove(CLINICAL_FINDING);
+		positiveChildren.elementSet().remove(CLINICAL_FINDING);
+		
 		// +1 is added to the total descendants count for the "and self" part
 		conceptDescendantCountById.findConceptDescendantCountById(context, conceptsAndAncestors, false)
 			.forEachOrdered(c -> totalDescendantsAndSelf.setCount(c.getId(), c.getDescendants().getTotal() + 1));
