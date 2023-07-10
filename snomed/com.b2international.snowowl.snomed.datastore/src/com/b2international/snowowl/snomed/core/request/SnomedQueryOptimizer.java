@@ -247,7 +247,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		
 		log.info("{} inclusion(s) and {} exclusion(s) evaluated to {} concept(s)", inclusions.size(), exclusions.size(), conceptSet.size());
 
-		if (conceptSet.isEmpty()) {
+		// Exit early if the value set evaluates to a single concept or is empty
+		if (conceptSet.size() < 2) {
 			return QueryExpressionDiffs.EMPTY;
 		}
 
