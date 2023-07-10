@@ -192,9 +192,7 @@ public class EsDocumentSearcher implements Searcher {
 		// paging config
 		final boolean isLocalStreaming = limit > resultWindow;
 		final boolean isLiveStreaming = !Strings.isNullOrEmpty(query.getSearchAfter());
-		if (isLocalStreaming) {
-			checkArgument(!isLiveStreaming, "Cannot use searchAfter when requesting more items (%s) than the configured result window (%s).", limit, resultWindow);
-		} else if (isLiveStreaming) {
+		if (isLiveStreaming) {
 			reqSource.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
@@ -233,8 +231,16 @@ public class EsDocumentSearcher implements Searcher {
 		
 		// If the client requested all data at once and there are more hits to retrieve, collect them all as part of the request 
 		if (isLocalStreaming && remainingCount > 0) {
-			admin.log().warn("Returning all matches (totalHits: '{}') larger than the currently configured result_window ('{}') might not be the most "
-					+ "efficient way of getting the data. Consider using the index pagination API (searchAfter) instead.", totalHitCount, resultWindow);
+			final String recommendation;
+			if (!isLiveStreaming && limit >= totalHitCount) {
+				recommendation = "Consider using the index pagination API (searchAfter) instead.";
+			} else {
+				recommendation = "Set a limit lower than the currently configured result window.";
+			}
+			
+			admin.log().warn("Requesting a result set of size '{}' larger than the currently configured result_window '{}'"
+				+" (for a total hit count of '{}') might not be the most efficient way of getting the data. {}", limit, 
+				resultWindow, totalHitCount, recommendation);
 			
 			while (true) {
 				// Extract searchAfter values for the next set of results
@@ -244,7 +250,10 @@ public class EsDocumentSearcher implements Searcher {
 				}
 				
 				reqSource.searchAfter(lastHit.getSortValues());
-
+				
+				// Move in "resultWindow" sized steps
+				reqSource.size(resultWindow);
+				
 				// Request more search results, adding them to the list builder
 				response = client.search(req);
 				responseHits = response.getHits();
