@@ -230,7 +230,7 @@ public class EsDocumentSearcher implements Searcher {
 		allHits.addAll(responseHits);
 		
 		// If the client requested all data at once and there are more hits to retrieve, collect them all as part of the request 
-		if (isLocalStreaming && remainingCount > 0) {
+		if (isLocalStreaming && firstCount > 0 && remainingCount > 0) {
 
 			if (!isLiveStreaming) {
 				// XXX: This could still be a streaming request but we only want to log on first invocation
