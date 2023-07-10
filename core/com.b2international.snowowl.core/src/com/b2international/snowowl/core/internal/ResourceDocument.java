@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,6 +267,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String purpose;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
+		private List<DependencyDocument> dependencies;
 		
 		// specialized resource fields
 		private String oid;
@@ -364,11 +365,21 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
+		/**
+		 * @deprecated - replaced by {@link #dependencies(List)}, will be removed in 9.0
+		 * @param extensionOf
+		 * @return
+		 */
 		public Builder extensionOf(ResourceURI extensionOf) {
 			this.extensionOf = extensionOf;
 			return getSelf();
 		}
 		
+		/**
+		 * @deprecated - replaced by {@link #dependencies(List)}, will be removed in 9.0
+		 * @param upgradeOf
+		 * @return
+		 */
 		public Builder upgradeOf(ResourceURI upgradeOf) {
 			this.upgradeOf = upgradeOf;
 			return getSelf();
@@ -387,6 +398,11 @@ public final class ResourceDocument extends RevisionDocument {
 		
 		public Builder updatedAt(Long updatedAt) {
 			this.updatedAt = updatedAt;
+			return getSelf();
+		}
+		
+		public Builder dependencies(List<DependencyDocument> dependencies) {
+			this.dependencies = dependencies;
 			return getSelf();
 		}
 		
@@ -420,7 +436,8 @@ public final class ResourceDocument extends RevisionDocument {
 				upgradeOf,
 				settings,
 				createdAt,
-				updatedAt
+				updatedAt,
+				dependencies
 			);
 		}
 		
@@ -445,6 +462,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	
 	// Ordered ancestor bundle IDs, sorted by depth
 	private final List<String> bundleAncestorIds;
 	private final String bundleId;
@@ -453,9 +471,13 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String oid;
 	private final String branchPath;
 	private final String toolingId;
+	private final Map<String, Object> settings;
+	
+	private final List<DependencyDocument> dependencies;
+	
+	// deprecated dependency-like fields, will be removed in 9.0
 	private final ResourceURI extensionOf;
 	private final ResourceURI upgradeOf;
-	private final Map<String, Object> settings;
 	
 	// derived fields, getters only, mapping generation requires a field to be specified
 	private final Long createdAt;
@@ -490,7 +512,8 @@ public final class ResourceDocument extends RevisionDocument {
 			final ResourceURI upgradeOf,
 			final Map<String, Object> settings,
 			final Long createdAt,
-			final Long updatedAt) {
+			final Long updatedAt,
+			final List<DependencyDocument> dependencies) {
 		super(id, iconId);
 		this.resourceType = resourceType;
 		this.url = url;
@@ -513,6 +536,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.settings = settings;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.dependencies = dependencies;
 	}
 
 	@JsonIgnore
@@ -608,6 +632,10 @@ public final class ResourceDocument extends RevisionDocument {
 		return Optional.ofNullable(updatedAt)
 				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
 				.orElse(null);
+	}
+	
+	public List<DependencyDocument> getDependencies() {
+		return dependencies;
 	}
 	
 }
