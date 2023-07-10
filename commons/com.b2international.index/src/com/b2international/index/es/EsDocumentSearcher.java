@@ -231,16 +231,14 @@ public class EsDocumentSearcher implements Searcher {
 		
 		// If the client requested all data at once and there are more hits to retrieve, collect them all as part of the request 
 		if (isLocalStreaming && remainingCount > 0) {
-			final String recommendation;
-			if (!isLiveStreaming && limit >= totalHitCount) {
-				recommendation = "Consider using the index pagination API (searchAfter) instead.";
-			} else {
-				recommendation = "Set a limit lower than the currently configured result window.";
+
+			if (!isLiveStreaming) {
+				// XXX: This could still be a streaming request but we only want to log on first invocation
+				admin.log().warn("Requesting a result set of size '{}' larger than the currently configured result_window '{}'"
+					+" (for a total hit count of '{}') might not be the most efficient way of getting the data. Consider using"
+					+" the index pagination API (searchAfter) and/or lower your request limit.", 
+					limit, resultWindow, totalHitCount);
 			}
-			
-			admin.log().warn("Requesting a result set of size '{}' larger than the currently configured result_window '{}'"
-				+" (for a total hit count of '{}') might not be the most efficient way of getting the data. {}", limit, 
-				resultWindow, totalHitCount, recommendation);
 			
 			while (true) {
 				// Extract searchAfter values for the next set of results
