@@ -231,18 +231,18 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.filterByReferencedComponent(conceptId)
 			.stream(context)
 			.flatMap(SnomedReferenceSetMembers::stream)
-			.filter(updatableMember())
+			.filter(getFilter())
 			.map(SnomedReferenceSetMember::getId)
 			.collect(Collectors.toSet());
 	}
 
 	private Set<SnomedReferenceSetMember> getUpdatableMembers() {
 		return members.stream()
-			.filter(updatableMember())
+			.filter(getFilter())
 			.collect(Collectors.toSet());
 	}
 
-	private Predicate<SnomedReferenceSetMember> updatableMember() {
+	private Predicate<SnomedReferenceSetMember> getFilter() {
 		return m -> !FILTERED_REFSET_IDS.contains(m.getRefsetId());
 	}
 	
