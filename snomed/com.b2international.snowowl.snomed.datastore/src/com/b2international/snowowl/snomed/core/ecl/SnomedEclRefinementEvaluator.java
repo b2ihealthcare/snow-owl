@@ -541,9 +541,10 @@ final class SnomedEclRefinementEvaluator {
 			activeOwlAxiomMemberQuery.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(focusConceptIds));
 		}
 		
+		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
 		final Query<SnomedRefSetMemberIndexEntry> activeAxiomStatementsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
 			.where(activeOwlAxiomMemberQuery.build())
-			.limit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
+			.limit(pageSize)
 			.build();
 		
 		final Set<Property> axiomProperties = newHashSet();

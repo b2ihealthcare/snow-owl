@@ -118,7 +118,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 					.from(type)
 					.fields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.EFFECTIVE_TIME)
 					.where(SnomedComponentDocument.Expressions.ids(dependencies))
-					.limit(10000)
+					.limit(getPageSize(context))
 					.build()
 					.stream(searcher)
 					.flatMap(Hits::stream)

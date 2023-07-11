@@ -27,6 +27,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -183,9 +184,11 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	private boolean updateRefSet(TransactionContext context, SnomedConceptDocument concept, SnomedConceptDocument.Builder updatedConcept) {
 		final boolean force = refSet == SnomedReferenceSet.FORCE_DELETE;
 		if (refSet == SnomedReferenceSet.DELETE || force) {
+			final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+			
 			Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedRefSetMemberIndexEntry.Expressions.refsetId(componentId()))
-				.limit(10_000)
+				.limit(pageSize)
 				.build()
 				.stream(context.service(RevisionSearcher.class))
 				.flatMap(Hits::stream)

@@ -36,6 +36,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
@@ -86,8 +87,11 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	@Override
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
-		
-		final int maxTermsCount = context.service(RepositoryConfiguration.class).getIndexConfiguration().getMaxTermsCount();
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
+		final int maxTermsCount = indexConfiguration.getMaxTermsCount();
+		final int resultWindow = indexConfiguration.getResultWindow();
+		// When partitioning by IDs we need to honor both limits
+		final int maxTermsLimit = Math.min(maxTermsCount, resultWindow);
 		
 		// initialize OWL Expression converter on the current branch
 		final SnomedOWLExpressionConverter expressionConverter = new BranchSnapshotContentRequest<>(staging.getBranchPath(), branchContext -> {
@@ -133,15 +137,14 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final LongSet inferredConceptIds = PrimitiveSets.newLongOpenHashSet();
 		
 		if (!statedDestinationIds.isEmpty()) {
-			for (List<String> statedDestinationIdsPartition : Iterables.partition(statedDestinationIds, maxTermsCount)) {
+			for (List<String> statedDestinationIdsPartition : Iterables.partition(statedDestinationIds, maxTermsLimit)) {
 				Query.select(SnomedConceptDocument.class)
 					// make sure we only load the necessary parent arrays, not everything
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
 					.where(SnomedConceptDocument.Expressions.ids(statedDestinationIdsPartition))
 					.limit(statedDestinationIdsPartition.size())
 					.build()
-					.stream(index)
-					.flatMap(Hits::stream)
+					.search(index)
 					.forEach(statedDestinationConcept -> {
 						statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
 						if (statedDestinationConcept.getStatedParents() != null) {
@@ -155,15 +158,14 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		}
 		
 		if (!inferredDestinationIds.isEmpty()) {
-			for (List<String> inferredDestinationIdsPartition : Iterables.partition(inferredDestinationIds, maxTermsCount)) {
+			for (List<String> inferredDestinationIdsPartition : Iterables.partition(inferredDestinationIds, maxTermsLimit)) {
 				Query.select(SnomedConceptDocument.class)
 					// make sure we only load the necessary parent arrays, not everything
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
 					.where(SnomedConceptDocument.Expressions.ids(inferredDestinationIdsPartition))
 					.limit(inferredDestinationIdsPartition.size())
 					.build()
-					.stream(index)
-					.flatMap(Hits::stream)
+					.search(index)
 					.forEach(inferredDestinationConcept -> {
 						inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
 						if (inferredDestinationConcept.getParents() != null) {
@@ -209,7 +211,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 							.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIdsPartition))
 							.should(SnomedConceptDocument.Expressions.statedAncestors(statedSourceIdsPartition))
 							.build())
-					.limit(50_000)
+					.limit(resultWindow)
 					.build()
 					.stream(index)
 					.flatMap(Hits::stream)
@@ -234,7 +236,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIdsPartition))
 							.should(SnomedConceptDocument.Expressions.ancestors(inferredSourceIdsPartition))
 							.build())
-					.limit(50_000)
+					.limit(resultWindow)
 					.build()
 					.stream(index)
 					.flatMap(Hits::stream)

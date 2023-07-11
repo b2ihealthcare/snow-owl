@@ -21,6 +21,7 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CappedTransactionContext;
@@ -68,7 +69,20 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 
 	protected final int getCommitLimit(TransactionContext context) {
-		return context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
+		final IndexConfiguration indexConfiguration = context.service(SnowOwlConfiguration.class)
+			.getModuleConfig(RepositoryConfiguration.class)
+			.getIndexConfiguration();
+		
+		// Since this limit is used in streaming queries, we have to honor the result window as well
+		return Math.min(indexConfiguration.getResultWindow(), indexConfiguration.getCommitWatermarkLow());
+	}
+	
+	protected final int getPageSize(TransactionContext context) {
+		final IndexConfiguration indexConfiguration = context.service(SnowOwlConfiguration.class)
+			.getModuleConfig(RepositoryConfiguration.class)
+			.getIndexConfiguration();
+		
+		return indexConfiguration.getResultWindow();
 	}
 	
 	/**
