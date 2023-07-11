@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -41,10 +42,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 /**
  * @since 7.0
@@ -302,20 +300,25 @@ public final class RelationshipChangeConverter
 	}
 
 	private Multimap<String, RelationshipChange> getItemsByBranch(final List<RelationshipChange> results) {
-		// FIXME: the set might go over the maximum number of allowed terms -- it should be partitioned
 		final Set<String> classificationTaskIds = results.stream()
-				.map(RelationshipChange::getClassificationId)
-				.collect(Collectors.toSet());
+			.map(RelationshipChange::getClassificationId)
+			.collect(Collectors.toSet());
 
 		final Map<String, String> branchesByClassificationIdMap = newHashMap();
-		final int pageSize = context().service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+
+		final IndexConfiguration indexConfiguration = context().service(RepositoryConfiguration.class).getIndexConfiguration();
+		final int maxTermsCount = indexConfiguration.getMaxTermsCount();
+		final int resultWindow = indexConfiguration.getResultWindow();
+		final int maxTermsLimit = Math.min(maxTermsCount, resultWindow);
 		
-		ClassificationRequests.prepareSearchClassification()
-				.filterByIds(classificationTaskIds)
-				.setLimit(pageSize)
-				.stream(context())
-				.flatMap(ClassificationTasks::stream)
+		Iterables.partition(classificationTaskIds, maxTermsLimit).forEach(ids -> {
+			ClassificationRequests.prepareSearchClassification()
+				.filterByIds(ids)
+				.setLimit(ids.size())
+				.build()
+				.execute(context())
 				.forEach(task -> branchesByClassificationIdMap.put(task.getId(), task.getBranch()));
+		});
 		
 		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, 
 				r -> branchesByClassificationIdMap.get(r.getClassificationId()));

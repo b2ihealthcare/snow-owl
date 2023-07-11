@@ -155,9 +155,9 @@ public final class InactivationPropertiesExpander {
 			.filterByIds(idsFilter)
 			.setLocales(locales)
 			.setExpand(expand)
-			.stream(context)
-			.flatMap(SnomedConcepts::stream)
-			.forEachOrdered(concept -> {
+			.build()
+			.execute(context)
+			.forEach(concept -> {
 				conceptsById.put(concept.getId(), concept);
 			});
 		});

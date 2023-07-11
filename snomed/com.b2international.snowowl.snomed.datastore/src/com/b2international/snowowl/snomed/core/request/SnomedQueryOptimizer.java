@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -78,8 +77,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			SnomedRequests.prepareSearchConcept()
 				.filterByIds(batchIds)
 				.setLimit(batchIds.size())
-				.stream(context)
-				.flatMap(SnomedConcepts::stream)
+				.build()
+				.execute(context)
 				.forEach(child -> {
 					final Collection<QueryExpression> childExpressions = singleConceptInclusions.get(child.getId());
 					final List<String> parentIds = child.getParentIdsAsString();
