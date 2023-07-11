@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.ObjectId;
@@ -33,8 +32,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
