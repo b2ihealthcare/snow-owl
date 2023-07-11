@@ -192,7 +192,9 @@ public class EsDocumentSearcher implements Searcher {
 		// paging config
 		final boolean isLocalStreaming = limit > resultWindow;
 		final boolean isLiveStreaming = !Strings.isNullOrEmpty(query.getSearchAfter());
-		if (isLiveStreaming) {
+		if (isLocalStreaming) {
+			checkArgument(!isLiveStreaming, "Cannot use searchAfter when requesting more items (%s) than the configured result window (%s).", limit, resultWindow);
+		} if (isLiveStreaming) {
 			reqSource.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
@@ -232,13 +234,10 @@ public class EsDocumentSearcher implements Searcher {
 		// If the client requested all data at once and there are more hits to retrieve, collect them all as part of the request 
 		if (isLocalStreaming && firstCount > 0 && remainingCount > 0) {
 
-			if (!isLiveStreaming) {
-				// XXX: This could still be a streaming request but we only want to log on first invocation
-				admin.log().warn("Requesting a result set of size '{}' larger than the currently configured result_window '{}'"
-					+" (for a total hit count of '{}') might not be the most efficient way of getting the data. Consider using"
-					+" the index pagination API (searchAfter) and/or lower your request limit.", 
-					limit, resultWindow, totalHitCount);
-			}
+			admin.log().warn("Requesting a result set of size '{}' larger than the currently configured result_window '{}'"
+				+" (for a total hit count of '{}') might not be the most efficient way of getting the data. Consider using"
+				+" the index pagination API (searchAfter).", 
+				limit, resultWindow, totalHitCount);
 			
 			while (remainingCount > 0) {
 				// Extract searchAfter values for the next set of results
