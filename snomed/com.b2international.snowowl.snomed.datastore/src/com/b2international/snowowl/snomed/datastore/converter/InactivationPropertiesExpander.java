@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -36,8 +38,6 @@ import com.google.common.collect.*;
  */
 public final class InactivationPropertiesExpander {
 
-	private static final int BATCH_SIZE = 10_000;
-	
 	private final BranchContext context;
 	private final Options expand;
 	private final List<ExtendedLocale> locales;
@@ -56,9 +56,10 @@ public final class InactivationPropertiesExpander {
 		}
 		
 		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = ArrayListMultimap.create();
+		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
 
 		SnomedRequests.prepareSearchMember()
-			.setLimit(10_000)
+			.setLimit(pageSize)
 			.filterByActive(true)
 			// all association type refsets and the indicator
 			.filterByRefSet(String.format("<%s OR %s", Concepts.REFSET_ASSOCIATION_TYPE, inactivationIndicatorRefSetId))
@@ -142,8 +143,13 @@ public final class InactivationPropertiesExpander {
 
 	private Map<String, SnomedConcept> expandConceptByIdMap(final Options expand, final Set<String> componentsToExpand, final BranchContext context) {
 		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
+		final int resultWindow = indexConfiguration.getResultWindow();
+		final int maxTermCount = indexConfiguration.getMaxTermsCount();
+		// We have to honor the lower of either limit here
+		final int maxTermLimit = Math.min(maxTermCount, resultWindow);
 		
-		Iterables.partition(componentsToExpand, BATCH_SIZE).forEach(idsFilter -> {
+		Iterables.partition(componentsToExpand, maxTermLimit).forEach(idsFilter -> {
 			SnomedRequests.prepareSearchConcept()
 			.setLimit(idsFilter.size())
 			.filterByIds(idsFilter)

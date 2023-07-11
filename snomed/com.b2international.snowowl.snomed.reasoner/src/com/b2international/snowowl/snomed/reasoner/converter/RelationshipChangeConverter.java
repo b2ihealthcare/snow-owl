@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -51,8 +52,6 @@ import com.google.common.collect.Multimaps;
 public final class RelationshipChangeConverter 
 	extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
 
-	private static final int BATCH_LIMIT = 10_000;
-	
 	private static final String MEMBERS = "members";
 	
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
@@ -303,14 +302,17 @@ public final class RelationshipChangeConverter
 	}
 
 	private Multimap<String, RelationshipChange> getItemsByBranch(final List<RelationshipChange> results) {
+		// FIXME: the set might go over the maximum number of allowed terms -- it should be partitioned
 		final Set<String> classificationTaskIds = results.stream()
 				.map(RelationshipChange::getClassificationId)
 				.collect(Collectors.toSet());
 
 		final Map<String, String> branchesByClassificationIdMap = newHashMap();
+		final int pageSize = context().service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		
 		ClassificationRequests.prepareSearchClassification()
 				.filterByIds(classificationTaskIds)
-				.setLimit(BATCH_LIMIT)
+				.setLimit(pageSize)
 				.stream(context())
 				.flatMap(ClassificationTasks::stream)
 				.forEach(task -> branchesByClassificationIdMap.put(task.getId(), task.getBranch()));

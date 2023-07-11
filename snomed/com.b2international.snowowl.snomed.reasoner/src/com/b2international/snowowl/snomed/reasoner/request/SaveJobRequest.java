@@ -83,8 +83,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
-	private static final int SCROLL_LIMIT = 10_000;
-
 	@NotEmpty
 	private String classificationId;
 
@@ -107,6 +105,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 	private boolean fixEquivalences;
 	
 	private boolean handleConcreteDomains;
+
+	private int pageSize;
 	
 	SaveJobRequest() {}
 	
@@ -150,8 +150,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 	public Boolean execute(final BranchContext context) {
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
-
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
+		
+		pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
 		
 		try (Locks locks = Locks.on(context)
 				.user(user)
@@ -255,7 +256,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final Set<String> conceptIdsToSkip) {
 
 		ClassificationRequests.prepareSearchRelationshipChange()
-				.setLimit(SCROLL_LIMIT)
+				.setLimit(pageSize)
 				.setExpand("relationship(inferredOnly:true)")
 				.filterByClassificationId(classificationId)
 				.stream(context)
@@ -337,7 +338,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final Set<String> conceptIdsToSkip) {
 
 		ClassificationRequests.prepareSearchConcreteDomainChange()
-				.setLimit(SCROLL_LIMIT)
+				.setLimit(pageSize)
 				.setExpand("concreteDomainMember(inferredOnly:true)")
 				.filterByClassificationId(classificationId)
 				.stream(context)
@@ -431,7 +432,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
 		
 		ClassificationRequests.prepareSearchEquivalentConceptSet()
-				.setLimit(SCROLL_LIMIT)
+				.setLimit(pageSize)
 				.setExpand(expand)
 				.filterByClassificationId(classificationId)
 				.stream(context)

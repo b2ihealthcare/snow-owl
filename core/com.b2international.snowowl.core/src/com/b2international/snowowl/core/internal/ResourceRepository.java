@@ -23,6 +23,7 @@ import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.VersionDocument;
@@ -129,6 +130,7 @@ public final class ResourceRepository implements RevisionIndex {
 		@Override
 		public void run(StagingArea staging) {
 			RepositoryContext context = (RepositoryContext) staging.getContext();
+			final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
 			
 			// stage deletion of all version documents as well when deleting a resource
 			final Multimap<String, ResourceDocument> resourceUrisByTooling = HashMultimap.create();
@@ -145,7 +147,7 @@ public final class ResourceRepository implements RevisionIndex {
 				final Set<String> resources = resourceUrisByTooling.get(toolingId).stream().map(ResourceDocument::getResourceURI).map(ResourceURI::toString).collect(Collectors.toSet());
 				
 				ResourceRequests.prepareSearchVersion()
-					.setLimit(10_000)
+					.setLimit(pageSize)
 					.filterByResources(resources)
 					.stream(context)
 					.flatMap(Versions::stream)

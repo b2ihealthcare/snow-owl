@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -54,8 +55,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	
 	private static final String CR_LF = "\r\n";
 
-	private static final int BATCH_SIZE = 10000;
-	
 	// Parameters used for file name calculations
 	protected final Rf2ReleaseType releaseType;
 	protected final String countryNamespaceElement;
@@ -116,6 +115,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 			final Set<String> visitedComponentEffectiveTimes) throws IOException {
 
 		LOG.info("Exporting {} branch to '{}'", branch, getFileName());
+		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
 		
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());
@@ -142,13 +142,14 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				 * An effective time filter is always set, even if not in delta mode, to prevent
 				 * exporting unpublished content twice.
 				 */
+				
 				new BranchSnapshotContentRequest<R>(
 					branch,
 					inner -> {
 						createSearchRequestBuilder()
 							.filterByModules(modules) // null value will be ignored
 							.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
-							.setLimit(BATCH_SIZE)
+							.setLimit(pageSize)
 							.setFields(Arrays.asList(getHeader()))
 							.stream(inner)
 							.flatMap(hits -> getMappedStream(hits, context, branch))
