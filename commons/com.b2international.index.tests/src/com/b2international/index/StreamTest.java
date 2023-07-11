@@ -105,10 +105,9 @@ public class StreamTest extends BaseIndexTest {
 		
 		Stopwatch w = Stopwatch.createStarted();
 		
-		final int pageSize = Integer.parseInt((String) getIndexSettings().getOrDefault(IndexClientFactory.RESULT_WINDOW_KEY, "" + IndexClientFactory.DEFAULT_RESULT_WINDOW));
 		final Query<Data> query = Query.select(Data.class)
 			.where(Expressions.matchAll())
-			.limit(pageSize)
+			.limit(1000)
 			.build();
 		
 		stream(query).forEachOrdered(page -> hits.addAll(page.getHits()));

@@ -194,7 +194,7 @@ public class EsDocumentSearcher implements Searcher {
 		final boolean isLiveStreaming = !Strings.isNullOrEmpty(query.getSearchAfter());
 		if (isLocalStreaming) {
 			checkArgument(!isLiveStreaming, "Cannot use searchAfter when requesting more items (%s) than the configured result window (%s).", limit, resultWindow);
-		} if (isLiveStreaming) {
+		} else if (isLiveStreaming) {
 			reqSource.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
