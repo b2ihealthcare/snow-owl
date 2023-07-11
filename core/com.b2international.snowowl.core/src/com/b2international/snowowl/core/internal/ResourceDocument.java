@@ -240,11 +240,15 @@ public final class ResourceDocument extends RevisionDocument {
 				.oid(from.getOid())
 				.branchPath(from.getBranchPath())
 				.toolingId(from.getToolingId())
-				.extensionOf(from.getExtensionOf())
-				.upgradeOf(from.getUpgradeOf())
 				.settings(from.getSettings())
 				.createdAt(from.getCreatedAt())
-				.updatedAt(from.getUpdatedAt());
+				.updatedAt(from.getUpdatedAt())
+				// still copy and maintain extensionOf and upgradeOf properties if they are set, they will be completely removed in 9.0
+				.extensionOf(from.getExtensionOf())
+				.upgradeOf(from.getUpgradeOf())
+				// copy the new dependency array values
+				.dependencies(from.getDependencies())
+				;
 	}
 	
 	/**

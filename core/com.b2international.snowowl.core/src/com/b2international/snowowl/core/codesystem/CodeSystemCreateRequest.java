@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.codesystem;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.request.BaseTerminologyResourceCreateRequest;
+import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceCreateRequest;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 
 /**

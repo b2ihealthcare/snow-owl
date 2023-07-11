@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,14 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	
 	public String getQuery() {
 		return query;
+	}
+	
+	public boolean isHead() {
+		return resourceUri.isHead();
+	}
+	
+	public boolean isLatest() {
+		return resourceUri.isLatest();
 	}
 	
 	public Multimap<String, String> getQueryValues() {

@@ -37,19 +37,50 @@ public abstract class TerminologyResource extends Resource {
 	private static final long serialVersionUID = 1L;
 
 	/**
+	 * @since 8.12
+	 */
+	public static final class DependencyScope {
+		
+		/**
+		 * Constant denoting a dependency as the base resource of this resource. Points to the resource (or versioned resource) that this resource is the extension of.
+		 */
+		public static final String EXTENSION_OF = "extensionOf";
+		
+		/**
+		 * Constant denoting a dependency as the development version of this upgrade resource. Points to the resource that this resource is the upgrade of. 
+		 */
+		public static final String UPGRADE_OF = "upgradeOf";
+	}
+	
+	/**
 	 * @since 8.0
 	 */
 	public static abstract class Expand extends Resource.Expand {
+		
 		public static final String UPGRADE_INFO = "upgradeInfo";
 		public static final String VERSIONS = "versions";
 		public static final String COMMITS = "commits";
 		
-		// deprecated expand options
-		@Deprecated
-		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
+		/**
+		 * Expand option to expand dependencies of a resource.
+		 */
+		public static final String DEPENDENCIES = "dependencies";
 		
-		@Deprecated
+		/**
+		 * Expand option to expand the current latest branch information based on the current {@link TerminologyResource#getBranchPath()} value.
+		 */
+		public static final String BRANCH = "branch";
+		
+		/**
+		 * @deprecated - this expand option has been moved to the new {@link Dependency} model, will be removed from this model in 9.0
+		 */
+		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
+
+		/**
+		 * @deprecated - this expand option has been moved to the new {@link Dependency} model and also to here as {@link #BRANCH}, will be removed from this model in 9.0
+		 */
 		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
+		
 	}
 	
 	// standard oid

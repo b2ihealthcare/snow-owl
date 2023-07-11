@@ -97,6 +97,16 @@ public final class Dependency {
 		return new DependencyDocument(resourceUri, scope);
 	}
 	
+	@JsonIgnore
+	public boolean isExtensionOf() {
+		return TerminologyResource.DependencyScope.EXTENSION_OF.equals(scope);
+	}
+	
+	@JsonIgnore
+	public boolean isUpgradeOf() {
+		return TerminologyResource.DependencyScope.UPGRADE_OF.equals(scope);
+	}
+	
 	/**
 	 * Creates a new {@link Dependency} instance with the given {@link ResourceURI} uri and optional scope value.
 	 * 
