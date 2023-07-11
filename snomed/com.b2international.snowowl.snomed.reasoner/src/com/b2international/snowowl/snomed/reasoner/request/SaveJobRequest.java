@@ -230,7 +230,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 	}
 	
 	private final int getCommitLimit(BranchContext context) {
-		return context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
+		return context.service(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
 	}
 
 	private void applyChanges(final SubMonitor subMonitor, 

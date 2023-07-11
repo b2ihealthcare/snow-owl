@@ -69,8 +69,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 
 	protected final int getCommitLimit(TransactionContext context) {
-		final IndexConfiguration indexConfiguration = context.service(SnowOwlConfiguration.class)
-			.getModuleConfig(RepositoryConfiguration.class)
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class)
 			.getIndexConfiguration();
 		
 		// Since this limit is used in streaming queries, we have to honor the result window as well
@@ -78,8 +77,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 	
 	protected final int getPageSize(TransactionContext context) {
-		final IndexConfiguration indexConfiguration = context.service(SnowOwlConfiguration.class)
-			.getModuleConfig(RepositoryConfiguration.class)
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class)
 			.getIndexConfiguration();
 		
 		return indexConfiguration.getResultWindow();

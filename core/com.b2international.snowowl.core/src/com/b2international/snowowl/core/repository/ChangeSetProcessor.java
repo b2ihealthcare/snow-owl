@@ -71,16 +71,14 @@ public interface ChangeSetProcessor {
 	Collection<RevisionDocument> getDeletions();
 
 	default int getPageSize(ServiceProvider context) {
-		final IndexConfiguration indexConfiguration = context.service(SnowOwlConfiguration.class)
-			.getModuleConfig(RepositoryConfiguration.class)
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class)
 			.getIndexConfiguration();
 		
 		return indexConfiguration.getResultWindow();
 	}
 	
 	default int getMaxTermLimit(ServiceProvider context) {
-		final IndexConfiguration indexConfiguration = context.service(SnowOwlConfiguration.class)
-			.getModuleConfig(RepositoryConfiguration.class)
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class)
 			.getIndexConfiguration();
 
 		// We need to honor the result window as well
