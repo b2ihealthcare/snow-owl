@@ -130,7 +130,10 @@ public final class ResourceRepository implements RevisionIndex {
 		@Override
 		public void run(StagingArea staging) {
 			RepositoryContext context = (RepositoryContext) staging.getContext();
-			final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+
+			final int pageSize = context.service(RepositoryConfiguration.class)
+				.getIndexConfiguration()
+				.getPageSize();
 			
 			// stage deletion of all version documents as well when deleting a resource
 			final Multimap<String, ResourceDocument> resourceUrisByTooling = HashMultimap.create();

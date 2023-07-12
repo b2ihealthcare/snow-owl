@@ -133,7 +133,10 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		final Set<String> reasonerExcludedModuleIds = Collections3.toImmutableSet((Iterable) resource.getSettings().getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet()));
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
-		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext)) {

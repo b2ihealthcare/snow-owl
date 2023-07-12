@@ -132,7 +132,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * Fetches members of the specified reference set
 	 */
 	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
 			.setLocales(locales)

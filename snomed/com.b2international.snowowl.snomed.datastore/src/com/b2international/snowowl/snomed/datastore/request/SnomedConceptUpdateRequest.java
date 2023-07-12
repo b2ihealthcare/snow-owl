@@ -109,7 +109,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		final SnomedConceptDocument concept = context.lookup(componentId(), SnomedConceptDocument.class);
 		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);

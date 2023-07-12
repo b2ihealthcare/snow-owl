@@ -58,7 +58,10 @@ public final class InactivationPropertiesExpander {
 		}
 		
 		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = ArrayListMultimap.create();
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 
 		SnomedRequests.prepareSearchMember()
 			.setLimit(pageSize)

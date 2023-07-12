@@ -415,7 +415,10 @@ final class SnomedEclRefinementEvaluator {
 
 		// TODO: does this request need to support filtering by group?
 		
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		return SnomedRequests.prepareSearchMember()
 				.filterByActive(true)
 				.filterByRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
@@ -479,7 +482,10 @@ final class SnomedEclRefinementEvaluator {
 		}
 		
 		// TODO: does this request need to support filtering by group?
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		Promise<Collection<Property>> statementsWithValue = SnomedRequests.prepareSearchRelationship()
 				.filterByActive(true)
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
@@ -543,7 +549,10 @@ final class SnomedEclRefinementEvaluator {
 			activeOwlAxiomMemberQuery.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(focusConceptIds));
 		}
 		
-		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		final Query<SnomedRefSetMemberIndexEntry> activeAxiomStatementsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
 			.where(activeOwlAxiomMemberQuery.build())
 			.limit(pageSize)
@@ -669,7 +678,10 @@ final class SnomedEclRefinementEvaluator {
 			fieldsToLoad.add(RELATIONSHIP_GROUP);
 		}
 		
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		SnomedRelationshipSearchRequestBuilder searchRelationships = SnomedRequests.prepareSearchRelationship()
 				.filterByActive(true) 
 				.filterBySources(sourceFilter)

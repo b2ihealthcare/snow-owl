@@ -77,7 +77,10 @@ final class BundleDeleteRequest implements Request<TransactionContext, Boolean> 
 	 * @param context 
 	 */
 	private void updateResourceBundles(TransactionContext context, ResourceDocument bundleToDelete) {
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		ResourceRequests.prepareSearch()
 			.filterByBundleId(bundleToDelete.getId())
 			.setLimit(pageSize)

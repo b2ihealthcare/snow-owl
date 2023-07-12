@@ -34,6 +34,7 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -94,7 +95,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		// inactivate descriptions of inactivated concepts, take current description changes into account
 		ServiceProvider context = (ServiceProvider) staging.getContext();
 		ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
-		int pageSize = getPageSize(context);
+		int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		if (!inactivatedConceptIds.isEmpty()) {
 			
@@ -280,7 +283,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 	private void processReactivations(StagingArea staging, RevisionSearcher searcher, Set<String> reactivatedConceptIds, Set<String> reactivatedComponentIds) throws IOException {
 		ServiceProvider context = (ServiceProvider) staging.getContext();
 		ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
-		int pageSize = getPageSize(context);
+		int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		try {
 			Query.select(String.class)

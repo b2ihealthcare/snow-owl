@@ -152,7 +152,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
 		
-		pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		try (Locks locks = Locks.on(context)
 				.user(user)

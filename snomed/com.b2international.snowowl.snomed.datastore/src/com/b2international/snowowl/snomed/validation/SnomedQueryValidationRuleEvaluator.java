@@ -94,7 +94,9 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		// TODO check if the expression contains only the ID list, then skip scrolling and just report them
 		List issues[] = { null }; 
 		
-		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		Query.select(String.class)
 			.from(validationQuery.getDocType())

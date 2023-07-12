@@ -289,4 +289,9 @@ public class IndexConfiguration {
 	public int getTermPartitionSize() {
 		return Math.min(getMaxTermsCount(), getResultWindow());
 	}
+
+	@JsonIgnore
+	public int getCommitLimit() {
+		return Math.min(getCommitWatermarkLow(), getResultWindow());
+	}
 }

@@ -56,9 +56,12 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 	@Override
 	@SuppressWarnings("deprecation")
 	public Set<String> execute(TransactionContext context) {
-		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
 		Logger log = LoggerFactory.getLogger("dataset-fix-SO-5690");
-		
+
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+
 		Set<String> referenceSetIds = SnomedRequests.prepareSearchRefSet()
 			.all()
 			.setFields(SnomedComponentDocument.Fields.ID)

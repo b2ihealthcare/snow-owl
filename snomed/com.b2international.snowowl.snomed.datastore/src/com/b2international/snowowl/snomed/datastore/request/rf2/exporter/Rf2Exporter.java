@@ -115,7 +115,10 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 			final Set<String> visitedComponentEffectiveTimes) throws IOException {
 
 		LOG.info("Exporting {} branch to '{}'", branch, getFileName());
-		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());

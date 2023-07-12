@@ -88,7 +88,9 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 			}
 		});
 		
-		final int pageSize = this.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		// TODO optimize multiple likes specifying the same source system
 		return likes

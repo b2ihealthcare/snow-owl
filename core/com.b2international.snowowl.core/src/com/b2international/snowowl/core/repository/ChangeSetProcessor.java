@@ -22,10 +22,6 @@ import java.util.Map;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.config.IndexConfiguration;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 
 /**
  * @since 4.3
@@ -69,19 +65,4 @@ public interface ChangeSetProcessor {
 	 * @return
 	 */
 	Collection<RevisionDocument> getDeletions();
-
-	default int getPageSize(ServiceProvider context) {
-		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration();
-		
-		return indexConfiguration.getResultWindow();
-	}
-	
-	default int getMaxTermLimit(ServiceProvider context) {
-		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration();
-
-		// We need to honor the result window as well
-		return Math.min(indexConfiguration.getMaxTermsCount(), indexConfiguration.getResultWindow());
-	}
 }

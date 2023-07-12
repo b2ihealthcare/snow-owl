@@ -28,6 +28,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.version.VersioningConfiguration;
@@ -111,6 +112,10 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		log.info("Collecting module dependencies of changed components...");
 		final Multimap<String, String> moduleDependencies = HashMultimap.create();
 		final Map<String, Long> moduleToLatestEffectiveTime = newHashMap();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		for (String module : ImmutableSet.copyOf(componentIdsByReferringModule.keySet())) {
 			final Collection<String> dependencies = componentIdsByReferringModule.removeAll(module);
 			for (Class<? extends SnomedComponentDocument> type : CORE_COMPONENT_TYPES) {
@@ -118,7 +123,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 					.from(type)
 					.fields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.EFFECTIVE_TIME)
 					.where(SnomedComponentDocument.Expressions.ids(dependencies))
-					.limit(getPageSize(context))
+					.limit(pageSize)
 					.build()
 					.stream(searcher)
 					.flatMap(Hits::stream)

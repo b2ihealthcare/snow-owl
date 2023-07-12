@@ -84,7 +84,10 @@ final class OntologyExportRequest implements Request<BranchContext, String>, Acc
 				.getOrDefault(REASONER_EXCLUDE_MODULE_IDS, Collections.emptySet()));
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupportEnabled = configuration.isConcreteDomainSupported();
-		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(reasonerExcludedModuleIds, pageSize);
 		

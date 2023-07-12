@@ -67,7 +67,9 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 
 		// add all matching members 
 		if (!Strings.isNullOrEmpty(getProperty(SnomedRf2Headers.FIELD_QUERY))) {
-			int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+			final int pageSize = context.service(RepositoryConfiguration.class)
+				.getIndexConfiguration()
+				.getPageSize();
 			
 			SnomedRequests.prepareSearchConcept()
 				.setFields(SnomedConceptDocument.Fields.ID)

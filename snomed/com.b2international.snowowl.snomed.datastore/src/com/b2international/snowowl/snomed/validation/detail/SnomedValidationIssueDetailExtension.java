@@ -121,7 +121,9 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	
 	@Override
 	public void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
-		pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow(); 
+		pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		extendIssueDetails(context, issues); // XXX adds labels for description issues
 		extendConceptIssueLabels(context, issues, ruleParameters);

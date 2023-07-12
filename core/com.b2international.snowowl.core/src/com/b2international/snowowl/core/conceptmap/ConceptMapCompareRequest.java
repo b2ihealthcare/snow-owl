@@ -79,7 +79,9 @@ final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, 
 	}
 
 	private List<ConceptMapMapping> fetchConceptMapMappings(ServiceProvider context, ResourceURI conceptMapUri) {
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 
 		return ConceptMapRequests.prepareSearchConceptMapMappings()
 			.filterByActive(true)

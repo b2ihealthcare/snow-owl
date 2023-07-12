@@ -90,7 +90,9 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 
 		final Set<String> expectedConcepts = newHashSet();
 		final Options expandOptions = expand().getOptions("referencedComponent");
-		int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		// Evaluate the query expression to find out which concepts should be in the simple type reference set
 		final Stream<MemberChange> expectedConceptChanges = SnomedRequests.prepareSearchConcept()
