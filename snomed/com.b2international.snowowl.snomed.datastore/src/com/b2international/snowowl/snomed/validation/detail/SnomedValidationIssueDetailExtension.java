@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -175,21 +174,28 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		}
 		
 		if (!issueIdsByConceptIds.isEmpty()) {
-			final Query<String[]> conceptStatusQuery = Query.select(String[].class)
+			final Set<String> sctIds = issueIdsByConceptIds.keySet();
+			final int partitionSize = context.service(RepositoryConfiguration.class)
+				.getIndexConfiguration()
+				.getTermPartitionSize();
+
+			Iterables.partition(sctIds, partitionSize).forEach(ids -> {
+				Query.select(String[].class)
 					.from(SnomedConceptDocument.class)
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.ACTIVE)
-					.where(SnomedConceptDocument.Expressions.ids(issueIdsByConceptIds.keySet()))
-					.limit(pageSize)
-					.build();
-			
-			conceptStatusQuery.stream(searcher)
-				.flatMap(Hits::stream)
-				.forEachOrdered(hit -> {
-					Collection<String> issueIds = issueIdsByConceptIds.get(hit[0]);
-					issueIds.stream().forEach(id -> {
-						issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.setDetails(CONCEPT_STATUS, hit[1]));
+					.where(Expressions.bool()
+						.filter(SnomedConceptDocument.Expressions.ids(ids))
+						.build())
+					.limit(ids.size())
+					.build()
+					.search(searcher)
+					.forEach(hit -> {
+						Collection<String> issueIds = issueIdsByConceptIds.get(hit[0]);
+						issueIds.stream().forEach(id -> {
+							issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.setDetails(CONCEPT_STATUS, hit[1]));
+						});
 					});
-				});
+			});
 		}
 	}
 	
