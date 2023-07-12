@@ -280,4 +280,13 @@ public class IndexConfiguration {
 		settings.put(IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY, getCommitWatermarkHigh());
 	}
 	
+	@JsonIgnore
+	public int getPageSize() {
+		return Math.min(IndexClientFactory.MAX_PAGE_SIZE, getResultWindow());
+	}
+	
+	@JsonIgnore
+	public int getTermPartitionSize() {
+		return Math.min(getMaxTermsCount(), getResultWindow());
+	}
 }

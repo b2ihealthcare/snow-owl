@@ -243,6 +243,11 @@ public interface IndexClientFactory {
 	String DEFAULT_NUMBER_OF_REPLICAS = "0";
 
 	/**
+	 * Page size when streaming query result should not exceed this maximum value.
+	 */
+	int MAX_PAGE_SIZE = 10_000;
+
+	/**
 	 * Create a new {@link IndexClient} with the given name.
 	 * 
 	 * @param name
