@@ -20,10 +20,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.prefixMatch;
 import static com.b2international.index.query.Expressions.regexp;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -271,7 +268,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String purpose;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
-		private List<DependencyDocument> dependencies;
+		private SortedSet<DependencyDocument> dependencies;
 		
 		// specialized resource fields
 		private String oid;
@@ -405,7 +402,7 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
-		public Builder dependencies(List<DependencyDocument> dependencies) {
+		public Builder dependencies(SortedSet<DependencyDocument> dependencies) {
 			this.dependencies = dependencies;
 			return getSelf();
 		}
@@ -477,7 +474,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String toolingId;
 	private final Map<String, Object> settings;
 	
-	private final List<DependencyDocument> dependencies;
+	private final SortedSet<DependencyDocument> dependencies;
 	
 	// deprecated dependency-like fields, will be removed in 9.0
 	private final ResourceURI extensionOf;
@@ -517,7 +514,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final Map<String, Object> settings,
 			final Long createdAt,
 			final Long updatedAt,
-			final List<DependencyDocument> dependencies) {
+			final SortedSet<DependencyDocument> dependencies) {
 		super(id, iconId);
 		this.resourceType = resourceType;
 		this.url = url;
@@ -638,7 +635,7 @@ public final class ResourceDocument extends RevisionDocument {
 				.orElse(null);
 	}
 	
-	public List<DependencyDocument> getDependencies() {
+	public SortedSet<DependencyDocument> getDependencies() {
 		return dependencies;
 	}
 	

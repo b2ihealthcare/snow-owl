@@ -107,6 +107,20 @@ public final class Dependency {
 		return TerminologyResource.DependencyScope.UPGRADE_OF.equals(scope);
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(resourceUri, scope);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		Dependency other = (Dependency) obj;
+		return Objects.equals(resourceUri, other.resourceUri) && Objects.equals(scope, other.scope);
+	}
+	
 	/**
 	 * Creates a new {@link Dependency} instance with the given {@link ResourceURI} uri and optional scope value.
 	 * 

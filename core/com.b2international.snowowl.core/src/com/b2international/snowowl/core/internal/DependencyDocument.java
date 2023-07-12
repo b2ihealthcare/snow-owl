@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.internal;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.ResourceURIWithQuery;
@@ -24,8 +25,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 8.12.0
  */
-public final class DependencyDocument {
+public final class DependencyDocument implements Comparable<DependencyDocument> {
 
+	private static final Comparator<DependencyDocument> COMPARATOR = Comparator
+			.comparing(DependencyDocument::getResourceUri)
+			.thenComparing(DependencyDocument::getScope);
+	
 	private final ResourceURIWithQuery resourceUri;
 	private final String scope;
 	
@@ -70,6 +75,11 @@ public final class DependencyDocument {
 	
 	public String getQuery() {
 		return query;
+	}
+	
+	@Override
+	public int compareTo(DependencyDocument other) {
+		return COMPARATOR.compare(this, other);
 	}
 	
 }

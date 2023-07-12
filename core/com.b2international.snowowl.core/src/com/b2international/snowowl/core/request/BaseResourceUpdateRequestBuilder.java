@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.Map;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.context.ResourceRepositoryTransactionRequestBuilder;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -118,7 +120,12 @@ public abstract class BaseResourceUpdateRequestBuilder<RB extends BaseResourceUp
 	@Override
 	protected final Request<TransactionContext, Boolean> doBuild() {
 		final R req = createResourceRequest();
+		init(req);
+		return req;
+	}
 
+	@OverridingMethodsMustInvokeSuper
+	protected void init(R req) {
 		req.setUrl(url);
 		req.setTitle(title);
 		req.setLanguage(language);
@@ -131,7 +138,5 @@ public abstract class BaseResourceUpdateRequestBuilder<RB extends BaseResourceUp
 		req.setPurpose(purpose);
 		req.setBundleId(bundleId);
 		req.setSettings(settings);
-
-		return req;
 	}
 }

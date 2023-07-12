@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.request.resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -151,7 +153,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.extensionOf(null)
 				.upgradeOf(null)
 				// extensionOf and upgradeOf will be merged into the new dependency array when creating new resources
-				.dependencies(mergedDependencies == null ? null : mergedDependencies.stream().map(Dependency::toDocument).toList());
+				.dependencies(mergedDependencies == null ? null : mergedDependencies.stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)));
 	}
 
 	@Override

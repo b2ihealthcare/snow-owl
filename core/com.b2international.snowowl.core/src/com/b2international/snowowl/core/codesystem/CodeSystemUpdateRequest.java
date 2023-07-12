@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.request.BaseTerminologyResourceUpdateRequest;
+import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceUpdateRequest;
 
 /**
  * @since 4.7
