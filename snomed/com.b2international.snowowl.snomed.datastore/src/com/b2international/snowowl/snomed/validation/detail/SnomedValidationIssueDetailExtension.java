@@ -35,6 +35,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.util.DecimalUtils;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
@@ -44,11 +45,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
@@ -75,8 +72,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		public static final String CONTENT_TYPE = "contentType";
 		
 	}
-	
-	private static final int SCROLL_SIZE = 50_000;
+
+	private int pageSize;
 	
 	@Override
 	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
@@ -124,6 +121,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	
 	@Override
 	public void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
+		pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow(); 
+		
 		extendIssueDetails(context, issues); // XXX adds labels for description issues
 		extendConceptIssueLabels(context, issues, ruleParameters);
 		extendRelationshipIssueLabels(context, issues, ruleParameters);
@@ -178,7 +177,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					.from(SnomedConceptDocument.class)
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.ACTIVE)
 					.where(SnomedConceptDocument.Expressions.ids(issueIdsByConceptIds.keySet()))
-					.limit(SCROLL_SIZE)
+					.limit(pageSize)
 					.build();
 			
 			conceptStatusQuery.stream(searcher)
@@ -218,7 +217,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.ids(memberIssues.keySet()))
 					.build())
-				.limit(SCROLL_SIZE)
+				.limit(pageSize)
 				.build())
 				.forEach(hits -> {
 					for (String[] hit : hits) {
@@ -265,7 +264,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		final Map<String, String> affectedComponentLabelsByConcept = new HashMap<>();
 		
-		for (List<String> partition : Iterables.partition(conceptIds, SCROLL_SIZE)) {
+		for (List<String> partition : Iterables.partition(conceptIds, pageSize)) {
 			
 			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 				.all()
@@ -310,7 +309,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,
 					SnomedRelationshipIndexEntry.Fields.STRING_VALUE)
 			.where(SnomedRelationshipIndexEntry.Expressions.ids(issuesByRelationshipId.keySet()))
-			.limit(SCROLL_SIZE)
+			.limit(pageSize)
 			.build())
 			.forEach(hits -> {
 				for (String[] hit : hits) {
@@ -402,7 +401,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		default:
 			throw new UnsupportedOperationException();
 		}
-		return queryBuilder.where(SnomedDocument.Expressions.ids(issueIds)).limit(SCROLL_SIZE).build();
+		return queryBuilder.where(SnomedDocument.Expressions.ids(issueIds)).limit(pageSize).build();
 	}
 	
 	private ComponentCategory getComponentCategory(String componentType) {

@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.DelegatingContext;
@@ -87,6 +88,8 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 			}
 		});
 		
+		final int pageSize = this.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		
 		// TODO optimize multiple likes specifying the same source system
 		return likes
 			.stream()
@@ -112,7 +115,7 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 							.filterByCodeSystemUri(uri.getResourceUri())
 							.filterByQuery(Ecl.or(eclQueries))
 							.filterByExclusion(exclusionQuery)
-							.setLimit(10_000)
+							.setLimit(pageSize)
 							.setLocales(locales)
 							.stream(this)
 							.flatMap(Concepts::stream)

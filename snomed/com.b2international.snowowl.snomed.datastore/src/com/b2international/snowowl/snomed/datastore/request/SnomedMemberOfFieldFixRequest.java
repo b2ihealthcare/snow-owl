@@ -27,10 +27,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -50,21 +50,23 @@ import com.google.common.collect.Sets;
 public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext, Set<String>> {
 
 	private static final long serialVersionUID = 7930138235619925182L;
-	private static final int LIMIT = 10_000;
+	
+	private static final int COMMIT_COUNT = 10_000;
 	
 	@Override
 	@SuppressWarnings("deprecation")
 	public Set<String> execute(TransactionContext context) {
+		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
 		Logger log = LoggerFactory.getLogger("dataset-fix-SO-5690");
 		
 		Set<String> referenceSetIds = SnomedRequests.prepareSearchRefSet()
-				.all()
-				.setFields(SnomedComponentDocument.Fields.ID)
-				.build()
-				.execute(context)
-				.stream()
-				.map(SnomedReferenceSet::getId)
-				.collect(Collectors.toSet());
+			.all()
+			.setFields(SnomedComponentDocument.Fields.ID)
+			.build()
+			.execute(context)
+			.stream()
+			.map(SnomedReferenceSet::getId)
+			.collect(Collectors.toSet());
 		
 		log.info("Found a total of {} reference sets", referenceSetIds.size());
 
@@ -79,57 +81,61 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 			log.info("Processing batch {}", ++counter);
 			log.info("Processing refset {}", referenceSetId);
 			
-			SnomedRefSetMemberSearchRequestBuilder memberRequest = SnomedRequests.prepareSearchMember()
-					.filterByRefSet(referenceSetId)
-					.setLimit(50_000)
-					.setFields(ID, ACTIVE, REFERENCED_COMPONENT_ID);
-			
-			SearchResourceRequestIterator<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers> iterator = 
-					new SearchResourceRequestIterator<>(memberRequest, b -> b.build().execute(context));
-			
-			iterator.forEachRemaining(refsetMembers ->
-				refsetMembers.forEach( m -> {
-					if (m.isActive()) {
-						missingActiveMembersOf.put(m.getReferencedComponentId(), referenceSetId);
-					}
+			SnomedRequests.prepareSearchMember()
+				.filterByRefSet(referenceSetId)
+				.setLimit(pageSize)
+				.setFields(ID, ACTIVE, REFERENCED_COMPONENT_ID)
+				.stream(context)
+				.flatMap(SnomedReferenceSetMembers::stream)
+				.forEachOrdered(m -> {
+					if (m.isActive()) { missingActiveMembersOf.put(m.getReferencedComponentId(), referenceSetId); }
 					missingMembersOf.put(m.getReferencedComponentId(), referenceSetId);
-				})
-			);
+				});
 			
 			// Find concepts/descriptions with incomplete member of fields
-			SnomedConceptSearchRequestBuilder conceptMemberOfRequest = SnomedRequests.prepareSearchConcept().isMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
-			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> memberOfConceptIterator = 
-					new SearchResourceRequestIterator<>(conceptMemberOfRequest, b -> b.build().execute(context));
-			memberOfConceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingMembersOf.removeAll(concept.getId())));
+			SnomedRequests.prepareSearchConcept()
+				.isMemberOf(referenceSetId)
+				.setFields(ID)
+				.setLimit(pageSize)
+				.stream(context)
+				.flatMap(SnomedConcepts::stream)
+				.forEachOrdered(c -> missingMembersOf.removeAll(c.getId()));
 			
-			SnomedDescriptionSearchRequestBuilder descriptionMemberOfRequest = SnomedRequests.prepareSearchDescription().isMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
-			SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> memberOfDescriptionIterator = 
-					new SearchResourceRequestIterator<>(descriptionMemberOfRequest, b -> b.setLimit(50_000).build().execute(context));
-			memberOfDescriptionIterator.forEachRemaining(descriptions -> descriptions.forEach(description -> missingMembersOf.removeAll(description.getId())));
+			SnomedRequests.prepareSearchDescription()
+				.isMemberOf(referenceSetId)
+				.setFields(ID)
+				.setLimit(pageSize)
+				.stream(context)
+				.flatMap(SnomedDescriptions::stream)
+				.forEachOrdered(d -> missingMembersOf.removeAll(d.getId()));
 			
 			missingMembersOfComponents.putAll(missingMembersOf);
 			log.info("Found {} components with missing member of entry for reference set {}", missingMembersOf.size(), referenceSetId);
 			
 			// Find concepts/descriptions with incomplete active member of fields
-			SnomedConceptSearchRequestBuilder conceptActiveMemberOfRequest = SnomedRequests.prepareSearchConcept().isActiveMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
-			SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> activeMemberOfConceptIterator = 
-					new SearchResourceRequestIterator<>(conceptActiveMemberOfRequest, b -> b.build().execute(context));
-			activeMemberOfConceptIterator.forEachRemaining(concepts -> concepts.forEach(concept -> missingActiveMembersOf.removeAll(concept.getId())));
-	
-			SnomedDescriptionSearchRequestBuilder descriptionActiveMemberOfRequest = SnomedRequests.prepareSearchDescription().isActiveMemberOf(referenceSetId).setFields(ID).setLimit(50_000);
-			SearchResourceRequestIterator<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> activeMemberOfDescriptionIterator = 
-					new SearchResourceRequestIterator<>(descriptionActiveMemberOfRequest, b -> b.build().execute(context));
-			activeMemberOfDescriptionIterator.forEachRemaining(descriptions -> descriptions.forEach(description -> missingActiveMembersOf.removeAll(description.getId())));
+			SnomedRequests.prepareSearchConcept()
+				.isActiveMemberOf(referenceSetId)
+				.setFields(ID)
+				.setLimit(pageSize)
+				.stream(context)
+				.flatMap(SnomedConcepts::stream)
+				.forEachOrdered(c -> missingActiveMembersOf.removeAll(c.getId()));
+		
+			SnomedRequests.prepareSearchDescription()
+				.isActiveMemberOf(referenceSetId)
+				.setFields(ID)
+				.setLimit(pageSize)
+				.stream(context)
+				.flatMap(SnomedDescriptions::stream)
+				.forEachOrdered(d -> missingActiveMembersOf.removeAll(d.getId()));
 			
 			missingActiveMembersOfComponents.putAll(missingActiveMembersOf);
 			log.info("Found {} components with missing active member of entry for reference set {}",  missingActiveMembersOf.size(), referenceSetId);
-
 		}
 		
 		int modifiedComponentCount = 0;
 		
 		Set<String> allAffectedComponents = Sets.union(missingMembersOfComponents.keySet(), missingActiveMembersOfComponents.keySet());
-		
 		for (String componentId : allAffectedComponents) {
 			try {
 				
@@ -176,7 +182,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 				}
 				
 				modifiedComponentCount++;
-				if (modifiedComponentCount % LIMIT == 0) {
+				if (modifiedComponentCount % COMMIT_COUNT == 0) {
 					context.commit("Update memberOf/activeMemberOf fields on components");
 				}
 				
@@ -189,5 +195,4 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 		context.commit("Update memberOf/activeMemberOf fields on components");
 		return Set.copyOf(allAffectedComponents);
 	}
-		
 }

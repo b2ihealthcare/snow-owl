@@ -225,18 +225,21 @@ public class EsDocumentSearcher implements Searcher {
 		
 		final SearchHit[] firstHits = responseHits.getHits();
 		final int firstCount = firstHits.length;
-		final int remainingCount = Math.min(limit, totalHitCount) - firstCount;
+		int remainingCount = Math.min(limit, totalHitCount) - firstCount;
 		
 		// Add the first set of results
 		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
 		allHits.addAll(responseHits);
 		
 		// If the client requested all data at once and there are more hits to retrieve, collect them all as part of the request 
-		if (isLocalStreaming && remainingCount > 0) {
-			admin.log().warn("Returning all matches (totalHits: '{}') larger than the currently configured result_window ('{}') might not be the most "
-					+ "efficient way of getting the data. Consider using the index pagination API (searchAfter) instead.", totalHitCount, resultWindow);
+		if (isLocalStreaming && firstCount > 0 && remainingCount > 0) {
+
+			admin.log().warn("Requesting a result set of size '{}' larger than the currently configured result_window '{}'"
+				+" (for a total hit count of '{}') might not be the most efficient way of getting the data. Consider using"
+				+" the index pagination API (searchAfter).", 
+				limit, resultWindow, totalHitCount);
 			
-			while (true) {
+			while (remainingCount > 0) {
 				// Extract searchAfter values for the next set of results
 				final SearchHit lastHit = Iterables.getLast(responseHits, null);
 				if (lastHit == null) {
@@ -244,11 +247,20 @@ public class EsDocumentSearcher implements Searcher {
 				}
 				
 				reqSource.searchAfter(lastHit.getSortValues());
-
+				
+				// Read at most "resultWindow" sized blocks
+				final int toReadBatch = Math.min(remainingCount, resultWindow);
+				reqSource.size(toReadBatch);
+				
 				// Request more search results, adding them to the list builder
 				response = client.search(req);
 				responseHits = response.getHits();
 				allHits.addAll(responseHits);
+
+				// Update the number of requested documents remaining
+				final SearchHit[] nextHits = responseHits.getHits();
+				final int nextCount = nextHits.length;
+				remainingCount -= nextCount;
 			}
 		}
 

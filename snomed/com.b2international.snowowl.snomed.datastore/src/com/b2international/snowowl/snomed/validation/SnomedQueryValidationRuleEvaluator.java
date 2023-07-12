@@ -32,6 +32,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -58,7 +59,6 @@ import com.google.common.base.Strings;
  */
 public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleEvaluator {
 
-	private static final int RULE_LIMIT = 25_000;
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -94,11 +94,13 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		// TODO check if the expression contains only the ID list, then skip scrolling and just report them
 		List issues[] = { null }; 
 		
+		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		
 		Query.select(String.class)
 			.from(validationQuery.getDocType())
 			.fields(SnomedDocument.Fields.ID)
 			.where(where)
-			.limit(RULE_LIMIT)
+			.limit(pageSize)
 			.withScores(false)
 			.build()
 			.stream(context.service(RevisionSearcher.class))

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,9 +28,9 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -46,8 +47,11 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
@@ -105,6 +109,8 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
+		final int pageSize = context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow();
+		
 		final SnomedConceptDocument concept = context.lookup(componentId(), SnomedConceptDocument.class);
 		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);
 
@@ -119,7 +125,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			componentChanged |= updateComponents(
 				context, 
 				concept.getId(), 
-				getDescriptionIds(context, concept.getId()),
+				getDescriptionIds(context, concept.getId(), pageSize),
 				descriptions, 
 				id -> SnomedRequests.prepareDeleteDescription(id).build()
 			);
@@ -129,7 +135,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			componentChanged |= updateComponents(
 				context, 
 				concept.getId(), 
-				getRelationshipIds(context, concept.getId()), 
+				getRelationshipIds(context, concept.getId(), pageSize), 
 				relationships, 
 				id -> SnomedRequests.prepareDeleteRelationship(id).build());
 		}
@@ -138,8 +144,8 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			componentChanged |= updateComponents(
 				context, 
 				concept.getId(), 
-				getPreviousMemberIds(concept.getId(), context), 
-				getUpdateableMembers(members).toSet(), 
+				getPreviousMemberIds(context, concept.getId(), pageSize), 
+				getUpdatableMembers(), 
 				id -> SnomedRequests.prepareDeleteMember(id).build()
 			);
 		}
@@ -157,7 +163,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		 * - (force) deletion of reference set and members via the identifier concept
 		 * - subclass definition status (doesn't exist as an actual RF2 property)
 		 */
-		changed |= updateRefSet(context, concept, updatedConcept);
+		changed |= updateRefSet(context, concept, updatedConcept, pageSize);
 		changed |= updateSubclassDefinitionStatus(context, concept, updatedConcept);
 		
 		if (changed) {
@@ -167,7 +173,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		// Changes on related components should be reported but not use "unset effective time" logic nor update the document in any way
 		return changed || componentChanged;
 	}
-	
+
 	@Override
 	protected <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void postInactivateComponent(TransactionContext context, T component, B updatedComponent) {
 		// automatically set concept to primitive when inactivating it, unless the user decided to use a different definition status ID 
@@ -180,12 +186,12 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		return Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR;
 	}
 
-	private boolean updateRefSet(TransactionContext context, SnomedConceptDocument concept, SnomedConceptDocument.Builder updatedConcept) {
+	private boolean updateRefSet(TransactionContext context, SnomedConceptDocument concept, SnomedConceptDocument.Builder updatedConcept, int pageSize) {
 		final boolean force = refSet == SnomedReferenceSet.FORCE_DELETE;
 		if (refSet == SnomedReferenceSet.DELETE || force) {
 			Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedRefSetMemberIndexEntry.Expressions.refsetId(componentId()))
-				.limit(10_000)
+				.limit(pageSize)
 				.build()
 				.stream(context.service(RevisionSearcher.class))
 				.flatMap(Hits::stream)
@@ -197,49 +203,49 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		return false;
 	}
 
-	private Set<String> getDescriptionIds(BranchContext context, String conceptId) {
+	private Set<String> getDescriptionIds(BranchContext context, String conceptId, int pageSize) {
 		return SnomedRequests.prepareSearchDescription()
-				.all()
-				.filterByConcept(conceptId)
-				.setFields(SnomedDocument.Fields.ID)
-				.build()
-				.execute(context)
-				.getItems()
-				.stream()
-				.map(IComponent::getId)
-				.collect(Collectors.toSet());
+			.setLimit(pageSize)
+			.filterByConcept(conceptId)
+			.setFields(SnomedDocument.Fields.ID)
+			.stream(context)
+			.flatMap(SnomedDescriptions::stream)
+			.map(SnomedDescription::getId)
+			.collect(Collectors.toSet());
 	}
 	
-	private Set<String> getRelationshipIds(BranchContext context, String conceptId) {
+	private Set<String> getRelationshipIds(BranchContext context, String conceptId, int pageSize) {
 		return SnomedRequests.prepareSearchRelationship()
-				.all()
-				.filterBySource(conceptId)
-				.setFields(SnomedDocument.Fields.ID)
-				.build()
-				.execute(context)
-				.getItems()
-				.stream()
-				.map(IComponent::getId)
-				.collect(Collectors.toSet());
+			.setLimit(pageSize)
+			.filterBySource(conceptId)
+			.setFields(SnomedDocument.Fields.ID)
+			.stream(context)
+			.flatMap(SnomedRelationships::stream)
+			.map(SnomedRelationship::getId)
+			.collect(Collectors.toSet());
 	}
 
-	private Set<String> getPreviousMemberIds(final String conceptId, TransactionContext context) {
-		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
-			.all()
+	private Set<String> getPreviousMemberIds(BranchContext context, String conceptId, int pageSize) {
+		return SnomedRequests.prepareSearchMember()
+			.setLimit(pageSize)
 			.filterByReferencedComponent(conceptId)
-			.build()
-			.execute(context);
-		
-		return getUpdateableMembers(members)
-				.transform(m -> m.getId())
-				.toSet();
+			.stream(context)
+			.flatMap(SnomedReferenceSetMembers::stream)
+			.filter(getFilter())
+			.map(SnomedReferenceSetMember::getId)
+			.collect(Collectors.toSet());
+	}
+
+	private Set<SnomedReferenceSetMember> getUpdatableMembers() {
+		return members.stream()
+			.filter(getFilter())
+			.collect(Collectors.toSet());
+	}
+
+	private Predicate<SnomedReferenceSetMember> getFilter() {
+		return m -> !FILTERED_REFSET_IDS.contains(m.getRefsetId());
 	}
 	
-	private FluentIterable<SnomedReferenceSetMember> getUpdateableMembers(Iterable<SnomedReferenceSetMember> members) {
-		return FluentIterable.from(members)
-				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getRefsetId()));
-	}
-
 	private boolean updateDefinitionStatus(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
 		final Set<String> newOwlAxiomExpressions = Optional.ofNullable(members)
 				.map(Collection::stream)

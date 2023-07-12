@@ -24,13 +24,14 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.*;
 import com.b2international.snowowl.core.ecl.EclParser;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -43,8 +44,6 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  * @since 7.7
  */
 public final class SnomedQueryOptimizer implements QueryOptimizer {
-
-	private static final int PAGE_SIZE = 10_000;
 
 	@Override
 	public QueryExpressionDiffs optimize(BranchContext context, Options params) {
@@ -69,12 +68,17 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// Record the ancestors (both direct and indirect) of each single concept inclusion
 		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
 		
-		Iterables.partition(singleConceptInclusions.keySet(), PAGE_SIZE).forEach(batchIds -> {
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
+		final int maxTermsCount = indexConfiguration.getMaxTermsCount();
+		final int resultWindow = indexConfiguration.getResultWindow();
+		final int maxTermsLimit = Math.min(maxTermsCount, resultWindow);
+		
+		Iterables.partition(singleConceptInclusions.keySet(), maxTermsLimit).forEach(batchIds -> {
 			SnomedRequests.prepareSearchConcept()
 				.filterByIds(batchIds)
 				.setLimit(batchIds.size())
-				.stream(context)
-				.flatMap(SnomedConcepts::stream)
+				.build()
+				.execute(context)
 				.forEach(child -> {
 					final Collection<QueryExpression> childExpressions = singleConceptInclusions.get(child.getId());
 					final List<String> parentIds = child.getParentIdsAsString();

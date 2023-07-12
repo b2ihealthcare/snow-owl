@@ -92,9 +92,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 
 	private void processInactivations(StagingArea staging, RevisionSearcher searcher, Set<String> inactivatedConceptIds, Set<String> inactivatedComponentIds) throws IOException {
 		// inactivate descriptions of inactivated concepts, take current description changes into account
-		
 		ServiceProvider context = (ServiceProvider) staging.getContext();
 		ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
+		int pageSize = getPageSize(context);
 		
 		if (!inactivatedConceptIds.isEmpty()) {
 			
@@ -112,7 +112,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 						.filter(SnomedDescriptionIndexEntry.Expressions.active())
 						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
 						.build())
-					.limit(PAGE_SIZE)
+					.limit(pageSize)
 					.build()
 					.stream(searcher)
 					.forEachOrdered(hits -> {
@@ -136,7 +136,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
 					.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactivatedConceptIds))
 					.build())
-				.limit(PAGE_SIZE)
+				.limit(pageSize)
 				.build()
 				.stream(searcher)
 				.flatMap(Hits::stream)
@@ -156,7 +156,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				.should(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(inactivatedComponentIds))
 				.setMinimumNumberShouldMatch(1)
 				.build())
-			.limit(PAGE_SIZE)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.flatMap(Hits::stream)
@@ -280,7 +280,8 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 	private void processReactivations(StagingArea staging, RevisionSearcher searcher, Set<String> reactivatedConceptIds, Set<String> reactivatedComponentIds) throws IOException {
 		ServiceProvider context = (ServiceProvider) staging.getContext();
 		ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
-
+		int pageSize = getPageSize(context);
+		
 		try {
 			Query.select(String.class)
 				.from(SnomedDescriptionIndexEntry.class)
@@ -291,7 +292,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					.filter(SnomedDescriptionIndexEntry.Expressions.concepts(reactivatedConceptIds))
 					.filter(SnomedDescriptionIndexEntry.Expressions.activeMemberOf(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 					.build())
-				.limit(PAGE_SIZE)
+				.limit(pageSize)
 				.build()
 				.stream(searcher)
 				.forEachOrdered(hits -> {

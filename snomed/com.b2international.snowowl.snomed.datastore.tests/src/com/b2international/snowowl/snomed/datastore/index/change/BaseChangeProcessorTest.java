@@ -71,7 +71,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 
 	@Before
 	public void setup() {
-		staging = index().prepareCommit(MAIN);
+		staging = index().prepareCommit(MAIN).withContext(context);
 	}
 	
 	@Override
