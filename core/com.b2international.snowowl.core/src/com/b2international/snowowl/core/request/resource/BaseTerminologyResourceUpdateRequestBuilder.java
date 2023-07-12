@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import java.util.List;
+
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.request.BaseResourceUpdateRequestBuilder;
 
 /**
@@ -25,6 +28,7 @@ public abstract class BaseTerminologyResourceUpdateRequestBuilder<RB extends Bas
 
 	private String oid;
 	private String branchPath;
+	private List<Dependency> dependencies;
 	
 	protected BaseTerminologyResourceUpdateRequestBuilder(String resourceId) {
 		super(resourceId);
@@ -40,11 +44,17 @@ public abstract class BaseTerminologyResourceUpdateRequestBuilder<RB extends Bas
 		return getSelf();
 	}
 	
+	public final RB setDependencies(List<Dependency> dependencies) {
+		this.dependencies = dependencies;
+		return getSelf();
+	}
+	
 	@Override
 	protected void init(R req) {
 		super.init(req);
 		req.setOid(oid);
 		req.setBranchPath(branchPath);
+		req.setDependencies(dependencies);
 	}
 
 }
