@@ -5,30 +5,31 @@ import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 
 import com.b2international.commons.exceptions.SyntaxException
 import com.b2international.index.query.Expressions
-import com.b2international.index.query.Query
 import com.b2international.index.query.Expressions.ExpressionBuilder
+import com.b2international.index.query.Query
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
+import com.b2international.snowowl.core.config.RepositoryConfiguration
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.ecl.EclParser
-import com.b2international.snowowl.snomed.common.SnomedConstants
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
-import com.b2international.snowowl.snomed.core.ecl.EclExpression
-import com.b2international.snowowl.snomed.core.tree.Trees
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
 import com.google.common.collect.Maps
 import com.google.common.collect.Sets
 
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
+final int pageSize = ctx.service(RepositoryConfiguration.class)
+	.getIndexConfiguration()
+	.getPageSize()
+
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 
 final String integerTypeRangePrefix = "int";
@@ -131,7 +132,7 @@ for (String typeId : allowedRanges.keySet()) {
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 		.where(relevantRelationshipQueryBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	searcher.stream(relevantRelationshipQuery).each { hits -> hits.forEach({ String destinationId -> destinationIds.add(destinationId)}) }
@@ -151,7 +152,7 @@ for (String typeId : allowedRanges.keySet()) {
 			SnomedRefSetMemberIndexEntry.Fields.GCI_AXIOM_RELATIONSHIP,
 			SnomedRefSetMemberIndexEntry.Fields.ID)
 		.where(relevantOwlMemberExpressionBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	searcher.stream(relevantOwlMemberQuery).forEach({ axioms -> 
@@ -217,7 +218,7 @@ for (String typeId : allowedRanges.keySet()) {
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
 		.where(destinationQueryBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	Set<String> incorrectDestinationIds = Sets.newHashSet();
@@ -241,7 +242,7 @@ for (String typeId : allowedRanges.keySet()) {
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(relationshipQueryBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 		
 	searcher.stream(relationshipQuery).each { hits ->
@@ -274,7 +275,7 @@ for (String typeId : allowedRanges.keySet()) {
 		.from(SnomedRefSetMemberIndexEntry.class)
 		.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 		.where(owlMemberExpressionBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	searcher.stream(owlMemberQuery).forEach({ hits ->
