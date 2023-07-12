@@ -24,7 +24,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.*;
 import com.b2international.snowowl.core.ecl.EclParser;
@@ -68,12 +67,11 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// Record the ancestors (both direct and indirect) of each single concept inclusion
 		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
 		
-		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
-		final int maxTermsCount = indexConfiguration.getMaxTermsCount();
-		final int resultWindow = indexConfiguration.getResultWindow();
-		final int maxTermsLimit = Math.min(maxTermsCount, resultWindow);
+		final int partitionSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getTermPartitionSize();
 		
-		Iterables.partition(singleConceptInclusions.keySet(), maxTermsLimit).forEach(batchIds -> {
+		Iterables.partition(singleConceptInclusions.keySet(), partitionSize).forEach(batchIds -> {
 			SnomedRequests.prepareSearchConcept()
 				.filterByIds(batchIds)
 				.setLimit(batchIds.size())

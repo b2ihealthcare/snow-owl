@@ -20,12 +20,14 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -143,13 +145,11 @@ public final class InactivationPropertiesExpander {
 
 	private Map<String, SnomedConcept> expandConceptByIdMap(final Options expand, final Set<String> componentsToExpand, final BranchContext context) {
 		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
-		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
-		final int resultWindow = indexConfiguration.getResultWindow();
-		final int maxTermCount = indexConfiguration.getMaxTermsCount();
-		// We have to honor the lower of either limit here
-		final int maxTermLimit = Math.min(maxTermCount, resultWindow);
+		final int partitionSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getTermPartitionSize();
 		
-		Iterables.partition(componentsToExpand, maxTermLimit).forEach(idsFilter -> {
+		Iterables.partition(componentsToExpand, partitionSize).forEach(idsFilter -> {
 			SnomedRequests.prepareSearchConcept()
 			.setLimit(idsFilter.size())
 			.filterByIds(idsFilter)

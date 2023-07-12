@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -39,7 +38,10 @@ import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.domain.*;
+import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 import com.google.common.collect.*;
@@ -306,12 +308,11 @@ public final class RelationshipChangeConverter
 
 		final Map<String, String> branchesByClassificationIdMap = newHashMap();
 
-		final IndexConfiguration indexConfiguration = context().service(RepositoryConfiguration.class).getIndexConfiguration();
-		final int maxTermsCount = indexConfiguration.getMaxTermsCount();
-		final int resultWindow = indexConfiguration.getResultWindow();
-		final int maxTermsLimit = Math.min(maxTermsCount, resultWindow);
+		final int partitionSize = context().service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getTermPartitionSize();
 		
-		Iterables.partition(classificationTaskIds, maxTermsLimit).forEach(ids -> {
+		Iterables.partition(classificationTaskIds, partitionSize).forEach(ids -> {
 			ClassificationRequests.prepareSearchClassification()
 				.filterByIds(ids)
 				.setLimit(ids.size())
