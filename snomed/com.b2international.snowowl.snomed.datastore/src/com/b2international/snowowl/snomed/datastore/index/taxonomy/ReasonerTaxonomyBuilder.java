@@ -82,10 +82,9 @@ public final class ReasonerTaxonomyBuilder {
 			Concepts.ADDITIONAL_RELATIONSHIP,
 			Concepts.INFERRED_RELATIONSHIP);
 	
-	private static final int SCROLL_LIMIT = 50_000;
-
 	private final Stopwatch stopwatch;
 	private final Set<String> excludedModuleIds;
+	private final int pageSize;
 	
 	private InternalIdMap.Builder conceptMapBuilder;
 	private InternalIdMap conceptMap;
@@ -113,13 +112,16 @@ public final class ReasonerTaxonomyBuilder {
 	private InternalIdMultimap.Builder<ConcreteDomainFragment> additionalGroupedConcreteDomainMembers;
 	private InternalIdMultimap.Builder<ConcreteDomainFragment> inferredConcreteDomainMembers;
 
-	public ReasonerTaxonomyBuilder() {
-		this(ImmutableSet.<String>of());
+
+	public ReasonerTaxonomyBuilder(final int pageSize) {
+		this(ImmutableSet.<String>of(), pageSize);
 	}
 	
-	public ReasonerTaxonomyBuilder(final Set<String> excludedModuleIds) {
+	public ReasonerTaxonomyBuilder(final Set<String> excludedModuleIds, final int pageSize) {
 		this.stopwatch = Stopwatch.createStarted();
 		this.excludedModuleIds = ImmutableSet.copyOf(checkNotNull(excludedModuleIds, "excludedModuleIds"));
+		this.pageSize = pageSize;
+		
 		this.conceptMapBuilder = InternalIdMap.builder();
 	}			
 
@@ -140,13 +142,13 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final List<String> conceptIds = new ArrayList<>(SCROLL_LIMIT);
+		final List<String> conceptIds = new ArrayList<>(pageSize);
 		
 		Query.select(String[].class)
 			.from(SnomedConceptDocument.class)
 			.fields(SnomedConceptDocument.Fields.ID)
 			.where(whereExpressionBuilder.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -168,8 +170,8 @@ public final class ReasonerTaxonomyBuilder {
 		Stream<SnomedConcept> filteredConcepts = concepts.filter(c -> c.isActive() 
 				&& !excludedModuleIds.contains(c.getModuleId()));
 
-		final Collection<String> conceptIds = new ArrayList<>(SCROLL_LIMIT);
-		for (final Collection<SnomedConcept> chunk : Iterables.partition(filteredConcepts::iterator, SCROLL_LIMIT)) {
+		final Collection<String> conceptIds = new ArrayList<>(pageSize);
+		for (final Collection<SnomedConcept> chunk : Iterables.partition(filteredConcepts::iterator, pageSize)) {
 			for (SnomedConcept concept : chunk) {
 				conceptIds.add(concept.getId());
 			}
@@ -222,15 +224,15 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final List<String> conceptIds = new ArrayList<>(SCROLL_LIMIT);
-		final List<String> terms = new ArrayList<>(SCROLL_LIMIT);
+		final List<String> conceptIds = new ArrayList<>(pageSize);
+		final List<String> terms = new ArrayList<>(pageSize);
 		
 		Query.select(String[].class)
 			.from(SnomedDescriptionIndexEntry.class)
 			.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, // 0
 					SnomedDescriptionIndexEntry.Fields.TERM) // 1
 			.where(whereExpressionBuilder.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -267,15 +269,15 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final List<String> sourceIds = new ArrayList<>(SCROLL_LIMIT);
-		final List<String> destinationIds = new ArrayList<>(SCROLL_LIMIT);
+		final List<String> sourceIds = new ArrayList<>(pageSize);
+		final List<String> destinationIds = new ArrayList<>(pageSize);
 		
 		Query.select(String[].class)
 			.from(SnomedRelationshipIndexEntry.class)
 			.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 0
 					SnomedRelationshipIndexEntry.Fields.DESTINATION_ID) // 1
 			.where(whereExpressionBuilder.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -309,9 +311,9 @@ public final class ReasonerTaxonomyBuilder {
 				&& Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(r.getModuleId()));
 		
-		final List<String> sourceIds = new ArrayList<>(SCROLL_LIMIT);
-		final List<String> destinationIds = new ArrayList<>(SCROLL_LIMIT);
-		for (final Iterable<SnomedRelationship> chunk : Iterables.partition(filteredRelationships::iterator, SCROLL_LIMIT)) {
+		final List<String> sourceIds = new ArrayList<>(pageSize);
+		final List<String> destinationIds = new ArrayList<>(pageSize);
+		for (final Iterable<SnomedRelationship> chunk : Iterables.partition(filteredRelationships::iterator, pageSize)) {
 			for (final SnomedRelationship relationship : chunk) {
 				if (conceptMap.containsKey(relationship.getSourceId()) && conceptMap.containsKey(relationship.getDestinationId())) {
 					sourceIds.add(relationship.getSourceId());
@@ -358,12 +360,12 @@ public final class ReasonerTaxonomyBuilder {
 		 * amount so that the expected number of elements can be inserted without
 		 * expanding the backing data structure.
 		 */
-		final Set<String> sctIds = newHashSetWithExpectedSize(SCROLL_LIMIT);
+		final Set<String> sctIds = newHashSetWithExpectedSize(pageSize);
 		Query.select(String[].class)
 			.from(SnomedConceptDocument.class)
 			.fields(SnomedConceptDocument.Fields.ID)
 			.where(whereExpressionBuilder.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -388,9 +390,9 @@ public final class ReasonerTaxonomyBuilder {
 					&& !excludedModuleIds.contains(c.getModuleId());
 		});
 
-		final Set<String> definingIds = newHashSetWithExpectedSize(SCROLL_LIMIT);
-		final Set<String> exhaustiveIds = newHashSetWithExpectedSize(SCROLL_LIMIT);
-		for (final List<SnomedConcept> chunk : Iterables.partition(filteredConcepts::iterator, SCROLL_LIMIT)) {
+		final Set<String> definingIds = newHashSetWithExpectedSize(pageSize);
+		final Set<String> exhaustiveIds = newHashSetWithExpectedSize(pageSize);
+		for (final List<SnomedConcept> chunk : Iterables.partition(filteredConcepts::iterator, pageSize)) {
 			for (final SnomedConcept concept : chunk) {
 				if (SubclassDefinitionStatus.DISJOINT_SUBCLASSES.equals(concept.getSubclassDefinitionStatus())) {
 					exhaustiveIds.add(concept.getId()); 
@@ -513,7 +515,7 @@ public final class ReasonerTaxonomyBuilder {
 
 	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Builder<StatementFragment> fragmentBuilder) {
 		
-		final List<StatementFragment> fragments = new ArrayList<>(SCROLL_LIMIT);
+		final List<StatementFragment> fragments = new ArrayList<>(pageSize);
 		final String[] lastSourceId = { "" };
 		
 		Query.select(String[].class)
@@ -536,7 +538,7 @@ public final class ReasonerTaxonomyBuilder {
 				.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC) 
 				.sortByField(SnomedRelationshipIndexEntry.Fields.ID, Order.ASC)
 				.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -604,10 +606,10 @@ public final class ReasonerTaxonomyBuilder {
 	 */
 	private void addRelationships(final Stream<SnomedRelationship> sortedRelationships, final Builder<StatementFragment> builder) {
 		
-		final List<StatementFragment> fragments = new ArrayList<>(SCROLL_LIMIT);
+		final List<StatementFragment> fragments = new ArrayList<>(pageSize);
 		String lastSourceId = "";
 
-		for (final List<SnomedRelationship> chunk : Iterables.partition(sortedRelationships::iterator, SCROLL_LIMIT)) {
+		for (final List<SnomedRelationship> chunk : Iterables.partition(sortedRelationships::iterator, pageSize)) {
 			for (final SnomedRelationship relationship : chunk) {
 				final String sourceId = relationship.getSourceId();
 				
@@ -671,10 +673,10 @@ public final class ReasonerTaxonomyBuilder {
 		}
 		
 		// XXX: we can only guess the lower limit here (1 relationship for each OWL axiom)
-		final List<StatementFragment> nonIsAFragments = new ArrayList<>(SCROLL_LIMIT);
-		final List<String> axioms = new ArrayList<>(SCROLL_LIMIT);
-		final List<String> sourceIds = new ArrayList<>(SCROLL_LIMIT);
-		final List<String> destinationIds = new ArrayList<>(SCROLL_LIMIT);
+		final List<StatementFragment> nonIsAFragments = new ArrayList<>(pageSize);
+		final List<String> axioms = new ArrayList<>(pageSize);
+		final List<String> sourceIds = new ArrayList<>(pageSize);
+		final List<String> destinationIds = new ArrayList<>(pageSize);
 		final String lastReferencedComponentId[] = { "" };
 		final int groupOffset[] = { AXIOM_GROUP_BASE };
 
@@ -685,7 +687,7 @@ public final class ReasonerTaxonomyBuilder {
 				.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
 				.sortByField(SnomedRefSetMemberIndexEntry.Fields.ID, Order.ASC)
 				.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -839,7 +841,7 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final LongList fragments = PrimitiveLists.newLongArrayListWithExpectedSize(SCROLL_LIMIT);
+		final LongList fragments = PrimitiveLists.newLongArrayListWithExpectedSize(pageSize);
 		
 		Query.select(String.class)
 			.from(SnomedRefSetMemberIndexEntry.class)
@@ -849,7 +851,7 @@ public final class ReasonerTaxonomyBuilder {
 				.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
 				.sortByField(SnomedRefSetMemberIndexEntry.Fields.ID, Order.ASC)
 				.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -877,9 +879,9 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 
-		final List<ConcreteDomainFragment> statedFragments = new ArrayList<>(SCROLL_LIMIT);
-		final List<ConcreteDomainFragment> inferredFragments = new ArrayList<>(SCROLL_LIMIT);
-		final List<ConcreteDomainFragment> additionalGroupedFragments = new ArrayList<>(SCROLL_LIMIT);
+		final List<ConcreteDomainFragment> statedFragments = new ArrayList<>(pageSize);
+		final List<ConcreteDomainFragment> inferredFragments = new ArrayList<>(pageSize);
+		final List<ConcreteDomainFragment> additionalGroupedFragments = new ArrayList<>(pageSize);
 		final String lastReferencedComponentId[] = { "" };
 
 		Query.select(SnomedRefSetMemberIndexEntry.class)
@@ -888,7 +890,7 @@ public final class ReasonerTaxonomyBuilder {
 				.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
 				.sortByField(SnomedRefSetMemberIndexEntry.Fields.ID, Order.ASC)
 				.build())
-			.limit(SCROLL_LIMIT)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.forEachOrdered(hits -> {
@@ -958,12 +960,12 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final Stream<SnomedReferenceSetMember> sortedMembers) {
 		entering("Registering active concrete domain members using stream");
 
-		final List<ConcreteDomainFragment> statedFragments = new ArrayList<>(SCROLL_LIMIT);
-		final List<ConcreteDomainFragment> inferredFragments = new ArrayList<>(SCROLL_LIMIT);
-		final List<ConcreteDomainFragment> additionalGroupedFragments = new ArrayList<>(SCROLL_LIMIT);
+		final List<ConcreteDomainFragment> statedFragments = new ArrayList<>(pageSize);
+		final List<ConcreteDomainFragment> inferredFragments = new ArrayList<>(pageSize);
+		final List<ConcreteDomainFragment> additionalGroupedFragments = new ArrayList<>(pageSize);
 		String lastReferencedComponentId = "";
 
-		for (final List<SnomedReferenceSetMember> chunk : Iterables.partition(sortedMembers::iterator, SCROLL_LIMIT)) {
+		for (final List<SnomedReferenceSetMember> chunk : Iterables.partition(sortedMembers::iterator, pageSize)) {
 			for (final SnomedReferenceSetMember member : chunk) {
 				final String characteristicTypeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 

@@ -26,6 +26,8 @@ import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequest;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -99,6 +101,11 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 			});
 			with(IEventBus.class, bus);
 			with(RepositoryContextProvider.class, context);
+			
+			IndexConfiguration indexConfiguration = new IndexConfiguration();
+			RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration();
+			repositoryConfiguration.setIndexConfiguration(indexConfiguration);
+			with(RepositoryConfiguration.class, repositoryConfiguration);
 		}
 		
 		public <T> Builder with(Class<T> type, T object) {

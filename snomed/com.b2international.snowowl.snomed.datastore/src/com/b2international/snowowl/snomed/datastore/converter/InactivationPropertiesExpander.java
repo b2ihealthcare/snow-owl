@@ -20,10 +20,14 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -36,8 +40,6 @@ import com.google.common.collect.*;
  */
 public final class InactivationPropertiesExpander {
 
-	private static final int BATCH_SIZE = 10_000;
-	
 	private final BranchContext context;
 	private final Options expand;
 	private final List<ExtendedLocale> locales;
@@ -57,8 +59,12 @@ public final class InactivationPropertiesExpander {
 		
 		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = ArrayListMultimap.create();
 
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+
 		SnomedRequests.prepareSearchMember()
-			.setLimit(10_000)
+			.setLimit(pageSize)
 			.filterByActive(true)
 			// all association type refsets and the indicator
 			.filterByRefSet(String.format("<%s OR %s", Concepts.REFSET_ASSOCIATION_TYPE, inactivationIndicatorRefSetId))
@@ -142,16 +148,19 @@ public final class InactivationPropertiesExpander {
 
 	private Map<String, SnomedConcept> expandConceptByIdMap(final Options expand, final Set<String> componentsToExpand, final BranchContext context) {
 		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
+		final int partitionSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getTermPartitionSize();
 		
-		Iterables.partition(componentsToExpand, BATCH_SIZE).forEach(idsFilter -> {
+		Iterables.partition(componentsToExpand, partitionSize).forEach(idsFilter -> {
 			SnomedRequests.prepareSearchConcept()
 			.setLimit(idsFilter.size())
 			.filterByIds(idsFilter)
 			.setLocales(locales)
 			.setExpand(expand)
-			.stream(context)
-			.flatMap(SnomedConcepts::stream)
-			.forEachOrdered(concept -> {
+			.build()
+			.execute(context)
+			.forEach(concept -> {
 				conceptsById.put(concept.getId(), concept);
 			});
 		});

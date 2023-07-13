@@ -415,13 +415,17 @@ final class SnomedEclRefinementEvaluator {
 
 		// TODO: does this request need to support filtering by group?
 		
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		return SnomedRequests.prepareSearchMember()
 				.filterByActive(true)
 				.filterByRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.filterByReferencedComponent(focusConceptIds)
 				.filterByProps(propFilter)
 				.setEclExpressionForm(expressionForm)
-				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
+				.setLimit(pageSize)
 				.<Property>transformAsync(context, req -> req.build(context.path()), members -> members.stream().map(input -> {
 					return new Property(
 							input.getReferencedComponent().getId(), 
@@ -478,6 +482,10 @@ final class SnomedEclRefinementEvaluator {
 		}
 		
 		// TODO: does this request need to support filtering by group?
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		Promise<Collection<Property>> statementsWithValue = SnomedRequests.prepareSearchRelationship()
 				.filterByActive(true)
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
@@ -487,7 +495,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValues(operator, values)
 				.setEclExpressionForm(expressionForm)
 				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
-				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
+				.setLimit(pageSize)
 				.transformAsync(context, req -> req.build(context.path()), relationships -> relationships.stream().map(relationship -> {
 					return new Property(
 							relationship.getSourceId(), 
@@ -541,9 +549,13 @@ final class SnomedEclRefinementEvaluator {
 			activeOwlAxiomMemberQuery.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(focusConceptIds));
 		}
 		
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		final Query<SnomedRefSetMemberIndexEntry> activeAxiomStatementsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
 			.where(activeOwlAxiomMemberQuery.build())
-			.limit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow())
+			.limit(pageSize)
 			.build();
 		
 		final Set<Property> axiomProperties = newHashSet();
@@ -666,6 +678,10 @@ final class SnomedEclRefinementEvaluator {
 			fieldsToLoad.add(RELATIONSHIP_GROUP);
 		}
 		
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		SnomedRelationshipSearchRequestBuilder searchRelationships = SnomedRequests.prepareSearchRelationship()
 				.filterByActive(true) 
 				.filterBySources(sourceFilter)
@@ -674,7 +690,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
 				.setEclExpressionForm(expressionForm)
 				.setFields(fieldsToLoad.build())
-				.setLimit(context.service(RepositoryConfiguration.class).getIndexConfiguration().getResultWindow());
+				.setLimit(pageSize);
 		
 		// if a grouping refinement, then filter relationships with group >= 1
 		if (groupedRelationshipsOnly) {

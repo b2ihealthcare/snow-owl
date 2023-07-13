@@ -28,8 +28,6 @@ import com.b2international.index.revision.StagingArea;
  */
 public interface ChangeSetProcessor {
 
-	int PAGE_SIZE = 10_000;
-	
 	/**
 	 * Processes the changes and writer index changes using the given {@link RevisionWriter}.
 	 * 
@@ -67,5 +65,4 @@ public interface ChangeSetProcessor {
 	 * @return
 	 */
 	Collection<RevisionDocument> getDeletions();
-
 }

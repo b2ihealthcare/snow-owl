@@ -26,6 +26,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
@@ -64,10 +66,14 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 			return;
 		}
 		
+		final int pageSize = ((ServiceProvider) staging.getContext()).service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		// deleting concepts should delete all of its descriptions, relationships, and inbound relationships
 		Query.select(SnomedDescriptionIndexEntry.class)
 			.where(SnomedDescriptionIndexEntry.Expressions.concepts(deletedConceptIds))
-			.limit(PAGE_SIZE)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.flatMap(Hits::stream)
@@ -81,7 +87,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 				.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(deletedConceptIds))
 				.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(deletedConceptIds))
 				.build())
-			.limit(PAGE_SIZE)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.flatMap(Hits::stream)
@@ -101,7 +107,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 		
 		Query.select(SnomedRefSetMemberIndexEntry.class)
 			.where(referringMembersQuery.build())
-			.limit(PAGE_SIZE)
+			.limit(pageSize)
 			.build()
 			.stream(searcher)
 			.flatMap(Hits::stream)

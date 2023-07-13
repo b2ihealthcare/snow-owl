@@ -24,6 +24,8 @@ import java.util.Set;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.Hits;
+import com.b2international.index.Index;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranch;
@@ -166,13 +168,17 @@ public final class SnomedCommand extends Command {
 				statuses.addAll(ALL_SCTID_STATUSES);
 			}
 			
-			((InternalSnomedIdentifierService) identifierService).cisStore().read( searcher -> {
+			final Index index = ((InternalSnomedIdentifierService) identifierService).cisStore();
+			final int pageSize = Integer.parseInt((String) index.admin().settings().getOrDefault(IndexClientFactory.RESULT_WINDOW_KEY, "" + IndexClientFactory.DEFAULT_RESULT_WINDOW));
+			
+			index.read( searcher -> {
+				
 				statuses.forEach( status -> {
 					Query<String> idQuery = Query.select(String.class)
 							.from(SctId.class)
 							.fields("sctid")
 							.where(SctId.Expressions.status(status))
-							.limit(100_000)
+							.limit(pageSize)
 							.build();
 					
 					File idReport = new File(String.format("%s/%sIds_%s.txt", path, status, Dates.now("yyyyMMdd_kkmmss")));

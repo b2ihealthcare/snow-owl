@@ -37,9 +37,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private Set<String> componentIds;
 	private String searchAfter;
-	
 	private int limit = 50;
-	
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchResourceRequestBuilder() {
@@ -124,7 +122,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Sets the request to return the entire results set as a single 'page'.
+	 * Configures the request to return all matches from the result set.
+	 * 
 	 * @return this builder instance
 	 * @deprecated - will be removed in 8.0, keeping it for backward compatibility, use the paging API if you need all hits, not just the top N 
 	 */
@@ -133,7 +132,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Returns a single hit from the result set.
+	 * Configures the request to return only the first item from the result set.
+	 * 
 	 * @return this builder instance
 	 */
 	public final B one() {

@@ -104,6 +104,7 @@ public class StreamTest extends BaseIndexTest {
 		List<Data> hits = newArrayListWithExpectedSize(NUM_DOCS);
 		
 		Stopwatch w = Stopwatch.createStarted();
+		
 		final Query<Data> query = Query.select(Data.class)
 			.where(Expressions.matchAll())
 			.limit(1000)

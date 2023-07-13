@@ -28,6 +28,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -45,8 +46,6 @@ import com.google.common.collect.Streams;
  * @since 4.5
  */
 public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest<BranchContext, QueryRefSetMemberEvaluation> implements AccessControl {
-
-	private static final int BATCH_SIZE = 10_000;
 
 	private static final long serialVersionUID = 1L;
 
@@ -91,13 +90,16 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 
 		final Set<String> expectedConcepts = newHashSet();
 		final Options expandOptions = expand().getOptions("referencedComponent");
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
 		
 		// Evaluate the query expression to find out which concepts should be in the simple type reference set
 		final Stream<MemberChange> expectedConceptChanges = SnomedRequests.prepareSearchConcept()
 			.filterByEcl(query)
 			.setExpand(expandOptions.getOptions("expand"))
 			.setLocales(locales())
-			.setLimit(10_000)
+			.setLimit(pageSize)
 			.stream(context)
 			.flatMap(batch -> {
 				final Map<String, SnomedConcept> conceptsToAdd = newHashMap(Maps.uniqueIndex(batch, SnomedConcept::getId));
@@ -114,7 +116,7 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 					.filterByRefSet(targetReferenceSet)
 					.filterByReferencedComponent(conceptsToAdd.keySet())
 					.sortBy("id:asc")
-					.setLimit(BATCH_SIZE)
+					.setLimit(pageSize)
 					.stream(context)
 					.flatMap(SnomedReferenceSetMembers::stream)
 					.forEachOrdered(member -> {
@@ -163,14 +165,14 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 			.filterByRefSet(targetReferenceSet)
 			.setExpand(expand())
 			.setLocales(locales())
-			.setLimit(10_000)
+			.setLimit(pageSize)
 			.stream(context)
 			.flatMap(batch -> batch.stream())
 			.filter(member -> !expectedConcepts.contains(member.getReferencedComponentId()))
 			.<MemberChange>map(member -> MemberChangeImpl.removed((SnomedConcept) member.getReferencedComponent(), member.getId()));
 
 		/* 
-		 * We checked elements in batches of 10 000 above, however if only a few members out of a single "run" are affected,
+		 * We checked elements in batches matching the result window setting above, however if only a few members out of a single "run" are affected,
 		 * we get small lists of changes which is ineffective. Re-package them into larger batches here.
 		 */
 		final Stream<List<MemberChange>> expectedConceptBatches = Streams.stream(Iterators.partition(expectedConceptChanges.iterator(), 10_000));

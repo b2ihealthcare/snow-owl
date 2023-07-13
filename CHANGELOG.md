@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.11.1
+
+### Bugs/Improvements
+- [index] adjust page size dynamically for streaming queries based on the `result_window` configuration (#1187)
+
 ## 8.11.0
 
 ### Core

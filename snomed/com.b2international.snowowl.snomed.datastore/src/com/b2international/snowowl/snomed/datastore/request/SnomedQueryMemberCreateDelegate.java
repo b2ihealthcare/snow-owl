@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Set;
 
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.cis.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -66,9 +67,13 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 
 		// add all matching members 
 		if (!Strings.isNullOrEmpty(getProperty(SnomedRf2Headers.FIELD_QUERY))) {
+			final int pageSize = context.service(RepositoryConfiguration.class)
+				.getIndexConfiguration()
+				.getPageSize();
+			
 			SnomedRequests.prepareSearchConcept()
 				.setFields(SnomedConceptDocument.Fields.ID)
-				.setLimit(10000)
+				.setLimit(pageSize)
 				.filterByEcl(getProperty(SnomedRf2Headers.FIELD_QUERY))
 				.build()
 				.execute(context)

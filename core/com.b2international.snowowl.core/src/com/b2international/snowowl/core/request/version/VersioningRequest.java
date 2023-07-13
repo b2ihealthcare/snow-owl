@@ -22,7 +22,6 @@ import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CappedTransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -68,7 +67,9 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 
 	protected final int getCommitLimit(TransactionContext context) {
-		return context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
+		return context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getCommitLimit();
 	}
 	
 	/**
