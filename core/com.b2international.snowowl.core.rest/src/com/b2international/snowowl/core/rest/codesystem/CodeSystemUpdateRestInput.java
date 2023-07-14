@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.b2international.snowowl.core.rest.codesystem;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemUpdateRequestBuilder;
-import com.b2international.snowowl.core.rest.BaseResourceUpdateRestInput;
+import com.b2international.snowowl.core.rest.BaseTerminologyResourceUpdateRestInput;
 
 /**
  * @since 8.0
  */
-public final class CodeSystemUpdateRestInput extends BaseResourceUpdateRestInput {
+public final class CodeSystemUpdateRestInput extends BaseTerminologyResourceUpdateRestInput {
 	
 	private String oid;
 	private String branchPath;
@@ -45,10 +45,18 @@ public final class CodeSystemUpdateRestInput extends BaseResourceUpdateRestInput
 		return branchPath;
 	}
 	
+	/**
+	 * @param extensionOf
+	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
+	 */
 	public void setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
 	}
 	
+	/**
+	 * @return
+	 * @deprecated - replaced by {@link #getDependencies()}, will be removed in 9.0
+	 */
 	public ResourceURI getExtensionOf() {
 		return extensionOf;
 	}
@@ -68,7 +76,10 @@ public final class CodeSystemUpdateRestInput extends BaseResourceUpdateRestInput
 			.setBundleId(getBundleId())
 			.setOid(getOid())
 			.setBranchPath(getBranchPath())
+			.setSettings(getSettings())
+			.setDependencies(getDependencies())
+			// XXX maintain old model field options until 9.0
 			.setExtensionOf(getExtensionOf())
-			.setSettings(getSettings());
+			;
 	}
 }

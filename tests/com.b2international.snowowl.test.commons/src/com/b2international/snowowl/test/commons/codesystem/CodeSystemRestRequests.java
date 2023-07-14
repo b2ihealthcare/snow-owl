@@ -23,7 +23,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -104,7 +106,7 @@ public abstract class CodeSystemRestRequests {
 			);
 
 		if (extensionOf != null) {
-			requestBody = requestBody.with("extensionOf", extensionOf);
+			requestBody = requestBody.with("dependencies", List.of(Dependency.of(extensionOf, TerminologyResource.DependencyScope.EXTENSION_OF)));
 		} else if (branchPath != null) {
 			requestBody = requestBody.with("branchPath", branchPath);
 		}
@@ -165,8 +167,10 @@ public abstract class CodeSystemRestRequests {
 		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
-					"extensionOf", extensionOf.toString(),
-					"upgradeOf", upgradeOf.toString()
+					"dependencies", List.of(
+						Dependency.of(extensionOf, TerminologyResource.DependencyScope.EXTENSION_OF),
+						Dependency.of(upgradeOf, TerminologyResource.DependencyScope.UPGRADE_OF)
+					)
 				))
 				.post()
 				.then()

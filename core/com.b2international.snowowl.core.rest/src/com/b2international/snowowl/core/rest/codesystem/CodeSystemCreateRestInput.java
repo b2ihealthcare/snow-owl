@@ -54,10 +54,18 @@ public final class CodeSystemCreateRestInput extends BaseTerminologyResourceRest
 		return toolingId;
 	}
 	
+	/**
+	 * @param extensionOf
+	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
+	 */
 	public void setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
 	}
 	
+	/**
+	 * @return
+	 * @deprecated - replaced by {@link #getDependencies()}, will be removed in 9.0
+	 */
 	public ResourceURI getExtensionOf() {
 		return extensionOf;
 	}

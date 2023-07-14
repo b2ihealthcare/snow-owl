@@ -30,6 +30,11 @@ public final class CodeSystemUpdateRequestBuilder
 		super(resourceId);
 	}
 
+	/**
+	 * @param extensionOf
+	 * @return
+	 * @deprecated - replaced with {@link #setDependencies(java.util.List)}, will be removed in 9.0
+	 */
 	public CodeSystemUpdateRequestBuilder setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
 		return getSelf();

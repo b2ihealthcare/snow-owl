@@ -371,7 +371,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	}
 	
 	@Test
-	public void codesystem21_UpdateExtensionOf() {
+	public void codesystem21_UpdateExtensionOfOldModel() {
 		final String parentCodeSystemId = "cs13";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
 		assertCodeSystemCreated(parentRequestBody);
@@ -687,12 +687,42 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			
 			// check extensionOf value comes back as part of both dependencies and extensionOf
 			assertCodeSystemGet(codeSystemId)
+				.statusCode(200)
 				.body("extensionOf", equalTo("codesystems/cs34/v1"))
 				.body("dependencies", hasItem(Map.of("resourceUri", "codesystems/cs34/v1", "scope", "extensionOf")));
 			
 		} catch (NotFoundException e) {
 			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
 		}
+	}
+	
+	@Test
+	public void codesystem35_UpdateExtensionOfNewModel() {
+		final String parentCodeSystemId = "cs35";
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
+		assertCodeSystemCreated(parentRequestBody);
+		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
+		
+		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
+		assertVersionCreated(v3RequestBody).statusCode(201);
+		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "2020-04-17");
+		assertVersionCreated(v4RequestBody).statusCode(201);
+		
+		final String codeSystemId = "cs36";
+		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
+				.without("branchPath")
+				.with("dependencies", List.of(Dependency.of(CodeSystem.uri("cs35/v3"), "extensionOf")));
+		
+		assertCodeSystemCreated(requestBody);
+		assertCodeSystemUpdated(codeSystemId, Json.object("dependencies", List.of(Dependency.of(CodeSystem.uri("cs35/v4"), "extensionOf"))));
+		
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs35", "v4", codeSystemId);
+
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.body("extensionOf", equalTo("codesystems/cs35/v4"))
+			.body("dependencies", hasItem(Map.of("resourceUri", "codesystems/cs35/v4", "scope", "extensionOf")))
+			.body("branchPath", equalTo(expectedBranchPath));
 	}
 	
 	private long getCodeSystemCreatedAt(final String id) {
