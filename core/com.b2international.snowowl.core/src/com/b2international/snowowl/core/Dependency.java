@@ -142,5 +142,14 @@ public final class Dependency {
 	public static final Dependency of(ResourceURIWithQuery resourceUri, String scope) {
 		return new Dependency(resourceUri, scope);
 	}
+	
+	/**
+	 * Creates and returns a new instance of {@link Dependency} built from the given {@link DependencyDocument}. 
+	 * @param doc
+	 * @return a new instance of {@link Dependency}, never <code>null</code>
+	 */
+	public static final Dependency from(DependencyDocument doc) {
+		return new Dependency(doc.getResourceUri(), doc.getScope());
+	}
 
 }

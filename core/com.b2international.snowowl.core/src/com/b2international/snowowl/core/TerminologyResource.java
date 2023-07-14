@@ -188,6 +188,10 @@ public abstract class TerminologyResource extends Resource {
 		return availableUpgrades;
 	}
 
+	public void setDependencies(List<Dependency> dependencies) {
+		this.dependencies = dependencies;
+	}
+	
 	/**
 	 * @param extensionOf
 	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
