@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import org.elasticsearch.common.Strings;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -79,6 +80,10 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		return query;
 	}
 	
+	public boolean hasQueryPart() {
+		return !CompareUtils.isEmpty(getQuery());
+	}
+	
 	public boolean isHead() {
 		return resourceUri.isHead();
 	}
@@ -125,5 +130,5 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		checkNotNull(query, "'query' must be specified");
 		return new ResourceURIWithQuery(String.join(QUERY_PART_SEPARATOR, String.join(Branch.SEPARATOR, resourceType, resourceId), query));
 	}
-	
+
 }
