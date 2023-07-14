@@ -40,6 +40,7 @@ import org.junit.runners.MethodSorters;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
@@ -264,7 +265,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	}
 	
 	@Test
-	public void codesystem16_CreateWithExtensionOf() {
+	public void codesystem16_CreateWithExtensionOfOldModel() {
 		final String parentCodeSystemId = "cs11";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
 		assertCodeSystemCreated(parentRequestBody);
@@ -277,11 +278,11 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
 				.without("branchPath")
-				.with("extensionOf", CodeSystem.uri("cs11/v1"));
+				.with("extensionOf", CodeSystem.uri(parentCodeSystemId, "v1"));
 		
 		assertCodeSystemCreated(requestBody);
 		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs11", "v1", codeSystemId);
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, parentCodeSystemId, "v1", codeSystemId);
 		
 		try {
 			
@@ -291,6 +292,9 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 				.build(TOOLING_ID)
 				.execute(Services.bus())
 				.getSync();
+			
+			assertCodeSystemGet(codeSystemId)
+				.body("extensionOf", equalTo("codesystems/cs11/v1"));
 			
 		} catch (NotFoundException e) {
 			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
@@ -650,6 +654,45 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
+	}
+	
+	@Test
+	public void codesystem34_CreateWithExtensionOfNewModel() {
+		final String parentCodeSystemId = "cs34";
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
+		assertCodeSystemCreated(parentRequestBody);
+		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
+		
+		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2023-07-14");
+		assertVersionCreated(versionRequestBody).statusCode(201);
+
+		final String codeSystemId = "cs35";
+		
+		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
+				.without("branchPath")
+				.with("dependencies", List.of(Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "extensionOf")));
+		
+		assertCodeSystemCreated(requestBody);
+		
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, parentCodeSystemId, "v1", codeSystemId);
+		
+		try {
+			
+			// Check if the branch has been created
+			RepositoryRequests.branching()
+				.prepareGet(expectedBranchPath)
+				.build(TOOLING_ID)
+				.execute(Services.bus())
+				.getSync();
+			
+			// check extensionOf value comes back as part of both dependencies and extensionOf
+			assertCodeSystemGet(codeSystemId)
+				.body("extensionOf", equalTo("codesystems/cs34/v1"))
+				.body("dependencies", hasItem(Map.of("resourceUri", "codesystems/cs34/v1", "scope", "extensionOf")));
+			
+		} catch (NotFoundException e) {
+			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
+		}
 	}
 	
 	private long getCodeSystemCreatedAt(final String id) {

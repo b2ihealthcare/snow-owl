@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.b2international.snowowl.core.rest.codesystem;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.rest.BaseResourceRestInput;
+import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestInput;
 
 /**
  * @since 8.0
  */
-public final class CodeSystemCreateRestInput extends BaseResourceRestInput {
+public final class CodeSystemCreateRestInput extends BaseTerminologyResourceRestInput {
 	
 	private String oid;
 	private String branchPath;
@@ -79,7 +79,9 @@ public final class CodeSystemCreateRestInput extends BaseResourceRestInput {
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
 				.setToolingId(getToolingId())
-				.setExtensionOf(getExtensionOf())
-				.setSettings(getSettings());
+				.setSettings(getSettings())
+				.setDependencies(getDependencies())
+				// XXX support old model input until 9.0
+				.setExtensionOf(getExtensionOf());
 	}
 }
