@@ -74,6 +74,11 @@ public interface IndexClientFactory {
 	String COMMIT_CONCURRENCY_LEVEL = "concurrencyLevel";
 
 	/**
+	 * Configuration key to specify the concurrency level for "update by query" and "delete by query" operations.
+	 */
+	String INDEX_BY_QUERY_CONCURRENCY_LEVEL = "indexByQueryConcurrencyLevel";
+	
+	/**
 	 * Configuration key to specify the name of the embedded or TCP based Elasticsearch cluster to connect to.
 	 */
 	String CLUSTER_NAME = "clusterName";
@@ -182,10 +187,16 @@ public interface IndexClientFactory {
 	int DEFAULT_MAX_TERMS_COUNT = 65_536;
 	
 	/**
-	 * The default concurrency level for the bulk operations depends on the number of cores you have <code>max(1, cores / 4)</code>.
+	 * The default concurrency level for the bulk indexing operations depends on the number of cores you have <code>max(1, cores / 4)</code>.
 	 * Elasticsearch module only configuration key.
 	 */
 	int DEFAULT_COMMIT_CONCURRENCY_LEVEL = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+	
+	/**
+	 * The default maximum concurrency level for the "update by query" and "delete by query" operations is a constant value.
+	 * Elasticsearch module only configuration key.
+	 */
+	int DEFAULT_INDEX_BY_QUERY_CONCURRENCY_LEVEL = 4;
 	
 	/**
 	 * The default index prefix is empty

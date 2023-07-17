@@ -45,6 +45,8 @@ public class IndexConfiguration {
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 	@Min(1)
+	private int indexByQueryConcurrencyLevel = IndexClientFactory.DEFAULT_INDEX_BY_QUERY_CONCURRENCY_LEVEL;
+	@Min(1)
 	private int bulkActionSize = IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE;
 	@Min(1)
 	private int bulkActionSizeInMb = IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE_IN_MB;
@@ -101,6 +103,16 @@ public class IndexConfiguration {
 	@JsonProperty
 	public void setCommitConcurrencyLevel(int commitConcurrencyLevel) {
 		this.commitConcurrencyLevel = commitConcurrencyLevel;
+	}
+	
+	@JsonProperty
+	public int getIndexByQueryConcurrencyLevel() {
+		return indexByQueryConcurrencyLevel;
+	}
+	
+	@JsonProperty
+	public void setIndexByQueryConcurrencyLevel(int indexByQueryConcurrencyLevel) {
+		this.indexByQueryConcurrencyLevel = indexByQueryConcurrencyLevel;
 	}
 
 	@JsonProperty
@@ -271,6 +283,7 @@ public class IndexConfiguration {
 		settings.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, ""+getMaxTermsCount());
 		settings.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, getCommitInterval());
 		settings.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, getCommitConcurrencyLevel());
+		settings.put(IndexClientFactory.INDEX_BY_QUERY_CONCURRENCY_LEVEL, getIndexByQueryConcurrencyLevel());
 		settings.put(IndexClientFactory.CONNECT_TIMEOUT, getConnectTimeout());
 		settings.put(IndexClientFactory.SOCKET_TIMEOUT, getSocketTimeout());
 		settings.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, getClusterHealthTimeout());

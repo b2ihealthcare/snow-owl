@@ -120,11 +120,13 @@ public class EsDocumentWriter implements Writer {
 		
 		final Set<DocumentMapping> mappingsToRefresh = Collections.synchronizedSet(newHashSet());
 		final EsClient client = admin.client();
+		
 		// apply bulk updates first
 		final ListeningExecutorService executor;
 		admin.log().trace("Applying bulk updates ({}) and deletes ({})...", bulkUpdateOperations.size(), bulkDeleteOperations.size());
+		
 		if (bulkUpdateOperations.size() > 1 || bulkDeleteOperations.size() > 1) {
-			final int threads = Math.min(4, Math.max(bulkUpdateOperations.size(), bulkDeleteOperations.size()));
+			final int threads = Math.min(getIndexByQueryConcurrencyLevel(), Math.max(bulkUpdateOperations.size(), bulkDeleteOperations.size()));
 			executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threads));
 		} else {
 			executor = MoreExecutors.newDirectExecutorService();
@@ -260,6 +262,10 @@ public class EsDocumentWriter implements Writer {
 
 	private int getConcurrencyLevel() {
 		return (int) admin.settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
+	}
+	
+	private int getIndexByQueryConcurrencyLevel() {
+		return (int) admin.settings().get(IndexClientFactory.INDEX_BY_QUERY_CONCURRENCY_LEVEL);
 	}
 
 	/*
