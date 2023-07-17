@@ -725,11 +725,27 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			.body("branchPath", equalTo(expectedBranchPath));
 	}
 	
+	@Test
+	public void codesystem36_ExtensionOfDependencyNonExistent() {
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody("cs36")
+				.with("dependencies", List.of(Dependency.of(CodeSystem.uri("nonexistent/v1"), "extensionOf")))
+		).statusCode(400).body("message", equalTo("Couldn't find base terminology resource version for 'extensionOf' dependency 'codesystems/nonexistent/v1'."));
+	}
+	
+	@Test
+	public void codesystem37_RandomDependencyScopeNonExistent() {
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody("cs37")
+				.with("dependencies", List.of(Dependency.of(CodeSystem.uri("nonexistent/v1"), "any_scope")))
+		).statusCode(400).body("message", equalTo("Some of the requested dependencies are not present in the system. Missing dependencies are: '[nonexistent]'."));
+	}
+	
 	private long getCodeSystemCreatedAt(final String id) {
 		return assertCodeSystemGet(id)
 			.statusCode(200)
 			.extract()
 			.jsonPath()
 			.getLong("createdAt");
-	}	
+	}
 }

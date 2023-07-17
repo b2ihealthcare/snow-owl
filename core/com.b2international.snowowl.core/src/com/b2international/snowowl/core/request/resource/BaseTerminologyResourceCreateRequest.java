@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -42,6 +39,8 @@ import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 
 /**
  * @since 8.0
@@ -221,7 +220,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		if (extensionOfUri != null) {
 			if (extensionOfUri.isHead() || extensionOfUri.isLatest()) {
 				throw new BadRequestException("Base terminology resource version was not expicitly given (can not be empty, "
-					+ "LATEST or HEAD) in 'extensionOf' dependency %s.", extensionOfUri);
+					+ "LATEST or HEAD) in 'extensionOf' dependency '%s'.", extensionOfUri);
 			}
 			
 			final String versionId = extensionOfUri.getResourceUri().getPath();
@@ -235,7 +234,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 					.first();
 			
 			if (!extensionOfVersion.isPresent()) {
-				throw new BadRequestException("Couldn't find base terminology resource version for 'extensionOf' dependency %s.", extensionOfUri);
+				throw new BadRequestException("Couldn't find base terminology resource version for 'extensionOf' dependency '%s'.", extensionOfUri);
 			}
 			
 			// The working branch prefix is determined by the extensionOf code system version's path
@@ -250,6 +249,32 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			}
 					
 			return extensionOfVersion;
+		}
+		
+		// validate non-extensionOf dependency entries
+		if (!CompareUtils.isEmpty(mergedDependencies)) {
+			final Set<String> resourceReferencesToCheck = mergedDependencies.stream()
+					.filter(dep -> !dep.isExtensionOf())
+					.map(dep -> dep.getResourceUri().getResourceUri().getResourceId())
+					.collect(Collectors.toSet());
+			
+			
+			// fetch all resources (TODO verify version references in a single search somehow)
+			Set<String> existingResourceIds = ResourceRequests.prepareSearch()
+				.filterByIds(resourceReferencesToCheck)
+				.setLimit(resourceReferencesToCheck.size())
+				.setFields(Resource.Fields.RESOURCE_TYPE, Resource.Fields.ID)
+				.build()
+				.execute(context)
+				.stream()
+				.map(Resource::getId)
+				.collect(Collectors.toSet());
+
+			Set<String> missingDependencies = Sets.difference(resourceReferencesToCheck, existingResourceIds);
+			if (!missingDependencies.isEmpty()) {
+				throw new BadRequestException("Some of the requested dependencies are not present in the system. Missing dependencies are: '%s'.", ImmutableSortedSet.copyOf(missingDependencies));
+			}
+			
 		}
 		
 		return Optional.empty();
