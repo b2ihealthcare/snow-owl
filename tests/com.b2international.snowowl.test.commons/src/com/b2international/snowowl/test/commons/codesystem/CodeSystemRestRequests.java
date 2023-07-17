@@ -167,10 +167,8 @@ public abstract class CodeSystemRestRequests {
 		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
-					"dependencies", List.of(
-						Dependency.of(extensionOf, TerminologyResource.DependencyScope.EXTENSION_OF),
-						Dependency.of(upgradeOf, TerminologyResource.DependencyScope.UPGRADE_OF)
-					)
+					"extensionOf", extensionOf.toString(),
+					"upgradeOf", upgradeOf.toString()
 				))
 				.post()
 				.then()
