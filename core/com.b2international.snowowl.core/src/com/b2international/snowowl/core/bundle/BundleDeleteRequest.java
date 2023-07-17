@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.bundle;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -76,9 +77,13 @@ final class BundleDeleteRequest implements Request<TransactionContext, Boolean> 
 	 * @param context 
 	 */
 	private void updateResourceBundles(TransactionContext context, ResourceDocument bundleToDelete) {
+		final int pageSize = context.service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getPageSize();
+		
 		ResourceRequests.prepareSearch()
 			.filterByBundleId(bundleToDelete.getId())
-			.setLimit(10_000)
+			.setLimit(pageSize)
 			.stream(context)
 			.flatMap(Resources::stream)
 			.forEach(resource -> {

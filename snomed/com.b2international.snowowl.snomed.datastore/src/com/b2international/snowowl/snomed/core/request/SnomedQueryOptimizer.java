@@ -343,7 +343,6 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		 * "no false positive" inclusion (that, contrary to its name, _can_ include
 		 * false positives) covers them
 		 */
-
 		optimizeAncestorInclusions(context, inclusionHierarchyStats);
 
 		// Remaining concepts in "conceptsToInclude" are added as '=' inclusions

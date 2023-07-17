@@ -3,14 +3,15 @@ package scripts
 import java.util.concurrent.TimeUnit
 
 import com.b2international.index.query.Expressions
-import com.b2international.index.query.Query
 import com.b2international.index.query.Expressions.ExpressionBuilder
+import com.b2international.index.query.Query
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snomed.ecl.Ecl
 import com.b2international.snowowl.core.ComponentIdentifier
+import com.b2international.snowowl.core.config.RepositoryConfiguration
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
@@ -27,6 +28,10 @@ import com.google.common.collect.*
 import groovy.transform.Field
 
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class);
+final int pageSize = ctx.service(RepositoryConfiguration.class)
+	.getIndexConfiguration()
+	.getPageSize()
+
 Set<ComponentIdentifier> issues = Sets.newHashSet();
 Set<ComponentIdentifier> potentialIssues = Sets.newHashSet();
 
@@ -178,7 +183,7 @@ def searchRelationships = { boolean isValidationRun ->
 			.from(SnomedRelationshipIndexEntry.class)
 			.fields(SnomedRelationshipIndexEntry.Fields.ID)
 			.where(relationshipQueryBuilder.build())
-			.limit(50_000)
+			.limit(pageSize)
 			.build();
 		
 		searcher.stream(relationshipQuery).each { hits ->
@@ -215,7 +220,7 @@ def searchRelationships = { boolean isValidationRun ->
 			.from(SnomedRefSetMemberIndexEntry.class)
 			.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 			.where(owlMemberExpressionBuilder.build())
-			.limit(50_000)
+			.limit(pageSize)
 			.build();
 		
 		searcher.stream(owlMemberQuery).forEach({ hits ->
@@ -247,7 +252,7 @@ def searchRelationshipsWithUnregulatedTypeIds =  {
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(relationshipQueryBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	searcher.stream(relationshipQuery).each { hits -> hits.each { id -> 
@@ -268,7 +273,7 @@ def searchRelationshipsWithUnregulatedTypeIds =  {
 		.from(SnomedRefSetMemberIndexEntry.class)
 		.fields(SnomedRefSetMemberIndexEntry.Fields.ID, SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION)
 		.where(owlMemberExpressionBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	searcher.stream(owlMemberQuery).forEach({ hits ->
@@ -304,7 +309,7 @@ def searchRelationshipsInUnregulatedDomains =  {
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(relationshipQueryBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	searcher.stream(relationshipQuery).each { hits -> hits.each { id ->
@@ -326,7 +331,7 @@ def searchRelationshipsInUnregulatedDomains =  {
 		.from(SnomedRefSetMemberIndexEntry.class)
 		.fields(SnomedRefSetMemberIndexEntry.Fields.ID, SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION)
 		.where(owlMemberExpressionBuilder.build())
-		.limit(50_000)
+		.limit(pageSize)
 		.build();
 	
 	searcher.stream(owlMemberQuery).forEach({ hits ->

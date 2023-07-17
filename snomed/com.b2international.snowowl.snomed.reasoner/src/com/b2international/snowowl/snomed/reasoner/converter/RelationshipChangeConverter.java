@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -37,13 +38,13 @@ import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.domain.*;
+import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 /**
  * @since 7.0
@@ -51,8 +52,6 @@ import com.google.common.collect.Multimaps;
 public final class RelationshipChangeConverter 
 	extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
 
-	private static final int BATCH_LIMIT = 10_000;
-	
 	private static final String MEMBERS = "members";
 	
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
@@ -304,16 +303,23 @@ public final class RelationshipChangeConverter
 
 	private Multimap<String, RelationshipChange> getItemsByBranch(final List<RelationshipChange> results) {
 		final Set<String> classificationTaskIds = results.stream()
-				.map(RelationshipChange::getClassificationId)
-				.collect(Collectors.toSet());
+			.map(RelationshipChange::getClassificationId)
+			.collect(Collectors.toSet());
 
 		final Map<String, String> branchesByClassificationIdMap = newHashMap();
-		ClassificationRequests.prepareSearchClassification()
-				.filterByIds(classificationTaskIds)
-				.setLimit(BATCH_LIMIT)
-				.stream(context())
-				.flatMap(ClassificationTasks::stream)
+
+		final int partitionSize = context().service(RepositoryConfiguration.class)
+			.getIndexConfiguration()
+			.getTermPartitionSize();
+		
+		Iterables.partition(classificationTaskIds, partitionSize).forEach(ids -> {
+			ClassificationRequests.prepareSearchClassification()
+				.filterByIds(ids)
+				.setLimit(ids.size())
+				.build()
+				.execute(context())
 				.forEach(task -> branchesByClassificationIdMap.put(task.getId(), task.getBranch()));
+		});
 		
 		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, 
 				r -> branchesByClassificationIdMap.get(r.getClassificationId()));

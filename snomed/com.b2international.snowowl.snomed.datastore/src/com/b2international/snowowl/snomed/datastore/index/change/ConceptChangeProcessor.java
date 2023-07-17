@@ -26,12 +26,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.b2international.commons.collect.LongSets;
-import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -141,13 +142,16 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
 			// load missing documents from index, the full document, using intentionally lower page value than maxTermsCount
 			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.newHashMapWithExpectedSize(missingCurrentConceptIds.size());
-			for (List<String> missingCurrentConceptIdsPartition : Iterables.partition(missingCurrentConceptIds, PAGE_SIZE)) {
+			final int partitionSize = ((ServiceProvider) staging.getContext()).service(RepositoryConfiguration.class)
+				.getIndexConfiguration()
+				.getTermPartitionSize();
+			
+			for (List<String> missingCurrentConceptIdsPartition : Iterables.partition(missingCurrentConceptIds, partitionSize)) {
 				Query.select(SnomedConceptDocument.class)
 					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIdsPartition))
 					.limit(missingCurrentConceptIdsPartition.size())
 					.build()
-					.stream(searcher)
-					.flatMap(Hits::stream)
+					.search(searcher)
 					.forEach(existingConceptDocument -> {
 						currentConceptDocumentsById.put(existingConceptDocument.getId(), existingConceptDocument);
 					});
