@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core;
 
 import java.util.List;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
@@ -316,11 +318,15 @@ public abstract class TerminologyResource extends Resource {
 				.bundleAncestorIds(getBundleAncestorIds())
 				.bundleId(getBundleId())
 				.branchPath(getBranchPath())
-				.extensionOf(getExtensionOf())
 				.oid(getOid())
 				.settings(getSettings())
 				.toolingId(getToolingId())
-				.upgradeOf(getUpgradeOf());
+				// since 8.12
+				.dependencies(getDependencies() != null ? getDependencies().stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null)
+				// XXX maintain old model fields until 9.0
+				.upgradeOf(getUpgradeOf())
+				.extensionOf(getExtensionOf())
+				;
 	}
 	
 }
