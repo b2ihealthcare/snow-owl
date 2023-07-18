@@ -154,7 +154,6 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 			return CodeSystemRequests.prepareSearchConcepts()
 				.filterByCodeSystemUri(resourceUri)
-				.filterByActive(true)
 				.filterByInclusions(queryExpressions)
 				.filterByExclusions(mustNotQueryExpressions)
 				.setLimit(PAGE_SIZE)
