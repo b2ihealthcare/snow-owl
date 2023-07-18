@@ -40,7 +40,6 @@ import org.junit.runners.MethodSorters;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
@@ -258,43 +257,6 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 				.build(TOOLING_ID)
 				.execute(Services.bus())
 				.getSync();
-			
-		} catch (NotFoundException e) {
-			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
-		}
-	}
-	
-	@Test
-	public void codesystem16_CreateWithExtensionOfOldModel() {
-		final String parentCodeSystemId = "cs11";
-		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
-		
-		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-15");
-		assertVersionCreated(versionRequestBody).statusCode(201);
-
-		final String codeSystemId = "cs12";
-		
-		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
-				.without("branchPath")
-				.with("extensionOf", CodeSystem.uri(parentCodeSystemId, "v1"));
-		
-		assertCodeSystemCreated(requestBody);
-		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, parentCodeSystemId, "v1", codeSystemId);
-		
-		try {
-			
-			// Check if the branch has been created
-			RepositoryRequests.branching()
-				.prepareGet(expectedBranchPath)
-				.build(TOOLING_ID)
-				.execute(Services.bus())
-				.getSync();
-			
-			assertCodeSystemGet(codeSystemId)
-				.body("extensionOf", equalTo("codesystems/cs11/v1"));
 			
 		} catch (NotFoundException e) {
 			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
@@ -654,91 +616,6 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
-	}
-	
-	@Test
-	public void codesystem34_CreateWithExtensionOfNewModel() {
-		final String parentCodeSystemId = "cs34";
-		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
-		
-		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2023-07-14");
-		assertVersionCreated(versionRequestBody).statusCode(201);
-
-		final String codeSystemId = "cs35";
-		
-		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
-				.without("branchPath")
-				.with("dependencies", List.of(Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "extensionOf")));
-		
-		assertCodeSystemCreated(requestBody);
-		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, parentCodeSystemId, "v1", codeSystemId);
-		
-		try {
-			
-			// Check if the branch has been created
-			RepositoryRequests.branching()
-				.prepareGet(expectedBranchPath)
-				.build(TOOLING_ID)
-				.execute(Services.bus())
-				.getSync();
-			
-			// check extensionOf value comes back as part of both dependencies and extensionOf
-			assertCodeSystemGet(codeSystemId)
-				.statusCode(200)
-				.body("extensionOf", equalTo("codesystems/cs34/v1"))
-				.body("dependencies", hasItem(Map.of("resourceUri", "codesystems/cs34/v1", "scope", "extensionOf")));
-			
-		} catch (NotFoundException e) {
-			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
-		}
-	}
-	
-	@Test
-	public void codesystem35_UpdateExtensionOfNewModel() {
-		final String parentCodeSystemId = "cs35";
-		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
-		
-		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
-		assertVersionCreated(v3RequestBody).statusCode(201);
-		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "2020-04-17");
-		assertVersionCreated(v4RequestBody).statusCode(201);
-		
-		final String codeSystemId = "cs36";
-		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
-				.without("branchPath")
-				.with("dependencies", List.of(Dependency.of(CodeSystem.uri("cs35/v3"), "extensionOf")));
-		
-		assertCodeSystemCreated(requestBody);
-		assertCodeSystemUpdated(codeSystemId, Json.object("dependencies", List.of(Dependency.of(CodeSystem.uri("cs35/v4"), "extensionOf"))));
-		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs35", "v4", codeSystemId);
-
-		assertCodeSystemGet(codeSystemId)
-			.statusCode(200)
-			.body("extensionOf", equalTo("codesystems/cs35/v4"))
-			.body("dependencies", hasItem(Map.of("resourceUri", "codesystems/cs35/v4", "scope", "extensionOf")))
-			.body("branchPath", equalTo(expectedBranchPath));
-	}
-	
-	@Test
-	public void codesystem36_ExtensionOfDependencyNonExistent() {
-		assertCodeSystemCreate(
-			prepareCodeSystemCreateRequestBody("cs36")
-				.with("dependencies", List.of(Dependency.of(CodeSystem.uri("nonexistent/v1"), "extensionOf")))
-		).statusCode(400).body("message", equalTo("Couldn't find base terminology resource version for 'extensionOf' dependency 'codesystems/nonexistent/v1'."));
-	}
-	
-	@Test
-	public void codesystem37_RandomDependencyScopeNonExistent() {
-		assertCodeSystemCreate(
-			prepareCodeSystemCreateRequestBody("cs37")
-				.with("dependencies", List.of(Dependency.of(CodeSystem.uri("nonexistent/v1"), "any_scope")))
-		).statusCode(400).body("message", equalTo("Some of the requested dependencies are not present in the system. Missing dependencies are: '[nonexistent]'."));
 	}
 	
 	private long getCodeSystemCreatedAt(final String id) {

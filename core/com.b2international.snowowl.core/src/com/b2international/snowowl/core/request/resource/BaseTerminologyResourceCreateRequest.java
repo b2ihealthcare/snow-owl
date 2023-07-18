@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 
@@ -208,15 +209,14 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		} else {
 			this.mergedDependencies = dependencies;
 		}
+
+		// check dependency duplication first before fetching any data from the server
+		checkDuplicateDependencies(context, mergedDependencies);
 		
-		// TODO handle case when dependencies contain multiple extensionOf dependency
-		// TODO validate dependency reference to existing resources 
-		
-		// handle extensionOf dependency if configured
+		// check extensionOf dependency first, if configured
 		Optional<Dependency> extensionOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isExtensionOf).findFirst() : Optional.empty();
 		var extensionOfUri = extensionOfDependency.map(Dependency::getResourceUri).orElse(null);
-		
-		
+		Optional<Version> extensionOfVersion = Optional.empty(); 
 		if (extensionOfUri != null) {
 			if (extensionOfUri.isHead() || extensionOfUri.isLatest()) {
 				throw new BadRequestException("Base terminology resource version was not expicitly given (can not be empty, "
@@ -225,7 +225,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			
 			final String versionId = extensionOfUri.getResourceUri().getPath();
 			
-			final Optional<Version> extensionOfVersion = ResourceRequests.prepareSearchVersion()
+			extensionOfVersion = ResourceRequests.prepareSearchVersion()
 					.one()
 					.filterByResource(extensionOfUri.getResourceUri().withoutPath())
 					.filterByVersionId(versionId)
@@ -247,37 +247,61 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			if (upgradeOfUri == null && !create && !branchPath.equals(newResourceBranchPath)) {
 				throw new BadRequestException("Branch path is inconsistent with 'extensionOf' dependency ('%s' given, should be '%s').", branchPath, newResourceBranchPath);
 			}
-					
-			return extensionOfVersion;
 		}
-		
-		// validate non-extensionOf dependency entries
-		if (!CompareUtils.isEmpty(mergedDependencies)) {
-			final Set<String> resourceReferencesToCheck = mergedDependencies.stream()
-					.filter(dep -> !dep.isExtensionOf())
-					.map(dep -> dep.getResourceUri().getResourceUri().getResourceId())
-					.collect(Collectors.toSet());
-			
-			
-			// fetch all resources (TODO verify version references in a single search somehow)
-			Set<String> existingResourceIds = ResourceRequests.prepareSearch()
-				.filterByIds(resourceReferencesToCheck)
-				.setLimit(resourceReferencesToCheck.size())
-				.setFields(Resource.Fields.RESOURCE_TYPE, Resource.Fields.ID)
-				.build()
-				.execute(context)
-				.stream()
-				.map(Resource::getId)
-				.collect(Collectors.toSet());
 
-			Set<String> missingDependencies = Sets.difference(resourceReferencesToCheck, existingResourceIds);
-			if (!missingDependencies.isEmpty()) {
-				throw new BadRequestException("Some of the requested dependencies are not present in the system. Missing dependencies are: '%s'.", ImmutableSortedSet.copyOf(missingDependencies));
-			}
+		// then check any other dependency reference if present
+		checkNonExtensionOfDependencyReferences(context, mergedDependencies);
+		
+		return extensionOfVersion;
+	}
+
+	private void checkNonExtensionOfDependencyReferences(RepositoryContext context, List<Dependency> dependenciesToCheck) {
+		// validate non-extensionOf dependency entries
+		if (CompareUtils.isEmpty(dependenciesToCheck)) {
+			return;
+		}
 			
+		final Set<String> resourceReferencesToCheck = dependenciesToCheck.stream()
+				.filter(dep -> !dep.isExtensionOf())
+				.map(dep -> dep.getResourceUri().getResourceUri().getResourceId())
+				.collect(Collectors.toSet());
+		
+		
+		// fetch all resources (TODO verify version references in a single search somehow)
+		Set<String> existingResourceIds = ResourceRequests.prepareSearch()
+			.filterByIds(resourceReferencesToCheck)
+			.setLimit(resourceReferencesToCheck.size())
+			.setFields(Resource.Fields.RESOURCE_TYPE, Resource.Fields.ID)
+			.build()
+			.execute(context)
+			.stream()
+			.map(Resource::getId)
+			.collect(Collectors.toSet());
+
+		Set<String> missingDependencies = Sets.difference(resourceReferencesToCheck, existingResourceIds);
+		if (!missingDependencies.isEmpty()) {
+			throw new BadRequestException("Some of the requested dependencies are not present in the system. Missing dependencies are: '%s'.", ImmutableSortedSet.copyOf(missingDependencies));
+		}
+	}
+
+	private void checkDuplicateDependencies(RepositoryContext context, List<Dependency> dependenciesToCheck) {
+		if (CompareUtils.isEmpty(dependenciesToCheck)) {
+			return;
 		}
 		
-		return Optional.empty();
+		final Set<String> duplicateResourceIdReferences = dependenciesToCheck.stream()
+				.map(dep -> dep.getResourceUri().getResourceUri().getResourceId())
+				.collect(Collectors.toCollection(HashMultiset::create))
+				.entrySet()
+				.stream()
+				.filter(entry -> entry.getCount() > 1)
+				.map(entry -> entry.getElement())
+				.collect(Collectors.toSet());
+		
+		if (!duplicateResourceIdReferences.isEmpty()) {
+			throw new BadRequestException("Some of the requested dependencies ('%s') are listed more than once. Correct the dependencies array and try again.", ImmutableSortedSet.copyOf(duplicateResourceIdReferences));
+		}
+		
 	}
 
 	private void checkBranchPath(final RepositoryContext context, final boolean create) {
