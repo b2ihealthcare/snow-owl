@@ -625,8 +625,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 					}
 				}
 
-				// Elevate strategy after using the same one for 100 iterations
-				if (iteration > (optimizerStrategy.ordinal() + 1) * 100 && optimizerStrategy.ordinal() < OptimizerStrategy.values().length - 1) {
+				// Elevate strategy after using the same one for 100 iterations (but don't promote to LOSSY from non-lossy strategies)
+				if (iteration > (optimizerStrategy.ordinal() + 1) * 100 && optimizerStrategy.ordinal() < OptimizerStrategy.values().length - 2) {
 					optimizerStrategy = OptimizerStrategy.values()[optimizerStrategy.ordinal() + 1];
 					log.info("Optimizer strategy changed to {} after {} iterations", optimizerStrategy, iteration);
 				}
