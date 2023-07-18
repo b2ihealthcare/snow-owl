@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,8 +45,10 @@ import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.QueryExpression;
 import com.b2international.snowowl.core.domain.QueryExpressionDiff;
@@ -63,20 +66,50 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptDescendantCountById;
 import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptSearchById;
 import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.EdgeSearchBySourceId;
+import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer.ConceptSetEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer.EclEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.RelationshipSearchBySource;
 import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.RelationshipSearchByTypeAndDestination;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.inject.Injector;
 
 public class SnomedQueryOptimizerTest {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedQueryOptimizerTest.class);
-
 	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 
+	private static class EclConceptSetEvaluator implements ConceptSetEvaluator {
+
+		private final EclEvaluator evaluator;
+		
+		private EclConceptSetEvaluator(final EclEvaluator evaluator) {
+			this.evaluator = evaluator;
+		}
+
+		@Override
+		public Set<String> evaluateConceptSet(
+			final BranchContext context, 
+			final List<ExtendedLocale> locales,
+			final ResourceURI resourceUri, 
+			final Collection<QueryExpression> inclusions, 
+			final Collection<QueryExpression> exclusions,
+			final int pageSize
+		) {
+			final Set<String> includedIds = inclusions.stream()
+				.flatMap(clause -> evaluator.evaluateEcl(context, clause.getQuery(), pageSize))
+				.collect(Collectors.toSet());
+
+			exclusions.stream()
+				.flatMap(clause -> evaluator.evaluateEcl(context, clause.getQuery(), pageSize))
+				.forEachOrdered(excludedId -> includedIds.remove(excludedId));
+
+			return ImmutableSet.copyOf(includedIds);
+		}
+	}
+	
 	@Rule
 	public TestWatcher watcher = new TestWatcher() {
 		@Override
@@ -108,6 +141,11 @@ public class SnomedQueryOptimizerTest {
 
 	private SnomedQueryOptimizer optimizer;
 
+	private void setEclAndConceptSetEvaluator(final EclEvaluator evaluator) {
+		optimizer.setEvaluator(evaluator);
+		optimizer.setConceptSetEvaluator(new EclConceptSetEvaluator(evaluator));
+	}
+
 	@Before
 	public void setupOptimizer() {
 		optimizer = new SnomedQueryOptimizer();
@@ -117,6 +155,8 @@ public class SnomedQueryOptimizerTest {
 		optimizer.setLog(LOG);
 
 		optimizer.setEvaluator((context, eclExpression, pageSize) -> Stream.empty());
+		optimizer.setConceptSetEvaluator((context, locales, resourceUri, inclusions, exclusions, pageSize) -> Set.of());
+		
 		optimizer.setLabeler((context, locales, codeSystemUri, unlabeledExpressions) -> unlabeledExpressions);
 
 		optimizer.setConceptSearchById((context, conceptIds) -> Stream.empty());
@@ -144,11 +184,10 @@ public class SnomedQueryOptimizerTest {
 
 	@Test
 	public void testSingleInclusion() throws Exception {
+		
+		setEclAndConceptSetEvaluator((context, expression, pageSize) -> Stream.of(expression));
 
 		final QueryExpression inclusion = new QueryExpression(IDs.base62UUID(), "131148009", false); // Bleeding
-
-		final EclEvaluator evaluator = (context, expression, pageSize) -> Stream.of(expression);
-		optimizer.setEvaluator(evaluator);
 		
 		final Options optimizeOptions = Options.builder()
 			.put(QueryOptimizer.OptionKey.INCLUSIONS, List.<QueryExpression>of(inclusion))
@@ -164,15 +203,14 @@ public class SnomedQueryOptimizerTest {
 
 	@Test
 	public void testRedundantPinnedInclusions() throws Exception {
-
-		final QueryExpression pinned1 = new QueryExpression(IDs.base62UUID(), "< 80631005", true); // Clinical stage finding
-		final QueryExpression pinned2 = new QueryExpression(IDs.base62UUID(), "13104003 OR 60333009 OR 50283003 OR 2640006", true); // Children of "Clinical stage finding"
-
+		
 		final EclEvaluator evaluator = mock(EclEvaluator.class, i -> Stream.empty());
 		when(evaluator.evaluateEcl(any(), eq("< 80631005"), anyInt())).thenAnswer(i -> Stream.of("13104003", "60333009", "50283003", "2640006"));
 		when(evaluator.evaluateEcl(any(), eq("13104003 OR 60333009 OR 50283003 OR 2640006"), anyInt())).thenAnswer(i -> Stream.of("13104003", "60333009", "50283003", "2640006"));
+		setEclAndConceptSetEvaluator(evaluator);
 
-		optimizer.setEvaluator(evaluator);
+		final QueryExpression pinned1 = new QueryExpression(IDs.base62UUID(), "< 80631005", true); // Clinical stage finding
+		final QueryExpression pinned2 = new QueryExpression(IDs.base62UUID(), "13104003 OR 60333009 OR 50283003 OR 2640006", true); // Children of "Clinical stage finding"
 
 		final Options optimizeOptions = Options.builder()
 			.put(QueryOptimizer.OptionKey.INCLUSIONS, List.<QueryExpression>of(pinned1, pinned2))
@@ -201,10 +239,6 @@ public class SnomedQueryOptimizerTest {
 			"74353003",  // Egret
 			"33964005"   // Wild bird
 		);
-
-		final List<QueryExpression> inclusions = members.stream()
-			.map(id -> new QueryExpression(IDs.base62UUID(), id, false))
-			.toList();
 
 		// The ECL evaluator should respond to the refinement query, but otherwise assume that all other ECL expressions are single-concept ones
 		final EclEvaluator evaluator = mock(EclEvaluator.class, i -> Stream.of(i.getArgument(1, String.class)));
@@ -311,9 +345,13 @@ public class SnomedQueryOptimizerTest {
 				return relationships.stream();
 			});
 
-		optimizer.setEvaluator(evaluator);
+		setEclAndConceptSetEvaluator(evaluator);
 		optimizer.setRelationshipSearchBySource(relationshipSearchBySource);
 		optimizer.setRelationshipSearchByTypeAndDestination(relationshipSearchByTypeAndDestination);
+
+		final List<QueryExpression> inclusions = members.stream()
+			.map(id -> new QueryExpression(IDs.base62UUID(), id, false))
+			.toList();
 
 		final Options optimizeOptions = Options.builder()
 			.put(QueryOptimizer.OptionKey.INCLUSIONS, inclusions)
@@ -340,12 +378,11 @@ public class SnomedQueryOptimizerTest {
 	
 	@Test
 	public void testOptimizeToDescendantOrSelf() throws Exception {
-		final QueryExpression include = new QueryExpression(IDs.base62UUID(), "80631005 OR 13104003 OR 60333009 OR 50283003 OR 2640006", false); // "Clinical stage finding" and children
 
 		final EclEvaluator evaluator = mock(EclEvaluator.class, i -> Stream.empty());
 		when(evaluator.evaluateEcl(any(), eq("<< 80631005"), anyInt())).thenAnswer(i -> Stream.of("80631005", "13104003", "60333009", "50283003", "2640006"));
 		when(evaluator.evaluateEcl(any(), eq("80631005 OR 13104003 OR 60333009 OR 50283003 OR 2640006"), anyInt())).thenAnswer(i -> Stream.of("80631005", "13104003", "60333009", "50283003", "2640006"));
-		optimizer.setEvaluator(evaluator);
+		setEclAndConceptSetEvaluator(evaluator);
 
 		final ConceptSearchById conceptSearchById = (context, conceptIds) -> conceptIds.stream()
 			.map(id -> {
@@ -390,6 +427,8 @@ public class SnomedQueryOptimizerTest {
 		optimizer.setConceptDescendantCountById(conceptDescendantCountById);
 		optimizer.setEdgeSearchBySourceId(edgeSearchBySourceId);
 		
+		final QueryExpression include = new QueryExpression(IDs.base62UUID(), "80631005 OR 13104003 OR 60333009 OR 50283003 OR 2640006", false); // "Clinical stage finding" and children
+
 		final Options optimizeOptions = Options.builder()
 			.put(QueryOptimizer.OptionKey.INCLUSIONS, List.<QueryExpression>of(include))
 			.put(QueryOptimizer.OptionKey.EXCLUSIONS, List.<QueryExpression>of())
@@ -415,12 +454,6 @@ public class SnomedQueryOptimizerTest {
 
 	@Test
 	public void testSingleInclusionWithValue() throws Exception {
-
-		final QueryExpression inclusion1 = new QueryExpression(IDs.base62UUID(), "131148009", false); // Bleeding
-		final QueryExpression inclusion2 = new QueryExpression(IDs.base62UUID(), "125667009 ", false); // Bruising
-
-		final EclEvaluator evaluator = (context, expression, pageSize) -> Stream.of(expression);
-		optimizer.setEvaluator(evaluator);
 		
 		final RelationshipSearchBySource relationshipSearchBySource = (context, sourceIds) -> sourceIds.stream()
 			.map(id -> {
@@ -439,9 +472,13 @@ public class SnomedQueryOptimizerTest {
 			return Stream.of(r);
 		};
 		
+		setEclAndConceptSetEvaluator((context, expression, pageSize) -> Stream.of(expression));
 		optimizer.setRelationshipSearchBySource(relationshipSearchBySource);
 		optimizer.setRelationshipSearchByTypeAndDestination(relationshipSearchByTypeAndDestination);
 		
+		final QueryExpression inclusion1 = new QueryExpression(IDs.base62UUID(), "131148009", false); // Bleeding
+		final QueryExpression inclusion2 = new QueryExpression(IDs.base62UUID(), "125667009 ", false); // Bruising
+
 		final Options optimizeOptions = Options.builder()
 			.put(QueryOptimizer.OptionKey.INCLUSIONS, List.<QueryExpression>of(inclusion1, inclusion2))
 			.put(QueryOptimizer.OptionKey.EXCLUSIONS, List.<QueryExpression>of())

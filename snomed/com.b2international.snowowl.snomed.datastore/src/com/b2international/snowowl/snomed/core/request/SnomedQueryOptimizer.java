@@ -36,10 +36,8 @@ import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.QueryExpression;
-import com.b2international.snowowl.core.domain.QueryExpressionDiff;
-import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.*;
 import com.b2international.snowowl.core.ecl.EclLabelerRequestBuilder;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
@@ -53,7 +51,6 @@ import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.R
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Floats;
@@ -122,23 +119,66 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		Stream<String> evaluateEcl(BranchContext context, String eclExpression, int pageSize);
 	}
-
+	
 	@FunctionalInterface
 	public interface EclLabeler {
-
+	
 		EclLabeler DEFAULT = (context, locales, codeSystemUri, unlabeledExpressions) -> new EclLabelerRequestBuilder(codeSystemUri, unlabeledExpressions)
 			.setLocales(locales)
 			.build()
 			.execute(context)
 			.getItems();
-
+	
 		List<String> getLabeledExpressions(BranchContext context, List<ExtendedLocale> locales, String codeSystemUri, List<String> unlabeledExpressions);
+	}
+
+	@FunctionalInterface
+	public interface ConceptSetEvaluator {
+		
+		ConceptSetEvaluator DEFAULT = (context, locales, resourceUri, inclusions, exclusions, pageSize) -> {
+			Set<String> queryExpressions = inclusions.stream()
+				.map(QueryExpression::getQuery)
+				.collect(Collectors.toSet());
+			
+			if (queryExpressions.isEmpty()) {
+				queryExpressions = null;
+			}
+			
+			Set<String> mustNotQueryExpressions = exclusions.stream()
+				.map(QueryExpression::getQuery)
+				.collect(Collectors.toSet());
+
+			if (mustNotQueryExpressions.isEmpty()) {
+				mustNotQueryExpressions = null;
+			}
+
+			return CodeSystemRequests.prepareSearchConcepts()
+				.filterByCodeSystemUri(resourceUri)
+				.filterByActive(true)
+				.filterByInclusions(queryExpressions)
+				.filterByExclusions(mustNotQueryExpressions)
+				.setLimit(PAGE_SIZE)
+				.setLocales(locales)
+				.stream(context)
+				.flatMap(Concepts::stream)
+				.map(Concept::getId)
+				.collect(Collectors.toSet());
+		};
+		
+		Set<String> evaluateConceptSet(
+			BranchContext context, 
+			List<ExtendedLocale> locales, 
+			ResourceURI resourceUri, 
+			Collection<QueryExpression> inclusions, 
+			Collection<QueryExpression> exclusions, 
+			int pageSize);
 	}
 
 	// External dependencies, can be modified for testing purposes
 	private Clock clock = Clock.systemUTC();
 	private EclEvaluator evaluator = EclEvaluator.DEFAULT;
 	private EclLabeler labeler = EclLabeler.DEFAULT;
+	private ConceptSetEvaluator conceptSetEvaluator = ConceptSetEvaluator.DEFAULT;
 
 	private RelationshipSearchBySource relationshipSearchBySource = RelationshipSearchBySource.DEFAULT;
 	private RelationshipSearchByTypeAndDestination relationshipSearchByTypeAndDestination = RelationshipSearchByTypeAndDestination.DEFAULT;
@@ -187,6 +227,11 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		this.labeler = labeler;
 	}
 
+	@VisibleForTesting
+	void setConceptSetEvaluator(final ConceptSetEvaluator conceptSetEvaluator) {
+		this.conceptSetEvaluator = conceptSetEvaluator;
+	}
+	
 	@VisibleForTesting
 	void setRelationshipSearchBySource(final RelationshipSearchBySource relationshipSearchBySource) {
 		this.relationshipSearchBySource = relationshipSearchBySource;
@@ -239,7 +284,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		maxClauseCount = Ints.min(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
 
 		try {
-			conceptSet = evaluateConceptSet(context, inclusions, exclusions);
+			conceptSet = evaluateConceptSet(context, locales, inclusions, exclusions);
 		} catch (SyntaxException e) {
 			log.info("Evaluation resulted in syntax error, returning empty diff");
 			return QueryExpressionDiffs.EMPTY;
@@ -413,17 +458,13 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 	}
 
-	private Set<String> evaluateConceptSet(final BranchContext context, final Collection<QueryExpression> inclusions, final Collection<QueryExpression> exclusions) {
-
-		final Set<String> includedIds = inclusions.stream()
-			.flatMap(clause -> evaluateEcl(context, clause.getQuery()))
-			.collect(Collectors.toSet());
-
-		exclusions.stream()
-			.map(clause -> evaluateEclToSet(context, clause.getQuery()))
-			.forEachOrdered(excludedIds -> includedIds.removeAll(excludedIds));
-
-		return ImmutableSet.copyOf(includedIds);
+	private Set<String> evaluateConceptSet(
+		final BranchContext context, 
+		final List<ExtendedLocale> locales, 
+		final Collection<QueryExpression> inclusions, 
+		final Collection<QueryExpression> exclusions
+	) {
+		return conceptSetEvaluator.evaluateConceptSet(context, locales, resourceUri, inclusions, exclusions, PAGE_SIZE);
 	}
 
 	private Stream<String> evaluateEcl(final BranchContext context, final String eclExpression) {
