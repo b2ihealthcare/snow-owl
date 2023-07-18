@@ -412,4 +412,45 @@ public class SnomedQueryOptimizerTest {
 		assertThat(diff.getRemove())
 			.containsExactly(include);
 	}
+
+	@Test
+	public void testSingleInclusionWithValue() throws Exception {
+
+		final QueryExpression inclusion1 = new QueryExpression(IDs.base62UUID(), "131148009", false); // Bleeding
+		final QueryExpression inclusion2 = new QueryExpression(IDs.base62UUID(), "125667009 ", false); // Bruising
+
+		final EclEvaluator evaluator = (context, expression, pageSize) -> Stream.of(expression);
+		optimizer.setEvaluator(evaluator);
+		
+		final RelationshipSearchBySource relationshipSearchBySource = (context, sourceIds) -> sourceIds.stream()
+			.map(id -> {
+				final SnomedRelationship r = new SnomedRelationship();
+				r.setSourceId(id);
+				r.setTypeId("1142139005"); // Count of base of active ingredient
+				r.setValue("#37");
+				return r;
+			});
+		
+		final RelationshipSearchByTypeAndDestination relationshipSearchByTypeAndDestination = (context, typeIds, destinationIds) -> {
+			final SnomedRelationship r = new SnomedRelationship();
+			r.setSourceId("131148009");
+			r.setTypeId("1142139005"); // Count of base of active ingredient
+			r.setValue("#37");
+			return Stream.of(r);
+		};
+		
+		optimizer.setRelationshipSearchBySource(relationshipSearchBySource);
+		optimizer.setRelationshipSearchByTypeAndDestination(relationshipSearchByTypeAndDestination);
+		
+		final Options optimizeOptions = Options.builder()
+			.put(QueryOptimizer.OptionKey.INCLUSIONS, List.<QueryExpression>of(inclusion1, inclusion2))
+			.put(QueryOptimizer.OptionKey.EXCLUSIONS, List.<QueryExpression>of())
+			.put(QueryOptimizer.OptionKey.LOCALES, null)
+			.put(QueryOptimizer.OptionKey.LIMIT, 100)
+			.build();
+
+		final QueryExpressionDiffs diffs = optimizer.optimize(context, optimizeOptions);
+		assertThat(diffs).isEmpty();
+		assertThat(diffs.isHasMoreOptimizations()).isFalse();
+	}	
 }

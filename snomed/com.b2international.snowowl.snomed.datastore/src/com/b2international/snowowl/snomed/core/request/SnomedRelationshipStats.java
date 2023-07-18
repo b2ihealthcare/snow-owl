@@ -54,8 +54,7 @@ public record SnomedRelationshipStats(
 				SnomedRelationshipIndexEntry.Fields.TYPE_ID, 
 				SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 			.stream(context)
-			.flatMap(SnomedRelationships::stream)
-			.filter(r -> !Concepts.IS_A.equals(r.getTypeId())); // Exclude IS_A relationships
+			.flatMap(SnomedRelationships::stream);
 
 		Stream<SnomedRelationship> findRelationshipsBySource(BranchContext context, Set<String> sourceIds);
 	}
@@ -96,6 +95,8 @@ public record SnomedRelationshipStats(
 		}
 		
 		searchBySource.findRelationshipsBySource(context, conceptIds)
+			// Exclude IS_A relationships and relationship values
+			.filter(r -> !r.hasValue() && !Concepts.IS_A.equals(r.getTypeId()))
 			.forEachOrdered(r -> incrementTableCount(positiveSources, r));
 
 		if (positiveSources.isEmpty()) {
