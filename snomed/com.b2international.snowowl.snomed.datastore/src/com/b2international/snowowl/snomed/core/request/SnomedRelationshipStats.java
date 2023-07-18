@@ -52,7 +52,10 @@ public record SnomedRelationshipStats(
 				SnomedRelationshipIndexEntry.Fields.ID, 
 				SnomedRelationshipIndexEntry.Fields.SOURCE_ID, 
 				SnomedRelationshipIndexEntry.Fields.TYPE_ID, 
-				SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+				SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
+				SnomedRelationshipIndexEntry.Fields.VALUE_TYPE,
+				SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,
+				SnomedRelationshipIndexEntry.Fields.STRING_VALUE)
 			.stream(context)
 			.flatMap(SnomedRelationships::stream);
 
