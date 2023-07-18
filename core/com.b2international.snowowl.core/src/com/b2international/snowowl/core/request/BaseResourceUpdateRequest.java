@@ -148,9 +148,6 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 		boolean changed = false;
 
-		changed |= updateSpecializedProperties(context, resource, updated);
-		changed |= updateSettings(resource, updated);
-
 		// url checked against all resources
 		if (url != null && !url.equals(resource.getUrl())) {
 			if (url.isBlank()) {
@@ -158,11 +155,11 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			}
 			
 			final boolean existingUrl = ResourceRequests.prepareSearch()
-				.setLimit(0)
-				.filterByUrl(url)
-				.build()
-				.execute(context)
-				.getTotal() > 0;
+					.setLimit(0)
+					.filterByUrl(url)
+					.build()
+					.execute(context)
+					.getTotal() > 0;
 					
 			if (existingUrl) {
 				throw new AlreadyExistsException("Resource", ResourceDocument.Fields.URL, url);
@@ -170,6 +167,9 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			
 			changed |= updateProperty(url, resource::getUrl, updated::url);
 		}
+		
+		changed |= updateSpecializedProperties(context, resource, updated);
+		changed |= updateSettings(resource, updated);
 
 		changed |= updateBundle(context, resource.getId(), resource.getBundleId(), updated);
 		

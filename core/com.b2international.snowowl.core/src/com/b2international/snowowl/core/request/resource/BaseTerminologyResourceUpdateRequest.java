@@ -156,6 +156,11 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 		
 		final SortedSet<DependencyDocument> newDependencies = mergedDependencies != null ? mergedDependencies.stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null;
 		if (mergedDependencies != null && !Objects.equals(newDependencies, oldDependencies)) {
+			// check duplicates in new dependency array
+			BaseTerminologyResourceCreateRequest.checkDuplicateDependencies(context, mergedDependencies);
+			// verify references to new dependency array
+			BaseTerminologyResourceCreateRequest.checkNonExtensionOfDependencyReferences(context, mergedDependencies);
+			
 			// make sure we auto-migrate the old fields to the new value
 			resource.extensionOf(null);
 			resource.upgradeOf(null);

@@ -255,7 +255,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		return extensionOfVersion;
 	}
 
-	private void checkNonExtensionOfDependencyReferences(RepositoryContext context, List<Dependency> dependenciesToCheck) {
+	static void checkNonExtensionOfDependencyReferences(RepositoryContext context, List<Dependency> dependenciesToCheck) {
 		// validate non-extensionOf dependency entries
 		if (CompareUtils.isEmpty(dependenciesToCheck)) {
 			return;
@@ -284,7 +284,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		}
 	}
 
-	private void checkDuplicateDependencies(RepositoryContext context, List<Dependency> dependenciesToCheck) {
+	static void checkDuplicateDependencies(RepositoryContext context, List<Dependency> dependenciesToCheck) {
 		if (CompareUtils.isEmpty(dependenciesToCheck)) {
 			return;
 		}
