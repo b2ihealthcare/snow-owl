@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs/Improvements
 - [index] adjust page size dynamically for streaming queries based on the `result_window` configuration (#1187)
+- [index] make `update_by_query` and `delete_by_query` index write operation concurrency level configurable via the new  `indexByQueryConcurrencyLevel` configuration setting (#1189)
 
 ## 8.11.0
 
