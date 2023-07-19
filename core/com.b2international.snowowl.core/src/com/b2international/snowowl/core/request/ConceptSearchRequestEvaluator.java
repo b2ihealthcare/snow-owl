@@ -345,8 +345,8 @@ public interface ConceptSearchRequestEvaluator {
 		return Ecl.or(expressions);
 	}
 
-	default String toConceptSet(final SortedSet<String> descendantOrSelfOfConceptIds) {
-		return descendantOrSelfOfConceptIds.stream().collect(Collectors.joining(" ", "(", ")"));
+	default String toConceptSet(final Collection<String> conceptIds) {
+		return conceptIds.stream().collect(Collectors.joining(" ", "(", ")"));
 	}
 	
 	/**
