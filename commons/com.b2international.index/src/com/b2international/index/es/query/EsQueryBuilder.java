@@ -142,6 +142,8 @@ public final class EsQueryBuilder {
 			visit((ScriptQueryExpression)expression);
 		} else if (expression instanceof MoreLikeThisPredicate) {
 			visit((MoreLikeThisPredicate) expression);
+		} else if (expression instanceof QueryStringExpression) {
+			visit((QueryStringExpression) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -430,6 +432,13 @@ public final class EsQueryBuilder {
 				.minWordLength(mlt.getMinWordLength())
 				.maxWordLength(mlt.getMaxWordLength())
 				.minimumShouldMatch(mlt.getMinimumShouldMatch())
+		);
+	}
+	
+	private void visit(QueryStringExpression qs) {
+		deque.push(
+			QueryBuilders.queryStringQuery(qs.getQuery())
+				.defaultField(qs.getDefaultField())
 		);
 	}
 	
