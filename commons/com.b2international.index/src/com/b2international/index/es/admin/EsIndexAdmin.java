@@ -139,6 +139,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		// local configuration settings for bulk writes, monitoring, etc.
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
+		this.settings.putIfAbsent(IndexClientFactory.INDEX_BY_QUERY_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_INDEX_BY_QUERY_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.BULK_ACTIONS_SIZE, IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE);
 		this.settings.putIfAbsent(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB, IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE_IN_MB);
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_WATERMARK_LOW_KEY, IndexClientFactory.DEFAULT_COMMIT_WATERMARK_LOW_VALUE);
