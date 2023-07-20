@@ -22,6 +22,7 @@ import static com.b2international.index.query.Expressions.matchRange;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
@@ -29,10 +30,13 @@ import com.b2international.index.mapping.Field;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchPoint;
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.internal.DependencyDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -69,6 +73,8 @@ public final class VersionDocument implements Serializable {
 		public static final String TOOLING_ID = "toolingId";
 		public static final String URL = "url";
 		public static final String AUTHOR = "author";
+		public static final String DEPENDENCIES = "dependencies";
+		public static final String SETTINGS = "settings";
 		
 		// derived fields
 		public static final String RESOURCE_BRANCH_PATH = "resourceBranchPath";
@@ -127,6 +133,11 @@ public final class VersionDocument implements Serializable {
 		public static Expression createdAt(long from, long to) {
 			return matchRange(Fields.CREATED_AT, from, to);
 		}
+		
+		public static Expression dependency(String queryString) {
+			return ResourceDocument.Expressions.dependency(queryString);
+		}
+		
 	}
 	
 	public static Builder builder() {
@@ -156,6 +167,7 @@ public final class VersionDocument implements Serializable {
 		private String language;
 		private String purpose;
 		private String oid;
+		private SortedSet<DependencyDocument> dependencies;
 		private Map<String, Object> settings;
 		
 		public Builder id(String id) {
@@ -253,6 +265,11 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
+		public Builder dependencies(SortedSet<DependencyDocument> dependencies) {
+			this.dependencies = dependencies;
+			return this;
+		}
+		
 		public Builder settings(Map<String, Object> settings) {
 			this.settings = (settings == null) ? null : Map.copyOf(settings);
 			return this;
@@ -270,6 +287,7 @@ public final class VersionDocument implements Serializable {
 					.language(resourceSnapshot.getLanguage())
 					.purpose(resourceSnapshot.getPurpose())
 					.oid(resourceSnapshot.getOid())
+					.dependencies(resourceSnapshot.getDependencies() == null ? null : resourceSnapshot.getDependencies().stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)))
 					.settings(resourceSnapshot.getSettings());
 			} else {
 				return this
@@ -334,6 +352,7 @@ public final class VersionDocument implements Serializable {
 				language,
 				purpose,
 				oid,
+				dependencies,
 				settings
 			);
 		}
@@ -378,11 +397,12 @@ public final class VersionDocument implements Serializable {
 	private final String purpose;
 	private final String oid;
 	
-	// XXX derived field requires a mapping declaration to be present here
-	private String resourceBranchPath;
-	
 	@Field(index = false) 
 	private final Map<String, Object> settings;
+	private final SortedSet<DependencyDocument> dependencies;
+	
+	// XXX derived field requires a mapping declaration to be present here
+	private String resourceBranchPath;
 
 	private VersionDocument(
 		final String id, 
@@ -405,6 +425,7 @@ public final class VersionDocument implements Serializable {
 		final String language,
 		final String purpose,
 		final String oid,
+		final SortedSet<DependencyDocument> dependencies,
 		final Map<String, Object> settings) {
 		
 		this.id = id;
@@ -430,6 +451,7 @@ public final class VersionDocument implements Serializable {
 		this.language = language;
 		this.purpose = purpose;
 		this.oid = oid;
+		this.dependencies = dependencies;
 		this.settings = settings;
 	}
 	
@@ -525,6 +547,10 @@ public final class VersionDocument implements Serializable {
 		return settings;
 	}
 	
+	public SortedSet<DependencyDocument> getDependencies() {
+		return dependencies;
+	}
+	
 	// additional helpers
 	
 	/**
@@ -579,6 +605,7 @@ public final class VersionDocument implements Serializable {
 			.add("language", language)
 			.add("purpose", purpose)
 			.add("oid", oid)
+			.add("dependencies", dependencies)
 			.add("settings", settings)
 			.toString();
 	}
