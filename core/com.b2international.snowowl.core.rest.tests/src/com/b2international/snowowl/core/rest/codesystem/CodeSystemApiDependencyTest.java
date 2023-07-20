@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.rest.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.fail;
@@ -30,6 +31,7 @@ import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.BaseResourceApiTest;
@@ -110,7 +112,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			assertCodeSystemGet(codeSystemId)
 				.statusCode(200)
 				.body("extensionOf", equalTo("codesystems/cs34/v1"))
-				.body("dependencies", hasItem(Map.of("resourceUri", "codesystems/cs34/v1", "scope", "extensionOf")));
+				.body("dependencies", hasItem(Map.of("uri", "codesystems/cs34/v1", "scope", "extensionOf")));
 			
 		} catch (NotFoundException e) {
 			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
@@ -167,7 +169,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 		assertCodeSystemGet(codeSystemId)
 			.statusCode(200)
 			.body("extensionOf", equalTo("codesystems/cs35/v4"))
-			.body("dependencies", hasItem(Map.of("resourceUri", "codesystems/cs35/v4", "scope", "extensionOf")))
+			.body("dependencies", hasItem(Map.of("uri", "codesystems/cs35/v4", "scope", "extensionOf")))
 			.body("branchPath", equalTo(expectedBranchPath));	}
 	
 	@Test
@@ -232,6 +234,83 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			prepareCodeSystemCreateRequestBody("duplicateDependencies_DiffScope")
 			.with("dependencies", List.of(Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "extensionOf"), Dependency.of(CodeSystem.uri(parentCodeSystemId, "v2"), "extensionOf")))
 		).statusCode(400).body("message", equalTo("Some of the requested dependencies ('["+parentCodeSystemId+"]') are listed more than once. Correct the dependencies array and try again."));
+	}
+	
+	@Test
+	public void search_dependency() throws Exception {
+		final String parentCodeSystemId = IDs.base62UUID();
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
+		assertCodeSystemCreated(parentRequestBody);
+		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
+		
+		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16");
+		assertVersionCreated(versionRequestBody).statusCode(201);
+		
+		final String codeSystemWithZeroDependencies = "codeSystemWithZeroDependencies";
+		final String codeSystemWithOneDependency = "codeSystemWithOneDependency";
+		final String codeSystemWithTwoDependencies = "codeSystemWithTwoDependencies";
+		
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithZeroDependencies)
+			.with("dependencies", List.of())
+		).statusCode(201);
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithOneDependency)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "extensionOf")
+			))
+		).statusCode(201);
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithTwoDependencies)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "source"),
+				Dependency.of(CodeSystem.uri(codeSystemWithZeroDependencies), "target")
+			))
+		).statusCode(201);
+		
+		// simple search, using URI only without any specific syntax
+		CodeSystems matches = assertCodeSystemSearch(Map.of(
+			"dependency", CodeSystem.uri(parentCodeSystemId, "v1").toString()
+		)).extract().as(CodeSystems.class);
+		
+		assertThat(matches)
+			.extracting(CodeSystem::getId)
+			.containsOnly(codeSystemWithOneDependency, codeSystemWithTwoDependencies);
+		
+		// explicit uri search
+		matches = assertCodeSystemSearch(Map.of(
+			"dependency", "uri:" + CodeSystem.uri(codeSystemWithZeroDependencies).toString()
+		)).extract().as(CodeSystems.class);
+		
+		assertThat(matches)
+			.extracting(CodeSystem::getId)
+			.containsOnly(codeSystemWithTwoDependencies);
+		
+		// scope search
+		matches = assertCodeSystemSearch(Map.of(
+			"dependency", "scope:source"
+		)).extract().as(CodeSystems.class);
+		
+		assertThat(matches)
+			.extracting(CodeSystem::getId)
+			.containsOnly(codeSystemWithTwoDependencies);
+		
+		// uri and scope search, match
+		matches = assertCodeSystemSearch(Map.of(
+			"dependency", String.format("uri:%s AND scope:target", CodeSystem.uri(codeSystemWithZeroDependencies))
+		)).extract().as(CodeSystems.class);
+		
+		assertThat(matches)
+			.extracting(CodeSystem::getId)
+			.containsOnly(codeSystemWithTwoDependencies);
+	
+		// uri and scope search, no match
+		matches = assertCodeSystemSearch(Map.of(
+			"dependency", String.format("uri:%s AND scope:source", CodeSystem.uri(codeSystemWithZeroDependencies))
+		)).extract().as(CodeSystems.class);
+		
+		assertThat(matches)
+			.isEmpty();
 	}
 	
 }

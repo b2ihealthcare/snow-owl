@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.ResourceTypeConverter.Registry;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest;
 
 /**
  * @since 8.0
@@ -55,15 +56,29 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		/**
 		 * Filter matches by their currently associated working branch (exact match).
 		 */
-		BRANCH,
+		BRANCH, 
+		
+		/**
+		 * Filter matches by their dependency array (supports partial and exact matches as well via special syntax).
+		 */
+		DEPENDENCY,
 
 	}
 
 	@Override
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		super.prepareAdditionalFilters(context, queryBuilder);
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
+		addDependencyFilter(context, queryBuilder);
+	}
+
+	private void addDependencyFilter(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.DEPENDENCY)) {
+			String queryString = getString(OptionKey.DEPENDENCY);
+			queryBuilder.filter(ResourceDocument.Expressions.dependency(queryString));
+		}
 	}
 
 	@Override

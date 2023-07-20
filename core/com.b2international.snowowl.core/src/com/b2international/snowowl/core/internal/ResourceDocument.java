@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.prefixMatch;
-import static com.b2international.index.query.Expressions.regexp;
+import static com.b2international.index.query.Expressions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,10 +94,21 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String OID = "oid";
 		public static final String BRANCH_PATH = "branchPath";
 		public static final String TOOLING_ID = "toolingId";
-		public static final String EXTENSION_OF = "extensionOf";
-		public static final String UPGRADE_OF = "upgradeOf";
 		public static final String SETTINGS = "settings";
 		public static final String TYPE_RANK = "typeRank";
+		// since 8.12
+		public static final String DEPENDENCIES = "dependencies";
+		
+		// deprecated in 8.12
+		/**
+		 * @deprecated replace by {@link #DEPENDENCIES}, will be removed in 9.0
+		 */
+		public static final String EXTENSION_OF = "extensionOf";
+		
+		/**
+		 * @deprecated replace by {@link #DEPENDENCIES}, will be removed in 9.0
+		 */
+		public static final String UPGRADE_OF = "upgradeOf";
 		
 		// analyzed fields
 		private static final String TITLE_PREFIX   = TITLE + ".prefix";
@@ -210,6 +219,18 @@ public final class ResourceDocument extends RevisionDocument {
 		
 		public static Expression upgradeOfs(Iterable<ResourceURI> upgradeOfs) {
 			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
+		}
+
+		public static Expression dependency(String queryString) {
+			final String qs = checkNotNull(queryString, "queryString")
+					// escape reserved forward slash characters which are often present in Snowy URIs
+					.replace("/", "\\/")
+					// replace uri: field prefix with dependencies.uri: to make it work in ES
+					.replace("uri:", "dependencies.uri:")
+					// replace scope: field prefix with dependencies.scope: to make it work in ES
+					.replace("scope:", "dependencies.scope:")
+					;
+			return nestedMatch(Fields.DEPENDENCIES, queryString(qs, "dependencies.*"));
 		}
 	}
 

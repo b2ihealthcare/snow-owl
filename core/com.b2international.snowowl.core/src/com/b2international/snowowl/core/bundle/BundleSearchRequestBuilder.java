@@ -16,8 +16,8 @@
 package com.b2international.snowowl.core.bundle;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.BaseResourceSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequestBuilder;
 
 /**
  * @since 8.0

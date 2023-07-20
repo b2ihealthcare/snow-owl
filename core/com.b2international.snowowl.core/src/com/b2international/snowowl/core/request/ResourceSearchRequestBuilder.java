@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequestBuilder;
 
 /**
  * @since 8.0
@@ -60,6 +61,10 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 	
 	public ResourceSearchRequestBuilder filterByBranches(Iterable<String> branchPaths) {
 		return addOption(OptionKey.BRANCH, branchPaths);
+	}
+	
+	public ResourceSearchRequestBuilder filterByDependency(String dependency) {
+		return addOption(OptionKey.DEPENDENCY, dependency);
 	}
 
 	@Override

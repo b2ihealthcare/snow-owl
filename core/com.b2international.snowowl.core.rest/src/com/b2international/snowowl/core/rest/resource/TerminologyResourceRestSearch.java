@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,9 @@ public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 	@Parameter
 	private List<String> url;
 	
+	@Parameter
+	private String dependency;
+	
 	public List<String> getOid() {
 		return oid;
 	}
@@ -68,5 +71,13 @@ public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 	
 	public void setUrl(List<String> url) {
 		this.url = url;
+	}
+	
+	public String getDependency() {
+		return dependency;
+	}
+	
+	public void setDependency(String dependency) {
+		this.dependency = dependency;
 	}
 }

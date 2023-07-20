@@ -30,6 +30,14 @@ public final class QueryStringExpression implements Expression {
 		this.defaultField = defaultField;
 	}
 	
+	public String getQuery() {
+		return query;
+	}
+	
+	public String getDefaultField() {
+		return defaultField;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(query, defaultField);
@@ -44,13 +52,10 @@ public final class QueryStringExpression implements Expression {
 		return Objects.equals(query, predicate.query) 
 				&& Objects.equals(defaultField, predicate.defaultField);
 	}
-
-	public String getQuery() {
-		return query;
-	}
 	
-	public String getDefaultField() {
-		return defaultField;
+	@Override
+	public String toString() {
+		return String.format("QUERY_STRING(%s)[defaultField:'%s']", query, defaultField);
 	}
 	
 }
