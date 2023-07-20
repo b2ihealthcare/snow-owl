@@ -249,6 +249,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 		final String codeSystemWithZeroDependencies = "codeSystemWithZeroDependencies";
 		final String codeSystemWithOneDependency = "codeSystemWithOneDependency";
 		final String codeSystemWithTwoDependencies = "codeSystemWithTwoDependencies";
+		final String codeSystemWithHEADDependency = "codeSystemWithHEADDependency";
 		
 		assertCodeSystemCreate(
 			prepareCodeSystemCreateRequestBody(codeSystemWithZeroDependencies)
@@ -265,6 +266,12 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.with("dependencies", List.of(
 				Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "source"),
 				Dependency.of(CodeSystem.uri(codeSystemWithZeroDependencies), "target")
+			))
+		).statusCode(201);
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithHEADDependency)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId), "source")
 			))
 		).statusCode(201);
 		
@@ -293,7 +300,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 		
 		assertThat(matches)
 			.extracting(CodeSystem::getId)
-			.containsOnly(codeSystemWithTwoDependencies);
+			.containsOnly(codeSystemWithHEADDependency, codeSystemWithTwoDependencies);
 		
 		// uri and scope search, match
 		matches = assertCodeSystemSearch(Map.of(
@@ -311,6 +318,15 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 		
 		assertThat(matches)
 			.isEmpty();
+		
+		// uri regex match should return both versioned and unversioned dependencies
+		matches = assertCodeSystemSearch(Map.of(
+			"dependency", String.format("uri:%s OR uri:%s/*", CodeSystem.uri(parentCodeSystemId), CodeSystem.uri(parentCodeSystemId))
+		)).extract().as(CodeSystems.class);
+		
+		assertThat(matches)
+			.extracting(CodeSystem::getId)
+			.containsOnly(codeSystemWithOneDependency, codeSystemWithTwoDependencies, codeSystemWithHEADDependency);
 	}
 	
 }
