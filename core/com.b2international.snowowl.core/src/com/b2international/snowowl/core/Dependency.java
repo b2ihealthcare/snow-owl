@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,10 +30,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * 
  * @since 8.12.0
  */
-@JsonPropertyOrder({ "resourceUri", "scope", "resource", "upgrades" })
-public final class Dependency {
+@JsonPropertyOrder({ "uri", "scope", "resource", "upgrades" })
+public final class Dependency implements Serializable {
 
-	private final ResourceURIWithQuery resourceUri;
+	private static final long serialVersionUID = 1L;
+	
+	private final ResourceURIWithQuery uri;
 	private final String scope;
 
 	// expandable props
@@ -40,16 +43,16 @@ public final class Dependency {
 	private List<ResourceURI> upgrades;
 
 	@JsonCreator
-	Dependency(@JsonProperty("resourceUri") ResourceURIWithQuery resourceUri, @JsonProperty("scope") String scope) {
-		this.resourceUri = Objects.requireNonNull(resourceUri);
+	Dependency(@JsonProperty("uri") ResourceURIWithQuery uri, @JsonProperty("scope") String scope) {
+		this.uri = Objects.requireNonNull(uri);
 		this.scope = scope;
 	}
 
 	/**
 	 * @return the {@link ResourceURIWithQuery} this dependency points to, never <code>null</code>
 	 */
-	public ResourceURIWithQuery getResourceUri() {
-		return resourceUri;
+	public ResourceURIWithQuery getUri() {
+		return uri;
 	}
 
 	/**
@@ -60,7 +63,7 @@ public final class Dependency {
 	}
 
 	/**
-	 * @return the {@link TerminologyResource} object denoted by the {@link #getResourceUri()} property, <code>null</code> if not requested to be
+	 * @return the {@link TerminologyResource} object denoted by the {@link #getUri()} property, <code>null</code> if not requested to be
 	 *         expanded, never <code>null</code> if requested to be expanded
 	 */
 	public TerminologyResource getResource() {
@@ -94,7 +97,7 @@ public final class Dependency {
 	 */
 	@JsonIgnore
 	public DependencyDocument toDocument() {
-		return new DependencyDocument(resourceUri, scope);
+		return new DependencyDocument(uri, scope);
 	}
 	
 	@JsonIgnore
@@ -109,7 +112,7 @@ public final class Dependency {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(resourceUri, scope);
+		return Objects.hash(uri, scope);
 	}
 	
 	@Override
@@ -118,14 +121,24 @@ public final class Dependency {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		Dependency other = (Dependency) obj;
-		return Objects.equals(resourceUri, other.resourceUri) && Objects.equals(scope, other.scope);
+		return Objects.equals(uri, other.uri) && Objects.equals(scope, other.scope);
+	}
+
+	/**
+	 * Creates a new unscoped {@link Dependency} instance with the given {@link ResourceURI uri}.
+	 * 
+	 * @param resourceUri - the URI this dependency instance will point to
+	 * @return a new {@link Dependency} instance
+	 */
+	public static Dependency of(ResourceURI resourceUri) {
+		return of(ResourceURIWithQuery.of(resourceUri.getResourceType(), resourceUri.withoutResourceType()), null);
 	}
 	
 	/**
 	 * Creates a new {@link Dependency} instance with the given {@link ResourceURI} uri and optional scope value.
 	 * 
 	 * @param resourceUri - the URI this dependency instance will point to
-	 * @param scope - optional scope of the dependency
+	 * @param scope - optional scope of the dependency, may be <code>null</code>\
 	 * @return a new {@link Dependency} instance
 	 */
 	public static final Dependency of(ResourceURI resourceUri, String scope) {
@@ -149,7 +162,7 @@ public final class Dependency {
 	 * @return a new instance of {@link Dependency}, never <code>null</code>
 	 */
 	public static final Dependency from(DependencyDocument doc) {
-		return new Dependency(doc.getResourceUri(), doc.getScope());
+		return new Dependency(doc.getUri(), doc.getScope());
 	}
 
 }

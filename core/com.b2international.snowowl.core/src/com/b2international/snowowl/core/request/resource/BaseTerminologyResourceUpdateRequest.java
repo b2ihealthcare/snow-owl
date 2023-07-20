@@ -119,7 +119,7 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 		
 		// handle extensionOf dependency if configured
 		Optional<Dependency> extensionOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isExtensionOf).findFirst() : Optional.empty();
-		var extensionOfUri = extensionOfDependency.map(Dependency::getResourceUri).orElse(null);
+		var extensionOfUri = extensionOfDependency.map(Dependency::getUri).orElse(null);
 		
 		
 		if (extensionOfUri != null) {

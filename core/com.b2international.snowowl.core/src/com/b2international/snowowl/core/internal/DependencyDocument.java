@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.internal;
 import java.util.Comparator;
 import java.util.Objects;
 
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,56 +26,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 8.12.0
  */
+@Doc
 public final class DependencyDocument implements Comparable<DependencyDocument> {
 
 	private static final Comparator<DependencyDocument> COMPARATOR = Comparator
-			.comparing(DependencyDocument::getResourceUri)
+			.comparing(DependencyDocument::getUri)
 			.thenComparing(DependencyDocument::getScope);
 	
-	private final ResourceURIWithQuery resourceUri;
+	private final ResourceURIWithQuery uri;
 	private final String scope;
 	
-	// derived fields for easier searching
-	private final String resourceType;
-	private final String resourceId;
-	private final String path;
-	private final String query;
-	
 	@JsonCreator
-	public DependencyDocument(@JsonProperty("resourceUri") ResourceURIWithQuery resourceUri, @JsonProperty("scope") String scope) {
-		this.resourceUri = Objects.requireNonNull(resourceUri);
+	public DependencyDocument(@JsonProperty("uri") ResourceURIWithQuery uri, @JsonProperty("scope") String scope) {
+		this.uri = Objects.requireNonNull(uri);
 		this.scope = scope;
-		// configure derived fields
-		this.resourceType = resourceUri.getResourceUri().getResourceType();
-		this.resourceId = resourceUri.getResourceUri().getResourceId();
-		this.path = resourceUri.getResourceUri().getPath();
-		this.query = resourceUri.getQuery();
 	}
 	
-	public ResourceURIWithQuery getResourceUri() {
-		return resourceUri;
+	public ResourceURIWithQuery getUri() {
+		return uri;
 	}
 	
 	public String getScope() {
 		return scope;
-	}
-	
-	// derived fields
-	
-	public String getResourceType() {
-		return resourceType;
-	}
-	
-	public String getResourceId() {
-		return resourceId;
-	}
-	
-	public String getPath() {
-		return path;
-	}
-	
-	public String getQuery() {
-		return query;
 	}
 	
 	@Override

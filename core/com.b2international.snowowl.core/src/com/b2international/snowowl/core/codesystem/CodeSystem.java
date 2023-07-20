@@ -97,14 +97,14 @@ public final class CodeSystem extends TerminologyResource {
 			codeSystem.setDependencies(doc.getDependencies().stream().map(Dependency::from).toList());
 			doc.getDependencies().forEach(dep -> {
 				// maintain old extensionOf and upgradeOf field value from dependencies only if query part is not defined
-				if (dep.getResourceUri().hasQueryPart()) {
+				if (dep.getUri().hasQueryPart()) {
 					return;
 				} 
 				
 				if (TerminologyResource.DependencyScope.EXTENSION_OF.equals(dep.getScope())) {
-					codeSystem.setExtensionOf(dep.getResourceUri().getResourceUri());
+					codeSystem.setExtensionOf(dep.getUri().getResourceUri());
 				} else if (TerminologyResource.DependencyScope.UPGRADE_OF.equals(dep.getScope())) {
-					codeSystem.setUpgradeOf(dep.getResourceUri().getResourceUri());
+					codeSystem.setUpgradeOf(dep.getUri().getResourceUri());
 				}
 			});
 		} else {

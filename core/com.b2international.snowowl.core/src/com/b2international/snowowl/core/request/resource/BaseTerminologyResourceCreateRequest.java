@@ -215,7 +215,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		
 		// check extensionOf dependency first, if configured
 		Optional<Dependency> extensionOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isExtensionOf).findFirst() : Optional.empty();
-		var extensionOfUri = extensionOfDependency.map(Dependency::getResourceUri).orElse(null);
+		var extensionOfUri = extensionOfDependency.map(Dependency::getUri).orElse(null);
 		Optional<Version> extensionOfVersion = Optional.empty(); 
 		if (extensionOfUri != null) {
 			if (extensionOfUri.isHead() || extensionOfUri.isLatest()) {
@@ -242,7 +242,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			
 			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
 			Optional<Dependency> upgradeOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isUpgradeOf).findFirst() : Optional.empty();
-			var upgradeOfUri = upgradeOfDependency.map(Dependency::getResourceUri).orElse(null);
+			var upgradeOfUri = upgradeOfDependency.map(Dependency::getUri).orElse(null);
 			
 			if (upgradeOfUri == null && !create && !branchPath.equals(newResourceBranchPath)) {
 				throw new BadRequestException("Branch path is inconsistent with 'extensionOf' dependency ('%s' given, should be '%s').", branchPath, newResourceBranchPath);
@@ -263,7 +263,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			
 		final Set<String> resourceReferencesToCheck = dependenciesToCheck.stream()
 				.filter(dep -> !dep.isExtensionOf())
-				.map(dep -> dep.getResourceUri().getResourceUri().getResourceId())
+				.map(dep -> dep.getUri().getResourceUri().getResourceId())
 				.collect(Collectors.toSet());
 		
 		
@@ -290,7 +290,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		}
 		
 		final Set<String> duplicateResourceIdReferences = dependenciesToCheck.stream()
-				.map(dep -> dep.getResourceUri().getResourceUri().getResourceId())
+				.map(dep -> dep.getUri().getResourceUri().getResourceId())
 				.collect(Collectors.toCollection(HashMultiset::create))
 				.entrySet()
 				.stream()
