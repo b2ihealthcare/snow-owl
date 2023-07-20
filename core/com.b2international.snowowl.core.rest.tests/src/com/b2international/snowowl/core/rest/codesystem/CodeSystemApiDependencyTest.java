@@ -237,11 +237,27 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	}
 	
 	@Test
+	public void delete_resourceWithDependants() throws Exception {
+		final String dependencyResourceId = IDs.base62UUID();
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(dependencyResourceId);
+		assertCodeSystemCreated(parentRequestBody);
+		
+		final String dependantResourceId = IDs.base62UUID();
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(dependantResourceId)
+			.with("dependencies", List.of(Map.of("uri", CodeSystem.uri(dependencyResourceId))))
+		).statusCode(201);
+		
+		assertCodeSystemDelete(dependencyResourceId)
+			.statusCode(400)
+			.body("message", equalTo("Resource '"+dependencyResourceId+"' is being referenced by other resources and it cannot be deleted. References are ["+CodeSystem.uri(dependantResourceId)+"]."));
+	}
+	
+	@Test
 	public void search_dependency() throws Exception {
 		final String parentCodeSystemId = IDs.base62UUID();
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
 		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16");
 		assertVersionCreated(versionRequestBody).statusCode(201);

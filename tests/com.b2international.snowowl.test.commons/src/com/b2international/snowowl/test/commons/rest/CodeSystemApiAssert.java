@@ -97,6 +97,12 @@ public abstract class CodeSystemApiAssert {
 			.then().assertThat().statusCode(statusCode);
 	}
 	
+	public static ValidatableResponse assertCodeSystemDelete(final String codeSystemId) {
+		return givenAuthenticatedRequest(CODESYSTEMS_API)
+			.delete("/{id}", codeSystemId)
+			.then();
+	}
+	
 	private static Response whenUpdatingCodeSystem(final String codeSystemId, final Map<String, Object> requestBody) {
 		return givenAuthenticatedRequest(CODESYSTEMS_API)
 			.with().contentType(ContentType.JSON)

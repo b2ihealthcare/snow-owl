@@ -29,8 +29,8 @@ import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
@@ -109,10 +109,11 @@ public abstract class BaseAuthorizationTest {
 			.getSync(1, TimeUnit.MINUTES)
 			.forEach(resource -> {
 				ResourceRequests
-				.prepareDelete(resource.getId())
-				.build(RestExtensions.USER, "Delete " + resource.getId())
-				.execute(Services.bus())
-				.getSync(1, TimeUnit.MINUTES); 
+					.prepareDelete(resource.getResourceURI())
+					.force(true)
+					.build(RestExtensions.USER, "Delete " + resource.getId())
+					.execute(Services.bus())
+					.getSync(1, TimeUnit.MINUTES); 
 			});
 	}
 	

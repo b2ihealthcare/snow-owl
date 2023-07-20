@@ -363,12 +363,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody(codeSystemId));
 		assertCodeSystemGet(codeSystemId).statusCode(200);
 		
-		// TODO add REST API
-		ResourceRequests.prepareDelete(codeSystemId)
-			.build(RestExtensions.USER, "Delete " + codeSystemId)
-			.execute(Services.bus())
-			.getSync();
-		
+		assertCodeSystemDelete(codeSystemId).statusCode(204);
 		assertCodeSystemGet(codeSystemId).statusCode(404);
 		
 		// Check if the branch has been deleted
@@ -391,12 +386,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", LocalDate.now().toString());
 		assertVersionCreated(versionRequestBody).statusCode(201);
 		
-		// TODO add REST API
-		ResourceRequests.prepareDelete(codeSystemId)
-			.build(RestExtensions.USER, "Delete " + codeSystemId)
-			.execute(Services.bus())
-			.getSync();
-		
+		assertCodeSystemDelete(codeSystemId).statusCode(204);
 		assertCodeSystemGet(codeSystemId).statusCode(404);
 		
 		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);

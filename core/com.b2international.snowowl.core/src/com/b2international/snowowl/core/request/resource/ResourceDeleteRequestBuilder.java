@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.context.ResourceRepositoryTransactionRequestBuilder;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.repository.RevisionDocument;
-import com.b2international.snowowl.core.request.DeleteRequest;
 
 /**
  * @since 8.0
@@ -29,14 +28,12 @@ public final class ResourceDeleteRequestBuilder
 		extends BaseRequestBuilder<ResourceDeleteRequestBuilder, TransactionContext, Boolean> 
 		implements ResourceRepositoryTransactionRequestBuilder<Boolean> {
 
-	protected final String componentId;
-	protected final Class<? extends RevisionDocument> type;
+	protected final ResourceURI resourceUri;
 	protected Boolean force = Boolean.FALSE;
 	
-	public ResourceDeleteRequestBuilder(String componentId, Class<? extends RevisionDocument> type) {
+	public ResourceDeleteRequestBuilder(ResourceURI componentId) {
 		super();
-		this.componentId = componentId;
-		this.type = type;
+		this.resourceUri = componentId;
 	}
 	
 	/**
@@ -53,7 +50,7 @@ public final class ResourceDeleteRequestBuilder
 	
 	@Override
 	protected Request<TransactionContext, Boolean> doBuild() {
-		return new DeleteRequest(componentId, type, force);
+		return new ResourceDeleteRequest(resourceUri, force);
 	}
 
 }

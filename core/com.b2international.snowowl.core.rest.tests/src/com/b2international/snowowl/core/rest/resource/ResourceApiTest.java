@@ -81,10 +81,11 @@ public class ResourceApiTest {
 			.getSync(1, TimeUnit.MINUTES)
 			.forEach(resource -> {
 				ResourceRequests
-				.prepareDelete(resource.getId())
-				.build(RestExtensions.USER, "Delete " + resource.getId())
-				.execute(Services.bus())
-				.getSync(1, TimeUnit.MINUTES); 
+					.prepareDelete(resource.getResourceURI())
+					.force(true)
+					.build(RestExtensions.USER, "Delete " + resource.getId())
+					.execute(Services.bus())
+					.getSync(1, TimeUnit.MINUTES); 
 			});
 	}
 

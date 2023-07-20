@@ -170,13 +170,13 @@ public class ResourceRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		try {
-			final Resource codeSystem = ResourceRequests.prepareGet(resourceId)
+			final Resource resource = ResourceRequests.prepareGet(resourceId)
 					.buildAsync()
 					.execute(getBus())
 					.getSync(1, TimeUnit.MINUTES);
 			
-			ResourceRequests.prepareDelete(resourceId)
-				.build(author, String.format("Deleted resource %s", codeSystem.getTitle()))
+			ResourceRequests.prepareDelete(resource.getResourceURI())
+				.build(author, String.format("Deleted resource %s", resource.getTitle()))
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 		} catch(NotFoundException e) {
