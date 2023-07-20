@@ -31,7 +31,7 @@ public final class DependencyDocument implements Comparable<DependencyDocument> 
 
 	private static final Comparator<DependencyDocument> COMPARATOR = Comparator
 			.comparing(DependencyDocument::getUri)
-			.thenComparing(DependencyDocument::getScope);
+			.thenComparing(Comparator.comparing(DependencyDocument::getScope, Comparator.nullsLast(Comparator.naturalOrder())));
 	
 	private final ResourceURIWithQuery uri;
 	private final String scope;
