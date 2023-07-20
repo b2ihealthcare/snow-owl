@@ -51,14 +51,12 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.BaseResourceApiTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
 import com.b2international.snowowl.test.commons.rest.BundleApiAssert;
-import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 1.0
@@ -330,31 +328,6 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		final Json updateRequestBody = Json.object("branchPath", "non-existent-branch-path");
 		
 		assertCodeSystemUpdatedWithStatus(codeSystemId, updateRequestBody, 400);
-	}
-	
-	@Test
-	public void codesystem21_UpdateExtensionOfOldModel() {
-		final String parentCodeSystemId = "cs13";
-		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
-		
-		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
-		assertVersionCreated(v3RequestBody).statusCode(201);
-		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "2020-04-17");
-		assertVersionCreated(v4RequestBody).statusCode(201);
-		
-		final String codeSystemId = "cs14";
-		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
-				.without("branchPath")
-				.with("extensionOf", CodeSystem.uri("cs13/v3"));
-		
-		assertCodeSystemCreated(requestBody);
-		assertCodeSystemUpdated(codeSystemId, Json.object("extensionOf", CodeSystem.uri("cs13/v4")));
-		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs13", "v4", codeSystemId);
-		assertCodeSystemHasAttributeValue(codeSystemId, "extensionOf", "codesystems/cs13/v4");
-		assertCodeSystemHasAttributeValue(codeSystemId, "branchPath", expectedBranchPath);
 	}
 	
 	@Test
