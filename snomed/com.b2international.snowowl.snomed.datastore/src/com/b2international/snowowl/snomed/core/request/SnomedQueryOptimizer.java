@@ -649,7 +649,11 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 						newFitThreshold = fitThreshold * 0.9f;
 					} else {
 						// Lower it enough so that the current maximum score will pass
-						newFitThreshold = Floats.max(ancestorScores.values().toArray());
+						if (!ancestorScores.isEmpty()) {
+							newFitThreshold = Floats.max(ancestorScores.values().toArray());
+						} else {
+							newFitThreshold = 0.0f;
+						}
 					}
 
 					if (newFitThreshold > minimumFitThreshold) {
@@ -694,7 +698,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		log.info("Found {} optimized inclusion(s) with a '<</<' expression", ancestorExpressionCount);
 	}
 
-	private int compact(final List<QueryExpression> expressions, final SnomedHierarchyStats inclusionHierarchyStats) {
+	private int compact(final List<QueryExpression> expressions, final SnomedHierarchyStats hierarchyStats) {
 		final IntSet removeIdx = PrimitiveSets.newIntOpenHashSet();
 
 		// Eliminate exact duplicates
@@ -703,7 +707,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final String queryA = expressions.get(i).getQuery();
 				final String queryB = expressions.get(j).getQuery();
 				if (queryA.equals(queryB)) {
-					removeIdx.add(j);
+					removeIdx.add(i);
 				}
 			}
 		}
@@ -713,6 +717,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			if (removeIdx.contains(i)) { continue; }
 
 			for (int j = 0; j < expressions.size() - 1; j++) {
+				if (i == j) { continue; }
 				if (removeIdx.contains(j)) { continue; }
 
 				final String queryA = expressions.get(i).getQuery();
@@ -740,19 +745,20 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			if (removeIdx.contains(i)) { continue; }
 
 			for (int j = 0; j < expressions.size() - 1; j++) {
+				if (i == j) { continue; }
 				if (removeIdx.contains(j)) { continue; }
 
 				final String queryA = expressions.get(i).getQuery();
 				final String queryB = expressions.get(j).getQuery();
 
-				if (!queryA.startsWith("< ") || !queryA.startsWith("<< ") || !queryB.startsWith("< ") || !queryB.startsWith("<< ")) {
+				if ((!queryA.startsWith("< ") && !queryA.startsWith("<< ")) || (!queryB.startsWith("< ") && !queryB.startsWith("<< "))) {
 					continue;
 				}
 
 				final String conceptA = getConceptId(queryA);
 				final String conceptB = getConceptId(queryB);
 
-				if (inclusionHierarchyStats.subsumes(conceptA, conceptB)) {
+				if (hierarchyStats.subsumes(conceptA, conceptB)) {
 					removeIdx.add(i);
 				}
 			}
