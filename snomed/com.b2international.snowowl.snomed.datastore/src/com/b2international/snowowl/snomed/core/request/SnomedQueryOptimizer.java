@@ -310,15 +310,12 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		optimizeExclusions(context, exclusions, inclusionAncestors);
 
 		/* 
-		 * TODO: final compaction steps are still missing:
+		 * TODO: some of the final compaction steps are still missing:
 		 * 
 		 * - merge < and = clauses targeting the same concept to a single << clause
 		 * - remove = clause if a corresponding << clause exists  
-		 * - remove < clause if a corresponding << clause exists
 		 * 
 		 * - remove sticky inclusions which have a corresponding sticky exclusion
-		 * - remove duplicate clauses
-		 * - remove <X and <<X clauses if a corresponding <Y or <<Y clause exists and Y is an ancestor of X
 		 */
 		
 		final QueryExpressionDiff diff = QueryExpressionDiff.create(
@@ -402,6 +399,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			});
 		}
 		
+		final int removals = compact(optimizedInclusions, inclusionHierarchyStats);
+		log.info("Final inclusion compaction removed {} clause(s)", removals);
 		return inclusionAncestors;
 	}
 
@@ -455,6 +454,9 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				return true;
 			});
 		}
+		
+		final int removals = compact(optimizedExclusions, exclusionHierarchyStats);
+		log.info("Final exclusion compaction removed {} clause(s)", removals);
 	}
 
 	private Set<String> evaluateConceptSet(
@@ -666,78 +668,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 			// Do we need to compact clauses?
 			if (optimizedInclusions.size() > maxClauseCount) {
-
-				final IntSet removeIdx = PrimitiveSets.newIntOpenHashSet();
-
-				// Eliminate exact duplicates
-				for (int i = 0; i < optimizedInclusions.size() - 1; i++) {
-					for (int j = i + 1; j < optimizedInclusions.size(); j++) {
-						final String queryA = optimizedInclusions.get(i).getQuery();
-						final String queryB = optimizedInclusions.get(j).getQuery();
-						if (queryA.equals(queryB)) {
-							removeIdx.add(j);
-						}
-					}
-				}
-
-				// Favor << over < if the same concept ID is mentioned
-				for (int i = 0; i < optimizedInclusions.size() - 1; i++) {
-					if (removeIdx.contains(i)) { continue; }
-
-					for (int j = 0; j < optimizedInclusions.size() - 1; j++) {
-						if (removeIdx.contains(j)) { continue; }
-
-						final String queryA = optimizedInclusions.get(i).getQuery();
-						final String queryB = optimizedInclusions.get(j).getQuery();
-
-						/*
-						 * XXX: We are using string manipulation here instead of parsing the expression - this relies 
-						 * on having a space character as a separator between the concept ID and the ECL operator.
-						 */
-						if (!queryA.startsWith("< ") || !queryB.startsWith("<< ")) {
-							continue;
-						}
-
-						final String conceptA = getConceptId(queryA);
-						final String conceptB = getConceptId(queryB);
-
-						if (conceptA.equals(conceptB)) {
-							removeIdx.add(i);
-						}
-					}
-				}
-
-				// Favor (< X or << X) over (< Y or << Y) if X is an ancestor of Y
-				for (int i = 0; i < optimizedInclusions.size() - 1; i++) {
-					if (removeIdx.contains(i)) { continue; }
-
-					for (int j = 0; j < optimizedInclusions.size() - 1; j++) {
-						if (removeIdx.contains(j)) { continue; }
-
-						final String queryA = optimizedInclusions.get(i).getQuery();
-						final String queryB = optimizedInclusions.get(j).getQuery();
-
-						if (!queryA.startsWith("< ") || !queryA.startsWith("<< ") || !queryB.startsWith("< ") || !queryB.startsWith("<< ")) {
-							continue;
-						}
-
-						final String conceptA = getConceptId(queryA);
-						final String conceptB = getConceptId(queryB);
-
-						if (inclusionHierarchyStats.subsumes(conceptA, conceptB)) {
-							removeIdx.add(i);
-						}
-					}
-				}				
-
-				if (!removeIdx.isEmpty()) {
-					final int[] sortedRemoveIdx = removeIdx.toArray();
-					Ints.sortDescending(sortedRemoveIdx);
-
-					for (final int idx : sortedRemoveIdx) {
-						optimizedInclusions.remove(idx);
-					}
-				}
+				compact(optimizedInclusions, inclusionHierarchyStats);
 				
 				// Did we manage to get under the limit?
 				if (optimizedInclusions.size() > maxClauseCount) {
@@ -761,6 +692,82 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 
 		log.info("Found {} optimized inclusion(s) with a '<</<' expression", ancestorExpressionCount);
+	}
+
+	private int compact(final List<QueryExpression> expressions, final SnomedHierarchyStats inclusionHierarchyStats) {
+		final IntSet removeIdx = PrimitiveSets.newIntOpenHashSet();
+
+		// Eliminate exact duplicates
+		for (int i = 0; i < expressions.size() - 1; i++) {
+			for (int j = i + 1; j < expressions.size(); j++) {
+				final String queryA = expressions.get(i).getQuery();
+				final String queryB = expressions.get(j).getQuery();
+				if (queryA.equals(queryB)) {
+					removeIdx.add(j);
+				}
+			}
+		}
+
+		// Favor << over < if the same concept ID is mentioned
+		for (int i = 0; i < expressions.size() - 1; i++) {
+			if (removeIdx.contains(i)) { continue; }
+
+			for (int j = 0; j < expressions.size() - 1; j++) {
+				if (removeIdx.contains(j)) { continue; }
+
+				final String queryA = expressions.get(i).getQuery();
+				final String queryB = expressions.get(j).getQuery();
+
+				/*
+				 * XXX: We are using string manipulation here instead of parsing the expression - this relies 
+				 * on having a space character as a separator between the concept ID and the ECL operator.
+				 */
+				if (!queryA.startsWith("< ") || !queryB.startsWith("<< ")) {
+					continue;
+				}
+
+				final String conceptA = getConceptId(queryA);
+				final String conceptB = getConceptId(queryB);
+
+				if (conceptA.equals(conceptB)) {
+					removeIdx.add(i);
+				}
+			}
+		}
+
+		// Favor (< X or << X) over (< Y or << Y) if X is an ancestor of Y
+		for (int i = 0; i < expressions.size() - 1; i++) {
+			if (removeIdx.contains(i)) { continue; }
+
+			for (int j = 0; j < expressions.size() - 1; j++) {
+				if (removeIdx.contains(j)) { continue; }
+
+				final String queryA = expressions.get(i).getQuery();
+				final String queryB = expressions.get(j).getQuery();
+
+				if (!queryA.startsWith("< ") || !queryA.startsWith("<< ") || !queryB.startsWith("< ") || !queryB.startsWith("<< ")) {
+					continue;
+				}
+
+				final String conceptA = getConceptId(queryA);
+				final String conceptB = getConceptId(queryB);
+
+				if (inclusionHierarchyStats.subsumes(conceptA, conceptB)) {
+					removeIdx.add(i);
+				}
+			}
+		}				
+
+		if (!removeIdx.isEmpty()) {
+			final int[] sortedRemoveIdx = removeIdx.toArray();
+			Ints.sortDescending(sortedRemoveIdx);
+
+			for (final int idx : sortedRemoveIdx) {
+				expressions.remove(idx);
+			}
+		}
+		
+		return removeIdx.size();
 	}
 
 	private String getBestAncestor(final BranchContext context, final LongKeyFloatMap ancestorScore) {
