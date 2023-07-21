@@ -189,23 +189,14 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 
 	private Optional<Version> checkDependencies(RepositoryContext context, boolean create) {
 		// throw error if using both the old and the new way of attaching dependencies to a resource
-		if (extensionOf != null || upgradeOf != null) {
+		Map<String, ResourceURI> deprecatedDependencies = getDeprecatedDependencies();
+		if (!deprecatedDependencies.isEmpty()) {
 			if (!CompareUtils.isEmpty(dependencies)) {
-				throw new BadRequestException("Using both the deprecated extensionOf and upgradeOf parameters along with the new dependencies array is not supported. Stick to the old format or migrate to the new.");
+				throw new BadRequestException("Using both the deprecated dependency parameters (%s) along with the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
 			}
 
-			// make sure we merge dependencies into a single mergedDependencies List, detect duplicates and old API usage
-			final List<Dependency> mergedDependencies = new ArrayList<>();
-			
-			if (extensionOf != null) {
-				mergedDependencies.add(Dependency.of(extensionOf, TerminologyResource.DependencyScope.EXTENSION_OF));
-			}
-			
-			if (upgradeOf != null) {
-				mergedDependencies.add(Dependency.of(upgradeOf, TerminologyResource.DependencyScope.UPGRADE_OF));
-			}
-			
-			this.mergedDependencies = mergedDependencies; 
+			// merge old, deprecated dependencies into a single mergedDependencies List, detect duplicates and old API usage
+			this.mergedDependencies = deprecatedDependencies.entrySet().stream().map(entry -> Dependency.of(entry.getValue(), entry.getKey())).toList(); 
 		} else {
 			this.mergedDependencies = dependencies;
 		}
@@ -253,6 +244,31 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		checkNonExtensionOfDependencyReferences(context, mergedDependencies);
 		
 		return extensionOfVersion;
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	protected final Map<String, ResourceURI> getDeprecatedDependencies() {
+		final Map<String, ResourceURI> deprecatedDependencies = new HashMap<>();
+		
+		if (extensionOf != null) {
+			deprecatedDependencies.put(TerminologyResource.DependencyScope.EXTENSION_OF, extensionOf);
+		}
+		
+		if (upgradeOf != null) {
+			deprecatedDependencies.put(TerminologyResource.DependencyScope.UPGRADE_OF, upgradeOf);
+		}
+		
+		collectDeprecatedDependencies(deprecatedDependencies);
+		
+		return deprecatedDependencies;
+	}
+
+	/**
+	 * Subclasses may optionally override this method to provide any deprecated dependency fields they accepted pre-8.12.
+	 * 
+	 * @param deprecatedDependencies - the map to populate with deprecated dependency field keys and values
+	 */
+	protected void collectDeprecatedDependencies(Map<String, ResourceURI> deprecatedDependencies) {
 	}
 
 	static void checkNonExtensionOfDependencyReferences(RepositoryContext context, List<Dependency> dependenciesToCheck) {

@@ -25,26 +25,8 @@ import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestInput;
  */
 public final class CodeSystemCreateRestInput extends BaseTerminologyResourceRestInput {
 	
-	private String oid;
-	private String branchPath;
 	private String toolingId;
 	private ResourceURI extensionOf;
-	
-	public void setOid(String oid) {
-		this.oid = oid;
-	}
-	
-	public String getOid() {
-		return oid;
-	}
-	
-	public void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-	}
-	
-	public String getBranchPath() {
-		return branchPath;
-	}
 	
 	public void setToolingId(String toolingId) {
 		this.toolingId = toolingId;

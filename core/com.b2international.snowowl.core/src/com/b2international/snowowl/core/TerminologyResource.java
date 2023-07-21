@@ -41,7 +41,7 @@ public abstract class TerminologyResource extends Resource {
 	/**
 	 * @since 8.12
 	 */
-	public static final class DependencyScope {
+	public static class DependencyScope {
 		
 		/**
 		 * Constant denoting a dependency as the base resource of this resource. Points to the resource (or versioned resource) that this resource is the extension of.
@@ -82,6 +82,8 @@ public abstract class TerminologyResource extends Resource {
 		 * @deprecated - this expand option has been moved to the new {@link Dependency} model and also to here as {@link #BRANCH}, will be removed from this model in 9.0
 		 */
 		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
+		
+//		public static final String DEPENDENCIES = 
 		
 	}
 	

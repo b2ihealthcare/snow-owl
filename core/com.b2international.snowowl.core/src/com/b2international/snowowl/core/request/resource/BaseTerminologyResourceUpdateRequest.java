@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.request.resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -85,6 +87,7 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 	}
 
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	protected boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated) {
 		boolean changed = false;
 		
@@ -155,7 +158,7 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 		}
 		
 		final SortedSet<DependencyDocument> newDependencies = mergedDependencies != null ? mergedDependencies.stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null;
-		if (mergedDependencies != null && !Objects.equals(newDependencies, oldDependencies)) {
+		if (newDependencies != null && !Objects.equals(newDependencies, oldDependencies)) {
 			// check duplicates in new dependency array
 			BaseTerminologyResourceCreateRequest.checkDuplicateDependencies(context, mergedDependencies);
 			// verify references to new dependency array

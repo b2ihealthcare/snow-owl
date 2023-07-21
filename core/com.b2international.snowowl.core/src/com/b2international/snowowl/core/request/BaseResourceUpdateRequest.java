@@ -20,6 +20,8 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -323,6 +325,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		return parentBundle.getResourcePathSegments();
 	}
 
+	@OverridingMethodsMustInvokeSuper
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);
 
 	@Override

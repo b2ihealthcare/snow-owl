@@ -24,7 +24,25 @@ import com.b2international.snowowl.core.Dependency;
  */
 public abstract class BaseTerminologyResourceRestInput extends BaseResourceRestInput {
 
+	private String oid;
+	private String branchPath;
 	private List<Dependency> dependencies;
+	
+	public void setOid(String oid) {
+		this.oid = oid;
+	}
+	
+	public String getOid() {
+		return oid;
+	}
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
+	}
+	
+	public String getBranchPath() {
+		return branchPath;
+	}
 	
 	public List<Dependency> getDependencies() {
 		return dependencies;
