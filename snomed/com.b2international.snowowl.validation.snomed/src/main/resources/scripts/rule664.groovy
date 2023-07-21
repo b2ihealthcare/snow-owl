@@ -89,13 +89,11 @@ if (params.isUnpublishedOnly) {
 		)
 		.limit(10_000)
 		.build())
-		.each { Hits<String[]> publishedTermsBatch ->
-			// all returned terms are duplicate of an unpublished term
-			publishedTermsBatch.each { publishedTerm ->
+		.each { publishedTerm ->
+				// all returned terms are duplicate of an unpublished term
 				if (activeConceptIds.get().contains(publishedTerm[1])) {
 					issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, publishedTerm[0]))
 				}
-			}
 		}
 		
 	
