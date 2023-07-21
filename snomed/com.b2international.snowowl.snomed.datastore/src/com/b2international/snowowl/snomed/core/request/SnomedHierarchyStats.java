@@ -295,9 +295,6 @@ public record SnomedHierarchyStats(
 			.map(e -> e.getElement())
 			.collect(Collectors.toSet());
 
-		// Remove selected ancestors from future consideration
-		removeCandidates(noFalsePositives);
-
 		return noFalsePositives.stream()
 			.map(ancestorId -> {
 				final boolean member = memberIds.contains(ancestorId);
