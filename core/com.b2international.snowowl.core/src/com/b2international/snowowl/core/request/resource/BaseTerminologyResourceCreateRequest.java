@@ -189,7 +189,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 
 	private Optional<Version> checkDependencies(RepositoryContext context, boolean create) {
 		// throw error if using both the old and the new way of attaching dependencies to a resource
-		Map<String, ResourceURI> deprecatedDependencies = getDeprecatedDependencies();
+		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
 		if (!deprecatedDependencies.isEmpty()) {
 			if (!CompareUtils.isEmpty(dependencies)) {
 				throw new BadRequestException("Using both the deprecated dependency parameters (%s) along with the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
@@ -247,15 +247,15 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected final Map<String, ResourceURI> getDeprecatedDependencies() {
-		final Map<String, ResourceURI> deprecatedDependencies = new HashMap<>();
+	protected final Map<String, ResourceURIWithQuery> getDeprecatedDependencies() {
+		final Map<String, ResourceURIWithQuery> deprecatedDependencies = new HashMap<>();
 		
 		if (extensionOf != null) {
-			deprecatedDependencies.put(TerminologyResource.DependencyScope.EXTENSION_OF, extensionOf);
+			deprecatedDependencies.put(TerminologyResource.DependencyScope.EXTENSION_OF, ResourceURIWithQuery.of(extensionOf));
 		}
 		
 		if (upgradeOf != null) {
-			deprecatedDependencies.put(TerminologyResource.DependencyScope.UPGRADE_OF, upgradeOf);
+			deprecatedDependencies.put(TerminologyResource.DependencyScope.UPGRADE_OF, ResourceURIWithQuery.of(upgradeOf));
 		}
 		
 		collectDeprecatedDependencies(deprecatedDependencies);
@@ -268,7 +268,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	 * 
 	 * @param deprecatedDependencies - the map to populate with deprecated dependency field keys and values
 	 */
-	protected void collectDeprecatedDependencies(Map<String, ResourceURI> deprecatedDependencies) {
+	protected void collectDeprecatedDependencies(Map<String, ResourceURIWithQuery> deprecatedDependencies) {
 	}
 
 	static void checkNonExtensionOfDependencyReferences(RepositoryContext context, List<Dependency> dependenciesToCheck) {

@@ -65,7 +65,7 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	ResourceURIWithQuery(ResourceURI resourceUri, String query) {
 		this.resourceUri = resourceUri;
 		this.query = query;
-		this.uri = String.join(QUERY_PART_SEPARATOR, resourceUri.toString(), query);
+		this.uri = Strings.isNullOrEmpty(query) ? resourceUri.toString() : String.join(QUERY_PART_SEPARATOR, resourceUri.toString(), query);
 	}
 	
 	public String getUri() {
@@ -129,6 +129,14 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		checkNotNull(resourceId, "'resourceId' must be specified");
 		checkNotNull(query, "'query' must be specified");
 		return new ResourceURIWithQuery(String.join(QUERY_PART_SEPARATOR, String.join(Branch.SEPARATOR, resourceType, resourceId), query));
+	}
+	
+	public static ResourceURIWithQuery of(ResourceURI resourceUri) {
+		return of(resourceUri, null);
+	}
+	
+	public static ResourceURIWithQuery of(ResourceURI resourceUri, String query) {
+		return new ResourceURIWithQuery(resourceUri, query);
 	}
 
 }
