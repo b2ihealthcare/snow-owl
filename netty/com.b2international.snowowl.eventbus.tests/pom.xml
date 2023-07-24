@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>netty-parent</artifactId>
-		<version>7.22.3</version>
+		<version>7.23.0</version>
 	</parent>
 
 	<build>
