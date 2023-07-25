@@ -136,6 +136,11 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	public interface ConceptSetEvaluator {
 		
 		ConceptSetEvaluator DEFAULT = (context, locales, resourceUri, inclusions, exclusions, pageSize) -> {
+			// No inclusions, return early with empty result
+			if (inclusions.isEmpty()) {
+				return newHashSet();
+			}
+			
 			Set<String> queryExpressions = inclusions.stream()
 				.map(QueryExpression::getQuery)
 				.collect(Collectors.toSet());
