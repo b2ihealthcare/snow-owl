@@ -64,6 +64,18 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	/**
 	 * @since 8.12.0
 	 */
+	public enum OptionKey {
+		
+		/**
+		 * A boolean option that controls whether relationship refinement optimization
+		 * should be performed.
+		 */
+		SKIP_REFINEMENTS;
+	}
+	
+	/**
+	 * @since 8.12.0
+	 */
 	public enum OptimizerStrategy {
 		
 		/**
@@ -280,6 +292,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private final int idealClauseCount         = 1;
 	private final int maxIteration             = 1000;
 	private final Duration maxRuntime          = Duration.ofSeconds(580L);
+	private boolean skipRefinements            = false;
 
 	private OptimizerStrategy optimizerStrategy = OptimizerStrategy.DEFAULT;
 	private int zoom                            = 1;
@@ -292,6 +305,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 	private List<QueryExpression> optimizedInclusions;
 	private List<QueryExpression> optimizedExclusions;
+	
 
 	public SnomedQueryOptimizer(final int pageSize) {
 		this.pageSize = pageSize;
@@ -365,9 +379,11 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		final Collection<QueryExpression> inclusions = params.getCollection(QueryOptimizer.OptionKey.INCLUSIONS, QueryExpression.class);
 		final Collection<QueryExpression> exclusions = params.getCollection(QueryOptimizer.OptionKey.EXCLUSIONS, QueryExpression.class);
 		final List<ExtendedLocale> locales = params.getList(QueryOptimizer.OptionKey.LOCALES, ExtendedLocale.class);
-		// Don't exceed maximum clause count set initially
-		maxClauseCount = Ints.min(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
 
+		// Don't exceed the maximum clause count that was set initially
+		maxClauseCount = Ints.min(maxClauseCount, params.getOptional(QueryOptimizer.OptionKey.LIMIT, Integer.class).orElse(maxClauseCount));
+		skipRefinements = params.getBoolean(OptionKey.SKIP_REFINEMENTS);
+		
 		try {
 			conceptSet = evaluateConceptSet(context, locales, inclusions, exclusions);
 		} catch (SyntaxException e) {
@@ -431,18 +447,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		log.trace("Found {} unique pinned inclusion(s)", pinnedInclusions.size());
 		applyInclusions(context, pinnedInclusions);
 
-		// See if concepts still to be processed can be converted to "* : c1 = c2" expressions
-		final SnomedRelationshipStats inclusionRelationshipStats = SnomedRelationshipStats.create(
-			context, 
-			pageSize,
-			conceptsToInclude, 
-			relationshipSearchBySource, 
-			relationshipSearchByTypeAndDestination);
-
-		filterRefinementsForInclusion(inclusionRelationshipStats);
-		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements(context);
-		log.trace("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
-		applyInclusions(context, refinementInclusions);
+		optimizeRefinementInclusions(context);
 
 		// Collect information about the entire original concept set (ie. not the remaining set) and their ancestors
 		final SnomedHierarchyStats inclusionHierarchyStats = SnomedHierarchyStats.create(
@@ -492,6 +497,26 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		return inclusionAncestors;
 	}
 
+	private void optimizeRefinementInclusions(final BranchContext context) {
+		if (skipRefinements) {
+			log.info("Skipping refinement inclusion optimization on request.");
+			return;
+		}
+		
+		// See if concepts still to be processed can be converted to "* : c1 = c2" expressions
+		final SnomedRelationshipStats inclusionRelationshipStats = SnomedRelationshipStats.create(
+			context, 
+			pageSize,
+			conceptsToInclude, 
+			relationshipSearchBySource, 
+			relationshipSearchByTypeAndDestination);
+
+		filterRefinementsForInclusion(inclusionRelationshipStats);
+		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements(context);
+		log.trace("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
+		applyInclusions(context, refinementInclusions);
+	}
+
 	private void optimizeExclusions(final BranchContext context, final Collection<QueryExpression> exclusions, final Set<String> inclusionAncestors) {
 		optimizedExclusions = newArrayList();
 
@@ -499,17 +524,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		log.trace("Found {} unique pinned exclusion(s)", pinnedExclusions.size());
 		applyExclusions(context, pinnedExclusions);
 
-		final SnomedRelationshipStats exclusionRelationshipStats = SnomedRelationshipStats.create(
-			context, 
-			pageSize,
-			conceptsToExclude,
-			relationshipSearchBySource,
-			relationshipSearchByTypeAndDestination);
-
-		filterRefinementsForExclusion(exclusionRelationshipStats);
-		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements(context);
-		log.trace("Found {} exclusion(s) using a refinement expression", refinementExclusions.size());
-		applyExclusions(context, refinementExclusions);
+		optimizeRefinementExclusions(context);
 
 		final SnomedHierarchyStats exclusionHierarchyStats = SnomedHierarchyStats.create(
 			context, 
@@ -547,6 +562,25 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		
 		final int removals = compact(optimizedExclusions, exclusionHierarchyStats);
 		log.trace("Final exclusion compaction removed {} clause(s)", removals);
+	}
+
+	private void optimizeRefinementExclusions(final BranchContext context) {
+		if (skipRefinements) {
+			log.info("Skipping refinement exclusion optimization on request.");
+			return;
+		}
+		
+		final SnomedRelationshipStats exclusionRelationshipStats = SnomedRelationshipStats.create(
+			context, 
+			pageSize,
+			conceptsToExclude,
+			relationshipSearchBySource,
+			relationshipSearchByTypeAndDestination);
+
+		filterRefinementsForExclusion(exclusionRelationshipStats);
+		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements(context);
+		log.trace("Found {} exclusion(s) using a refinement expression", refinementExclusions.size());
+		applyExclusions(context, refinementExclusions);
 	}
 
 	private Set<String> evaluateConceptSet(
