@@ -43,11 +43,11 @@ public record SnomedRelationshipStats(
 	@FunctionalInterface
 	public interface RelationshipSearchBySource {
 
-		RelationshipSearchBySource DEFAULT = (context, sourceIds) -> SnomedRequests.prepareSearchRelationship()
+		RelationshipSearchBySource DEFAULT = (context, sourceIds, pageSize) -> SnomedRequests.prepareSearchRelationship()
 			.filterByActive(true)
 			.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 			.filterBySources(sourceIds)
-			.setLimit(SnomedQueryOptimizer.PAGE_SIZE)
+			.setLimit(pageSize)
 			.setFields(
 				SnomedRelationshipIndexEntry.Fields.ID, 
 				SnomedRelationshipIndexEntry.Fields.SOURCE_ID, 
@@ -59,18 +59,18 @@ public record SnomedRelationshipStats(
 			.stream(context)
 			.flatMap(SnomedRelationships::stream);
 
-		Stream<SnomedRelationship> findRelationshipsBySource(BranchContext context, Set<String> sourceIds);
+		Stream<SnomedRelationship> findRelationshipsBySource(BranchContext context, Set<String> sourceIds, int pageSize);
 	}
 
 	@FunctionalInterface
 	public interface RelationshipSearchByTypeAndDestination {
 
-		RelationshipSearchByTypeAndDestination DEFAULT = (context, typeIds, destinationIds) -> SnomedRequests.prepareSearchRelationship()
+		RelationshipSearchByTypeAndDestination DEFAULT = (context, typeIds, destinationIds, pageSize) -> SnomedRequests.prepareSearchRelationship()
 			.filterByActive(true)
 			.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 			.filterByTypes(typeIds)
 			.filterByDestinations(destinationIds)
-			.setLimit(SnomedQueryOptimizer.PAGE_SIZE)
+			.setLimit(pageSize)
 			.setFields(
 				SnomedRelationshipIndexEntry.Fields.ID, 
 				SnomedRelationshipIndexEntry.Fields.TYPE_ID, 
@@ -78,11 +78,12 @@ public record SnomedRelationshipStats(
 			.stream(context)
 			.flatMap(SnomedRelationships::stream);
 
-		Stream<SnomedRelationship> findRelationshipsByTypeAndDestination(BranchContext context, Set<String> typeIds, Set<String> destinationIds);
+		Stream<SnomedRelationship> findRelationshipsByTypeAndDestination(BranchContext context, Set<String> typeIds, Set<String> destinationIds, int pageSize);
 	}
 
 	public static SnomedRelationshipStats create(
 		final BranchContext context, 
+		final int pageSize,
 		final Set<String> conceptIds, 
 		final RelationshipSearchBySource searchBySource, 
 		final RelationshipSearchByTypeAndDestination searchByTypeAndDestination
@@ -96,8 +97,8 @@ public record SnomedRelationshipStats(
 			// No input concepts
 			return new SnomedRelationshipStats(positiveSources, totalSources);	
 		}
-		
-		searchBySource.findRelationshipsBySource(context, conceptIds)
+
+		searchBySource.findRelationshipsBySource(context, conceptIds, pageSize)
 			// Exclude IS_A relationships and relationship values
 			.filter(r -> !r.hasValue() && !Concepts.IS_A.equals(r.getTypeId()))
 			.forEachOrdered(r -> incrementTableCount(positiveSources, r));
@@ -110,7 +111,7 @@ public record SnomedRelationshipStats(
 		final Set<String> typeIds = positiveSources.rowKeySet();
 		final Set<String> destinationIds = positiveSources.columnKeySet();
 
-		searchByTypeAndDestination.findRelationshipsByTypeAndDestination(context, typeIds, destinationIds)
+		searchByTypeAndDestination.findRelationshipsByTypeAndDestination(context, typeIds, destinationIds, pageSize)
 			// XXX: This request may return any combination of the given type-destination pairs, which need to be filtered here
 			.filter(r -> positiveSources.contains(r.getTypeId(), r.getDestinationId()))
 			.forEachOrdered(r -> incrementTableCount(totalSources, r));

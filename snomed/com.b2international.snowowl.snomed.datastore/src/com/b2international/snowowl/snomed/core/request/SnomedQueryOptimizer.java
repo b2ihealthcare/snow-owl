@@ -61,8 +61,6 @@ import com.google.common.primitives.Ints;
  */
 public final class SnomedQueryOptimizer implements QueryOptimizer {
 
-	static final int PAGE_SIZE = 10_000;
-
 	public enum OptimizerStrategy {
 		DEFAULT,
 		
@@ -161,7 +159,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				.filterByCodeSystemUri(resourceUri)
 				.filterByInclusions(queryExpressions)
 				.filterByExclusions(mustNotQueryExpressions)
-				.setLimit(PAGE_SIZE)
+				.setLimit(pageSize)
 				.setLocales(locales)
 				.stream(context)
 				.flatMap(Concepts::stream)
@@ -178,6 +176,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			int pageSize);
 	}
 
+	private final int pageSize;
+	
 	// External dependencies, can be modified for testing purposes
 	private Clock clock = Clock.systemUTC();
 	private EclEvaluator evaluator = EclEvaluator.DEFAULT;
@@ -215,6 +215,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 	private List<QueryExpression> optimizedInclusions;
 	private List<QueryExpression> optimizedExclusions;
+
+	public SnomedQueryOptimizer(final int pageSize) {
+		this.pageSize = pageSize;
+	}
 
 	@VisibleForTesting
 	void setClock(final Clock clock) {
@@ -353,6 +357,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// See if concepts still to be processed can be converted to "* : c1 = c2" expressions
 		final SnomedRelationshipStats inclusionRelationshipStats = SnomedRelationshipStats.create(
 			context, 
+			pageSize,
 			conceptsToInclude, 
 			relationshipSearchBySource, 
 			relationshipSearchByTypeAndDestination);
@@ -364,7 +369,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		// Collect information about the entire original concept set (ie. not the remaining set) and their ancestors
 		final SnomedHierarchyStats inclusionHierarchyStats = SnomedHierarchyStats.create(
-			context, 
+			context,
+			pageSize,
 			conceptSet,
 			conceptSearchById,
 			edgeSearchBySourceId,
@@ -418,6 +424,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		final SnomedRelationshipStats exclusionRelationshipStats = SnomedRelationshipStats.create(
 			context, 
+			pageSize,
 			conceptsToExclude,
 			relationshipSearchBySource,
 			relationshipSearchByTypeAndDestination);
@@ -429,6 +436,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		final SnomedHierarchyStats exclusionHierarchyStats = SnomedHierarchyStats.create(
 			context, 
+			pageSize,
 			conceptsToExclude,
 			conceptSearchById,
 			edgeSearchBySourceId,
@@ -470,11 +478,11 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		final Collection<QueryExpression> inclusions, 
 		final Collection<QueryExpression> exclusions
 	) {
-		return conceptSetEvaluator.evaluateConceptSet(context, locales, resourceUri, inclusions, exclusions, PAGE_SIZE);
+		return conceptSetEvaluator.evaluateConceptSet(context, locales, resourceUri, inclusions, exclusions, pageSize);
 	}
 
 	private Stream<String> evaluateEcl(final BranchContext context, final String eclExpression) {
-		return evaluator.evaluateEcl(context, eclExpression, PAGE_SIZE);
+		return evaluator.evaluateEcl(context, eclExpression, pageSize);
 	}
 
 	private Set<String> evaluateEclToSet(final BranchContext context, final String eclExpression) {

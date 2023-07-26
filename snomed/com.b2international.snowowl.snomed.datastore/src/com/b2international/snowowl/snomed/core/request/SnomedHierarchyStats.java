@@ -58,10 +58,10 @@ public record SnomedHierarchyStats(
 	@FunctionalInterface
 	public interface ConceptSearchById {
 
-		ConceptSearchById DEFAULT = (context, conceptIds) -> SnomedRequests.prepareSearchConcept()
+		ConceptSearchById DEFAULT = (context, conceptIds, pageSize) -> SnomedRequests.prepareSearchConcept()
 			.filterByActive(true)
 			.filterByIds(conceptIds)
-			.setLimit(SnomedQueryOptimizer.PAGE_SIZE)
+			.setLimit(pageSize)
 			.setFields(
 				SnomedConceptDocument.Fields.ID, 
 				SnomedConceptDocument.Fields.PARENTS, 
@@ -69,33 +69,33 @@ public record SnomedHierarchyStats(
 			.stream(context)
 			.flatMap(SnomedConcepts::stream);
 
-		Stream<SnomedConcept> findConceptsById(BranchContext context, Set<String> conceptIds);
+		Stream<SnomedConcept> findConceptsById(BranchContext context, Set<String> conceptIds, int pageSize);
 	}
 
 	@FunctionalInterface
 	public interface ConceptDescendantCountById {
 
-		ConceptDescendantCountById DEFAULT = (context, conceptIds, direct) -> SnomedRequests.prepareSearchConcept()
+		ConceptDescendantCountById DEFAULT = (context, conceptIds, direct, pageSize) -> SnomedRequests.prepareSearchConcept()
 			.filterByActive(true)
 			.filterByIds(conceptIds)
-			.setLimit(SnomedQueryOptimizer.PAGE_SIZE)
+			.setLimit(pageSize)
 			.setFields(SnomedConceptDocument.Fields.ID)
 			.setExpand(String.format("descendants(direct:%b, limit:0)", direct))
 			.stream(context)
 			.flatMap(SnomedConcepts::stream);
 
-		Stream<SnomedConcept> findConceptDescendantCountById(BranchContext context, Set<String> conceptIds, boolean direct);
+		Stream<SnomedConcept> findConceptDescendantCountById(BranchContext context, Set<String> conceptIds, boolean direct, int pageSize);
 	}
 
 	@FunctionalInterface
 	public interface EdgeSearchBySourceId {
 
-		EdgeSearchBySourceId DEFAULT = (context, sourceIds) -> SnomedRequests.prepareSearchRelationship()
+		EdgeSearchBySourceId DEFAULT = (context, sourceIds, pageSize) -> SnomedRequests.prepareSearchRelationship()
 			.filterByActive(true)
 			.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 			.filterBySources(sourceIds)
 			.filterByType(Concepts.IS_A)
-			.setLimit(SnomedQueryOptimizer.PAGE_SIZE)
+			.setLimit(pageSize)
 			.setFields(
 				SnomedRelationshipIndexEntry.Fields.ID, 
 				SnomedRelationshipIndexEntry.Fields.SOURCE_ID, 
@@ -103,11 +103,12 @@ public record SnomedHierarchyStats(
 			.stream(context)
 			.flatMap(SnomedRelationships::stream);
 
-		Stream<SnomedRelationship> findEdgesBySourceId(BranchContext context, Set<String> sourceIds);
+		Stream<SnomedRelationship> findEdgesBySourceId(BranchContext context, Set<String> sourceIds, int pageSize);
 	}
 
 	public static SnomedHierarchyStats create(
 		final BranchContext context, 
+		final int pageSize,
 		final Set<String> conceptIds,
 		final ConceptSearchById conceptSearchById,
 		final EdgeSearchBySourceId edgeSearchBySourceId,
@@ -135,7 +136,7 @@ public record SnomedHierarchyStats(
 				totalChildren);	
 		}
 
-		conceptSearchById.findConceptsById(context, conceptIds)
+		conceptSearchById.findConceptsById(context, conceptIds, pageSize)
 			.forEachOrdered(c -> {
 				positiveDescendantsAndSelf.add(c.getId());
 	
@@ -157,7 +158,7 @@ public record SnomedHierarchyStats(
 		final SimpleTaxonomyGraph graph = new SimpleTaxonomyGraph(conceptsAndAncestors.size(), conceptsAndAncestors.size());
 		conceptsAndAncestors.forEach(graph::addNode);
 
-		edgeSearchBySourceId.findEdgesBySourceId(context, conceptsAndAncestors)
+		edgeSearchBySourceId.findEdgesBySourceId(context, conceptsAndAncestors, pageSize)
 			.forEachOrdered(r -> graph.addEdge(r.getSourceId(), r.getDestinationId()));
 
 		graph.build();
@@ -174,11 +175,11 @@ public record SnomedHierarchyStats(
 		positiveChildren.elementSet().remove(CLINICAL_FINDING);
 		
 		// +1 is added to the total descendants count for the "and self" part
-		conceptDescendantCountById.findConceptDescendantCountById(context, conceptsAndAncestors, false)
+		conceptDescendantCountById.findConceptDescendantCountById(context, conceptsAndAncestors, false, pageSize)
 			.forEachOrdered(c -> totalDescendantsAndSelf.setCount(c.getId(), c.getDescendants().getTotal() + 1));
 
 		// No +1 for the total children counter however
-		conceptDescendantCountById.findConceptDescendantCountById(context, conceptsAndAncestors, true)
+		conceptDescendantCountById.findConceptDescendantCountById(context, conceptsAndAncestors, true, pageSize)
 			.forEachOrdered(c -> totalChildren.setCount(c.getId(), c.getDescendants().getTotal()));
 
 		return new SnomedHierarchyStats(

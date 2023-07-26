@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -136,7 +137,7 @@ public class SnomedQueryOptimizerTest {
 		when(context.service(EclSerializer.class)).thenReturn(new DefaultEclSerializer(
 			ECL_INJECTOR.getInstance(ISerializer.class)));
 
-		when(context.service(EclRewriter.class)).thenReturn(new EclRewriter());		
+		when(context.service(EclRewriter.class)).thenReturn(new EclRewriter());
 	}
 
 	private SnomedQueryOptimizer optimizer;
@@ -148,7 +149,7 @@ public class SnomedQueryOptimizerTest {
 
 	@Before
 	public void setupOptimizer() {
-		optimizer = new SnomedQueryOptimizer();
+		optimizer = new SnomedQueryOptimizer(IndexClientFactory.MAX_PAGE_SIZE);
 
 		optimizer.setClock(Clock.fixed(Instant.now(), ZoneOffset.UTC));
 		optimizer.setResourceUri(SnomedContentRule.SNOMEDCT);
@@ -159,12 +160,12 @@ public class SnomedQueryOptimizerTest {
 		
 		optimizer.setLabeler((context, locales, codeSystemUri, unlabeledExpressions) -> unlabeledExpressions);
 
-		optimizer.setConceptSearchById((context, conceptIds) -> Stream.empty());
-		optimizer.setConceptDescendantCountById((context, conceptIds, direct) -> Stream.empty());
-		optimizer.setEdgeSearchBySourceId((context, sourceIds) -> Stream.empty());
+		optimizer.setConceptSearchById((context, conceptIds, pageSize) -> Stream.empty());
+		optimizer.setConceptDescendantCountById((context, conceptIds, direct, pageSize) -> Stream.empty());
+		optimizer.setEdgeSearchBySourceId((context, sourceIds, pageSize) -> Stream.empty());
 
-		optimizer.setRelationshipSearchBySource((context, sourceIds) -> Stream.empty());
-		optimizer.setRelationshipSearchByTypeAndDestination((context, typeIds, destinationIds) -> Stream.empty());
+		optimizer.setRelationshipSearchBySource((context, sourceIds, pageSize) -> Stream.empty());
+		optimizer.setRelationshipSearchByTypeAndDestination((context, typeIds, destinationIds, pageSize) -> Stream.empty());
 	}
 
 	@Test
@@ -245,7 +246,7 @@ public class SnomedQueryOptimizerTest {
 		when(evaluator.evaluateEcl(any(), eq("* : 116676008 = 56381008"), anyInt())).thenAnswer(i -> members.stream());
 
 		final RelationshipSearchBySource relationshipSearchBySource = mock(RelationshipSearchBySource.class, i -> Stream.of());
-		when(relationshipSearchBySource.findRelationshipsBySource(any(), eq(members)))
+		when(relationshipSearchBySource.findRelationshipsBySource(any(), eq(members), anyInt()))
 			.thenAnswer(i -> {
 				final Set<String> sourceIds = i.getArgument(1); 
 				final List<SnomedRelationship> relationships = newArrayList();
@@ -289,7 +290,7 @@ public class SnomedQueryOptimizerTest {
 		final RelationshipSearchByTypeAndDestination relationshipSearchByTypeAndDestination = mock(RelationshipSearchByTypeAndDestination.class, i -> Stream.of());
 		final Set<String> typeIds = Set.of("116676008", "246112005", "363698007");
 		final Set<String> destinationIds = Set.of("56381008", "24484000", "123037004");
-		when(relationshipSearchByTypeAndDestination.findRelationshipsByTypeAndDestination(any(), eq(typeIds), eq(destinationIds)))
+		when(relationshipSearchByTypeAndDestination.findRelationshipsByTypeAndDestination(any(), eq(typeIds), eq(destinationIds), anyInt()))
 			.thenAnswer(i -> {
 				final List<SnomedRelationship> relationships = newArrayList();
 	
@@ -384,7 +385,7 @@ public class SnomedQueryOptimizerTest {
 		when(evaluator.evaluateEcl(any(), eq("80631005 OR 13104003 OR 60333009 OR 50283003 OR 2640006"), anyInt())).thenAnswer(i -> Stream.of("80631005", "13104003", "60333009", "50283003", "2640006"));
 		setEclAndConceptSetEvaluator(evaluator);
 
-		final ConceptSearchById conceptSearchById = (context, conceptIds) -> conceptIds.stream()
+		final ConceptSearchById conceptSearchById = (context, conceptIds, pageSize) -> conceptIds.stream()
 			.map(id -> {
 				final SnomedConcept c = new SnomedConcept(id);
 				c.setAncestorIds(List.of(SnomedConcept.ROOT_ID));
@@ -398,7 +399,7 @@ public class SnomedQueryOptimizerTest {
 				return c;
 			});
 		
-		final ConceptDescendantCountById conceptDescendantCountById = (context, conceptIds, direct) -> conceptIds.stream()
+		final ConceptDescendantCountById conceptDescendantCountById = (context, conceptIds, direct, pageSize) -> conceptIds.stream()
 			.map(id -> {
 				final SnomedConcept c = new SnomedConcept(id);
 
@@ -413,7 +414,7 @@ public class SnomedQueryOptimizerTest {
 				return c;
 			});
 		
-		final EdgeSearchBySourceId edgeSearchBySourceId = (context, sourceIds) -> sourceIds.stream()
+		final EdgeSearchBySourceId edgeSearchBySourceId = (context, sourceIds, pageSize) -> sourceIds.stream()
 			.filter(id -> !"80631005".equals(id))
 			.map(id -> {
 				// Relationships point from children to the parent
@@ -455,7 +456,7 @@ public class SnomedQueryOptimizerTest {
 	@Test
 	public void testSingleInclusionWithValue() throws Exception {
 		
-		final RelationshipSearchBySource relationshipSearchBySource = (context, sourceIds) -> sourceIds.stream()
+		final RelationshipSearchBySource relationshipSearchBySource = (context, sourceIds, pageSize) -> sourceIds.stream()
 			.map(id -> {
 				final SnomedRelationship r = new SnomedRelationship();
 				r.setSourceId(id);
@@ -464,7 +465,7 @@ public class SnomedQueryOptimizerTest {
 				return r;
 			});
 		
-		final RelationshipSearchByTypeAndDestination relationshipSearchByTypeAndDestination = (context, typeIds, destinationIds) -> {
+		final RelationshipSearchByTypeAndDestination relationshipSearchByTypeAndDestination = (context, typeIds, destinationIds, pageSize) -> {
 			final SnomedRelationship r = new SnomedRelationship();
 			r.setSourceId("131148009");
 			r.setTypeId("1142139005"); // Count of base of active ingredient
