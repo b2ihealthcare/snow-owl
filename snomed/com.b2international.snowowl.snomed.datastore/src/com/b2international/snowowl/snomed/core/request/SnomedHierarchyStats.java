@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 
 /**
- * @since 8.11.0
+ * @since 8.12.0
  */
 public record SnomedHierarchyStats(
 	SimpleTaxonomyGraph graph,
@@ -55,6 +55,9 @@ public record SnomedHierarchyStats(
 
 	private static final String CLINICAL_FINDING = "404684003";
 
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface ConceptSearchById {
 
@@ -72,6 +75,9 @@ public record SnomedHierarchyStats(
 		Stream<SnomedConcept> findConceptsById(BranchContext context, Set<String> conceptIds, int pageSize);
 	}
 
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface ConceptDescendantCountById {
 
@@ -87,6 +93,9 @@ public record SnomedHierarchyStats(
 		Stream<SnomedConcept> findConceptDescendantCountById(BranchContext context, Set<String> conceptIds, boolean direct, int pageSize);
 	}
 
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface EdgeSearchBySourceId {
 

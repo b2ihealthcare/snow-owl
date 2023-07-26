@@ -33,13 +33,16 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 /**
- * @since 8.11.0
+ * @since 8.12.0
  */
 public record SnomedRelationshipStats(
 	Table<String, String, Integer> positiveSources, 
 	Table<String, String, Integer> totalSources
 ) {
 
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface RelationshipSearchBySource {
 
@@ -62,6 +65,9 @@ public record SnomedRelationshipStats(
 		Stream<SnomedRelationship> findRelationshipsBySource(BranchContext context, Set<String> sourceIds, int pageSize);
 	}
 
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface RelationshipSearchByTypeAndDestination {
 

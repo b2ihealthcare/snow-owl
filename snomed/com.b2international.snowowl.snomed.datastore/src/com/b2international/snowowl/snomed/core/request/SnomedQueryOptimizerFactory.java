@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 
 /**
- * @since 8.11.2
+ * @since 8.12.0
  */
 public final class SnomedQueryOptimizerFactory implements QueryOptimizer {
 

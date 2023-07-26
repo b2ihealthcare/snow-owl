@@ -61,6 +61,9 @@ import com.google.common.primitives.Ints;
  */
 public final class SnomedQueryOptimizer implements QueryOptimizer {
 
+	/**
+	 * @since 8.12.0
+	 */
 	public enum OptimizerStrategy {
 		DEFAULT,
 		
@@ -103,6 +106,9 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 	}
 
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface EclEvaluator {
 
@@ -118,6 +124,9 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		Stream<String> evaluateEcl(BranchContext context, String eclExpression, int pageSize);
 	}
 	
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface EclLabeler {
 	
@@ -130,6 +139,9 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		List<String> getLabeledExpressions(BranchContext context, List<ExtendedLocale> locales, String codeSystemUri, List<String> unlabeledExpressions);
 	}
 
+	/**
+	 * @since 8.12.0
+	 */
 	@FunctionalInterface
 	public interface ConceptSetEvaluator {
 		
@@ -177,6 +189,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	}
 
 	private final int pageSize;
+	private ResourceURI resourceUri;
+	private Logger log;
 	
 	// External dependencies, can be modified for testing purposes
 	private Clock clock = Clock.systemUTC();
@@ -191,9 +205,6 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private ConceptDescendantCountById conceptDescendantCountById = ConceptDescendantCountById.DEFAULT;
 	private EdgeSearchBySourceId edgeSearchBySourceId = EdgeSearchBySourceId.DEFAULT;
 
-	private ResourceURI resourceUri;
-	private Logger log;
-	
 	// Optimizer parameters (some of these are adjusted dynamically)
 	private final int minimumClusterSize       = 2;
 	private final float falsePositiveThreshold = 0.7f;
