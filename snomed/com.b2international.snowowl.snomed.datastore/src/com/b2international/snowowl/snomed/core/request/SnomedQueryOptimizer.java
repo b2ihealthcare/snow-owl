@@ -512,7 +512,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			relationshipSearchByTypeAndDestination);
 
 		filterRefinementsForInclusion(inclusionRelationshipStats);
-		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements(context);
+		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements();
 		log.trace("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
 		applyInclusions(context, refinementInclusions);
 	}
@@ -578,7 +578,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			relationshipSearchByTypeAndDestination);
 
 		filterRefinementsForExclusion(exclusionRelationshipStats);
-		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements(context);
+		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements();
 		log.trace("Found {} exclusion(s) using a refinement expression", refinementExclusions.size());
 		applyExclusions(context, refinementExclusions);
 	}

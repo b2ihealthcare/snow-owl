@@ -130,6 +130,14 @@ public record SnomedRelationshipStats(
 		countByDestination.merge(relationship.getDestinationId(), 1, (oldCount, newCount) -> oldCount + newCount);
 	}
 
+	/**
+	 * Excludes type-destination pair candidates where the precision (relevant
+	 * concepts covered by a relationship refinement expression divided by the total
+	 * number of concepts) is less than the specified threshold.
+	 * 
+	 * @param precisionThreshold the precision threshold (should be in the
+	 * <code>0..1</code> range)
+	 */
 	public void filterByPrecision(final float precisionThreshold) {
 		positiveSources.cellSet().removeIf(cell -> {
 			final int truePositives = cell.getValue();
@@ -144,12 +152,24 @@ public record SnomedRelationshipStats(
 		});
 	}
 
+	/**
+	 * Excludes type-destination pair candidates where the number of <b>relevant</b> concepts
+	 * covered by a relationship refinement expression is <b>less than</b> the specified value.
+	 * 
+	 * @param minTruePositives the lower bound for covered concepts (inclusive)
+	 */
 	public void filterByMinTruePositives(final int minTruePositives) {
 		positiveSources.values().removeIf(truePositives -> {
 			return truePositives < minTruePositives;
 		});
 	}
 
+	/**
+	 * Excludes type-destination pair candidates where the number of <b>irrelevant</b> concepts
+	 * covered by a relationship refinement expression is <b>greater than</b> the specified value.
+	 * 
+	 * @param maxFalsePositives the upper bound for irrelevant concepts (inclusive)
+	 */
 	public void filterByMaxFalsePositives(final int maxFalsePositives) {
 		positiveSources.cellSet().removeIf(cell -> {
 			final int truePositives = cell.getValue();
@@ -159,7 +179,14 @@ public record SnomedRelationshipStats(
 		});
 	}
 
-	public List<QueryExpression> optimizeRefinements(final BranchContext context) {
+	/**
+	 * Converts any remaining type-destination pair candidates (after calling filter
+	 * methods) to relationship refinement query expressions.
+	 * 
+	 * @return a list of converted query expressions in the form of
+	 * "<code>* : ${typeId} = ${destinationId}</code>"
+	 */
+	public List<QueryExpression> optimizeRefinements() {
 		if (positiveSources.isEmpty()) {
 			return List.of();
 		}
