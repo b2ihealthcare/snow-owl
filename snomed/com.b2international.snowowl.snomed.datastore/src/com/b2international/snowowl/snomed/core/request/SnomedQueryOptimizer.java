@@ -65,10 +65,16 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	 * @since 8.12.0
 	 */
 	public enum OptimizerStrategy {
+		
+		/**
+		 * Default strategy; does not modify ancestor candidate scores in any way.
+		 */
 		DEFAULT,
 		
+		/** 
+		 * Boost scores with the fraction of the precision of direct children, for selected candidates.
+		 */
 		SCORE_BOOST_1 {
-			// Boost scores with the fraction of the precision of direct children, for selected candidates
 			@Override
 			public float adjustScore(final float score, final int totalChildren, final float childPrecision) {
 				if (score < 0.4f && totalChildren > 6 && childPrecision > 0.8f) {
@@ -78,30 +84,60 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				}
 			}
 		},
-		
+
+		/**
+		 * Boost scores with the precision of direct children for all candidates.
+		 */
 		SCORE_BOOST_2 {
-			// Boost scores with the precision of direct children for all candidates
 			@Override
 			public float adjustScore(float score, final int totalChildren, final float childPrecision) {
 				return score + childPrecision;
 			}
 		},
 		
+		/**
+		 * Allow some false positives in lossy optimization mode
+		 */
 		LOSSY {
-			// Allow some false positives in lossy optimization mode
 			@Override 
-			public float getFalsePositiveThreshold(float value) { 
-				return value; 
+			public float getFalsePositiveThreshold(float configuredThreshold) { 
+				return configuredThreshold; 
 			}
 		};
-		
-		public float getFalsePositiveThreshold(final float value) {
-			// Default behavior is to disallow false positives
+
+		/**
+		 * Controls whether the configured false positive threshold value can take
+		 * effect.
+		 * <p>
+		 * With the exception of {@link #LOSSY} mode, the input value
+		 * is discarded and <code>0.0f</code> is returned to indicate that false
+		 * positives are disallowed. In lossy mode the input value is passed through.
+		 * 
+		 * @param configuredThreshold the value initially set for the false positive 
+		 * threshold
+		 * @return <code>0.0f</code> or <code>configuredThreshold</code>, depending on
+		 * the optimizer strategy
+		 */
+		public float getFalsePositiveThreshold(final float configuredThreshold) {
 			return 0.0f;
 		}
 
+		/**
+		 * Adjusts a candidate ancestor's fitness score based on contextual information.
+		 * <p>
+		 * The default implementation (used in modes {@link #DEFAULT} and
+		 * {@link #LOSSY}) does not change the input score.
+		 * <p>
+		 * Other strategies may modify the input score based on the total number of
+		 * children this parent concept has, as well as its precision (percentage of
+		 * children that are also members of the evaluated concept set).
+		 * 
+		 * @param score
+		 * @param totalChildren
+		 * @param childPrecision
+		 * @return
+		 */
 		public float adjustScore(final float score, final int totalChildren, final float childPrecision) {
-			// Default behavior is to not modify scoring
 			return score;
 		}
 	}
@@ -204,7 +240,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private ConceptSearchById conceptSearchById = ConceptSearchById.DEFAULT;
 	private ConceptDescendantCountById conceptDescendantCountById = ConceptDescendantCountById.DEFAULT;
 	private EdgeSearchBySourceId edgeSearchBySourceId = EdgeSearchBySourceId.DEFAULT;
-
+	
 	// Optimizer parameters (some of these are adjusted dynamically)
 	private final int minimumClusterSize       = 2;
 	private final float falsePositiveThreshold = 0.7f;
@@ -619,6 +655,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		boolean canceled = false;
 
 		while (!canceled) {
+
 			final String bestFitAncestor = getBestAncestor(context, ancestorScores);
 
 			if (bestFitAncestor != null) {
