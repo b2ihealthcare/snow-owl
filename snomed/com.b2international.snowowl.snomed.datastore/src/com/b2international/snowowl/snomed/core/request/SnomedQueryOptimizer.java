@@ -206,6 +206,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				.filterByCodeSystemUri(resourceUri)
 				.filterByInclusions(queryExpressions)
 				.filterByExclusions(mustNotQueryExpressions)
+				.setFields(SnomedConceptDocument.Fields.ID)
 				.setLimit(pageSize)
 				.setLocales(locales)
 				.stream(context)
