@@ -69,12 +69,18 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		/**
 		 * Default strategy; does not modify ancestor candidate scores in any way.
 		 */
-		DEFAULT,
+		DEFAULT {
+			@Override public boolean needsElevation(int iteration) { return iteration > 100; }
+			@Override public OptimizerStrategy nextStrategy() { return SCORE_BOOST_1; }
+		},
 		
 		/** 
 		 * Boost scores with the fraction of the precision of direct children, for selected candidates.
 		 */
 		SCORE_BOOST_1 {
+			@Override public boolean needsElevation(int iteration) { return iteration > 200; }
+			@Override public OptimizerStrategy nextStrategy() { return SCORE_BOOST_2; }
+			
 			@Override
 			public float adjustScore(final float score, final int totalChildren, final float childPrecision) {
 				if (score < 0.4f && totalChildren > 6 && childPrecision > 0.8f) {
@@ -132,13 +138,37 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		 * children this parent concept has, as well as its precision (percentage of
 		 * children that are also members of the evaluated concept set).
 		 * 
-		 * @param score
-		 * @param totalChildren
-		 * @param childPrecision
-		 * @return
+		 * @param score the candidate's initial score
+		 * @param totalChildren the number of children this candidate has
+		 * @param childPrecision the percentage of children that are members of the
+		 * evaluated concept set
+		 * @return the candidate's adjusted score
 		 */
 		public float adjustScore(final float score, final int totalChildren, final float childPrecision) {
 			return score;
+		}
+		
+		/**
+		 * Determines whether the optimization algorithm should move to a more
+		 * aggressive strategy given the iteration count.
+		 * 
+		 * @param iteration the number of iterations so far
+		 * @return <code>true</code> if a more aggressive strategy should be tried next,
+		 * <code>false</code> otherwise
+		 */
+		public boolean needsElevation(final int iteration) {
+			return false;
+		}
+		
+		/**
+		 * Suggests the next strategy in the chain. Should only be called when 
+		 * {@link #needsElevation} returns <code>true</code>.
+		 * 
+		 * @return a more aggressive optimization strategy than the current one
+		 * @throws NoSuchElementException if there are no more strategies to try
+		 */
+		public OptimizerStrategy nextStrategy() {
+			throw new NoSuchElementException();
 		}
 	}
 
@@ -689,8 +719,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				}
 
 				// Elevate strategy after using the same one for 100 iterations (but don't promote to LOSSY from non-lossy strategies)
-				if (iteration > (optimizerStrategy.ordinal() + 1) * 100 && optimizerStrategy.ordinal() < OptimizerStrategy.values().length - 2) {
-					optimizerStrategy = OptimizerStrategy.values()[optimizerStrategy.ordinal() + 1];
+				if (optimizerStrategy.needsElevation(iteration)) {
+					optimizerStrategy = optimizerStrategy.nextStrategy();
 					log.info("Optimizer strategy changed to {} after {} iterations", optimizerStrategy, iteration);
 				}
 
