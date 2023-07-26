@@ -371,7 +371,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		try {
 			conceptSet = evaluateConceptSet(context, locales, inclusions, exclusions);
 		} catch (SyntaxException e) {
-			log.info("Evaluation resulted in syntax error, returning empty diff");
+			log.error("Clause evaluation resulted in syntax error, returning empty diff", e);
 			return QueryExpressionDiffs.EMPTY;
 		}
 		
@@ -428,7 +428,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		// Pinned inclusions are checked for redundancy but otherwise should appear unmodified in optimized output 
 		final List<QueryExpression> pinnedInclusions = optimizePinned(context, inclusions);
-		log.info("Found {} unique pinned inclusion(s)", pinnedInclusions.size());
+		log.trace("Found {} unique pinned inclusion(s)", pinnedInclusions.size());
 		applyInclusions(context, pinnedInclusions);
 
 		// See if concepts still to be processed can be converted to "* : c1 = c2" expressions
@@ -441,7 +441,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		filterRefinementsForInclusion(inclusionRelationshipStats);
 		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements(context);
-		log.info("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
+		log.trace("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
 		applyInclusions(context, refinementInclusions);
 
 		// Collect information about the entire original concept set (ie. not the remaining set) and their ancestors
@@ -464,7 +464,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			conceptSet, 
 			optimizerStrategy.getFalsePositiveThreshold(falsePositiveThreshold));
 		
-		log.info("Found {} inclusion(s) with a '<</<' expression that evaluate to existing members only", noFalsePositiveInclusions.size());
+		log.trace("Found {} inclusion(s) with a '<</<' expression that evaluate to existing members only", noFalsePositiveInclusions.size());
 		applyInclusions(context, noFalsePositiveInclusions, false);
 
 		/*
@@ -476,7 +476,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		// Remaining concepts in "conceptsToInclude" are added as '=' inclusions
 		if (!conceptsToInclude.isEmpty()) {
-			log.info("Adding {} remaining concept(s) as a simple inclusion", conceptsToInclude.size());
+			log.trace("Adding {} remaining concept(s) as a simple inclusion", conceptsToInclude.size());
 
 			conceptsToInclude.removeIf(id -> {
 				final QueryExpression singleInclusion = new QueryExpression(IDs.base62UUID(), id, false);
@@ -488,7 +488,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 		
 		final int removals = compact(optimizedInclusions, inclusionHierarchyStats);
-		log.info("Final inclusion compaction removed {} clause(s)", removals);
+		log.trace("Final inclusion compaction removed {} clause(s)", removals);
 		return inclusionAncestors;
 	}
 
@@ -496,7 +496,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		optimizedExclusions = newArrayList();
 
 		final List<QueryExpression> pinnedExclusions = optimizePinned(context, exclusions);
-		log.info("Found {} unique pinned exclusion(s)", pinnedExclusions.size());
+		log.trace("Found {} unique pinned exclusion(s)", pinnedExclusions.size());
 		applyExclusions(context, pinnedExclusions);
 
 		final SnomedRelationshipStats exclusionRelationshipStats = SnomedRelationshipStats.create(
@@ -508,7 +508,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		filterRefinementsForExclusion(exclusionRelationshipStats);
 		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements(context);
-		log.info("Found {} exclusion(s) using a refinement expression", refinementExclusions.size());
+		log.trace("Found {} exclusion(s) using a refinement expression", refinementExclusions.size());
 		applyExclusions(context, refinementExclusions);
 
 		final SnomedHierarchyStats exclusionHierarchyStats = SnomedHierarchyStats.create(
@@ -528,12 +528,12 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		// For exclusions, only ancestors without any false positives can be accepted
 		final List<QueryExpression> noFalsePositiveExclusions = exclusionHierarchyStats.optimizeNoFalsePositives(context, conceptsToExclude);
-		log.info("Found {} exclusion(s) with a '<</<' expression that evaluate to concepts selected for exclusion only", noFalsePositiveExclusions.size());
+		log.trace("Found {} exclusion(s) with a '<</<' expression that evaluate to concepts selected for exclusion only", noFalsePositiveExclusions.size());
 		applyExclusions(context, noFalsePositiveExclusions);
 
 		// Remaining concepts in "conceptsToExclude" are added as '=' exclusions, or '<<' if the concept is a leaf (for future-proofing)
 		if (!conceptsToExclude.isEmpty()) {
-			log.info("Adding {} remaining concept(s) as a simple exclusion", conceptsToExclude.size());
+			log.trace("Adding {} remaining concept(s) as a simple exclusion", conceptsToExclude.size());
 
 			conceptsToExclude.removeIf(id -> {
 				final String operator = leafExclusions.contains(id) ? "<< " : "";
@@ -546,7 +546,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 		
 		final int removals = compact(optimizedExclusions, exclusionHierarchyStats);
-		log.info("Final exclusion compaction removed {} clause(s)", removals);
+		log.trace("Final exclusion compaction removed {} clause(s)", removals);
 	}
 
 	private Set<String> evaluateConceptSet(
@@ -714,14 +714,14 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 					if (newFitThreshold > minimumFitThreshold) {
 						fitThreshold = newFitThreshold;
 						zoom = idealClauseCount;
-						log.info("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
+						log.trace("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
 					}
 				}
 
 				// Elevate strategy after using the same one for 100 iterations (but don't promote to LOSSY from non-lossy strategies)
 				if (optimizerStrategy.needsElevation(iteration)) {
 					optimizerStrategy = optimizerStrategy.nextStrategy();
-					log.info("Optimizer strategy changed to {} after {} iterations", optimizerStrategy, iteration);
+					log.trace("Optimizer strategy changed to {} after {} iterations", optimizerStrategy, iteration);
 				}
 
 			} else {
@@ -730,7 +730,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				if (zoom <= maxClauseCount && zoom <= conceptSet.size() && zoom != Math.round(zoom * 1.1f)) {
 					// Try adjusting zoom first
 					zoom = Math.round(zoom * 1.1f);
-					log.info("Zoom changed to {}", zoom);
+					log.trace("Zoom changed to {}", zoom);
 				} else {
 					// With zoom at its limits, see if lowering the fitness threshold might work
 					final float newFitThreshold;
@@ -751,7 +751,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 						fitThreshold = newFitThreshold;
 						zoom = idealClauseCount;
 						ancestorFound = false;
-						log.info("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
+						log.trace("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
 					} else {
 						canceled = true;
 					}
@@ -767,26 +767,26 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				
 				// Did we manage to get under the limit?
 				if (optimizedInclusions.size() > maxClauseCount) {
-					log.info("Compaction could not decrease inclusion count {} below the maximum allowed {}", optimizedInclusions.size(), maxClauseCount);
+					log.trace("Compaction could not decrease inclusion count {} below the maximum allowed {}", optimizedInclusions.size(), maxClauseCount);
 					canceled = true;
 				} else {
-					log.info("Compaction changed inclusion count from {} to {}", optimizedInclusions.size(), maxClauseCount);
+					log.trace("Compaction changed inclusion count from {} to {}", optimizedInclusions.size(), maxClauseCount);
 				}
 			}
 
 			if (iteration > maxIteration) {
-				log.info("Iteration limit {} reached", maxIteration);
+				log.trace("Iteration limit {} reached", maxIteration);
 				canceled = true;
 			}
 
 			final Instant currentTime = Instant.now(clock);
 			if (Duration.between(currentTime, endTime).isNegative()) {
-				log.info("{} s runtime limit reached", maxRuntime.toSeconds());
+				log.trace("{} s runtime limit reached", maxRuntime.toSeconds());
 				canceled = true;
 			}
 		}
 
-		log.info("Found {} optimized inclusion(s) with a '<</<' expression", ancestorExpressionCount);
+		log.trace("Found {} optimized inclusion(s) with a '<</<' expression", ancestorExpressionCount);
 	}
 
 	private int compact(final List<QueryExpression> expressions, final SnomedHierarchyStats hierarchyStats) {
