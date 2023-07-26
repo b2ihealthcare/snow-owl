@@ -199,10 +199,20 @@ public record SnomedHierarchyStats(
 			totalChildren);
 	}
 
+	/**
+	 * @return an {@link ImmutableSet} containing all known ancestor candidates
+	 * (including the members of the evaluated set)
+	 */
 	public Set<String> conceptsAndAncestors() {
 		return ImmutableSet.copyOf(positiveDescendantsAndSelf.elementSet());
 	}
 
+	/**
+	 * Excludes ancestor candidates where the number of <b>relevant</b> descendants
+	 * is <b>less than</b> the specified value.
+	 * 
+	 * @param minimumClusterSize the minimum number of concepts to cover (inclusive)
+	 */
 	public void filterByClusterSize(final int minimumClusterSize) {
 		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
 			final int truePositives = e.getCount();
@@ -210,6 +220,25 @@ public record SnomedHierarchyStats(
 		});
 	}
 
+	/**
+	 * Excludes ancestor candidates that have a single child and either the parent
+	 * or the child is a non-member.
+	 * <p>
+	 * <ul>
+	 * <li>
+	 * If the parent is irrelevant, then it does not matter whether we use
+	 * "<code>&lt;&nbsp;${parentId}</code>" or "<code>=&nbsp;${childId}</code>" for
+	 * the inclusion expression, and the former is slightly more complex;
+	 * </li>
+	 * <li>
+	 * If the child is irrelevant, an inclusion of
+	 * "<code>&lt;&lt;&nbsp;${parentId}</code>" would also need an exclusion of
+	 * "<code>=&nbsp;${childId}</code>". Just as above,
+	 * "<code>=&nbsp;${parentId}</code>" is the more reasonable choice in these
+	 * cases.
+	 * </li>
+	 * </ul>
+	 */
 	public void filterSingleChildMember() {
 		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
 			final int truePositives = e.getCount();
@@ -219,6 +248,10 @@ public record SnomedHierarchyStats(
 		});
 	}
 
+	/**
+	 * Excludes ancestor candidates that have more non-member children than
+	 * relevant ones.
+	 */
 	public void filterByChildren() {
 		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
 			final int truePositives = positiveChildren.count(e.getElement());
@@ -228,6 +261,15 @@ public record SnomedHierarchyStats(
 		});
 	}
 	
+	/**
+	 * Excludes ancestor candidates that have more children than the specified limit
+	 * and the fraction of relevant children is lower than the given threshold.
+	 * 
+	 * @param childLimit the number of children above which ancestors are
+	 * considered for exclusion (exclusive)
+	 * @param precisionThreshold the precision threshold below which ancestors are
+	 * excluded from the candidate set (inclusive)
+	 */
 	public void filterByChildrenAndPrecision(final int childLimit, final float precisionThreshold) {
 		positiveDescendantsAndSelf.entrySet().removeIf(e -> {
 			final int trueposPositives = positiveChildren.count(e.getElement());
@@ -237,6 +279,25 @@ public record SnomedHierarchyStats(
 		});
 	}
 
+	/**
+	 * Checks all ancestor candidates in a pairwise fashion and eliminates the ones
+	 * which:
+	 * 
+	 * <ul>
+	 * <li>Do not have any false positives whatsoever, ie. all of their descendants
+	 * are relevant (a single false positive is permitted if the candidate itself is
+	 * not a member of the concept set)
+	 * <li>One of the ancestors is a descendant of the other
+	 * </ul>
+	 * 
+	 * <p>
+	 * Information about excluded candidates is removed from descendant and child
+	 * counting {@link Multiset}s, but not the taxonomy graph.
+	 * </p>
+	 * 
+	 * @param memberIds the {@link Set} of concept IDs that are members of the
+	 * evaluated concept set
+	 */
 	public void filterRedundantNoFalsePositives(final Set<String> memberIds) {
 		final Set<String> allAncestors = conceptsAndAncestors();
 		final Set<String> redundantIds = newHashSet();
@@ -266,22 +327,60 @@ public record SnomedHierarchyStats(
 		redundantIds.clear();
 	}
 
+	/**
+	 * Removes descendant and child counters for the specified ancestors. The
+	 * taxonomy graph is not modified.
+	 * 
+	 * @param conceptIds the {@link Set} of ancestors to remove from the candidate pool
+	 */
 	public void removeCandidates(final Set<String> conceptIds) {
 		// Remove counters from the first Multimap...
 		final Set<String> positiveElementSet = positiveDescendantsAndSelf.elementSet();
 		positiveElementSet.removeAll(conceptIds);
 
-		// ...then retain the same set of keys across all Multimaps
+		// ...then retain the same set of keys across all other Multimaps
 		totalDescendantsAndSelf.elementSet().retainAll(positiveElementSet);
 		positiveChildren.elementSet().retainAll(positiveElementSet);
 		totalChildren.elementSet().retainAll(positiveElementSet);
 	}
 
-	public List<QueryExpression> optimizeNoFalsePositives(final BranchContext context, final Set<String> memberIds) {
-		return optimizeNoFalsePositives(context, memberIds, 0.0f);
+	/**
+	 * Converts ancestor candidates who have 100% precision to
+	 * <code>"&lt;/&lt;&lt; ${ancestorId}"</code> expressions. The operator to use
+	 * is determined by whether the ancestor itself is a member of the concept set
+	 * or not.
+	 * <p>
+	 * This method is used for collecting expressions for exclusion, as they can not
+	 * have any false positives at all.
+	 * </p>
+	 * 
+	 * @param memberIds the {@link Set} of concept IDs that are members of the
+	 * evaluated concept set
+	 * @return a {@link List} of resulting {@link QueryExpression}s
+	 */
+	public List<QueryExpression> optimizeNoFalsePositives(final Set<String> memberIds) {
+		return optimizeNoFalsePositives(memberIds, 0.0f);
 	}
 
-	public List<QueryExpression> optimizeNoFalsePositives(final BranchContext context, final Set<String> memberIds, final float falsePositiveThreshold) {
+	/**
+	 * Converts ancestor candidates who have a false positive rate below the
+	 * specified threshold to <code>"&lt;/&lt;&lt; ${ancestorId}"</code>
+	 * expressions. The operator to use is determined by whether the ancestor itself
+	 * is a member of the concept set or not.
+	 * <p>
+	 * This method is used for collecting expressions for inclusion.
+	 * <code>falsePositivesThreshold</code> is only set to a non-zero value when
+	 * using the lossy optimization strategy; see
+	 * {@link SnomedQueryOptimizer.OptimizerStrategy#LOSSY}.
+	 * </p>
+	 * 
+	 * @param memberIds the {@link Set} of concept IDs that are members
+	 * of the evaluated concept set
+	 * @param falsePositiveThreshold the fraction of allowed false positives (should
+	 * be in the <code>0..1</code> range)
+	 * @return a {@link List} of resulting {@link QueryExpression}s
+	 */
+	public List<QueryExpression> optimizeNoFalsePositives(final Set<String> memberIds, final float falsePositiveThreshold) {
 		final Set<String> noFalsePositives = positiveDescendantsAndSelf.entrySet()
 			.stream()
 			.filter(e -> {
@@ -314,11 +413,19 @@ public record SnomedHierarchyStats(
 			.collect(Collectors.toList());
 	}
 
-	public LongKeyFloatMap initAncestorScores(
-		final BranchContext context,
+	/**
+	 * Computes a fitness metric for each candidate ancestor.
+	 * 
+	 * @param conceptSet the original set of concept IDs that are members
+	 * @param optimizerStrategy the strategy to be used for adjusting ancestor scoring
+	 * @param targetClauses the currently selected target clause count
+	 * @param clauseCountWeighting the exponent for the ideal clause count weighting function
+	 * @return fitness scores keyed by candidate ancestor ID
+	 */
+	public LongKeyFloatMap computeAncestorScores(
 		final Set<String> conceptSet,
 		final OptimizerStrategy optimizerStrategy,
-		final int zoom,
+		final int targetClauses,
 		final double clauseCountWeighting
 	) {
 		final int conceptCount = positiveDescendantsAndSelf.elementSet().size();
@@ -329,38 +436,51 @@ public record SnomedHierarchyStats(
 
 			final int truePositives = e.getCount();
 			final int total = totalDescendantsAndSelf.count(id);
-			float precision = ((float) truePositives) / total;
+			
+			// The initial score is determined by "descendant precision" -- what fraction of the covered descendants is relevant?
+			float score = ((float) truePositives) / total;
 
+			// Apply boost based on the currently selected optimizer strategy
 			final int truePositiveChildren = positiveChildren.count(id); 
 			final int allChildren = totalChildren.count(id); 
 			final float childPrecision = ((float) truePositiveChildren) / allChildren;
-
-			// Apply boost based on the currently selected strategy
-			precision = optimizerStrategy.adjustScore(precision, allChildren, childPrecision);
+			score = optimizerStrategy.adjustScore(score, allChildren, childPrecision);
 
 			// Slightly lower the rating of non-member ancestors
 			if (!conceptSet.contains(id)) {
-				precision *= 0.95f;
+				score *= 0.95f;
 			}
 
-			if (precision > 0.0f && precision < 0.7f) {
+			if (score > 0.0f && score < 0.7f) {
 				/*
-				 * How many clauses would we get for the original concept set if we assume that
-				 * all clauses cover the number of concepts taken care of by this ancestor?
+				 * How many clauses would we get if we assume that all clauses cover the same
+				 * number of concepts as this ancestor?
 				 */
 				final float numClauses = ((float) conceptSet.size()) / truePositives;
+				final float differenceFromTarget = Math.abs(numClauses - targetClauses + 1);
 				
 				// Reflect this information in the ancestor score with exponential weighting
-				precision *= ((float) Math.pow(1.0 / Math.abs(numClauses - zoom + 1), clauseCountWeighting));
+				score *= ((float) Math.pow(1.0 / differenceFromTarget, clauseCountWeighting));
 			}
 
 			final long idAsLong = Long.parseLong(id);
-			ancestorScore.put(idAsLong, precision);
+			ancestorScore.put(idAsLong, score);
 		});
 
 		return ancestorScore;
 	}
 
+	/**
+	 * Checks whether the first concept is a descendant of the second concept using
+	 * information in the collected taxonomy graph. As a result, this method only
+	 * knows about concepts that were considered as ancestors at the creation of
+	 * this instance.
+	 * 
+	 * @param conceptA the ID of the first concept to check
+	 * @param conceptB the ID of the second conept to check
+	 * @return <code>true</code> if conceptA is subsumed by conceptB,
+	 * <code>false</code> otherwise
+	 */
 	public boolean subsumes(final String conceptA, final String conceptB) {
 		return graph.subsumes(conceptA, conceptB);
 	}

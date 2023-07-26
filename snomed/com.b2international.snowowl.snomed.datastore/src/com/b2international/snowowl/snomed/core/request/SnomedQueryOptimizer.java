@@ -465,7 +465,6 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		// Gather ancestors without any false positives
 		final List<QueryExpression> noFalsePositiveInclusions = inclusionHierarchyStats.optimizeNoFalsePositives(
-			context, 
 			conceptSet, 
 			optimizerStrategy.getFalsePositiveThreshold(falsePositiveThreshold));
 		
@@ -542,7 +541,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		filterAncestorsForExclusion(exclusionHierarchyStats, inclusionAncestors);
 
 		// For exclusions, only ancestors without any false positives can be accepted
-		final List<QueryExpression> noFalsePositiveExclusions = exclusionHierarchyStats.optimizeNoFalsePositives(context, conceptsToExclude);
+		final List<QueryExpression> noFalsePositiveExclusions = exclusionHierarchyStats.optimizeNoFalsePositives(conceptsToExclude);
 		log.trace("Found {} exclusion(s) with a '<</<' expression that evaluate to concepts selected for exclusion only", noFalsePositiveExclusions.size());
 		applyExclusions(context, noFalsePositiveExclusions);
 
@@ -699,8 +698,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	// Compute scores, then iterate over the best candidates with an acceptable fit in decreasing order
 	private void optimizeAncestorInclusions(final BranchContext context, final SnomedHierarchyStats inclusionHierarchyStats) {
 
-		final LongKeyFloatMap ancestorScores = inclusionHierarchyStats.initAncestorScores(
-			context, 
+		final LongKeyFloatMap ancestorScores = inclusionHierarchyStats.computeAncestorScores(
 			conceptSet, 
 			optimizerStrategy, 
 			zoom, 
