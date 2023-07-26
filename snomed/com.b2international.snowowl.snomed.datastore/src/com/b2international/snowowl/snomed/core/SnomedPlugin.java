@@ -47,7 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.merge.SnomedComponentRevisionConflictProcessor;
 import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
-import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer;
+import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizerFactory;
 import com.b2international.snowowl.snomed.core.uri.SnomedURLSchemaSupport;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -126,7 +126,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	protected QueryOptimizer getQueryOptimizer() {
-		return new SnomedQueryOptimizer();
+		return new SnomedQueryOptimizerFactory();
 	}
 	
 	@Override
