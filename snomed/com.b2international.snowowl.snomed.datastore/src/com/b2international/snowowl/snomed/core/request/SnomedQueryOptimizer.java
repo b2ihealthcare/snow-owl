@@ -32,6 +32,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyFloatMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -295,7 +296,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private boolean skipRefinements            = false;
 
 	private OptimizerStrategy optimizerStrategy = OptimizerStrategy.DEFAULT;
-	private int zoom                            = 1;
+	private int targetClauseCount               = 1;
 	private int maxClauseCount                  = 2000;
 
 	// Run-time fields
@@ -698,12 +699,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	// Compute scores, then iterate over the best candidates with an acceptable fit in decreasing order
 	private void optimizeAncestorInclusions(final BranchContext context, final SnomedHierarchyStats inclusionHierarchyStats) {
 
-		final LongKeyFloatMap ancestorScores = inclusionHierarchyStats.computeAncestorScores(
-			conceptSet, 
-			optimizerStrategy, 
-			zoom, 
-			weight);
-
+		LongKeyFloatMap ancestorScores = computeAncestorScores(inclusionHierarchyStats, null);
 		if (ancestorScores.isEmpty()) {
 			return;
 		}
@@ -740,31 +736,43 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final Set<String> unexpected = Sets.difference(includedIds, conceptSet);
 				conceptsToExclude.addAll(unexpected);
 
-				// Tune parameters after a successful selection
-				if (((float) conceptSet.size()) / (includedIds.size() + 1) > 1000.0f) {
+				// Check if a high fit threshold results in lots of small inclusions
+				final float clauseCountFromInclusion = ((float) conceptSet.size()) / (includedIds.size() + 1);
+				if (clauseCountFromInclusion > 1000.0f) {
+					
+					// Lower fit threshold to 90% of the original if possible
 					final float newFitThreshold = fitThreshold * 0.9f;
 					if (newFitThreshold > minimumFitThreshold) {
 						fitThreshold = newFitThreshold;
-						zoom = idealClauseCount;
-						log.trace("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
+						targetClauseCount = idealClauseCount;
+						
+						// Recompute scores as targetClauseCount was set back to the initial value
+						ancestorScores = computeAncestorScores(inclusionHierarchyStats, ancestorScores.keySet());
+						log.trace("Fit threshold changed to {}, target clause count is {}", fitThreshold, targetClauseCount);
 					}
 				}
 
 				// Elevate strategy after using the same one for 100 iterations (but don't promote to LOSSY from non-lossy strategies)
 				if (optimizerStrategy.needsElevation(iteration)) {
 					optimizerStrategy = optimizerStrategy.nextStrategy();
+					
+					// Recompute scores as optimizer strategy has changed
+					ancestorScores = computeAncestorScores(inclusionHierarchyStats, ancestorScores.keySet());
 					log.trace("Optimizer strategy changed to {} after {} iterations", optimizerStrategy, iteration);
 				}
 
 			} else {
 				// No acceptable ancestor in this round
 
-				if (zoom <= maxClauseCount && zoom <= conceptSet.size() && zoom != Math.round(zoom * 1.1f)) {
-					// Try adjusting zoom first
-					zoom = Math.round(zoom * 1.1f);
-					log.trace("Zoom changed to {}", zoom);
+				if (targetClauseCount <= maxClauseCount && targetClauseCount <= conceptSet.size() && targetClauseCount != Math.round(targetClauseCount * 1.1f)) {
+					// Try increasing target clause count by 10% first
+					targetClauseCount = Math.round(targetClauseCount * 1.1f);
+					
+					// Recompute scores as targetClauseCount has increased					
+					ancestorScores = computeAncestorScores(inclusionHierarchyStats, ancestorScores.keySet());
+					log.trace("Target clause count changed to {}", targetClauseCount);
 				} else {
-					// With zoom at its limits, see if lowering the fitness threshold might work
+					// With the clause count at its limits, see if lowering the fitness threshold might work
 					final float newFitThreshold;
 
 					if (ancestorFound) {
@@ -781,9 +789,12 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 					if (newFitThreshold > minimumFitThreshold) {
 						fitThreshold = newFitThreshold;
-						zoom = idealClauseCount;
+						targetClauseCount = idealClauseCount;
+						
+						// Recompute scores as targetClauseCount was set back to the initial value 
+						ancestorScores = computeAncestorScores(inclusionHierarchyStats, ancestorScores.keySet());
 						ancestorFound = false;
-						log.trace("Fit threshold changed to {}, zoom is {}", fitThreshold, zoom);
+						log.trace("Fit threshold changed to {}, target clause count is {}", fitThreshold, targetClauseCount);
 					} else {
 						canceled = true;
 					}
@@ -819,6 +830,21 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 
 		log.trace("Found {} optimized inclusion(s) with a '<</<' expression", ancestorExpressionCount);
+	}
+
+	private LongKeyFloatMap computeAncestorScores(final SnomedHierarchyStats inclusionHierarchyStats, final LongSet keysToRetain) {
+		final LongKeyFloatMap ancestorScores = inclusionHierarchyStats.computeAncestorScores(
+			conceptSet, 
+			optimizerStrategy, 
+			targetClauseCount, 
+			weight);
+		
+		// If some values were discarded already, they should be discarded again
+		if (keysToRetain != null) {
+			ancestorScores.keySet().retainAll(keysToRetain);
+		}
+		
+		return ancestorScores;
 	}
 
 	private int compact(final List<QueryExpression> expressions, final SnomedHierarchyStats hierarchyStats) {
