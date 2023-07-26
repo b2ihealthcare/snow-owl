@@ -152,7 +152,6 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			.setLimit(pageSize)
 			.filterByEcl(eclExpression)
 			.setFields(SnomedConceptDocument.Fields.ID)
-			.sortBy(SnomedConceptDocument.Fields.ID)
 			.stream(context)
 			.flatMap(SnomedConcepts::stream)
 			.map(SnomedConcept::getId);
