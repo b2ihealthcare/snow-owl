@@ -326,7 +326,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			throw new BadRequestException("Branch path '%s' should point to an existing branch if given.", branchPath);
 		}
 		
-		// If the branch should be created, it branch should not exist, however 
+		// If the branch should be created, it should not exist already
 		if (create) {
 			final String newBranchPath = Branch.get(parentPath, getId());
 			if (branchExists(newBranchPath, context)) {
