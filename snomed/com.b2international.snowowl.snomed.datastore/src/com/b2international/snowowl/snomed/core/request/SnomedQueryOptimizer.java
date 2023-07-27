@@ -918,7 +918,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			Ints.sortDescending(sortedRemoveIdx);
 
 			for (final int idx : sortedRemoveIdx) {
-				expressions.remove(idx);
+				final QueryExpression expressionToRemove = expressions.get(idx);
+				if (!expressionToRemove.isPinned()) {
+					expressions.remove(idx);
+				}
 			}
 		}
 		
