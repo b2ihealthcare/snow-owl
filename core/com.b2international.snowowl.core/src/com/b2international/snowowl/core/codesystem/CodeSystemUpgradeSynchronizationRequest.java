@@ -15,21 +15,22 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.internal.DependencyDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
@@ -98,7 +99,18 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 				new ResourceRepositoryCommitRequestBuilder()
 					.setBody((tx) -> {
 						ResourceDocument entry = tx.lookup(codeSystemId.getResourceId(), ResourceDocument.class);
-						tx.add(ResourceDocument.builder(entry).upgradeOf(source).build());
+						
+						// find and replace the upgradeOf dependency amongst the registered dependencies
+						final SortedSet<DependencyDocument> newDependencies = new TreeSet<>(entry.getDependencies());
+						newDependencies.removeIf(dep -> TerminologyResource.DependencyScope.UPGRADE_OF.equals(dep.getScope()));
+						newDependencies.add(Dependency.of(source, TerminologyResource.DependencyScope.UPGRADE_OF).toDocument());
+						
+						
+						tx.add(ResourceDocument.builder(entry)
+								// ensure we auto-migrate to the new model when upgrading/syncing a resource
+								.upgradeOf(null)
+								.dependencies(newDependencies)
+								.build());
 						tx.commit(String.format("Update upgradeOf from '%s' to '%s'", codeSystem.getUpgradeOf(), source));
 						return Boolean.TRUE;
 					})

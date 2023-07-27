@@ -20,6 +20,8 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -85,7 +87,12 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 	@JsonProperty
 	private Map<String, Object> settings;
 
+	// runtime fields
 	private transient ResourceDocument resource;
+	
+	protected BaseResourceUpdateRequest(String componentId) {
+		super(componentId);
+	}
 	
 	protected final void setUrl(String url) {
 		this.url = url;
@@ -135,10 +142,10 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		this.settings = settings;
 	}
 	
-	protected BaseResourceUpdateRequest(String componentId) {
-		super(componentId);
+	protected final Map<String, Object> getSettings() {
+		return settings;
 	}
-
+	
 	@Override
 	public final Boolean execute(TransactionContext context) {
 		if (resource == null) {
@@ -148,9 +155,6 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 		boolean changed = false;
 
-		changed |= updateSpecializedProperties(context, resource, updated);
-		changed |= updateSettings(resource, updated);
-
 		// url checked against all resources
 		if (url != null && !url.equals(resource.getUrl())) {
 			if (url.isBlank()) {
@@ -158,11 +162,11 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			}
 			
 			final boolean existingUrl = ResourceRequests.prepareSearch()
-				.setLimit(0)
-				.filterByUrl(url)
-				.build()
-				.execute(context)
-				.getTotal() > 0;
+					.setLimit(0)
+					.filterByUrl(url)
+					.build()
+					.execute(context)
+					.getTotal() > 0;
 					
 			if (existingUrl) {
 				throw new AlreadyExistsException("Resource", ResourceDocument.Fields.URL, url);
@@ -170,6 +174,9 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			
 			changed |= updateProperty(url, resource::getUrl, updated::url);
 		}
+		
+		changed |= updateSpecializedProperties(context, resource, updated);
+		changed |= updateSettings(resource, updated);
 
 		changed |= updateBundle(context, resource.getId(), resource.getBundleId(), updated);
 		
@@ -323,6 +330,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		return parentBundle.getResourcePathSegments();
 	}
 
+	@OverridingMethodsMustInvokeSuper
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);
 
 	@Override

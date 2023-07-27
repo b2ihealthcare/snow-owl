@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,10 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.prefixMatch;
-import static com.b2international.index.query.Expressions.regexp;
+import static com.b2international.index.query.Expressions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -99,10 +94,21 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String OID = "oid";
 		public static final String BRANCH_PATH = "branchPath";
 		public static final String TOOLING_ID = "toolingId";
-		public static final String EXTENSION_OF = "extensionOf";
-		public static final String UPGRADE_OF = "upgradeOf";
 		public static final String SETTINGS = "settings";
 		public static final String TYPE_RANK = "typeRank";
+		// since 8.12
+		public static final String DEPENDENCIES = "dependencies";
+		
+		// deprecated in 8.12
+		/**
+		 * @deprecated replace by {@link #DEPENDENCIES}, will be removed in 9.0
+		 */
+		public static final String EXTENSION_OF = "extensionOf";
+		
+		/**
+		 * @deprecated replace by {@link #DEPENDENCIES}, will be removed in 9.0
+		 */
+		public static final String UPGRADE_OF = "upgradeOf";
 		
 		// analyzed fields
 		private static final String TITLE_PREFIX   = TITLE + ".prefix";
@@ -214,6 +220,18 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression upgradeOfs(Iterable<ResourceURI> upgradeOfs) {
 			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
+
+		public static Expression dependency(String queryString) {
+			final String qs = checkNotNull(queryString, "queryString")
+					// escape reserved forward slash characters which are often present in Snowy URIs
+					.replace("/", "\\/")
+					// replace uri: field prefix with dependencies.uri: to make it work in ES
+					.replace("uri:", "dependencies.uri:")
+					// replace scope: field prefix with dependencies.scope: to make it work in ES
+					.replace("scope:", "dependencies.scope:")
+					;
+			return nestedMatch(Fields.DEPENDENCIES, queryString(qs, "dependencies.*"));
+		}
 	}
 
 	public static Builder builder() {
@@ -240,11 +258,15 @@ public final class ResourceDocument extends RevisionDocument {
 				.oid(from.getOid())
 				.branchPath(from.getBranchPath())
 				.toolingId(from.getToolingId())
-				.extensionOf(from.getExtensionOf())
-				.upgradeOf(from.getUpgradeOf())
 				.settings(from.getSettings())
 				.createdAt(from.getCreatedAt())
-				.updatedAt(from.getUpdatedAt());
+				.updatedAt(from.getUpdatedAt())
+				// still copy and maintain extensionOf and upgradeOf properties if they are set, they will be completely removed in 9.0
+				.extensionOf(from.getExtensionOf())
+				.upgradeOf(from.getUpgradeOf())
+				// copy the new dependency array values
+				.dependencies(from.getDependencies())
+				;
 	}
 	
 	/**
@@ -267,6 +289,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String purpose;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
+		private SortedSet<DependencyDocument> dependencies;
 		
 		// specialized resource fields
 		private String oid;
@@ -364,11 +387,21 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
+		/**
+		 * @deprecated - replaced by {@link #dependencies(List)}, will be removed in 9.0
+		 * @param extensionOf
+		 * @return
+		 */
 		public Builder extensionOf(ResourceURI extensionOf) {
 			this.extensionOf = extensionOf;
 			return getSelf();
 		}
 		
+		/**
+		 * @deprecated - replaced by {@link #dependencies(List)}, will be removed in 9.0
+		 * @param upgradeOf
+		 * @return
+		 */
 		public Builder upgradeOf(ResourceURI upgradeOf) {
 			this.upgradeOf = upgradeOf;
 			return getSelf();
@@ -387,6 +420,11 @@ public final class ResourceDocument extends RevisionDocument {
 		
 		public Builder updatedAt(Long updatedAt) {
 			this.updatedAt = updatedAt;
+			return getSelf();
+		}
+		
+		public Builder dependencies(SortedSet<DependencyDocument> dependencies) {
+			this.dependencies = dependencies;
 			return getSelf();
 		}
 		
@@ -420,7 +458,8 @@ public final class ResourceDocument extends RevisionDocument {
 				upgradeOf,
 				settings,
 				createdAt,
-				updatedAt
+				updatedAt,
+				dependencies
 			);
 		}
 		
@@ -445,6 +484,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	
 	// Ordered ancestor bundle IDs, sorted by depth
 	private final List<String> bundleAncestorIds;
 	private final String bundleId;
@@ -453,9 +493,13 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String oid;
 	private final String branchPath;
 	private final String toolingId;
+	private final Map<String, Object> settings;
+	
+	private final SortedSet<DependencyDocument> dependencies;
+	
+	// deprecated dependency-like fields, will be removed in 9.0
 	private final ResourceURI extensionOf;
 	private final ResourceURI upgradeOf;
-	private final Map<String, Object> settings;
 	
 	// derived fields, getters only, mapping generation requires a field to be specified
 	private final Long createdAt;
@@ -490,7 +534,8 @@ public final class ResourceDocument extends RevisionDocument {
 			final ResourceURI upgradeOf,
 			final Map<String, Object> settings,
 			final Long createdAt,
-			final Long updatedAt) {
+			final Long updatedAt,
+			final SortedSet<DependencyDocument> dependencies) {
 		super(id, iconId);
 		this.resourceType = resourceType;
 		this.url = url;
@@ -513,6 +558,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.settings = settings;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.dependencies = dependencies;
 	}
 
 	@JsonIgnore
@@ -608,6 +654,10 @@ public final class ResourceDocument extends RevisionDocument {
 		return Optional.ofNullable(updatedAt)
 				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
 				.orElse(null);
+	}
+	
+	public SortedSet<DependencyDocument> getDependencies() {
+		return dependencies;
 	}
 	
 }

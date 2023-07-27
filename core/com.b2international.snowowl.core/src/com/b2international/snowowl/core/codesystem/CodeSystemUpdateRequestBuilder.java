@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,25 @@
 package com.b2international.snowowl.core.codesystem;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.request.BaseResourceUpdateRequestBuilder;
+import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceUpdateRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemUpdateRequestBuilder
-		extends BaseResourceUpdateRequestBuilder<CodeSystemUpdateRequestBuilder, CodeSystemUpdateRequest> {
+		extends BaseTerminologyResourceUpdateRequestBuilder<CodeSystemUpdateRequestBuilder, CodeSystemUpdateRequest> {
 
-	private String oid;
-	private String branchPath;
 	private ResourceURI extensionOf;
 
-	CodeSystemUpdateRequestBuilder(String uniqueId) {
-		super(uniqueId);
+	CodeSystemUpdateRequestBuilder(String resourceId) {
+		super(resourceId);
 	}
 
-	public CodeSystemUpdateRequestBuilder setOid(String oid) {
-		this.oid = oid;
-		return getSelf();
-	}
-
-	public CodeSystemUpdateRequestBuilder setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-		return getSelf();
-	}
-
+	/**
+	 * @param extensionOf
+	 * @return
+	 * @deprecated - replaced with {@link #setDependencies(java.util.List)}, will be removed in 9.0
+	 */
 	public CodeSystemUpdateRequestBuilder setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
 		return getSelf();
@@ -49,12 +42,12 @@ public final class CodeSystemUpdateRequestBuilder
 
 	@Override
 	public CodeSystemUpdateRequest createResourceRequest() {
-		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(getResourceId());
-
-		req.setOid(oid);
-		req.setBranchPath(branchPath);
+		return new CodeSystemUpdateRequest(getResourceId());
+	}
+	
+	@Override
+	protected void init(CodeSystemUpdateRequest req) {
+		super.init(req);
 		req.setExtensionOf(extensionOf);
-
-		return req;
 	}
 }

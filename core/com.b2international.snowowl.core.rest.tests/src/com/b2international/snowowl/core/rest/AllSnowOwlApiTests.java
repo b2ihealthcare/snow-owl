@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.bundle.BundleApiTest;
 import com.b2international.snowowl.core.rest.auth.AuthorizationTest;
 import com.b2international.snowowl.core.rest.auth.BasicAuthenticationTest;
 import com.b2international.snowowl.core.rest.bundle.BundleRestApiTest;
+import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiDependencyTest;
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiTest;
 import com.b2international.snowowl.core.rest.rate.RateLimitTest;
 import com.b2international.snowowl.core.rest.resource.ResourceApiTest;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	AuthorizationTest.class,
 	RateLimitTest.class,
 	CodeSystemApiTest.class,
+	CodeSystemApiDependencyTest.class,
 	ResourceApiTest.class,
 	BundleApiTest.class,
 	BundleRestApiTest.class,

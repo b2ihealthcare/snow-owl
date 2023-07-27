@@ -17,7 +17,9 @@ package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.TerminologyResource;
@@ -89,9 +91,26 @@ public final class CodeSystem extends TerminologyResource {
 		codeSystem.setOid(doc.getOid());
 		codeSystem.setBranchPath(doc.getBranchPath());
 		codeSystem.setToolingId(doc.getToolingId());
-		codeSystem.setExtensionOf(doc.getExtensionOf());
-		codeSystem.setUpgradeOf(doc.getUpgradeOf());
 		codeSystem.setSettings(doc.getSettings());
+		// old dependency models are no longer being maintained on the document, use those values only if dependencies array is not defined
+		if (!CompareUtils.isEmpty(doc.getDependencies())) {
+			codeSystem.setDependencies(doc.getDependencies().stream().map(Dependency::from).toList());
+			doc.getDependencies().forEach(dep -> {
+				// maintain old extensionOf and upgradeOf field value from dependencies only if query part is not defined
+				if (dep.getUri().hasQueryPart()) {
+					return;
+				} 
+				
+				if (TerminologyResource.DependencyScope.EXTENSION_OF.equals(dep.getScope())) {
+					codeSystem.setExtensionOf(dep.getUri().getResourceUri());
+				} else if (TerminologyResource.DependencyScope.UPGRADE_OF.equals(dep.getScope())) {
+					codeSystem.setUpgradeOf(dep.getUri().getResourceUri());
+				}
+			});
+		} else {
+			codeSystem.setExtensionOf(doc.getExtensionOf());
+			codeSystem.setUpgradeOf(doc.getUpgradeOf());
+		}
 		return codeSystem;
 	}
 

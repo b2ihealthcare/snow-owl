@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.bundle.BundleRequests;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
-import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
 import com.b2international.snowowl.core.request.resource.ResourceGetRequestBuilder;
@@ -55,11 +54,7 @@ public final class ResourceRequests {
 	}
 	
 	public static ResourceDeleteRequestBuilder prepareDelete(ResourceURI resourceUri) {
-		return prepareDelete(resourceUri.getResourceId());
-	}
-	
-	public static ResourceDeleteRequestBuilder prepareDelete(String resourceId) {
-		return new ResourceDeleteRequestBuilder(resourceId, ResourceDocument.class);
+		return new ResourceDeleteRequestBuilder(resourceUri);
 	}
 	
 	public static VersionSearchRequestBuilder prepareSearchVersion() {

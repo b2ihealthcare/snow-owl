@@ -75,6 +75,7 @@ public class CodeSystemRestService extends AbstractRestService {
 			.filterByBundleIds(params.getBundleId())
 			.filterByBundleAncestorIds(params.getBundleAncestorId())
 			.filterByStatus(params.getStatus())
+			.filterByDependency(params.getDependency())
 			.setLimit(params.getLimit())
 			.setExpand(params.getExpand())
 			.setFields(params.getField())
@@ -98,7 +99,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "404", description = "Branch not found")
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<CodeSystems> searchByPost(@RequestBody(required = false) final TerminologyResourceRestSearch params) {
+	public Promise<CodeSystems> searchByPost(@RequestBody(required = false) final TerminologyResourceRestSearch params) {
 		return searchByGet(params);
 	}
 
@@ -236,7 +237,7 @@ public class CodeSystemRestService extends AbstractRestService {
 					.execute(getBus())
 					.getSync(1, TimeUnit.MINUTES);
 			
-			ResourceRequests.prepareDelete(codeSystemId)
+			ResourceRequests.prepareDelete(codeSystem.getResourceURI())
 				.build(author, String.format("Deleted Code System %s", codeSystem.getTitle()))
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);

@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.request.resource;
 
 import java.util.*;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -33,6 +35,11 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest.NoResultException;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
@@ -225,6 +232,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	 * @param context
 	 * @param queryBuilder
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 	}
 

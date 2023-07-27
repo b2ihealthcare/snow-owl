@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,8 @@ abstract class BaseBundleApiTest {
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES)
 			.forEach(bundle -> {
-				ResourceRequests.prepareDelete(bundle.getId())
+				ResourceRequests.prepareDelete(bundle.getResourceURI())
+					.force(true)
 					.build(USER, String.format("Delete bundle: %s", bundle.getId()))
 					.execute(Services.bus())
 					.getSync(1, TimeUnit.MINUTES);

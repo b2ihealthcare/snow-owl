@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,38 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.bundle;
+package com.b2international.snowowl.core.request.resource;
 
-import java.util.Collections;
-
-import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest;
 
 /**
- * @since 8.0
+ * @since 8.12
+ * @param <R>
  */
-final class BundleSearchRequest extends BaseResourceSearchRequest<Bundles> {
+public abstract class BaseTerminologyResourceSearchRequest<R> extends BaseResourceSearchRequest<R> {
 
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * @since 8.12
+	 */
+	public enum OptionKey {
+		
+		/**
+		 * Filters terminology resources by their listed dependencies.
+		 */
+		DEPENDENCY
+		
+	}
 
 	@Override
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		super.prepareAdditionalFilters(context, queryBuilder);
-		queryBuilder.filter(ResourceDocument.Expressions.resourceType(Bundle.RESOURCE_TYPE));
+		addDependencyFilter(context, queryBuilder);
 	}
 
-	@Override
-	protected Bundles toCollectionResource(RepositoryContext context, Hits<ResourceDocument> hits) {
-		final BundleConverter converter = new BundleConverter(context, expand(), null);
-		return converter.convert(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
-	}
-
-	@Override
-	protected Bundles createEmptyResult(int limit) {
-		return new Bundles(Collections.emptyList(), null, limit, 0);
+	private void addDependencyFilter(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.DEPENDENCY)) {
+			String queryString = getString(OptionKey.DEPENDENCY);
+			queryBuilder.filter(ResourceDocument.Expressions.dependency(queryString));
+		}
 	}
 	
 }

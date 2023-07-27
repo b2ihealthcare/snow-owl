@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,6 +152,8 @@ public class Es8QueryBuilder {
 			visit((ScriptQueryExpression) expression);
 		} else if (expression instanceof MoreLikeThisPredicate){
 			visit((MoreLikeThisPredicate) expression);
+		} else if (expression instanceof QueryStringExpression){
+			visit((QueryStringExpression) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -547,6 +549,12 @@ public class Es8QueryBuilder {
 				.maxWordLength(mlt.getMaxWordLength())
 				.minimumShouldMatch(mlt.getMinimumShouldMatch())
 			)
+		);
+	}
+	
+	private void visit(QueryStringExpression qs) {
+		deque.push(
+			QueryBuilders.queryString(q -> q.query(qs.getQuery()).defaultField(qs.getDefaultField()))
 		);
 	}
 

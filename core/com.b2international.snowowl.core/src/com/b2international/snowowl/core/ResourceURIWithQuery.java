@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import org.elasticsearch.common.Strings;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -64,7 +65,7 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	ResourceURIWithQuery(ResourceURI resourceUri, String query) {
 		this.resourceUri = resourceUri;
 		this.query = query;
-		this.uri = String.join(QUERY_PART_SEPARATOR, resourceUri.toString(), query);
+		this.uri = Strings.isNullOrEmpty(query) ? resourceUri.toString() : String.join(QUERY_PART_SEPARATOR, resourceUri.toString(), query);
 	}
 	
 	public String getUri() {
@@ -77,6 +78,18 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	
 	public String getQuery() {
 		return query;
+	}
+	
+	public boolean hasQueryPart() {
+		return !CompareUtils.isEmpty(getQuery());
+	}
+	
+	public boolean isHead() {
+		return resourceUri.isHead();
+	}
+	
+	public boolean isLatest() {
+		return resourceUri.isLatest();
 	}
 	
 	public Multimap<String, String> getQueryValues() {
@@ -118,4 +131,12 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 		return new ResourceURIWithQuery(String.join(QUERY_PART_SEPARATOR, String.join(Branch.SEPARATOR, resourceType, resourceId), query));
 	}
 	
+	public static ResourceURIWithQuery of(ResourceURI resourceUri) {
+		return of(resourceUri, null);
+	}
+	
+	public static ResourceURIWithQuery of(ResourceURI resourceUri, String query) {
+		return new ResourceURIWithQuery(resourceUri, query);
+	}
+
 }

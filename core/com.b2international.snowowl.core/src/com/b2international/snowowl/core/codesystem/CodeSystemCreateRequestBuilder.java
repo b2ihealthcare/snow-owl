@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,42 +16,41 @@
 package com.b2international.snowowl.core.codesystem;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.request.BaseResourceCreateRequestBuilder;
+import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceCreateRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequestBuilder<CodeSystemCreateRequestBuilder, CodeSystemCreateRequest> {
+public final class CodeSystemCreateRequestBuilder extends BaseTerminologyResourceCreateRequestBuilder<CodeSystemCreateRequestBuilder, CodeSystemCreateRequest> {
 
 	// specialized resource fields
-	private String oid;
-	private String branchPath;
 	private String toolingId;
 	private ResourceURI extensionOf;
 	private ResourceURI upgradeOf;
 
-	CodeSystemCreateRequestBuilder() {}
+	/* package */ CodeSystemCreateRequestBuilder() {
+	}
 
-	public CodeSystemCreateRequestBuilder setOid(String oid) {
-		this.oid = oid;
-		return getSelf();
-	}
-	
-	public CodeSystemCreateRequestBuilder setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-		return getSelf();
-	}
-	
 	public CodeSystemCreateRequestBuilder setToolingId(String toolingId) {
 		this.toolingId = toolingId;
 		return getSelf();
 	}
 	
+	/**
+	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
+	 * @param extensionOf
+	 * @return
+	 */
 	public CodeSystemCreateRequestBuilder setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
 		return getSelf();
 	}
 	
+	/**
+	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
+	 * @param upgradeOf
+	 * @return
+	 */
 	public CodeSystemCreateRequestBuilder setUpgradeOf(ResourceURI upgradeOf) {
 		this.upgradeOf = upgradeOf;
 		return getSelf();
@@ -59,14 +58,14 @@ public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequ
 
 	@Override
 	public CodeSystemCreateRequest createResourceRequest() {
-		final CodeSystemCreateRequest req = new CodeSystemCreateRequest();
-		
-		req.setOid(oid);
-		req.setBranchPath(branchPath);
+		return new CodeSystemCreateRequest();
+	}
+	
+	@Override
+	protected void init(CodeSystemCreateRequest req) {
+		super.init(req);
 		req.setToolingId(toolingId);
 		req.setExtensionOf(extensionOf);
 		req.setUpgradeOf(upgradeOf);
-		
-		return req;
 	}
 }

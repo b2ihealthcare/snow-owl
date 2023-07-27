@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.BaseResourceSearchRequest;
+import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceSearchRequest;
 
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystems> {
+final class CodeSystemSearchRequest extends BaseTerminologyResourceSearchRequest<CodeSystems> {
 
 	private static final long serialVersionUID = 3L;
 
@@ -53,6 +53,8 @@ final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystem
 
 	@Override
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		super.prepareAdditionalFilters(context, queryBuilder);
+		
 		queryBuilder.filter(ResourceDocument.Expressions.resourceType(CodeSystem.RESOURCE_TYPE));
 		
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);

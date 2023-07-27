@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.request.resource;
 
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.BaseResourceSearchRequest.OptionKey;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.OptionKey;
 import com.b2international.snowowl.core.request.search.TermFilter;
 
 /**

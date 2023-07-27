@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ package com.b2international.snowowl.core.codesystem;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.BaseResourceSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceSearchRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemSearchRequestBuilder extends BaseResourceSearchRequestBuilder<CodeSystemSearchRequestBuilder, CodeSystems> {
+public final class CodeSystemSearchRequestBuilder extends BaseTerminologyResourceSearchRequestBuilder<CodeSystemSearchRequestBuilder, CodeSystems> {
 
 	CodeSystemSearchRequestBuilder() {
 		super();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public class ResourceRestService extends AbstractRestService {
 			.filterByUrls(params.getUrl())
 			.filterByOwner(params.getOwner())
 			.filterBySettings(params.getSettings())
+			.filterByDependency(params.getDependency())
 			.setLimit(params.getLimit())
 			.setExpand(params.getExpand())
 			.setFields(params.getField())
@@ -169,13 +170,13 @@ public class ResourceRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		try {
-			final Resource codeSystem = ResourceRequests.prepareGet(resourceId)
+			final Resource resource = ResourceRequests.prepareGet(resourceId)
 					.buildAsync()
 					.execute(getBus())
 					.getSync(1, TimeUnit.MINUTES);
 			
-			ResourceRequests.prepareDelete(resourceId)
-				.build(author, String.format("Deleted resource %s", codeSystem.getTitle()))
+			ResourceRequests.prepareDelete(resource.getResourceURI())
+				.build(author, String.format("Deleted resource %s", resource.getTitle()))
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 		} catch(NotFoundException e) {

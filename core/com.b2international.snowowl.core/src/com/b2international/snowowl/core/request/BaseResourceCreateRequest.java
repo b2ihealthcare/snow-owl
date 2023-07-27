@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.request;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -291,6 +293,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	/**
 	 * Subclasses may configure the new resource before persisting.
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected ResourceDocument.Builder completeResource(final ResourceDocument.Builder builder) {
 		return builder;
 	}
