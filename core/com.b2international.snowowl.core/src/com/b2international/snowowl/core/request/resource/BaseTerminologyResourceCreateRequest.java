@@ -188,11 +188,11 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	}
 
 	private Optional<Version> checkDependencies(RepositoryContext context, boolean create) {
-		// throw error if using both the old and the new way of attaching dependencies to a resource
 		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
 		if (!deprecatedDependencies.isEmpty()) {
+			// throw error if using both the old and the new way of attaching dependencies to a resource
 			if (!CompareUtils.isEmpty(dependencies)) {
-				throw new BadRequestException("Using both the deprecated dependency parameters (%s) along with the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
+				throw new BadRequestException("Using both deprecated dependency parameters (%s) and the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
 			}
 
 			// merge old, deprecated dependencies into a single mergedDependencies List, detect duplicates and old API usage
@@ -246,7 +246,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		return extensionOfVersion;
 	}
 
-	@OverridingMethodsMustInvokeSuper
 	protected final Map<String, ResourceURIWithQuery> getDeprecatedDependencies() {
 		final Map<String, ResourceURIWithQuery> deprecatedDependencies = new HashMap<>();
 		

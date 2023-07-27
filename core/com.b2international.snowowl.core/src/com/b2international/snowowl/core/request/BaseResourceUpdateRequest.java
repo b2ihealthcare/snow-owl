@@ -87,7 +87,12 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 	@JsonProperty
 	private Map<String, Object> settings;
 
+	// runtime fields
 	private transient ResourceDocument resource;
+	
+	protected BaseResourceUpdateRequest(String componentId) {
+		super(componentId);
+	}
 	
 	protected final void setUrl(String url) {
 		this.url = url;
@@ -137,10 +142,10 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		this.settings = settings;
 	}
 	
-	protected BaseResourceUpdateRequest(String componentId) {
-		super(componentId);
+	protected final Map<String, Object> getSettings() {
+		return settings;
 	}
-
+	
 	@Override
 	public final Boolean execute(TransactionContext context) {
 		if (resource == null) {

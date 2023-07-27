@@ -26,6 +26,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceUpdateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 8.0
@@ -100,30 +102,22 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 	}
 	
 	private boolean updateDependencies(TransactionContext context, Builder resource, SortedSet<DependencyDocument> oldDependencies, String resourceId) {
-		// throw error if using both the old and the new way of attaching dependencies to a resource
-		if (extensionOf != null) {
+		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
+		if (!deprecatedDependencies.isEmpty()) {
+			// throw error if using both the old and the new way of attaching dependencies to a resource
 			if (!CompareUtils.isEmpty(dependencies)) {
-				throw new BadRequestException("Using both the deprecated 'extensionOf' parameter along with the new dependencies array is not supported. Stick to the old format or migrate to the new.");
+				throw new BadRequestException("Using both deprecated dependency parameters (%s) and the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
 			}
 
-			// make sure we merge dependencies into a single mergedDependencies List, detect duplicates and old API usage
-			final List<Dependency> mergedDependencies = new ArrayList<>();
-			
-			if (extensionOf != null) {
-				mergedDependencies.add(Dependency.of(extensionOf, TerminologyResource.DependencyScope.EXTENSION_OF));
-			}
-			
-			this.mergedDependencies = mergedDependencies; 
+			// merge old, deprecated dependencies into a single mergedDependencies List, detect duplicates and old API usage
+			this.mergedDependencies = deprecatedDependencies.entrySet().stream().map(entry -> Dependency.of(entry.getValue(), entry.getKey())).toList();; 
 		} else {
 			this.mergedDependencies = dependencies;
 		}
 		
-		// TODO validate valid reference to dependency resourceUri
-		
 		// handle extensionOf dependency if configured
 		Optional<Dependency> extensionOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isExtensionOf).findFirst() : Optional.empty();
 		var extensionOfUri = extensionOfDependency.map(Dependency::getUri).orElse(null);
-		
 		
 		if (extensionOfUri != null) {
 			if (extensionOfUri.isHead() || extensionOfUri.isLatest()) {
@@ -174,6 +168,27 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 		
 		return false;
 	}
+	
+	protected final Map<String, ResourceURIWithQuery> getDeprecatedDependencies() {
+		final Map<String, ResourceURIWithQuery> deprecatedDependencies = new HashMap<>();
+		
+		if (extensionOf != null) {
+			deprecatedDependencies.put(TerminologyResource.DependencyScope.EXTENSION_OF, ResourceURIWithQuery.of(extensionOf));
+		}
+		
+		collectDeprecatedDependencies(deprecatedDependencies);
+		
+		return deprecatedDependencies;
+	}
+	
+	/**
+	 * Subclasses may optionally override this method to provide any deprecated dependency fields they accepted pre-8.12.
+	 * 
+	 * @param deprecatedDependencies - the map to populate with deprecated dependency field keys and values
+	 */
+	protected void collectDeprecatedDependencies(Map<String, ResourceURIWithQuery> deprecatedDependencies) {
+	}
+
 
 	private boolean updateOid(TransactionContext context, String oldOid, Builder updated) {
 		if (oid == null || oid.equals(oldOid)) {
