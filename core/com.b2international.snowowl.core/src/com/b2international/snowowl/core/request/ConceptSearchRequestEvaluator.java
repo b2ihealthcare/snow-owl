@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.*;
@@ -22,8 +23,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.Ecl;
-import com.b2international.snomed.ecl.ecl.EclConceptReference;
-import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.*;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
@@ -289,31 +289,64 @@ public interface ConceptSearchRequestEvaluator {
 		// in case of having more than a hundred individual expressions, try to run an early optimization
 		if (expressions.size() > 100) {
 			var parser = context.service(EclParser.class);
+			
 			final SortedSet<String> singleConceptIds = new TreeSet<>();
+			final SortedSet<String> descendantOfConceptIds = new TreeSet<>();
+			final SortedSet<String> descendantOrSelfOfConceptIds = new TreeSet<>();
 			final SortedSet<String> remainingExpressions = new TreeSet<>();
 			
 			for (String expression : expressions) {
 				ExpressionConstraint expressionConstraint = parser.parse(expression, getIgnoredSyntaxErrorCodes());
-				Optional<EclConceptReference> eclConceptReference = Ecl.extractEclConceptReference(expressionConstraint);
+				
+				Optional<EclConceptReference> eclConceptReference = extractEclGrammarElement(EclConceptReference.class, expressionConstraint);
 				if (eclConceptReference.isPresent()) {
-					String conceptId = eclConceptReference.get().getId();
-					singleConceptIds.add(conceptId);
-				} else {
-					remainingExpressions.add(expression);
+					singleConceptIds.add(eclConceptReference.get().getId());
+					continue;
 				}
+				
+				Optional<DescendantOf> descendantOf = extractEclGrammarElement(DescendantOf.class, expressionConstraint);
+				Optional<EclConceptReference> descendantOfReference = descendantOf.flatMap(d -> extractEclGrammarElement(EclConceptReference.class, d.getConstraint()));
+				if (descendantOfReference.isPresent()) {
+					descendantOfConceptIds.add(descendantOfReference.get().getId());
+					continue;
+				}
+				
+				Optional<DescendantOrSelfOf> descendantOrSelfOf = extractEclGrammarElement(DescendantOrSelfOf.class, expressionConstraint);
+				Optional<EclConceptReference> descendantOrSelfOfReference = descendantOrSelfOf.flatMap(d -> extractEclGrammarElement(EclConceptReference.class, d.getConstraint()));
+				if (descendantOrSelfOfReference.isPresent()) {
+					descendantOrSelfOfConceptIds.add(descendantOrSelfOfReference.get().getId());
+					continue;
+				}
+				
+				remainingExpressions.add(expression);
+			}
+			
+			final List<String> rewrittenExpressions = newArrayList();
+			
+			if (!descendantOrSelfOfConceptIds.isEmpty()) {
+				final String descendantOrSelfOfWithFilter = String.format("<< (* {{ C id = %s }})", toConceptSet(descendantOrSelfOfConceptIds));
+				rewrittenExpressions.add(descendantOrSelfOfWithFilter);
+			}
+			
+			if (!descendantOfConceptIds.isEmpty()) {
+				final String descendantOfWithFilter = String.format("< (* {{ C id = %s }})", toConceptSet(descendantOfConceptIds));
+				rewrittenExpressions.add(descendantOfWithFilter);
 			}
 			
 			if (!singleConceptIds.isEmpty()) {
-				final String individualConceptIdsEcl = String.format("(* {{ C id = %s }})", singleConceptIds.stream().collect(Collectors.joining(" ", "(", ")")));
-				if (!remainingExpressions.isEmpty()) {
-					return String.join(" OR ", individualConceptIdsEcl, Ecl.or(remainingExpressions));
-				} else {
-					return individualConceptIdsEcl;
-				}
+				final String singleConceptIdsWithFilter = String.format("* {{ C id = %s }}", toConceptSet(singleConceptIds));
+				rewrittenExpressions.add(singleConceptIdsWithFilter);
 			}
 			
+			rewrittenExpressions.addAll(remainingExpressions);
+			return Ecl.or(rewrittenExpressions);	
 		}
+		
 		return Ecl.or(expressions);
+	}
+
+	default String toConceptSet(final Collection<String> conceptIds) {
+		return conceptIds.stream().collect(Collectors.joining(" ", "(", ")"));
 	}
 	
 	/**
@@ -347,8 +380,17 @@ public interface ConceptSearchRequestEvaluator {
 	 * @return a collection of extracted IDs
 	 * @see Concept#fromConceptString(String)
 	 */
-	default Collection<String> extractIds(Collection<String> queries) {
+	static Collection<String> extractIds(Collection<String> queries) {
 		return queries.stream().map(query -> Concept.fromConceptString(query)[0]).collect(Collectors.toList());
 	}
 
+	static <T> Optional<T> extractEclGrammarElement(final Class<T> elementClass, final ExpressionConstraint expression) {
+		if (elementClass.isInstance(expression)) {
+			return Optional.of(elementClass.cast(expression));
+		} else if (expression instanceof NestedExpression) {
+			return extractEclGrammarElement(elementClass, ((NestedExpression) expression).getNested());
+		} else {
+			return Optional.empty();
+		}
+	}
 }

@@ -140,20 +140,24 @@ public class EclRewriter extends EclSwitch<EObject> {
 	public EObject caseAttributeComparison(AttributeComparison object) {
 		final String op = object.getOp();
 		final Operator operator = Operator.fromString(op);
-		if (!Operator.NOT_EQUALS.equals(operator)) {
-			return object;
+		final ExpressionConstraint rewrittenValue = rewrite(object.getValue());
+		
+		if (Operator.NOT_EQUALS.equals(operator)) {
+			// replace "!= XYZ" with "= (* MINUS XYZ)"
+			final ExclusionExpressionConstraint newExclusion = EclFactory.eINSTANCE.createExclusionExpressionConstraint();
+			newExclusion.setLeft(EclFactory.eINSTANCE.createAny());
+			newExclusion.setRight(rewrittenValue);
+			
+			final NestedExpression newNestedExpression = EclFactory.eINSTANCE.createNestedExpression();
+			newNestedExpression.setNested(newExclusion);
+			
+			object.setOp(Operator.EQUALS.toString());
+			object.setValue(newNestedExpression);
+		} else {
+			// rewrite the value only otherwise
+			object.setValue(rewrittenValue);
 		}
 		
-		// replace "!= XYZ" with "= (* MINUS XYZ)"
-		final ExclusionExpressionConstraint newExclusion = EclFactory.eINSTANCE.createExclusionExpressionConstraint();
-		newExclusion.setLeft(EclFactory.eINSTANCE.createAny());
-		newExclusion.setRight(rewrite(object.getValue()));
-		
-		final NestedExpression newNestedExpression = EclFactory.eINSTANCE.createNestedExpression();
-		newNestedExpression.setNested(newExclusion);
-		
-		object.setOp(Operator.EQUALS.toString());
-		object.setValue(newNestedExpression);
 		return object;
 	}
 

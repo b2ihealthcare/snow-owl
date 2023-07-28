@@ -38,6 +38,8 @@ public final class QueryOptimizeRequest extends ResourceRequest<BranchContext, Q
 	private List<QueryExpression> exclusions;
 	
 	private Integer limit;
+
+	private Options additionalOptions;
 	
 	void setInclusions(List<QueryExpression> inclusions) {
 		this.inclusions = inclusions;
@@ -50,15 +52,22 @@ public final class QueryOptimizeRequest extends ResourceRequest<BranchContext, Q
 	void setLimit(Integer limit) {
 		this.limit = limit;
 	}
+
+	void setAdditionalOptions(Options additionalOptions) {
+		this.additionalOptions = additionalOptions;
+	}
 	
 	@Override
 	public QueryExpressionDiffs execute(BranchContext context) {
+
+		// Add entries from "additionalOptions" first so that it has no effect on the rest of the option keys
 		final Options params = Options.builder()
-				.put(QueryOptimizer.OptionKey.INCLUSIONS, inclusions)
-				.put(QueryOptimizer.OptionKey.EXCLUSIONS, exclusions)
-				.put(QueryOptimizer.OptionKey.LOCALES, locales())
-				.put(QueryOptimizer.OptionKey.LIMIT, limit)
-				.build();
+			.putAll(additionalOptions)
+			.put(QueryOptimizer.OptionKey.INCLUSIONS, inclusions)
+			.put(QueryOptimizer.OptionKey.EXCLUSIONS, exclusions)
+			.put(QueryOptimizer.OptionKey.LOCALES, locales())
+			.put(QueryOptimizer.OptionKey.LIMIT, limit)
+			.build();
 		
 		return context.service(QueryOptimizer.class).optimize(context, params);
 	}

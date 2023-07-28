@@ -331,6 +331,21 @@ public final class SimpleTaxonomyGraph {
 		return bitSetToIds(descendants[idx]);
 	}
 
+	public boolean subsumes(final String descendantId, final String ancestorId) {
+		checkNotNull(descendantId, "Descendant node ID cannot be null.");
+		checkNotNull(ancestorId, "Ancestor node ID cannot be null.");
+		checkBuilt();
+		final int descendantIdx = getNodeIdx(descendantId);
+		final int ancestorIdx = getNodeIdx(ancestorId);
+		final SparseFixedBitSet descendantsOfAncestor = descendants[ancestorIdx];
+		
+		if (CompareUtils.isEmpty(descendantsOfAncestor)) {
+			return false;
+		} else {
+			return descendantsOfAncestor.get(descendantIdx);
+		}
+	}
+
 	public Set<String> getParentIds(final String nodeId) {
 		checkNotNull(nodeId, "Node ID cannot be null.");
 		checkBuilt();

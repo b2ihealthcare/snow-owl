@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.QueryExpression;
@@ -32,10 +33,13 @@ public final class QueryOptimizeRequestBuilder
 	extends ResourceRequestBuilder<QueryOptimizeRequestBuilder, BranchContext, QueryExpressionDiffs> 
 	implements TerminologyResourceContentRequestBuilder<QueryExpressionDiffs> {
 
+	private static final int DEFAULT_LIMIT = 25;
+	
 	private final List<QueryExpression> inclusions = newArrayList();
 	private final List<QueryExpression> exclusions = newArrayList();
-	
-	private Integer limit = 25;
+
+	private Integer limit = DEFAULT_LIMIT;
+	private Options additionalOptions = Options.empty();
 	
 	public QueryOptimizeRequestBuilder filterByInclusions(Collection<QueryExpression> inclusions) {
 		if (inclusions != null) {
@@ -56,6 +60,11 @@ public final class QueryOptimizeRequestBuilder
 		return getSelf();
 	}
 	
+	public QueryOptimizeRequestBuilder setAdditionalOptions(Options additionalOptions) {
+		this.additionalOptions = additionalOptions;
+		return getSelf();
+	}
+
 	@Override
 	protected QueryOptimizeRequest create() {
 		return new QueryOptimizeRequest();
@@ -68,6 +77,7 @@ public final class QueryOptimizeRequestBuilder
 		final QueryOptimizeRequest req = (QueryOptimizeRequest) request;
 		req.setInclusions(inclusions);
 		req.setExclusions(exclusions);
-		req.setLimit(limit);
+		req.setLimit(limit == null ? DEFAULT_LIMIT : limit);
+		req.setAdditionalOptions(additionalOptions == null ? Options.empty() : additionalOptions);
 	}
 }
