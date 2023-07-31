@@ -33,6 +33,7 @@ import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.Pair;
 import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -630,21 +631,25 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			return;
 		}
 
-		// Add inclusions to our optimized list
-		optimizedInclusions.addAll(newInclusions);
-
 		// Evaluate queries; remove concepts that are members of the original set from "conceptsToInclude"; track extras in "conceptsToExclude"
 		newInclusions.stream()
-		.map(clause -> evaluateEclToSet(context, clause.getQuery()))
-		.forEachOrdered(includedIds -> {
-			final Set<String> expected = Sets.intersection(includedIds, conceptSet);
-			conceptsToInclude.removeAll(expected);
-
-			if (processExclusions) {
-				final Set<String> unexpected = Sets.difference(includedIds, conceptSet);
-				conceptsToExclude.addAll(unexpected);
-			}
-		});
+			.map(clause -> Pair.of(clause, evaluateEclToSet(context, clause.getQuery())))
+			.forEachOrdered(pair -> {
+				final QueryExpression clause = pair.getA();
+				final Set<String> includedIds = pair.getB();
+				final Set<String> expected = Sets.intersection(includedIds, conceptSet);
+				final boolean modified = conceptsToInclude.removeAll(expected);
+				
+				if (modified) {
+					// Only add the clause to the inclusions list if it had actually removed members from coneptsToInclude  
+					optimizedInclusions.add(clause);
+					
+					if (processExclusions) {
+						final Set<String> unexpected = Sets.difference(includedIds, conceptSet);
+						conceptsToExclude.addAll(unexpected);
+					}
+				}
+			});
 
 		newInclusions.clear();
 	}
@@ -725,16 +730,18 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final String operator = member ? "<<" : "<";
 				final QueryExpression bestFitInclusion = new QueryExpression(IDs.base62UUID(), String.format("%s %s", operator, bestFitAncestor), false);
 
-				// Add inclusion to our optimized list
-				optimizedInclusions.add(bestFitInclusion);
-
 				// "applyInclusions" is effectively inlined here because we need access to the number of concepts included
 				final Set<String> includedIds = evaluateEclToSet(context, bestFitInclusion.getQuery());
 				final Set<String> expected = Sets.intersection(includedIds, conceptSet);
-				conceptsToInclude.removeAll(expected);
+				final boolean modified = conceptsToInclude.removeAll(expected);
 
-				final Set<String> unexpected = Sets.difference(includedIds, conceptSet);
-				conceptsToExclude.addAll(unexpected);
+				if (modified) {
+					// Add inclusion to our optimized list if it actually removed some elements
+					optimizedInclusions.add(bestFitInclusion);
+
+					final Set<String> unexpected = Sets.difference(includedIds, conceptSet);
+					conceptsToExclude.addAll(unexpected);
+				}
 
 				// Check if a high fit threshold results in lots of small inclusions
 				final float clauseCountFromInclusion = ((float) conceptSet.size()) / (includedIds.size() + 1);
@@ -971,14 +978,20 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			return;
 		}
 
-		// Add inclusions to our optimized list
-		optimizedExclusions.addAll(newExclusions);
-
 		// Evaluate queries; remove concepts from "conceptsToExclude"
 		newExclusions.stream()
-			.map(clause -> evaluateEclToSet(context, clause.getQuery()))
-			.forEachOrdered(excludedIds -> conceptsToExclude.removeAll(excludedIds));
-
+			.map(clause -> Pair.of(clause, evaluateEclToSet(context, clause.getQuery())))
+			.forEachOrdered(pair -> {
+				final QueryExpression clause = pair.getA();
+				final Set<String> excludedIds = pair.getB();
+				final boolean modified = conceptsToExclude.removeAll(excludedIds);
+				
+				if (modified) {
+					// Add inclusions to our optimized list if it actually removed some elements
+					optimizedExclusions.add(clause);
+				}
+			});
+		
 		newExclusions.clear();
 	}
 
