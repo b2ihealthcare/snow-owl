@@ -987,7 +987,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final boolean modified = conceptsToExclude.removeAll(excludedIds);
 				
 				if (modified) {
-					// Add inclusions to our optimized list if it actually removed some elements
+					// Add exclusion to our optimized list if it actually removed some elements
 					optimizedExclusions.add(clause);
 				}
 			});
