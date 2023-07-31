@@ -433,7 +433,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			diff.getAddToExclusion().size(),
 			diff.getRemove().size());
 		
-		if (diff.getAddToExclusion().isEmpty() && diff.getAddToExclusion().isEmpty() && diff.getRemove().isEmpty()) {
+		if (diff.getAddToInclusion().isEmpty() && diff.getAddToExclusion().isEmpty() && diff.getRemove().isEmpty()) {
 			return QueryExpressionDiffs.EMPTY;
 		}
 		
