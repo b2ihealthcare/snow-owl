@@ -291,7 +291,7 @@ public record SnomedHierarchyStats(
 	 * </ul>
 	 * 
 	 * <p>
-	 * Information about excluded candidates is removed from descendant and child
+	 * Information about filtered candidates is removed from descendant and child
 	 * counting {@link Multiset}s, but not the taxonomy graph.
 	 * </p>
 	 * 
