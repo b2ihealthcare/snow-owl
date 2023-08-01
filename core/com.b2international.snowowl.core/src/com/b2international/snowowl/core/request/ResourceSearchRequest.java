@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest;
+import com.b2international.snowowl.core.request.resource.ResourceConverter;
 
 /**
  * @since 8.0

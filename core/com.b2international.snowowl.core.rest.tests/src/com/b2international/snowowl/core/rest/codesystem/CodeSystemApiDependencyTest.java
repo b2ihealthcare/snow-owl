@@ -19,7 +19,7 @@ import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,7 @@ import org.junit.Test;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.Dependency;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -36,6 +37,8 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.BaseResourceApiTest;
 import com.b2international.snowowl.test.commons.Services;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * @since 8.12
@@ -292,7 +295,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 		).statusCode(201);
 		
 		// simple search, using URI only without any specific syntax
-		CodeSystems matches = assertCodeSystemSearch(Map.of(
+		CodeSystems matches = codeSystemSearch(Map.of(
 			"dependency", CodeSystem.uri(parentCodeSystemId, "v1").toString()
 		)).extract().as(CodeSystems.class);
 		
@@ -301,7 +304,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.containsOnly(codeSystemWithOneDependency, codeSystemWithTwoDependencies);
 		
 		// explicit uri search
-		matches = assertCodeSystemSearch(Map.of(
+		matches = codeSystemSearch(Map.of(
 			"dependency", "uri:" + CodeSystem.uri(codeSystemWithZeroDependencies).toString()
 		)).extract().as(CodeSystems.class);
 		
@@ -310,7 +313,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.containsOnly(codeSystemWithTwoDependencies);
 		
 		// scope search
-		matches = assertCodeSystemSearch(Map.of(
+		matches = codeSystemSearch(Map.of(
 			"dependency", "scope:source"
 		)).extract().as(CodeSystems.class);
 		
@@ -319,7 +322,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.containsOnly(codeSystemWithHEADDependency, codeSystemWithTwoDependencies);
 		
 		// uri and scope search, match
-		matches = assertCodeSystemSearch(Map.of(
+		matches = codeSystemSearch(Map.of(
 			"dependency", String.format("uri:%s AND scope:target", CodeSystem.uri(codeSystemWithZeroDependencies))
 		)).extract().as(CodeSystems.class);
 		
@@ -328,7 +331,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.containsOnly(codeSystemWithTwoDependencies);
 	
 		// uri and scope search, no match
-		matches = assertCodeSystemSearch(Map.of(
+		matches = codeSystemSearch(Map.of(
 			"dependency", String.format("uri:%s AND scope:source", CodeSystem.uri(codeSystemWithZeroDependencies))
 		)).extract().as(CodeSystems.class);
 		
@@ -336,13 +339,77 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.isEmpty();
 		
 		// uri regex match should return both versioned and unversioned dependencies
-		matches = assertCodeSystemSearch(Map.of(
+		matches = codeSystemSearch(Map.of(
 			"dependency", String.format("uri:%s OR uri:%s/*", CodeSystem.uri(parentCodeSystemId), CodeSystem.uri(parentCodeSystemId))
 		)).extract().as(CodeSystems.class);
 		
 		assertThat(matches)
 			.extracting(CodeSystem::getId)
 			.containsOnly(codeSystemWithOneDependency, codeSystemWithTwoDependencies, codeSystemWithHEADDependency);
+	}
+	
+	@Test
+	public void expandDependencyUpgrades() throws Exception {
+		final String parentCodeSystemId = IDs.base62UUID();
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
+		assertCodeSystemCreated(parentRequestBody);
+		
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16")).statusCode(201);
+		
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v2", "2021-04-16")).statusCode(201);
+		
+		final String codeSystemWithZeroDependencies = "codeSystemWithZeroDependencies";
+		final String codeSystemWithOneDependency = "codeSystemWithOneDependency";
+		final String codeSystemWithTwoDependencies = "codeSystemWithTwoDependencies";
+		final String codeSystemWithHEADDependency = "codeSystemWithHEADDependency";
+		
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithZeroDependencies)
+			.with("dependencies", List.of())
+		).statusCode(201);
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithOneDependency)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "extensionOf")
+			))
+		).statusCode(201);
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithTwoDependencies)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "source"),
+				Dependency.of(CodeSystem.uri(codeSystemWithZeroDependencies), "target")
+			))
+		).statusCode(201);
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithHEADDependency)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId), "source")
+			))
+		).statusCode(201);
+		
+		CodeSystems codeSystems = codeSystemSearch(Map.of(
+			"id", List.of(codeSystemWithZeroDependencies, codeSystemWithOneDependency, codeSystemWithTwoDependencies, codeSystemWithHEADDependency),
+			"expand", "dependencies_upgrades()"
+		)).extract().as(CodeSystems.class);
+
+		var codeSystemsById = Maps.uniqueIndex(codeSystems, CodeSystem::getId);
+		
+		assertThat(codeSystemsById.get(codeSystemWithZeroDependencies).getDependencies())
+			.flatExtracting(Dependency::getUpgrades)
+			.isEmpty();
+		
+		assertThat(codeSystemsById.get(codeSystemWithOneDependency).getDependencies())
+			.flatExtracting(Dependency::getUpgrades)
+			.contains(CodeSystem.uri(parentCodeSystemId, "v2"));
+		
+		assertThat(codeSystemsById.get(codeSystemWithTwoDependencies).getDependencies())
+			.flatExtracting(Dependency::getUpgrades)
+			.contains(CodeSystem.uri(parentCodeSystemId, "v2"));
+		
+		assertThat(codeSystemsById.get(codeSystemWithHEADDependency).getDependencies())
+			.flatExtracting(Dependency::getUpgrades)
+			.isEmpty();
+		
 	}
 	
 }

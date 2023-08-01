@@ -34,6 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ExpandParser {
 
 	private static final JsonFactory JSON_FACTORY = new JsonFactory().enable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES);
+	private static final TypeReference<Map<String, Object>> MAP_TYPE_REF = new TypeReference<Map<String, Object>>() { };
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public static Options parse(final String expand) {
 		
@@ -91,11 +93,11 @@ public class ExpandParser {
 
 		try {
 			JsonParser parser = JSON_FACTORY.createParser(jsonizedOptionPart);
-			parser.setCodec(new ObjectMapper());
-			Map<String, Object> source = parser.<Map<String, Object>>readValueAs(new TypeReference<Map<String, Object>>() { });
-			return OptionsBuilder.newBuilder().putAll(source).build();
+			parser.setCodec(OBJECT_MAPPER);
+			Map<String, Object> source = parser.readValueAs(MAP_TYPE_REF);
+			return Options.from(source);
 		} catch (JsonParseException e) {
-			throw new BadRequestException("Expansion parameter %s is malformed.", expand);
+			throw new BadRequestException("Expansion parameter %s is malformed.", expand, e);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Caught I/O exception while reading expansion parameters.", e);
 		}
