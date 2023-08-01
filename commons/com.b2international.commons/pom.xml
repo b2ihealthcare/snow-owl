@@ -23,7 +23,6 @@
 		<validation.api.version>1.1.0.Final</validation.api.version>
 		<bucket4j.version>4.4.1</bucket4j.version>
 		<javax.annotation.version>1.3.1</javax.annotation.version>
-		<h2.version>2.1.210</h2.version>
 		<commons.collections.version>4.2</commons.collections.version>
 	</properties>
 
@@ -83,12 +82,6 @@
 		  	<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>${commons.collections.version}</version>
@@ -127,7 +120,6 @@
 								jheaps,
 								bucket4j-core,
 								javax.annotation-api,
-								h2,
 								commons-collections4
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
