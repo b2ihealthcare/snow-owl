@@ -100,6 +100,7 @@ public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdate
 		final boolean currentStatus = component.isActive();
 		final boolean newStatus = isActive() == null ? currentStatus : isActive();
 		final String newInactivationIndicatorId = getInactivationProperties() == null || getInactivationProperties().getInactivationIndicatorId() == null ? "" : getInactivationProperties().getInactivationIndicatorId(); 
+		final Boolean newInactivationIndicatorStatus = getInactivationProperties() == null ? null : getInactivationProperties().getInactivationIndicatorStatus(); 
 		final ImmutableMultimap.Builder<String, String> newAssociationTargets = ImmutableMultimap.builder();
 		
 		if (getInactivationProperties() != null && !CompareUtils.isEmpty(getInactivationProperties().getAssociationTargets())) {
@@ -114,7 +115,7 @@ public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdate
 			// (using default values if not given)
 			
 			inactivateComponent(context, component, updatedComponent);
-			updateInactivationIndicator(context, component, newInactivationIndicatorId);
+			updateInactivationIndicator(context, component, newInactivationIndicatorId, newInactivationIndicatorStatus);
 			updateAssociationTargets(context, component, newAssociationTargets.build());
 			postInactivateComponent(context, component, updatedComponent);
 			return true;
@@ -124,7 +125,7 @@ public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdate
 			// Inactive --> Active: concept reactivation, clear indicator and association targets
 			
 			reactivateComponent(context, component, updatedComponent);
-			updateInactivationIndicator(context, component, newInactivationIndicatorId);
+			updateInactivationIndicator(context, component, newInactivationIndicatorId, newInactivationIndicatorStatus);
 			updateAssociationTargets(context, component, newAssociationTargets.build());
 			postReactivateComponent(context, component, updatedComponent);
 			return true;
@@ -134,7 +135,10 @@ public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdate
 			// Same status, allow indicator and/or association targets to be updated if required
 			// (using original values that can be null)
 			
-			updateInactivationIndicator(context, component, getInactivationProperties() != null ? getInactivationProperties().getInactivationIndicatorId() : null);
+			updateInactivationIndicator(context, 
+					component, 
+					getInactivationProperties() != null ? getInactivationProperties().getInactivationIndicatorId() : null,
+					newInactivationIndicatorStatus);
 			updateAssociationTargets(context, component, newAssociationTargets.build());
 			return false;
 			
@@ -173,14 +177,15 @@ public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdate
 		}
 		new SnomedAssociationTargetUpdateRequest(concept, associationTargets).execute(context);
 	}
-
-	protected final void updateInactivationIndicator(final TransactionContext context, final SnomedComponentDocument concept, final String newInactivationIndicatorId) {
+	
+	protected final void updateInactivationIndicator(final TransactionContext context, final SnomedComponentDocument concept, final String newInactivationIndicatorId, Boolean newInactivationIndicatorStatus) {		
 		if (newInactivationIndicatorId == null) {
 			return;
 		}
 		
 		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(concept, getInactivationIndicatorRefSetId());
 		inactivationUpdateRequest.setInactivationValueId(newInactivationIndicatorId);
+		inactivationUpdateRequest.setInactivationMemberStatus(newInactivationIndicatorStatus);
 		inactivationUpdateRequest.execute(context);
 	}
 

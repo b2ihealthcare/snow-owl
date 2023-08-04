@@ -77,6 +77,7 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 
 	private final String inactivationRefSetId;
 	private String inactivationValueId;
+	private Boolean inactivationMemberStatus;
 
 	
 	SnomedInactivationReasonUpdateRequest(final SnomedComponentDocument componentToUpdate, final String inactivationRefSetId) {
@@ -87,7 +88,11 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 	void setInactivationValueId(final String inactivationValueId) {
 		this.inactivationValueId = inactivationValueId;
 	}
-
+	
+	public void setInactivationMemberStatus(Boolean inactivationMemberStatus) {
+		this.inactivationMemberStatus = inactivationMemberStatus;
+	}
+	
 	@Override
 	protected boolean canUpdate(TransactionContext context) {
 		// Null leaves inactivation reason unchanged, empty string clears existing inactivation reason
@@ -131,7 +136,7 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 			if (Objects.equals(existingValueId, inactivationValueId)) {
 
 				// Exact match, just make sure that the member is active
-				changed = ensureMemberActive(context, existingMember, updatedMember);
+				changed = ensureStatusChanged(context, existingMember, inactivationMemberStatus, updatedMember);
 
 			} else if (!CLEAR.equals(inactivationValueId)) {
 				// Re-use this member, if the intention was not to remove the existing value
@@ -173,5 +178,5 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 				.addTo(context);
 		}
 	}
-	
+
 }
