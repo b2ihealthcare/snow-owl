@@ -55,8 +55,9 @@ public abstract class CodeSystemApiAssert {
 			.then();
 	}
 	
-	public static ValidatableResponse assertCodeSystemGet(final String codeSystemId) {
+	public static ValidatableResponse assertCodeSystemGet(final String codeSystemId, final String...expand) {
 		return givenAuthenticatedRequest(CODESYSTEMS_API)
+			.queryParam("expand", expand == null ? null : String.join(",", expand))
 			.get("/{id}", codeSystemId)
 			.then();
 	}
@@ -67,7 +68,7 @@ public abstract class CodeSystemApiAssert {
 			.then();
 	}
 	
-	public static String assertCodeSystemCreated(final Map<String, Object> requestBody) {
+	public static String createCodeSystem(final Map<String, Object> requestBody) {
 		final String path = assertCodeSystemCreate(requestBody)
 				.statusCode(201)
 				.and().header("Location", containsString(String.format("%s/%s", "codesystems", requestBody.get("id"))))

@@ -244,7 +244,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId).without("branchPath");
 		
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		assertCodeSystemGet(codeSystemId).statusCode(200);
 		
 		try {
@@ -265,7 +265,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	public void codesystem17_UpdateTitle() {
 		final String codeSystemId = "cs2";
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		
 		final Json updateRequestBody = Json.object("title", "updated name");
 		
@@ -302,7 +302,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	public void codesystem19_UpdateLocales() {
 		final String codeSystemId = "cs9";
 		
-		assertCodeSystemCreated(Json.assign(
+		createCodeSystem(Json.assign(
 			prepareCodeSystemCreateRequestBody(codeSystemId), 
 			Json.object("settings", Json.object(
 				CodeSystem.CommonSettings.LOCALES, AcceptLanguageHeader.parseHeader("en-x-123456781000198103,en-x-876543211000198107")
@@ -323,7 +323,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		final String codeSystemId = "cs3";
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
 		
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		
 		final Json updateRequestBody = Json.object("branchPath", "non-existent-branch-path");
 		
@@ -333,7 +333,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	@Test
 	public void codesystem22_Delete() throws Exception {
 		final String codeSystemId = "cs22";
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody(codeSystemId));
+		createCodeSystem(prepareCodeSystemCreateRequestBody(codeSystemId));
 		assertCodeSystemGet(codeSystemId).statusCode(200);
 		
 		assertCodeSystemDelete(codeSystemId).statusCode(204);
@@ -352,7 +352,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	@Test
 	public void codesystem23_DeleteVersioned() throws Exception {
 		final String codeSystemId = "cs23";
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody(codeSystemId));
+		createCodeSystem(prepareCodeSystemCreateRequestBody(codeSystemId));
 		assertCodeSystemGet(codeSystemId).statusCode(200);
 		
 		// version codesystem
@@ -386,7 +386,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	public void codesystem24_UpdateBundleId() {
 		final String codeSystemId = "cs24";
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		
 		final String bundleId = IDs.base62UUID();
 		BundleApiAssert.assertCreate(BundleApiAssert.prepareBundleCreateRequestBody(bundleId))
@@ -402,7 +402,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	public void codesystem25_UpdateBundleIdNotExist() {
 		final String codeSystemId = "cs25";
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 
 		final Json updateRequestBody = Json.object("bundleId", "not-existing-bundle");
 		
@@ -413,7 +413,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	public void codesystem26_CreateVersionIncorrectEffectiveTime() {
 		final String codeSystemId = "cs26";
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", "2020-04-15")).statusCode(201);
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v2", "2020-04-14")).statusCode(400);
@@ -424,7 +424,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	public void codesystem27_GetWithTimestamp() {
 		final String codeSystemId = "cs27";
 		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		
 		final CodeSystem createdCodeSystem = assertCodeSystemGet(codeSystemId)
 			.statusCode(200)
@@ -484,9 +484,9 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	
 	@Test
 	public void codesystem28_SearchWithTimestamp() throws Exception {
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_1"));
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_2"));
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs28_3"));
+		createCodeSystem(prepareCodeSystemCreateRequestBody("cs28_1"));
+		createCodeSystem(prepareCodeSystemCreateRequestBody("cs28_2"));
+		createCodeSystem(prepareCodeSystemCreateRequestBody("cs28_3"));
 
 		final long timestamp1 = getCodeSystemCreatedAt("cs28_1");
 		final long timestamp2 = getCodeSystemCreatedAt("cs28_2");
@@ -503,7 +503,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	
 	@Test
 	public void codesystem29_VersionWithReservedBranchName() throws Exception {
-		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs29_1"));
+		String codeSystemId = createCodeSystem(prepareCodeSystemCreateRequestBody("cs29_1"));
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), ResourceURI.HEAD, EffectiveTimes.today()))
 			.statusCode(400)
 			.body("message", containsString("Version 'HEAD' is a reserved alias or branch name."));
@@ -520,7 +520,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	
 	@Test
 	public void codesystem30_AllowMetadataUpdatesOnRetiredResources() throws Exception {
-		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs30"));
+		String codeSystemId = createCodeSystem(prepareCodeSystemCreateRequestBody("cs30"));
 		assertCodeSystemUpdated(codeSystemId, Map.of(
 			"status", Resource.RETIRED_STATUS
 		));
@@ -545,7 +545,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 	
 	@Test
 	public void codesystem31_DisallowVersioningOfRetiredResources() throws Exception {
-		String codeSystemId = assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs31"));
+		String codeSystemId = createCodeSystem(prepareCodeSystemCreateRequestBody("cs31"));
 		assertCodeSystemUpdated(codeSystemId, Map.of(
 			"status", Resource.RETIRED_STATUS
 		));

@@ -49,7 +49,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void createWithExtensionOfOldModel() {
 		final String parentCodeSystemId = "cs11";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-15");
@@ -61,7 +61,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 				.without("branchPath")
 				.with("extensionOf", CodeSystem.uri(parentCodeSystemId, "v1"));
 		
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		
 		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, parentCodeSystemId, "v1", codeSystemId);
 		
@@ -86,7 +86,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void createWithExtensionOfNewModel() {
 		final String parentCodeSystemId = "cs34";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2023-07-14");
@@ -98,7 +98,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 				.without("branchPath")
 				.with("dependencies", List.of(Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "extensionOf")));
 		
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		
 		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, parentCodeSystemId, "v1", codeSystemId);
 		
@@ -126,7 +126,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void updateExtensionOfOldModel() {
 		final String parentCodeSystemId = "cs13";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
@@ -139,7 +139,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 				.without("branchPath")
 				.with("extensionOf", CodeSystem.uri("cs13/v3"));
 		
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		assertCodeSystemUpdated(codeSystemId, Json.object("extensionOf", CodeSystem.uri("cs13/v4")));
 		
 		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs13", "v4", codeSystemId);
@@ -151,7 +151,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void updateExtensionOf_NewModel() {
 		final String parentCodeSystemId = "cs35";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
@@ -164,7 +164,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 				.without("branchPath")
 				.with("dependencies", List.of(Dependency.of(CodeSystem.uri("cs35/v3"), "extensionOf")));
 		
-		assertCodeSystemCreated(requestBody);
+		createCodeSystem(requestBody);
 		assertCodeSystemUpdated(codeSystemId, Json.object("dependencies", List.of(Dependency.of(CodeSystem.uri("cs35/v4"), "extensionOf"))));
 		
 		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs35", "v4", codeSystemId);
@@ -195,7 +195,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void create_DuplicateReference_SameScope() {
 		final String parentCodeSystemId = IDs.base62UUID();
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16");
@@ -211,7 +211,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void create_DuplicateReference_DifferentScope() {
 		final String parentCodeSystemId = IDs.base62UUID();
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16");
@@ -227,7 +227,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void create_DuplicateReference_DifferentVersion() {
 		final String parentCodeSystemId = IDs.base62UUID();
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16");
@@ -243,7 +243,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void delete_resourceWithDependants() throws Exception {
 		final String dependencyResourceId = IDs.base62UUID();
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(dependencyResourceId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		
 		final String dependantResourceId = IDs.base62UUID();
 		assertCodeSystemCreate(
@@ -260,7 +260,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void search_dependency() throws Exception {
 		final String parentCodeSystemId = IDs.base62UUID();
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		
 		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16");
 		assertVersionCreated(versionRequestBody).statusCode(201);
@@ -352,7 +352,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	public void expandDependencyUpgrades() throws Exception {
 		final String parentCodeSystemId = IDs.base62UUID();
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		assertCodeSystemCreated(parentRequestBody);
+		createCodeSystem(parentRequestBody);
 		
 		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16")).statusCode(201);
 		

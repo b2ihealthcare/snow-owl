@@ -95,6 +95,9 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 			this.branchPath = resourcePath;
 		} else {
 			// resourcePaths are just ID/PATH style expressions to reference content in a terminology repository
+			
+			
+			
 			final ResourceURI referenceResourceUri = ResourceURI.of("any", resourcePath);
 			// XXX intentionally not fetching using the full resourceUri here, this might change in the future
 			Resource resource = ResourceRequests.prepareGet(referenceResourceUri).buildAsync().getRequest().execute(context);
@@ -107,7 +110,7 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 				.withTimestampPart(referenceResourceUri.getTimestampPart());
 			this.branchPath = context.service(ResourceURIPathResolver.class)
 				.resolve(context, referenceResourceUri, resource);
-		}		
+		}
 	}
 
 	public String getResourcePath() {
