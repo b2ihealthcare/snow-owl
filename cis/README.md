@@ -61,7 +61,20 @@ See more details at: https://www.elastic.co/guide/en/elasticsearch/reference/6.5
 
 ## SCTID lifecycle
 
-![](sctid_states.png)
+```mermaid
+graph LR;
+    Available -- Register / Generate --> Assigned;
+    Available -- Reserve --> Reserved;
+
+    Reserved -- Register --> Assigned;
+    Reserved -- Release --> Available;
+
+    Assigned -- Deprecate --> Deprecated;
+    Assigned -- Publish --> Published;
+    Assigned -- Release --> Available;    
+
+    Published -- Deprecate --> Deprecated;
+```
 
 ## Synchronize from Snow Owl Server instances
 
