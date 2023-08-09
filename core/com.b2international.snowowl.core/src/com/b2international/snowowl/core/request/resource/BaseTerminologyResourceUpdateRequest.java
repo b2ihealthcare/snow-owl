@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request.resource;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -104,8 +105,8 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 	private boolean updateDependencies(TransactionContext context, Builder resource, SortedSet<DependencyDocument> oldDependencies, String resourceId) {
 		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
 		if (!deprecatedDependencies.isEmpty()) {
-			// throw error if using both the old and the new way of attaching dependencies to a resource
-			if (!CompareUtils.isEmpty(dependencies)) {
+			// throw error if using both the old and the new way of attaching dependencies to a resource and they are different
+			if (!CompareUtils.isEmpty(dependencies) && !Dependency.isEqual(dependencies, deprecatedDependencies)) {
 				throw new BadRequestException("Using both deprecated dependency parameters (%s) and the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
 			}
 

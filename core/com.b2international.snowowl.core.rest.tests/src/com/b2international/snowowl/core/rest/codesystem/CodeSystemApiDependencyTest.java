@@ -19,8 +19,9 @@ import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -343,6 +344,41 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 		assertThat(matches)
 			.extracting(CodeSystem::getId)
 			.containsOnly(codeSystemWithOneDependency, codeSystemWithTwoDependencies, codeSystemWithHEADDependency);
+	}
+	
+	@Test
+	public void updateCodeSystemPropertyWithUsingBothDependenciesAndSettings() throws Exception {
+		final String parentCodeSystemId = IDs.base62UUID();
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
+		assertCodeSystemCreated(parentRequestBody);
+		
+		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", LocalDate.now().toString());
+		assertVersionCreated(versionRequestBody).statusCode(201);
+		
+		final String codeSystemWithZeroDependencies = IDs.base62UUID();
+		final String codeSystemWithTwoDependencies = IDs.base62UUID();
+		
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithZeroDependencies)
+		).statusCode(201);
+		// create codesystem using settings, this will register dependency values in both settings and in dependency array
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithTwoDependencies)
+			.with("settings", Map.of(
+				"source", CodeSystem.uri(parentCodeSystemId, "v1").toString(),
+				"target", CodeSystem.uri(codeSystemWithZeroDependencies)
+			))
+		).statusCode(201);
+		
+		// update status to active using the CodeSystem
+		assertCodeSystemUpdated(codeSystemWithTwoDependencies, Json.object(
+			"status", "something",
+			"dependencies", List.of(Dependency.of(CodeSystem.uri(parentCodeSystemId, "v1"), "source"), Dependency.of(CodeSystem.uri(codeSystemWithZeroDependencies), "target")),
+			"settings", Map.of(
+				"source", CodeSystem.uri(parentCodeSystemId, "v1").toString(),
+				"target", CodeSystem.uri(codeSystemWithZeroDependencies)
+			)
+		));
 	}
 	
 }

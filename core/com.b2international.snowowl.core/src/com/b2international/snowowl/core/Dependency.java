@@ -17,8 +17,10 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.internal.DependencyDocument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public final class Dependency implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final ResourceURIWithQuery uri;
 	private final String scope;
 
@@ -63,15 +65,16 @@ public final class Dependency implements Serializable {
 	}
 
 	/**
-	 * @return the {@link TerminologyResource} object denoted by the {@link #getUri()} property, <code>null</code> if not requested to be
-	 *         expanded, never <code>null</code> if requested to be expanded
+	 * @return the {@link TerminologyResource} object denoted by the {@link #getUri()} property, <code>null</code> if not requested to be expanded,
+	 *         never <code>null</code> if requested to be expanded
 	 */
 	public TerminologyResource getResource() {
 		return resource;
 	}
 
 	/**
-	 * @param resource - the expanded resource to attach to this {@link Dependency} instance
+	 * @param resource
+	 *            - the expanded resource to attach to this {@link Dependency} instance
 	 */
 	public void setResource(TerminologyResource resource) {
 		this.resource = resource;
@@ -86,12 +89,14 @@ public final class Dependency implements Serializable {
 	}
 
 	/**
-	 * @param upgrades - the expanded list of version URIs to attach to this {@link Dependency} instance that represent possible upgrades for this dependency
+	 * @param upgrades
+	 *            - the expanded list of version URIs to attach to this {@link Dependency} instance that represent possible upgrades for this
+	 *            dependency
 	 */
 	public void setUpgrades(List<ResourceURI> upgrades) {
 		this.upgrades = upgrades;
 	}
-	
+
 	/**
 	 * @return a {@link DependencyDocument document} version of this domain model
 	 */
@@ -99,27 +104,30 @@ public final class Dependency implements Serializable {
 	public DependencyDocument toDocument() {
 		return new DependencyDocument(uri, scope);
 	}
-	
+
 	@JsonIgnore
 	public boolean isExtensionOf() {
 		return TerminologyResource.DependencyScope.EXTENSION_OF.equals(scope);
 	}
-	
+
 	@JsonIgnore
 	public boolean isUpgradeOf() {
 		return TerminologyResource.DependencyScope.UPGRADE_OF.equals(scope);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(uri, scope);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
 		Dependency other = (Dependency) obj;
 		return Objects.equals(uri, other.uri) && Objects.equals(scope, other.scope);
 	}
@@ -127,42 +135,73 @@ public final class Dependency implements Serializable {
 	/**
 	 * Creates a new unscoped {@link Dependency} instance with the given {@link ResourceURI uri}.
 	 * 
-	 * @param resourceUri - the URI this dependency instance will point to
+	 * @param resourceUri
+	 *            - the URI this dependency instance will point to
 	 * @return a new {@link Dependency} instance
 	 */
 	public static Dependency of(ResourceURI resourceUri) {
 		return of(ResourceURIWithQuery.of(resourceUri.getResourceType(), resourceUri.withoutResourceType()), null);
 	}
-	
+
 	/**
 	 * Creates a new {@link Dependency} instance with the given {@link ResourceURI} uri and optional scope value.
 	 * 
-	 * @param resourceUri - the URI this dependency instance will point to
-	 * @param scope - optional scope of the dependency, may be <code>null</code>\
+	 * @param resourceUri
+	 *            - the URI this dependency instance will point to
+	 * @param scope
+	 *            - optional scope of the dependency, may be <code>null</code>\
 	 * @return a new {@link Dependency} instance
 	 */
 	public static final Dependency of(ResourceURI resourceUri, String scope) {
 		return of(ResourceURIWithQuery.of(resourceUri.getResourceType(), resourceUri.withoutResourceType()), scope);
 	}
-	
+
 	/**
 	 * Creates a new {@link Dependency} instance with the given {@link ResourceURIWithQuery} uri and optional scope value.
 	 * 
-	 * @param resourceUri - the URI this dependency instance will point to
-	 * @param scope - optional scope of the dependency
+	 * @param resourceUri
+	 *            - the URI this dependency instance will point to
+	 * @param scope
+	 *            - optional scope of the dependency
 	 * @return a new {@link Dependency} instance
 	 */
 	public static final Dependency of(ResourceURIWithQuery resourceUri, String scope) {
 		return new Dependency(resourceUri, scope);
 	}
-	
+
 	/**
-	 * Creates and returns a new instance of {@link Dependency} built from the given {@link DependencyDocument}. 
+	 * Creates and returns a new instance of {@link Dependency} built from the given {@link DependencyDocument}.
+	 * 
 	 * @param doc
 	 * @return a new instance of {@link Dependency}, never <code>null</code>
 	 */
 	public static final Dependency from(DependencyDocument doc) {
 		return new Dependency(doc.getUri(), doc.getScope());
+	}
+
+	/**
+	 * Helper method to detect changes between a dependency list and the dependencies registered in resource settings.
+	 * 
+	 * @param dependencies
+	 * @param dependenciesFromSettings
+	 * @return <code>true</code> if the two are equal, <code>false</code> if they are not.
+	 */
+	public static boolean isEqual(List<Dependency> dependencies, Map<String, ResourceURIWithQuery> dependenciesFromSettings) {
+		if (CompareUtils.isEmpty(dependencies) && CompareUtils.isEmpty(dependenciesFromSettings)) {
+			return true;
+		} else if ((!CompareUtils.isEmpty(dependencies) && CompareUtils.isEmpty(dependenciesFromSettings))
+				|| (CompareUtils.isEmpty(dependencies) && !CompareUtils.isEmpty(dependenciesFromSettings))) {
+			return false;
+		} else {
+			// for all dependencies, there must be the same entry in the settings map, otherwise the two are not equal
+			for (Dependency dependency : dependencies) {
+				ResourceURIWithQuery settingsDependency = dependenciesFromSettings.get(dependency.getScope());
+				if (!Objects.equals(dependency.getUri(), settingsDependency)) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 
 }
