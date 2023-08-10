@@ -489,7 +489,16 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 					if (versionsToExport.isEmpty()) {
 						throw new BadRequestException("Snapshot export without unpublished components requires at least one version.");
 					}
-					branchesToExport.add(versionsToExport.last().getBranchPath());
+					
+					// if the reference branch is a version branch use that, otherwise fall back to the last valid version
+					Version versionToExport = null;
+					for (Version v : versionsToExport) {
+						if (v.getBranchPath().equals(referenceBranch)) {
+							versionToExport = v;
+							break;
+						}
+					}
+					branchesToExport.add(versionToExport == null ? versionsToExport.last().getBranchPath() : versionToExport.getBranchPath());
 				} else {
 					branchesToExport.add(referenceBranch);
 				}

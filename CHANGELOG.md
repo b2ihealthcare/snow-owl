@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Expression Constraint Language query optimization improvements are now GA (#1185)
 
 ### Bugs/Improvements
+- [snomed] fixed an issue where RF2 export would use the latest available SNOMED version only even if the client has specified an explicit version to export (1140b4a)
 - [validation] fixed an issue with rule664 where unpublished terms were not reported in some cases (#1190)
 - [deps] removed unused H2 database jars to eliminate security vulnerability warnings (#1191)
 
