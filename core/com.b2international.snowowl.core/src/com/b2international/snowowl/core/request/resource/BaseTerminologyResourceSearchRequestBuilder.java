@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceSearchRequest.OptionKey;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  * @param <RB>
  * @param <R>
  */

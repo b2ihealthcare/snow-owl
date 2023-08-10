@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.rest.BaseResourceApiTest;
 import com.b2international.snowowl.test.commons.Services;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 

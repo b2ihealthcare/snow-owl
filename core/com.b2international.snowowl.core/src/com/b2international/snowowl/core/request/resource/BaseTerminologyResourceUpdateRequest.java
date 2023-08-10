@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import com.b2international.snowowl.core.version.Version;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
- * @since 8.0
+ * @since 8.12.0
  */
 public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceUpdateRequest {
 

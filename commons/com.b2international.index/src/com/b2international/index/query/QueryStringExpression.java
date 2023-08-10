@@ -18,7 +18,7 @@ package com.b2international.index.query;
 import java.util.Objects;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public final class QueryStringExpression implements Expression {
 

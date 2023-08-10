@@ -28,7 +28,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public class QueryStringQueryTest extends BaseIndexTest {
 

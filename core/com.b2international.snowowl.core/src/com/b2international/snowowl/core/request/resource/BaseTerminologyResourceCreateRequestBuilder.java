@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequestBuilder;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public abstract class BaseTerminologyResourceCreateRequestBuilder<RB extends BaseTerminologyResourceCreateRequestBuilder<RB, R>, R extends BaseTerminologyResourceCreateRequest> 
 		extends BaseResourceCreateRequestBuilder<RB, R> {

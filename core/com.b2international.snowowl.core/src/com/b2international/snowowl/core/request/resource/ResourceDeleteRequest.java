@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.request.DeleteRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public final class ResourceDeleteRequest implements Request<TransactionContext, Boolean>, AccessControl {
 

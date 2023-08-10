@@ -20,7 +20,7 @@ import java.util.List;
 import com.b2international.snowowl.core.Dependency;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public abstract class BaseTerminologyResourceRestInput extends BaseResourceRestInput {
 

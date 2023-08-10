@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  * @param <R>
  */
 public abstract class BaseTerminologyResourceSearchRequest<R> extends BaseResourceSearchRequest<R> {
@@ -28,7 +28,7 @@ public abstract class BaseTerminologyResourceSearchRequest<R> extends BaseResour
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * @since 8.12
+	 * @since 8.12.0
 	 */
 	public enum OptionKey {
 		
