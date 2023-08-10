@@ -78,7 +78,7 @@ if (params.isUnpublishedOnly) {
 	// then scroll through all possible duplicates among published terms
 	searcher.stream(Query.select(String[].class)
 		.from(SnomedDescriptionIndexEntry.class)
-		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
+		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, SnomedDescriptionIndexEntry.Fields.TERM)
 		.where(
 			Expressions.builder()
 				.filter(SnomedDescriptionIndexEntry.Expressions.active())
@@ -94,10 +94,14 @@ if (params.isUnpublishedOnly) {
 			publishedTermsBatch.each { publishedTerm ->
 				if (activeConceptIds.get().contains(publishedTerm[1])) {
 					issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, publishedTerm[0]))
+					String term = publishedTerm[2];
+					descriptionsByTerm.get(term).forEach({ descriptionId -> 
+						//Report the unpublished term
+						issues.add(ComponentIdentifier.of(SnomedDescription.TYPE,  descriptionId))
+					});
 				}
 			}
 		}
-		
 	
 } else {
 	// published and unpublished FSNs both count, use aggregation to gather all possible terms
