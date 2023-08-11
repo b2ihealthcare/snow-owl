@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,15 +130,20 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	}
 	
 	public boolean isLatest() {
-		return LATEST.equals(getPath());
+		return isSpecial(LATEST);
 	}
 	
 	public boolean isHead() {
-		return HEAD.equals(getPath());
+		return isSpecial(HEAD);
 	}
 	
 	public boolean isNext() {
-		return NEXT.equals(getPath());
+		return isSpecial(NEXT);
+	}
+	
+	public boolean isSpecial(String path) {
+		Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "Path must not be empty or null");
+		return path.equals(getPath());
 	}
 	
 	public ResourceURI withPath(String path) {
