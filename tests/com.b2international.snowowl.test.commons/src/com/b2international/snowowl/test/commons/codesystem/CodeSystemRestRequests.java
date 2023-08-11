@@ -163,40 +163,6 @@ public abstract class CodeSystemRestRequests {
 
 	}
 	
-	public static ValidatableResponse assertCodeSystemUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
-		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API)
-				.contentType(ContentType.JSON)
-				.body(Map.of(
-					"extensionOf", extensionOf.toString(),
-					"upgradeOf", upgradeOf.toString()
-				))
-				.post()
-				.then()
-				.assertThat();
-	}
-	
-	public static ValidatableResponse assertCodeSystemUpgradeSync(ResourceURI codeSystemUri, ResourceURI sourceUri) {
-		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API + "/sync")
-				.contentType(ContentType.JSON)
-				.accept(ContentType.JSON)
-				.body(Map.of(
-					"codeSystemId", codeSystemUri.getResourceId(),
-					"source", sourceUri
-				))
-				.post()
-				.then()
-				.assertThat();
-	}
-	
-	public static ValidatableResponse assertCodeSystemUpgradeComplete(ResourceURI upgradedCodeSystemUri) {
-		return givenAuthenticatedRequest(ApiTestConstants.UPGRADE_API + "/" + upgradedCodeSystemUri.getResourceId() + "/complete")
-				.contentType(ContentType.JSON)
-				.accept(ContentType.JSON)
-				.post()
-				.then()
-				.assertThat();
-	}
-	
 	public static CodeSystems search(String id, String...expand) {
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.contentType(ContentType.JSON)

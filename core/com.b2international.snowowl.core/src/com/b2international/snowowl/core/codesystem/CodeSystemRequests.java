@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,20 +52,6 @@ public class CodeSystemRequests {
 		return new CodeSystemSearchRequestBuilder();
 	}
 
-	// Upgrade API
-	
-	public static CodeSystemUpgradeRequestBuilder prepareUpgrade(ResourceURI codeSystem, ResourceURI extensionOf) {
-		return new CodeSystemUpgradeRequestBuilder(codeSystem, extensionOf);
-	}
-	
-	public static CodeSystemCompleteUpgradeRequestBuilder prepareComplete(String codeSystemId) {
-		return new CodeSystemCompleteUpgradeRequestBuilder(codeSystemId);
-	}
-	
-	public static CodeSystemUpgradeSynchronizationRequestBuilder prepareUpgradeSynchronization(ResourceURI codeSystemId, ResourceURI source) {
-		return new CodeSystemUpgradeSynchronizationRequestBuilder(codeSystemId, source);
-	}
-	
 	// Generic Content Search APIs
 	
 	/**
