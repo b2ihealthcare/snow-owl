@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
+import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
@@ -77,6 +78,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ContextConfigurer.class, getRequestConfigurer())
 					.bind(ResourceURLSchemaSupport.class, getTerminologyURISupport())
 					.bind(EclRewriter.class, getEclRewriter())
+					.bind(TerminologyResourceComparer.class, getTerminologyResourceComparer())
 					.build(env);
 			
 			RepositoryInfo status = repo.status();
@@ -224,4 +226,10 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		return new ComponentRevisionConflictProcessor(Collections.emptyList());
 	}
 
+	/**
+	 * @return 
+	 */
+	protected TerminologyResourceComparer getTerminologyResourceComparer() {
+		return TerminologyResourceComparer.DEFAULT;
+	}
 }

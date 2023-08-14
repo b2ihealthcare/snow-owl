@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestB
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
 import com.b2international.snowowl.core.request.resource.ResourceGetRequestBuilder;
+import com.b2international.snowowl.core.request.resource.TerminologyResourceCompareRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionGetRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
@@ -75,6 +76,10 @@ public final class ResourceRequests {
 	
 	public static ResourceRepositoryCommitRequestBuilder prepareCommit() {
 		return new ResourceRepositoryCommitRequestBuilder();
+	}
+
+	public static TerminologyResourceCompareRequestBuilder prepareCompare() {
+		return new TerminologyResourceCompareRequestBuilder();
 	}
 	
 	public static String versionJobKey(ResourceURI codeSystemUri) {
