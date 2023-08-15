@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.bundleAncestorIds;
+import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.bundleIds;
+import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.hidden;
+
 import java.util.*;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -102,6 +106,8 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	@Override
 	protected final Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.bool();
+		// always apply the non-hidden resource filter, as hidden resources are meant to be internal documents managed by other services
+		queryBuilder.filter(hidden(false));
 		
 		addSecurityFilter(context, queryBuilder);
 		
@@ -109,8 +115,8 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		if (containsKey(OptionKey.BUNDLE_ANCESTOR_ID)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.BUNDLE_ANCESTOR_ID, String.class);
 			queryBuilder.filter(Expressions.bool()
-				.should(ResourceDocument.Expressions.bundleIds(ancestorIds))
-				.should(ResourceDocument.Expressions.bundleAncestorIds(ancestorIds))
+				.should(bundleIds(ancestorIds))
+				.should(bundleAncestorIds(ancestorIds))
 				.build());
 		}
 

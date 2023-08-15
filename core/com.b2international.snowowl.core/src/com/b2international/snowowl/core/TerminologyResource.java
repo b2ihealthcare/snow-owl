@@ -355,6 +355,8 @@ public abstract class TerminologyResource extends Resource {
 				.contact(getContact())
 				.usage(getUsage())
 				.purpose(getPurpose())
+				// by default resources converted from domain representations are not hidden
+				.hidden(false)
 				.bundleAncestorIds(getBundleAncestorIds())
 				.bundleId(getBundleId())
 				.settings(getSettings())

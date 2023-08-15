@@ -313,6 +313,8 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)
+				// explicitly set all resources created by this request to visible
+				.hidden(false)
 				.bundleAncestorIds(bundleAncestorIds)
 				.bundleId(bundleId)
 				.settings(settings == null ? Map.of() : settings);
