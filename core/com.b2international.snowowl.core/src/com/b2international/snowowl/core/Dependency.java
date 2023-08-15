@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.internal.DependencyDocument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -122,6 +123,22 @@ public final class Dependency implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		Dependency other = (Dependency) obj;
 		return Objects.equals(uri, other.uri) && Objects.equals(scope, other.scope);
+	}
+	
+	@Override
+	public String toString() {
+		return CompareUtils.isEmpty(scope) ? uri.toString() : String.join(":", uri.toString(), scope);
+	}
+	
+	/**
+	 * @param other
+	 * @return <code>true</code> if this {@link Dependency} and the other {@link Dependency} depend on the same base resource and their scope is the
+	 *         same. It returns <code>false</code> in any other case.
+	 */
+	public boolean dependOnSameResource(Dependency other) {
+		if (other == null) return false;
+		return getUri().getResourceUri().withoutPath().equals(other.getUri().getResourceUri().withoutPath()) 
+				&& Objects.equals(getScope(), other.getScope());
 	}
 
 	/**
