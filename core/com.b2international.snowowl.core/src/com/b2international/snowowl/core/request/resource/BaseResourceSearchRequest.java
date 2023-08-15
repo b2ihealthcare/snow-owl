@@ -100,14 +100,20 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		/**
 		 * Search resources by the presence of a property or by a specific property-value pair in settings
 		 */
-		SETTINGS
+		SETTINGS,
+		
+		/**
+		 * Internal filter option key to fetch and access hidden resources. By default hidden resources are not being returned.
+		 */
+		HIDDEN,
 	}
 	
 	@Override
 	protected final Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.bool();
-		// always apply the non-hidden resource filter, as hidden resources are meant to be internal documents managed by other services
-		queryBuilder.filter(hidden(false));
+		// always apply the hidden resource filter
+		final boolean hiddenFilter = containsKey(OptionKey.HIDDEN) ? getBoolean(OptionKey.HIDDEN) : false;
+		queryBuilder.filter(hidden(hiddenFilter));
 		
 		addSecurityFilter(context, queryBuilder);
 		

@@ -29,11 +29,11 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		extends SearchPageableCollectionResourceRequestBuilder<RB, RepositoryContext, R>
 		implements ResourceRepositoryRequestBuilder<R> {
 
-	public RB filterByUrl(String url) {
+	public final RB filterByUrl(String url) {
 		return addOption(OptionKey.URL, url);
 	}
 	
-	public RB filterByUrls(Iterable<String> urls) {
+	public final RB filterByUrls(Iterable<String> urls) {
 		return addOption(OptionKey.URL, urls);
 	}
 
@@ -88,43 +88,60 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		return addOption(OptionKey.TITLE_EXACT, titles);
 	}
 	
-	public RB filterByBundleId(String bundleId) {
+	public final RB filterByBundleId(String bundleId) {
 		return addOption(OptionKey.BUNDLE_ID, bundleId);
 	}
 
-	public RB filterByBundleIds(Iterable<String> bundleIds) {
+	public final RB filterByBundleIds(Iterable<String> bundleIds) {
 		return addOption(OptionKey.BUNDLE_ID, bundleIds);
 	}
 	
-	public RB filterByBundleAncestorId(String bundleAncestorId) {
+	public final RB filterByBundleAncestorId(String bundleAncestorId) {
 		return addOption(OptionKey.BUNDLE_ANCESTOR_ID, bundleAncestorId);
 	}
 	
-	public RB filterByBundleAncestorIds(Iterable<String> bundleAncestorIds) {
+	public final RB filterByBundleAncestorIds(Iterable<String> bundleAncestorIds) {
 		return addOption(OptionKey.BUNDLE_ANCESTOR_ID, bundleAncestorIds);
 	}
 
-	public RB filterByOid(String oid) {
+	public final RB filterByOid(String oid) {
 		return addOption(OptionKey.OID, oid);
 	}
 	
-	public RB filterByOids(Iterable<String> oids) {
+	public final RB filterByOids(Iterable<String> oids) {
 		return addOption(OptionKey.OID, oids);
 	}
 
-	public RB filterByStatus(String status) {
+	public final RB filterByStatus(String status) {
 		return addOption(OptionKey.STATUS, status);
 	}
 
-	public RB filterByStatus(Iterable<String> status) {
+	public final RB filterByStatus(Iterable<String> status) {
 		return addOption(OptionKey.STATUS, status);
 	}
 	
-	public RB filterBySettings(Iterable<String> settings) {
+	/**
+	 * 
+	 * 
+	 * @param settings
+	 * @return
+	 */
+	public final RB filterBySettings(Iterable<String> settings) {
 		return addOption(OptionKey.SETTINGS, settings);
 	}	
 
-	public RB filterByOwner(Iterable<String> owner) {
+	public final RB filterByOwner(Iterable<String> owner) {
 		return addOption(OptionKey.OWNER, owner);
+	}
+	
+	/**
+	 * Internal API. Allows plug-ins to search for hidden resources.
+	 * 
+	 * @param hidden
+	 * @return
+	 * @since 9.0
+	 */
+	public final RB filterByHidden(Boolean hidden) {
+		return addOption(OptionKey.HIDDEN, hidden);
 	}
 }
