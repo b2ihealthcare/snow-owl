@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import com.google.common.base.Joiner;
  * {@link TestWatcher} superclass.
  * @since 7.6
  */
-public class ApiTestWatcher extends TestWatcher {
+public class ApiTestWatcher extends LoggingTestWatcher {
 	
 	protected static final Joiner PATH_JOINER = Joiner.on('/');
 	
@@ -95,8 +95,4 @@ public class ApiTestWatcher extends TestWatcher {
 				.orElse(true);
 	}
 	
-	@Override
-	protected void finished(Description description) {
-		System.out.println("===== End of " + description + " =====");
-	}
 }
