@@ -18,8 +18,7 @@ package com.b2international.snowowl.core.request;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.commons.collections.Collections3;
-import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -140,23 +139,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		return setLimit(1);
 	}
 	
-	// XXX: Does not allow null values or collections with null values
 	protected final B addOption(String key, Object value) {
-		if (value instanceof Iterable<?>) {
-			for (final Object val : (Iterable<?>) value) {
-				if (val == null) {
-					throw new BadRequestException("%s filter cannot contain null values", key);
-				}
-			}
-			if (value instanceof List) {
-				optionsBuilder.put(key, Collections3.toImmutableList((Iterable<?>) value));
-			} else {
-				// handle any other Iterable subtype as Set
-				optionsBuilder.put(key, Collections3.toImmutableSet((Iterable<?>) value));
-			}
-		} else if (value != null) {
-			optionsBuilder.put(key, value);
-		}
+		optionsBuilder.add(key, value);
 		return getSelf();
 	}
 	
@@ -170,10 +154,19 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		req.setComponentIds(componentIds);
 		req.setSearchAfter(searchAfter);
 		req.setLimit(Math.min(limit, MAX_LIMIT));
-		req.setOptions(optionsBuilder.build());
+		req.setOptions(initOptions(optionsBuilder));
 		return req;
 	}
 	
+	/**
+	 * Subclasses may optionally change/override filter options if they wish to do so.
+	 * @param options - the original options in builder form
+	 * @return the {@link Options} to use for search
+	 */
+	protected Options initOptions(OptionsBuilder options) {
+		return options.build();
+	}
+
 	protected abstract SearchResourceRequest<C, R> createSearch();
 	
 	/**

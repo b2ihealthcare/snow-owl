@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,12 @@ package com.b2international.commons.options;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.BadRequestException;
 
 /**
  * @since 4.5
@@ -29,6 +33,10 @@ public final class OptionsBuilder {
 	
 	OptionsBuilder() {}
 	
+	public OptionsBuilder put(Enum<?> key, Object value) {
+		return put(key.name(), value);
+	}
+	
 	public OptionsBuilder put(String key, Object value) {
 		if (value != null) {
 			options.put(key, value);
@@ -38,8 +46,17 @@ public final class OptionsBuilder {
 		return this;
 	}
 	
-	public OptionsBuilder put(Enum<?> key, Object value) {
-		return put(key.name(), value);
+	public OptionsBuilder putIfAbsent(Enum<?> key, Object value) {
+		return putIfAbsent(key.name(), value);
+	}
+	
+	public OptionsBuilder putIfAbsent(String key, Object value) {
+		if (value != null) {
+			options.putIfAbsent(key, value);
+		} else {
+			options.remove(key);
+		}
+		return this;
 	}
 	
 	public OptionsBuilder putAll(Options options) {
@@ -57,6 +74,29 @@ public final class OptionsBuilder {
 		return this;
 	}
 	
+	public OptionsBuilder add(Enum<?> key, Object value) {
+		return add(key.name(), value);
+	}
+	
+	public OptionsBuilder add(String key, Object value) {
+		if (value instanceof Iterable<?>) {
+			for (final Object val : (Iterable<?>) value) {
+				if (val == null) {
+					throw new BadRequestException("%s cannot contain null values", key);
+				}
+			}
+			if (value instanceof List) {
+				put(key, Collections3.toImmutableList((Iterable<?>) value));
+			} else {
+				// handle any other Iterable subtype as Set
+				put(key, Collections3.toImmutableSet((Iterable<?>) value));
+			}
+		} else if (value != null) {
+			put(key, value);
+		}
+		return this;
+	}
+	
 	public Options build() {
 		return new HashMapOptions(options);
 	}
@@ -64,5 +104,5 @@ public final class OptionsBuilder {
 	public static OptionsBuilder newBuilder() {
 		return new OptionsBuilder();
 	}
-	
+
 }
