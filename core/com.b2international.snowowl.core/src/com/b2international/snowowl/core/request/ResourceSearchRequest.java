@@ -35,7 +35,7 @@ import com.b2international.snowowl.core.request.resource.ResourceConverter;
 /**
  * @since 8.0
  */
-final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
+public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -104,11 +104,11 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 	protected void toQuerySortBy(RepositoryContext context, Builder sortBuilder, Sort sort) {
 		if (sort instanceof SortField) {
 			SortField sortField = (SortField) sort;
-			if (ResourceSearchRequestBuilder.TYPE_RANK.equals(sortField.getField())) {
+			if (ResourceDocument.Fields.TYPE_RANK.equals(sortField.getField())) {
 				Registry registry = context.service(ResourceTypeConverter.Registry.class);
 				Map<String, Integer> orderMap = registry.getResourceTypeConverters().values().stream().collect(Collectors.toMap(typeDef -> typeDef.getResourceType(), typeDef -> typeDef.getRank()));
 				
-				sortBuilder.sortByScriptNumeric(ResourceSearchRequestBuilder.TYPE_RANK, Map.of("ranks", orderMap) , sort.isAscending() ? Order.ASC : Order.DESC);
+				sortBuilder.sortByScriptNumeric(ResourceDocument.Fields.TYPE_RANK, Map.of("ranks", orderMap) , sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}
 		}

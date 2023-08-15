@@ -25,8 +25,6 @@ import com.b2international.snowowl.core.request.resource.BaseResourceSearchReque
  */
 public final class ResourceSearchRequestBuilder extends BaseResourceSearchRequestBuilder<ResourceSearchRequestBuilder, Resources> {
 	
-	public static final String TYPE_RANK = "typeRank";
-
 	/**
 	 * Filters matches by the given resource type.
 	 * 

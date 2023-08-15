@@ -59,7 +59,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 @Script(
-		name="typeRank", 
+		name=ResourceDocument.Fields.TYPE_RANK, 
 		script="return params.ranks.getOrDefault(doc.resourceType.value, Integer.MAX_VALUE)")
 @Script(
 		name="snomedFirst", 
