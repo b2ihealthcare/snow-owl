@@ -105,7 +105,12 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		/**
 		 * Internal filter option key to fetch and access hidden resources. By default hidden resources are not being returned.
 		 */
-		HIDDEN,
+		HIDDEN, 
+		
+		/**
+		 * Internal filter option key to fetch resources where the ID starts with any of the specified prefixes.
+		 */
+		ID_PREFIX,
 	}
 	
 	@Override
@@ -155,6 +160,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		addTitleFilter(queryBuilder);
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addUrlFilter(queryBuilder);
+		addFilter(queryBuilder, OptionKey.ID_PREFIX, String.class, ResourceDocument.Expressions::idPrefixes);
 		
 		prepareAdditionalFilters(context, queryBuilder);
 		

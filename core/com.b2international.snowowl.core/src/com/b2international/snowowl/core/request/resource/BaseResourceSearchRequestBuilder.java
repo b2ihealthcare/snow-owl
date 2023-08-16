@@ -29,6 +29,14 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		extends SearchPageableCollectionResourceRequestBuilder<RB, RepositoryContext, R>
 		implements ResourceRepositoryRequestBuilder<R> {
 
+	public final RB filterByIdPrefix(String idPrefix) {
+		return addOption(OptionKey.ID_PREFIX, idPrefix);
+	}
+	
+	public final RB filterByIdPrefixes(Iterable<String> idPrefixes) {
+		return addOption(OptionKey.ID_PREFIX, idPrefixes);
+	}
+	
 	public final RB filterByUrl(String url) {
 		return addOption(OptionKey.URL, url);
 	}
