@@ -19,7 +19,7 @@ import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,7 +41,7 @@ import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.Maps;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 

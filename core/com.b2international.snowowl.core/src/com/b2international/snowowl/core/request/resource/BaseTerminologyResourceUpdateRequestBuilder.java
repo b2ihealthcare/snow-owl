@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.request.BaseResourceUpdateRequestBuilder;
 
 /**
- * @since 8.12
+ * @since 8.12.0
  */
 public abstract class BaseTerminologyResourceUpdateRequestBuilder<RB extends BaseTerminologyResourceUpdateRequestBuilder<RB, R>, R extends BaseTerminologyResourceUpdateRequest> 
 		extends BaseResourceUpdateRequestBuilder<RB, R> {

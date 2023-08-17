@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.junit.runners.Parameterized;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -850,16 +851,27 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedDescriptionIndexEntry d3 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel World!")
 				.conceptId(c3.getId()).build();
 		
+		SnomedDescriptionIndexEntry d4 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Identical FSN").conceptId(c1.getId())
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) //Always set to unpublished regardless of test mode
+				.build();
+		
+		SnomedDescriptionIndexEntry d5 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Identical FSN").conceptId(c2.getId())
+				.effectiveTime(1L) //Always set to published regardless of test mode
+				.build();
+		
 		indexRevision(MAIN, 
-			c1, d1,
-			c2, d2,
+			c1, d1, d4,
+			c2, d2, d5,
 			c3, d3
 		);
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, d1.getId()),
-				ComponentIdentifier.of(SnomedDescription.TYPE, d2.getId()));
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedDescription.TYPE, d1.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, d2.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, d4.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, d5.getId()));
 	}
 	
 	@Test

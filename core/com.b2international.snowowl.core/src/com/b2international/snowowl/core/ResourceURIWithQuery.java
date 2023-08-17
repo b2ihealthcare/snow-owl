@@ -18,6 +18,7 @@ package com.b2international.snowowl.core;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.elasticsearch.common.Strings;
 
@@ -44,7 +45,7 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	private final ResourceURI resourceUri;
 	private final String query;
 	
-	private Multimap<String, String> queryValues;
+	private transient Multimap<String, String> queryValues;
 	
 	@JsonCreator
 	public ResourceURIWithQuery(String uri) {
@@ -116,6 +117,22 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	@Override
 	public String toString() {
 		return getUri();
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(uri, resourceUri, query);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		ResourceURIWithQuery other = (ResourceURIWithQuery) obj;
+		return Objects.equals(uri, other.uri) 
+				&& Objects.equals(resourceUri, other.resourceUri)
+				&& Objects.equals(query, other.query);
 	}
 
 	public static ResourceURIWithQuery of(String resourceType, String resourceIdWithQuery) {

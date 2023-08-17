@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.12.0
+
+### Core
+- Introduce new terminology resource dependency model (#1188)
+  * Dependency fields `extensionOf` and `upgradeOf` became deprecated, they still function, but will be removed in the next major version
+  * New `dependencies` array is available for all terminology resource types. Each dependency entry encapsulates a resource `uri` field (with optional query part) and an optional `scope` field to allow a more dynamic dependency graph to be built between resources
+
+### SNOMED CT
+- Expression Constraint Language query optimization improvements are now GA (#1185)
+
+### Bugs/Improvements
+- [snomed] fixed an issue where RF2 export would use the latest available SNOMED version only even if the client has specified an explicit version to export (1140b4a)
+- [validation] fixed an issue with rule664 where unpublished terms were not reported in some cases (#1190)
+- [deps] removed unused H2 database jars to eliminate security vulnerability warnings (#1191)
+
 ## 8.11.1
 
 ### Bugs/Improvements
