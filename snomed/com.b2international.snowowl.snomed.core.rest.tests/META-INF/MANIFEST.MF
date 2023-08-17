@@ -15,3 +15,18 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.core
 Import-Package: org.assertj.core.api;version="3.16.1",
  org.assertj.core.api.iterable;version="3.16.1"
+Export-Package: com.b2international.snowowl.snomed.core.branch,
+ com.b2international.snowowl.snomed.core.io,
+ com.b2international.snowowl.snomed.core.io.commit,
+ com.b2international.snowowl.snomed.core.issue,
+ com.b2international.snowowl.snomed.core.request,
+ com.b2international.snowowl.snomed.core.rest,
+ com.b2international.snowowl.snomed.core.rest.branches,
+ com.b2international.snowowl.snomed.core.rest.classification,
+ com.b2international.snowowl.snomed.core.rest.compare,
+ com.b2international.snowowl.snomed.core.rest.components,
+ com.b2international.snowowl.snomed.core.rest.ext,
+ com.b2international.snowowl.snomed.core.rest.io,
+ com.b2international.snowowl.snomed.core.rest.perf,
+ com.b2international.snowowl.snomed.core.rest.suggest,
+ com.b2international.snowowl.snomed.core.rest.versioning
