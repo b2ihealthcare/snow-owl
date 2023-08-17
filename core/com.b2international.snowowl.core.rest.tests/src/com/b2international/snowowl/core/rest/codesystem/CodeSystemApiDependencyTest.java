@@ -19,7 +19,7 @@ import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.BaseResourceApiTest;
 import com.b2international.snowowl.test.commons.Services;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -410,6 +409,24 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.flatExtracting(Dependency::getUpgrades)
 			.isEmpty();
 		
+	}
+	
+	@Test
+	public void preventUsingSpecialPathSegments() throws Exception {
+		final String parentCodeSystemId = IDs.base62UUID();
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
+		createCodeSystem(parentRequestBody);
+		
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16")).statusCode(201);
+		
+		ResourceURI latestVersionUri = CodeSystem.uri(parentCodeSystemId, "LATEST");
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(IDs.base62UUID())
+			.with("dependencies", List.of(
+				Dependency.of(latestVersionUri, "extensionOf")
+			))
+		).statusCode(400)
+		.body("message", equalTo("Some of the requested dependencies ('["+latestVersionUri.toString()+"]') are referencing a special URI path segment, which is forbidden when forming a dependency between two resources. Correct the dependencies array and try again."));
 	}
 	
 }

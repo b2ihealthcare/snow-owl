@@ -51,6 +51,7 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.b2international.snowowl.core.uri.TerminologyResourceURIPathResolver;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -89,7 +90,7 @@ public final class SnowOwlPlugin extends Plugin {
 		env.services().registerService(ObjectMapper.class, mapper);
 		
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
-		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver(true));
+		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver(scanner.getComponentsByInterface(TerminologyResourceURIPathResolver.class), true));
 		env.services().registerService(PathTerminologyResourceResolver.class, new PathTerminologyResourceResolver.Default());
 		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
 		env.services().registerService(ResourceTypeConverter.Registry.class, new ResourceTypeConverter.Registry(scanner));

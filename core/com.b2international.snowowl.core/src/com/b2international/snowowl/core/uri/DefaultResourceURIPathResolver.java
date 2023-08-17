@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
  */
 package com.b2international.snowowl.core.uri;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
@@ -30,6 +28,7 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
@@ -39,10 +38,17 @@ import com.b2international.snowowl.core.version.Versions;
  */
 public final class DefaultResourceURIPathResolver implements ResourceURIPathResolver {
 	
+	private final List<TerminologyResourceURIPathResolver> terminologyResourceURIPathResolvers;
 	private final boolean allowBranches;
 	
-	public DefaultResourceURIPathResolver(boolean allowBranches) {
+	public DefaultResourceURIPathResolver(Collection<TerminologyResourceURIPathResolver> terminologyResourceURIPathResolvers, boolean allowBranches) {
+		this.terminologyResourceURIPathResolvers = Collections3.toImmutableList(terminologyResourceURIPathResolvers);
 		this.allowBranches = allowBranches;
+	}
+	
+	@Override
+	public boolean isSpecialURI(ResourceURI resourceUri) {
+		return resourceUri.isLatest() || terminologyResourceURIPathResolvers.stream().anyMatch(r -> r.canResolve(resourceUri));
 	}
 	
 	@Override
@@ -53,6 +59,8 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 		final Set<String> resourceIds = codeSystemURIs.stream().map(ResourceURI::getResourceId).collect(Collectors.toSet());
 		final Map<String, Resource> resourcesById = ResourceRequests.prepareSearch()
 				.filterByIds(resourceIds)
+				// make sure we fetch both visible and hidden resources as well, so that URI resolution works correctly
+				.filterByHidden(ResourceHiddenFilter.ALL)
 				.buildAsync()
 				.getRequest()
 				.execute(context)
@@ -66,18 +74,28 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 	public PathWithVersion resolveWithVersion(ServiceProvider context, ResourceURI uriToResolve, Resource resource) {
 		if (resource instanceof TerminologyResource) {
 			TerminologyResource terminologyResource = (TerminologyResource) resource;
+			
+			// use code system working branch directly when HEAD is specified
 			if (uriToResolve.isHead()) {
-				// use code system working branch directly when HEAD is specified
 				return getResourceHeadBranch(uriToResolve, terminologyResource);
 			}
 			
-			// prevent running version search if path does not look like a versionId (single path segment)
+			// prevent running special URI resolution if path is not a single path segment
 			final String relativeBranchPath = terminologyResource.getRelativeBranchPath(uriToResolve.getPath());
 			if (uriToResolve.getPath().contains(Branch.SEPARATOR)) {
 				final String absoluteBranchPath = relativeBranchPath + uriToResolve.getTimestampPart();
 				return new PathWithVersion(absoluteBranchPath);
 			}
-				
+			
+			// perform URI resolution for special single path segments
+			// first use the plugged in URI resolvers
+			for (TerminologyResourceURIPathResolver resolver : terminologyResourceURIPathResolvers) {
+				if (resolver.canResolve(uriToResolve)) {
+					return resolver.resolve(context, uriToResolve, terminologyResource);
+				}
+			}
+			
+			// then fall back to version search
 			VersionSearchRequestBuilder versionSearch = ResourceRequests.prepareSearchVersion()
 				.one()
 				.filterByResource(terminologyResource.getResourceURI());

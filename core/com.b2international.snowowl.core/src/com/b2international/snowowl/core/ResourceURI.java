@@ -130,18 +130,18 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	}
 	
 	public boolean isLatest() {
-		return isSpecial(LATEST);
+		return hasPath(LATEST);
 	}
 	
 	public boolean isHead() {
-		return isSpecial(HEAD);
+		return hasPath(HEAD);
 	}
 	
 	public boolean isNext() {
-		return isSpecial(NEXT);
+		return hasPath(NEXT);
 	}
 	
-	public boolean isSpecial(String path) {
+	public boolean hasPath(String path) {
 		Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "Path must not be empty or null");
 		return path.equals(getPath());
 	}
