@@ -215,7 +215,15 @@ public final class ResourceDocument extends RevisionDocument {
 		}
 		
 		public static Expression hidden(Boolean hidden) {
-			return match(Fields.HIDDEN, hidden);
+			if (hidden) {
+				return match(Fields.HIDDEN, hidden);
+			} else {
+				return com.b2international.index.query.Expressions.bool()
+						.should(match(Fields.HIDDEN, hidden))
+						// XXX required for backward compatibility with 8.x indices
+						.should(com.b2international.index.query.Expressions.bool().mustNot(exists(Fields.HIDDEN)).build())
+						.build();
+			}
 		}
 		
 		public static Expression extensionOf(Iterable<ResourceURI> extensionOfs) {

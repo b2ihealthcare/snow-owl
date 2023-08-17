@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.OptionKey;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 import com.b2international.snowowl.core.request.search.TermFilter;
 
 /**
@@ -145,11 +146,13 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	/**
 	 * Internal API. Allows plug-ins to search for hidden resources.
 	 * 
-	 * @param hidden
+	 * @param filter - all, visible_only, hidden_only
 	 * @return
 	 * @since 9.0
+	 * @see ResourceHiddenFilter
 	 */
-	public final RB filterByHidden(Boolean hidden) {
-		return addOption(OptionKey.HIDDEN, hidden);
+	public final RB filterByHidden(ResourceHiddenFilter filter) {
+		return addOption(OptionKey.HIDDEN, filter);
 	}
+
 }

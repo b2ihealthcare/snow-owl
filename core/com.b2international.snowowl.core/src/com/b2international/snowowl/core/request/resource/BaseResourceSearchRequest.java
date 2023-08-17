@@ -26,6 +26,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ForbiddenException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -113,15 +114,25 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		ID_PREFIX,
 	}
 	
+	/**
+	 * @since 9.0
+	 */
+	public enum ResourceHiddenFilter {
+		
+		ALL,
+		
+		VISIBLE_ONLY,
+		
+		HIDDEN_ONLY
+		
+	}
+	
 	@Override
 	protected final Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.bool();
-		// always apply the hidden resource filter
-		final boolean hiddenFilter = containsKey(OptionKey.HIDDEN) ? getBoolean(OptionKey.HIDDEN) : false;
-		queryBuilder.filter(hidden(hiddenFilter));
-		
 		addSecurityFilter(context, queryBuilder);
 		
+		addHiddenFilter(queryBuilder);
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		if (containsKey(OptionKey.BUNDLE_ANCESTOR_ID)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.BUNDLE_ANCESTOR_ID, String.class);
@@ -165,6 +176,25 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		prepareAdditionalFilters(context, queryBuilder);
 		
 		return queryBuilder.build();
+	}
+
+	/*
+	 * Always apply the hidden resource filter
+	 */
+	private void addHiddenFilter(final ExpressionBuilder queryBuilder) {
+		final ResourceHiddenFilter hiddenFilter = containsKey(OptionKey.HIDDEN) ? get(OptionKey.HIDDEN, ResourceHiddenFilter.class) : ResourceHiddenFilter.VISIBLE_ONLY;
+		switch (hiddenFilter) {
+		case ALL:
+			// no filter is necessary, returning all resources
+			break;
+		case VISIBLE_ONLY:
+			queryBuilder.filter(hidden(false));
+			break;
+		case HIDDEN_ONLY:
+			queryBuilder.filter(hidden(true));
+			break;
+		default: throw new NotImplementedException("Hidden filter '%s' is not implemented.", hiddenFilter);
+		}
 	}
 	
 	@Override
