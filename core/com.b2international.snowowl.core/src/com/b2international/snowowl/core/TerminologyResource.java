@@ -166,7 +166,7 @@ public abstract class TerminologyResource extends Resource {
 	}
 
 	/**
-	 * Searches the dependency array for the dependency URI that has the matching scope. If there is no such dependency can be found in the dependency
+	 * Searches the dependency array for the dependency URI that has the matching scope. If there is no such dependency in the dependency
 	 * array then the system takes the current settings object into account and tries to find the appropriate settingsKeyed value as fallback
 	 * dependency URI. If none of them can be found this method return <code>null</code>.
 	 * 
