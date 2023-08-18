@@ -361,7 +361,8 @@ public abstract class TerminologyResource extends Resource {
 				.bundleId(getBundleId())
 				.settings(getSettings())
 				// terminology resource fields
-				.branchPath(getBranchPath()).oid(getOid())
+				.branchPath(getBranchPath())
+				.oid(getOid())
 				.toolingId(getToolingId())
 				// since 8.12
 				.dependencies(getDependencies() != null ? getDependencies().stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null)
