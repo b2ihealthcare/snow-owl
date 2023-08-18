@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.Version;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
@@ -204,6 +205,8 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		// check dependency duplication first before fetching any data from the server
 		checkDuplicateDependencies(context, mergedDependencies);
 		
+		checkDependenciesWithSpecialURIs(context, mergedDependencies);
+		
 		// check extensionOf dependency first, if configured
 		Optional<Dependency> extensionOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isExtensionOf).findFirst() : Optional.empty();
 		var extensionOfUri = extensionOfDependency.map(Dependency::getUri).orElse(null);
@@ -316,7 +319,22 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		if (!duplicateResourceIdReferences.isEmpty()) {
 			throw new BadRequestException("Some of the requested dependencies ('%s') are listed more than once. Correct the dependencies array and try again.", ImmutableSortedSet.copyOf(duplicateResourceIdReferences));
 		}
+	}
+	
+	static void checkDependenciesWithSpecialURIs(RepositoryContext context, List<Dependency> dependenciesToCheck) {
+		if (CompareUtils.isEmpty(dependenciesToCheck)) {
+			return;
+		}
 		
+		ResourceURIPathResolver resolver = context.service(ResourceURIPathResolver.class);
+		final List<ResourceURIWithQuery> resourceUrisWithSpecialPathSegment = dependenciesToCheck.stream()
+				.filter(dep -> resolver.isSpecialURI(dep.getUri().getResourceUri()))
+				.map(Dependency::getUri)
+				.toList();
+		
+		if (!resourceUrisWithSpecialPathSegment.isEmpty()) {
+			throw new BadRequestException("Some of the requested dependencies ('%s') are referencing a special URI path segment, which is forbidden when forming a dependency between two resources. Correct the dependencies array and try again.", resourceUrisWithSpecialPathSegment);
+		}
 	}
 
 	private void checkBranchPath(final RepositoryContext context, final boolean create) {

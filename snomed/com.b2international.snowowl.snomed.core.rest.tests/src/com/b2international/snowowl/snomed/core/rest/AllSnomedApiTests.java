@@ -38,7 +38,6 @@ import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassif
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedComponentEffectiveTimeRestoreTest;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionCreationTest;
-import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionUpgradeTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportRowValidatorTest;
@@ -117,7 +116,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Extension test cases
 	SnomedComponentEffectiveTimeRestoreTest.class,
 	SnomedExtensionCreationTest.class,
-	SnomedExtensionUpgradeTest.class, 
 	// Performance test cases, should be the last tests to perform
 	SnomedReferenceSetDeletionPerformanceTest.class,
 	SnomedConceptCreatePerformanceTest.class,

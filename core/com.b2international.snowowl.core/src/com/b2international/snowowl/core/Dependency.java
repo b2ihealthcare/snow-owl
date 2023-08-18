@@ -131,6 +131,22 @@ public final class Dependency implements Serializable {
 		Dependency other = (Dependency) obj;
 		return Objects.equals(uri, other.uri) && Objects.equals(scope, other.scope);
 	}
+	
+	@Override
+	public String toString() {
+		return CompareUtils.isEmpty(scope) ? uri.toString() : String.join(":", uri.toString(), scope);
+	}
+	
+	/**
+	 * @param other
+	 * @return <code>true</code> if this {@link Dependency} and the other {@link Dependency} depend on the same base resource and their scope is the
+	 *         same. It returns <code>false</code> in any other case.
+	 */
+	public boolean dependOnSameResource(Dependency other) {
+		if (other == null) return false;
+		return getUri().getResourceUri().withoutPath().equals(other.getUri().getResourceUri().withoutPath()) 
+				&& Objects.equals(getScope(), other.getScope());
+	}
 
 	/**
 	 * Creates a new unscoped {@link Dependency} instance with the given {@link ResourceURI uri}.

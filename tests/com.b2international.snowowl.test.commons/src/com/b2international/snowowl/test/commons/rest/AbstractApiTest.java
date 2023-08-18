@@ -44,7 +44,7 @@ public abstract class AbstractApiTest {
 		
 		@Override
 		protected void starting(Description description) {
-			System.out.println("===== Start of " + description + " =====");
+			super.starting(description);
 			branchPath = createTestBranchPath(description);
 			branching.createBranchRecursively(branchPath);
 		}

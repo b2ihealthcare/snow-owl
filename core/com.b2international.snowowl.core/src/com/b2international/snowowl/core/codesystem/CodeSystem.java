@@ -108,6 +108,8 @@ public final class CodeSystem extends TerminologyResource {
 				}
 			});
 		} else {
+			// maintain index entry of either null dependencies or empty list in this case
+			codeSystem.setDependencies(doc.getDependencies() == null ? null : List.of());
 			codeSystem.setExtensionOf(doc.getExtensionOf());
 			codeSystem.setUpgradeOf(doc.getUpgradeOf());
 		}

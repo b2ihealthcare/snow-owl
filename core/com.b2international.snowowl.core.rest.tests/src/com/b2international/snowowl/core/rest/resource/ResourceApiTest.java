@@ -19,7 +19,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY;
 import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCES_API;
-import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.assertCodeSystemCreated;
 import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceGet;
 import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceSearch;
@@ -45,12 +44,13 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.CommitResult;
-import com.b2international.snowowl.core.request.ResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.resource.ResourceConverter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.BundleApiAssert;
+import com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
@@ -342,7 +342,7 @@ public class ResourceApiTest {
 		
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(rootBundleId));
 		BundleApiAssert.createBundle(BundleApiAssert.prepareBundleCreateRequestBody(subBundleId, rootBundleId));
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", subBundleId));
+		CodeSystemApiAssert.createCodeSystem(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", subBundleId));
 
 		givenAuthenticatedRequest(RESOURCES_API)
 			.when()

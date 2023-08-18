@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,12 @@ public interface ResourceURIPathResolver {
 	PathWithVersion resolveWithVersion(ServiceProvider context, ResourceURI uriToResolve, Resource resource);
 	
 	/**
+	 * @param resourceUri - the URI to test
+	 * @return <code>true</code> if the given {@link ResourceURI} denotes a special URI path segment, <code>false</code> otherwise.
+	 */
+	boolean isSpecialURI(ResourceURI resourceUri);
+	
+	/**
 	 * Basic resource URI to branch path resolver, which uses a Resource ID to BranchPath Map to provide branch paths for any Resource.
 	 * 
 	 * @param resourcesToBranches
@@ -115,6 +121,11 @@ public interface ResourceURIPathResolver {
 			@Override
 			public PathWithVersion resolveWithVersion(ServiceProvider context, ResourceURI uriToResolve, Resource resource) {
 				throw new UnsupportedOperationException("Not implemented yet");
+			}
+			
+			@Override
+			public boolean isSpecialURI(ResourceURI resourceUri) {
+				return resourceUri.isLatest();
 			}
 		};
 	}

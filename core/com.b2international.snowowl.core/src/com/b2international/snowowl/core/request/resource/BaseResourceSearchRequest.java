@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.bundleAncestorIds;
+import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.bundleIds;
+import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.hidden;
+
 import java.util.*;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -22,6 +26,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ForbiddenException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -36,10 +41,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequest.NoResultException;
-import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
@@ -100,21 +101,44 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		/**
 		 * Search resources by the presence of a property or by a specific property-value pair in settings
 		 */
-		SETTINGS
+		SETTINGS,
+		
+		/**
+		 * Internal filter option key to fetch and access hidden resources. By default hidden resources are not being returned.
+		 */
+		HIDDEN, 
+		
+		/**
+		 * Internal filter option key to fetch resources where the ID starts with any of the specified prefixes.
+		 */
+		ID_PREFIX,
+	}
+	
+	/**
+	 * @since 9.0
+	 */
+	public enum ResourceHiddenFilter {
+		
+		ALL,
+		
+		VISIBLE_ONLY,
+		
+		HIDDEN_ONLY
+		
 	}
 	
 	@Override
 	protected final Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.bool();
-		
 		addSecurityFilter(context, queryBuilder);
 		
+		addHiddenFilter(queryBuilder);
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		if (containsKey(OptionKey.BUNDLE_ANCESTOR_ID)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.BUNDLE_ANCESTOR_ID, String.class);
 			queryBuilder.filter(Expressions.bool()
-				.should(ResourceDocument.Expressions.bundleIds(ancestorIds))
-				.should(ResourceDocument.Expressions.bundleAncestorIds(ancestorIds))
+				.should(bundleIds(ancestorIds))
+				.should(bundleAncestorIds(ancestorIds))
 				.build());
 		}
 
@@ -147,10 +171,30 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		addTitleFilter(queryBuilder);
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addUrlFilter(queryBuilder);
+		addFilter(queryBuilder, OptionKey.ID_PREFIX, String.class, ResourceDocument.Expressions::idPrefixes);
 		
 		prepareAdditionalFilters(context, queryBuilder);
 		
 		return queryBuilder.build();
+	}
+
+	/*
+	 * Always apply the hidden resource filter
+	 */
+	private void addHiddenFilter(final ExpressionBuilder queryBuilder) {
+		final ResourceHiddenFilter hiddenFilter = containsKey(OptionKey.HIDDEN) ? get(OptionKey.HIDDEN, ResourceHiddenFilter.class) : ResourceHiddenFilter.VISIBLE_ONLY;
+		switch (hiddenFilter) {
+		case ALL:
+			// no filter is necessary, returning all resources
+			break;
+		case VISIBLE_ONLY:
+			queryBuilder.filter(hidden(false));
+			break;
+		case HIDDEN_ONLY:
+			queryBuilder.filter(hidden(true));
+			break;
+		default: throw new NotImplementedException("Hidden filter '%s' is not implemented.", hiddenFilter);
+		}
 	}
 	
 	@Override

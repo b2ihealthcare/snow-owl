@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import static com.b2international.snowowl.core.request.ResourceConverter.expandVersions;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,13 +24,11 @@ import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.resource.BaseMetadataResourceConverter;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
@@ -42,43 +38,23 @@ import com.google.common.collect.*;
 /**
  * @since 7.6
  */
-public final class CodeSystemConverter extends BaseResourceConverter<ResourceDocument, CodeSystem, CodeSystems> {
+public final class CodeSystemConverter extends BaseMetadataResourceConverter<CodeSystem, CodeSystems> {
 
-	private final ResourceTypeConverter.Registry converters;
-	
 	public CodeSystemConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
-		this.converters = context().service(ResourceTypeConverter.Registry.class);
 	}
 	
-	@Override
-	protected RepositoryContext context() {
-		return (RepositoryContext) super.context();
-	}
-
 	@Override
 	protected CodeSystems createCollectionResource(List<CodeSystem> results, String searchAfter, int limit, int total) {
 		return new CodeSystems(results, searchAfter, limit, total);
 	}
 
 	@Override
-	protected CodeSystem toResource(ResourceDocument doc) {
-		return CodeSystem.from(doc);
-	}
-	
-	@Override
 	public void expand(List<CodeSystem> results) {
-		if (expand().isEmpty()) {
-			return;
-		}
-		
-		expandAvailableUpgrades(results);
+		super.expand(results);
 		expandExtensionOfBranchState(results);
 		expandUpgradeOfInfo(results);
-		expandVersions(results, expand(), options -> getLimit(options), locales(), context());
-		
-		// expand additional fields via pluggable converters
-		converters.expand(context(), expand(), locales(), results);
+		expandAvailableUpgrades(results);
 	}
 	
 	private void expandExtensionOfBranchState(List<CodeSystem> results) {

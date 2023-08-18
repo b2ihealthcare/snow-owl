@@ -59,7 +59,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 @Script(
-		name="typeRank", 
+		name=ResourceDocument.Fields.TYPE_RANK, 
 		script="return params.ranks.getOrDefault(doc.resourceType.value, Integer.MAX_VALUE)")
 @Script(
 		name="snomedFirst", 
@@ -85,6 +85,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String CONTACT = "contact";
 		public static final String USAGE = "usage";
 		public static final String PURPOSE = "purpose";
+		public static final String HIDDEN = "hidden";
 		public static final String CREATED_AT = "createdAt";
 		public static final String UPDATED_AT = "updatedAt";
 		public static final String BUNDLE_ANCESTOR_IDS = "bundleAncestorIds";
@@ -213,6 +214,18 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.STATUS, status);
 		}
 		
+		public static Expression hidden(Boolean hidden) {
+			if (hidden) {
+				return match(Fields.HIDDEN, hidden);
+			} else {
+				return com.b2international.index.query.Expressions.bool()
+						.should(match(Fields.HIDDEN, hidden))
+						// XXX required for backward compatibility with 8.x indices
+						.should(com.b2international.index.query.Expressions.bool().mustNot(exists(Fields.HIDDEN)).build())
+						.build();
+			}
+		}
+		
 		public static Expression extensionOf(Iterable<ResourceURI> extensionOfs) {
 			return matchAny(Fields.EXTENSION_OF, Collections3.toImmutableSet(extensionOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
@@ -253,6 +266,7 @@ public final class ResourceDocument extends RevisionDocument {
 				.contact(from.getContact())
 				.usage(from.getUsage())
 				.purpose(from.getPurpose())
+				.hidden(from.getHidden())
 				.bundleAncestorIds(from.getBundleAncestorIds())
 				.bundleId(from.getBundleId())
 				.oid(from.getOid())
@@ -287,6 +301,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String contact;
 		private String usage;
 		private String purpose;
+		private Boolean hidden;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
 		private SortedSet<DependencyDocument> dependencies;
@@ -359,6 +374,11 @@ public final class ResourceDocument extends RevisionDocument {
 		
 		public Builder purpose(String purpose) {
 			this.purpose = purpose;
+			return getSelf();
+		}
+		
+		public Builder hidden(Boolean hidden) {
+			this.hidden = hidden;
 			return getSelf();
 		}
 
@@ -449,6 +469,7 @@ public final class ResourceDocument extends RevisionDocument {
 				contact, 
 				usage, 
 				purpose,
+				hidden,
 				bundleAncestorIds,
 				bundleId,
 				oid,
@@ -484,6 +505,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	private final Boolean hidden;
 	
 	// Ordered ancestor bundle IDs, sorted by depth
 	private final List<String> bundleAncestorIds;
@@ -525,6 +547,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final String contact,
 			final String usage,
 			final String purpose,
+			final Boolean hidden,
 			final List<String> bundleAncestorIds,
 			final String bundleId,
 			final String oid,
@@ -548,6 +571,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.contact = contact;
 		this.usage = usage;
 		this.purpose = purpose;
+		this.hidden = hidden;
 		this.bundleAncestorIds = bundleAncestorIds;
 		this.bundleId = bundleId;
 		this.oid = oid;
@@ -608,6 +632,10 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public String getPurpose() {
 		return purpose;
+	}
+	
+	public Boolean getHidden() {
+		return hidden;
 	}
 	
 	public List<String> getBundleAncestorIds() {

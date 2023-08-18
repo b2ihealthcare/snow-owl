@@ -16,7 +16,10 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -38,16 +41,16 @@ public abstract class Resource implements Serializable {
 	public static final String RETIRED_STATUS = "retired";
 	public static final String DRAFT_STATUS = "draft";
 	public static final String SNOMED_FIRST = "snomedFirst";
-	
+
 	public static final String SETTINGS_DELIMITER = "#";
-	
+
 	public static final class Settings {
-		
+
 		public static final String PUBLISHER = "publisher";
 		public static final String DISTRIBUTABLE = "distributable"; // "true" or "false"
-		
+
 	}
-	
+
 	/**
 	 * @since 8.0
 	 */
@@ -62,26 +65,14 @@ public abstract class Resource implements Serializable {
 		public static final String TYPE_RANK = ResourceDocument.Fields.TYPE_RANK;
 		public static final String CREATED_AT = ResourceDocument.Fields.CREATED_AT;
 		public static final String UPDATED_AT = ResourceDocument.Fields.UPDATED_AT;
-		
+
 		// TerminologyResource subtype specific fields, but for convenience and single API access, they are defined here
 		public static final String OID = ResourceDocument.Fields.OID;
-		
-		public static final Set<String> ALL = Set.of(
-			ID,
-			TITLE,
-			URL,
-			STATUS,
-			LANGUAGE,
-			OWNER,
-			OID,
-			CREATED_AT,
-			UPDATED_AT,
-			RESOURCE_TYPE,
-			TYPE_RANK,
-			SNOMED_FIRST
-		);
+
+		public static final Set<String> ALL = Set.of(ID, TITLE, URL, STATUS, LANGUAGE, OWNER, OID, CREATED_AT, UPDATED_AT, RESOURCE_TYPE, TYPE_RANK,
+				SNOMED_FIRST);
 	}
-	
+
 	/**
 	 * @since 8.1.0
 	 */
@@ -89,7 +80,7 @@ public abstract class Resource implements Serializable {
 		public static final String RESOURCE_PATH_LABELS = "resourcePathLabels";
 		public static final String UPDATED_AT_COMMIT = "updatedAtCommit";
 	}
-	
+
 	// unique identifier for each resource, can be auto-generated or manually specified
 	private String id;
 
@@ -98,10 +89,10 @@ public abstract class Resource implements Serializable {
 
 	// FHIR Property, human-readable name of the resource (formerly CodeSystem.name in 7.x)
 	private String title;
-	
+
 	// FHIR Property, primary language of this resource, must be a valid two letter ISO-639 language code, if defined
 	private String language;
-	
+
 	// FHIR Property, supports markdown
 	private String description;
 
@@ -119,49 +110,51 @@ public abstract class Resource implements Serializable {
 
 	// useContext from FHIR is just too complex for our initial use cases, using former usage field instead
 	private String usage;
-	
+
 	// FHIR property, supports markdown
 	private String purpose;
 
 	// Hierarchical path from the resource root; contains all indirect ancestor bundle ID(s) of this resource
 	private List<String> bundleAncestorIds;
-	
+
 	// The ID of the bundle this resource is directly contained by
 	private String bundleId;
 
 	// The label of all bundles leading to this resource (expandable property)
 	private List<String> resourcePathLabels;
-	
-	// The timestamp when the resource was created originally 
+
+	// The timestamp when the resource was created originally
 	private Long createdAt;
-	
+
 	// The timestamp when the resource was last modified (either its contents or its properties)
 	private Long updatedAt;
-	
+
 	// The commit object that holds information about the last update
 	private CommitInfo updatedAtCommit;
-	
+
 	// Resource metadata
 	private Map<String, Object> settings;
-	
+
 	// Any additional properties in the JSON representation that are not defined above (usually added through plugins)
 	private Map<String, Object> properties;
-	
+
 	/**
 	 * @return the type of the resource
 	 */
 	public abstract String getResourceType();
-	
+
 	// XXX empty setter to make Jackson happy when deserializing
 	@JsonSetter
-	/*package*/ final void setResourceType(String resourceType) {}
-	
+	/* package */ final void setResourceType(String resourceType) {
+	}
+
 	/**
 	 * Logical id of this resource.
 	 * 
-	 * The logical id on the system that holds the System resource instance - this typically is expected to change as the resource moves from server to server. 
-	 * The location URI is constructed by appending the logical id to the server base address where the instance is found and the resource type. 
-	 * This URI should be a resolvable URL by which the resource instance may be retrieved, usually from a server, and it may be a relative reference typically to the server base URL.
+	 * The logical id on the system that holds the System resource instance - this typically is expected to change as the resource moves from server
+	 * to server. The location URI is constructed by appending the logical id to the server base address where the instance is found and the resource
+	 * type. This URI should be a resolvable URL by which the resource instance may be retrieved, usually from a server, and it may be a relative
+	 * reference typically to the server base URL.
 	 * 
 	 * @return
 	 */
@@ -172,14 +165,15 @@ public abstract class Resource implements Serializable {
 	public void setId(String id) {
 		this.id = id;
 	}
-	
+
 	public ResourceURI getResourceURI() {
 		return ResourceURI.of(getResourceType(), getId());
 	}
 
-	// XXX empty setter to make Jackson happy when deserializing 
+	// XXX empty setter to make Jackson happy when deserializing
 	@JsonSetter
-	/*package*/ final void setResourceURI(ResourceURI resourceUri) {}
+	/* package */ final void setResourceURI(ResourceURI resourceUri) {
+	}
 
 	/**
 	 * The canonical URL that never changes for this resource - it is the same in every copy. This canonical URL is used to refer to all instances of
@@ -206,15 +200,16 @@ public abstract class Resource implements Serializable {
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	
+
 	/**
 	 * The primary language tag of the resource, eg. "en_US"
+	 * 
 	 * @return
 	 */
 	public String getLanguage() {
 		return language;
 	}
-	
+
 	public void setLanguage(String language) {
 		this.language = language;
 	}
@@ -274,19 +269,19 @@ public abstract class Resource implements Serializable {
 	public void setPurpose(String purpose) {
 		this.purpose = purpose;
 	}
-	
+
 	public List<String> getBundleAncestorIds() {
 		return bundleAncestorIds;
 	}
-	
+
 	public void setBundleAncestorIds(List<String> bundleAncestorIds) {
 		this.bundleAncestorIds = bundleAncestorIds;
 	}
-	
+
 	public String getBundleId() {
 		return bundleId;
 	}
-	
+
 	public void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
 	}
@@ -294,27 +289,27 @@ public abstract class Resource implements Serializable {
 	public Long getCreatedAt() {
 		return createdAt;
 	}
-	
+
 	public void setCreatedAt(Long createdAt) {
 		this.createdAt = createdAt;
 	}
-	
+
 	public Long getUpdatedAt() {
 		return updatedAt;
 	}
-	
+
 	public void setUpdatedAt(Long updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-	
+
 	public CommitInfo getUpdatedAtCommit() {
 		return updatedAtCommit;
 	}
-	
+
 	public void setUpdatedAtCommit(CommitInfo updatedAtCommit) {
 		this.updatedAtCommit = updatedAtCommit;
 	}
-	
+
 	/**
 	 * A configuration map storing additional key-value pairs specific to this terminology resource (can be {@code null}). Interpretation of values is
 	 * implementation-dependent.
@@ -333,12 +328,12 @@ public abstract class Resource implements Serializable {
 	public Map<String, Object> getProperties() {
 		return properties;
 	}
-	
+
 	@JsonIgnore
 	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
 	}
-	
+
 	@JsonAnySetter
 	public void setProperties(String key, Object value) {
 		if (this.properties == null) {
@@ -346,46 +341,60 @@ public abstract class Resource implements Serializable {
 		}
 		this.properties.put(key, value);
 	}
-	
+
 	/**
-	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root), or <code>null</code> if ancestry information is not available
+	 * Returns a custom property appended by a plug-in using its unique property name. If {@link #getProperties()} is <code>null</code> this method
+	 * returns <code>null</code>.
+	 * 
+	 * @param <T> - the desired type of the mapped value
+	 * @param property - the property key
+	 * @return the property value mapped to the given property key or <code>null</code> if the {@link #getProperties()} map is null or the key is not
+	 *         mapped to any value.
+	 * @throws ClassCastException - if the mapped value is not of type <T> 
+	 */
+	public <T> T get(String property) {
+		return getProperties() == null ? null : (T) getProperties().get(property);
+	}
+
+	/**
+	 * @return the ID of all bundles leading to the resource, starting with "-1" (the ID of the resource root), or <code>null</code> if ancestry
+	 *         information is not available
 	 */
 	public List<String> getResourcePathSegments() {
 		final List<String> bundleAncestorIds = getBundleAncestorIds();
 		final String bundleParentId = getBundleId();
-		
+
 		// if either parentId or ancestorIds list are null then skip calculating the resourcePathSegments (eg. field selection)
 		if (bundleParentId == null || bundleAncestorIds == null) {
 			return null;
 		}
-		
+
 		if (IComponent.ROOT_ID.equals(bundleParentId)) {
 			return bundleAncestorIds;
 		}
-		
+
 		// Append our _parent ID_ to our ancestor ID array
-		return ImmutableList.<String>builder() 
-			.addAll(bundleAncestorIds)
-			.add(bundleParentId)
-			.build();
+		return ImmutableList.<String> builder().addAll(bundleAncestorIds).add(bundleParentId).build();
 	}
-	
+
 	// XXX empty setter to make Jackson happy when deserializing
 	@JsonSetter
-	/*package*/ final void setResourcePathSegments(List<String> resourcePathSegments) {}
-	
+	/* package */ final void setResourcePathSegments(List<String> resourcePathSegments) {
+	}
+
 	public List<String> getResourcePathLabels() {
 		return resourcePathLabels;
 	}
-	
+
 	public void setResourcePathLabels(final List<String> resourcePathLabels) {
 		this.resourcePathLabels = resourcePathLabels;
 	}
 
 	/**
 	 * Converts this {@link Resource} to a commitable {@link ResourceDocument.Builder}
+	 * 
 	 * @return
 	 */
 	public abstract ResourceDocument.Builder toDocumentBuilder();
-	
+
 }

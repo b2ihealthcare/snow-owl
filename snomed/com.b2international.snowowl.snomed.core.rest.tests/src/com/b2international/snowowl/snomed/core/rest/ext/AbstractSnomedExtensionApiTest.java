@@ -28,9 +28,6 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
-import com.b2international.snowowl.test.commons.rest.RestExtensions;
-
-import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 7.14.1
@@ -68,23 +65,6 @@ public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTe
 			.assertThat()
 			.statusCode(201);
 		return CodeSystemRestRequests.getCodeSystem(codeSystemId);
-	}
-
-	protected final ValidatableResponse assertCodeSystemUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
-		return CodeSystemRestRequests.assertCodeSystemUpgrade(upgradeOf, extensionOf);
-	}
-	
-	protected final CodeSystem createExtensionUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
-		final String upgradeCodeSystemId = RestExtensions.lastPathSegment(assertCodeSystemUpgrade(upgradeOf, extensionOf).statusCode(201).extract().header("Location"));
-		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId);
-	}
-	
-	protected final void syncExtensionUpgrade(ResourceURI codeSystemUri, ResourceURI sourceUri) {
-		CodeSystemRestRequests.assertCodeSystemUpgradeSync(codeSystemUri, sourceUri).statusCode(204);
-	}
-	
-	protected final void completeExtensionUpgrade(ResourceURI upgradedCodeSystemUri) {
-		CodeSystemRestRequests.assertCodeSystemUpgradeComplete(upgradedCodeSystemUri).statusCode(204);
 	}
 
 }

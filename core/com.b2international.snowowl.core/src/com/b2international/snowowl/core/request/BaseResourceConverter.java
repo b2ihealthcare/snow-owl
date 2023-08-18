@@ -73,7 +73,7 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 				.map(this::toResource)
 				.collect(Collectors.toList());
 		
-		if (!results.isEmpty()) {
+		if (!results.isEmpty() && !expand().isEmpty()) {
 			// expand using the current converter
 			expand(results);
 			// expand via plugins 

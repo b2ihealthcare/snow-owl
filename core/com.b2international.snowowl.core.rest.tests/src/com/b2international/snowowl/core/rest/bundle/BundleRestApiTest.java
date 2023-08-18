@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.rest.bundle;
 
 import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.*;
-import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.createCodeSystem;
 import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceGet;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -179,9 +179,9 @@ public class BundleRestApiTest {
 		
 		createBundle(prepareBundleCreateRequestBody(rootBundleId));
 		createBundle(prepareBundleCreateRequestBody(subBundleId, rootBundleId));
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", rootBundleId));
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs2").with("bundleId", rootBundleId));
-		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs3").with("bundleId", subBundleId));
+		createCodeSystem(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", rootBundleId));
+		createCodeSystem(prepareCodeSystemCreateRequestBody("cs2").with("bundleId", rootBundleId));
+		createCodeSystem(prepareCodeSystemCreateRequestBody("cs3").with("bundleId", subBundleId));
 		
 		assertBundleSearch(Map.of("id", Set.of(rootBundleId), "expand", "resources()")).and()
 			.body("total", equalTo(1))
