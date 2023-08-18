@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.MoreObjects;
@@ -51,6 +52,7 @@ public final class ValidationIssue implements Serializable {
 	 */
 	public static class Fields {
 		public static final String ID = "id";
+		public static final String RESULT_ID = "resultId";
 		public static final String RULE_ID = "ruleId";
 		public static final String RESOURCE_URI = "resourceURI";
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
@@ -71,6 +73,7 @@ public final class ValidationIssue implements Serializable {
 	
 	@ID
 	private final String id;
+	private final String resultId;
 	private final String ruleId;
 	private final ComponentURI affectedComponentURI;
 	private final String affectedComponentId;
@@ -87,30 +90,50 @@ public final class ValidationIssue implements Serializable {
 	
 	@JsonCreator
 	/*package*/ ValidationIssue(
-			@JsonProperty("id") final String id,
-			@JsonProperty("ruleId") final String ruleId, 
-			@JsonProperty("affectedComponentURI") final ComponentURI affectedComponentURI,
-			@JsonProperty("resourceURI") final ResourceURI resourceURI,
-			@JsonProperty("affectedComponentId") final String affectedComponentId,
-			@JsonProperty("whitelisted") final boolean whitelisted) {
+		@JsonProperty("id") final String id,
+		@JsonProperty("resultId") final String resultId, 
+		@JsonProperty("ruleId") final String ruleId, 
+		@JsonProperty("affectedComponentURI") final ComponentURI affectedComponentURI,
+		@JsonProperty("resourceURI") final ResourceURI resourceURI,
+		@JsonProperty("affectedComponentId") final String affectedComponentId,
+		@JsonProperty("whitelisted") final boolean whitelisted
+	) {
 		this.id = id;
+		this.resultId = resultId;
 		this.ruleId = ruleId;
 		this.affectedComponentId = affectedComponentId;
 		this.affectedComponentURI = affectedComponentURI;
 		this.resourceURI = resourceURI;
 		this.whitelisted = whitelisted;
 	}
+
 	
-	public ValidationIssue(
-			final String id,
-			final String ruleId, 
-			final ComponentURI componentURI, 
-			final boolean whitelisted) {
-		this(id, ruleId, componentURI, componentURI.resourceUri(), componentURI.identifier(), whitelisted);
+	public ValidationIssue(String id, String ruleId, ComponentURI componentURI, boolean whitelisted) {
+		this(id, ValidationRequests.SHARED_VALIDATION_RESULT_ID, ruleId, componentURI, whitelisted);
 	}
-	
+
+	public ValidationIssue(
+		final String id,
+		final String resultId, 
+		final String ruleId, 
+		final ComponentURI componentURI, 
+		final boolean whitelisted
+	) {
+		this(id, 
+			resultId, 
+			ruleId, 
+			componentURI, 
+			componentURI.resourceUri(), 
+			componentURI.identifier(), 
+			whitelisted);
+	}
+
 	public String getId() {
 		return id;
+	}
+	
+	public String getResultId() {
+		return resultId;
 	}
 	
 	/**
@@ -191,12 +214,13 @@ public final class ValidationIssue implements Serializable {
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
-				.add("id", id)
-				.add("ruleId", ruleId)
-				.add("resourceURI", resourceURI)
-				.add("affectedComponentURI", affectedComponentURI)
-				.add("details", getDetails())
-				.toString();
+			.add("id", id)
+			.add("resultId", resultId)
+			.add("ruleId", ruleId)
+			.add("resourceURI", resourceURI)
+			.add("affectedComponentURI", affectedComponentURI)
+			.add("details", getDetails())
+			.toString();
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,31 +27,36 @@ import com.b2international.snowowl.core.events.Request;
  * @since 6.0
  */
 public final class ValidateRequestBuilder 
-		extends BaseRequestBuilder<ValidateRequestBuilder, BranchContext, ValidationResult>
-		implements TerminologyResourceContentRequestBuilder<ValidationResult> {
-	
+	extends BaseRequestBuilder<ValidateRequestBuilder, BranchContext, ValidationResult>
+	implements TerminologyResourceContentRequestBuilder<ValidationResult> {
+
 	ValidateRequestBuilder() {}
-	
+
+	private String resultId = ValidationRequests.SHARED_VALIDATION_RESULT_ID;
 	private Collection<String> ruleIds;
+	private Map<String, Object> ruleParameters;
 	
-	private Map<String, Object> ruleParameters = Map.of();
-	
-	public ValidateRequestBuilder setRuleIds(Collection<String> ruleIds) {
+	public ValidateRequestBuilder setResultId(final String resultId) {
+		this.resultId = resultId;
+		return getSelf();
+	}
+
+	public ValidateRequestBuilder setRuleIds(final Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
 		return getSelf();
 	}
-	
-	public ValidateRequestBuilder setRuleParameters(Map<String, Object> ruleParameters) {
+
+	public ValidateRequestBuilder setRuleParameters(final Map<String, Object> ruleParameters) {
 		this.ruleParameters = ruleParameters;
 		return getSelf();
 	}
-	
+
 	@Override
 	protected Request<BranchContext, ValidationResult> doBuild() {
-		ValidateRequest validateRequest = new ValidateRequest();
+		final ValidateRequest validateRequest = new ValidateRequest();
+		validateRequest.setResultId(resultId);
 		validateRequest.setRuleIds(ruleIds);
 		validateRequest.setRuleParameters(ruleParameters);
 		return validateRequest;
 	}
-
 }

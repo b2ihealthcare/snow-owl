@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -34,6 +35,8 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -45,10 +48,12 @@ import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
+import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteLists;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
 
@@ -56,156 +61,212 @@ import com.google.common.collect.*;
  * @since 6.0
  */
 final class ValidateRequest implements Request<BranchContext, ValidationResult>, AccessControl {
-	
+
 	private static final long serialVersionUID = -2254266211853070728L;
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	private static final long POLL_INTERVAL_MAX = 1000L;
-	
-	Set<String> ruleIds;
 
+	private static final class IssuesToPersist {
+	
+		public final String ruleId;
+		public final Collection<ValidationIssueDetails> issueDetails;
+	
+		@SuppressWarnings("unchecked")
+		public IssuesToPersist(final String ruleId, final Collection<?> evaluationResult) {
+			this.ruleId = ruleId;
+			if (evaluationResult.iterator().hasNext() && evaluationResult.iterator().next() instanceof ValidationIssueDetails) {
+				this.issueDetails = (Collection<ValidationIssueDetails>) evaluationResult;
+			} else {
+				this.issueDetails = evaluationResult.stream()
+						.map(result -> (ComponentIdentifier) result)
+						.map(identifier -> new ValidationIssueDetails(identifier))
+						.collect(Collectors.toList());
+			}
+		}
+	
+	}
+
+	private String resultId;
+	private Set<String> ruleIds;
 	private Map<String, Object> ruleParameters;
-	
+
 	ValidateRequest() {}
-	
+
+	void setResultId(final String resultId) {
+		this.resultId = resultId;
+	}
+
+	void setRuleIds(final Collection<String> ruleIds) {
+		this.ruleIds = Collections3.toImmutableSortedSet(ruleIds);
+	}
+
+	void setRuleParameters(final Map<String, Object> ruleParameters) {
+		this.ruleParameters = ruleParameters == null
+			? ImmutableMap.of()
+			: ImmutableMap.copyOf(ruleParameters);
+	}
+
 	@Override
-	public ValidationResult execute(BranchContext context) {
+	public ValidationResult execute(final BranchContext context) {
 		return context.service(ValidationRepository.class).write(writer -> doValidate(context, writer));
 	}
-	
-	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
+
+	private ValidationResult doValidate(final BranchContext context, final Writer index) throws IOException {
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
+		final int pageSize = indexConfiguration.getPageSize();
+
 		final String branchPath = context.path();
-		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
+		final TerminologyResource resource = context.service(TerminologyResource.class);
+		final ResourceURI resourceURI = resource.getResourceURI(branchPath);
 		
-		TerminologyResource resource = context.service(TerminologyResource.class);
-		ResourceURI resourceURI = resource.getResourceURI(branchPath);
+		final ValidationRuleSearchRequestBuilder req = ValidationRequests.rules()
+			.prepareSearch()
+			.setLimit(pageSize);
 		
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);
 		}
-		
-		final ValidationRules rules = req
-				.all()
-				.build()
-				.execute(context);
-		
-		// check whether the selected rules are present in the system and report if one is missing
+
+		final List<ValidationRule> rules = req.stream(context)
+			.flatMap(ValidationRules::stream)
+			.toList();
+
+		final Set<String> knownRuleIds = rules.stream()
+			.map(ValidationRule::getId)
+			.collect(Collectors.toSet());
+
+		// Check whether the selected rules are present in the system and report if one is missing
 		if (!CompareUtils.isEmpty(ruleIds)) {
-			Set<String> missingRuleIds = Sets.difference(ruleIds, rules.stream().map(ValidationRule::getId).collect(Collectors.toSet()));
+			final Set<String> missingRuleIds = Sets.difference(ruleIds, knownRuleIds);
+			
 			if (!missingRuleIds.isEmpty()) {
-				throw new BadRequestException("The following ruleIds are missing from the system: %s. Remove them from the query parameter list or load them into the system.", missingRuleIds);
+				throw new BadRequestException("The following ruleIds are missing from the system: %s. "
+					+ "Remove them from the query parameter list or load them into the system.", missingRuleIds);
 			}
 		}
-		
+
 		final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 		final BlockingQueue<IssuesToPersist> issuesToPersistQueue = Queues.newLinkedBlockingDeque();
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
-		// evaluate selected rules
-		for (ValidationRule rule : rules) {
+		
+		// Evaluate selected rules
+		for (final ValidationRule rule : rules) {
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
+			
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
-			if (evaluator != null) {
-				validationPromises.add(pool.submit(rule.getCheckType(), () -> {
-					Stopwatch w = Stopwatch.createStarted();
-					
-					try {
-						LOG.info("Executing rule '{}'...", rule.getId());
-						final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
-						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), evaluationResponse));
-						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
-						// TODO report successfully executed validation rule
-					} catch (Exception e) {
-						// TODO report failed validation rule
-						LOG.error("Execution of rule '{}' failed after '{}'.", rule.getId(), w, e);
-					}
-				}));
+			if (evaluator == null) {
+				// No corresponding evaluator exists, skip for now
+				continue;
 			}
+			
+			validationPromises.add(pool.submit(rule.getCheckType(), () -> {
+				final Stopwatch w = Stopwatch.createStarted();
+
+				try {
+					LOG.info("Executing rule '{}'...", rule.getId());
+					final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
+					issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), evaluationResponse));
+					LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
+				} catch (final Exception e) {
+					LOG.error("Execution of rule '{}' failed after '{}'.", rule.getId(), w, e);
+				}
+			}));
 		}
-		
-		final Set<String> ruleIds = rules.stream().map(ValidationRule::getId).collect(Collectors.toSet());
+
 		final Multimap<String, ComponentIdentifier> whiteListedEntries = fetchWhiteListEntries(context, ruleIds);
-		
 		final Promise<List<Object>> promise = Promise.all(validationPromises);
-		
+
 		while (!promise.isDone() || !issuesToPersistQueue.isEmpty()) {
 			if (!issuesToPersistQueue.isEmpty()) {
 				final Collection<IssuesToPersist> issuesToPersist = newArrayList(); 
 				issuesToPersistQueue.drainTo(issuesToPersist);
+				
 				if (!issuesToPersist.isEmpty()) {
-					final List<String> rulesToPersist = issuesToPersist.stream().map(itp -> itp.ruleId).collect(Collectors.toList());
+					final List<String> rulesToPersist = issuesToPersist.stream()
+						.map(itp -> itp.ruleId)
+						.collect(Collectors.toList());
+					
 					LOG.info("Persisting issues generated by rules '{}'...", rulesToPersist);
+					
 					// persist new issues generated by rules so far, extending them using the Issue Extension API
 					int persistedIssues = 0;
-					
-					final Multimap<String, ValidationIssue> issuesToExtendWithDetailsByToolingId = HashMultimap.create();
-					for (IssuesToPersist ruleIssues : Iterables.consumingIterable(issuesToPersist)) {
-						final String ruleId = ruleIssues.ruleId;
-						final List<ValidationIssue> existingRuleIssues = ValidationRequests.issues().prepareSearch()
-								.all()
-								.filterByResourceUri(resourceURI)
-								.filterByRule(ruleId)
-								.build()
-								.execute(context)
-								.getItems();
-						
+
+					final Multimap<String, ValidationIssue> issuesToExtendByToolingId = HashMultimap.create();
+					for (final IssuesToPersist newIssues : Iterables.consumingIterable(issuesToPersist)) {
+						final String ruleId = newIssues.ruleId;
+						final List<ValidationIssue> existingIssues = ValidationRequests.issues()
+							.prepareSearch()
+							.setLimit(pageSize)
+							.filterByResultId(resultId)
+							.filterByResourceUri(resourceURI)
+							.filterByRule(ruleId)
+							.stream(context)
+							.flatMap(ValidationIssues::stream)
+							.collect(Collectors.toList());
+
 						final Set<String> issueIdsToDelete = Sets.newHashSet();
-						
-						final Map<ComponentIdentifier, ValidationIssue> existingIsssuesByComponentIdentifier = new HashMap<>();
-						
-						for (ValidationIssue issue : existingRuleIssues) {
-							if (existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent())) {
+						final Map<ComponentIdentifier, ValidationIssue> existingIssuesByComponentIdentifier = new HashMap<>();
+
+						for (final ValidationIssue issue : existingIssues) {
+							if (existingIssuesByComponentIdentifier.containsKey(issue.getAffectedComponent())) {
 								issueIdsToDelete.add(issue.getId());
 							} else {
-								existingIsssuesByComponentIdentifier.put(issue.getAffectedComponent(), issue);
+								existingIssuesByComponentIdentifier.put(issue.getAffectedComponent(), issue);
 							}
 						}
-						
-						// remove all processed whitelist entries 
+
+						// Remove whitelist entries as we are going through the Multimap rule-by-rule 
 						final Collection<ComponentIdentifier> ruleWhiteListEntries = whiteListedEntries.removeAll(ruleId);
-						final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
-						for (ValidationIssueDetails issueDetails : ruleIssues.issueDetails) {
+						final String toolingId = rules.stream()
+							.filter(rule -> ruleId.equals(rule.getId()))
+							.findFirst()
+							.get()
+							.getToolingId();
+						
+						for (final ValidationIssueDetails issueDetails : newIssues.issueDetails) {
 							final ValidationIssue validationIssue;
-							ComponentIdentifier componentIdentifier = issueDetails.affectedComponentId;
+							final ComponentIdentifier componentIdentifier = issueDetails.affectedComponentId;
+							final ValidationIssue issueToCopy = existingIssuesByComponentIdentifier.remove(componentIdentifier);
 							
-							if (!existingIsssuesByComponentIdentifier.containsKey(componentIdentifier)) {
+							if (issueToCopy == null) {
 								validationIssue = new ValidationIssue(
-										UUID.randomUUID().toString(),
-										ruleId,
-										ComponentURI.of(resourceURI, componentIdentifier),
-										ruleWhiteListEntries.contains(componentIdentifier));
+									UUID.randomUUID().toString(),
+									resultId,
+									ruleId,
+									ComponentURI.of(resourceURI, componentIdentifier),
+									ruleWhiteListEntries.contains(componentIdentifier));
 							} else {
-								final ValidationIssue issueToCopy = existingIsssuesByComponentIdentifier.get(componentIdentifier);
 								validationIssue = new ValidationIssue(
 									issueToCopy.getId(),
+									issueToCopy.getResultId(),
 									issueToCopy.getRuleId(),
 									ComponentURI.of(resourceURI, issueToCopy.getAffectedComponent()),
 									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));	
-								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
 							}
+							
 							validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
-							issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
+							issuesToExtendByToolingId.put(toolingId, validationIssue);
 							persistedIssues++; 
 						}
-						
-						existingRuleIssues
-							.stream()
-							.filter(issue -> existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent()))
+
+						existingIssues.stream()
+							.filter(issue -> existingIssuesByComponentIdentifier.containsKey(issue.getAffectedComponent()))
 							.forEach(issue -> issueIdsToDelete.add(issue.getId()));
-						
+
 						if (!issueIdsToDelete.isEmpty()) {
 							index.removeAll(Collections.singletonMap(ValidationIssue.class, issueIdsToDelete));
 						}
-						
 					}
-					
-					for (String toolingId : issuesToExtendWithDetailsByToolingId.keySet()) {
+
+					for (final String toolingId : issuesToExtendByToolingId.keySet()) {
 						final ValidationIssueDetailExtension extensions = context.service(ValidationIssueDetailExtensionProvider.class).getExtensions(toolingId);
-						final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.removeAll(toolingId);
+						final Collection<ValidationIssue> issues = issuesToExtendByToolingId.removeAll(toolingId);
 						extensions.extendIssues(context, issues, ruleParameters);
-						for (ValidationIssue issue : issues) {
+						for (final ValidationIssue issue : issues) {
 							index.put(issue);
 						}
 					}
-					
+
 					index.commit();
 					LOG.info("Persisted '{}' issues generated by rules '{}'.", persistedIssues, rulesToPersist);
 				}
@@ -213,67 +274,41 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 				try {
 					// wait at least number of rules * 50ms for the next responses
 					Thread.sleep(Math.min(((long) ruleIds.size()) * 100, POLL_INTERVAL_MAX));
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					throw new SnowowlRuntimeException(e);
 				}
 			}
 		}
-		
+
 		// TODO return ValidationResult object with status and new issue IDs as set
 		return new ValidationResult(context.info().id(), context.path());
 	}
 
-	private Multimap<String, ComponentIdentifier> fetchWhiteListEntries(BranchContext context, final Set<String> ruleIds) {
-		// fetch all white list entries to determine whether an issue is whitelisted already or not
-		final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
-		ValidationWhiteListSearchRequestBuilder whiteListReq = ValidationRequests.whiteList().prepareSearch();
+	private Multimap<String, ComponentIdentifier> fetchWhiteListEntries(final BranchContext context, final Set<String> ruleIds) {
+		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
+		final int pageSize = indexConfiguration.getPageSize();
 		
-		// fetch whitelist entries associated with the defined rules
+		// Fetch all whitelist entries to determine whether an issue is whitelisted already or not
+		final ValidationWhiteListSearchRequestBuilder whiteListReq = ValidationRequests.whiteList()
+			.prepareSearch()
+			.setLimit(pageSize);
+
+		// Fetch whitelist entries associated with the defined rules
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			whiteListReq.filterByRuleIds(ruleIds);
 		}
+
+		final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
 		
-		whiteListReq
-			.all()
-			.build()
-			.execute(context)
-			.stream()
+		whiteListReq.stream(context)
+			.flatMap(ValidationWhiteLists::stream)
 			.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
-		
+
 		return whiteListedEntries;
-	}
-	
-	void setRuleIds(Collection<String> ruleIds) {
-		this.ruleIds = ruleIds == null ? Collections.emptySet() : ImmutableSortedSet.copyOf(ruleIds);
-	}
-	
-	void setRuleParameters(Map<String, Object> ruleParameters) {
-		this.ruleParameters = ruleParameters;
-	}
-	
-	private static final class IssuesToPersist {
-		
-		public final String ruleId;
-		public final Collection<ValidationIssueDetails> issueDetails;
-		
-		@SuppressWarnings("unchecked")
-		public IssuesToPersist(String ruleId, Collection<?> evaluationResult) {
-			this.ruleId = ruleId;
-			if (evaluationResult.iterator().hasNext() && evaluationResult.iterator().next() instanceof ValidationIssueDetails) {
-				this.issueDetails = (Collection<ValidationIssueDetails>) evaluationResult;
-			} else {
-				this.issueDetails = evaluationResult.stream()
-					.map(result -> (ComponentIdentifier) result)
-					.map(identifier -> new ValidationIssueDetails(identifier))
-					.collect(Collectors.toList());
-			}
-		}
-		
 	}
 
 	@Override
 	public String getOperation() {
 		return Permission.OPERATION_EDIT;
 	}
-	
 }
