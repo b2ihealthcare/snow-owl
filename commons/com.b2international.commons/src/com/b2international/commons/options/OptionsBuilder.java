@@ -38,7 +38,19 @@ public final class OptionsBuilder {
 	}
 	
 	public OptionsBuilder put(String key, Object value) {
-		if (value != null) {
+		if (value instanceof Iterable<?>) {
+			for (final Object val : (Iterable<?>) value) {
+				if (val == null) {
+					throw new BadRequestException("%s cannot contain null values", key);
+				}
+			}
+			if (value instanceof List) {
+				options.put(key, Collections3.toImmutableList((Iterable<?>) value));
+			} else {
+				// handle any other Iterable subtype as Set
+				options.put(key, Collections3.toImmutableSet((Iterable<?>) value));
+			}
+		} else if (value != null) {
 			options.put(key, value);
 		} else {
 			options.remove(key);
@@ -70,29 +82,6 @@ public final class OptionsBuilder {
 			} else {
 				put(entry.getKey(), entry.getValue());
 			}
-		}
-		return this;
-	}
-	
-	public OptionsBuilder add(Enum<?> key, Object value) {
-		return add(key.name(), value);
-	}
-	
-	public OptionsBuilder add(String key, Object value) {
-		if (value instanceof Iterable<?>) {
-			for (final Object val : (Iterable<?>) value) {
-				if (val == null) {
-					throw new BadRequestException("%s cannot contain null values", key);
-				}
-			}
-			if (value instanceof List) {
-				put(key, Collections3.toImmutableList((Iterable<?>) value));
-			} else {
-				// handle any other Iterable subtype as Set
-				put(key, Collections3.toImmutableSet((Iterable<?>) value));
-			}
-		} else if (value != null) {
-			put(key, value);
 		}
 		return this;
 	}

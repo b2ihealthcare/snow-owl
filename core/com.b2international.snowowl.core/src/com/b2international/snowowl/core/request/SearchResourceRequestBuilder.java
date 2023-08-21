@@ -140,7 +140,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	protected final B addOption(String key, Object value) {
-		optionsBuilder.add(key, value);
+		optionsBuilder.put(key, value);
 		return getSelf();
 	}
 	
