@@ -21,6 +21,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequestBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 8.12.0
@@ -31,6 +32,11 @@ public abstract class BaseTerminologyResourceCreateRequestBuilder<RB extends Bas
 	private String oid;
 	private String branchPath;
 	private List<Dependency> dependencies;
+	
+	public final RB setDependencies(Dependency... dependencies) {
+		this.dependencies = ImmutableList.copyOf(dependencies);
+		return getSelf();
+	}
 	
 	public final RB setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
