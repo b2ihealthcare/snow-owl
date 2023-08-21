@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.validation;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -24,19 +23,51 @@ import com.b2international.snowowl.core.ComponentIdentifier;
  * @since 6.16
  */
 public class ValidationIssueDetails {
-	
-	public static final String HIGHLIGHT_DETAILS = "highlightDetails";
-	public final List<StylingDetail> stylingDetails;
-	public final ComponentIdentifier affectedComponentId;
 
-	public ValidationIssueDetails(ComponentIdentifier affectedComponentId) {
-		this.stylingDetails = Collections.emptyList();
+	/** Detail key for highlighting information */
+	public static final String DETAIL_HIGHLIGHT = "highlightDetails";
+
+	/** Detail key for suggested action */
+	public static final String DETAIL_ACTION = "suggestedAction";
+
+	/** Detail key for components related to the suggested action */
+	public static final String DETAIL_ACTION_COMPONENTS = "suggestedActionComponents";
+
+	private final ComponentIdentifier affectedComponentId;
+
+	private List<StylingDetail> stylingDetails;
+	private SuggestedAction suggestedAction;
+	private List<SuggestedComponent> suggestedComponents;
+
+	public ValidationIssueDetails(final ComponentIdentifier affectedComponentId) {
 		this.affectedComponentId = affectedComponentId;
 	}
-	
-	public ValidationIssueDetails(List<StylingDetail> stylingDetails, ComponentIdentifier affectedComponentId) {
+
+	public ComponentIdentifier getAffectedComponentId() {
+		return affectedComponentId;
+	}
+
+	public List<StylingDetail> getStylingDetails() {
+		return stylingDetails;
+	}
+
+	public void setStylingDetails(final List<StylingDetail> stylingDetails) {
 		this.stylingDetails = stylingDetails;
-		this.affectedComponentId = affectedComponentId;
 	}
-	
+
+	public SuggestedAction getSuggestedAction() {
+		return suggestedAction;
+	}
+
+	public void setSuggestedAction(final SuggestedAction suggestedAction) {
+		this.suggestedAction = suggestedAction;
+	}
+
+	public List<SuggestedComponent> getSuggestedComponents() {
+		return suggestedComponents;
+	}
+
+	public void setSuggestedComponents(final List<SuggestedComponent> suggestedComponents) {
+		this.suggestedComponents = suggestedComponents;
+	}
 }

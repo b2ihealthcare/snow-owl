@@ -225,7 +225,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						
 						for (final ValidationIssueDetails issueDetails : newIssues.issueDetails) {
 							final ValidationIssue validationIssue;
-							final ComponentIdentifier componentIdentifier = issueDetails.affectedComponentId;
+							final ComponentIdentifier componentIdentifier = issueDetails.getAffectedComponentId();
 							final ValidationIssue issueToCopy = existingIssuesByComponentIdentifier.remove(componentIdentifier);
 							
 							if (issueToCopy == null) {
@@ -244,7 +244,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));	
 							}
 							
-							validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
+							validationIssue.putDetails(ValidationIssueDetails.DETAIL_HIGHLIGHT, issueDetails.getStylingDetails());
+							validationIssue.putDetails(ValidationIssueDetails.DETAIL_ACTION, issueDetails.getSuggestedAction());
+							validationIssue.putDetails(ValidationIssueDetails.DETAIL_ACTION_COMPONENTS, issueDetails.getSuggestedComponents());
+
 							issuesToExtendByToolingId.put(toolingId, validationIssue);
 							persistedIssues++; 
 						}

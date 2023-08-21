@@ -37,7 +37,7 @@ public interface ValidationIssueDetailExtension {
 	void prepareQuery(ExpressionBuilder queryBuilder, Options options);
 
 	/**
-	 * Customize each issue by adding new fields to them via the {@link ValidationIssue#setDetails(String, Object)},
+	 * Customize each issue by adding new fields to them via the {@link ValidationIssue#putDetails(String, Object)},
 	 * {@link ValidationIssue#setAffectedComponentLabels(java.util.List)} methods to support domain specific searching on it later via the
 	 * {@link ValidationIssueSearchRequestBuilder#filterByDetails(java.util.Map)} and
 	 * {@link ValidationIssueSearchRequestBuilder#filterByAffectedComponentLabel(String)} methods.

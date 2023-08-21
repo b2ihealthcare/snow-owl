@@ -200,11 +200,14 @@ public final class ValidationIssue implements Serializable {
 	}
 	
 	@JsonAnySetter
-	public void setDetails(String key, Object value) {
+	public void putDetails(String key, Object value) {
 		if (details == null) {
 			this.details = newHashMap();
 		}
-		this.details.put(key, value);
+		
+		if (value != null) {
+			this.details.put(key, value);
+		}
 	}
 	
 	public void setDetails(Map<String, Object> details) {
