@@ -10,23 +10,25 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
 import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.RepositoryRequest;
+import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
  * @since 9.0
  */
-final class TerminologyResourceCompareRequest implements Request<RepositoryContext, TerminologyResourceCompareResult> {
+final class TerminologyResourceCompareRequest extends ResourceRequest<RepositoryContext, TerminologyResourceCompareResult> {
 
 	private static final long serialVersionUID = 1L;
 
 	private final ResourceURI fromUri;
 	private final ResourceURI toUri;
+	private final String termType;
 
-	public TerminologyResourceCompareRequest(final ResourceURI fromUri, final ResourceURI toUri) {
+	public TerminologyResourceCompareRequest(final ResourceURI fromUri, final ResourceURI toUri, final String termType) {
 		this.fromUri = fromUri;
 		this.toUri = toUri;
+		this.termType = termType;
 	}
 
 	@Override
@@ -51,7 +53,7 @@ final class TerminologyResourceCompareRequest implements Request<RepositoryConte
 		final String toolingId = terminologyResource.getToolingId();
 		final RepositoryRequest<TerminologyResourceCompareResult> repositoryRequest = new RepositoryRequest<>(toolingId, repositoryContext -> {
 			final TerminologyResourceComparer resourceComparer = repositoryContext.service(TerminologyResourceComparer.class);
-			return resourceComparer.compareResource(repositoryContext, fromUri, toUri);
+			return resourceComparer.compareResource(repositoryContext, fromUri, toUri, termType, locales());
 		});
 
 		return repositoryRequest.execute(metaContext);

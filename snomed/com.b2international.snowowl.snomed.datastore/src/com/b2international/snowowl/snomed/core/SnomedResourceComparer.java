@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareChangeKind;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareResultItem;
@@ -44,7 +49,13 @@ import com.google.common.collect.*;
 public class SnomedResourceComparer implements TerminologyResourceComparer {
 
 	@Override
-	public TerminologyResourceCompareResult compareResource(final RepositoryContext context, final ResourceURI fromUri, final ResourceURI toUri) {
+	public TerminologyResourceCompareResult compareResource(
+		final RepositoryContext context, 
+		final ResourceURI fromUri, 
+		final ResourceURI toUri,
+		final String termType,
+		final List<ExtendedLocale> locales
+	) {
 
 		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
 		final int partitionSize = indexConfiguration.getTermPartitionSize();
@@ -194,9 +205,26 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			fromUri, 
 			changeDetails);
 
+		final Map<String, String> termsById = newHashMap();
+		for (final List<String> batch : Iterables.partition(changeDetails.keySet(), partitionSize)) {
+			CodeSystemRequests.prepareSearchConcepts()
+				.filterByIds(batch)
+				.filterByCodeSystemUri(toUri)
+				.setPreferredDisplay(termType)
+				.setLocales(locales)
+				.setLimit(batch.size())
+				.buildAsync()
+				.execute(context)
+				.forEach(c -> termsById.put(c.getId(), c.getTerm()));
+		}
+		
 		final List<TerminologyResourceCompareResultItem> items = changeDetails.entries()
 			.stream()
-			.map(e -> new TerminologyResourceCompareResultItem(e.getKey(), e.getValue()))
+			.map(e -> new TerminologyResourceCompareResultItem(
+				e.getKey(), // ID 
+				termsById.getOrDefault(e.getKey(), e.getKey()), // Label (or ID as the fallback) 
+				e.getValue() // "Change kind"
+			))
 			.collect(Collectors.toList());
 		
 		final TerminologyResourceCompareResult result = new TerminologyResourceCompareResult(items, fromUri, toUri);

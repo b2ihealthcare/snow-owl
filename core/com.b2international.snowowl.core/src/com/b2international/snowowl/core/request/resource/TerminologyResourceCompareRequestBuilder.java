@@ -15,40 +15,56 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 
 /**
  * @since 9.0
  */
 public final class TerminologyResourceCompareRequestBuilder 
-	extends BaseRequestBuilder<TerminologyResourceCompareRequestBuilder, RepositoryContext, TerminologyResourceCompareResult> 
+	extends ResourceRequestBuilder<TerminologyResourceCompareRequestBuilder, RepositoryContext, TerminologyResourceCompareResult> 
 	implements ResourceRepositoryRequestBuilder<TerminologyResourceCompareResult> {
 
 	@NotNull
 	private ResourceURI fromUri;
-	
+
 	@NotNull
 	private ResourceURI toUri;
-	
+
+	@NotEmpty
+	private String termType = "FSN";
+
+	@NotEmpty
+	private List<ExtendedLocale> locales;
+
 	public TerminologyResourceCompareRequestBuilder setFromUri(final ResourceURI fromUri) {
 		this.fromUri = fromUri;
 		return getSelf();
 	}
-	
+
 	public TerminologyResourceCompareRequestBuilder setToUri(final ResourceURI toUri) {
 		this.toUri = toUri;
 		return getSelf();
 	}
-	
+
+	public TerminologyResourceCompareRequestBuilder setTermType(final String termType) {
+		this.termType = termType;
+		return getSelf();
+	}
+
 	@Override
-	protected Request<RepositoryContext, TerminologyResourceCompareResult> doBuild() {
-		return new TerminologyResourceCompareRequest(fromUri, toUri);
+	protected ResourceRequest<RepositoryContext, TerminologyResourceCompareResult> create() {
+		return new TerminologyResourceCompareRequest(fromUri, toUri, termType);
 	}
 }

@@ -18,6 +18,6 @@ package com.b2international.snowowl.core.compare;
 /**
  * @since 9.0
  */
-public record TerminologyResourceCompareResultItem(String id, TerminologyResourceCompareChangeKind changeKind) {
+public record TerminologyResourceCompareResultItem(String id, String label, TerminologyResourceCompareChangeKind changeKind) {
 	// Empty record body
 }
