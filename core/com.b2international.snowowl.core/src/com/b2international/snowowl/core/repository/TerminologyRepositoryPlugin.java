@@ -18,18 +18,20 @@ package com.b2international.snowowl.core.repository;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.IndexClient;
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Hooks;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
@@ -39,6 +41,7 @@ import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.b2international.snowowl.core.request.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
@@ -230,6 +233,17 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 * @return 
 	 */
 	protected TerminologyResourceComparer getTerminologyResourceComparer() {
-		return TerminologyResourceComparer.DEFAULT;
+		// Find the type corresponding to the "Concept" component category
+		final Optional<String> conceptType = getTerminologyComponents().stream()
+			.map(componentClass -> Terminology.getAnnotation(componentClass))
+			.filter(annotation -> ComponentCategory.CONCEPT.equals(annotation.componentCategory()))
+			.map(conceptAnnotation -> DocumentMapping.getDocType(conceptAnnotation.docType()))
+			.findFirst();
+		
+		if (conceptType.isPresent()) {
+			return new TerminologyResourceComparer.Default(conceptType.get());
+		} else {
+			return TerminologyResourceComparer.NOOP;
+		}
 	}
 }
