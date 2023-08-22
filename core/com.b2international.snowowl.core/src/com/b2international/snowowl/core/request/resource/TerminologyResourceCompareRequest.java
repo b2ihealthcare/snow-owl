@@ -6,6 +6,7 @@ package com.b2international.snowowl.core.request.resource;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
 import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
@@ -21,11 +22,11 @@ final class TerminologyResourceCompareRequest extends ResourceRequest<Repository
 
 	private static final long serialVersionUID = 1L;
 
-	private final ResourceURI fromUri;
-	private final ResourceURI toUri;
+	private final ResourceURIWithQuery fromUri;
+	private final ResourceURIWithQuery toUri;
 	private final String termType;
 
-	public TerminologyResourceCompareRequest(final ResourceURI fromUri, final ResourceURI toUri, final String termType) {
+	public TerminologyResourceCompareRequest(final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri, final String termType) {
 		this.fromUri = fromUri;
 		this.toUri = toUri;
 		this.termType = termType;
@@ -34,8 +35,8 @@ final class TerminologyResourceCompareRequest extends ResourceRequest<Repository
 	@Override
 	public TerminologyResourceCompareResult execute(final RepositoryContext metaContext) {
 
-		final ResourceURI fromWithoutPath = fromUri.withoutPath();
-		final ResourceURI toWithoutPath = toUri.withoutPath();
+		final ResourceURI fromWithoutPath = fromUri.getResourceUri().withoutPath();
+		final ResourceURI toWithoutPath = toUri.getResourceUri().withoutPath();
 
 		if (!fromWithoutPath.equals(toWithoutPath)) {
 			throw new BadRequestException("Resource URIs should have a common root, got '%s' and '%s'", fromWithoutPath, toWithoutPath);

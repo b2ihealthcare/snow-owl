@@ -23,6 +23,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -37,10 +38,10 @@ public final class TerminologyResourceCompareRequestBuilder
 	implements ResourceRepositoryRequestBuilder<TerminologyResourceCompareResult> {
 
 	@NotNull
-	private ResourceURI fromUri;
+	private ResourceURIWithQuery fromUri;
 
 	@NotNull
-	private ResourceURI toUri;
+	private ResourceURIWithQuery toUri;
 
 	@NotEmpty
 	private String termType = "FSN";
@@ -49,11 +50,19 @@ public final class TerminologyResourceCompareRequestBuilder
 	private List<ExtendedLocale> locales;
 
 	public TerminologyResourceCompareRequestBuilder setFromUri(final ResourceURI fromUri) {
+		return setFromUri(ResourceURIWithQuery.of(fromUri));
+	}
+	
+	public TerminologyResourceCompareRequestBuilder setToUri(final ResourceURI toUri) {
+		return setToUri(ResourceURIWithQuery.of(toUri));
+	}
+	
+	public TerminologyResourceCompareRequestBuilder setFromUri(final ResourceURIWithQuery fromUri) {
 		this.fromUri = fromUri;
 		return getSelf();
 	}
 
-	public TerminologyResourceCompareRequestBuilder setToUri(final ResourceURI toUri) {
+	public TerminologyResourceCompareRequestBuilder setToUri(final ResourceURIWithQuery toUri) {
 		this.toUri = toUri;
 		return getSelf();
 	}

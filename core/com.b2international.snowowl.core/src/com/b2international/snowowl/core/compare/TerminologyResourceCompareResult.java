@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.domain.ListCollectionResource;
 import com.google.common.base.MoreObjects;
 
@@ -34,8 +34,8 @@ public final class TerminologyResourceCompareResult extends ListCollectionResour
 
 	private static final long serialVersionUID = 1L;
 
-	private final ResourceURI fromUri;
-	private final ResourceURI toUri;
+	private final ResourceURIWithQuery fromUri;
+	private final ResourceURIWithQuery toUri;
 
 	private Integer newComponents;
 	private Integer changedComponents;
@@ -47,7 +47,7 @@ public final class TerminologyResourceCompareResult extends ListCollectionResour
 	 * @param fromUri - the resource URI representing the comparison baseline
 	 * @param toUri - the resource URI representing the comparison target
 	 */
-	public TerminologyResourceCompareResult(final ResourceURI fromUri, final ResourceURI toUri) {
+	public TerminologyResourceCompareResult(final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri) {
 		this(null, fromUri, toUri);
 	}
 	
@@ -58,23 +58,23 @@ public final class TerminologyResourceCompareResult extends ListCollectionResour
 	 * @param fromUri - the resource URI representing the comparison baseline
 	 * @param toUri - the resource URI representing the comparison target
 	 */
-	public TerminologyResourceCompareResult(final List<TerminologyResourceCompareResultItem> items, final ResourceURI fromUri, final ResourceURI toUri) {
+	public TerminologyResourceCompareResult(final List<TerminologyResourceCompareResultItem> items, final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri) {
 		super(items);
 		this.fromUri = checkNotNull(fromUri, "Resource URI 'fromUri' may not be null.");
-		this.toUri = checkNotNull(toUri, "ResourceURI 'toUri' may not be null.");
+		this.toUri = checkNotNull(toUri, "Resource URI 'toUri' may not be null.");
 	}
 
 	/**
 	 * @return the resource URI representing the comparison baseline
 	 */
-	public ResourceURI getFromUri() {
+	public ResourceURIWithQuery getFromUri() {
 		return fromUri;
 	}
 
 	/**
 	 * @return the resource URI representing the comparison target
 	 */
-	public ResourceURI getToUri() {
+	public ResourceURIWithQuery getToUri() {
 		return toUri;
 	}
 

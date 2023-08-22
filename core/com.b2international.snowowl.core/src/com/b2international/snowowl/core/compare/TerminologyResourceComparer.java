@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.config.IndexConfiguration;
@@ -50,66 +51,70 @@ public interface TerminologyResourceComparer {
 	 * component change counts for the provided type.
 	 */
 	public class Default implements TerminologyResourceComparer {
-		
+
 		private final String componentType;
-		
+
 		public Default(final String componentType) {
 			this.componentType = componentType;
 		}
 
 		@Override
 		public TerminologyResourceCompareResult compareResource(
-			RepositoryContext context, 
-			ResourceURI fromUri,
-			ResourceURI toUri, 
-			String termType, 
-			List<ExtendedLocale> locales
+			final RepositoryContext context, 
+			final ResourceURIWithQuery fromUri,
+			final ResourceURIWithQuery toUri, 
+			final String termType, 
+			final List<ExtendedLocale> locales
 		) {
 			final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
 			final int termPartitionSize = indexConfiguration.getTermPartitionSize();
-			
+
+			final ResourceURI fromWithoutQuery = fromUri.getResourceUri();
+			final ResourceURI toWithoutQuery = toUri.getResourceUri();
 			final ResourceURIPathResolver pathResolver = context.service(ResourceURIPathResolver.class);
-			final List<String> branchPaths = pathResolver.resolve(context, ImmutableList.of(fromUri, toUri));
+
+			final List<String> branchPaths = pathResolver.resolve(context, ImmutableList.of(fromWithoutQuery, toWithoutQuery));
 			final String baseBranch = branchPaths.get(0);
 			final String compareBranch = branchPaths.get(1);
-			
-			final BranchCompareResult compareResult = RepositoryRequests.branching().prepareCompare()
+
+			final BranchCompareResult compareResult = RepositoryRequests.branching()
+				.prepareCompare()
 				.setBase(baseBranch)
 				.setCompare(compareBranch)
 				.setExcludeComponentChanges(true)
 				.build()
 				.execute(context);
-			
+
 			final Collection<ComponentIdentifier> changedComponents = compareResult.getChangedComponents();
 			final TerminologyResourceCompareResult summary;
-			
+
 			if (changedComponents.isEmpty()) {
-				
+
 				// No changed components to return with this response
 				summary = new TerminologyResourceCompareResult(fromUri, toUri);
-				
+
 			} else {
-				
+
 				// Record all relevant changed components as a generic "Component change"
 				final Set<String> changedComponentIds = changedComponents
 					.stream()
 					.filter(ci -> componentType.equals(ci.getComponentType()))
 					.map(ci -> ci.getComponentId())
 					.collect(Collectors.toSet());
-		
+
 				final Map<String, String> termsById = newHashMap();
 				for (final List<String> batch : Iterables.partition(changedComponentIds, termPartitionSize)) {
 					CodeSystemRequests.prepareSearchConcepts()
-						.filterByIds(batch)
-						.filterByCodeSystemUri(toUri)
-						.setPreferredDisplay(termType)
-						.setLocales(locales)
-						.setLimit(batch.size())
-						.buildAsync()
-						.execute(context)
-						.forEach(c -> termsById.put(c.getId(), c.getTerm()));
+					.filterByIds(batch)
+					.filterByCodeSystemUri(toWithoutQuery)
+					.setPreferredDisplay(termType)
+					.setLocales(locales)
+					.setLimit(batch.size())
+					.buildAsync()
+					.execute(context)
+					.forEach(c -> termsById.put(c.getId(), c.getTerm()));
 				}
-				
+
 				final List<TerminologyResourceCompareResultItem> items = changedComponents
 					.stream()
 					.map(ci -> new TerminologyResourceCompareResultItem(
@@ -122,7 +127,7 @@ public interface TerminologyResourceComparer {
 				summary = new TerminologyResourceCompareResult(items, fromUri, toUri);
 				summary.setChangedComponents(items.size());
 			}
-			
+
 			// Populate the other two counters as well
 			summary.setNewComponents(getComponentCount(compareResult.getNewComponents()));
 			summary.setDeletedComponents(getComponentCount(compareResult.getDeletedComponents()));
@@ -135,7 +140,7 @@ public interface TerminologyResourceComparer {
 				.count();
 		}
 	}
-	
+
 	/** 
 	 * The "no-op" implementation returns an unpopulated comparison summary.
 	 */
@@ -154,8 +159,8 @@ public interface TerminologyResourceComparer {
 	 */
 	TerminologyResourceCompareResult compareResource(
 		RepositoryContext repositoryContext, 
-		ResourceURI fromUri, 
-		ResourceURI toUri,
+		ResourceURIWithQuery fromUri, 
+		ResourceURIWithQuery toUri,
 		String termType,
 		List<ExtendedLocale> locales);
 }

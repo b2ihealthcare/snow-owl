@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.TerminologyResourceCompareChangeKind;
@@ -51,8 +52,8 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 	@Override
 	public TerminologyResourceCompareResult compareResource(
 		final RepositoryContext context, 
-		final ResourceURI fromUri, 
-		final ResourceURI toUri,
+		final ResourceURIWithQuery fromUri, 
+		final ResourceURIWithQuery toUri,
 		final String termType,
 		final List<ExtendedLocale> locales
 	) {
@@ -61,8 +62,11 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 		final int partitionSize = indexConfiguration.getTermPartitionSize();
 		final int pageSize = indexConfiguration.getPageSize();
 
+		final ResourceURI fromWithoutQuery = fromUri.getResourceUri();
+		final ResourceURI toWithoutQuery = toUri.getResourceUri();
 		final ResourceURIPathResolver pathResolver = context.service(ResourceURIPathResolver.class);
-		final List<String> branchPaths = pathResolver.resolve(context, ImmutableList.of(fromUri, toUri));
+
+		final List<String> branchPaths = pathResolver.resolve(context, ImmutableList.of(fromWithoutQuery, toWithoutQuery));
 		final String baseBranch = branchPaths.get(0);
 		final String compareBranch = branchPaths.get(1);
 
@@ -103,7 +107,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize,
 			pageSize,
 			Iterables.concat(newConcepts, newDescriptions, changedConcepts, changedDescriptions),
-			toUri,
+			toWithoutQuery,
 			newMembers,
 			changedMembers,
 			deletedMembers);
@@ -114,7 +118,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize,
 			pageSize,
 			Iterables.concat(deletedConcepts, deletedDescriptions),
-			fromUri,
+			fromWithoutQuery,
 			deletedMembers);
 
 		// Remove descriptions and relationships that appear alongside known new/changed concepts
@@ -123,7 +127,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize,
 			pageSize,
 			Iterables.concat(newConcepts, changedConcepts),
-			toUri,
+			toWithoutQuery,
 			newDescriptions,
 			changedDescriptions,
 			deletedDescriptions,
@@ -137,7 +141,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize,
 			pageSize,
 			deletedConcepts,
-			fromUri,
+			fromWithoutQuery,
 			deletedDescriptions,
 			deletedRelationships);
 
@@ -161,7 +165,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize,
 			pageSize,
 			Iterables.concat(newMembers, changedMembers),
-			toUri,
+			toWithoutQuery,
 			changeDetails);
 
 		registerMemberChanges(
@@ -169,7 +173,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize,
 			pageSize,
 			deletedMembers,
-			fromUri,
+			fromWithoutQuery,
 			changeDetails);
 
 		// Description term and status changes are considered "term changes", the rest is unspecified
@@ -178,7 +182,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize, 
 			pageSize, 
 			newDescriptions, 
-			toUri, 
+			toWithoutQuery, 
 			changeDetails);
 		
 		registerDescriptionChanges(
@@ -186,7 +190,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize, 
 			pageSize, 
 			deletedDescriptions, 
-			fromUri, 
+			fromWithoutQuery,
 			changeDetails);
 
 		registerRelationshipChanges(
@@ -194,7 +198,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize, 
 			pageSize, 
 			Iterables.concat(newRelationships, changedRelationships), 
-			toUri, 
+			toWithoutQuery, 
 			changeDetails);
 		
 		registerRelationshipChanges(
@@ -202,14 +206,14 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			partitionSize, 
 			pageSize, 
 			deletedRelationships, 
-			fromUri, 
+			fromWithoutQuery, 
 			changeDetails);
 
 		final Map<String, String> termsById = newHashMap();
 		for (final List<String> batch : Iterables.partition(changeDetails.keySet(), partitionSize)) {
 			CodeSystemRequests.prepareSearchConcepts()
 				.filterByIds(batch)
-				.filterByCodeSystemUri(toUri)
+				.filterByCodeSystemUri(toWithoutQuery)
 				.setPreferredDisplay(termType)
 				.setLocales(locales)
 				.setLimit(batch.size())
