@@ -26,6 +26,9 @@ import com.b2international.commons.StringUtils;
  */
 public enum TerminologyResourceCompareChangeKind {
 
+	/** A component has been added */
+	ADDED,
+
 	/** An intrinsic property of the component itself changed (eg. status or definition status) */
 	DEFINITION_CHANGE,
 
@@ -36,7 +39,13 @@ public enum TerminologyResourceCompareChangeKind {
 	TERM_CHANGE,
 
 	/** A change that can not be categorized into the cases above */
-	COMPONENT_CHANGE;
+	COMPONENT_CHANGE,
+	
+	/** A component has been deleted or was made otherwise inaccessible (eg. removed from evaluated set or deactivated) */
+	DELETED,
+	
+	/** The component has not changed when compared to the reference */
+	UNCHANGED;
 
 	/**
 	 * @return a human-readable name of this change kind (eg. "Definition change"
