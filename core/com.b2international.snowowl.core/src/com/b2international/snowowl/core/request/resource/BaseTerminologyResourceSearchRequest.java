@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -39,6 +41,7 @@ public abstract class BaseTerminologyResourceSearchRequest<R> extends BaseResour
 		
 	}
 
+	@OverridingMethodsMustInvokeSuper
 	@Override
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		super.prepareAdditionalFilters(context, queryBuilder);

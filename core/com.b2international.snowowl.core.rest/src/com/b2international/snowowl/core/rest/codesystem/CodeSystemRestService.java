@@ -171,7 +171,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 		@RequestBody
-		final ResourceRequest<CodeSystemCreateRestInput> body,
+		final ResourceRequest<CodeSystemRestCreate> body,
 		
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author) {

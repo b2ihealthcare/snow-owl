@@ -100,6 +100,9 @@ public final class ResourceDocument extends RevisionDocument {
 		// since 8.12
 		public static final String DEPENDENCIES = "dependencies";
 		
+		// since 9.0
+		public static final String CHILD_RESOURCE_TYPE = "childResourceType";
+		
 		// deprecated in 8.12
 		/**
 		 * @deprecated replace by {@link #DEPENDENCIES}, will be removed in 9.0
@@ -304,15 +307,25 @@ public final class ResourceDocument extends RevisionDocument {
 		private Boolean hidden;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
-		private SortedSet<DependencyDocument> dependencies;
+		private Map<String, Object> settings;
 		
 		// specialized resource fields
+		private SortedSet<DependencyDocument> dependencies;
 		private String oid;
 		private String branchPath;
 		private String toolingId;
+		
+		private String childResourceType;
+		
+		/**
+		 * @deprecated will be removed in 9.0
+		 */
 		private ResourceURI extensionOf;
+		
+		/**
+		 * @deprecated will be removed in 9.0
+		 */
 		private ResourceURI upgradeOf;
-		private Map<String, Object> settings;
 		
 		// derived fields, access only
 		private Long createdAt;
@@ -448,6 +461,11 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
+		public Builder childResourceType(String childResourceType) {
+			this.childResourceType = childResourceType;
+			return getSelf();
+		}
+		
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -480,7 +498,8 @@ public final class ResourceDocument extends RevisionDocument {
 				settings,
 				createdAt,
 				updatedAt,
-				dependencies
+				dependencies,
+				childResourceType
 			);
 		}
 		
@@ -518,6 +537,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final Map<String, Object> settings;
 	
 	private final SortedSet<DependencyDocument> dependencies;
+	private final String childResourceType;
 	
 	// deprecated dependency-like fields, will be removed in 9.0
 	private final ResourceURI extensionOf;
@@ -558,7 +578,8 @@ public final class ResourceDocument extends RevisionDocument {
 			final Map<String, Object> settings,
 			final Long createdAt,
 			final Long updatedAt,
-			final SortedSet<DependencyDocument> dependencies) {
+			final SortedSet<DependencyDocument> dependencies,
+			final String childResourceType) {
 		super(id, iconId);
 		this.resourceType = resourceType;
 		this.url = url;
@@ -583,6 +604,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 		this.dependencies = dependencies;
+		this.childResourceType = childResourceType;
 	}
 
 	@JsonIgnore
@@ -686,6 +708,10 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public SortedSet<DependencyDocument> getDependencies() {
 		return dependencies;
+	}
+	
+	public String getChildResourceType() {
+		return childResourceType;
 	}
 	
 }

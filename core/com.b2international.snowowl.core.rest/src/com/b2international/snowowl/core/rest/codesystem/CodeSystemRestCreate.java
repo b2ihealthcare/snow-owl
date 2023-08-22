@@ -18,12 +18,12 @@ package com.b2international.snowowl.core.rest.codesystem;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestInput;
+import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestCreate;
 
 /**
  * @since 8.0
  */
-public final class CodeSystemCreateRestInput extends BaseTerminologyResourceRestInput {
+public final class CodeSystemRestCreate extends BaseTerminologyResourceRestCreate {
 	
 	private String toolingId;
 	private ResourceURI extensionOf;

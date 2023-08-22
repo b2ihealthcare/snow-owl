@@ -106,7 +106,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		this.upgradeOf = upgradeOf;
 	}
 	
-	public void setDependencies(List<Dependency> dependencies) {
+	public final void setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
 	}
 	
