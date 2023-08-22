@@ -86,10 +86,9 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 		resource.setEquivalentConceptsFound(entry.getHasEquivalentConcepts());
 		return resource;
 	}
-
+	
 	@Override
-	public void expand(final List<ClassificationTask> results) {
-
+	protected void alterResults(List<ClassificationTask> results) {
 		final Multimap<String, ClassificationTask> tasksByBranch = Multimaps.index(results, ClassificationTask::getBranch);
 		final Branches branches = RepositoryRequests.branching()
 				.prepareSearch()
@@ -112,11 +111,10 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 				task.setStatus(ClassificationStatus.STALE);
 			}
 		}
+	}
 
-		if (expand().isEmpty()) { 
-			return; 
-		}
-
+	@Override
+	public void expand(final List<ClassificationTask> results) {
 		final Set<String> classificationTaskIds = results.stream()
 				.map(ClassificationTask::getId)
 				.collect(Collectors.toSet());

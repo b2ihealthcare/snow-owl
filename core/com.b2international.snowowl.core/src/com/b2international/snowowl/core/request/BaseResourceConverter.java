@@ -73,16 +73,33 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 				.map(this::toResource)
 				.collect(Collectors.toList());
 		
-		if (!results.isEmpty() && !expand().isEmpty()) {
-			// expand using the current converter
-			expand(results);
-			// expand via plugins 
-			expandViaPlugins(results);
+		if (!results.isEmpty()) {
+			// perform additional transformations on the responses in bulk when needed
+			alterResults(results);
+			
+			if (!expand().isEmpty()) {
+				// expand using the current converter
+				expand(results);
+				// expand via plugins 
+				expandViaPlugins(results);
+			}
 		}
 		
 		return createCollectionResource(results, searchAfter, limit, total);
 	}
 	
+	/**
+	 * Subclasses may optionally alter the result documents in bulk based on some
+	 * logic if needed. Primarily alter the result in the
+	 * {@link #toResource(Object)} method call if all information is available
+	 * during the conversion. If for performance reasons results must be altered in
+	 * bulk, then use this method.
+	 * 
+	 * @param results
+	 */
+	protected void alterResults(List<R> results) {
+	}
+
 	@Override
 	public void expand(List<R> results) {
 		// by default no expansions are performed
