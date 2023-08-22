@@ -33,7 +33,7 @@ final class TerminologyResourceCompareRequest extends ResourceRequest<Repository
 	}
 
 	@Override
-	public TerminologyResourceCompareResult execute(final RepositoryContext metaContext) {
+	public TerminologyResourceCompareResult execute(final RepositoryContext resourceContext) {
 
 		final ResourceURI fromWithoutPath = fromUri.getResourceUri().withoutPath();
 		final ResourceURI toWithoutPath = toUri.getResourceUri().withoutPath();
@@ -45,18 +45,18 @@ final class TerminologyResourceCompareRequest extends ResourceRequest<Repository
 		// Check whether the resource exists
 		final Resource fromResource = ResourceRequests.prepareGet(fromWithoutPath)
 			.build()
-			.execute(metaContext);
+			.execute(resourceContext);
 
 		if (!(fromResource instanceof final TerminologyResource terminologyResource)) {
 			throw new BadRequestException("Only terminology resources are supported, got '%s'", fromResource.getClass().getSimpleName());
 		}
 
 		final String toolingId = terminologyResource.getToolingId();
-		final RepositoryRequest<TerminologyResourceCompareResult> repositoryRequest = new RepositoryRequest<>(toolingId, repositoryContext -> {
-			final TerminologyResourceComparer resourceComparer = repositoryContext.service(TerminologyResourceComparer.class);
-			return resourceComparer.compareResource(repositoryContext, fromUri, toUri, termType, locales());
+		final RepositoryRequest<TerminologyResourceCompareResult> contentRequest = new RepositoryRequest<>(toolingId, contentContext -> {
+			final TerminologyResourceComparer resourceComparer = contentContext.service(TerminologyResourceComparer.class);
+			return resourceComparer.compareResource(contentContext, fromUri, toUri, termType, locales());
 		});
 
-		return repositoryRequest.execute(metaContext);
+		return contentRequest.execute(resourceContext);
 	}
 }
