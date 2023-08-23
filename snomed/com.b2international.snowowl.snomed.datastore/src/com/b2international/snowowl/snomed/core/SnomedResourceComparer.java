@@ -54,6 +54,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 		final RepositoryContext context, 
 		final ResourceURIWithQuery fromUri, 
 		final ResourceURIWithQuery toUri,
+		final boolean summaryOnly,
 		final String termType,
 		final List<ExtendedLocale> locales
 	) {
@@ -208,30 +209,42 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			deletedRelationships, 
 			fromWithoutQuery, 
 			changeDetails);
+		
+		final TerminologyResourceCompareResult result;
+		
+		if (summaryOnly) {
+			
+			// No change detail items needed
+			result = new TerminologyResourceCompareResult(fromUri, toUri);
+			
+		} else {
 
-		final Map<String, String> termsById = newHashMap();
-		for (final List<String> batch : Iterables.partition(changeDetails.keySet(), partitionSize)) {
-			CodeSystemRequests.prepareSearchConcepts()
-				.filterByIds(batch)
-				.filterByCodeSystemUri(toWithoutQuery)
-				.setPreferredDisplay(termType)
-				.setLocales(locales)
-				.setLimit(batch.size())
-				.buildAsync()
-				.execute(context)
-				.forEach(c -> termsById.put(c.getId(), c.getTerm()));
+			// Look up labels
+			final Map<String, String> termsById = newHashMap();
+			for (final List<String> batch : Iterables.partition(changeDetails.keySet(), partitionSize)) {
+				CodeSystemRequests.prepareSearchConcepts()
+					.filterByIds(batch)
+					.filterByCodeSystemUri(toWithoutQuery)
+					.setPreferredDisplay(termType)
+					.setLocales(locales)
+					.setLimit(batch.size())
+					.buildAsync()
+					.execute(context)
+					.forEach(c -> termsById.put(c.getId(), c.getTerm()));
+			}
+			
+			final List<TerminologyResourceCompareResultItem> items = changeDetails.entries()
+				.stream()
+				.map(e -> new TerminologyResourceCompareResultItem(
+					e.getKey(), // ID 
+					termsById.getOrDefault(e.getKey(), e.getKey()), // Label (or ID as the fallback) 
+					e.getValue() // "Change kind"
+				))
+				.collect(Collectors.toList());
+			
+			result = new TerminologyResourceCompareResult(items, fromUri, toUri);
 		}
 		
-		final List<TerminologyResourceCompareResultItem> items = changeDetails.entries()
-			.stream()
-			.map(e -> new TerminologyResourceCompareResultItem(
-				e.getKey(), // ID 
-				termsById.getOrDefault(e.getKey(), e.getKey()), // Label (or ID as the fallback) 
-				e.getValue() // "Change kind"
-			))
-			.collect(Collectors.toList());
-		
-		final TerminologyResourceCompareResult result = new TerminologyResourceCompareResult(items, fromUri, toUri);
 		result.setNewComponents(newConcepts.size());
 		result.setChangedComponents(changeDetails.size());
 		result.setDeletedComponents(deletedConcepts.size());

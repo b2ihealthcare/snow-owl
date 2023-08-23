@@ -46,6 +46,8 @@ public final class TerminologyResourceCompareRequestBuilder
 	@NotEmpty
 	private String termType = "FSN";
 
+	private boolean summaryOnly = false;
+
 	@NotEmpty
 	private List<ExtendedLocale> locales;
 
@@ -67,6 +69,11 @@ public final class TerminologyResourceCompareRequestBuilder
 		return getSelf();
 	}
 
+	public TerminologyResourceCompareRequestBuilder setSummaryOnly(final boolean summaryOnly) {
+		this.summaryOnly = summaryOnly;
+		return getSelf();
+	}
+
 	public TerminologyResourceCompareRequestBuilder setTermType(final String termType) {
 		this.termType = termType;
 		return getSelf();
@@ -74,6 +81,6 @@ public final class TerminologyResourceCompareRequestBuilder
 
 	@Override
 	protected ResourceRequest<RepositoryContext, TerminologyResourceCompareResult> create() {
-		return new TerminologyResourceCompareRequest(fromUri, toUri, termType);
+		return new TerminologyResourceCompareRequest(fromUri, toUri, summaryOnly, termType);
 	}
 }

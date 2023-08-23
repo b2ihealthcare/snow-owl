@@ -25,11 +25,18 @@ final class TerminologyResourceCompareRequest extends ResourceRequest<Repository
 	private final ResourceURIWithQuery fromUri;
 	private final ResourceURIWithQuery toUri;
 	private final String termType;
+	private final boolean summaryOnly;
 
-	public TerminologyResourceCompareRequest(final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri, final String termType) {
+	public TerminologyResourceCompareRequest(
+		final ResourceURIWithQuery fromUri, 
+		final ResourceURIWithQuery toUri, 
+		final boolean summaryOnly, 
+		final String termType
+	) {
 		this.fromUri = fromUri;
 		this.toUri = toUri;
 		this.termType = termType;
+		this.summaryOnly = summaryOnly;
 	}
 
 	@Override
@@ -54,7 +61,7 @@ final class TerminologyResourceCompareRequest extends ResourceRequest<Repository
 		final String toolingId = terminologyResource.getToolingId();
 		final RepositoryRequest<TerminologyResourceCompareResult> contentRequest = new RepositoryRequest<>(toolingId, contentContext -> {
 			final TerminologyResourceComparer resourceComparer = contentContext.service(TerminologyResourceComparer.class);
-			return resourceComparer.compareResource(contentContext, fromUri, toUri, termType, locales());
+			return resourceComparer.compareResource(contentContext, fromUri, toUri, summaryOnly, termType, locales());
 		});
 
 		return contentRequest.execute(resourceContext);
