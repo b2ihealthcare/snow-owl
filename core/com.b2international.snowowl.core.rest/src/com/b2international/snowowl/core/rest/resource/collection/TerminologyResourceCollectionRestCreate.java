@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.core.rest.resource.collection;
 
-import com.b2international.snowowl.core.request.collection.TerminologyResourceCollectionCreateRequestBuilder;
-import com.b2international.snowowl.core.request.collection.TerminologyResourceCollectionRequests;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollectionCreateRequestBuilder;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollectionRequests;
 import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestCreate;
 
 /**

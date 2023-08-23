@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request.collection;
+package com.b2international.snowowl.core.collection;
 
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceUpdateRequest;
 

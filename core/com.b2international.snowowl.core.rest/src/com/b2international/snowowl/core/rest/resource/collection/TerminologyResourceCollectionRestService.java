@@ -33,10 +33,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.TerminologyResourceCollection;
-import com.b2international.snowowl.core.TerminologyResourceCollections;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollectionRequests;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollections;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.request.collection.TerminologyResourceCollectionRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
