@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.compare;
 
+import static com.google.common.collect.Sets.immutableEnumSet;
+
 import java.util.Locale;
+import java.util.Set;
 
 import com.b2international.commons.StringUtils;
 
@@ -47,11 +50,19 @@ public enum TerminologyResourceCompareChangeKind {
 	/** The component has not changed when compared to the reference */
 	UNCHANGED;
 
+	private static final Set<TerminologyResourceCompareChangeKind> CHANGED_VALUES = immutableEnumSet(
+		DEFINITION_CHANGE, PROPERTY_CHANGE, TERM_CHANGE, COMPONENT_CHANGE
+	);
+	
 	/**
 	 * @return a human-readable name of this change kind (eg. "Definition change"
 	 * for the literal {@link #DEFINITION_CHANGE})
 	 */
 	public String getDisplayName() {
 		return StringUtils.splitCamelCaseAndCapitalize(name().toLowerCase(Locale.ENGLISH));
+	}
+
+	public boolean isChanged() {
+		return CHANGED_VALUES.contains(this);
 	}
 }
