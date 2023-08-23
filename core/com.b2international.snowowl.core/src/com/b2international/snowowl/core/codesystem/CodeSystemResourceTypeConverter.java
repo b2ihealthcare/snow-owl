@@ -47,7 +47,7 @@ public final class CodeSystemResourceTypeConverter implements ResourceTypeConver
 	
 	@Override
 	public Integer getRank() {
-		return 2;
+		return 3;
 	}
 	
 	@Override
