@@ -73,6 +73,7 @@
         <setEntry value="io.netty.common@default:default"/>
         <setEntry value="io.netty.handler@default:default"/>
         <setEntry value="io.netty.resolver@default:default"/>
+        <setEntry value="io.netty.transport-native-unix-common@default:default"/>
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
@@ -136,7 +137,6 @@
         <setEntry value="org.eclipse.xtext.util@default:default"/>
         <setEntry value="org.eclipse.xtext.xbase.lib@default:default"/>
         <setEntry value="org.eclipse.xtext@default:default"/>
-        <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
         <setEntry value="org.junit@default:default"/>
@@ -176,6 +176,7 @@
         <setEntry value="com.b2international.snowowl.snomed.reasoner.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
+        <setEntry value="org.hamcrest.core@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
     <booleanAttribute key="tracing" value="false"/>
