@@ -15,13 +15,9 @@
  */
 package com.b2international.snowowl.core.collection;
 
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceCreateRequest;
@@ -51,21 +47,20 @@ final class TerminologyResourceCollectionCreateRequest extends BaseTerminologyRe
 				.childResourceType(childResourceType);
 	}
 	
-//	@Override
-//	protected void preExecute(TransactionContext context) {
-//		var supportedChildResourceTypes = context.service(ResourceTypeConverter.Registry.class).getResourceTypeConverters()
-//				.values()
-//				.stream()
-//				.filter(ResourceTypeConverter::canBeContainedByCollection)
-//				.map(ResourceTypeConverter::getResourceType)
-//				.collect(Collectors.toCollection(TreeSet::new));
-//		
-//		if (!supportedChildResourceTypes.contains(childResourceType)) {
-//			throw new BadRequestException("'%s' is not supported as child resource type in collections. Select one from the following supported resource types: '%s'", childResourceType, supportedChildResourceTypes);
-//		}
-//		
-//		// FIXME call preExecute after validating child resource type as the method has a side effect on creating a new branch, which is not rolled back in case of an error 
-//		super.preExecute(context);
-//	}
+	@Override
+	protected void preExecute(TransactionContext context) {
+		// TODO support fetching toolingId from the first dependency if not defined? or just report error that is not defined?
+		var toolingId = getToolingId();
+		
+		var terminologyToolingSupport = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getToolingSupport(toolingId);
+
+		var supportedChildResourceTypes = terminologyToolingSupport.getSupportedChildResourceTypes();
+		if (!supportedChildResourceTypes.contains(childResourceType)) {
+			throw new BadRequestException("'%s' is not supported as child resource type in collections created for tooling '%s'. Select one from the following supported resource types: '%s'", childResourceType, toolingId, supportedChildResourceTypes);
+		}
+		
+		// FIXME call preExecute after validating child resource type as the method has a side effect on creating a new branch, which is not rolled back in case of an error 
+		super.preExecute(context);
+	}
 	
 }

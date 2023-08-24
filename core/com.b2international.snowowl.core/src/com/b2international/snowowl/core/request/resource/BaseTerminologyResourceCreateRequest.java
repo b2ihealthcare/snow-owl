@@ -158,6 +158,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	}
 
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	protected void preExecute(final TransactionContext context) {
 		checkOid(context);
 		

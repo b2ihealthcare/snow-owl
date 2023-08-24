@@ -83,6 +83,7 @@ public final class TerminologyResourceCollection extends TerminologyResource {
 		if (doc.getDependencies() != null) {
 			result.setDependencies(doc.getDependencies().stream().map(Dependency::from).toList());
 		}
+		result.setChildResourceType(doc.getChildResourceType());
 		return result;
 	}
 
