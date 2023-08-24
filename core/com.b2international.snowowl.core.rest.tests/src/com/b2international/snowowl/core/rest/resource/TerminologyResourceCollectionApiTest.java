@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
-import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionCreate;
-import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionGet;
-import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.createTerminologyResourceCollection;
+import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionCreate;
+import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionGet;
+import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.createTerminologyResourceCollection;
 import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.assertBundleGet;
 import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.createBundle;
 import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.*;
