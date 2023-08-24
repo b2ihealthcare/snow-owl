@@ -78,8 +78,16 @@ public abstract class CodeSystemApiAssert {
 		return lastPathSegment(path);
 	}
 	
+	public static String createCodeSystem(String codeSystemId, String parentCollectionId) {
+		return createCodeSystem(prepareCodeSystemCreateRequestBody(codeSystemId).with("bundleId", parentCollectionId));
+	}
+	
 	public static ValidatableResponse assertCodeSystemNotCreated(final Map<String, Object> requestBody) {
 		return assertCodeSystemCreate(requestBody).statusCode(409);
+	}
+	
+	public static ValidatableResponse assertCodeSystemCreate(final String codeSystemId, final String parentCollectionId) {
+		return assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(codeSystemId).with("bundleId", parentCollectionId));
 	}
 	
 	public static ValidatableResponse assertCodeSystemCreate(final Map<String, Object> requestBody) {

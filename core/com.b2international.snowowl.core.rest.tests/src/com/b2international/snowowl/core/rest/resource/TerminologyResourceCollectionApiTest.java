@@ -18,10 +18,15 @@ package com.b2international.snowowl.core.rest.resource;
 import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionCreate;
 import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionGet;
 import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.createTerminologyResourceCollection;
+import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.assertBundleGet;
+import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.createBundle;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.*;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 
 import java.util.Set;
 
+import org.elasticsearch.core.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +34,8 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -37,9 +44,7 @@ import com.google.common.collect.ImmutableSortedSet;
  */
 public class TerminologyResourceCollectionApiTest {
 
-	private static final String CHILD_RESOURCE_TYPE = CodeSystem.RESOURCE_TYPE;
-
-	private static final TerminologyResourceCollectionToolingSupport TOOLING_SUPPORT = new TerminologyResourceCollectionToolingSupport() {
+	private static final TerminologyResourceCollectionToolingSupport SNOMED_CODESYSTEM_CHILD_SUPPORT = new TerminologyResourceCollectionToolingSupport() {
 		
 		@Override
 		public String getToolingId() {
@@ -48,36 +53,96 @@ public class TerminologyResourceCollectionApiTest {
 		
 		@Override
 		public Set<String> getSupportedChildResourceTypes() {
-			return ImmutableSortedSet.of(CHILD_RESOURCE_TYPE);
+			return ImmutableSortedSet.of(CodeSystem.RESOURCE_TYPE);
 		}
-	}; 
+	};
+	
+	private static final TerminologyResourceCollectionToolingSupport SNOMED_OTHER_CHILD_SUPPORT = new TerminologyResourceCollectionToolingSupport() {
+		
+		@Override
+		public String getToolingId() {
+			return SnomedTerminologyComponentConstants.TOOLING_ID;
+		}
+		
+		@Override
+		public Set<String> getSupportedChildResourceTypes() {
+			return ImmutableSortedSet.of("other");
+		}
+	};
 
 	@Before
 	public void setup() {
-		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(TOOLING_SUPPORT);
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(SNOMED_CODESYSTEM_CHILD_SUPPORT);
 	}
 	
 	@After
 	public void after() {
-		// make sure we always unregister the custom tooling support implementation
-		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(TOOLING_SUPPORT);
+		// make sure we always unregister all custom tooling support for terminology collections
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(SNOMED_CODESYSTEM_CHILD_SUPPORT);
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(SNOMED_OTHER_CHILD_SUPPORT);
 	}
 	
 	@Test
 	public void create_UnsupportedChildResourceType() throws Exception {
-		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(TOOLING_SUPPORT);
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(SNOMED_CODESYSTEM_CHILD_SUPPORT);
 		
-		assertTerminologyResourceCollectionCreate(CHILD_RESOURCE_TYPE)
-			.statusCode(400);
+		assertTerminologyResourceCollectionCreate(CodeSystem.RESOURCE_TYPE)
+			.statusCode(400)
+			.body("message", equalTo("ToolingId 'snomed' is not supported to be used for resource collections."));
 	}
 	
 	@Test
 	public void create() throws Exception {
-		var collectionId = createTerminologyResourceCollection(CHILD_RESOURCE_TYPE);
+		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
 		
 		assertTerminologyResourceCollectionGet(collectionId)
 			.statusCode(200)
-			.body("childResourceType", equalTo(CHILD_RESOURCE_TYPE));
+			.body("childResourceType", equalTo(CodeSystem.RESOURCE_TYPE));
+	}
+	
+	@Test
+	public void create_BundleChildResource() throws Exception {
+		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
+		
+		var bundleId = createBundle(IDs.base62UUID(), collectionId);
+		
+		assertBundleGet(bundleId, "resourcePathLabels()")
+			.statusCode(200)
+			.body("bundleId", equalTo(collectionId))
+			.body("bundleAncestorIds", equalTo(List.of(IComponent.ROOT_ID)))
+			.body("resourcePathLabels", equalTo(List.of("Root", "Title of " + collectionId)));
+		
+		assertTerminologyResourceCollectionGet(collectionId, "content()")
+			.statusCode(200)
+			.body("content.items.id", hasItem(bundleId));
+	}
+	
+	@Test
+	public void create_ValidChildResource() throws Exception {
+		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
+		
+		var codeSystemId = createCodeSystem(IDs.base62UUID(), collectionId);
+		
+		assertCodeSystemGet(codeSystemId, "resourcePathLabels()")
+			.statusCode(200)
+			.body("bundleId", equalTo(collectionId))
+			.body("bundleAncestorIds", equalTo(List.of(IComponent.ROOT_ID)))
+			.body("resourcePathLabels", equalTo(List.of("Root", "Title of " + collectionId)));
+		
+		assertTerminologyResourceCollectionGet(collectionId, "content()")
+			.statusCode(200)
+			.body("content.items.id", hasItem(codeSystemId));
+	}
+	
+	@Test
+	public void create_InvalidChildResource() throws Exception {
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(SNOMED_OTHER_CHILD_SUPPORT);
+		
+		var collectionId = createTerminologyResourceCollection("other");
+		
+		assertCodeSystemCreate(IDs.base62UUID(), collectionId)
+			.statusCode(400)
+			.body("message", equalTo("'codesystems' resources are not allowed to be created under parent collection '"+collectionId+"'. The allowed resource types are: 'other'."));
 	}
 	
 }

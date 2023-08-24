@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -26,9 +31,17 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.*;
+import com.b2international.snowowl.core.Dependency;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.User;
@@ -186,6 +199,16 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.build(toolingId)
 				.getRequest()
 				.execute(context);
+		}
+	}
+	
+	@Override
+	@OverridingMethodsMustInvokeSuper
+	protected void checkParentCollection(TransactionContext context, Resource parentCollection) {
+		if (parentCollection instanceof TerminologyResourceCollection resourceCollection) {
+			if (!getResourceType().equals(resourceCollection.getChildResourceType())) {
+				throw new BadRequestException("'%s' resources are not allowed to be created under parent collection '%s'. The allowed resource types are: '%s'.", getResourceType(), resourceCollection.getId(), resourceCollection.getChildResourceType());
+			}
 		}
 	}
 

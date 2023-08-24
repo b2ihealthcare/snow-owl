@@ -54,11 +54,12 @@ public class TerminologyResourceCollectionRestRequests {
 			.then();
 	}
 	
-	public static ValidatableResponse assertTerminologyResourceCollectionGet(String collectionId) {
+	public static ValidatableResponse assertTerminologyResourceCollectionGet(String collectionId, String...expand) {
 		return givenAuthenticatedRequest(COLLECTIONS_API)
 				.accept(ContentType.JSON)
+				.queryParam("expand", expand == null ? null : String.join(",", expand))
 				.get("/{id}", collectionId)
-				.then();
+				.then().assertThat();
 	}
 	
 	public static ValidatableResponse assertTerminologyResourceCollectionSearch(Map<String, Object> filters) {
@@ -66,7 +67,7 @@ public class TerminologyResourceCollectionRestRequests {
 				.accept(ContentType.JSON)
 				.queryParams(filters)
 				.get()
-				.then();
+				.then().assertThat();
 	}
 	
 	public static String createTerminologyResourceCollection(String childResourceType) {

@@ -15,10 +15,19 @@
  */
 package com.b2international.snowowl.core.collection;
 
+import java.util.Collection;
+import java.util.List;
+
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.expand.BaseResourceExpander;
 
 /**
  * @since 9.0
@@ -39,6 +48,22 @@ public final class TerminologyResourceCollectionResourceTypeConverter implements
 	@Override
 	public Resource toResource(ResourceDocument doc) {
 		return TerminologyResourceCollection.from(doc);
+	}
+
+	@Override
+	public <T extends Resource> void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<T> results) {
+		if (expand.containsKey("content")) {
+			final Options expandOptions = expand.getOptions("content");
+			// allow expanding content via content expansion, for now hit count only
+			results.forEach(collection -> {
+				final Resources resources = ResourceRequests.prepareSearch()
+						.filterByBundleAncestorId(collection.getId())
+						.setLimit(BaseResourceExpander.getLimit(expandOptions))
+						.build()
+						.execute(context);
+				collection.setProperties("content", resources);
+			});
+		}
 	}
 	
 }

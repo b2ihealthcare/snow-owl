@@ -49,9 +49,7 @@ final class TerminologyResourceCollectionSearchRequest extends BaseTerminologyRe
 	@Override
 	protected TerminologyResourceCollections toCollectionResource(RepositoryContext context,
 			Hits<ResourceDocument> hits) {
-		return new TerminologyResourceCollections(
-				hits.getHits().stream().map(TerminologyResourceCollection::from).toList(), hits.getSearchAfter(),
-				hits.getLimit(), hits.getTotal());
+		return new TerminologyResourceCollectionConverter(context, expand(), locales()).convert(hits);
 	}
 
 	@Override

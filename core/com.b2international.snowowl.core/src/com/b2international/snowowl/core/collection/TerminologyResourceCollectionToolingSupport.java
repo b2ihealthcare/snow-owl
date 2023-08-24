@@ -48,7 +48,7 @@ public interface TerminologyResourceCollectionToolingSupport {
 		
 		public TerminologyResourceCollectionToolingSupport getToolingSupport(String toolingId) {
 			if (!collectionToolingSupportImplementations.containsKey(toolingId)) {
-				throw new BadRequestException("ToolingId '%s' is currently not supported to be used for Terminology Resource Collections.", toolingId);
+				throw new BadRequestException("ToolingId '%s' is not supported to be used for resource collections.", toolingId);
 			}
 			return collectionToolingSupportImplementations.get(toolingId); 
 		}
