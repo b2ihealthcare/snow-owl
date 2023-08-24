@@ -15,26 +15,22 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionCreate;
+import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionGet;
+import static com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionRestRequests.createTerminologyResourceCollection;
 import static org.hamcrest.Matchers.equalTo;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
-import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.google.common.collect.ImmutableSortedSet;
-
-import io.restassured.http.ContentType;
-import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 9.0
@@ -43,8 +39,6 @@ public class TerminologyResourceCollectionApiTest {
 
 	private static final String CHILD_RESOURCE_TYPE = CodeSystem.RESOURCE_TYPE;
 
-	private static final String COLLECTIONS_API = "/collections";
-	
 	private static final TerminologyResourceCollectionToolingSupport TOOLING_SUPPORT = new TerminologyResourceCollectionToolingSupport() {
 		
 		@Override
@@ -57,6 +51,11 @@ public class TerminologyResourceCollectionApiTest {
 			return ImmutableSortedSet.of(CHILD_RESOURCE_TYPE);
 		}
 	}; 
+
+	@Before
+	public void setup() {
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(TOOLING_SUPPORT);
+	}
 	
 	@After
 	public void after() {
@@ -66,58 +65,19 @@ public class TerminologyResourceCollectionApiTest {
 	
 	@Test
 	public void create_UnsupportedChildResourceType() throws Exception {
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(TOOLING_SUPPORT);
+		
 		assertTerminologyResourceCollectionCreate(CHILD_RESOURCE_TYPE)
 			.statusCode(400);
 	}
 	
 	@Test
 	public void create() throws Exception {
-		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(TOOLING_SUPPORT);
-		
 		var collectionId = createTerminologyResourceCollection(CHILD_RESOURCE_TYPE);
 		
 		assertTerminologyResourceCollectionGet(collectionId)
 			.statusCode(200)
 			.body("childResourceType", equalTo(CHILD_RESOURCE_TYPE));
-	}
-	
-	private ValidatableResponse assertTerminologyResourceCollectionCreate(String childResourceType) {
-		var collectionId = IDs.base62UUID();
-		return givenAuthenticatedRequest(COLLECTIONS_API)
-			.contentType(ContentType.JSON)
-			.body(Json.object(
-				"id", collectionId,
-				"title", "Title of " + collectionId,
-				"url", collectionId,
-				"description", "<div>Markdown supported</div>",
-				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
-				"oid", "oid_" + collectionId,
-				"language", "ENG",
-				"owner", "owner",
-				"contact", "https://b2ihealthcare.com",
-				"childResourceType", childResourceType
-			))
-			.post()
-			.then();
-	}
-	
-	private ValidatableResponse assertTerminologyResourceCollectionGet(String collectionId) {
-		return givenAuthenticatedRequest(COLLECTIONS_API)
-				.accept(ContentType.JSON)
-				.get("/{id}", collectionId)
-				.then();
-	}
-	
-	private ValidatableResponse assertTerminologyResourceCollectionSearch(Map<String, Object> filters) {
-		return givenAuthenticatedRequest(COLLECTIONS_API)
-				.accept(ContentType.JSON)
-				.queryParams(filters)
-				.get()
-				.then();
-	}
-	
-	private String createTerminologyResourceCollection(String childResourceType) {
-		return assertCreated(assertTerminologyResourceCollectionCreate(childResourceType));
 	}
 	
 }
