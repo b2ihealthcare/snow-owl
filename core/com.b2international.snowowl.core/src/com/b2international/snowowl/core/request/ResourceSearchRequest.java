@@ -16,14 +16,12 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
-import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.ResourceTypeConverter.Registry;
 import com.b2international.snowowl.core.Resources;
@@ -85,14 +83,6 @@ public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resou
 	@Override
 	protected Resources toCollectionResource(RepositoryContext context, Hits<ResourceDocument> hits) {
 		return new ResourceConverter(context, expand(), locales()).convert(hits);
-	}
-	
-	@Override
-	protected void collectAdditionalFieldsToFetch(Set<String> fieldsToLoad) {
-		// make sure resourceType is always fetched, even when not explicitly set, to avoid URI creation error, ID field is ensured by the generic API
-		if (!fields().contains(Resource.Fields.RESOURCE_TYPE)) {
-			fieldsToLoad.add(Resource.Fields.RESOURCE_TYPE);
-		}
 	}
 
 	@Override
