@@ -49,6 +49,7 @@ import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -87,11 +88,49 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		expandVersions(results, expand(), options -> getLimit(options), locales(), context());
 		
 		expandDependencyUpgrades(results);
+		expandDependencyResources(results);
 		
 		// expand additional fields via pluggable converters
 		converters.expand(context(), expand(), locales(), results);
 	}
 	
+	protected final void expandDependencyResources(List<R> results) {
+		if (!expand().containsKey("dependencies_resource")) {
+			return;
+		}
+		
+		// index result dependencies by their Resource IDs in a Multimap to easily update them later on when we get back resource data
+		// FIXME it would be great to fetch the versioned state of the resource but that can only be executed one-by-one, which slows things down
+		Multimap<String, Dependency> dependenciesToExpand = HashMultimap.create();
+		for (Resource res : results) {
+			if (res instanceof TerminologyResource tres) {
+				TerminologyResource terminologyResource = (TerminologyResource) res;
+				if (!CompareUtils.isEmpty(terminologyResource.getDependencies())) {
+					for (Dependency dep : terminologyResource.getDependencies()) {
+						dependenciesToExpand.put(dep.getUri().getResourceUri().getResourceId(), dep);
+					}
+				}
+			}
+		}
+		
+		// fetch all referenced resources by their ID for now
+		ResourceRequests.prepareSearch()
+			.filterByIds(dependenciesToExpand.keySet())
+			.setLimit(dependenciesToExpand.keySet().size())
+			.build()
+			.execute(context())
+			.forEach(resource -> {
+				// update the Multimap by removing all Dependency entries from it that we could handle
+				dependenciesToExpand.removeAll(resource.getId()).forEach(dependencyToExpand -> {
+					dependencyToExpand.setResource((TerminologyResource) resource);
+				});
+			});
+		
+		if (!dependenciesToExpand.isEmpty()) {
+			context().log().warn("The following resources could not be expanded for their dependencies: {}", ImmutableSortedSet.copyOf(dependenciesToExpand.keySet()));
+		}
+	}
+
 	protected final void expandDependencyUpgrades(List<R> results) {
 		if (!expand().containsKey("dependencies_upgrades")) {
 			return;

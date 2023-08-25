@@ -10,7 +10,8 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.17.2</elasticsearch.version>
+		<elasticsearch.version>7.17.12</elasticsearch.version>
+		<log4j2.version>2.17.1</log4j2.version>
     </properties>
     
     <!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
@@ -69,6 +70,12 @@
         	<version>1.8.0</version>
         	<scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j2.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -100,6 +107,7 @@
 								elasticsearch-cli,
 								elasticsearch-core,
 								elasticsearch-geo,
+								elasticsearch-lz4,
 								elasticsearch-rest-client,
 								elasticsearch-rest-high-level-client,
 								elasticsearch-secure-sm,
@@ -112,6 +120,7 @@
 								lang-mustache-client,
 								lang-painless,
 								log4j-api,
+								log4j-core,
 								lucene-analyzers-common,
 								lucene-backward-codecs,
 								lucene-core,
@@ -123,7 +132,6 @@
 								lucene-queries,
 								lucene-queryparser,
 								lucene-sandbox,
-								lucene-spatial-extras,
 								lucene-spatial3d,
 								lucene-suggest,
 								lz4-java,

@@ -279,6 +279,14 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	@OverridingMethodsMustInvokeSuper
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 	}
+	
+	@Override
+	protected void collectAdditionalFieldsToFetch(Set<String> fieldsToLoad) {
+		// make sure resourceType is always fetched, even when not explicitly set, to avoid URI creation error, ID field is ensured by the generic API
+		if (!fields().contains(Resource.Fields.RESOURCE_TYPE)) {
+			fieldsToLoad.add(Resource.Fields.RESOURCE_TYPE);
+		}
+	}
 
 	protected final void addUrlFilter(ExpressionBuilder queryBuilder) {
 		addFilter(queryBuilder, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);

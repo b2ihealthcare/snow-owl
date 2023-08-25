@@ -82,73 +82,67 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-cbor</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-csv</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-smile</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-xml</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-yaml</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.datatype</groupId>
 				<artifactId>jackson-datatype-jsr310</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.module</groupId>
 				<artifactId>jackson-module-afterburner</artifactId>
-				<version>2.12.7</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.module</groupId>
-				<artifactId>jackson-module-jaxb-annotations</artifactId>
-				<version>2.12.7</version>
+				<version>2.14.2</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.woodstox</groupId>
 				<artifactId>woodstox-core</artifactId>
-				<version>5.3.0</version>
+				<version>6.5.0</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
@@ -196,43 +190,49 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-buffer</artifactId>
-				<version>4.1.68.Final</version>
+				<version>4.1.94.Final</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-codec-http</artifactId>
-				<version>4.1.68.Final</version>
+				<version>4.1.94.Final</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-codec</artifactId>
-				<version>4.1.68.Final</version>
+				<version>4.1.94.Final</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-common</artifactId>
-				<version>4.1.68.Final</version>
+				<version>4.1.94.Final</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-handler</artifactId>
-				<version>4.1.68.Final</version>
+				<version>4.1.94.Final</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-resolver</artifactId>
-				<version>4.1.68.Final</version>
+				<version>4.1.94.Final</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport</artifactId>
-				<version>4.1.68.Final</version>
+				<version>4.1.94.Final</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-transport-native-unix-common</artifactId>
+				<version>4.1.94.Final</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
@@ -646,7 +646,7 @@
 			<dependency>
 				<groupId>org.yaml</groupId>
 				<artifactId>snakeyaml</artifactId>
-				<version>1.27</version>
+				<version>1.33</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
