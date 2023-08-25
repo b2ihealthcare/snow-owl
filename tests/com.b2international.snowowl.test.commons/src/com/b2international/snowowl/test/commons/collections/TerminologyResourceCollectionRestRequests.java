@@ -35,23 +35,30 @@ public class TerminologyResourceCollectionRestRequests {
 	public static final String COLLECTIONS_API = "/collections";
 	
 	public static ValidatableResponse assertTerminologyResourceCollectionCreate(String childResourceType) {
-		var collectionId = IDs.base62UUID();
+		return assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), childResourceType));
+	}
+
+	public static ValidatableResponse assertTerminologyResourceCollectionCreate(Json body) {
 		return givenAuthenticatedRequest(COLLECTIONS_API)
 			.contentType(ContentType.JSON)
-			.body(Json.object(
-				"id", collectionId,
-				"title", "Title of " + collectionId,
-				"url", collectionId,
-				"description", "<div>Markdown supported</div>",
-				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
-				"oid", "oid_" + collectionId,
-				"language", "ENG",
-				"owner", "owner",
-				"contact", "https://b2ihealthcare.com",
-				"childResourceType", childResourceType
-			))
+			.body(body)
 			.post()
 			.then();
+	}
+
+	public static Json prepareTerminologyResourceCollectionCreateBody(String collectionId, String childResourceType) {
+		return Json.object(
+			"id", collectionId,
+			"title", "Title of " + collectionId,
+			"url", collectionId,
+			"description", "<div>Markdown supported</div>",
+			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
+			"oid", "oid_" + collectionId,
+			"language", "ENG",
+			"owner", "owner",
+			"contact", "https://b2ihealthcare.com",
+			"childResourceType", childResourceType
+		);
 	}
 	
 	public static ValidatableResponse assertTerminologyResourceCollectionGet(String collectionId, String...expand) {
@@ -72,6 +79,10 @@ public class TerminologyResourceCollectionRestRequests {
 	
 	public static String createTerminologyResourceCollection(String childResourceType) {
 		return assertCreated(assertTerminologyResourceCollectionCreate(childResourceType));
+	}
+	
+	public static String createTerminologyResourceCollection(Json body) {
+		return assertCreated(assertTerminologyResourceCollectionCreate(body));
 	}
 	
 }
