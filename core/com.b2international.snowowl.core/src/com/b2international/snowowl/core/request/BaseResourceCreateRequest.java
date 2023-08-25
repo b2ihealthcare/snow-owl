@@ -140,7 +140,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		return purpose;
 	}
 	
-	public Map<String, Object> getSettings() {
+	protected final Map<String, Object> getSettings() {
 		return settings;
 	}
 	
@@ -247,7 +247,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		}
 		
 		final List<String> collectionAncestorIds = checkParentCollection(context);
-
+		
 		preExecute(context);
 		
 		context.add(createResourceDocument(context, collectionAncestorIds));

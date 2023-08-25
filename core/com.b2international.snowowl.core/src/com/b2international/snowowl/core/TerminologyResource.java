@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -166,6 +167,19 @@ public abstract class TerminologyResource extends Resource {
 	}
 
 	/**
+	 * Searches the dependency array for the first dependency that has the matching scope.
+	 * 
+	 * @param scope
+	 * @return an {@link Optional} value of a {@link Dependency} entry.
+	 */
+	public Optional<Dependency> getDependency(String scope) {
+		return Collections3.toImmutableList(getDependencies())
+				.stream()
+				.filter(dep -> Objects.equals(scope, dep.getScope()))
+				.findFirst();
+	}
+	
+	/**
 	 * Searches the dependency array for the dependency URI that has the matching scope. If there is no such dependency in the dependency
 	 * array then the system takes the current settings object into account and tries to find the appropriate settingsKeyed value as fallback
 	 * dependency URI. If none of them can be found this method returns <code>null</code>.
@@ -175,9 +189,7 @@ public abstract class TerminologyResource extends Resource {
 	 * @return
 	 */
 	public ResourceURI getDependency(String scope, String settingsKey) {
-		return Collections3.toImmutableList(getDependencies())
-				.stream()
-				.filter(dep -> Objects.equals(scope, dep.getScope())).findFirst()
+		return getDependency(scope)
 				.map(Dependency::getUri)
 				.map(ResourceURIWithQuery::getResourceUri)
 				.orElseGet(() -> (getSettings() == null || !getSettings().containsKey(settingsKey)) ? null : new ResourceURIWithQuery((String) getSettings().get(settingsKey)).getResourceUri());

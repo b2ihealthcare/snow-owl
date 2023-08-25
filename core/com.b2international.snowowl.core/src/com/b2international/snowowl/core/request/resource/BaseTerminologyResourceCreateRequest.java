@@ -31,6 +31,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
@@ -42,6 +43,7 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.User;
@@ -55,6 +57,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -90,6 +93,9 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	// runtime fields
 	private transient List<Dependency> mergedDependencies;
 	private transient String parentPath;
+	
+	// inherited dependencies from parent collection, will be merged during dependency check into the mergedDependencies above
+	private transient List<Dependency> inheritedDependencies;
 	
 	public final void setOid(String oid) {
 		this.oid = oid;
@@ -208,24 +214,54 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		if (parentCollection instanceof TerminologyResourceCollection resourceCollection) {
 			if (!getResourceType().equals(resourceCollection.getChildResourceType())) {
 				throw new BadRequestException("'%s' resources are not allowed to be created under parent collection '%s'. The allowed resource types are: '%s'.", getResourceType(), resourceCollection.getId(), resourceCollection.getChildResourceType());
+			} else {
+				TerminologyResourceCollectionToolingSupport toolingSupport = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getToolingSupport(toolingId);
+				// in case of matching child resource type, validate and inherit dependencies and settings
+				inheritParentCollectionDependencies(resourceCollection, toolingSupport.getInheritedDependencyScopeMapping());
+				inheritParentCollectionSettings(resourceCollection, toolingSupport.getInheritedSettingKeys());
 			}
 		}
 	}
 
-	private Optional<Version> checkDependencies(RepositoryContext context, boolean create) {
-		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
-		if (!deprecatedDependencies.isEmpty()) {
-			// throw error if using both the old and the new way of attaching dependencies to a resource
-			if (!CompareUtils.isEmpty(dependencies) && !Dependency.isEqual(dependencies, deprecatedDependencies)) {
-				throw new BadRequestException("Using both deprecated dependency parameters (%s) and the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
-			}
-
-			// merge old, deprecated dependencies into a single mergedDependencies List, detect duplicates and old API usage
-			this.mergedDependencies = deprecatedDependencies.entrySet().stream().map(entry -> Dependency.of(entry.getValue(), entry.getKey())).toList(); 
-		} else {
-			this.mergedDependencies = dependencies;
+	private void inheritParentCollectionDependencies(TerminologyResourceCollection resourceCollection, Map<String, String> inheritedDependencyScopeMapping) {
+		if (CompareUtils.isEmpty(inheritedDependencyScopeMapping)) {
+			return;
 		}
+		
+		// calculate mergedDependencies field if not calculated yet
+		calculateMergedDependencies();
 
+		this.inheritedDependencies = inheritedDependencyScopeMapping
+				.entrySet()
+				.stream()
+				.map(entry -> {
+					// raise an error if client tries to redefine parent inherited dependency
+					this.mergedDependencies.stream().filter(dep -> entry.getKey().equals(dep.getScope()))
+						.findFirst()
+						.ifPresent(dep -> {
+							throw new BadRequestException("Scoped dependency '%s' is automatically inherited and managed on resource collection level. Remove it from the dependency array and try again.", dep);
+						});
+					
+					return resourceCollection
+						.getDependency(entry.getKey())
+						.map(dep -> Dependency.of(dep.getUri(), entry.getValue()))
+						.orElseThrow(() -> new BadRequestException("Required '%s' scoped dependency entry is missing from parent resource collection '%s'.", entry.getKey(), resourceCollection.getId()));
+				})
+				.toList();
+	}
+
+	private void inheritParentCollectionSettings(TerminologyResourceCollection resourceCollection, Set<String> inheritedSettingKeys) {
+		if (CompareUtils.isEmpty(inheritedSettingKeys)) {
+			return;
+		}
+		
+		// take the filtered resource collection settings with the inherited keys and override it with the current settings if they are specified
+		setSettings(Json.assign(Maps.filterKeys(resourceCollection.getSettings(), inheritedSettingKeys::contains), getSettings()));
+	}
+	
+	private Optional<Version> checkDependencies(RepositoryContext context, boolean create) {
+		calculateMergedDependencies();
+		
 		// check dependency duplication first before fetching any data from the server
 		checkDuplicateDependencies(context, mergedDependencies);
 		
@@ -271,6 +307,27 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		checkNonExtensionOfDependencyReferences(context, mergedDependencies);
 		
 		return extensionOfVersion;
+	}
+
+	// TODO temporary method, will be removed completely when we eliminate the old settings based dependency model
+	private void calculateMergedDependencies() {
+		// already calculated, skipping
+		if (this.mergedDependencies != null) {
+			return;
+		}
+		
+		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
+		if (!deprecatedDependencies.isEmpty()) {
+			// throw error if using both the old and the new way of attaching dependencies to a resource
+			if (!CompareUtils.isEmpty(dependencies) && !Dependency.isEqual(dependencies, deprecatedDependencies)) {
+				throw new BadRequestException("Using both deprecated dependency parameters (%s) and the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
+			}
+
+			// merge old, deprecated dependencies into a single mergedDependencies List, detect duplicates and old API usage
+			this.mergedDependencies = deprecatedDependencies.entrySet().stream().map(entry -> Dependency.of(entry.getValue(), entry.getKey())).toList(); 
+		} else {
+			this.mergedDependencies = dependencies;
+		}
 	}
 
 	protected final Map<String, ResourceURIWithQuery> getDeprecatedDependencies() {
