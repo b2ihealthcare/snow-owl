@@ -104,6 +104,7 @@ public interface TerminologyResourceCollectionToolingSupport {
 	/**
 	 * Certain tooling implementations might require certain scoped dependencies to be present when creating a terminology resource.
 	 * @param dependencies
+	 * @throws BadRequestException - if a scoped dependency is required 
 	 */
 	default void validateRequiredDependencies(List<Dependency> dependencies) {
 		
