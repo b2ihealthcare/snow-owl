@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 
 /**
  * @since 9.0
@@ -30,27 +29,11 @@ public final class TerminologyResourceCollection extends TerminologyResource {
 	
 	public static final String RESOURCE_TYPE = "collections";
 	
-	private String childResourceType;
-	
-	public String getChildResourceType() {
-		return childResourceType;
-	}
-	
-	public void setChildResourceType(String childResourceType) {
-		this.childResourceType = childResourceType;
-	}
-	
 	@Override
 	public String getResourceType() {
 		return RESOURCE_TYPE;
 	}
 	
-	@Override
-	public Builder toDocumentBuilder() {
-		return super.toDocumentBuilder()
-				.childResourceType(getChildResourceType());
-	}
-
 	public static ResourceURI uri(String collectionId) {
 		return ResourceURI.of(RESOURCE_TYPE, collectionId);
 	}
@@ -83,7 +66,6 @@ public final class TerminologyResourceCollection extends TerminologyResource {
 		if (doc.getDependencies() != null) {
 			result.setDependencies(doc.getDependencies().stream().map(Dependency::from).toList());
 		}
-		result.setChildResourceType(doc.getChildResourceType());
 		return result;
 	}
 

@@ -18,17 +18,21 @@ package com.b2international.snowowl.core.rest.resource;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionCreate;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionGet;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.createTerminologyResourceCollection;
+import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.prepareTerminologyResourceCollectionCreateBody;
 import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.assertBundleGet;
 import static com.b2international.snowowl.test.commons.rest.BundleApiAssert.createBundle;
-import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.*;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.assertCodeSystemCreate;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.assertCodeSystemGet;
+import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.createCodeSystem;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Set;
 
 import org.elasticsearch.core.List;
+import org.elasticsearch.core.Map;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -55,6 +59,12 @@ public class TerminologyResourceCollectionApiTest {
 		public Set<String> getSupportedChildResourceTypes() {
 			return ImmutableSortedSet.of(CodeSystem.RESOURCE_TYPE);
 		}
+		
+		@Override
+		public Set<String> getInheritedSettingKeys() {
+			return Set.of("customSetting");
+		}
+		
 	};
 	
 	private static final TerminologyResourceCollectionToolingSupport SNOMED_OTHER_CHILD_SUPPORT = new TerminologyResourceCollectionToolingSupport() {
@@ -70,11 +80,6 @@ public class TerminologyResourceCollectionApiTest {
 		}
 	};
 
-	@Before
-	public void setup() {
-		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(SNOMED_CODESYSTEM_CHILD_SUPPORT);
-	}
-	
 	@After
 	public void after() {
 		// make sure we always unregister all custom tooling support for terminology collections
@@ -82,26 +87,32 @@ public class TerminologyResourceCollectionApiTest {
 		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(SNOMED_OTHER_CHILD_SUPPORT);
 	}
 	
+	private void registerSnomedCodeSystemChildSupport() {
+		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(SNOMED_CODESYSTEM_CHILD_SUPPORT);
+	}
+	
 	@Test
 	public void create_UnsupportedChildResourceType() throws Exception {
-		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).unregister(SNOMED_CODESYSTEM_CHILD_SUPPORT);
-		
 		assertTerminologyResourceCollectionCreate(CodeSystem.RESOURCE_TYPE)
 			.statusCode(400)
-			.body("message", equalTo("ToolingId 'snomed' is not supported to be used for resource collections."));
+			.body("message", equalTo("ToolingId 'snomed' is not supported for resource collections."));
 	}
 	
 	@Test
 	public void create() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
 		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
 		
 		assertTerminologyResourceCollectionGet(collectionId)
 			.statusCode(200)
-			.body("childResourceType", equalTo(CodeSystem.RESOURCE_TYPE));
+			.body("resourceURI", equalTo("collections/" + collectionId));
 	}
-	
+
 	@Test
 	public void create_BundleChildResource() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
 		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
 		
 		var bundleId = createBundle(IDs.base62UUID(), collectionId);
@@ -110,7 +121,8 @@ public class TerminologyResourceCollectionApiTest {
 			.statusCode(200)
 			.body("bundleId", equalTo(collectionId))
 			.body("bundleAncestorIds", equalTo(List.of(IComponent.ROOT_ID)))
-			.body("resourcePathLabels", equalTo(List.of("Root", "Title of " + collectionId)));
+			.body("resourcePathLabels", equalTo(List.of("Root", "Title of " + collectionId)))
+			.body("dependencies", nullValue());
 		
 		assertTerminologyResourceCollectionGet(collectionId, "content()")
 			.statusCode(200)
@@ -119,6 +131,8 @@ public class TerminologyResourceCollectionApiTest {
 	
 	@Test
 	public void create_ValidChildResource() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
 		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
 		
 		var codeSystemId = createCodeSystem(IDs.base62UUID(), collectionId);
@@ -127,7 +141,8 @@ public class TerminologyResourceCollectionApiTest {
 			.statusCode(200)
 			.body("bundleId", equalTo(collectionId))
 			.body("bundleAncestorIds", equalTo(List.of(IComponent.ROOT_ID)))
-			.body("resourcePathLabels", equalTo(List.of("Root", "Title of " + collectionId)));
+			.body("resourcePathLabels", equalTo(List.of("Root", "Title of " + collectionId)))
+			.body("dependencies", equalTo(List.of(Map.of("uri", "collections/" + collectionId))));
 		
 		assertTerminologyResourceCollectionGet(collectionId, "content()")
 			.statusCode(200)
@@ -142,7 +157,19 @@ public class TerminologyResourceCollectionApiTest {
 		
 		assertCodeSystemCreate(IDs.base62UUID(), collectionId)
 			.statusCode(400)
-			.body("message", equalTo("'codesystems' resources are not allowed to be created under parent collection '"+collectionId+"'. The allowed resource types are: 'other'."));
+			.body("message", equalTo("ToolingId 'snomed' and child resource type 'codesystems' combination is not supported for resource collections. ToolingId 'snomed' supports the following child resource types: '[other]'."));
+	}
+	
+	@Test
+	public void create_ChildResourceInheritsSettings() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("settings", Map.of("customSetting", "customSettingValue")));
+		
+		var codeSystemId = createCodeSystem(IDs.base62UUID(), collectionId);
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.body("settings.customSetting", equalTo("customSettingValue"));
 	}
 	
 }

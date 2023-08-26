@@ -15,11 +15,18 @@
  */
 package com.b2international.snowowl.core.collection;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 
 /**
@@ -39,24 +46,43 @@ public interface TerminologyResourceCollectionToolingSupport {
 		}
 
 		public void register(TerminologyResourceCollectionToolingSupport toolingSupport) {
-			collectionToolingSupportImplementations.put(toolingSupport.getToolingId(), toolingSupport);
+			checkArgument(!CompareUtils.isEmpty(toolingSupport.getSupportedChildResourceTypes()), "'%s' resource collection tooling support does not define any valid child resource type.", toolingSupport.getClass().getName());
+			toolingSupport.getSupportedChildResourceTypes().forEach(childResourceType -> {
+				collectionToolingSupportImplementations.put(asKey(toolingSupport.getToolingId(), childResourceType), toolingSupport);
+			});
 		}
 
 		public void unregister(TerminologyResourceCollectionToolingSupport toolingSupport) {
-			collectionToolingSupportImplementations.remove(toolingSupport.getToolingId());
+			toolingSupport.getSupportedChildResourceTypes().forEach(childResourceType -> {
+				collectionToolingSupportImplementations.remove(asKey(toolingSupport.getToolingId(), childResourceType));
+			});
 		}
 
-		public TerminologyResourceCollectionToolingSupport getToolingSupport(String toolingId) {
-			if (!collectionToolingSupportImplementations.containsKey(toolingId)) {
-				throw new BadRequestException("ToolingId '%s' is not supported to be used for resource collections.", toolingId);
+		public TerminologyResourceCollectionToolingSupport getToolingSupport(String toolingId, String childResourceType) {
+			String key = asKey(toolingId, childResourceType);
+			if (!collectionToolingSupportImplementations.containsKey(key)) {
+				var supportedChildResourceTypes = collectionToolingSupportImplementations.values()
+					.stream()
+					.filter(support -> support.getToolingId().equals(toolingId))
+					.flatMap(support -> support.getSupportedChildResourceTypes().stream())
+					.collect(Collectors.toCollection(TreeSet::new));
+				if (supportedChildResourceTypes.isEmpty()) {
+					throw new BadRequestException("ToolingId '%s' is not supported for resource collections.", toolingId);
+				} else {
+					throw new BadRequestException("ToolingId '%s' and child resource type '%s' combination is not supported for resource collections. ToolingId '%s' supports the following child resource types: '%s'.", toolingId, childResourceType, toolingId, supportedChildResourceTypes);
+				}
 			}
-			return collectionToolingSupportImplementations.get(toolingId);
+			return collectionToolingSupportImplementations.get(key);
+		}
+
+		private String asKey(String toolingId, String childResourceType) {
+			return String.join("#", toolingId, childResourceType);
 		}
 
 	}
 
 	/**
-	 * @return the toolingId to which this support class is registered
+	 * @return the toolingId to which this support class belongs to
 	 */
 	String getToolingId();
 
@@ -68,21 +94,19 @@ public interface TerminologyResourceCollectionToolingSupport {
 	Set<String> getSupportedChildResourceTypes();
 
 	/**
-	 * @return a {@link Map} of dependency scope key-value pairs where keys are required to be present in the parent collection dependency array when
-	 *         creating a child resource of any of the matching types. These dependencies are considered inherited and will inherit with the scope
-	 *         mapped to the parent colleciton's dependency scope. These scope values cannot be changed on child resource level.
-	 * 
-	 */
-	default Map<String, String> getInheritedDependencyScopeMapping() {
-		return Map.of();
-	}
-
-	/**
 	 * @return a {@link Set} of setting key values that are required to be present in the parent collection settings object when creating a child
 	 *         resource of any of the matching types. These settings are considered inherited and cannot be changed on child resource level directly.
 	 */
 	default Set<String> getInheritedSettingKeys() {
 		return Set.of();
+	}
+
+	/**
+	 * Certain tooling implementations might require certain scoped dependencies to be present when creating a terminology resource.
+	 * @param dependencies
+	 */
+	default void validateRequiredDependencies(List<Dependency> dependencies) {
+		
 	}
 
 }

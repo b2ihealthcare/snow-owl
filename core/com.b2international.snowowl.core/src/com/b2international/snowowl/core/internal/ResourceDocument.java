@@ -15,10 +15,21 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.exists;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.nestedMatch;
+import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.queryString;
+import static com.b2international.index.query.Expressions.regexp;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -99,9 +110,6 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String TYPE_RANK = "typeRank";
 		// since 8.12
 		public static final String DEPENDENCIES = "dependencies";
-		
-		// since 9.0
-		public static final String CHILD_RESOURCE_TYPE = "childResourceType";
 		
 		// deprecated in 8.12
 		/**
@@ -315,8 +323,6 @@ public final class ResourceDocument extends RevisionDocument {
 		private String branchPath;
 		private String toolingId;
 		
-		private String childResourceType;
-		
 		/**
 		 * @deprecated will be removed in 9.0
 		 */
@@ -461,11 +467,6 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
-		public Builder childResourceType(String childResourceType) {
-			this.childResourceType = childResourceType;
-			return getSelf();
-		}
-		
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -498,8 +499,7 @@ public final class ResourceDocument extends RevisionDocument {
 				settings,
 				createdAt,
 				updatedAt,
-				dependencies,
-				childResourceType
+				dependencies
 			);
 		}
 		
@@ -537,7 +537,6 @@ public final class ResourceDocument extends RevisionDocument {
 	private final Map<String, Object> settings;
 	
 	private final SortedSet<DependencyDocument> dependencies;
-	private final String childResourceType;
 	
 	// deprecated dependency-like fields, will be removed in 9.0
 	private final ResourceURI extensionOf;
@@ -578,8 +577,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final Map<String, Object> settings,
 			final Long createdAt,
 			final Long updatedAt,
-			final SortedSet<DependencyDocument> dependencies,
-			final String childResourceType) {
+			final SortedSet<DependencyDocument> dependencies) {
 		super(id, iconId);
 		this.resourceType = resourceType;
 		this.url = url;
@@ -604,7 +602,6 @@ public final class ResourceDocument extends RevisionDocument {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 		this.dependencies = dependencies;
-		this.childResourceType = childResourceType;
 	}
 
 	@JsonIgnore
@@ -708,10 +705,6 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public SortedSet<DependencyDocument> getDependencies() {
 		return dependencies;
-	}
-	
-	public String getChildResourceType() {
-		return childResourceType;
 	}
 	
 }
