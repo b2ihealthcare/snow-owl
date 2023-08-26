@@ -21,6 +21,7 @@ import java.util.Map;
 import com.b2international.commons.CompareUtils;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -56,12 +57,18 @@ public final class Json extends ForwardingMap<String, Object> {
 	}
 	
 	public Json without(String property) {
+		if (Strings.isNullOrEmpty(property) || !containsKey(property)) {
+			return this;
+		}
 		final Map<String, Object> newJson = Maps.newLinkedHashMap(source);
 		newJson.remove(property);
 		return new Json(newJson);
 	}
 	
 	public Json with(Map<String, Object> object) {
+		if (object == null) {
+			return this;
+		}
 		final Map<String, Object> newJson = Maps.newLinkedHashMap(source);
 		newJson.putAll(object);
 		return new Json(newJson);
