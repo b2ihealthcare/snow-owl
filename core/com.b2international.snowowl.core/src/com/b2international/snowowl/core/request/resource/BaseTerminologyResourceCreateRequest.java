@@ -210,9 +210,10 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	@OverridingMethodsMustInvokeSuper
 	protected void checkParentCollection(TransactionContext context, Resource parentCollection) {
 		if (parentCollection instanceof TerminologyResourceCollection resourceCollection) {
-			// append parent collection as a dependency of this new resource
-			TerminologyResourceCollectionToolingSupport toolingSupport = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getToolingSupport(toolingId, getResourceType());
+			// find the resource collection's tooling support for this child resource type
+			TerminologyResourceCollectionToolingSupport toolingSupport = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getToolingSupport(resourceCollection.getToolingId(), getResourceType());
 			
+			// append parent collection as a dependency of this new resource
 			final Dependency collectionDependency = Dependency.of(resourceCollection.getResourceURI());
 			setDependencies(dependencies == null ? List.of(collectionDependency) : ImmutableList.<Dependency>builder().addAll(dependencies).add(collectionDependency).build());
 			
