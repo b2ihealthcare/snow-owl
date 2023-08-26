@@ -19,8 +19,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.internal.DependencyDocument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -218,6 +220,19 @@ public final class Dependency implements Serializable {
 			}
 			return true;
 		}
+	}
+
+	/**
+	 * Searches the given dependency array for the first dependency that has the matching scope.
+	 * 
+	 * @param scope - the scope to look for
+	 * @return an {@link Optional} value of a {@link Dependency} entry.
+	 */
+	public static Optional<Dependency> find(List<Dependency> dependencies, String scope) {
+		return Collections3.toImmutableList(dependencies)
+				.stream()
+				.filter(dep -> Objects.equals(scope, dep.getScope()))
+				.findFirst();
 	}
 
 }

@@ -16,12 +16,10 @@
 package com.b2international.snowowl.core;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.collections.Collections3;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchInfo;
@@ -171,12 +169,10 @@ public abstract class TerminologyResource extends Resource {
 	 * 
 	 * @param scope
 	 * @return an {@link Optional} value of a {@link Dependency} entry.
+	 * @see Dependency#find(List, String)
 	 */
 	public Optional<Dependency> getDependency(String scope) {
-		return Collections3.toImmutableList(getDependencies())
-				.stream()
-				.filter(dep -> Objects.equals(scope, dep.getScope()))
-				.findFirst();
+		return Dependency.find(getDependencies(), scope);
 	}
 	
 	/**
