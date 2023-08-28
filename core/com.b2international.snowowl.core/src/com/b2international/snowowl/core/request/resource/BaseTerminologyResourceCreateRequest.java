@@ -29,6 +29,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.json.Json;
@@ -42,8 +43,10 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
 import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.User;
@@ -219,6 +222,26 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			
 			// in case of matching child resource type, validate and inherit settings
 			inheritParentCollectionSettings(resourceCollection, toolingSupport.getInheritedSettingKeys());
+		} else if (parentCollection instanceof Bundle) {
+			// fetch all resources matching any of the current 
+			List<String> nonRootAncestorResourceIds = Collections3.toImmutableList(parentCollection.getResourcePathSegments()).stream().filter(path -> !IComponent.ROOT_ID.equals(path)).toList();
+			
+			if (!nonRootAncestorResourceIds.isEmpty()) {
+				// find and check the first matching terminology resource collection in the ancestor array (only one should exists)
+				ResourceRequests.prepareSearch()
+					.filterByResourceType(TerminologyResourceCollection.RESOURCE_TYPE)
+					.filterByIds(nonRootAncestorResourceIds)
+					.setLimit(nonRootAncestorResourceIds.size())
+					.build()
+					.execute(context)
+					.stream()
+					.filter(ancestorResource -> ancestorResource instanceof TerminologyResourceCollection)
+					.findFirst()
+					.ifPresent(ancestorTerminologyResourceCollection -> checkParentCollection(context, ancestorTerminologyResourceCollection));
+			}
+			
+		} else {
+			throw new BadRequestException("Selected parent resource '%s' is not a valid, recognizable collection resource.", parentCollection.getResourceURI());
 		}
 	}
 

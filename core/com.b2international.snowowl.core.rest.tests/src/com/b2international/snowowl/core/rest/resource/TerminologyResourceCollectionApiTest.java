@@ -172,4 +172,18 @@ public class TerminologyResourceCollectionApiTest {
 			.body("settings.customSetting", equalTo("customSettingValue"));
 	}
 	
+	@Test
+	public void create_ChildResourceInheritsSettingsThroughAncestors() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("settings", Map.of("customSetting", "customSettingValue")));
+		
+		var bundleId = createBundle(IDs.base62UUID(), collectionId);
+		
+		var codeSystemId = createCodeSystem(IDs.base62UUID(), bundleId);
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.body("settings.customSetting", equalTo("customSettingValue"));
+	}
+	
 }
