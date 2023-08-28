@@ -108,7 +108,7 @@ public class TerminologyResourceCollectionRestService extends AbstractRestServic
 	
 	@Operation(
 		summary = "Retrieve a terminology collection resource by its unique identifier", 
-		description = "Returns generic information about a single terminology collection resource associated to the given unique identifier."
+		description = "Returns generic information about a single terminology collection resource identified by the given unique identifier."
 	)
 	@ApiResponses({ 
 		@ApiResponse(responseCode = "200", description = "OK"),
