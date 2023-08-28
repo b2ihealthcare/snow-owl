@@ -96,7 +96,7 @@ public class TerminologyResourceCollectionRestService extends AbstractRestServic
 	@Operation(
 		summary = "Retrieve Terminology Resource Collections", 
 		description = "Returns a collection resource containing all/filtered registered Terminology Collection Resources."
-			+ "<p>Results are by default sorted by ID.")
+			+ "<p>Default sort order of results are by ID.")
 	@ApiResponses({ 
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
