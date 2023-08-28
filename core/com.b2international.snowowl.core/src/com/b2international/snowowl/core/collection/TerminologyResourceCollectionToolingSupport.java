@@ -39,7 +39,9 @@ public interface TerminologyResourceCollectionToolingSupport {
 	 */
 	public static final class Registry {
 
-		private final Map<String, TerminologyResourceCollectionToolingSupport> collectionToolingSupportImplementations = new HashMap<>();
+		private record RegistryKey(String toolingId, String childResourceType) { }
+		
+		private final Map<RegistryKey, TerminologyResourceCollectionToolingSupport> collectionToolingSupportImplementations = new HashMap<>();
 
 		public Registry(ClassPathScanner scanner) {
 			scanner.getComponentsByInterface(TerminologyResourceCollectionToolingSupport.class).forEach(this::register);
@@ -59,7 +61,7 @@ public interface TerminologyResourceCollectionToolingSupport {
 		}
 
 		public TerminologyResourceCollectionToolingSupport getToolingSupport(String toolingId, String childResourceType) {
-			String key = asKey(toolingId, childResourceType);
+			RegistryKey key = asKey(toolingId, childResourceType);
 			if (!collectionToolingSupportImplementations.containsKey(key)) {
 				var supportedChildResourceTypes = collectionToolingSupportImplementations.values()
 					.stream()
@@ -75,8 +77,8 @@ public interface TerminologyResourceCollectionToolingSupport {
 			return collectionToolingSupportImplementations.get(key);
 		}
 
-		private String asKey(String toolingId, String childResourceType) {
-			return String.join("#", toolingId, childResourceType);
+		private RegistryKey asKey(String toolingId, String childResourceType) {
+			return new RegistryKey(toolingId, childResourceType);
 		}
 
 	}
