@@ -54,7 +54,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "Collections", name = "collections")
 @RestController
-@RequestMapping(value = "/collections", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+@RequestMapping(value = "/collections")
 public class TerminologyResourceCollectionRestService extends AbstractRestService {
 
 	public TerminologyResourceCollectionRestService() {
@@ -69,7 +69,7 @@ public class TerminologyResourceCollectionRestService extends AbstractRestServic
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
-	@GetMapping
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<TerminologyResourceCollections> searchByGet(@ParameterObject final TerminologyResourceRestSearch params) {
 		return TerminologyResourceCollectionRequests.prepareSearch()
 			.filterByIds(params.getId())
@@ -101,7 +101,7 @@ public class TerminologyResourceCollectionRestService extends AbstractRestServic
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request") 
 	})
-	@PostMapping(value = "/search", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PostMapping(value = "/search", consumes = { AbstractRestService.JSON_MEDIA_TYPE }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<TerminologyResourceCollections> searchByPost(@RequestBody(required = false) final TerminologyResourceRestSearch params) {
 		return searchByGet(params);
 	}
@@ -115,7 +115,7 @@ public class TerminologyResourceCollectionRestService extends AbstractRestServic
 		@ApiResponse(responseCode = "400", description = "Bad Request"), 
 		@ApiResponse(responseCode = "404", description = "Not Found") 
 	})
-	@GetMapping("/{collectionId}")
+	@GetMapping(value = "/{collectionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<TerminologyResourceCollection> get(
 		@Parameter(description = "The collection resource identifier") 
 		@PathVariable(value = "collectionId") 
