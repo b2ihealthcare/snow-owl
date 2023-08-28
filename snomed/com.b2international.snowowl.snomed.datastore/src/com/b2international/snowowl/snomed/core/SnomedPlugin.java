@@ -195,6 +195,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	protected DependencyComparer getDependencyComparer() {
-		return new SnomedResourceComparer();
+		return new SnomedDependencyComparer();
 	}
 }

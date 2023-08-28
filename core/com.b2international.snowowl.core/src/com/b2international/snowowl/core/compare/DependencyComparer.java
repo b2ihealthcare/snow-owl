@@ -92,20 +92,19 @@ public interface DependencyComparer {
 
 				if (includeChanges) {
 
-					// No changed components to return with this response, but set the counter
-					summary = new AnalysisCompareResult(fromUri, toUri);
-					summary.setChangedComponents(changedComponentIds.size());
-
-				} else {
-
 					// Record all relevant changed components as a generic "Component change"
-					final List<AnalysisCompareResultItem> items = changedComponents
-						.stream()
+					final List<AnalysisCompareResultItem> items = changedComponents.stream()
 						.map(ci -> new AnalysisCompareResultItem(ci.getComponentId(), AnalysisCompareChangeKind.COMPONENT_CHANGE))
 						.collect(Collectors.toList());
 
 					summary = new AnalysisCompareResult(items, fromUri, toUri);
 					summary.setChangedComponents(items.size());
+					
+				} else {
+					
+					// No changed components to return with this response, but set the counter
+					summary = new AnalysisCompareResult(fromUri, toUri);
+					summary.setChangedComponents(changedComponentIds.size());
 				}
 			}
 

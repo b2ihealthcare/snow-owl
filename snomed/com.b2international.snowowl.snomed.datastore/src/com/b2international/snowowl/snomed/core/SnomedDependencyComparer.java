@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -42,14 +43,14 @@ import com.google.common.collect.*;
 /**
  * @since 9.0
  */
-public class SnomedResourceComparer implements DependencyComparer {
+public class SnomedDependencyComparer implements DependencyComparer {
 
 	@Override
 	public AnalysisCompareResult compareResource(
 		final RepositoryContext context, 
 		final ResourceURIWithQuery fromUri, 
 		final ResourceURIWithQuery toUri,
-		final boolean summaryOnly
+		final boolean includeChanges
 	) {
 
 		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
@@ -153,7 +154,7 @@ public class SnomedResourceComparer implements DependencyComparer {
 		// Register all changed concepts
 		changedConcepts.forEach(id -> changeDetails.put(id, AnalysisCompareChangeKind.COMPONENT_CHANGE));
 		
-		// OWL expression changes are considered "property changes", the rest is unspecified
+		// OWL expression changes are considered "property changes", the rest is skipped
 		registerMemberChanges(
 			context,
 			partitionSize,
@@ -205,12 +206,7 @@ public class SnomedResourceComparer implements DependencyComparer {
 		
 		final AnalysisCompareResult result;
 		
-		if (summaryOnly) {
-			
-			// No change detail items needed
-			result = new AnalysisCompareResult(fromUri, toUri);
-			
-		} else {
+		if (includeChanges) {
 
 			final List<AnalysisCompareResultItem> items = changeDetails.entries()
 				.stream()
@@ -218,6 +214,11 @@ public class SnomedResourceComparer implements DependencyComparer {
 				.collect(Collectors.toList());
 			
 			result = new AnalysisCompareResult(items, fromUri, toUri);
+			
+		} else {
+			
+			// No change detail items needed
+			result = new AnalysisCompareResult(fromUri, toUri);
 		}
 		
 		result.setNewComponents(newConcepts.size());
@@ -360,6 +361,7 @@ public class SnomedResourceComparer implements DependencyComparer {
 			SnomedRequests.prepareSearchMember()
 				.filterByIds(batch)
 				.filterByReferencedComponentType(SnomedConcept.TYPE)
+				.filterByRefSetType(SnomedRefSetType.OWL_AXIOM)
 				.setLimit(pageSize)
 				.setFields(SnomedReferenceSetMember.Fields.ID, SnomedReferenceSetMember.Fields.REFERENCED_COMPONENT_ID)
 				.stream(context, rb -> rb.build(resourceUri))

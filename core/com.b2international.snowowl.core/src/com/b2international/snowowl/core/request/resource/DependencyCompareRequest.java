@@ -3,6 +3,8 @@
  *******************************************************************************/
 package com.b2international.snowowl.core.request.resource;
 
+import javax.validation.constraints.NotNull;
+
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
@@ -22,8 +24,12 @@ final class DependencyCompareRequest implements Request<RepositoryContext, Analy
 
 	private static final long serialVersionUID = 1L;
 
+	@NotNull
 	private final ResourceURIWithQuery fromUri;
+	
+	@NotNull
 	private final ResourceURIWithQuery toUri;
+	
 	private final boolean includeChanges;
 
 	public DependencyCompareRequest(

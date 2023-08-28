@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import javax.validation.constraints.NotNull;
-
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.compare.AnalysisCompareResult;
@@ -32,12 +30,8 @@ public final class DependencyCompareRequestBuilder
 	extends BaseRequestBuilder<DependencyCompareRequestBuilder, RepositoryContext, AnalysisCompareResult> 
 	implements ResourceRepositoryRequestBuilder<AnalysisCompareResult> {
 
-	@NotNull
 	private ResourceURIWithQuery fromUri;
-
-	@NotNull
 	private ResourceURIWithQuery toUri;
-
 	private boolean includeChanges = false;
 
 	public DependencyCompareRequestBuilder setFromUri(final ResourceURI fromUri) {
