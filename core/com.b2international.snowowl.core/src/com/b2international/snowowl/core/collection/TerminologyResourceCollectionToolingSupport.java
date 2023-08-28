@@ -39,46 +39,46 @@ public interface TerminologyResourceCollectionToolingSupport {
 	 */
 	public static final class Registry {
 
-		private record RegistryKey(String toolingId, String childResourceType) { }
+		private record RegistryKey(String toolingId, String childResourceType) {
+			static RegistryKey of(String toolingId, String childResourceType) {
+				return new RegistryKey(toolingId, childResourceType);
+			}
+		}
 		
 		private final Map<RegistryKey, TerminologyResourceCollectionToolingSupport> collectionToolingSupportImplementations = new HashMap<>();
 
 		public Registry(ClassPathScanner scanner) {
 			scanner.getComponentsByInterface(TerminologyResourceCollectionToolingSupport.class).forEach(this::register);
 		}
+		
+		public List<TerminologyResourceCollectionToolingSupport> getAllByToolingId(String toolingId) {
+			return collectionToolingSupportImplementations.values().stream().filter(support -> support.getToolingId().equals(toolingId)).toList();
+		}
 
 		public void register(TerminologyResourceCollectionToolingSupport toolingSupport) {
 			checkArgument(!CompareUtils.isEmpty(toolingSupport.getSupportedChildResourceTypes()), "'%s' resource collection tooling support does not define any valid child resource type.", toolingSupport.getClass().getName());
 			toolingSupport.getSupportedChildResourceTypes().forEach(childResourceType -> {
-				collectionToolingSupportImplementations.put(asKey(toolingSupport.getToolingId(), childResourceType), toolingSupport);
+				collectionToolingSupportImplementations.put(RegistryKey.of(toolingSupport.getToolingId(), childResourceType), toolingSupport);
 			});
 		}
 
 		public void unregister(TerminologyResourceCollectionToolingSupport toolingSupport) {
 			toolingSupport.getSupportedChildResourceTypes().forEach(childResourceType -> {
-				collectionToolingSupportImplementations.remove(asKey(toolingSupport.getToolingId(), childResourceType));
+				collectionToolingSupportImplementations.remove(RegistryKey.of(toolingSupport.getToolingId(), childResourceType));
 			});
 		}
 
 		public TerminologyResourceCollectionToolingSupport getToolingSupport(String toolingId, String childResourceType) {
-			RegistryKey key = asKey(toolingId, childResourceType);
+			RegistryKey key = RegistryKey.of(toolingId, childResourceType);
 			if (!collectionToolingSupportImplementations.containsKey(key)) {
 				var supportedChildResourceTypes = collectionToolingSupportImplementations.values()
 					.stream()
 					.filter(support -> support.getToolingId().equals(toolingId))
 					.flatMap(support -> support.getSupportedChildResourceTypes().stream())
 					.collect(Collectors.toCollection(TreeSet::new));
-				if (supportedChildResourceTypes.isEmpty()) {
-					throw new BadRequestException("ToolingId '%s' is not supported for resource collections.", toolingId);
-				} else {
-					throw new BadRequestException("ToolingId '%s' and child resource type '%s' combination is not supported for resource collections. ToolingId '%s' supports the following child resource types: '%s'.", toolingId, childResourceType, toolingId, supportedChildResourceTypes);
-				}
+				throw new BadRequestException("ToolingId '%s' and child resource type '%s' combination is not supported for resource collections. ToolingId '%s' supports the following child resource types: '%s'.", toolingId, childResourceType, toolingId, supportedChildResourceTypes);
 			}
 			return collectionToolingSupportImplementations.get(key);
-		}
-
-		private RegistryKey asKey(String toolingId, String childResourceType) {
-			return new RegistryKey(toolingId, childResourceType);
 		}
 
 	}
@@ -101,15 +101,6 @@ public interface TerminologyResourceCollectionToolingSupport {
 	 */
 	default Set<String> getInheritedSettingKeys() {
 		return Set.of();
-	}
-
-	/**
-	 * Certain tooling implementations might require certain scoped dependencies to be present when creating a terminology resource.
-	 * @param dependencies
-	 * @throws BadRequestException - if a scoped dependency is required 
-	 */
-	default void validateRequiredDependencies(List<Dependency> dependencies) {
-		
 	}
 
 	/**

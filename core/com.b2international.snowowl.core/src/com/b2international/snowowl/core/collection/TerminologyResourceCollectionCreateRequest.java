@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.core.collection;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.bundle.Bundle;
@@ -30,13 +29,6 @@ final class TerminologyResourceCollectionCreateRequest extends BaseTerminologyRe
 
 	private static final long serialVersionUID = 1L;
 
-	@NotEmpty
-	private String childResourceType;
-
-	void setChildResourceType(String childResourceType) {
-		this.childResourceType = childResourceType;
-	}
-	
 	@Override
 	protected String getResourceType() {
 		return TerminologyResourceCollection.RESOURCE_TYPE;
@@ -47,10 +39,11 @@ final class TerminologyResourceCollectionCreateRequest extends BaseTerminologyRe
 		// TODO support fetching toolingId from the first dependency if not defined? or just report error that is not defined?
 		var toolingId = getToolingId();
 		
-		var terminologyToolingSupport = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getToolingSupport(toolingId, childResourceType);
-		
-		// validate dependency array for tooling specific requirements
-		terminologyToolingSupport.validateRequiredDependencies(getDependencies());
+		var terminologyToolingSupports = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getAllByToolingId(toolingId);
+
+		if (CompareUtils.isEmpty(terminologyToolingSupports)) {
+			throw new BadRequestException("ToolingId '%s' is not supported for resource collections.", toolingId);
+		}
 
 		// FIXME call preExecute after validating child resource type as the method has a side effect on creating a new branch, which is not rolled back in case of an error 
 		super.preExecute(context);

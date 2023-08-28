@@ -23,13 +23,7 @@ import com.b2international.snowowl.core.request.resource.BaseTerminologyResource
 public final class TerminologyResourceCollectionCreateRequestBuilder
 		extends BaseTerminologyResourceCreateRequestBuilder<TerminologyResourceCollectionCreateRequestBuilder, TerminologyResourceCollectionCreateRequest> {
 
-	private String childResourceType;
 	private String toolingId;
-	
-	public TerminologyResourceCollectionCreateRequestBuilder setChildResourceType(String childResourceType) {
-		this.childResourceType = childResourceType;
-		return getSelf();
-	}
 	
 	public TerminologyResourceCollectionCreateRequestBuilder setToolingId(String toolingId) {
 		this.toolingId = toolingId;
@@ -44,7 +38,6 @@ public final class TerminologyResourceCollectionCreateRequestBuilder
 	@Override
 	protected void init(TerminologyResourceCollectionCreateRequest req) {
 		super.init(req);
-		req.setChildResourceType(childResourceType);
 		req.setToolingId(toolingId);
 	}
 

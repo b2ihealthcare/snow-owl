@@ -25,11 +25,6 @@ import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestCreate;
 public class TerminologyResourceCollectionRestCreate extends BaseTerminologyResourceRestCreate {
 	
 	private String toolingId;
-	private String childResourceType;
-	
-	public String getChildResourceType() {
-		return childResourceType;
-	}
 	
 	public String getToolingId() {
 		return toolingId;
@@ -39,10 +34,6 @@ public class TerminologyResourceCollectionRestCreate extends BaseTerminologyReso
 		this.toolingId = toolingId;
 	}
 	
-	public void setChildResourceType(String childResourceType) {
-		this.childResourceType = childResourceType;
-	}
-
 	public TerminologyResourceCollectionCreateRequestBuilder toCreateRequest() {
 		return TerminologyResourceCollectionRequests.prepareCreate()
 				.setId(getId())
@@ -61,8 +52,7 @@ public class TerminologyResourceCollectionRestCreate extends BaseTerminologyReso
 				.setBranchPath(getBranchPath())
 				.setSettings(getSettings())
 				.setDependencies(getDependencies())
-				.setToolingId(getToolingId())
-				.setChildResourceType(getChildResourceType());
+				.setToolingId(getToolingId());
 	}
 	
 }

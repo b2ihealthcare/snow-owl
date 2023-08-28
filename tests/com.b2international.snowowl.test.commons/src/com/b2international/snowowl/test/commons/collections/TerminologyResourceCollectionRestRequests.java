@@ -34,8 +34,8 @@ public class TerminologyResourceCollectionRestRequests {
 
 	public static final String COLLECTIONS_API = "/collections";
 	
-	public static ValidatableResponse assertTerminologyResourceCollectionCreate(String childResourceType) {
-		return assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), childResourceType));
+	public static ValidatableResponse assertTerminologyResourceCollectionCreate() {
+		return assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()));
 	}
 
 	public static ValidatableResponse assertTerminologyResourceCollectionCreate(Json body) {
@@ -46,7 +46,7 @@ public class TerminologyResourceCollectionRestRequests {
 			.then();
 	}
 
-	public static Json prepareTerminologyResourceCollectionCreateBody(String collectionId, String childResourceType) {
+	public static Json prepareTerminologyResourceCollectionCreateBody(String collectionId) {
 		return Json.object(
 			"id", collectionId,
 			"title", "Title of " + collectionId,
@@ -56,8 +56,7 @@ public class TerminologyResourceCollectionRestRequests {
 			"oid", "oid_" + collectionId,
 			"language", "ENG",
 			"owner", "owner",
-			"contact", "https://b2ihealthcare.com",
-			"childResourceType", childResourceType
+			"contact", "https://b2ihealthcare.com"
 		);
 	}
 	
@@ -77,8 +76,8 @@ public class TerminologyResourceCollectionRestRequests {
 				.then().assertThat();
 	}
 	
-	public static String createTerminologyResourceCollection(String childResourceType) {
-		return assertCreated(assertTerminologyResourceCollectionCreate(childResourceType));
+	public static String createTerminologyResourceCollection() {
+		return assertCreated(assertTerminologyResourceCollectionCreate());
 	}
 	
 	public static String createTerminologyResourceCollection(Json body) {

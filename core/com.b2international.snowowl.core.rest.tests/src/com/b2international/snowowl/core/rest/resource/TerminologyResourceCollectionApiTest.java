@@ -93,7 +93,7 @@ public class TerminologyResourceCollectionApiTest {
 	
 	@Test
 	public void create_UnsupportedChildResourceType() throws Exception {
-		assertTerminologyResourceCollectionCreate(CodeSystem.RESOURCE_TYPE)
+		assertTerminologyResourceCollectionCreate()
 			.statusCode(400)
 			.body("message", equalTo("ToolingId 'snomed' is not supported for resource collections."));
 	}
@@ -102,7 +102,7 @@ public class TerminologyResourceCollectionApiTest {
 	public void create() throws Exception {
 		registerSnomedCodeSystemChildSupport();
 		
-		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
+		var collectionId = createTerminologyResourceCollection();
 		
 		assertTerminologyResourceCollectionGet(collectionId)
 			.statusCode(200)
@@ -113,7 +113,7 @@ public class TerminologyResourceCollectionApiTest {
 	public void create_BundleChildResource() throws Exception {
 		registerSnomedCodeSystemChildSupport();
 		
-		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
+		var collectionId = createTerminologyResourceCollection();
 		
 		var bundleId = createBundle(IDs.base62UUID(), collectionId);
 		
@@ -133,7 +133,7 @@ public class TerminologyResourceCollectionApiTest {
 	public void create_ValidChildResource() throws Exception {
 		registerSnomedCodeSystemChildSupport();
 		
-		var collectionId = createTerminologyResourceCollection(CodeSystem.RESOURCE_TYPE);
+		var collectionId = createTerminologyResourceCollection();
 		
 		var codeSystemId = createCodeSystem(IDs.base62UUID(), collectionId);
 		
@@ -153,7 +153,7 @@ public class TerminologyResourceCollectionApiTest {
 	public void create_InvalidChildResource() throws Exception {
 		ApplicationContext.getServiceForClass(TerminologyResourceCollectionToolingSupport.Registry.class).register(SNOMED_OTHER_CHILD_SUPPORT);
 		
-		var collectionId = createTerminologyResourceCollection("other");
+		var collectionId = createTerminologyResourceCollection();
 		
 		assertCodeSystemCreate(IDs.base62UUID(), collectionId)
 			.statusCode(400)
@@ -164,7 +164,7 @@ public class TerminologyResourceCollectionApiTest {
 	public void create_ChildResourceInheritsSettings() throws Exception {
 		registerSnomedCodeSystemChildSupport();
 		
-		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("settings", Map.of("customSetting", "customSettingValue")));
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("settings", Map.of("customSetting", "customSettingValue")));
 		
 		var codeSystemId = createCodeSystem(IDs.base62UUID(), collectionId);
 		assertCodeSystemGet(codeSystemId)
@@ -176,7 +176,7 @@ public class TerminologyResourceCollectionApiTest {
 	public void create_ChildResourceInheritsSettingsThroughAncestors() throws Exception {
 		registerSnomedCodeSystemChildSupport();
 		
-		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("settings", Map.of("customSetting", "customSettingValue")));
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("settings", Map.of("customSetting", "customSettingValue")));
 		
 		var bundleId = createBundle(IDs.base62UUID(), collectionId);
 		
@@ -191,7 +191,7 @@ public class TerminologyResourceCollectionApiTest {
 		registerSnomedCodeSystemChildSupport();
 		
 		var bundleId = createBundle(IDs.base62UUID());
-		assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("bundleId", bundleId))
+		assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("bundleId", bundleId))
 			.statusCode(201);
 	}
 	
@@ -199,9 +199,9 @@ public class TerminologyResourceCollectionApiTest {
 	public void create_UnderAnotherTerminologyResourceCollection() throws Exception {
 		registerSnomedCodeSystemChildSupport();
 		
-		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("settings", Map.of("customSetting", "customSettingValue")));
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("settings", Map.of("customSetting", "customSettingValue")));
 		
-		assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("bundleId", collectionId))
+		assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("bundleId", collectionId))
 			.statusCode(400)
 			.body("message", equalTo("Nesting terminology collection resources is not supported. Use regular bundles to organize content."));
 	}
