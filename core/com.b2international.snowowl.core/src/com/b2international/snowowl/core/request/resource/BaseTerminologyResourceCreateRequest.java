@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.bundle.Bundle;
@@ -61,6 +62,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -231,16 +233,25 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			
 			if (!nonRootAncestorResourceIds.isEmpty()) {
 				// find and check the first matching terminology resource collection in the ancestor array (only one should exists)
-				ResourceRequests.prepareSearch()
+				var collectionAncestorResources = ResourceRequests.prepareSearch()
 					.filterByResourceType(TerminologyResourceCollection.RESOURCE_TYPE)
 					.filterByIds(nonRootAncestorResourceIds)
-					.setLimit(nonRootAncestorResourceIds.size())
+					.setLimit(2)
 					.build()
 					.execute(context)
 					.stream()
 					.filter(ancestorResource -> ancestorResource instanceof TerminologyResourceCollection)
-					.findFirst()
-					.ifPresent(ancestorTerminologyResourceCollection -> checkParentCollection(context, ancestorTerminologyResourceCollection));
+					.toList();
+				
+				if (collectionAncestorResources.size() > 1) {
+					// report error for invalid state of more than one ancestor collection
+					throw new SnowowlRuntimeException(String.format("The number of ancestor collection resources in ancestor hierarchy of bundle '%s' is more than one.", parentCollection.getBundleId()));
+				} else if (collectionAncestorResources.size() == 1) {
+					// use the single ancestor collection
+					checkParentCollection(context, Iterables.getOnlyElement(collectionAncestorResources, null));
+				} else {
+					// skip if there are no ancestor collections available
+				}
 			}
 			
 		} else {
