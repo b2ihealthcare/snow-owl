@@ -15,16 +15,13 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
-import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
+import com.b2international.snowowl.core.compare.AnalysisCompareResult;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
@@ -33,9 +30,9 @@ import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 /**
  * @since 9.0
  */
-public final class TerminologyResourceCompareRequestBuilder 
-	extends ResourceRequestBuilder<TerminologyResourceCompareRequestBuilder, RepositoryContext, TerminologyResourceCompareResult> 
-	implements ResourceRepositoryRequestBuilder<TerminologyResourceCompareResult> {
+public final class ResourceContentCompareRequestBuilder 
+	extends ResourceRequestBuilder<ResourceContentCompareRequestBuilder, RepositoryContext, AnalysisCompareResult> 
+	implements ResourceRepositoryRequestBuilder<AnalysisCompareResult> {
 
 	@NotNull
 	private ResourceURIWithQuery fromUri;
@@ -46,41 +43,38 @@ public final class TerminologyResourceCompareRequestBuilder
 	@NotEmpty
 	private String termType = "FSN";
 
-	private boolean summaryOnly = false;
+	private boolean includeChanges = false;
 
-	@NotEmpty
-	private List<ExtendedLocale> locales;
-
-	public TerminologyResourceCompareRequestBuilder setFromUri(final ResourceURI fromUri) {
+	public ResourceContentCompareRequestBuilder setFromUri(final ResourceURI fromUri) {
 		return setFromUri(ResourceURIWithQuery.of(fromUri));
 	}
-	
-	public TerminologyResourceCompareRequestBuilder setToUri(final ResourceURI toUri) {
+
+	public ResourceContentCompareRequestBuilder setToUri(final ResourceURI toUri) {
 		return setToUri(ResourceURIWithQuery.of(toUri));
 	}
-	
-	public TerminologyResourceCompareRequestBuilder setFromUri(final ResourceURIWithQuery fromUri) {
+
+	public ResourceContentCompareRequestBuilder setFromUri(final ResourceURIWithQuery fromUri) {
 		this.fromUri = fromUri;
 		return getSelf();
 	}
 
-	public TerminologyResourceCompareRequestBuilder setToUri(final ResourceURIWithQuery toUri) {
+	public ResourceContentCompareRequestBuilder setToUri(final ResourceURIWithQuery toUri) {
 		this.toUri = toUri;
 		return getSelf();
 	}
 
-	public TerminologyResourceCompareRequestBuilder setSummaryOnly(final boolean summaryOnly) {
-		this.summaryOnly = summaryOnly;
+	public ResourceContentCompareRequestBuilder setIncludeChanges(final boolean includeChanges) {
+		this.includeChanges = includeChanges;
 		return getSelf();
 	}
 
-	public TerminologyResourceCompareRequestBuilder setTermType(final String termType) {
+	public ResourceContentCompareRequestBuilder setTermType(final String termType) {
 		this.termType = termType;
 		return getSelf();
 	}
 
 	@Override
-	protected ResourceRequest<RepositoryContext, TerminologyResourceCompareResult> create() {
-		return new TerminologyResourceCompareRequest(fromUri, toUri, summaryOnly, termType);
+	protected ResourceRequest<RepositoryContext, AnalysisCompareResult> create() {
+		return new ResourceContentCompareRequest(fromUri, toUri, includeChanges, termType);
 	}
 }

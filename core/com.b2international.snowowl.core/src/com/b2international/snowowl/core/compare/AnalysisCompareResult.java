@@ -25,12 +25,11 @@ import com.b2international.snowowl.core.domain.ListCollectionResource;
 import com.google.common.base.MoreObjects;
 
 /**
- * Represents a summary of primary component (eg. concept) changes between two versions of a
- * terminology resource.
+ * Represents a summary of component changes between two versions of a terminology resource.
  * 
  * @since 9.0
  */
-public final class TerminologyResourceCompareResult extends ListCollectionResource<TerminologyResourceCompareResultItem> implements Serializable {
+public final class AnalysisCompareResult extends ListCollectionResource<AnalysisCompareResultItem> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -47,7 +46,7 @@ public final class TerminologyResourceCompareResult extends ListCollectionResour
 	 * @param fromUri - the resource URI representing the comparison baseline
 	 * @param toUri - the resource URI representing the comparison target
 	 */
-	public TerminologyResourceCompareResult(final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri) {
+	public AnalysisCompareResult(final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri) {
 		this(null, fromUri, toUri);
 	}
 	
@@ -58,7 +57,7 @@ public final class TerminologyResourceCompareResult extends ListCollectionResour
 	 * @param fromUri - the resource URI representing the comparison baseline
 	 * @param toUri - the resource URI representing the comparison target
 	 */
-	public TerminologyResourceCompareResult(final List<TerminologyResourceCompareResultItem> items, final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri) {
+	public AnalysisCompareResult(final List<AnalysisCompareResultItem> items, final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri) {
 		super(items);
 		this.fromUri = checkNotNull(fromUri, "Resource URI 'fromUri' may not be null.");
 		this.toUri = checkNotNull(toUri, "Resource URI 'toUri' may not be null.");

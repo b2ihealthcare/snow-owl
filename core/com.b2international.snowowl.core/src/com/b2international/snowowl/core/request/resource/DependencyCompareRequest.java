@@ -8,39 +8,36 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.TerminologyResource;
-import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
-import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
+import com.b2international.snowowl.core.compare.AnalysisCompareResult;
+import com.b2international.snowowl.core.compare.DependencyComparer;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.RepositoryRequest;
-import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
  * @since 9.0
  */
-final class TerminologyResourceCompareRequest extends ResourceRequest<RepositoryContext, TerminologyResourceCompareResult> {
+final class DependencyCompareRequest implements Request<RepositoryContext, AnalysisCompareResult> {
 
 	private static final long serialVersionUID = 1L;
 
 	private final ResourceURIWithQuery fromUri;
 	private final ResourceURIWithQuery toUri;
-	private final String termType;
-	private final boolean summaryOnly;
+	private final boolean includeChanges;
 
-	public TerminologyResourceCompareRequest(
+	public DependencyCompareRequest(
 		final ResourceURIWithQuery fromUri, 
 		final ResourceURIWithQuery toUri, 
-		final boolean summaryOnly, 
-		final String termType
+		final boolean includeChanges
 	) {
 		this.fromUri = fromUri;
 		this.toUri = toUri;
-		this.termType = termType;
-		this.summaryOnly = summaryOnly;
+		this.includeChanges = includeChanges;
 	}
 
 	@Override
-	public TerminologyResourceCompareResult execute(final RepositoryContext resourceContext) {
+	public AnalysisCompareResult execute(final RepositoryContext resourceContext) {
 
 		final ResourceURI fromWithoutPath = fromUri.getResourceUri().withoutPath();
 		final ResourceURI toWithoutPath = toUri.getResourceUri().withoutPath();
@@ -59,9 +56,9 @@ final class TerminologyResourceCompareRequest extends ResourceRequest<Repository
 		}
 
 		final String toolingId = terminologyResource.getToolingId();
-		final RepositoryRequest<TerminologyResourceCompareResult> contentRequest = new RepositoryRequest<>(toolingId, contentContext -> {
-			final TerminologyResourceComparer resourceComparer = contentContext.service(TerminologyResourceComparer.class);
-			return resourceComparer.compareResource(contentContext, fromUri, toUri, summaryOnly, termType, locales());
+		final RepositoryRequest<AnalysisCompareResult> contentRequest = new RepositoryRequest<>(toolingId, contentContext -> {
+			final DependencyComparer dependencyComparer = contentContext.service(DependencyComparer.class);
+			return dependencyComparer.compareResource(contentContext, fromUri, toUri, includeChanges);
 		});
 
 		return contentRequest.execute(resourceContext);

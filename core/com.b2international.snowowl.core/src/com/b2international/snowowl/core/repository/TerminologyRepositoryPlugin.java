@@ -31,7 +31,8 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
+import com.b2international.snowowl.core.compare.DependencyComparer;
+import com.b2international.snowowl.core.compare.ResourceContentComparer;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
@@ -81,7 +82,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ContextConfigurer.class, getRequestConfigurer())
 					.bind(ResourceURLSchemaSupport.class, getTerminologyURISupport())
 					.bind(EclRewriter.class, getEclRewriter())
-					.bind(TerminologyResourceComparer.class, getTerminologyResourceComparer())
+					.bind(DependencyComparer.class, getDependencyComparer())
 					.build(env);
 			
 			RepositoryInfo status = repo.status();
@@ -232,7 +233,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	/**
 	 * @return 
 	 */
-	protected TerminologyResourceComparer getTerminologyResourceComparer() {
+	protected DependencyComparer getDependencyComparer() {
 		// Find the type corresponding to the "Concept" component category
 		final Optional<String> conceptType = getTerminologyComponents().stream()
 			.map(componentClass -> Terminology.getAnnotation(componentClass))
@@ -241,9 +242,13 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 			.findFirst();
 		
 		if (conceptType.isPresent()) {
-			return new TerminologyResourceComparer.Default(conceptType.get());
+			return new DependencyComparer.Default(conceptType.get());
 		} else {
-			return TerminologyResourceComparer.NOOP;
+			return DependencyComparer.NOOP;
 		}
+	}
+	
+	protected ResourceContentComparer getContentComparer() {
+		return ResourceContentComparer.NOOP;		
 	}
 }

@@ -19,9 +19,10 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.bundle.BundleRequests;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
+import com.b2international.snowowl.core.request.resource.DependencyCompareRequestBuilder;
+import com.b2international.snowowl.core.request.resource.ResourceContentCompareRequestBuilder;
 import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
 import com.b2international.snowowl.core.request.resource.ResourceGetRequestBuilder;
-import com.b2international.snowowl.core.request.resource.TerminologyResourceCompareRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionGetRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
@@ -78,8 +79,12 @@ public final class ResourceRequests {
 		return new ResourceRepositoryCommitRequestBuilder();
 	}
 
-	public static TerminologyResourceCompareRequestBuilder prepareCompare() {
-		return new TerminologyResourceCompareRequestBuilder();
+	public static DependencyCompareRequestBuilder prepareCompareDependency() {
+		return new DependencyCompareRequestBuilder();
+	}
+	
+	public static ResourceContentCompareRequestBuilder prepareCompareContent() {
+		return new ResourceContentCompareRequestBuilder();
 	}
 	
 	public static String versionJobKey(ResourceURI codeSystemUri) {

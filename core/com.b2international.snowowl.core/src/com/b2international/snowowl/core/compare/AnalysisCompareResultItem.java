@@ -18,6 +18,10 @@ package com.b2international.snowowl.core.compare;
 /**
  * @since 9.0
  */
-public record TerminologyResourceCompareResultItem(String id, String label, TerminologyResourceCompareChangeKind changeKind) {
-	// Empty record body
+public record AnalysisCompareResultItem(String id, String label, AnalysisCompareChangeKind changeKind) {
+
+	// Short constructor for label-less items
+	public AnalysisCompareResultItem(final String id, final AnalysisCompareChangeKind changeKind) {
+		this(id, null, changeKind);
+	}
 }

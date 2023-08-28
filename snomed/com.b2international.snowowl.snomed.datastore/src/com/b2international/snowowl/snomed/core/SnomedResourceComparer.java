@@ -15,24 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.compare.TerminologyResourceCompareChangeKind;
-import com.b2international.snowowl.core.compare.TerminologyResourceCompareResult;
-import com.b2international.snowowl.core.compare.TerminologyResourceCompareResultItem;
-import com.b2international.snowowl.core.compare.TerminologyResourceComparer;
+import com.b2international.snowowl.core.compare.AnalysisCompareChangeKind;
+import com.b2international.snowowl.core.compare.AnalysisCompareResult;
+import com.b2international.snowowl.core.compare.AnalysisCompareResultItem;
+import com.b2international.snowowl.core.compare.DependencyComparer;
 import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -47,16 +42,14 @@ import com.google.common.collect.*;
 /**
  * @since 9.0
  */
-public class SnomedResourceComparer implements TerminologyResourceComparer {
+public class SnomedResourceComparer implements DependencyComparer {
 
 	@Override
-	public TerminologyResourceCompareResult compareResource(
+	public AnalysisCompareResult compareResource(
 		final RepositoryContext context, 
 		final ResourceURIWithQuery fromUri, 
 		final ResourceURIWithQuery toUri,
-		final boolean summaryOnly,
-		final String termType,
-		final List<ExtendedLocale> locales
+		final boolean summaryOnly
 	) {
 
 		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
@@ -155,10 +148,10 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 		 * 
 		 * New and changed components can be retrieved from "toUri", deleted components need to be looked up on "fromUri".
 		 */
-		final SortedSetMultimap<String, TerminologyResourceCompareChangeKind> changeDetails = TreeMultimap.create();
+		final SortedSetMultimap<String, AnalysisCompareChangeKind> changeDetails = TreeMultimap.create();
 		
 		// Register all changed concepts
-		changedConcepts.forEach(id -> changeDetails.put(id, TerminologyResourceCompareChangeKind.COMPONENT_CHANGE));
+		changedConcepts.forEach(id -> changeDetails.put(id, AnalysisCompareChangeKind.COMPONENT_CHANGE));
 		
 		// OWL expression changes are considered "property changes", the rest is unspecified
 		registerMemberChanges(
@@ -210,39 +203,21 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 			fromWithoutQuery, 
 			changeDetails);
 		
-		final TerminologyResourceCompareResult result;
+		final AnalysisCompareResult result;
 		
 		if (summaryOnly) {
 			
 			// No change detail items needed
-			result = new TerminologyResourceCompareResult(fromUri, toUri);
+			result = new AnalysisCompareResult(fromUri, toUri);
 			
 		} else {
 
-			// Look up labels
-			final Map<String, String> termsById = newHashMap();
-			for (final List<String> batch : Iterables.partition(changeDetails.keySet(), partitionSize)) {
-				CodeSystemRequests.prepareSearchConcepts()
-					.filterByIds(batch)
-					.filterByCodeSystemUri(toWithoutQuery)
-					.setPreferredDisplay(termType)
-					.setLocales(locales)
-					.setLimit(batch.size())
-					.buildAsync()
-					.execute(context)
-					.forEach(c -> termsById.put(c.getId(), c.getTerm()));
-			}
-			
-			final List<TerminologyResourceCompareResultItem> items = changeDetails.entries()
+			final List<AnalysisCompareResultItem> items = changeDetails.entries()
 				.stream()
-				.map(e -> new TerminologyResourceCompareResultItem(
-					e.getKey(), // ID 
-					termsById.getOrDefault(e.getKey(), e.getKey()), // Label (or ID as the fallback) 
-					e.getValue() // "Change kind"
-				))
+				.map(e -> new AnalysisCompareResultItem(e.getKey(), e.getValue()))
 				.collect(Collectors.toList());
 			
-			result = new TerminologyResourceCompareResult(items, fromUri, toUri);
+			result = new AnalysisCompareResult(items, fromUri, toUri);
 		}
 		
 		result.setNewComponents(newConcepts.size());
@@ -379,7 +354,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 		final int pageSize,
 		final Iterable<String> memberIds,
 		final ResourceURI resourceUri,
-		final SortedSetMultimap<String, TerminologyResourceCompareChangeKind> changeDetails
+		final SortedSetMultimap<String, AnalysisCompareChangeKind> changeDetails
 	) {
 		for (final List<String> batch : Iterables.partition(memberIds, partitionSize)) {
 			SnomedRequests.prepareSearchMember()
@@ -389,7 +364,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 				.setFields(SnomedReferenceSetMember.Fields.ID, SnomedReferenceSetMember.Fields.REFERENCED_COMPONENT_ID)
 				.stream(context, rb -> rb.build(resourceUri))
 				.flatMap(SnomedReferenceSetMembers::stream)
-				.forEachOrdered(m -> changeDetails.put(m.getReferencedComponentId(), TerminologyResourceCompareChangeKind.COMPONENT_CHANGE));
+				.forEachOrdered(m -> changeDetails.put(m.getReferencedComponentId(), AnalysisCompareChangeKind.COMPONENT_CHANGE));
 
 			final Set<String> descriptionIds = SnomedRequests.prepareSearchMember()
 				.filterByIds(batch)
@@ -407,7 +382,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 				.setFields(SnomedDescription.Fields.ID, SnomedDescription.Fields.CONCEPT_ID)
 				.build(resourceUri)
 				.execute(context)
-				.forEach(d -> changeDetails.put(d.getConceptId(), TerminologyResourceCompareChangeKind.COMPONENT_CHANGE));
+				.forEach(d -> changeDetails.put(d.getConceptId(), AnalysisCompareChangeKind.COMPONENT_CHANGE));
 		}
 	}
 
@@ -417,7 +392,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 		final int pageSize,
 		final Iterable<String> descriptionIds,
 		final ResourceURI resourceUri,
-		final SortedSetMultimap<String, TerminologyResourceCompareChangeKind> changeDetails
+		final SortedSetMultimap<String, AnalysisCompareChangeKind> changeDetails
 	) {
 		for (final List<String> batch : Iterables.partition(descriptionIds, partitionSize)) {
 			SnomedRequests.prepareSearchDescription()
@@ -426,7 +401,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 				.setFields(SnomedDescription.Fields.ID, SnomedDescription.Fields.CONCEPT_ID)
 				.stream(context, rb -> rb.build(resourceUri))
 				.flatMap(SnomedDescriptions::stream)
-				.forEachOrdered(d -> changeDetails.put(d.getConceptId(), TerminologyResourceCompareChangeKind.COMPONENT_CHANGE));
+				.forEachOrdered(d -> changeDetails.put(d.getConceptId(), AnalysisCompareChangeKind.COMPONENT_CHANGE));
 		}
 	}
 
@@ -436,7 +411,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 		final int pageSize,
 		final Iterable<String> relationshipIds,
 		final ResourceURI resourceUri,
-		final SortedSetMultimap<String, TerminologyResourceCompareChangeKind> changeDetails
+		final SortedSetMultimap<String, AnalysisCompareChangeKind> changeDetails
 	) {
 		for (final List<String> batch : Iterables.partition(relationshipIds, partitionSize)) {
 			SnomedRequests.prepareSearchRelationship()
@@ -445,7 +420,7 @@ public class SnomedResourceComparer implements TerminologyResourceComparer {
 				.setFields(SnomedRelationship.Fields.ID, SnomedRelationship.Fields.SOURCE_ID)
 				.stream(context, rb -> rb.build(resourceUri))
 				.flatMap(SnomedRelationships::stream)
-				.forEachOrdered(r -> changeDetails.put(r.getSourceId(), TerminologyResourceCompareChangeKind.COMPONENT_CHANGE));
+				.forEachOrdered(r -> changeDetails.put(r.getSourceId(), AnalysisCompareChangeKind.COMPONENT_CHANGE));
 		}
 	}
 }

@@ -15,42 +15,34 @@
  */
 package com.b2international.snowowl.core.compare;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.config.IndexConfiguration;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 
 /**
  * Implementations of this interface can be used to generate
- * {@link TerminologyResourceCompareResult} instances.
+ * {@link AnalysisCompareResult} instances.
  * 
  * @since 9.0
  */
 @FunctionalInterface
-public interface TerminologyResourceComparer {
+public interface DependencyComparer {
 
 	/**
 	 * The default implementation filters all revision-level changes to find out
 	 * component change counts for the provided type.
 	 */
-	public class Default implements TerminologyResourceComparer {
+	public class Default implements DependencyComparer {
 
 		private final String componentType;
 
@@ -59,17 +51,12 @@ public interface TerminologyResourceComparer {
 		}
 
 		@Override
-		public TerminologyResourceCompareResult compareResource(
+		public AnalysisCompareResult compareResource(
 			final RepositoryContext context, 
 			final ResourceURIWithQuery fromUri,
 			final ResourceURIWithQuery toUri, 
-			final boolean summaryOnly,
-			final String termType, 
-			final List<ExtendedLocale> locales
+			final boolean includeChanges
 		) {
-			final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
-			final int termPartitionSize = indexConfiguration.getTermPartitionSize();
-
 			final ResourceURI fromWithoutQuery = fromUri.getResourceUri();
 			final ResourceURI toWithoutQuery = toUri.getResourceUri();
 			final ResourceURIPathResolver pathResolver = context.service(ResourceURIPathResolver.class);
@@ -87,12 +74,12 @@ public interface TerminologyResourceComparer {
 				.execute(context);
 
 			final Collection<ComponentIdentifier> changedComponents = compareResult.getChangedComponents();
-			final TerminologyResourceCompareResult summary;
+			final AnalysisCompareResult summary;
 
 			if (changedComponents.isEmpty()) {
 
 				// No changed components to return with this response
-				summary = new TerminologyResourceCompareResult(fromUri, toUri);
+				summary = new AnalysisCompareResult(fromUri, toUri);
 				summary.setChangedComponents(0);
 
 			} else {
@@ -103,39 +90,21 @@ public interface TerminologyResourceComparer {
 					.map(ci -> ci.getComponentId())
 					.collect(Collectors.toSet());
 
-				if (summaryOnly) {
-					
+				if (includeChanges) {
+
 					// No changed components to return with this response, but set the counter
-					summary = new TerminologyResourceCompareResult(fromUri, toUri);
+					summary = new AnalysisCompareResult(fromUri, toUri);
 					summary.setChangedComponents(changedComponentIds.size());
-				
+
 				} else {
-				
-					// Look up labels for the components
-					final Map<String, String> termsById = newHashMap();
-					for (final List<String> batch : Iterables.partition(changedComponentIds, termPartitionSize)) {
-						CodeSystemRequests.prepareSearchConcepts()
-							.filterByIds(batch)
-							.filterByCodeSystemUri(toWithoutQuery)
-							.setPreferredDisplay(termType)
-							.setLocales(locales)
-							.setLimit(batch.size())
-							.buildAsync()
-							.execute(context)
-							.forEach(c -> termsById.put(c.getId(), c.getTerm()));
-					}
 
 					// Record all relevant changed components as a generic "Component change"
-					final List<TerminologyResourceCompareResultItem> items = changedComponents
+					final List<AnalysisCompareResultItem> items = changedComponents
 						.stream()
-						.map(ci -> new TerminologyResourceCompareResultItem(
-							ci.getComponentId(), 
-							termsById.getOrDefault(ci.getComponentId(), ci.getComponentId()),
-							TerminologyResourceCompareChangeKind.COMPONENT_CHANGE
-						))
+						.map(ci -> new AnalysisCompareResultItem(ci.getComponentId(), AnalysisCompareChangeKind.COMPONENT_CHANGE))
 						.collect(Collectors.toList());
-	
-					summary = new TerminologyResourceCompareResult(items, fromUri, toUri);
+
+					summary = new AnalysisCompareResult(items, fromUri, toUri);
 					summary.setChangedComponents(items.size());
 				}
 			}
@@ -156,25 +125,23 @@ public interface TerminologyResourceComparer {
 	/** 
 	 * The "no-op" implementation returns an unpopulated comparison summary.
 	 */
-	TerminologyResourceComparer NOOP = (context, fromUri, toUri, summaryOnly, termType, locales) -> new TerminologyResourceCompareResult(fromUri, toUri);
+	DependencyComparer NOOP = (context, fromUri, toUri, includeChanges) -> new AnalysisCompareResult(fromUri, toUri);
 
 	/**
-	 * Generates a compare result based on the contents of the resource represented
+	 * Generates a dependency compare result based on the contents of the resource represented
 	 * by the two resource URI arguments.
 	 * 
-	 * @param repositoryContext - the context to use for completing the request (must match the tooling of both resource URIs)
+	 * @param repositoryContext - the context to use for completing the request
+	 * (must match the tooling of both resource URIs)
 	 * @param fromUri - the resource URI representing the comparison baseline
 	 * @param toUri - the resource URI representing the comparison target
-	 * @param summaryOnly 
-	 * @param termType - term type for changed component labels
-	 * @param locales - locales to use for changed component labels
+	 * @param includeChanges - set to <code>true</code> when itemized component
+	 * changes should be included in the response
 	 * @return the populated change summary
 	 */
-	TerminologyResourceCompareResult compareResource(
+	AnalysisCompareResult compareResource(
 		RepositoryContext repositoryContext, 
 		ResourceURIWithQuery fromUri, 
 		ResourceURIWithQuery toUri,
-		boolean summaryOnly, 
-		String termType,
-		List<ExtendedLocale> locales);
+		boolean includeChanges);
 }

@@ -27,7 +27,7 @@ import com.b2international.commons.StringUtils;
  * 
  * @since 9.0
  */
-public enum TerminologyResourceCompareChangeKind {
+public enum AnalysisCompareChangeKind {
 
 	/** A component has been added */
 	ADDED,
@@ -50,7 +50,7 @@ public enum TerminologyResourceCompareChangeKind {
 	/** The component has not changed when compared to the reference */
 	UNCHANGED;
 
-	private static final Set<TerminologyResourceCompareChangeKind> CHANGED_VALUES = immutableEnumSet(
+	private static final Set<AnalysisCompareChangeKind> CHANGED_VALUES = immutableEnumSet(
 		DEFINITION_CHANGE, PROPERTY_CHANGE, TERM_CHANGE, COMPONENT_CHANGE
 	);
 	
