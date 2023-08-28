@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.collection;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceCreateRequest;
 
@@ -51,6 +54,18 @@ final class TerminologyResourceCollectionCreateRequest extends BaseTerminologyRe
 
 		// FIXME call preExecute after validating child resource type as the method has a side effect on creating a new branch, which is not rolled back in case of an error 
 		super.preExecute(context);
+	}
+	
+	@Override
+	protected void checkParentCollection(TransactionContext context, Resource parentCollection) {
+		if (parentCollection instanceof TerminologyResourceCollection) {
+			throw new BadRequestException("Nesting terminology collection resources is not supported. Use regular bundles to organize content.")
+				.withDeveloperMessage("'bundleId' points to the terminology resource collection, '%s'.", parentCollection.getId());
+		} else if (parentCollection instanceof Bundle) {
+			// allow bundle parents without any validation
+		} else {
+			super.checkParentCollection(context, parentCollection);
+		}
 	}
 	
 }

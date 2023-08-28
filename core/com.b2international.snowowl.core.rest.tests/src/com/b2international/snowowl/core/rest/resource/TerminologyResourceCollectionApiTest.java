@@ -186,4 +186,24 @@ public class TerminologyResourceCollectionApiTest {
 			.body("settings.customSetting", equalTo("customSettingValue"));
 	}
 	
+	@Test
+	public void create_UnderBundle() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
+		var bundleId = createBundle(IDs.base62UUID());
+		assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("bundleId", bundleId))
+			.statusCode(201);
+	}
+	
+	@Test
+	public void create_UnderAnotherTerminologyResourceCollection() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("settings", Map.of("customSetting", "customSettingValue")));
+		
+		assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID(), CodeSystem.RESOURCE_TYPE).with("bundleId", collectionId))
+			.statusCode(400)
+			.body("message", equalTo("Nesting terminology collection resources is not supported. Use regular bundles to organize content."));
+	}
+	
 }
