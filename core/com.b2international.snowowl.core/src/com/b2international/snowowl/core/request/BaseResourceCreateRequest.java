@@ -27,9 +27,9 @@ import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.bundle.Bundle;
-import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -140,7 +140,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		return purpose;
 	}
 	
-	public Map<String, Object> getSettings() {
+	protected final Map<String, Object> getSettings() {
 		return settings;
 	}
 	
@@ -233,26 +233,6 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 			throw new AlreadyExistsException("Resource", ResourceDocument.Fields.URL, getUrl());
 		}
 		
-		final List<String> bundleAncestorIds;
-		if (IComponent.ROOT_ID.equals(bundleId)) {
-			// "-1" is the only key that will show up both as the parent and as an ancestor
-			bundleAncestorIds = List.of(IComponent.ROOT_ID);
-		} else {
-			final Bundles bundles = ResourceRequests.bundles()
-				.prepareSearch()
-				.filterById(bundleId)
-				.one()
-				.build()
-				.execute(context);
-			
-			if (bundles.getTotal() == 0) {
-				throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
-			}
-	
-			final Bundle bundleParent = bundles.first().get();
-			bundleAncestorIds = bundleParent.getResourcePathSegments();
-		}
-		
 		// Validate settings
 		if (settings != null) {
 			final Optional<String> nullValueProperty = settings.entrySet()
@@ -265,13 +245,49 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				throw new BadRequestException("Setting value for key '%s' is null.", key);	
 			});
 		}
-
+		
+		final List<String> collectionAncestorIds = checkParentCollection(context);
+		
 		preExecute(context);
 		
-		context.add(createResourceDocument(context, bundleAncestorIds));
+		context.add(createResourceDocument(context, collectionAncestorIds));
 		return id;
 	}
+
+	private List<String> checkParentCollection(TransactionContext context) {
+		if (IComponent.ROOT_ID.equals(bundleId)) {
+			// "-1" is the only key that will show up both as the parent and as an ancestor
+			return List.of(IComponent.ROOT_ID);
+		} else {
+			final Resources bundles = ResourceRequests.prepareSearchCollections()
+				.filterById(bundleId)
+				.one()
+				.build()
+				.execute(context);
+			
+			if (bundles.getTotal() == 0) {
+				throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
+			}
 	
+			final Resource parentCollection = bundles.first().get();
+			
+			checkParentCollection(context, parentCollection);
+			
+			return parentCollection.getResourcePathSegments();
+		}
+	}
+	
+	/**
+	 * Subclasses may optionally check whether the given selected parent collection (Bundle or Terminology Resource Collection) is allowed to be used
+	 * or not for the to be created resource. By default this method does nothing.
+	 * 
+	 * @param context
+	 * @param parentCollection
+	 */
+	protected void checkParentCollection(TransactionContext context, Resource parentCollection) {
+		
+	}
+
 	@JsonIgnore
 	protected abstract String getResourceType();
 	
@@ -298,7 +314,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		return builder;
 	}
 	
-	private ResourceDocument createResourceDocument(TransactionContext context, List<String> bundleAncestorIds) {
+	private ResourceDocument createResourceDocument(TransactionContext context, List<String> collectionAncestorIds) {
 		final Builder builder = ResourceDocument.builder()
 				.resourceType(getResourceType())
 				.id(id)
@@ -315,7 +331,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				.purpose(purpose)
 				// explicitly set all resources created by this request to visible
 				.hidden(false)
-				.bundleAncestorIds(bundleAncestorIds)
+				.bundleAncestorIds(collectionAncestorIds)
 				.bundleId(bundleId)
 				.settings(settings == null ? Map.of() : settings);
 		

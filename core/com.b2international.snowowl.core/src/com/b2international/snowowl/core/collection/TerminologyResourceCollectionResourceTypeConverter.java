@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.codesystem;
+package com.b2international.snowowl.core.collection;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,54 +22,48 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceTypeConverter;
-import com.b2international.snowowl.core.ResourceURIWithQuery;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.expand.BaseResourceExpander;
 
 /**
- * @since 8.0
+ * @since 9.0
  */
 @Component
-public final class CodeSystemResourceTypeConverter implements ResourceTypeConverter {
+public final class TerminologyResourceCollectionResourceTypeConverter implements ResourceTypeConverter {
 
 	@Override
 	public String getResourceType() {
-		return CodeSystem.RESOURCE_TYPE;
+		return TerminologyResourceCollection.RESOURCE_TYPE;
+	}
+
+	@Override
+	public Integer getRank() {
+		return 2;
 	}
 
 	@Override
 	public Resource toResource(ResourceDocument doc) {
-		return CodeSystem.from(doc);
+		return TerminologyResourceCollection.from(doc);
 	}
-	
-	@Override
-	public Integer getRank() {
-		return 3;
-	}
-	
+
 	@Override
 	public <T extends Resource> void expand(RepositoryContext context, Options expand, List<ExtendedLocale> locales, Collection<T> results) {
 		if (expand.containsKey("content")) {
 			final Options expandOptions = expand.getOptions("content");
 			// allow expanding content via content expansion, for now hit count only
-			results.forEach(codeSystem -> {
-				final Concepts concepts = CodeSystemRequests.prepareSearchConcepts()
-						.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-						.filterByCodeSystemUri(expandOptions.containsKey("version") ? codeSystem.getResourceURI().withPath(expandOptions.getString("version")) : codeSystem.getResourceURI())
-						.setLimit(0)
-						.buildAsync()
+			results.forEach(collection -> {
+				final Resources resources = ResourceRequests.prepareSearch()
+						.filterByBundleAncestorId(collection.getId())
+						.setLimit(BaseResourceExpander.getLimit(expandOptions))
+						.build()
 						.execute(context);
-				codeSystem.setProperties("content", concepts);
+				collection.setProperties("content", resources);
 			});
 		}
 	}
 	
-	@Override
-	public ResourceURIWithQuery resolveToCodeSystemUriWithQuery(ServiceProvider context, String uriToResolve) {
-		return CodeSystem.uriWithQuery(uriToResolve);
-	}
-
 }

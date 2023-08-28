@@ -17,8 +17,17 @@ package com.b2international.snowowl.core.request;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -30,8 +39,6 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.bundle.Bundle;
-import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -311,18 +318,17 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			return List.of(bundleId);
 		}
 		
-		final Bundles bundles = ResourceRequests.bundles()
-			.prepareSearch()
-			.filterById(bundleId)
-			.one()
-			.build()
-			.execute(context);
+		final Resources bundles = ResourceRequests.prepareSearchCollections()
+				.filterById(bundleId)
+				.one()
+				.build()
+				.execute(context);
 				
 		if (bundles.getTotal() == 0) {
 			throw new NotFoundException("Bundle parent", bundleId).toBadRequestException();
 		}
 
-		final Bundle parentBundle = bundles.first().get();
+		final Resource parentBundle = bundles.first().get();
 		if (parentBundle.getBundleId().equals(resourceId) || parentBundle.getBundleAncestorIds().contains(resourceId)) {
 			throw new CycleDetectedException("Setting parent bundle ID to '" + bundleId + "' would create a loop.");
 		}

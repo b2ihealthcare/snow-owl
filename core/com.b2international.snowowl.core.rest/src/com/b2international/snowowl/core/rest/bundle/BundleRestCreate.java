@@ -17,12 +17,12 @@ package com.b2international.snowowl.core.rest.bundle;
 
 import com.b2international.snowowl.core.bundle.BundleCreateRequestBuilder;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.rest.BaseResourceRestInput;
+import com.b2international.snowowl.core.rest.BaseResourceRestCreate;
 
 /**
  * @since 8.0
  */
-public final class BundleRestInput extends BaseResourceRestInput {
+public final class BundleRestCreate extends BaseResourceRestCreate {
 
 	public BundleCreateRequestBuilder toCreateRequest() {
 		return ResourceRequests.bundles().prepareCreate()

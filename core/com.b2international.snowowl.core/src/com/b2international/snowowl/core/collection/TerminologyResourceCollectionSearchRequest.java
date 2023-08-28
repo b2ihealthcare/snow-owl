@@ -13,46 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request.resource;
+package com.b2international.snowowl.core.collection;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceSearchRequest;
 
 /**
- * @since 8.12.0
- * @param <R>
+ * @since 9.0
  */
-public abstract class BaseTerminologyResourceSearchRequest<R> extends BaseResourceSearchRequest<R> {
+final class TerminologyResourceCollectionSearchRequest extends BaseTerminologyResourceSearchRequest<TerminologyResourceCollections> {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
-	 * @since 8.12.0
+	 * @since 9.0
 	 */
 	public enum OptionKey {
 		
 		/**
-		 * Filters terminology resources by their listed dependencies.
+		 * Filter matches by their associated toolingId value.
 		 */
-		DEPENDENCY
+		TOOLING_ID
 		
 	}
 
-	@OverridingMethodsMustInvokeSuper
 	@Override
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		super.prepareAdditionalFilters(context, queryBuilder);
-		addDependencyFilter(context, queryBuilder);
-	}
-
-	private void addDependencyFilter(RepositoryContext context, ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.DEPENDENCY)) {
-			String queryString = getString(OptionKey.DEPENDENCY);
-			queryBuilder.filter(ResourceDocument.Expressions.dependency(queryString));
-		}
+		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 	}
 	
+	@Override
+	protected TerminologyResourceCollections toCollectionResource(RepositoryContext context,
+			Hits<ResourceDocument> hits) {
+		return new TerminologyResourceCollectionConverter(context, expand(), locales()).convert(hits);
+	}
+
+	@Override
+	protected TerminologyResourceCollections createEmptyResult(int limit) {
+		return new TerminologyResourceCollections(limit, 0);
+	}
+
 }

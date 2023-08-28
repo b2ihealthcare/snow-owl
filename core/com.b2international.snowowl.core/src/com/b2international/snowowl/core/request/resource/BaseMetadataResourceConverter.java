@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -78,6 +80,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 	}
 	
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	public void expand(List<R> results) {
 		expandCommits(results);
 		expandUpdateAtCommit(results);
@@ -251,29 +254,28 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 	protected final void expandResourcePathLabels(List<R> results) {
 		if (expand().containsKey(Resource.Expand.RESOURCE_PATH_LABELS)) {
 			
-			final Set<String> bundleIds = results.stream()
+			final Set<String> collectionIds = results.stream()
 				.map(Resource::getResourcePathSegments)
 				.<String>flatMap(List::stream)
 				.collect(Collectors.toSet());
 			
-			bundleIds.remove(IComponent.ROOT_ID);
+			collectionIds.remove(IComponent.ROOT_ID);
 			
-			final Map<String, String> bundleLabelsById = ResourceRequests.bundles()
-				.prepareSearch()
-				.filterByIds(bundleIds)
+			final Map<String, String> collectionLabelsById = ResourceRequests.prepareSearchCollections()
+				.filterByIds(collectionIds)
 				.setFields(Resource.Fields.ID, Resource.Fields.TITLE)
-				.setLimit(bundleIds.size())
+				.setLimit(collectionIds.size())
 				.build()
 				.execute(context())
 				.stream()
 				.collect(Collectors.toMap(b -> b.getId(), b -> b.getTitle()));
 			
-			bundleLabelsById.put(IComponent.ROOT_ID, ROOT_LABEL);
+			collectionLabelsById.put(IComponent.ROOT_ID, ROOT_LABEL);
 			
 			results.forEach(r -> {
 				r.setResourcePathLabels(r.getResourcePathSegments()
 					.stream()
-					.map(id -> bundleLabelsById.computeIfAbsent(id, key -> String.format(MISSING_BUNDLE_TEMPLATE, key)))
+					.map(id -> collectionLabelsById.computeIfAbsent(id, key -> String.format(MISSING_BUNDLE_TEMPLATE, key)))
 					.collect(Collectors.toList()));
 			});
 		}

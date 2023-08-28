@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiDependencyT
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiTest;
 import com.b2international.snowowl.core.rest.rate.RateLimitTest;
 import com.b2international.snowowl.core.rest.resource.ResourceApiTest;
+import com.b2international.snowowl.core.rest.resource.TerminologyResourceCollectionApiTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
@@ -43,6 +44,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	CodeSystemApiTest.class,
 	CodeSystemApiDependencyTest.class,
 	ResourceApiTest.class,
+	TerminologyResourceCollectionApiTest.class,
 	BundleApiTest.class,
 	BundleRestApiTest.class,
 })

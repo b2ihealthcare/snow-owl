@@ -15,10 +15,21 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.exists;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.nestedMatch;
+import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.queryString;
+import static com.b2international.index.query.Expressions.regexp;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -304,15 +315,23 @@ public final class ResourceDocument extends RevisionDocument {
 		private Boolean hidden;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
-		private SortedSet<DependencyDocument> dependencies;
+		private Map<String, Object> settings;
 		
 		// specialized resource fields
+		private SortedSet<DependencyDocument> dependencies;
 		private String oid;
 		private String branchPath;
 		private String toolingId;
+		
+		/**
+		 * @deprecated will be removed in 9.0
+		 */
 		private ResourceURI extensionOf;
+		
+		/**
+		 * @deprecated will be removed in 9.0
+		 */
 		private ResourceURI upgradeOf;
-		private Map<String, Object> settings;
 		
 		// derived fields, access only
 		private Long createdAt;

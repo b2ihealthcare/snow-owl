@@ -78,15 +78,14 @@ public class BundleRestApiTest {
 	
 	@Test
 	public void createBundle_OK() throws JsonProcessingException {
-		final Json body = prepareBundleCreateRequestBody("b1");
-		createBundle(body);
-		getBundle("b1");
+		var bundleId = createBundle("b1");
+		assertBundleGet(bundleId)
+			.statusCode(200);
 	}
 	
 	@Test
 	public void getBundleWithTimestamp() throws Exception {
-		final String id = "b16";
-		createBundle(prepareBundleCreateRequestBody(id));
+		final String id = createBundle("b16");
 		
 		final Bundle createdBundle = assertResourceGet(id)
 			.statusCode(200)
