@@ -216,6 +216,9 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			// find the resource collection's tooling support for this child resource type
 			TerminologyResourceCollectionToolingSupport toolingSupport = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getToolingSupport(resourceCollection.getToolingId(), getResourceType());
 			
+			// validate dependencies before allowing the child resource to be created
+			toolingSupport.validateChildResourceDependencies(resourceCollection, dependencies);
+			
 			// append parent collection as a dependency of this new resource
 			final Dependency collectionDependency = Dependency.of(resourceCollection.getResourceURI());
 			setDependencies(dependencies == null ? List.of(collectionDependency) : ImmutableList.<Dependency>builder().addAll(dependencies).add(collectionDependency).build());

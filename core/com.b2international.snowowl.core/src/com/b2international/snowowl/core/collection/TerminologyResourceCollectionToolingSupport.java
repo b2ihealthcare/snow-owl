@@ -110,4 +110,15 @@ public interface TerminologyResourceCollectionToolingSupport {
 		
 	}
 
+	/**
+	 * Certain tooling implementations might require additional validation checks to be performed when creating a new resource under a terminology collection with specific dependencies.
+	 * 
+	 * @param resourceCollection - the resource parent collection
+	 * @param dependencies - the new child resource's explicitly set dependency list
+	 * @throws BadRequestException - if any of the child resource's explicitly set dependency entry is forbidden to be used within the given resource collection
+	 */
+	default void validateChildResourceDependencies(TerminologyResourceCollection resourceCollection, List<Dependency> dependencies) {
+		
+	}
+
 }
