@@ -225,12 +225,12 @@ public class SnomedDependencyCompareTest {
 		final ResourceURI toUri = createVersion(codeSystemUri);
 
 		final AnalysisCompareResult compareResult = ResourceRequests.prepareCompareDependency()
-				.setFromUri(fromUri)
-				.setToUri(toUri)
-				// .setIncludeChanges(...)
-				.buildAsync()
-				.execute(Services.bus())
-				.getSync();
+			.setFromUri(fromUri)
+			.setToUri(toUri)
+			// .setIncludeChanges(...)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync();
 
 		assertThat(compareResult.getFromUri().getResourceUri()).isEqualTo(fromUri);
 		assertThat(compareResult.getToUri().getResourceUri()).isEqualTo(toUri);
@@ -251,19 +251,19 @@ public class SnomedDependencyCompareTest {
 		final ResourceURI toUri = createVersion(codeSystemUri);
 
 		final AnalysisCompareResult compareResult = ResourceRequests.prepareCompareDependency()
-				.setFromUri(fromUri)
-				.setToUri(toUri)
-				.setIncludeChanges(true)
-				.buildAsync()
-				.execute(Services.bus())
-				.getSync();
+			.setFromUri(fromUri)
+			.setToUri(toUri)
+			.setIncludeChanges(true)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync();
 
 		assertThat(compareResult.getFromUri().getResourceUri()).isEqualTo(fromUri);
 		assertThat(compareResult.getToUri().getResourceUri()).isEqualTo(toUri);
 
 		assertThat(compareResult.getItems())
-		.extracting(AnalysisCompareResultItem::id) 
-		.containsExactlyInAnyOrder(hasDefinitionStatusChange);
+			.extracting(AnalysisCompareResultItem::id) 
+			.containsExactlyInAnyOrder(hasDefinitionStatusChange);
 
 		assertThat(compareResult.getNewComponents()).isZero();
 		assertThat(compareResult.getChangedComponents()).isEqualTo(1);
@@ -287,40 +287,40 @@ public class SnomedDependencyCompareTest {
 		createNewDescription(branchPath, hasNewDescription);
 		createNewRelationship(branchPath, hasNewRelationship, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.SUBSTANCE);
 		createNewRefSetMember(branchPath, hasNewAxiom, Concepts.REFSET_OWL_AXIOM, ImmutableMap.of(
-				SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubClassOf(:" + hasNewAxiom + " :" + Concepts.ROOT_CONCEPT + ")"
-				));
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubClassOf(:" + hasNewAxiom + " :" + Concepts.ROOT_CONCEPT + ")"
+		));
 
 		createNewRefSetMember(branchPath, shouldNotAppearInChanges, simpleTypeRefset);
 
 		final SnomedDescription synonym = SnomedRequests.prepareSearchDescription()
-				.filterByActive(true)
-				.filterByConcept(hasNewLanguageMember)
-				.filterByType(Concepts.SYNONYM)
-				.setLimit(1)
-				.build(codeSystemUri)
-				.execute(Services.bus())
-				.getSync()
-				.first()
-				.get();
+			.filterByActive(true)
+			.filterByConcept(hasNewLanguageMember)
+			.filterByType(Concepts.SYNONYM)
+			.setLimit(1)
+			.build(codeSystemUri)
+			.execute(Services.bus())
+			.getSync()
+			.first()
+			.get();
 
 		createNewLanguageRefSetMember(branchPath, synonym.getId(), Concepts.REFSET_LANGUAGE_TYPE_US, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
 
 		final ResourceURI toUri = createVersion(codeSystemUri);
 
 		final AnalysisCompareResult compareResult = ResourceRequests.prepareCompareDependency()
-				.setFromUri(fromUri)
-				.setToUri(toUri)
-				.setIncludeChanges(true)
-				.buildAsync()
-				.execute(Services.bus())
-				.getSync();
+			.setFromUri(fromUri)
+			.setToUri(toUri)
+			.setIncludeChanges(true)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync();
 
 		assertThat(compareResult.getFromUri().getResourceUri()).isEqualTo(fromUri);
 		assertThat(compareResult.getToUri().getResourceUri()).isEqualTo(toUri);
 
 		assertThat(compareResult.getItems())
-		.extracting(AnalysisCompareResultItem::id) 
-		.containsExactlyInAnyOrder(hasNewDescription, hasNewRelationship, hasNewAxiom, hasNewLanguageMember);
+			.extracting(AnalysisCompareResultItem::id) 
+			.containsExactlyInAnyOrder(hasNewDescription, hasNewRelationship, hasNewAxiom, hasNewLanguageMember);
 
 		assertThat(compareResult.getNewComponents()).isZero();
 		assertThat(compareResult.getChangedComponents()).isEqualTo(4);
@@ -329,32 +329,31 @@ public class SnomedDependencyCompareTest {
 
 	private static ResourceURI createVersion(final ResourceURI codeSystemUri) {
 		final LocalDate nextDate = ResourceRequests.prepareSearchVersion()
-				.filterByResource(codeSystemUri)
-				.setLimit(1)
-				.sortBy("createdAt:desc")
-				.buildAsync()
-				.execute(Services.bus())
-				.getSync()
-				.first()
-				.map(Version::getEffectiveTime)
-				.orElse(LocalDate.now())
-				.plusDays(1);
+			.filterByResource(codeSystemUri)
+			.setLimit(1)
+			.sortBy("createdAt:desc")
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync()
+			.first()
+			.map(Version::getEffectiveTime)
+			.orElse(LocalDate.now())
+			.plusDays(1);
 
 		final String versionId = nextDate.toString();
 		final String jobId = ResourceRequests.prepareNewVersion()
-				.setResource(codeSystemUri)
-				.setVersion(versionId)
-				.setDescription(versionId)
-				.setEffectiveTime(nextDate)
-				.setAuthor(RestExtensions.USER)
-				.setCommitComment(String.format("Created version '%s'", versionId))
-				.buildAsync()
-				.runAsJob(String.format("Creating code system version '%s'", codeSystemUri.withPath(versionId).withoutResourceType()))
-				.execute(Services.bus())
-				.getSync();
+			.setResource(codeSystemUri)
+			.setVersion(versionId)
+			.setDescription(versionId)
+			.setEffectiveTime(nextDate)
+			.setAuthor(RestExtensions.USER)
+			.setCommitComment(String.format("Created version '%s'", versionId))
+			.buildAsync()
+			.runAsJob(String.format("Creating code system version '%s'", codeSystemUri.withPath(versionId).withoutResourceType()))
+			.execute(Services.bus())
+			.getSync();
 
 		JobRequests.waitForJob(Services.bus(), jobId);
-
 		return codeSystemUri.withPath(versionId); 
 	}
 }
