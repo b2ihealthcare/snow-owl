@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 
 /**
  * @since 8.0
@@ -26,14 +27,21 @@ import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
 public final class ResourceGetRequest extends BaseGetResourceRequest<ResourceSearchRequestBuilder, Resources, Resource> {
 
 	private static final long serialVersionUID = 1L;
+
+	private boolean allowHiddenResources;
 	
 	public ResourceGetRequest(ResourceURI resourceUri) {
 		super(resourceUri);
 	}
-
+	
+	void setAllowHiddenResources(boolean allowHiddenResources) {
+		this.allowHiddenResources = allowHiddenResources;
+	}
+	
 	@Override
 	protected ResourceSearchRequestBuilder createSearchRequestBuilder() {
-		return new ResourceSearchRequestBuilder();
+		return new ResourceSearchRequestBuilder()
+				.filterByHidden(allowHiddenResources ? ResourceHiddenFilter.ALL : ResourceHiddenFilter.VISIBLE_ONLY);
 	}
 
 }
