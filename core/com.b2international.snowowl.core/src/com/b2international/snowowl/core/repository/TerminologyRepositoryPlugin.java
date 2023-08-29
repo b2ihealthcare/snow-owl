@@ -83,6 +83,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ResourceURLSchemaSupport.class, getTerminologyURISupport())
 					.bind(EclRewriter.class, getEclRewriter())
 					.bind(DependencyComparer.class, getDependencyComparer())
+					.bind(ResourceContentComparer.class, getContentComparer())
 					.build(env);
 			
 			RepositoryInfo status = repo.status();
