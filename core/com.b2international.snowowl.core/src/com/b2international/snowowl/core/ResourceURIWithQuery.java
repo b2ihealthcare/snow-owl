@@ -96,15 +96,19 @@ public final class ResourceURIWithQuery implements Serializable, Comparable<Reso
 	public Multimap<String, String> getQueryValues() {
 		if (queryValues == null) {
 			queryValues = HashMultimap.create();
-			for (String keyValueRaw : this.query.split(QUERY_KEY_SEPARATOR)) {
-				if (!Strings.isNullOrEmpty(keyValueRaw)) {
-					String[] keyValue = keyValueRaw.split(QUERY_KEY_VALUE_SEPARATOR);
-					if (keyValue.length == 2) {
-						queryValues.put(keyValue[0], keyValue[1]);
+			
+			if (!Strings.isNullOrEmpty(query)) {
+				for (String keyValueRaw : query.split(QUERY_KEY_SEPARATOR)) {
+					if (!Strings.isNullOrEmpty(keyValueRaw)) {
+						String[] keyValue = keyValueRaw.split(QUERY_KEY_VALUE_SEPARATOR);
+						if (keyValue.length == 2) {
+							queryValues.put(keyValue[0], keyValue[1]);
+						}
 					}
-				}
+				}				
 			}
 		}
+		
 		return queryValues;
 	}
 	
