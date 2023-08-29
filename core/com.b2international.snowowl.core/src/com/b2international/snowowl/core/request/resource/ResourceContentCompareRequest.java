@@ -3,6 +3,10 @@
  *******************************************************************************/
 package com.b2international.snowowl.core.request.resource;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
@@ -22,9 +26,15 @@ final class ResourceContentCompareRequest extends ResourceRequest<RepositoryCont
 
 	private static final long serialVersionUID = 1L;
 
+	@NotNull
 	private final ResourceURIWithQuery fromUri;
+	
+	@NotNull
 	private final ResourceURIWithQuery toUri;
+	
+	@NotEmpty
 	private final String termType;
+	
 	private final boolean includeChanges;
 
 	public ResourceContentCompareRequest(

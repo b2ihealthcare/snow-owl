@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.compare.AnalysisCompareResult;
@@ -34,16 +31,10 @@ public final class ResourceContentCompareRequestBuilder
 	extends ResourceRequestBuilder<ResourceContentCompareRequestBuilder, RepositoryContext, AnalysisCompareResult> 
 	implements ResourceRepositoryRequestBuilder<AnalysisCompareResult> {
 
-	@NotNull
 	private ResourceURIWithQuery fromUri;
-
-	@NotNull
 	private ResourceURIWithQuery toUri;
-
-	@NotEmpty
 	private String termType = "FSN";
-
-	private boolean includeChanges = false;
+	private boolean includeChanges = true;
 
 	public ResourceContentCompareRequestBuilder setFromUri(final ResourceURI fromUri) {
 		return setFromUri(ResourceURIWithQuery.of(fromUri));
@@ -69,7 +60,7 @@ public final class ResourceContentCompareRequestBuilder
 	}
 
 	public ResourceContentCompareRequestBuilder setTermType(final String termType) {
-		this.termType = termType;
+		this.termType = StringUtils.isEmpty(termType) ? "FSN" : termType;
 		return getSelf();
 	}
 
