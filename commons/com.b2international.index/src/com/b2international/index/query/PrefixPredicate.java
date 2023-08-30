@@ -31,7 +31,7 @@ public final class PrefixPredicate extends SetPredicate<String> {
 		final long numberOfTerms = Iterables.size(arguments);
 		// XXX the usual maxClauseCount default value in ES is 1024, so allow room for other clauses before responding with an error to the caller 
 		if (numberOfTerms > 1000) {
-			throw new BadRequestException("Too may ('%s') prefix query clauses supplied for '%s' field.", numberOfTerms, field);
+			throw new BadRequestException("Too many ('%s') prefix query clauses supplied for '%s' field.", numberOfTerms, field);
 		}
 	}
 	
