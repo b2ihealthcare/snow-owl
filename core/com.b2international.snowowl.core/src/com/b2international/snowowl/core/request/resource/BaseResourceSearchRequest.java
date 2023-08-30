@@ -278,7 +278,10 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			
 			if (!resourceIdPrefixes.isEmpty()) {
 				// partial IDs, prefixes
-				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
+				Iterables.partition(resourceIdPrefixes, 1000).forEach(idPrefixes -> {
+					bool.should(ResourceDocument.Expressions.idPrefixes(idPrefixes));	
+				});
+				
 				if (authz.isDefault()) {
 					// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively) (perform only in default mode, let external authorization systems handle this)
 					bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
