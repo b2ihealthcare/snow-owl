@@ -121,6 +121,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		
 		final ValidationRuleSearchRequestBuilder req = ValidationRequests.rules()
 			.prepareSearch()
+			.filterByTooling(resource.getToolingId())
 			.setLimit(pageSize);
 		
 		if (!CompareUtils.isEmpty(ruleIds)) {
