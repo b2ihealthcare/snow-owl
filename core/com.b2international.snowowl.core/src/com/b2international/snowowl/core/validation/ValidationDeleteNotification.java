@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ public final class ValidationDeleteNotification extends SystemNotification {
 	
 	private final Set<String> resourceURIs;
 	private final Set<String> toolingIds;
+	private final Set<String> resultIds;
 
-	public ValidationDeleteNotification(Set<String> resourceURIs, Set<String> toolingIds) {
+	public ValidationDeleteNotification(Set<String> resourceURIs, Set<String> toolingIds, Set<String> resultIds) {
 		this.resourceURIs = resourceURIs;
 		this.toolingIds = toolingIds;
+		this.resultIds = resultIds;
 	}
 
 	public Set<String> getResourceURIs() {
@@ -42,4 +44,7 @@ public final class ValidationDeleteNotification extends SystemNotification {
 		return toolingIds;
 	}
 	
+	public Set<String> getResultIds() {
+		return resultIds;
+	}
 }

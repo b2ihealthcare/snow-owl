@@ -43,10 +43,14 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 
 	@JsonProperty
 	private final Set<String> toolingIds;
+
+	@JsonProperty
+	private final Set<String> resultIds;
 	
-	ValidationIssueDeleteRequest(Set<String> resourceURIs, Set<String> toolingIds) {
+	ValidationIssueDeleteRequest(Set<String> resourceURIs, Set<String> toolingIds, Set<String> resultIds) {
 		this.resourceURIs = resourceURIs;
 		this.toolingIds = toolingIds;
+		this.resultIds = resultIds;
 	}
 	
 	@Override
@@ -66,7 +70,15 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 				.stream()
 				.map(ValidationRule::getId)
 				.collect(Collectors.toSet());
+			
 			query.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, rulesToDelete));
+		}
+		
+		if (!CompareUtils.isEmpty(resultIds)) {
+			query.filter(Expressions.matchAny(ValidationIssue.Fields.RESULT_ID, resultIds));
+		} else {
+			// Use "shared" result ID as the default value if not specified
+			query.filter(Expressions.exactMatch(ValidationIssue.Fields.RESULT_ID, ValidationRequests.SHARED_VALIDATION_RESULT_ID));
 		}
 		
 		return context.service(ValidationRepository.class).write(writer -> {
@@ -74,7 +86,7 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 			writer.bulkDelete(new BulkDelete<>(ValidationIssue.class, query.build()));
 			writer.commit();
 			
-			new ValidationDeleteNotification(resourceURIs, toolingIds).publish(context.service(IEventBus.class));
+			new ValidationDeleteNotification(resourceURIs, toolingIds, resultIds).publish(context.service(IEventBus.class));
 			
 			return Boolean.TRUE;
 		});
