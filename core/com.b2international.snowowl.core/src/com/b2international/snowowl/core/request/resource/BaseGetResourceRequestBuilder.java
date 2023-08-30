@@ -16,22 +16,35 @@
 package com.b2international.snowowl.core.request.resource;
 
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.request.ResourceRequest;
 
 /**
  * @since 8.7
  */
 public abstract class BaseGetResourceRequestBuilder<
 	B extends GetResourceRequestBuilder<B, SB, RepositoryContext, SR, R>, 
-	SB extends SearchResourceRequestBuilder<SB, RepositoryContext, SR>, 
-	SR, 
+	SB extends BaseResourceSearchRequestBuilder<SB, SR>, 
+	SR extends PageableCollectionResource<R>, 
 	R> 
 	extends GetResourceRequestBuilder<B, SB, RepositoryContext, SR, R> implements ResourceRepositoryRequestBuilder<R> {
+
+	private boolean allowHiddenResources = true;
 
 	public BaseGetResourceRequestBuilder(BaseGetResourceRequest<SB, SR, R> request) {
 		super(request);
 	}
 
+	public B setAllowHiddenResources(boolean allowHiddenResources) {
+		this.allowHiddenResources = allowHiddenResources;
+		return getSelf();
+	}
+
+	@Override
+	protected void init(ResourceRequest<RepositoryContext, R> req) {
+		super.init(req);
+		((BaseGetResourceRequest<?, ?, ?>) req).setAllowHiddenResources(allowHiddenResources);
+	}
 }

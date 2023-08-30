@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
-import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 
 /**
  * @since 8.0
@@ -28,20 +27,12 @@ public final class ResourceGetRequest extends BaseGetResourceRequest<ResourceSea
 
 	private static final long serialVersionUID = 1L;
 
-	private boolean allowHiddenResources;
-	
 	public ResourceGetRequest(ResourceURI resourceUri) {
 		super(resourceUri);
 	}
 	
-	void setAllowHiddenResources(boolean allowHiddenResources) {
-		this.allowHiddenResources = allowHiddenResources;
-	}
-	
 	@Override
 	protected ResourceSearchRequestBuilder createSearchRequestBuilder() {
-		return new ResourceSearchRequestBuilder()
-				.filterByHidden(allowHiddenResources ? ResourceHiddenFilter.ALL : ResourceHiddenFilter.VISIBLE_ONLY);
+		return configureHiddenFilter(new ResourceSearchRequestBuilder());
 	}
-
 }
