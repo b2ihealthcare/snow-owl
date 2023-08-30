@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	// codeSystem settings related to reasoner settings
 	public static final String REASONER_EXCLUDE_MODULE_IDS = "reasonerExcludedModuleIds";
 
-	// codeSystem settings related to reference set management
-	public static final String DEFAULT_REFSET_MODULE_ID = "defaultRefsetModuleId";
-	public static final String DEFAULT_QUERY_TYPE_REFSET_ID = "defaultQueryTypeRefsetId";
-	
 	// FHIR specific constants
 	public static final String SNOMED_URI_BASE = "http://snomed.info";
 	public static final String SNOMED_URI_SCT = SNOMED_URI_BASE + "/sct";

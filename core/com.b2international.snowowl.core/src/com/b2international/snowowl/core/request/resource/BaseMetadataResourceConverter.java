@@ -15,15 +15,27 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.*;
+import com.b2international.snowowl.core.Dependency;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -37,6 +49,7 @@ import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -67,6 +80,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 	}
 	
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	public void expand(List<R> results) {
 		expandCommits(results);
 		expandUpdateAtCommit(results);
@@ -74,11 +88,49 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		expandVersions(results, expand(), options -> getLimit(options), locales(), context());
 		
 		expandDependencyUpgrades(results);
+		expandDependencyResources(results);
 		
 		// expand additional fields via pluggable converters
 		converters.expand(context(), expand(), locales(), results);
 	}
 	
+	protected final void expandDependencyResources(List<R> results) {
+		if (!expand().containsKey("dependencies_resource")) {
+			return;
+		}
+		
+		// index result dependencies by their Resource IDs in a Multimap to easily update them later on when we get back resource data
+		// FIXME it would be great to fetch the versioned state of the resource but that can only be executed one-by-one, which slows things down
+		Multimap<String, Dependency> dependenciesToExpand = HashMultimap.create();
+		for (Resource res : results) {
+			if (res instanceof TerminologyResource tres) {
+				TerminologyResource terminologyResource = (TerminologyResource) res;
+				if (!CompareUtils.isEmpty(terminologyResource.getDependencies())) {
+					for (Dependency dep : terminologyResource.getDependencies()) {
+						dependenciesToExpand.put(dep.getUri().getResourceUri().getResourceId(), dep);
+					}
+				}
+			}
+		}
+		
+		// fetch all referenced resources by their ID for now
+		ResourceRequests.prepareSearch()
+			.filterByIds(dependenciesToExpand.keySet())
+			.setLimit(dependenciesToExpand.keySet().size())
+			.build()
+			.execute(context())
+			.forEach(resource -> {
+				// update the Multimap by removing all Dependency entries from it that we could handle
+				dependenciesToExpand.removeAll(resource.getId()).forEach(dependencyToExpand -> {
+					dependencyToExpand.setResource((TerminologyResource) resource);
+				});
+			});
+		
+		if (!dependenciesToExpand.isEmpty()) {
+			context().log().warn("The following resources could not be expanded for their dependencies: {}", ImmutableSortedSet.copyOf(dependenciesToExpand.keySet()));
+		}
+	}
+
 	protected final void expandDependencyUpgrades(List<R> results) {
 		if (!expand().containsKey("dependencies_upgrades")) {
 			return;
@@ -202,29 +254,28 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 	protected final void expandResourcePathLabels(List<R> results) {
 		if (expand().containsKey(Resource.Expand.RESOURCE_PATH_LABELS)) {
 			
-			final Set<String> bundleIds = results.stream()
+			final Set<String> collectionIds = results.stream()
 				.map(Resource::getResourcePathSegments)
 				.<String>flatMap(List::stream)
 				.collect(Collectors.toSet());
 			
-			bundleIds.remove(IComponent.ROOT_ID);
+			collectionIds.remove(IComponent.ROOT_ID);
 			
-			final Map<String, String> bundleLabelsById = ResourceRequests.bundles()
-				.prepareSearch()
-				.filterByIds(bundleIds)
+			final Map<String, String> collectionLabelsById = ResourceRequests.prepareSearchCollections()
+				.filterByIds(collectionIds)
 				.setFields(Resource.Fields.ID, Resource.Fields.TITLE)
-				.setLimit(bundleIds.size())
+				.setLimit(collectionIds.size())
 				.build()
 				.execute(context())
 				.stream()
 				.collect(Collectors.toMap(b -> b.getId(), b -> b.getTitle()));
 			
-			bundleLabelsById.put(IComponent.ROOT_ID, ROOT_LABEL);
+			collectionLabelsById.put(IComponent.ROOT_ID, ROOT_LABEL);
 			
 			results.forEach(r -> {
 				r.setResourcePathLabels(r.getResourcePathSegments()
 					.stream()
-					.map(id -> bundleLabelsById.computeIfAbsent(id, key -> String.format(MISSING_BUNDLE_TEMPLATE, key)))
+					.map(id -> collectionLabelsById.computeIfAbsent(id, key -> String.format(MISSING_BUNDLE_TEMPLATE, key)))
 					.collect(Collectors.toList()));
 			});
 		}

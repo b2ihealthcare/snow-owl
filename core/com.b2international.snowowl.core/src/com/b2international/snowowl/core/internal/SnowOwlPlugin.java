@@ -36,6 +36,7 @@ import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.DeprecationLogger;
 import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -95,6 +96,7 @@ public final class SnowOwlPlugin extends Plugin {
 		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
 		env.services().registerService(ResourceTypeConverter.Registry.class, new ResourceTypeConverter.Registry(scanner));
 		env.services().registerService(ConceptSuggester.Registry.class, new ConceptSuggester.Registry(scanner, mapper));
+		env.services().registerService(TerminologyResourceCollectionToolingSupport.Registry.class, new TerminologyResourceCollectionToolingSupport.Registry(scanner));
 		
 		// configure global branch name validator
 		env.services().registerService(BranchNameValidator.class, new BranchNameValidator.Default(

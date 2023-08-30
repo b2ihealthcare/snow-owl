@@ -43,7 +43,6 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -215,11 +214,23 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 		
 		final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
+		// TODO make this configurable via plugins
+		final Set<String> specialResourceIdCharacters = Set.of("~");
 		
 		// special check for a single resource content access request to not lookup all the visible resources for the user but to check only the one needed for faster execution
 		if (!CompareUtils.isEmpty(componentIds()) && componentIds().size() == 1) {
 			try {
-				authz.checkPermission(context, user, List.of(Permission.requireAll(Permission.OPERATION_BROWSE, Iterables.getOnlyElement(componentIds()))));
+				final String componentIdValue = Iterables.getOnlyElement(componentIds());
+				
+				// special resources denoted by their special IDs are accessible when their original resource is accessible
+				final String componentIdToCheck = specialResourceIdCharacters.stream()
+						.filter(componentIdValue::contains)
+						.findFirst()
+						.map(specialResourceIdCharacter -> componentIdValue.split(specialResourceIdCharacter)[0])
+						.orElse(componentIdValue);
+				
+				
+				authz.checkPermission(context, user, List.of(Permission.requireAll(Permission.OPERATION_BROWSE, componentIdToCheck)));
 				return;
 			} catch (ForbiddenException e) {
 				// if this fails let the system carry on with the default execution path and check all visible resources, including bundles
@@ -228,14 +239,27 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 		
 		final Set<String> accessibleResources = authz.getAccessibleResources(context, user);
-		final SortedSet<String> exactResourceIds = accessibleResources.stream()
-				.filter(resource -> !resource.endsWith("*"))
-				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
 		
-		final SortedSet<String> resourceIdPrefixes = accessibleResources.stream()
-				.filter(resource -> resource.endsWith("*"))
-				.map(resource -> resource.substring(0, resource.length() - 1))
-				.collect(ImmutableSortedSet.toImmutableSortedSet(String::compareTo));
+		
+		final SortedSet<String> resourceIdPrefixes = new TreeSet<>();
+		final SortedSet<String> exactResourceIds = new TreeSet<>(); 
+		
+		// all exact resource IDs should be added to both the exact search and to the prefix search with any special characters registered (if hidden filter is enabled)
+		accessibleResources.stream()
+				.filter(resource -> !resource.endsWith("*"))
+				.forEach(exactResourceIds::add);
+		
+		if (hasValue(OptionKey.HIDDEN, ResourceHiddenFilter.ALL, ResourceHiddenFilter.HIDDEN_ONLY)) {
+			accessibleResources.stream()
+				.filter(resource -> !resource.endsWith("*"))
+				.flatMap(resource -> specialResourceIdCharacters.stream().map(specialCharacter -> resource.concat(specialCharacter)))
+				.forEach(exactResourceIds::add);
+		}
+		
+		accessibleResources.stream()
+			.filter(resource -> resource.endsWith("*"))
+			.map(resource -> resource.substring(0, resource.length() - 1))
+			.forEach(resourceIdPrefixes::add);
 		
 		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
 			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUserId(), exactResourceIds, resourceIdPrefixes);
@@ -270,6 +294,15 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 	}
 
+	private boolean hasValue(OptionKey optionKey, Object...values) {
+		if (CompareUtils.isEmpty(values) || !containsKey(optionKey)) {
+			return false;
+		} else {
+			return getList(optionKey, ResourceHiddenFilter.class)
+					.stream().anyMatch(Arrays.asList(values)::contains);
+		}
+	}
+
 	/**
 	 * Subclasses may override this method to provide additional filter clauses to the supplied bool {@link ExpressionBuilder}. This method does nothing by default.
 	 * 
@@ -278,6 +311,14 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
+	}
+	
+	@Override
+	protected void collectAdditionalFieldsToFetch(Set<String> fieldsToLoad) {
+		// make sure resourceType is always fetched, even when not explicitly set, to avoid URI creation error, ID field is ensured by the generic API
+		if (!fields().contains(Resource.Fields.RESOURCE_TYPE)) {
+			fieldsToLoad.add(Resource.Fields.RESOURCE_TYPE);
+		}
 	}
 
 	protected final void addUrlFilter(ExpressionBuilder queryBuilder) {

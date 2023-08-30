@@ -92,18 +92,18 @@ public abstract class CodeSystemRestRequests {
 
 	public static Json createCodeSystemBody(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {
 		Json requestBody = Json.object(
-				"id", codeSystemId,
-				"title", "Title of " + codeSystemId,
-				"url", getCodeSystemUrl(codeSystemId),
-				"description", "<div>Markdown supported</div>",
-				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
-				"oid", "oid_" + codeSystemId,
-				"language", "ENG",
-				"branchPath", branchPath,
-				"owner", "owner",
-				"contact", "https://b2ihealthcare.com",
-				"settings", configureLanguageAndPublisher(settings)
-			);
+			"id", codeSystemId,
+			"title", "Title of " + codeSystemId,
+			"url", getCodeSystemUrl(codeSystemId),
+			"description", "<div>Markdown supported</div>",
+			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
+			"oid", "oid_" + codeSystemId,
+			"language", "ENG",
+			"branchPath", branchPath,
+			"owner", "owner",
+			"contact", "https://b2ihealthcare.com",
+			"settings", configureLanguageAndPublisher(settings)
+		);
 
 		if (extensionOf != null) {
 			requestBody = requestBody.with("dependencies", List.of(Dependency.of(extensionOf, TerminologyResource.DependencyScope.EXTENSION_OF)));

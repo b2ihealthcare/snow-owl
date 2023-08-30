@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -24,11 +29,25 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.*;
+import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.Dependency;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ResourceURIWithQuery;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.bundle.Bundle;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.User;
@@ -41,7 +60,10 @@ import com.b2international.snowowl.core.version.Version;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -106,7 +128,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		this.upgradeOf = upgradeOf;
 	}
 	
-	public void setDependencies(List<Dependency> dependencies) {
+	public final void setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
 	}
 	
@@ -158,6 +180,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	}
 
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	protected void preExecute(final TransactionContext context) {
 		checkOid(context);
 		
@@ -187,7 +210,64 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.execute(context);
 		}
 	}
+	
+	@Override
+	@OverridingMethodsMustInvokeSuper
+	protected void checkParentCollection(TransactionContext context, Resource parentCollection) {
+		if (parentCollection instanceof TerminologyResourceCollection resourceCollection) {
+			// find the resource collection's tooling support for this child resource type
+			TerminologyResourceCollectionToolingSupport toolingSupport = context.service(TerminologyResourceCollectionToolingSupport.Registry.class).getToolingSupport(resourceCollection.getToolingId(), getResourceType());
+			
+			// validate dependencies before allowing the child resource to be created
+			toolingSupport.validateChildResourceDependencies(resourceCollection, dependencies);
+			
+			// append parent collection as a dependency of this new resource
+			final Dependency collectionDependency = Dependency.of(resourceCollection.getResourceURI());
+			setDependencies(dependencies == null ? List.of(collectionDependency) : ImmutableList.<Dependency>builder().addAll(dependencies).add(collectionDependency).build());
+			
+			// in case of matching child resource type, validate and inherit settings
+			inheritParentCollectionSettings(resourceCollection, toolingSupport.getInheritedSettingKeys());
+		} else if (parentCollection instanceof Bundle) {
+			// fetch all resources matching any of the current 
+			List<String> nonRootAncestorResourceIds = Collections3.toImmutableList(parentCollection.getResourcePathSegments()).stream().filter(path -> !IComponent.ROOT_ID.equals(path)).toList();
+			
+			if (!nonRootAncestorResourceIds.isEmpty()) {
+				// find and check the first matching terminology resource collection in the ancestor array (only one should exists)
+				var collectionAncestorResources = ResourceRequests.prepareSearch()
+					.filterByResourceType(TerminologyResourceCollection.RESOURCE_TYPE)
+					.filterByIds(nonRootAncestorResourceIds)
+					.setLimit(2)
+					.build()
+					.execute(context)
+					.stream()
+					.filter(ancestorResource -> ancestorResource instanceof TerminologyResourceCollection)
+					.toList();
+				
+				if (collectionAncestorResources.size() > 1) {
+					// report error for invalid state of more than one ancestor collection
+					throw new SnowowlRuntimeException(String.format("The number of ancestor collection resources in ancestor hierarchy of bundle '%s' is more than one.", parentCollection.getBundleId()));
+				} else if (collectionAncestorResources.size() == 1) {
+					// use the single ancestor collection
+					checkParentCollection(context, Iterables.getOnlyElement(collectionAncestorResources, null));
+				} else {
+					// skip if there are no ancestor collections available
+				}
+			}
+			
+		} else {
+			throw new BadRequestException("Selected parent resource '%s' is not a valid, recognizable collection resource.", parentCollection.getResourceURI());
+		}
+	}
 
+	private void inheritParentCollectionSettings(TerminologyResourceCollection resourceCollection, Set<String> inheritedSettingKeys) {
+		if (CompareUtils.isEmpty(resourceCollection.getSettings()) || CompareUtils.isEmpty(inheritedSettingKeys)) {
+			return;
+		}
+		
+		// take the filtered resource collection settings with the inherited keys and override it with the current settings if they are specified
+		setSettings(Json.assign(Maps.filterKeys(resourceCollection.getSettings(), inheritedSettingKeys::contains), getSettings()));
+	}
+	
 	private Optional<Version> checkDependencies(RepositoryContext context, boolean create) {
 		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
 		if (!deprecatedDependencies.isEmpty()) {
@@ -201,7 +281,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		} else {
 			this.mergedDependencies = dependencies;
 		}
-
+		
 		// check dependency duplication first before fetching any data from the server
 		checkDuplicateDependencies(context, mergedDependencies);
 		

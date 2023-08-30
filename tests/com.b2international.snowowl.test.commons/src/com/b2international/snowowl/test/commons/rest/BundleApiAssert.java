@@ -46,12 +46,11 @@ public class BundleApiAssert {
 				.then().statusCode(200).assertThat();
 	}
 	
-	public static ValidatableResponse getBundle(final String resourceId) {
+	public static ValidatableResponse assertBundleGet(final String bundleId, String...expand) {
 		return givenAuthenticatedRequest(BUNDLE_API)
-				.when().get("/{id}", resourceId)
-				.then().assertThat().statusCode(200)
-				.and().body("id", equalTo(resourceId))
-				.assertThat().and();
+				.queryParam("expand", expand == null ? null : String.join(",", expand))
+				.when().get("/{id}", bundleId)
+				.then().assertThat();
 	}
 	
 	public static String createBundle(final Map<String, Object> requestBody) {
@@ -62,6 +61,15 @@ public class BundleApiAssert {
 				.and().extract().response().getHeader("Location");
 		
 		return lastPathSegment(path);
+	}
+	
+	public static String createBundle(String bundleId) {
+		return createBundle(prepareBundleCreateRequestBody(bundleId));
+	}
+	
+	public static String createBundle(String bundleId, String parentCollectionId) {
+		return createBundle(prepareBundleCreateRequestBody(bundleId)
+				.with("bundleId", parentCollectionId));
 	}
 	
 	public static ValidatableResponse assertCreate(final Map<String, Object> requestBody) {
@@ -83,9 +91,10 @@ public class BundleApiAssert {
 	public static ValidatableResponse assertUpdateBundleField(final String uniqueId, final String field, final String value) {
 		assertUpdateBundle(uniqueId, Map.of(field, value)).statusCode(204);
 		
-		return getBundle(uniqueId)
-			.body(field, equalTo(value))
-			.assertThat().and();
+		return assertBundleGet(uniqueId)
+				.statusCode(200)
+				.body(field, equalTo(value))
+				.assertThat().and();
 	}
 	
 	public static Json prepareBundleCreateRequestBody(final String resourceId) {
@@ -102,4 +111,5 @@ public class BundleApiAssert {
 			"bundleId", bundleParentId
 		);
 	}
+
 }

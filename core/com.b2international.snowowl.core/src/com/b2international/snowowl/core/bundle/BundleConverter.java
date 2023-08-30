@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.BaseResourceConverter;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.resource.BaseMetadataResourceConverter;
 
 /**
  * @since 8.0
  */
-public class BundleConverter extends BaseResourceConverter<ResourceDocument, Bundle, Bundles> {
+public class BundleConverter extends BaseMetadataResourceConverter<Bundle, Bundles> {
 
-	public BundleConverter(final ServiceProvider context, final Options expand, final List<ExtendedLocale> locales) {
+	public BundleConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 	
@@ -40,16 +39,8 @@ public class BundleConverter extends BaseResourceConverter<ResourceDocument, Bun
 	}
 
 	@Override
-	protected Bundle toResource(final ResourceDocument doc) {
-		return Bundle.from(doc);
-	}
-
-	@Override
 	public void expand(final List<Bundle> results) {
-		if (expand().isEmpty() || results.isEmpty()) {
-			return;
-		}
-		
+		super.expand(results);
 		expandContents(results);
 	}
 

@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.core.request;
 
+import org.elasticsearch.core.List;
+
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.BundleRequests;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.resource.DependencyCompareRequestBuilder;
@@ -93,6 +97,12 @@ public final class ResourceRequests {
 	
 	public static boolean isVersionJob(RemoteJobEntry job) {
 		return job != null && job.getKey().startsWith(VERSION_JOB_KEY_PREFIX);
+	}
+
+	public static ResourceSearchRequestBuilder prepareSearchCollections() {
+		return prepareSearch()
+					// TODO fix hardcoded info about known collection-like resource types 
+					.filterByResourceTypes(List.of(Bundle.RESOURCE_TYPE, TerminologyResourceCollection.RESOURCE_TYPE));
 	}
 	
 }

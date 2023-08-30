@@ -38,7 +38,7 @@ import com.google.common.collect.*;
 /**
  * @since 7.6
  */
-public final class CodeSystemConverter extends BaseMetadataResourceConverter<CodeSystem, CodeSystems> {
+final class CodeSystemConverter extends BaseMetadataResourceConverter<CodeSystem, CodeSystems> {
 
 	public CodeSystemConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);

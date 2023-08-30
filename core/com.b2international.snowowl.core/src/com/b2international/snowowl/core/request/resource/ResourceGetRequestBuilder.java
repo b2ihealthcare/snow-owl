@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.request.resource;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
 
 /**
@@ -26,8 +28,21 @@ import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
 public final class ResourceGetRequestBuilder 
 		extends BaseGetResourceRequestBuilder<ResourceGetRequestBuilder, ResourceSearchRequestBuilder, Resources, Resource> {
 	
+	private boolean allowHiddenResources = Boolean.TRUE;
+	
 	public ResourceGetRequestBuilder(ResourceURI resourceUri) {
 		super(new ResourceGetRequest(resourceUri));
+	}
+	
+	public ResourceGetRequestBuilder setAllowHiddenResources(boolean allowHiddenResources) {
+		this.allowHiddenResources = allowHiddenResources;
+		return getSelf();
+	}
+	
+	@Override
+	protected void init(ResourceRequest<RepositoryContext, Resource> req) {
+		super.init(req);
+		((ResourceGetRequest) req).setAllowHiddenResources(allowHiddenResources);
 	}
 
 }

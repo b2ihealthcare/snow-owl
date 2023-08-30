@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.id.IDs;
 /**
  * @since 8.0
  */
-public abstract class BaseResourceRestInput {
+public abstract class BaseResourceRestCreate {
 	
 	//Mandatory properties
 	private String id = IDs.base62UUID();

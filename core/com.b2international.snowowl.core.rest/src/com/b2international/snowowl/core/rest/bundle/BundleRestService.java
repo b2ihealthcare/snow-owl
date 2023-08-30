@@ -164,7 +164,7 @@ public class BundleRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@RequestBody
-			final ResourceRequest<BundleRestInput> body,
+			final ResourceRequest<BundleRestCreate> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
