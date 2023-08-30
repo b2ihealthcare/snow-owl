@@ -240,26 +240,24 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		
 		final Set<String> accessibleResources = authz.getAccessibleResources(context, user);
 		
-		
-		final SortedSet<String> resourceIdPrefixes = new TreeSet<>();
 		final SortedSet<String> exactResourceIds = new TreeSet<>(); 
-		
-		// all exact resource IDs should be added to both the exact search and to the prefix search with any special characters registered (if hidden filter is enabled)
 		accessibleResources.stream()
-				.filter(resource -> !resource.endsWith("*"))
-				.forEach(exactResourceIds::add);
-		
-		if (hasValue(OptionKey.HIDDEN, ResourceHiddenFilter.ALL, ResourceHiddenFilter.HIDDEN_ONLY)) {
-			accessibleResources.stream()
-				.filter(resource -> !resource.endsWith("*"))
-				.flatMap(resource -> specialResourceIdCharacters.stream().map(specialCharacter -> resource.concat(specialCharacter)))
-				.forEach(exactResourceIds::add);
-		}
-		
+			.filter(resource -> !resource.endsWith("*"))
+			.forEach(exactResourceIds::add);
+
+		final SortedSet<String> resourceIdPrefixes = new TreeSet<>();
 		accessibleResources.stream()
 			.filter(resource -> resource.endsWith("*"))
 			.map(resource -> resource.substring(0, resource.length() - 1))
 			.forEach(resourceIdPrefixes::add);
+
+		// Exact accessible resources should also be added to the prefix search with all possible special characters registered, if hidden filter is enabled
+		if (hasValue(OptionKey.HIDDEN, ResourceHiddenFilter.ALL, ResourceHiddenFilter.HIDDEN_ONLY)) {
+			accessibleResources.stream()
+				.filter(resource -> !resource.endsWith("*"))
+				.flatMap(resource -> specialResourceIdCharacters.stream().map(specialCharacter -> resource.concat(specialCharacter)))
+				.forEach(resourceIdPrefixes::add);
+		}
 		
 		if (!exactResourceIds.isEmpty() || !resourceIdPrefixes.isEmpty()) {
 			context.log().trace("Restricting user '{}' to resources exact: '{}', prefix: '{}'.", user.getUserId(), exactResourceIds, resourceIdPrefixes);
@@ -280,7 +278,10 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 			
 			if (!resourceIdPrefixes.isEmpty()) {
 				// partial IDs, prefixes
-				bool.should(ResourceDocument.Expressions.idPrefixes(resourceIdPrefixes));
+				Iterables.partition(resourceIdPrefixes, 1000).forEach(idPrefixes -> {
+					bool.should(ResourceDocument.Expressions.idPrefixes(idPrefixes));	
+				});
+				
 				if (authz.isDefault()) {
 					// or the permitted resources are bundle ID prefixes which give access to all resources within it (recursively) (perform only in default mode, let external authorization systems handle this)
 					bool.should(ResourceDocument.Expressions.bundleIdPrefixes(resourceIdPrefixes));
