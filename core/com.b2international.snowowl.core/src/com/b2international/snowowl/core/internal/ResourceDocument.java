@@ -315,13 +315,14 @@ public final class ResourceDocument extends RevisionDocument {
 		private Boolean hidden;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
-		private Map<String, Object> settings;
 		
 		// specialized resource fields
+		private Boolean hasUpgrade;
 		private SortedSet<DependencyDocument> dependencies;
 		private String oid;
 		private String branchPath;
 		private String toolingId;
+		private Map<String, Object> settings;
 		
 		/**
 		 * @deprecated will be removed in 9.0
@@ -462,6 +463,11 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
+		public Builder hasUpgrade(boolean hasUpgrade) {
+			this.hasUpgrade = hasUpgrade;
+			return getSelf();
+		}
+		
 		public Builder dependencies(SortedSet<DependencyDocument> dependencies) {
 			this.dependencies = dependencies;
 			return getSelf();
@@ -499,6 +505,7 @@ public final class ResourceDocument extends RevisionDocument {
 				settings,
 				createdAt,
 				updatedAt,
+				hasUpgrade,
 				dependencies
 			);
 		}
@@ -537,6 +544,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final Map<String, Object> settings;
 	
 	private final SortedSet<DependencyDocument> dependencies;
+	private final Boolean hasUpgrade;
 	
 	// deprecated dependency-like fields, will be removed in 9.0
 	private final ResourceURI extensionOf;
@@ -577,6 +585,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final Map<String, Object> settings,
 			final Long createdAt,
 			final Long updatedAt,
+			final Boolean hasUpgrade,
 			final SortedSet<DependencyDocument> dependencies) {
 		super(id, iconId);
 		this.resourceType = resourceType;
@@ -601,6 +610,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.settings = settings;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.hasUpgrade = hasUpgrade;
 		this.dependencies = dependencies;
 	}
 
@@ -701,6 +711,10 @@ public final class ResourceDocument extends RevisionDocument {
 		return Optional.ofNullable(updatedAt)
 				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
 				.orElse(null);
+	}
+	
+	public Boolean getHasUpgrade() {
+		return hasUpgrade;
 	}
 	
 	public SortedSet<DependencyDocument> getDependencies() {
