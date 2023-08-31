@@ -34,7 +34,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
 public class ResourceLockRequestTest {
 
 	@Test
-	public void lockResource() {
+	public void lockResource() throws Exception {
 		
 		final String user = RestExtensions.USER;
 		final String lockDescription = "locking the working branch for test purposes";
@@ -48,18 +48,7 @@ public class ResourceLockRequestTest {
 		try {
 			
 			final LockedException lockedException = assertThrows(LockedException.class, () -> {
-				SnomedRequests.prepareNewDescription()
-					.setIdFromNamespace(Concepts.B2I_NAMESPACE)
-					.setActive(true)
-					.setModuleId(Concepts.MODULE_SCT_CORE)
-					.setConceptId(Concepts.ROOT_CONCEPT)
-					.setLanguageCode("en")
-					.setTerm("Synonym for root concept")
-					.setTypeId(Concepts.SYNONYM)
-					.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-					.build(SnomedContentRule.SNOMEDCT, user, "Add new description to root concept")
-					.execute(Services.bus())
-					.getSync();
+				createNewDescription(user);
 			});
 			
 			assertThat(lockedException.getMessage())
@@ -67,11 +56,28 @@ public class ResourceLockRequestTest {
 			
 		} finally {
 			
-			LockRequests.prepareResourceLock()
+			LockRequests.prepareResourceUnlock()
 				.setDescription(lockDescription)
 				.build(SnomedContentRule.SNOMEDCT)
 				.execute(Services.bus())
 				.getSync();
-		}		
+		}
+		
+		createNewDescription(user);
+	}
+
+	private void createNewDescription(final String author) {
+		SnomedRequests.prepareNewDescription()
+			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+			.setActive(true)
+			.setModuleId(Concepts.MODULE_SCT_CORE)
+			.setConceptId(Concepts.ROOT_CONCEPT)
+			.setLanguageCode("en")
+			.setTerm("Synonym for root concept")
+			.setTypeId(Concepts.SYNONYM)
+			.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+			.build(SnomedContentRule.SNOMEDCT, author, "Add new description to root concept")
+			.execute(Services.bus())
+			.getSync();
 	}
 }
