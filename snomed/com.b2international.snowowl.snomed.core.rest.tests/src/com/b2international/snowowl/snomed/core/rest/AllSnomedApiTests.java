@@ -100,6 +100,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
 	ConceptMapCompareDsvExportTest.class,
 	SnomedSuggestApiTest.class,
+	SnomedDependencyCompareTest.class,
 	// Branch Merge API test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,

@@ -34,6 +34,10 @@ public final class ValidationIssueSearchRequestBuilder
 
 	ValidationIssueSearchRequestBuilder() {}
 	
+	public ValidationIssueSearchRequestBuilder filterByResultId(final String resultId) {
+		return addOption(OptionKey.RESULT_ID, resultId);
+	}
+
 	public ValidationIssueSearchRequestBuilder filterByRule(final String ruleId) {
 		return addOption(OptionKey.RULE_ID, ruleId);
 	}

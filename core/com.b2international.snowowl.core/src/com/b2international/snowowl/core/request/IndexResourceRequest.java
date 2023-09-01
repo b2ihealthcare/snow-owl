@@ -25,9 +25,18 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * Base class for requests that may run subqueries (or sub-requests) to attach
+ * additional objects related to the primary item in the response. It also
+ * allows returning partial objects via field selection.
+ *
+ * @param <C> - the request context type
+ * @param <R> - the response type
+ * 
  * @since 7.5
  */
 public abstract class IndexResourceRequest<C extends ServiceProvider, R> extends ResourceRequest<C, R> {
+
+	private static final long serialVersionUID = 1L;
 
 	@NotNull
 	private Options expand;

@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.JsonSupport;
@@ -138,6 +139,46 @@ public class ValidationIssueApiTest {
 		
 		assertThat(issues).hasSize(1);
 		assertThat(issues.stream().map(ValidationIssue::getId).collect(Collectors.toList())).containsOnly(issueWithDetail);
+	}
+	
+	@Test
+	public void filterIssueByResultId() {
+		final String ruleId = ValidationRequests.rules().prepareCreate()
+			.setId(UUID.randomUUID().toString())
+			.setToolingId(TEST_TOOLING_ID)
+			.setMessageTemplate("Error message")
+			.setSeverity(Severity.ERROR)
+			.setType("snomed-query")
+			.setImplementation("*")
+			.buildAsync()
+			.getRequest()
+			.execute(context);
+		
+		final ValidationIssue issue = new ValidationIssue(
+			IDs.base62UUID(),
+			"custom-validation-results",
+			ruleId,
+			ComponentURI.of(CodeSystem.uri("SNOMEDCT", "testBranch"), ComponentIdentifier.of("concept", "ID1")),
+			false);
+		
+		// Add an issue with a custom result ID
+		final String issueWithResultId = issue.getId();
+		context.service(ValidationRepository.class).save(issue);
+
+		// Also index an issue with the shared result ID
+		createIssue(ruleId, Collections.emptyMap()); 
+		
+		final ValidationIssues issues = ValidationRequests.issues()
+			.prepareSearch()
+			.all()
+			.filterByResultId("custom-validation-results")
+			.filterByTooling(TEST_TOOLING_ID)
+			.buildAsync()
+			.getRequest()
+			.execute(context);
+		
+		assertThat(issues).hasSize(1);
+		assertThat(issues).map(ValidationIssue::getId).containsOnly(issueWithResultId);
 	}
 	
 	@Test

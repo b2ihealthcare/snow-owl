@@ -24,14 +24,23 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Iterables;
 
 /**
+ * Base class for requests that use an accompanying search request's "filter by ID"
+ * functionality to retrieve a single object.
+ * 
+ * @param <SB> - the search request builder type
+ * @param <C> - the request context type
+ * @param <SR> - the search response type (a {@link PageableCollectionResource} that should have at most one item)
+ * @param <R> - the response type
+ *
  * @since 5.2
  */
 public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder<SB, C, SR>, C extends ServiceProvider, SR, R> 
-		extends IndexResourceRequest<C, R> {
+	extends IndexResourceRequest<C, R> {
 	
 	private static final long serialVersionUID = 1L;
 	

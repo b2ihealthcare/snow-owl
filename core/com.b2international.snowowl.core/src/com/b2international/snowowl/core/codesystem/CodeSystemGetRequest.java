@@ -32,7 +32,7 @@ final class CodeSystemGetRequest
 
 	@Override
 	protected CodeSystemSearchRequestBuilder createSearchRequestBuilder() {
-		return new CodeSystemSearchRequestBuilder();
+		return configureHiddenFilter(new CodeSystemSearchRequestBuilder());
 	}
 
 }

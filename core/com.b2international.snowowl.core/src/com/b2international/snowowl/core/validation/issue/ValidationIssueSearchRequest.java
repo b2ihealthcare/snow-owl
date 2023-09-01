@@ -40,13 +40,17 @@ import com.google.common.collect.Sets.SetView;
 /**
  * @since 6.0
  */
-final class ValidationIssueSearchRequest 
-		extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue> {
-	
+final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue> {
 	
 	private static final long serialVersionUID = 8763370532712025424L;
 	
 	public enum OptionKey {
+		
+		/**
+		 * Filter matches by validation run/result identifier.
+		 */
+		RESULT_ID,
+		
 		/**
 		 * Filter matches by rule identifier.
 		 */
@@ -101,6 +105,13 @@ final class ValidationIssueSearchRequest
 		final ExpressionBuilder queryBuilder = Expressions.bool();
 
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationIssue.Fields.ID, ids));
+		
+		if (containsKey(OptionKey.RESULT_ID)) {
+			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.RESULT_ID, getString(OptionKey.RESULT_ID)));
+		} else {
+			// Use "shared" result ID as the default value if not specified
+			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.RESULT_ID, ValidationRequests.SHARED_VALIDATION_RESULT_ID));
+		}
 		
 		if (containsKey(OptionKey.RESOURCE_URI)) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, getCollection(OptionKey.RESOURCE_URI, String.class)));

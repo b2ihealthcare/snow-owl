@@ -25,13 +25,19 @@ import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 4.6
+ * Base class for requests that return localizable results. The locales set on
+ * the request are typically not used for filtering, they only control what in
+ * language / dialect the labels in the response should be.
  * 
- * @param <C>
- * @param <R>
+ * @param <C> - the request context type
+ * @param <R> - the response type
+ * 
+ * @since 4.6
  */
 public abstract class ResourceRequest<C extends ServiceProvider, R> implements Request<C, R> {
 
+	private static final long serialVersionUID = 1L;
+	
 	@NotNull
 	private List<ExtendedLocale> locales;
 	
@@ -43,5 +49,4 @@ public abstract class ResourceRequest<C extends ServiceProvider, R> implements R
 	final void setLocales(List<ExtendedLocale> locales) {
 		this.locales = locales;
 	}
-	
 }

@@ -151,14 +151,14 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					String status = hit[1];
 					String moduleId = hit[2];
 					issuesByComponentId.get(id).forEach(validationIssue -> {
-						validationIssue.setDetails(COMPONENT_STATUS, status);
-						validationIssue.setDetails(COMPONENT_MODULE_ID, moduleId);
+						validationIssue.putDetails(COMPONENT_STATUS, status);
+						validationIssue.putDetails(COMPONENT_MODULE_ID, moduleId);
 						if (CONCEPT == category) {
-							validationIssue.setDetails(CONCEPT_STATUS, status);
-							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
+							validationIssue.putDetails(CONCEPT_STATUS, status);
+							validationIssue.putDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							alreadyFetchedConceptIds.add(id);
 						} else if (DESCRIPTION == category || RELATIONSHIP == category || SET_MEMBER == category) {
-							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
+							validationIssue.putDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							final String containerConceptId = hit[4];
 							if (!Strings.isNullOrEmpty(containerConceptId) && (!issueIdsByConceptIds.containsKey(containerConceptId) || !alreadyFetchedConceptIds.contains(containerConceptId))) {
 								issueIdsByConceptIds.put(containerConceptId, id);
@@ -192,7 +192,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					.forEach(hit -> {
 						Collection<String> issueIds = issueIdsByConceptIds.get(hit[0]);
 						issueIds.stream().forEach(id -> {
-							issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.setDetails(CONCEPT_STATUS, hit[1]));
+							issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.putDetails(CONCEPT_STATUS, hit[1]));
 						});
 					});
 			});

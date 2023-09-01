@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,47 @@ package com.b2international.snowowl.core.request.resource;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.*;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.google.common.base.Strings;
 
 /**
- * @since 8.7
+ * Base class for requests that retrieve a terminology resource, eg. bundle or
+ * code system by identifier. In addition to searching by ID it also handles
+ * point-in-time resolution and resource visibility filtering.
  * 
- * @param <SB>
- * @param <SR>
- * @param <R>
+ * @param <SB> - the search request builder type
+ * @param <SR> - the search response type (a {@link PageableCollectionResource} that should have at most one item)
+ * @param <R> - the response type
+ * 
+ * @since 8.7
  */
-public abstract class BaseGetResourceRequest<SB extends SearchResourceRequestBuilder<SB, RepositoryContext, SR>, SR, R> 
-		extends GetResourceRequest<SB, RepositoryContext, SR, R>
-		implements RevisionIndexReadRequestTimestampProvider {
+public abstract class BaseGetResourceRequest<SB extends BaseResourceSearchRequestBuilder<SB, SR>, SR extends PageableCollectionResource<?>, R> 
+	extends GetResourceRequest<SB, RepositoryContext, SR, R>
+	implements RevisionIndexReadRequestTimestampProvider {
 
 	private static final long serialVersionUID = 1L;
 	
 	private final ResourceURI resourceUri;
 	
+	private boolean allowHiddenResources;
+	
 	public BaseGetResourceRequest(ResourceURI resourceUri) {
 		super(resourceUri.getResourceId());
 		this.resourceUri = resourceUri;
+	}
+	
+	void setAllowHiddenResources(boolean allowHiddenResources) {
+		this.allowHiddenResources = allowHiddenResources;
+	}
+	
+	protected final SB configureHiddenFilter(SB searchRequestBuilder) {
+		return searchRequestBuilder.filterByHidden(allowHiddenResources ? ResourceHiddenFilter.ALL : ResourceHiddenFilter.VISIBLE_ONLY);
 	}
 	
 	@Override

@@ -18,8 +18,6 @@ package com.b2international.snowowl.core.request.resource;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
 
 /**
@@ -28,21 +26,7 @@ import com.b2international.snowowl.core.request.ResourceSearchRequestBuilder;
 public final class ResourceGetRequestBuilder 
 		extends BaseGetResourceRequestBuilder<ResourceGetRequestBuilder, ResourceSearchRequestBuilder, Resources, Resource> {
 	
-	private boolean allowHiddenResources = Boolean.TRUE;
-	
 	public ResourceGetRequestBuilder(ResourceURI resourceUri) {
 		super(new ResourceGetRequest(resourceUri));
 	}
-	
-	public ResourceGetRequestBuilder setAllowHiddenResources(boolean allowHiddenResources) {
-		this.allowHiddenResources = allowHiddenResources;
-		return getSelf();
-	}
-	
-	@Override
-	protected void init(ResourceRequest<RepositoryContext, Resource> req) {
-		super.init(req);
-		((ResourceGetRequest) req).setAllowHiddenResources(allowHiddenResources);
-	}
-
 }

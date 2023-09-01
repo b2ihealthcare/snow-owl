@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ public final class ValidationIssueDeleteRequestBuilder
 	
 	private Set<String> codeSystemURIs;
 	private Set<String> toolingIds;
+	private Set<String> resultIds;
 	
 	ValidationIssueDeleteRequestBuilder() {}
 	
@@ -45,9 +46,13 @@ public final class ValidationIssueDeleteRequestBuilder
 		return getSelf();
 	}
 	
-	@Override
-	protected Request<ServiceProvider, Boolean> doBuild() {
-		return new ValidationIssueDeleteRequest(codeSystemURIs, toolingIds);
+	public ValidationIssueDeleteRequestBuilder setResultIds(Iterable<String> resultIds) {
+		this.resultIds = resultIds == null ? null : ImmutableSet.copyOf(resultIds);
+		return getSelf();
 	}
 	
+	@Override
+	protected Request<ServiceProvider, Boolean> doBuild() {
+		return new ValidationIssueDeleteRequest(codeSystemURIs, toolingIds, resultIds);
+	}
 }
