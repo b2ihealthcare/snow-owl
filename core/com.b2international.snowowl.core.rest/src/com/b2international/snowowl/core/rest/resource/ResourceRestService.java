@@ -74,6 +74,7 @@ public class ResourceRestService extends AbstractRestService {
 			.filterByOwner(params.getOwner())
 			.filterBySettings(params.getSettings())
 			.filterByDependency(params.getDependency())
+			.filterByHasUpgrade(params.getHasUpgrade())
 			.setLimit(params.getLimit())
 			.setExpand(params.getExpand())
 			.setFields(params.getField())

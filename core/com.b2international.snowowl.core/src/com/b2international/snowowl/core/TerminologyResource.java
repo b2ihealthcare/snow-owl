@@ -55,6 +55,12 @@ public abstract class TerminologyResource extends Resource {
 		 * upgrade of.
 		 */
 		public static final String UPGRADE_OF = "upgradeOf";
+		
+		/**
+		 * Configures a single source domain of a resource.
+		 */
+		public static final String DOMAIN = "domain";
+
 	}
 
 	/**

@@ -314,6 +314,13 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		return builder;
 	}
 	
+	/**
+	 * Subclasses may override this method to check if newer versions exist for this resource's domain dependency
+	 */
+	protected boolean hasUpgrade(final TransactionContext context) {
+		return false;
+	}
+
 	private ResourceDocument createResourceDocument(TransactionContext context, List<String> collectionAncestorIds) {
 		final Builder builder = ResourceDocument.builder()
 				.resourceType(getResourceType())
@@ -331,6 +338,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				.purpose(purpose)
 				// explicitly set all resources created by this request to visible
 				.hidden(false)
+				.hasUpgrade(hasUpgrade(context))
 				.bundleAncestorIds(collectionAncestorIds)
 				.bundleId(bundleId)
 				.settings(settings == null ? Map.of() : settings);

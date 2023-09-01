@@ -41,6 +41,9 @@ public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 	@Parameter
 	private String dependency;
 	
+	@Parameter
+	private Boolean hasUpgrade;
+	
 	public List<String> getOid() {
 		return oid;
 	}
@@ -80,4 +83,13 @@ public class TerminologyResourceRestSearch extends BaseResourceRestSearch {
 	public void setDependency(String dependency) {
 		this.dependency = dependency;
 	}
+	
+	public Boolean getHasUpgrade() {
+		return hasUpgrade;
+	}
+	
+	public void setHasUpgrade(Boolean hasUpgrade) {
+		this.hasUpgrade = hasUpgrade;
+	}
+	
 }

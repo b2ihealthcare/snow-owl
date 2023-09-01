@@ -55,8 +55,10 @@ import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
@@ -209,6 +211,45 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.getRequest()
 				.execute(context);
 		}
+	}
+	
+	@Override
+	protected boolean hasUpgrade(TransactionContext context) {
+		Optional<Dependency> domainDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isDomain).findFirst() : Optional.empty();
+		
+		if (domainDependency.isPresent()) {
+			var domainUri = domainDependency.map(Dependency::getUri).orElse(null);
+			
+			if (domainUri.isHead() || domainUri.isLatest()) {
+				throw new BadRequestException("Base terminology resource version was not expicitly given (can not be empty, "
+					+ "LATEST or HEAD) in 'domain' dependency '%s'.", domainUri);
+			}
+			
+			Optional<Version> domainVersion = ResourceRequests.prepareSearchVersion()
+					.one()
+					.filterByVersionId(domainUri.getResourceUri().getPath())
+					.filterByResource(domainUri.getResourceUri().withoutPath())
+					.build()
+					.execute(context)
+					.first();
+			
+			if (!domainVersion.isPresent()) {
+				throw new BadRequestException("Base terminology resource version not found for 'domain' dependency '%s'.", domainUri);
+			}
+			
+			//Latest version has to be present if domain version if present
+			Optional<Version> latestVersion = ResourceRequests.prepareSearchVersion()
+				.one()
+				.filterByResource(domainUri.getResourceUri().withoutPath())
+				.sortBy(Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME))
+				.build()
+				.execute(context)
+				.first();
+			
+			return latestVersion.get().getEffectiveTime().compareTo(domainVersion.get().getEffectiveTime()) > 0;
+		}
+		
+		return false;
 	}
 	
 	@Override

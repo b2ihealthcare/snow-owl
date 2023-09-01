@@ -15,21 +15,10 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.exists;
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.nestedMatch;
-import static com.b2international.index.query.Expressions.prefixMatch;
-import static com.b2international.index.query.Expressions.queryString;
-import static com.b2international.index.query.Expressions.regexp;
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -110,6 +99,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String TYPE_RANK = "typeRank";
 		// since 8.12
 		public static final String DEPENDENCIES = "dependencies";
+		public static final String HAS_UPGRADE = "hasUpgrade";
 		
 		// deprecated in 8.12
 		/**
@@ -233,6 +223,17 @@ public final class ResourceDocument extends RevisionDocument {
 						.should(match(Fields.HIDDEN, hidden))
 						// XXX required for backward compatibility with 8.x indices
 						.should(com.b2international.index.query.Expressions.bool().mustNot(exists(Fields.HIDDEN)).build())
+						.build();
+			}
+		}
+		
+		public static Expression hasUpgrade(Boolean hasUpgrade) {
+			if (hasUpgrade) {
+				return match(Fields.HAS_UPGRADE, hasUpgrade);				
+			} else {
+				return com.b2international.index.query.Expressions.bool()
+						.should(match(Fields.HAS_UPGRADE, hasUpgrade))
+						.should(com.b2international.index.query.Expressions.bool().mustNot(exists(Fields.HAS_UPGRADE)).build())
 						.build();
 			}
 		}

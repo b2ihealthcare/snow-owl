@@ -61,7 +61,11 @@ public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resou
 		 * Filter matches by their dependency array (supports partial and exact matches as well via special syntax).
 		 */
 		DEPENDENCY,
-
+		
+		/**
+		 * Filter matches by whether their domain dependency is up to date or not.
+		 */
+		HAS_UPGRADE
 	}
 
 	@Override
@@ -70,6 +74,7 @@ public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resou
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
+		addHasUpgradeFilter(queryBuilder);
 		addDependencyFilter(context, queryBuilder);
 	}
 
@@ -77,6 +82,13 @@ public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resou
 		if (containsKey(OptionKey.DEPENDENCY)) {
 			String queryString = getString(OptionKey.DEPENDENCY);
 			queryBuilder.filter(ResourceDocument.Expressions.dependency(queryString));
+		}
+	}
+	
+	private void addHasUpgradeFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.HAS_UPGRADE)) {
+			Boolean hasUpgrade = getBoolean(OptionKey.HAS_UPGRADE);
+			queryBuilder.filter(ResourceDocument.Expressions.hasUpgrade(hasUpgrade));
 		}
 	}
 
