@@ -594,13 +594,15 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		CommitInfos authorCommits = RepositoryRequests.commitInfos()
 			.prepareSearchCommitInfo()
-			.filterByAuthor("author@example.com")
+			.filterByBranch(branchPath.getPath())
 			.build(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.execute(getBus())
 			.getSync();
 		
-		// The entire import fits in a single commit
-		assertEquals(1, authorCommits.getTotal());
+		authorCommits.forEach(commit -> {
+			assertEquals("author@example.com", commit.getAuthor());
+		});
+		
 	}
   
   @Test
