@@ -16,13 +16,16 @@
 package com.b2international.snowowl.snomed.core.request;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.LockedException;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.locks.request.LockRequests;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -48,7 +51,7 @@ public class ResourceLockRequestTest {
 		try {
 			
 			final LockedException lockedException = assertThrows(LockedException.class, () -> {
-				createNewDescription(user);
+				updateConcept(user, Concepts.FULLY_DEFINED);
 			});
 			
 			assertThat(lockedException.getMessage())
@@ -63,20 +66,21 @@ public class ResourceLockRequestTest {
 				.getSync();
 		}
 		
-		createNewDescription(user);
+		updateConcept(user, Concepts.FULLY_DEFINED);
+		SnomedConcept updatedConcept = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT).build(SnomedContentRule.SNOMEDCT).execute(Services.bus()).getSync();
+		assertEquals(Concepts.FULLY_DEFINED, updatedConcept.getDefinitionStatusId());
+		
+		updateConcept(user, Concepts.PRIMITIVE);
+		SnomedConcept revertedConcept = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT).build(SnomedContentRule.SNOMEDCT).execute(Services.bus()).getSync();
+		assertEquals(Concepts.PRIMITIVE, revertedConcept.getDefinitionStatusId());
+		assertEquals(EffectiveTimes.parse("2002-01-31"), revertedConcept.getEffectiveTime());
+		
 	}
 
-	private void createNewDescription(final String author) {
-		SnomedRequests.prepareNewDescription()
-			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
-			.setActive(true)
-			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.setConceptId(Concepts.ROOT_CONCEPT)
-			.setLanguageCode("en")
-			.setTerm("Synonym for root concept")
-			.setTypeId(Concepts.SYNONYM)
-			.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-			.build(SnomedContentRule.SNOMEDCT, author, "Add new description to root concept")
+	private void updateConcept(final String author, String definitionStatus) {
+		SnomedRequests.prepareUpdateConcept(Concepts.ROOT_CONCEPT)
+			.setDefinitionStatusId(definitionStatus)
+			.build(SnomedContentRule.SNOMEDCT, author, "Update definition status of root concept")
 			.execute(Services.bus())
 			.getSync();
 	}

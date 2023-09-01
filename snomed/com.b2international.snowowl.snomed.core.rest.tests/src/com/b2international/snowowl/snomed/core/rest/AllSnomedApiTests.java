@@ -65,7 +65,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	EclSerializerTest.class,
 	SnomedCommitApiTest.class,
 	SnomedCommitApiAuthorizationTest.class,
-	ResourceLockRequestTest.class,
 	// Optimization Java API Test
 	SnomedOptimizationApiTest.class,
 	// RESTful API test cases
@@ -122,7 +121,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedReferenceSetDeletionPerformanceTest.class,
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
-	SnomedMrcmTest.class
+	SnomedMrcmTest.class,
+	ResourceLockRequestTest.class
 })
 public class AllSnomedApiTests {
 
