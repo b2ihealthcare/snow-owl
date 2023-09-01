@@ -5,10 +5,12 @@ on:
     branches:
       - 7.x
       - 8.x
+      - 9.x
   pull_request:
     branches:
       - 7.x
       - 8.x
+      - 9.x
 
 jobs:
   build:
