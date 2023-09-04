@@ -176,7 +176,7 @@ public class SnomedDependencyComparer implements DependencyComparer {
 			context, 
 			partitionSize, 
 			pageSize, 
-			newDescriptions, 
+			Iterables.concat(newDescriptions, changedDescriptions), 
 			toWithoutQuery, 
 			changeDetails);
 		

@@ -241,7 +241,7 @@ public class SnomedDependencyCompareTest {
 	}
 
 	@Test
-	public void testChangedConcept() {
+	public void testChanged_Concept() {
 		final ResourceURI codeSystemUri = CodeSystem.uri(CODE_SYSTEM_ID);
 
 		final String hasDefinitionStatusChange = createNewConcept(branchPath);
@@ -271,7 +271,7 @@ public class SnomedDependencyCompareTest {
 	}
 
 	@Test
-	public void testChangedRelatedCoreComponent() {
+	public void testChanged_NewCoreComponent() {
 		final ResourceURI codeSystemUri = CodeSystem.uri(CODE_SYSTEM_ID);
 
 		final String hasNewDescription = createNewConcept(branchPath);
@@ -327,6 +327,68 @@ public class SnomedDependencyCompareTest {
 		assertThat(compareResult.getDeletedComponents()).isZero();
 	}
 
+	@Test
+	public void testChanged_ChangedCoreComponent() {
+		final ResourceURI codeSystemUri = CodeSystem.uri(CODE_SYSTEM_ID);
+		
+		final String hasChangedDescription = createNewConcept(branchPath);
+		final String hasChangedRelationship = createNewConcept(branchPath);
+		final String hasChangedAxiom = createNewConcept(branchPath);
+		final String hasChangedLanguageMember = createNewConcept(branchPath);
+		
+		final String simpleTypeRefset = createNewRefSet(branchPath);
+		final String shouldNotAppearInChanges = createNewConcept(branchPath);
+		
+		final String changedDescriptionId = createNewDescription(branchPath, hasChangedDescription);
+		final String changedRelationshipId = createNewRelationship(branchPath, hasChangedRelationship, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.SUBSTANCE);
+		final String changedAxiomId = createNewRefSetMember(branchPath, hasChangedAxiom, Concepts.REFSET_OWL_AXIOM, ImmutableMap.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubClassOf(:" + hasChangedAxiom + " :" + Concepts.ROOT_CONCEPT + ")"
+		));
+		
+		final SnomedDescription synonym = SnomedRequests.prepareSearchDescription()
+			.filterByActive(true)
+			.filterByConcept(hasChangedLanguageMember)
+			.filterByType(Concepts.SYNONYM)
+			.setLimit(1)
+			.build(codeSystemUri)
+			.execute(Services.bus())
+			.getSync()
+			.first()
+			.get();
+		
+		final String changedLanguageMemberId = createNewLanguageRefSetMember(branchPath, synonym.getId(), Concepts.REFSET_LANGUAGE_TYPE_US, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
+		final String changedSimpleMemberId = createNewRefSetMember(branchPath, shouldNotAppearInChanges, simpleTypeRefset);
+		
+		final ResourceURI fromUri = createVersion(codeSystemUri);
+		
+		inactivateDescription(branchPath, changedDescriptionId);
+		inactivateRelationship(branchPath, changedRelationshipId);
+		inactivateMember(branchPath, changedAxiomId);
+		inactivateMember(branchPath, changedLanguageMemberId);
+		inactivateMember(branchPath, changedSimpleMemberId);
+		
+		final ResourceURI toUri = createVersion(codeSystemUri);
+		
+		final AnalysisCompareResult compareResult = ResourceRequests.prepareCompareDependency()
+			.setFromUri(fromUri)
+			.setToUri(toUri)
+			.setIncludeChanges(true)
+			.buildAsync()
+			.execute(Services.bus())
+			.getSync();
+		
+		assertThat(compareResult.getFromUri().getResourceUri()).isEqualTo(fromUri);
+		assertThat(compareResult.getToUri().getResourceUri()).isEqualTo(toUri);
+		
+		assertThat(compareResult.getItems())
+			.extracting(AnalysisCompareResultItem::id) 
+			.containsExactlyInAnyOrder(hasChangedDescription, hasChangedRelationship, hasChangedAxiom, hasChangedLanguageMember);
+		
+		assertThat(compareResult.getNewComponents()).isZero();
+		assertThat(compareResult.getChangedComponents()).isEqualTo(4);
+		assertThat(compareResult.getDeletedComponents()).isZero();
+	}
+	
 	private static ResourceURI createVersion(final ResourceURI codeSystemUri) {
 		final LocalDate nextDate = ResourceRequests.prepareSearchVersion()
 			.filterByResource(codeSystemUri)
