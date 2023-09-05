@@ -122,7 +122,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
 	SnomedMrcmTest.class,
-	ResourceLockRequestTest.class
+	ResourceLockRequestTest.class,
+	ResourceSearchRequestTest.class,
 })
 public class AllSnomedApiTests {
 

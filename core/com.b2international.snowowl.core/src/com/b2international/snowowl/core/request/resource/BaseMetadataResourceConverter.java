@@ -15,13 +15,7 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,11 +25,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.Dependency;
-import com.b2international.snowowl.core.Resource;
-import com.b2international.snowowl.core.ResourceTypeConverter;
-import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -214,6 +204,9 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 				.map(res -> {
 					return RepositoryRequests.commitInfos().prepareSearchCommitInfo()
 						.filterByBranch(res.getBranchPath())
+						.filterByTimestamp(
+							expandOptions.get(TerminologyResource.Expand.TIMESTAMP_FROM_OPTION_KEY, Long.class), 
+							expandOptions.get(TerminologyResource.Expand.TIMESTAMP_TO_OPTION_KEY, Long.class))
 						.setLimit(getLimit(expandOptions))
 						.setFields(expandOptions.containsKey(FIELD_OPTION_KEY) ? expandOptions.getList(FIELD_OPTION_KEY, String.class) : CommitInfo.Fields.DEFAULT_FIELD_SELECTION)
 						.sortBy(expandOptions.containsKey(SORT_OPTION_KEY) ? expandOptions.getString(SORT_OPTION_KEY) : null)
