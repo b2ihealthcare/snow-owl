@@ -15,21 +15,25 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.DeleteRequest;
+import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
@@ -41,6 +45,8 @@ public final class ResourceDeleteRequest implements Request<TransactionContext, 
 	
 	private final ResourceURI resourceUri;
 	private final boolean force;
+
+	private ResourceDocument resource;
 
 	public ResourceDeleteRequest(ResourceURI resourceUri, boolean force) {
 		this.resourceUri = Objects.requireNonNull(resourceUri);
@@ -66,7 +72,15 @@ public final class ResourceDeleteRequest implements Request<TransactionContext, 
 			}
 		}
 		
-		return new DeleteRequest(resourceUri.getResourceId(), ResourceDocument.class, force).execute(context);
+		try {
+			if (resource == null) {
+				resource = context.lookup(resourceUri.getResourceId(), ResourceDocument.class);
+			}
+			context.delete(resource, force);
+		} catch (ComponentNotFoundException e) {
+			// ignore, probably already deleted
+		}
+		return Boolean.TRUE;
 	}
 	
 	@Override
@@ -74,4 +88,21 @@ public final class ResourceDeleteRequest implements Request<TransactionContext, 
 		return Permission.OPERATION_EDIT;
 	}
 
+	@Override
+	public void collectAccessedResources(ServiceProvider context, Request<ServiceProvider, ?> req, List<String> accessedResources) {
+		if (resource == null) {
+			resource = context.service(ResourceRepository.class).read(searcher -> {
+				return searcher.get(ResourceDocument.class, resourceUri.getResourceId());
+			});
+			if (resource == null) {
+				return;
+			}
+		}
+		accessedResources.add(resourceUri.getResourceId());
+		
+		// permission on any bundle is enough to delete the contained resource
+		accessedResources.add(resource.getBundleId());
+		accessedResources.addAll(Collections3.toImmutableSet(resource.getBundleAncestorIds()));
+	}
+	
 }
