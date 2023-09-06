@@ -205,15 +205,14 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				.flatMap(Resources::stream)
 				.map(Resource::getId)
 				.collect(Collectors.toList());
-						
+			
 			// create a version for the resource
 			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
 				new ResourceRepositoryCommitRequestBuilder()
 				.setBody(tx -> {
-					dependentResourceIds.forEach(id -> {
-						ResourceDocument oldDocument = tx.lookup(id, ResourceDocument.class);
-						tx.update(oldDocument, ResourceDocument.builder(oldDocument).hasUpgrade(true).build());
-					});
+					Map<String, ResourceDocument> dependendentResources = tx.lookup(dependentResourceIds, ResourceDocument.class);
+					dependendentResources.values().forEach(oldDocument -> 
+							tx.update(oldDocument, ResourceDocument.builder(oldDocument).hasUpgrade(true).build()));
 					
 					tx.add(VersionDocument.builder()
 						.id(resource.withPath(version).withoutResourceType())
