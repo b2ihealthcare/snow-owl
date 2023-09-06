@@ -89,6 +89,8 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 			return;
 		}
 		
+		final Options expandOptions = expand().getOptions("dependencies_resource");
+		
 		// index result dependencies by their Resource IDs in a Multimap to easily update them later on when we get back resource data
 		// FIXME it would be great to fetch the versioned state of the resource but that can only be executed one-by-one, which slows things down
 		Multimap<String, Dependency> dependenciesToExpand = HashMultimap.create();
@@ -107,6 +109,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		ResourceRequests.prepareSearch()
 			.filterByIds(dependenciesToExpand.keySet())
 			.setLimit(dependenciesToExpand.keySet().size())
+			.setExpand(expandOptions.getOptions("expand"))
 			.build()
 			.execute(context())
 			.forEach(resource -> {
@@ -125,6 +128,8 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		if (!expand().containsKey("dependencies_upgrades")) {
 			return;
 		}
+		
+		final Options expandOptions = expand().getOptions("dependencies_upgrades");
 		
 		// index result dependencies by their URIs in a Multimap to easily update them later on when we get back newer dependency versions
 		Multimap<ResourceURI, Dependency> dependenciesToExpand = HashMultimap.create();
@@ -146,6 +151,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		ResourceRequests.prepareSearchVersion()
 			.setLimit(1_000)
 			.filterByResources(dependenciesToExpand.keySet().stream().map(ResourceURI::withoutPath).map(ResourceURI::toString).collect(Collectors.toSet()))
+			.setExpand(expandOptions.getOptions("expand"))
 			.stream(context())
 			.flatMap(Versions::stream)
 			.forEach(version -> versionsByResource.put(version.getResource(), version));
