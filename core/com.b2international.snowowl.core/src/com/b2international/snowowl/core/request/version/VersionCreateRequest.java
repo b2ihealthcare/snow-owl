@@ -205,18 +205,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				.flatMap(Resources::stream)
 				.map(Resource::getId)
 				.collect(Collectors.toList());
-			
-			if (resourceToVersion instanceof TerminologyResourceCollection) {
-				List<String> resourcesInCollection = ResourceRequests.prepareSearch()
-						.setLimit(10_000)
-						.filterByBundleId(resourceToVersion.getId())
-						.stream(context)
-						.flatMap(Resources::stream)
-						.map(Resource::getId)
-						.collect(Collectors.toList());
-				dependentResourceIds.addAll(resourcesInCollection);
-			}
-			
+						
 			// create a version for the resource
 			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
 				new ResourceRepositoryCommitRequestBuilder()
