@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import org.elasticsearch.core.List;
-import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import com.b2international.snowowl.fhir.rest.CodeSystemResourceProvider;
+import com.b2international.snowowl.fhir.rest.NestedRestfulServer;
+
+import ca.uhn.fhir.rest.server.IResourceProvider;
 
 /**
  * The Spring configuration class for Snow Owl's FHIR REST API.
@@ -27,8 +29,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 7.0
  */
 @Configuration
-@ComponentScan("com.b2international.snowowl.fhir.rest")
-public class FhirApiConfig extends BaseApiConfig {
+public class FhirApiConfig {
 
 	public static final String CODESYSTEM = "CodeSystem";
 	public static final String CONCEPTMAP = "ConceptMap";
@@ -37,26 +38,17 @@ public class FhirApiConfig extends BaseApiConfig {
 	public static final String CAPABILITY_STATEMENT = "CapabilityStatement";
 	public static final String STRUCTURE_DEFINITION = "StructureDefinition";
 	
-	@Override
-	public String getApiBaseUrl() {
+	public static String getApiBaseUrl() {
 		return "/fhir";
 	}
 
 	@Bean
-	public GroupedOpenApi fhirDocs() {
-		return docs(
-			getApiBaseUrl(), 
-			"fhir", 
-			"4.0.1", 
-			"FHIR API", 
-			B2I_SITE, 
-			"support@b2i.sg", 
-			"API License", 
-			B2I_SITE, 
-			"This describes the resources that make up the official Snow Owl® Snow Owl® <a href=\\\"http://hl7.org/fhir/\\\">FHIR®</a> API.\r\n" + 
-			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir).",
-			List.of(CAPABILITY_STATEMENT, CODESYSTEM, VALUESET, CONCEPTMAP, BUNDLE, STRUCTURE_DEFINITION)
-		);
+	public IResourceProvider codeSystemResourceProvider() {
+		return new CodeSystemResourceProvider();
 	}
 	
+	@Bean(name = "/fhir/**")
+	public NestedRestfulServer nestedRestfulServer() {
+		return new NestedRestfulServer();
+	}
 }
