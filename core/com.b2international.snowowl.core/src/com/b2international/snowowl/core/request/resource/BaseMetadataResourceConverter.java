@@ -105,6 +105,11 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 			}
 		}
 		
+		// skip if there are no resources to expand
+		if (dependenciesToExpand.isEmpty()) {
+			return;
+		}
+		
 		// fetch all referenced resources by their ID for now
 		ResourceRequests.prepareSearch()
 			.filterByIds(dependenciesToExpand.keySet())
@@ -142,6 +147,11 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 					}
 				}
 			}
+		}
+		
+		// skip if there are no dependency resources to expand
+		if (dependenciesToExpand.isEmpty()) {
+			return;
 		}
 		
 		final TreeMultimap<ResourceURI, Version> versionsByResource = TreeMultimap.create(
