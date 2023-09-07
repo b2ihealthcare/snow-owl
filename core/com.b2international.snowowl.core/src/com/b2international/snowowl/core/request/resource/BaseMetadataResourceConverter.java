@@ -38,10 +38,7 @@ import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.*;
 
 /**
  * @since 8.12
@@ -93,7 +90,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		
 		// index result dependencies by their Resource IDs in a Multimap to easily update them later on when we get back resource data
 		// FIXME it would be great to fetch the versioned state of the resource but that can only be executed one-by-one, which slows things down
-		Multimap<String, Dependency> dependenciesToExpand = HashMultimap.create();
+		Multimap<String, Dependency> dependenciesToExpand = ArrayListMultimap.create();
 		for (Resource res : results) {
 			if (res instanceof TerminologyResource tres) {
 				TerminologyResource terminologyResource = (TerminologyResource) res;
@@ -137,7 +134,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		final Options expandOptions = expand().getOptions("dependencies_upgrades");
 		
 		// index result dependencies by their URIs in a Multimap to easily update them later on when we get back newer dependency versions
-		Multimap<ResourceURI, Dependency> dependenciesToExpand = HashMultimap.create();
+		Multimap<ResourceURI, Dependency> dependenciesToExpand = ArrayListMultimap.create();
 		for (Resource res : results) {
 			if (res instanceof TerminologyResource tres) {
 				TerminologyResource terminologyResource = (TerminologyResource) res;

@@ -19,7 +19,7 @@ import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -410,6 +410,38 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			.flatExtracting(Dependency::getUpgrades)
 			.isEmpty();
 		
+	}
+	
+	@Test
+	public void expandDependencyResources() throws Exception {
+		final String parentCodeSystemId = IDs.base62UUID();
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
+		createCodeSystem(parentRequestBody);
+		
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-16")).statusCode(201);
+		
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v2", "2021-04-16")).statusCode(201);
+		
+		final String codeSystemWithOneDependency = "codeSystemWithOneDependency";
+		final String codeSystemWithSameDependency = "codeSystemWithTwoDependency";
+		
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithOneDependency)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId))
+			))
+		).statusCode(201);
+		assertCodeSystemCreate(
+			prepareCodeSystemCreateRequestBody(codeSystemWithSameDependency)
+			.with("dependencies", List.of(
+				Dependency.of(CodeSystem.uri(parentCodeSystemId))
+			))
+		).statusCode(201);
+		
+		codeSystemSearch(Map.of(
+			"id", List.of(codeSystemWithOneDependency, codeSystemWithSameDependency),
+			"expand", "dependencies_resource()"
+		)).body("items.dependencies.resource.id", equalTo(List.of(List.of(parentCodeSystemId), List.of(parentCodeSystemId))));
 	}
 	
 	@Test
