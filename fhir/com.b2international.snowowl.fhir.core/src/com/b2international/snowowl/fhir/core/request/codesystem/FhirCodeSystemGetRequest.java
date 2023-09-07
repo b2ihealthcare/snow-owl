@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.snowowl.fhir.core.request.FhirResourceGetRequest;
 
 /**
@@ -33,5 +34,4 @@ final class FhirCodeSystemGetRequest extends FhirResourceGetRequest<FhirCodeSyst
 	protected FhirCodeSystemSearchRequestBuilder prepareSearch() {
 		return new FhirCodeSystemSearchRequestBuilder();
 	}
-
 }

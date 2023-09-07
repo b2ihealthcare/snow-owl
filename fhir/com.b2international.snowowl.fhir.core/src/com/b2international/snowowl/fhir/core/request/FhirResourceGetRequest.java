@@ -18,55 +18,60 @@ package com.b2international.snowowl.fhir.core.request;
 import java.util.List;
 import java.util.Optional;
 
+import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.MetadataResource;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
-import com.b2international.snowowl.fhir.core.search.Summary;
+
+import ca.uhn.fhir.rest.api.SummaryEnum;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 
 /**
  * @since 8.0 
  * @param <R>
  */
-public abstract class FhirResourceGetRequest<SB extends FhirResourceSearchRequestBuilder<SB>, R> extends GetResourceRequest<SB, RepositoryContext, Bundle, R> {
+public abstract class FhirResourceGetRequest<
+	SB extends FhirResourceSearchRequestBuilder<SB>, 
+	R extends MetadataResource> 
+	extends GetResourceRequest<SB, RepositoryContext, Bundle, R> {
 
 	private static final long serialVersionUID = 1L;
-	
-	private String summary;
+
+	private SummaryEnum summary;
 	private List<String> elements;
-	
-	protected FhirResourceGetRequest(String idOrUrl) {
+
+	protected FhirResourceGetRequest(final String idOrUrl) {
 		super(idOrUrl);
 	}
-	
-	final void setSummary(String summary) {
+
+	final void setSummary(final SummaryEnum summary) {
 		this.summary = summary;
 	}
-	
-	final void setElements(List<String> elements) {
+
+	final void setElements(final List<String> elements) {
 		this.elements = elements;
 	}
-	
+
 	@Override
 	protected final SB createSearchRequestBuilder() {
-		if (Summary.COUNT.equals(summary)) {
-			throw new BadRequestException(String.format("_summary=count is not supported on single resource operations"));
+		if (SummaryEnum.COUNT.equals(summary)) {
+			throw new InvalidRequestException("_summary=count is not supported on single resource operations");
 		}
-		
+
 		return prepareSearch()
-				.setSummary(summary)
-				.setElements(elements);
+			.setSummary(summary)
+			.addElements(elements);
 	}
-	
+
 	protected abstract SB prepareSearch();
 
 	@Override
-	protected final Optional<R> extractFirst(Bundle items) {
-		return items.first()
-				.map(ResourceResponseEntry.class::cast)
-				.map(ResourceResponseEntry::getResponseResource)
-				.map(resource -> (R) resource);
+	protected final Optional<R> extractFirst(final Bundle searchSet) {
+		if (!searchSet.hasEntry()) {
+			return Optional.empty();
+		} else {
+			return Optional.of((R) searchSet.getEntryFirstRep().getResource());
+		}
 	}
-	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.snowowl.fhir.core.request.FhirResourceGetRequestBuilder;
 
 /**
  * @since 8.0
  */
 public final class FhirCodeSystemGetRequestBuilder 
-		extends FhirResourceGetRequestBuilder<FhirCodeSystemGetRequestBuilder, FhirCodeSystemSearchRequestBuilder, CodeSystem> {
+	extends FhirResourceGetRequestBuilder<FhirCodeSystemGetRequestBuilder, FhirCodeSystemSearchRequestBuilder, CodeSystem> {
 
-	public FhirCodeSystemGetRequestBuilder(String idOrUrl) {
+	public FhirCodeSystemGetRequestBuilder(final String idOrUrl) {
 		super(new FhirCodeSystemGetRequest(idOrUrl));
 	}
-	
 }

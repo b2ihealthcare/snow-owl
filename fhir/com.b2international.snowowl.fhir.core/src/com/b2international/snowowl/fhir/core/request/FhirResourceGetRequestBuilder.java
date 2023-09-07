@@ -17,42 +17,48 @@ package com.b2international.snowowl.fhir.core.request;
 
 import java.util.List;
 
+import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.MetadataResource;
+
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.core.request.ResourceRequest;
-import com.b2international.snowowl.fhir.core.model.Bundle;
+
+import ca.uhn.fhir.rest.api.SummaryEnum;
 
 /**
  * @since 8.0
  */
-public abstract class FhirResourceGetRequestBuilder<B extends FhirResourceGetRequestBuilder<B, SB, R>, SB extends FhirResourceSearchRequestBuilder<SB>, R> 
+public abstract class FhirResourceGetRequestBuilder<
+	B extends FhirResourceGetRequestBuilder<B, SB, R>, 
+	SB extends FhirResourceSearchRequestBuilder<SB>, 
+	R extends MetadataResource> 
 	extends GetResourceRequestBuilder<B, SB, RepositoryContext, Bundle, R>
 	implements ResourceRepositoryRequestBuilder<R> {
 
-	private String summary;
+	private SummaryEnum summary;
 	private List<String> elements;
-	
-	public FhirResourceGetRequestBuilder(FhirResourceGetRequest<SB, R> request) {
+
+	public FhirResourceGetRequestBuilder(final FhirResourceGetRequest<SB, R> request) {
 		super(request);
 	}
 
 	@Override
-	protected void init(ResourceRequest<RepositoryContext, R> req) {
+	protected void init(final ResourceRequest<RepositoryContext, R> req) {
 		super.init(req);
-		FhirResourceGetRequest<SB, R> request = (FhirResourceGetRequest<SB, R>) req;
+		final FhirResourceGetRequest<SB, R> request = (FhirResourceGetRequest<SB, R>) req;
 		request.setSummary(summary);
 		request.setElements(elements);
 	}
 
-	public final B setSummary(String summary) {
+	public final B setSummary(final SummaryEnum summary) {
 		this.summary = summary;
 		return getSelf();
 	}
 
-	public final B setElements(List<String> elements) {
+	public final B setElements(final List<String> elements) {
 		this.elements = elements;
 		return getSelf();
 	}
-	
 }

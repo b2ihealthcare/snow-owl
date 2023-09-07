@@ -15,83 +15,79 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import static com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequestBuilder.*;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-import com.b2international.commons.CompareUtils;
+import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeSystem.ConceptDefinitionComponent;
+import org.hl7.fhir.r5.model.Enumerations.CodeSystemContentMode;
+import org.hl7.fhir.r5.model.Identifier;
+import org.hl7.fhir.r5.model.Identifier.IdentifierUse;
+
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 8.0
  */
-final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSystem.Builder, CodeSystem> {
+final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSystem> {
 
 	private static final long serialVersionUID = 1L;
-	private static final Set<String> EXTERNAL_FHIR_CODESYSTEM_FIELDS = Set.of(
-		CodeSystem.Fields.COUNT,
-		CodeSystem.Fields.CONTENT,
-		CodeSystem.Fields.CONCEPT,
-		CodeSystem.Fields.FILTER,
-		CodeSystem.Fields.PROPERTY,
-		CodeSystem.Fields.IDENTIFIER
+
+	private static final Set<String> CODE_SYSTEM_FHIR_ELEMENTS = ImmutableSet.of(
+		CODE_SYSTEM_COUNT,
+		CODE_SYSTEM_CONTENT,
+		CODE_SYSTEM_CONCEPT,
+		CODE_SYSTEM_FILTER,
+		CODE_SYSTEM_PROPERTY,
+		CODE_SYSTEM_IDENTIFIER
 	);
-	
+
 	@Override
 	protected String getResourceType() {
 		return com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE;
 	}
-	
+
 	@Override
-	protected Set<String> getExternalFhirResourceFields() {
-		return EXTERNAL_FHIR_CODESYSTEM_FIELDS;
+	protected Set<String> getExternalFhirElements() {
+		return CODE_SYSTEM_FHIR_ELEMENTS;
 	}
 
 	@Override
-	protected CodeSystem.Builder createResourceBuilder() {
-		return CodeSystem.builder();
+	protected CodeSystem createEmptyResource() {
+		return new CodeSystem();
 	}
-	
+
 	@Override
-	protected void expandResourceSpecificFields(RepositoryContext context, CodeSystem.Builder entry, ResourceFragment resource) {
-		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
-		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
-			if (!CompareUtils.isEmpty(resource.getOid())) {
-				return Identifier.builder()
-						.use(IdentifierUse.OFFICIAL)
-						.system(resource.getUrl())
-						.value(resource.getOid())
-						.build();
-			} else {
-				return null;
-			}
-		}, entry::addIdentifier);
-		
-		FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
-				.get(resource.getToolingId())
-				.optionalService(FhirCodeSystemResourceConverter.class)
-				.orElse(FhirCodeSystemResourceConverter.DEFAULT);
-		
-		final ResourceURI resourceURI = resource.getResourceURI();
-		
-		if (fields().isEmpty() || fields().contains(CodeSystem.Fields.CONCEPT)) {
+	protected void expandResourceSpecificFields(final RepositoryContext context, final CodeSystem codeSystem, final ResourceFragment fragment) {
+		includeIfFieldSelected(CODE_SYSTEM_COPYRIGHT, fragment::getCopyright, codeSystem::setCopyright);
+		includeIfFieldSelected(CODE_SYSTEM_IDENTIFIER, () -> getOptionalIdentifier(fragment), id -> id.ifPresent(codeSystem::addIdentifier));
+
+		final ResourceURI resourceURI = fragment.getResourceURI();
+		final FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
+			.get(fragment.getToolingId())
+			.optionalService(FhirCodeSystemResourceConverter.class)
+			.orElse(FhirCodeSystemResourceConverter.DEFAULT);
+
+		if (fields().isEmpty() || fields().contains(CODE_SYSTEM_CONCEPT)) {
 			// XXX: When "concept" is requested to be included, we also need a total concept count to set "content" properly
-			final List<Concept> concepts = converter.expandConcepts(context, resourceURI, locales());
+			final List<ConceptDefinitionComponent> concepts = converter.expandConcepts(context, resourceURI, locales());
 			final int count = converter.count(context, resourceURI);
 
+			codeSystem.setConcept(concepts);
+			codeSystem.setCount(count);
+
 			if (concepts.size() == 0) {
-				entry.content(CodeSystemContentMode.NOT_PRESENT);	
+				codeSystem.setContent(CodeSystemContentMode.NOTPRESENT);	
 			} else if (concepts.size() == count) {
-				entry.content(CodeSystemContentMode.COMPLETE);
+				codeSystem.setContent(CodeSystemContentMode.COMPLETE);
 			} else {
 				/*
 				 * If the total concept count differs from the returned list's size, content is
@@ -99,22 +95,30 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 				 * "example" and "fragment", but the latter implies a curated subset, whereas
 				 * the former is intended for subsets without a specific intent.
 				 */				
-				entry.content(CodeSystemContentMode.EXAMPLE);
+				codeSystem.setContent(CodeSystemContentMode.EXAMPLE);
 			}
-			
-			entry.concepts(concepts);
-			entry.count(count);
+
 		} else {
-			entry.content(CodeSystemContentMode.NOT_PRESENT);
-			includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, resourceURI), entry::count);
+			includeIfFieldSelected(CODE_SYSTEM_COUNT, () -> converter.count(context, resourceURI), codeSystem::setCount);
+			codeSystem.setContent(CodeSystemContentMode.NOTPRESENT);	
 		}
-		
-		includeIfFieldSelected(CodeSystem.Fields.FILTER, () -> converter.expandFilters(context, resourceURI, locales()), entry::filters);
-		includeIfFieldSelected(CodeSystem.Fields.PROPERTY, () -> converter.expandProperties(context, resourceURI, locales()), properties -> {
-			properties.stream()
-				.filter(p -> !(SupportedCodeSystemRequestProperties.class.isInstance(p)))
-				.map(prop -> SupportedConceptProperty.builder(prop).build())
-				.forEach(entry::addProperty);
-		});
+
+		// XXX: Previously some commonly accepted properties were filtered out
+		includeIfFieldSelected(CODE_SYSTEM_PROPERTY, () -> converter.expandProperties(context, resourceURI, locales()), codeSystem::setProperty);
+		includeIfFieldSelected(CODE_SYSTEM_FILTER, () -> converter.expandFilters(context, resourceURI, locales()), codeSystem::setFilter);
+	}
+
+	private Optional<Identifier> getOptionalIdentifier(final ResourceFragment fragment) {
+		final String oid = fragment.getOid();
+		if (StringUtils.isEmpty(oid)) {
+			return Optional.empty();
+		}
+
+		final Identifier identifier = new Identifier();
+		identifier.setUse(IdentifierUse.OFFICIAL);
+		identifier.setSystem(fragment.getUrl());
+		identifier.setValue(oid);
+
+		return Optional.of(identifier);
 	}
 }
