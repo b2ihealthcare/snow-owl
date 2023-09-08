@@ -20,7 +20,10 @@ import org.springframework.context.annotation.Configuration;
 
 import com.b2international.snowowl.fhir.rest.CodeSystemResourceProvider;
 import com.b2international.snowowl.fhir.rest.NestedRestfulServer;
+import com.b2international.snowowl.fhir.rest.SearchAfterPagingProvider;
 
+import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
+import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 
 /**
@@ -50,5 +53,19 @@ public class FhirApiConfig {
 	@Bean(name = "/fhir/**")
 	public NestedRestfulServer nestedRestfulServer() {
 		return new NestedRestfulServer();
+	}
+
+	@Bean
+	public IPagingProvider delegatePagingProvider() {
+		// Store at most 100 pageable searches
+		final FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(100);
+		pp.setDefaultPageSize(1000);
+		pp.setMaximumPageSize(10_000);
+		return pp;
+	}
+	
+	@Bean
+	public SearchAfterPagingProvider searchAfterPagingProvider() {
+		return new SearchAfterPagingProvider();
 	}
 }

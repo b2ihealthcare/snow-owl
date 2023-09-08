@@ -33,9 +33,7 @@ import com.b2international.snowowl.core.rest.FhirApiConfig;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.EncodingEnum;
-import ca.uhn.fhir.rest.server.IResourceProvider;
-import ca.uhn.fhir.rest.server.IncomingRequestAddressStrategy;
-import ca.uhn.fhir.rest.server.RestfulServer;
+import ca.uhn.fhir.rest.server.*;
 import ca.uhn.fhir.rest.server.interceptor.ResponseHighlighterInterceptor;
 
 /**
@@ -48,6 +46,9 @@ public class NestedRestfulServer extends RestfulServer implements HttpRequestHan
 	@Autowired
 	private List<IResourceProvider> resourceProviders = List.of();
 
+	@Autowired
+	private SearchAfterPagingProvider pagingProvider;
+	
 	public NestedRestfulServer() {
 		super(FhirContext.forR5Cached());
 	}
@@ -66,6 +67,7 @@ public class NestedRestfulServer extends RestfulServer implements HttpRequestHan
 
 		registerInterceptor(new ResponseHighlighterInterceptor());
 		setResourceProviders(resourceProviders);
+		setPagingProvider(pagingProvider);
 	}
 
 	/*
@@ -95,7 +97,7 @@ public class NestedRestfulServer extends RestfulServer implements HttpRequestHan
 	}
 
 	/*
-	 * Lifecycle binding: called on shutdown when DisposableBean is implemented.
+	 * Lifecycle binding: called on shutdown for beans that implement DisposableBean.
 	 * Method is just added for clarity, as another one with the same signature
 	 * already exists.
 	 */
