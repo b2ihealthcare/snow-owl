@@ -200,7 +200,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			//Find resources that depend on this resource
 			List<String> dependentResourceIds = ResourceRequests.prepareSearch()
 				.setLimit(10_000)
-				.filterByDependency(String.format("(uri:%s OR uri:%s/* OR uri:%s\\?*) AND scope:domain) ", resource, resource, resource))
+				.filterByDependency(String.format("uri:%s OR uri:%s/* OR uri:%s\\?*", resource, resource, resource))
 				.setFields(ResourceDocument.Fields.ID)
 				.stream(context)
 				.flatMap(Resources::stream)
