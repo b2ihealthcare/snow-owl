@@ -143,7 +143,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 
 		final Bundle searchSet = createEmptyResult(0);
 
-		// Stash searchAfter keys in user data as building full paging links here is a bit difficult
+		// Store some information in user data that will come in handy later
 		searchSet.setUserData("currentPageId", searchAfter());
 		searchSet.setUserData("nextPageId", internalResources.getSearchAfter());
 
@@ -265,7 +265,13 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		// Mandatory fields
 		//////////////////////
 
-		resource.setId(fragment.getId());
+		/*
+		 * For versioned resources the resource ID should not contain a version path --
+		 * the version identifier goes inside the <Meta> element
+		 */
+		final IdType idElement = resource.getIdElement();
+		idElement.setParts(null, resource.fhirType(), fragment.getResourceURI().getResourceId(), fragment.getVersion());
+		
 		resource.setStatus(getPublicationStatus(fragment));
 
 		final Meta meta = resource.getMeta();
@@ -282,7 +288,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		// Optional fields
 		/////////////////////
 
-		// we are using the ID of the resource as machine readable name
+		// See comment on "idElement" above: we can use the version-qualified resource ID as a name however!
 		includeIfFieldSelected(CANONICAL_RESOURCE_NAME, fragment::getId, resource::setName);
 		includeIfFieldSelected(CANONICAL_RESOURCE_TITLE, fragment::getTitle, resource::setTitle);
 		includeIfFieldSelected(CANONICAL_RESOURCE_URL, fragment::getUrl, resource::setUrl);
