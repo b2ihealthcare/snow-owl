@@ -32,8 +32,7 @@
 			<directory>${project.basedir}/assembly/common</directory>
 			<outputDirectory></outputDirectory>
 			<excludes>
-				<!-- Exclude all *.sh file, as we will add 755 permission later during 
-					copy -->
+				<!-- Exclude all *.sh file from win package -->
 				<exclude>**/*.sh</exclude>
 			</excludes>
 		</fileSet>
