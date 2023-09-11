@@ -239,7 +239,11 @@ public class Expressions {
 	}
 	
 	public static RegexpPredicate regexp(String field, String regexp) {
-		return new RegexpPredicate(field, regexp);
+		return regexp(field, regexp, false);
+	}
+	
+	public static RegexpPredicate regexp(String field, String regexp, boolean caseInsensitive) {
+		return new RegexpPredicate(field, regexp, caseInsensitive);
 	}
 	
 	public static Expression dismaxWithScoreCategories(Expression...disjuncts) {

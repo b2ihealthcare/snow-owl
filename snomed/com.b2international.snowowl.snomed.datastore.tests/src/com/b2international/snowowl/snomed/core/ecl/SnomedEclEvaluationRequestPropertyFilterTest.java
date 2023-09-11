@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.*;
 
@@ -233,6 +233,31 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 			
 		final Expression actual = eval("* {{ term = \"history\" }}");
 		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termWildCaseInsensitive() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("History related concept")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.SYNONYM)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Concept with history")
+				.conceptId(Concepts.MODULE_SCT_CORE)
+				.typeId(Concepts.SYNONYM)
+				.build());
+			
+		final Expression actual = eval("* {{ term = wild:\"*history*\" }}");
+		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		assertEquals(expected, actual);
 	}
 	

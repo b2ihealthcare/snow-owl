@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,20 @@ package com.b2international.index.query;
  */
 public final class RegexpPredicate extends SingleArgumentPredicate<String> {
 
-	RegexpPredicate(String field, String regexp) {
+	private final boolean caseInsensitive;
+	
+	RegexpPredicate(String field, String regexp, boolean caseInsensitive) {
 		super(field, regexp);
+		this.caseInsensitive = caseInsensitive;
+	}
+	
+	public boolean isCaseInsensitive() {
+		return caseInsensitive;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("%s = regexp(%s)", getField(), getArgument());
+		return String.format("%s = regexp(%s)%s", getField(), getArgument(), isCaseInsensitive() ? "[ci]" : "[cs]");
 	}
 
 }

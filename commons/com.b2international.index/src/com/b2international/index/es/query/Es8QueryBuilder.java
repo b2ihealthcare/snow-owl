@@ -475,7 +475,7 @@ public class Es8QueryBuilder {
 	}
 	
 	private void visit(RegexpPredicate regexp) {
-		deque.push(QueryBuilders.regexp(r -> r.boost(this.boost).field(toFieldPath(regexp)).value(regexp.getArgument())));
+		deque.push(QueryBuilders.regexp(r -> r.boost(this.boost).field(toFieldPath(regexp)).value(regexp.getArgument()).caseInsensitive(regexp.isCaseInsensitive())));
 	}
 	
 	private void visit(RangePredicate<?> range) {
