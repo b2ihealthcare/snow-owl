@@ -501,15 +501,14 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		switch (lexicalSearchType) {
 			case MATCH:
 				return termMatchExpression(com.b2international.snowowl.core.request.search.TermFilter.match().term(term)
-						// make sure we disable case sensitivity and synonyms
-						.caseSensitive(false)
+						// make sure we disable synonyms when performing an ECL search
 						.synonyms(false)
 						.build());
 			case WILD:
 				final String regex = term.replace("*", ".*");
-				return termRegexExpression(regex);
+				return termRegexExpression(regex, true);
 			case REGEX:
-				return termRegexExpression(term);
+				return termRegexExpression(term, false);
 			case EXACT:
 				return termCaseInsensitiveExpression(term);
 			default:
@@ -545,7 +544,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		return throwUnsupported("Unable to provide case insensitive term expression for term filter: " + term);		
 	}
 
-	protected Expression termRegexExpression(String regex) {
+	protected Expression termRegexExpression(String regex, boolean caseInsensitive) {
 		return throwUnsupported("Unable to provide regex term expression for term filter: " + regex);
 	}
 
