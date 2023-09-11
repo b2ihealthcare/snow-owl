@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,13 @@ public final class MatchTermFilter extends TermFilter {
 	
 	private final boolean ignoreStopwords;
 	private final boolean caseSensitive;
+	private final Boolean synonyms;
 	
 	private final String fuzziness;
 	private final Integer prefixLength;
 	private final Integer maxExpansions;
 	
-	MatchTermFilter(final String term, final Integer minShouldMatch, final boolean ignoreStopwords, final boolean caseSensitive, final String fuzziness, final Integer prefixLength, final Integer maxExpansions) {
+	MatchTermFilter(final String term, final Integer minShouldMatch, final boolean ignoreStopwords, final boolean caseSensitive, final Boolean synonyms, final String fuzziness, final Integer prefixLength, final Integer maxExpansions) {
 		if (term == null) {
 			throw new BadRequestException("'term' filter parameter was null.");
 		}
@@ -52,6 +53,7 @@ public final class MatchTermFilter extends TermFilter {
 		this.minShouldMatch = minShouldMatch;
 		this.ignoreStopwords = ignoreStopwords;
 		this.caseSensitive = caseSensitive;
+		this.synonyms = synonyms;
 		this.fuzziness = fuzziness;
 		this.prefixLength = prefixLength;
 		this.maxExpansions = maxExpansions;
@@ -71,6 +73,10 @@ public final class MatchTermFilter extends TermFilter {
 	
 	public boolean isCaseSensitive() {
 		return caseSensitive;
+	}
+	
+	public Boolean isSynonyms() {
+		return synonyms;
 	}
 	
 	public String getFuzziness() {
@@ -121,6 +127,7 @@ public final class MatchTermFilter extends TermFilter {
 		
 		private boolean ignoreStopwords;
 		private boolean caseSensitive;
+		private Boolean synonyms;
 		
 		private String fuzziness;
 		private Integer prefixLength;
@@ -134,6 +141,7 @@ public final class MatchTermFilter extends TermFilter {
 			this.minShouldMatch = from.getMinShouldMatch();
 			this.ignoreStopwords = from.isIgnoreStopwords();
 			this.caseSensitive = from.isCaseSensitive();
+			this.synonyms = from.isSynonyms();
 			this.fuzziness = from.getFuzziness();
 			this.prefixLength = from.getPrefixLength();
 			this.maxExpansions = from.getMaxExpansions();
@@ -159,6 +167,11 @@ public final class MatchTermFilter extends TermFilter {
 			return this;
 		}
 		
+		public Builder synonyms(Boolean synonyms) {
+			this.synonyms = synonyms;
+			return this;
+		}
+		
 		public Builder fuzzy() {
 			return fuzziness("AUTO");
 		}
@@ -179,7 +192,7 @@ public final class MatchTermFilter extends TermFilter {
 		}
 		
 		public MatchTermFilter build() {
-			return new MatchTermFilter(term, minShouldMatch, ignoreStopwords, caseSensitive, fuzziness, prefixLength, maxExpansions);
+			return new MatchTermFilter(term, minShouldMatch, ignoreStopwords, caseSensitive, synonyms, fuzziness, prefixLength, maxExpansions);
 		}
 
 	}
@@ -188,9 +201,11 @@ public final class MatchTermFilter extends TermFilter {
 		return dismaxWithScoreCategories(
 			TermFilter.exact().term(getTerm()).caseSensitive(isCaseSensitive()).build().toExpression(field, textFieldSuffix, exactFieldSuffix, prefixFieldSuffix),
 			matchTextAll(fieldAlias(field, textFieldSuffix), getTerm())
-				.withIgnoreStopwords(isIgnoreStopwords()),
+				.withIgnoreStopwords(isIgnoreStopwords())
+				.withSynonyms(isSynonyms()),
 			matchBooleanPrefix(fieldAlias(field, textFieldSuffix), getTerm())
-				.withIgnoreStopwords(isIgnoreStopwords()),
+				.withIgnoreStopwords(isIgnoreStopwords())
+				.withSynonyms(isSynonyms()),
 			matchTextAll(fieldAlias(field, prefixFieldSuffix), getTerm())
 				.withIgnoreStopwords(isIgnoreStopwords())
 		);
@@ -198,8 +213,12 @@ public final class MatchTermFilter extends TermFilter {
 
 	public Expression minShouldMatchTermDisjunctionQuery(String field, String textFieldSuffix, String exactFieldSuffix, String prefixFieldSuffix) {
 		return dismaxWithScoreCategories(
-			matchTextAny(fieldAlias(field, textFieldSuffix), getTerm(), getMinShouldMatch()).withIgnoreStopwords(isIgnoreStopwords()),
-			matchTextAny(fieldAlias(field, prefixFieldSuffix), getTerm(), getMinShouldMatch()).withIgnoreStopwords(isIgnoreStopwords())
+			matchTextAny(fieldAlias(field, textFieldSuffix), getTerm(), getMinShouldMatch())
+				.withIgnoreStopwords(isIgnoreStopwords())
+				.withSynonyms(isSynonyms()),
+			matchTextAny(fieldAlias(field, prefixFieldSuffix), getTerm(), getMinShouldMatch())
+				.withIgnoreStopwords(isIgnoreStopwords())
+				.withSynonyms(isSynonyms())
 		);
 	}
 
