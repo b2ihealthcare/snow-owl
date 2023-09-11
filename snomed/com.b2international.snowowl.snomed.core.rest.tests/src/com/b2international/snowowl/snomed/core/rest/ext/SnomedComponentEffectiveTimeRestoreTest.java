@@ -43,8 +43,6 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
  */
 public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExtensionApiTest {
 
-	private static final String EXT_VERSION = "2019-10-31";
-	
 	@Test
 	public void restoreEffectiveTimeOnReleasedConcept() throws Exception {
 		String conceptId = createNewConcept(branchPath);
