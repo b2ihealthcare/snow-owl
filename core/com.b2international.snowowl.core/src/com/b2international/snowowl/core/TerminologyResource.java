@@ -81,17 +81,10 @@ public abstract class TerminologyResource extends Resource {
 		public static final String BRANCH = "branch";
 
 		/**
-		 * @deprecated - this expand option has been moved to the new {@link Dependency} model, will be removed from this model in 9.0
-		 */
-		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
-
-		/**
 		 * @deprecated - this expand option has been moved to the new {@link Dependency} model and also to here as {@link #BRANCH}, will be removed
 		 *             from this model in 9.0
 		 */
 		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
-
-		// public static final String DEPENDENCIES =
 
 	}
 
@@ -122,6 +115,7 @@ public abstract class TerminologyResource extends Resource {
 	@Deprecated
 	private List<ResourceURI> availableUpgrades;
 
+	@Deprecated
 	private UpgradeInfo upgradeInfo;
 
 	private Versions versions;
@@ -187,6 +181,7 @@ public abstract class TerminologyResource extends Resource {
 	 * @param scope
 	 * @param settingsKey
 	 * @return
+	 * @deprecated - replaced by {@link #getDependency(String)} as settings is no longer accepted as source of dependencies  
 	 */
 	public ResourceURI getDependency(String scope, String settingsKey) {
 		return getDependency(scope)
@@ -230,15 +225,6 @@ public abstract class TerminologyResource extends Resource {
 		return upgradeOf;
 	}
 
-	/**
-	 * @return a list of {@link ResourceURI}s pointing to resource versions that have been created after the current {{@link #getExtensionOf()}
-	 *         version on the parent resource (can be {@code null} if not requested as part of an expand() option)
-	 * @deprecated - moved this information to each separate dependency instead of allowing expanding it here, see {@link Dependency#getUpgrades()}
-	 */
-	public List<ResourceURI> getAvailableUpgrades() {
-		return availableUpgrades;
-	}
-
 	public void setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
 	}
@@ -260,15 +246,6 @@ public abstract class TerminologyResource extends Resource {
 	}
 
 	/**
-	 * @param availableUpgrades
-	 * @deprecated - moved this information to each separate dependency instead of allowing expanding it here, see
-	 *             {@link Dependency#setUpgrades(List)}
-	 */
-	public void setAvailableUpgrades(List<ResourceURI> availableUpgrades) {
-		this.availableUpgrades = availableUpgrades;
-	}
-
-	/**
 	 * @param upgradeOf
 	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
 	 */
@@ -279,11 +256,16 @@ public abstract class TerminologyResource extends Resource {
 	/**
 	 * @return an {@link UpgradeInfo} object representing the state of a currently ongoing upgrade. Can only be expanded on an upgrade version of a
 	 *         {@link TerminologyResource}.
+	 * @deprecated
 	 */
 	public UpgradeInfo getUpgradeInfo() {
 		return upgradeInfo;
 	}
 
+	/**
+	 * @param upgradeInfo
+	 * @deprecated
+	 */
 	public void setUpgradeInfo(UpgradeInfo upgradeInfo) {
 		this.upgradeInfo = upgradeInfo;
 	}

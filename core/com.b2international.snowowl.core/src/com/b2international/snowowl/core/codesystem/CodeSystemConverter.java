@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -30,10 +33,10 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.resource.BaseMetadataResourceConverter;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
-import com.b2international.snowowl.core.version.Version;
-import com.b2international.snowowl.core.version.Versions;
 import com.google.common.base.Strings;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * @since 7.6
@@ -54,7 +57,6 @@ final class CodeSystemConverter extends BaseMetadataResourceConverter<CodeSystem
 		super.expand(results);
 		expandExtensionOfBranchState(results);
 		expandUpgradeOfInfo(results);
-		expandAvailableUpgrades(results);
 	}
 	
 	private void expandExtensionOfBranchState(List<CodeSystem> results) {
@@ -153,60 +155,6 @@ final class CodeSystemConverter extends BaseMetadataResourceConverter<CodeSystem
 				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, availableVersions));
 			}
 		}
-	}
-
-	private void expandAvailableUpgrades(List<CodeSystem> results) {
-		if (!expand().containsKey(CodeSystem.Expand.AVAILABLE_UPGRADES)) {
-			return;
-		}
-		
-		final Set<ResourceURI> parentResources = results.stream()
-			.map(CodeSystem::getExtensionOf)
-			.filter(uri -> uri != null)
-			.collect(Collectors.toSet());
-		
-		final Versions parentVersions = ResourceRequests.prepareSearchVersion()
-			.all()
-			.filterByResources(parentResources.stream().map(ResourceURI::withoutPath).map(ResourceURI::toString).collect(Collectors.toSet()))
-			.build()
-			.execute(context());
-		
-		final TreeMultimap<ResourceURI, Version> versionsByResource = TreeMultimap.create(
-				Comparator.naturalOrder(), 
-				Comparator.comparing(Version::getEffectiveTime));
-		
-		versionsByResource.putAll(Multimaps.index(parentVersions, Version::getResource));
-		
-		for (final CodeSystem result : results) {
-			final ResourceURI extensionOf = result.getExtensionOf();
-			
-			// skip if there is not dependency set in extensionOf
-			// or if this is an upgrade CodeSystem
-			// or the CodeSystem already has an upgrade
-			if (extensionOf == null || result.getUpgradeOf() != null || hasUpgrade(result, results)) {
-				// always set the field if user expands it
-				result.setAvailableUpgrades(List.of());
-				continue;
-			}
-			
-			final ResourceURI resource = extensionOf.withoutPath();
-			final String version = extensionOf.getPath();
-			
-			final NavigableSet<Version> candidates = versionsByResource.get(resource);
-			
-			final Optional<Version> currentExtensionVersion = candidates.stream()
-					.filter(v -> v.getVersion().equals(version))
-					.findFirst();
-			
-			final Optional<List<ResourceURI>> upgradeUris = currentExtensionVersion.map(currentVersion -> {
-				final SortedSet<Version> upgradeVersions = candidates.tailSet(currentVersion, false);
-				return upgradeVersions.stream()
-						.map(upgradeVersion -> upgradeVersion.getVersionResourceURI())
-						.collect(Collectors.toList());
-			});
-	
-			result.setAvailableUpgrades(upgradeUris.orElseGet(List::of));
-		}			
 	}
 
 	private boolean hasUpgrade(CodeSystem result, List<CodeSystem> results) {

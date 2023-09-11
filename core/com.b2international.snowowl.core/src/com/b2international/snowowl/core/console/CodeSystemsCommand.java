@@ -79,10 +79,10 @@ public final class CodeSystemsCommand extends Command {
 			infos.add("Description: ".concat(codeSystem.getDescription()));
 		}
 
-		final String availableUpgradesInfo = getAvailableUpgradesInfo(codeSystem);
-		if (availableUpgradesInfo != null) {
-			infos.add(availableUpgradesInfo);
-		}
+//		final String availableUpgradesInfo = getAvailableUpgradesInfo(codeSystem);
+//		if (availableUpgradesInfo != null) {
+//			infos.add(availableUpgradesInfo);
+//		}
 
 		if (codeSystem.getUpgradeOf() != null) {
 			infos.add("Upgrade Of: ".concat(codeSystem.getUpgradeOf().toString()));
@@ -120,19 +120,19 @@ public final class CodeSystemsCommand extends Command {
 		return String.join(CODE_SYSTEM_SUBPROPERTY_DELIMITER, result.build());
 	}
 
-	private String getAvailableUpgradesInfo(CodeSystem codeSystem) {
-
-		if (codeSystem.getAvailableUpgrades() == null || codeSystem.getAvailableUpgrades().isEmpty()) {
-			return null;
-		}
-
-		final ImmutableList.Builder<String> result = ImmutableList.builder();
-
-		result.add("Available Upgrades: ");
-		codeSystem.getAvailableUpgrades().forEach(update -> result.add(update.toString()));
-
-		return String.join(CODE_SYSTEM_SUBPROPERTY_DELIMITER, result.build());
-	}
+//	private String getAvailableUpgradesInfo(CodeSystem codeSystem) {
+//
+//		if (codeSystem.getDependencies() == null || codeSystem.getAvailableUpgrades().isEmpty()) {
+//			return null;
+//		}
+//
+//		final ImmutableList.Builder<String> result = ImmutableList.builder();
+//
+//		result.add("Available Upgrades: ");
+//		codeSystem.getAvailableUpgrades().forEach(update -> result.add(update.toString()));
+//
+//		return String.join(CODE_SYSTEM_SUBPROPERTY_DELIMITER, result.build());
+//	}
 
 	private String getVersionsInfo(CodeSystem cs) {
 		final ImmutableList.Builder<String> result = ImmutableList.builder();
@@ -158,7 +158,8 @@ public final class CodeSystemsCommand extends Command {
 	private Stream<CodeSystem> getCodeSystems() {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
-				// default sorting is by ID
+				.setExpand("dependencies_upgrades()")
+				// XXX default sorting is by ID
 				.buildAsync()
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES)
