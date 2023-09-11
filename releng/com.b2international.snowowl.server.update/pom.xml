@@ -18,6 +18,7 @@
 		<product.id>com.b2international.snowowl.server</product.id>
 		<so.products.directory>${products.directory}/${product.id}</so.products.directory>
 		<linux.product.path>${so.products.directory}/linux/gtk/x86_64/${product.rootFolder}</linux.product.path>
+		<win.product.path>${so.products.directory}/win32/win32/x86_64/${product.rootFolder}</win.product.path>
 	</properties>
 
 	<dependencies>
@@ -56,7 +57,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>package-oss</id>
+						<id>package-oss-unix</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
@@ -65,6 +66,17 @@
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
 							<tarLongFileMode>gnu</tarLongFileMode>
+						</configuration>
+					</execution>
+					<execution>
+						<id>package-oss-win</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
+							<descriptor>${basedir}/assembly/oss-win.xml</descriptor>
 						</configuration>
 					</execution>
 				</executions>
