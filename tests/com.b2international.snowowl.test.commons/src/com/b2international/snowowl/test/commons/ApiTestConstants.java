@@ -57,11 +57,6 @@ public interface ApiTestConstants {
 	 */
 	String SCT_API = "/snomedct";
 	
-	/**
-	 * The context-relative base URL for code system upgrade controllers.
-	 */
-	String UPGRADE_API = "/upgrade";
-
 	long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
 
 	long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(120L);
