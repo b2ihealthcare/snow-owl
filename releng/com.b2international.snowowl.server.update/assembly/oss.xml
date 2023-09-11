@@ -28,6 +28,8 @@
 				<!-- Exclude all *.sh file, as we will add 755 permission later during 
 					copy -->
 				<exclude>**/*.sh</exclude>
+				<!-- Exclude all *.bat files from linux packages -->
+				<exclude>**/*.bat</exclude>
 			</excludes>
 		</fileSet>
 		<!-- Copy *.sh from common folder -->
