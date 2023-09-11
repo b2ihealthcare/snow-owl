@@ -47,7 +47,7 @@ public abstract class TermFilter implements Serializable {
 	 * 
 	 * <li>All terms present match on a case insensitive, ASCII folded, possessive removed, split text type field (usually the <b>term</b> field) with fuzziness enabled with hardcoded 10 expansions of 1 character difference (Levenshtein distance).
 	 * 
-	 * Additionally stopwords can be ignored and case sensitivity can be enabled/disabled.
+	 * Additionally stopwords can be ignored, case sensitivity can be enabled/disabled and synonyms can be included if needed.
 	 * 
 	 * @return {@link MatchTermFilter.Builder}
 	 */

@@ -101,15 +101,19 @@ public final class TextPredicate extends Predicate {
 		if (ignoreStopwords) {
 			return withAnalyzer((analyzer == Analyzers.TOKENIZED_SYNONYMS || analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS) ? Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS : Analyzers.TOKENIZED_IGNORE_STOPWORDS);
 		} else {
-			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_SYNONYMS : null);
+			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_SYNONYMS : Analyzers.TOKENIZED);
 		}
 	}
 	
-	public TextPredicate withSynonyms(boolean enableSynonyms) {
+	public TextPredicate withSynonyms(Boolean enableSynonyms) {
+		// if enableSynonyms is not a valid boolean value keep it unchanged, use the default set in the mapping
+		if (enableSynonyms == null) {
+			return this;
+		}
 		if (enableSynonyms) {
 			return withAnalyzer((analyzer == Analyzers.TOKENIZED_IGNORE_STOPWORDS || analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS) ? Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS : Analyzers.TOKENIZED_SYNONYMS);
 		} else {
-			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_IGNORE_STOPWORDS : null);
+			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_IGNORE_STOPWORDS : Analyzers.TOKENIZED);
 		}
 	}
 
