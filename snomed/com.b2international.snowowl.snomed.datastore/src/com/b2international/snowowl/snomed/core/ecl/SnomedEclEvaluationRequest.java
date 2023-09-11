@@ -628,8 +628,8 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	}
 	
 	@Override
-	protected Expression termRegexExpression(String regex) {
-		return SnomedDescriptionIndexEntry.Expressions.matchTermRegex(regex);
+	protected Expression termRegexExpression(String regex, boolean caseInsensitive) {
+		return Expressions.regexp(SnomedDescriptionIndexEntry.Fields.TERM, regex, caseInsensitive);
 	}
 	
 	@Override
