@@ -500,7 +500,11 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 
 		switch (lexicalSearchType) {
 			case MATCH:
-				return termMatchExpression(com.b2international.snowowl.core.request.search.TermFilter.match().term(term).build());
+				return termMatchExpression(com.b2international.snowowl.core.request.search.TermFilter.match().term(term)
+						// make sure we disable case sensitivity and synonyms
+						.caseSensitive(false)
+						.synonyms(false)
+						.build());
 			case WILD:
 				final String regex = term.replace("*", ".*");
 				return termRegexExpression(regex);
