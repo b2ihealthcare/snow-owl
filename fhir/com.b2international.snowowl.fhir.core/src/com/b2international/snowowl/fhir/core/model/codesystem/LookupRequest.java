@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,301 +15,230 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.AssertFalse;
+
+import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.Coding;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.fhir.core.FhirDates;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.*;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSet;
+
+import ca.uhn.fhir.model.primitive.CodeDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.UriDt;
 
 /**
- * This class represents a FHIR lookup operation request.
+ * This class represents a FHIR lookup operation request's input parameters.
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
  */
-@JsonDeserialize(builder = LookupRequest.Builder.class)
-@JsonPropertyOrder({ "code", "system", "version", "coding", "date", "displayLanguage", "property" })
-public class LookupRequest {
+public final class LookupRequest {
 
-	// The code that is to be located. If a code is provided, a system must be provided (0..1)
-	private final Code code;
+	private static final String SNOMED_BASE_URI = "http://snomed.info/sct/";
+
+	// The code that is to be located. If "code" is provided, "system" must be given as well (0..1)
+	private CodeDt code;
 
 	// The system for the code that is to be located (0..1)
-	private final Uri system;
+	private UriDt system;
 
 	// The version that these details are based on (0..1)
-	private final String version;
+	private String version;
 
-	// The coding to look up (0..1)
-	private final Coding coding;
-
-	/*
-	 * The date for which the information should be returned. Normally, this is the current conditions (which is the default value) but under some
-	 * circumstances, systems need to access this information as it would have been in the past. A typical example of this would be where code
-	 * selection is constrained to the set of codes that were available when the patient was treated, not when the record is being edited. Note that
-	 * which date is appropriate is a matter for implementation policy.
-	 */
-	private final Date date;
-
-	// The requested language for display (see ExpansionProfile.displayLanguage)
-	private final Code displayLanguage;
+	// A coding to look up (0..1)
+	private Coding coding;
 
 	/*
-	 * A property that the client wishes to be returned in the output. If no properties are specified, the server chooses what to return. The
-	 * following properties are defined for all code systems: url, name, version (code system info) and code information: display, definition,
-	 * designation, parent and child, and for designations, lang.X where X is a designation language code. Some of the properties are returned
-	 * explicit in named parameters (when the names match), and the rest (except for lang.X) in the property parameter group
+	 * The date for which the information should be returned. Normally, this is the
+	 * current conditions (which is the default value) but under some circumstances,
+	 * systems need to access this information as it would have been in the past. A
+	 * typical example of this would be where code selection is constrained to the
+	 * set of codes that were available when the patient was treated, not when the
+	 * record is being edited. Note that which date is appropriate is a matter for
+	 * implementation policy.
 	 */
-	@FhirType(FhirDataType.PART)
-	private final Collection<Code> property;
+	private DateTimeDt date;
 
-	LookupRequest(Code code, Uri system, String version, Coding coding, Date date, Code displayLanguage, Collection<Code> properties) {
+	// The requested language for display
+	private CodeDt displayLanguage;
+
+	/*
+	 * A property that the client wishes to be returned in the output. If no
+	 * properties are specified, the server chooses what to return. The following
+	 * properties are defined for all code systems: 
+	 * 
+	 * - url
+	 * - name
+	 * - version (code system info) 
+	 * 
+	 * ...and code information: 
+	 * 
+	 * - display
+	 * - definition
+	 * - designation
+	 * - parent
+	 * - child
+	 * 
+	 * ...and for designations, lang.X where X is a designation language code.
+	 * 
+	 * Some of the properties are returned explicit in named parameters (when the
+	 * names match, eg. "display"), and the rest (except for lang.X) in the "property" parameter
+	 * group.
+	 */
+	private Set<CodeDt> properties = ImmutableSet.of();
+
+	public CodeDt getCode() {
+		return code;
+	}
+
+	public void setCode(final CodeDt code) {
 		this.code = code;
+	}
+
+	public UriDt getSystem() {
+		return system;
+	}
+
+	public void setSystem(final UriDt system) {
 		this.system = system;
-		this.version = version;
-		this.coding = coding;
-		this.date = date;
-		this.displayLanguage = displayLanguage;
-		this.property = properties;
-	}
-
-	public String getCode() {
-		if (code != null) {
-			return code.getCodeValue();
-		} else if (coding != null) {
-			return coding.getCode().getCodeValue();
-		}
-		return null;
-	}
-
-	public String getSystem() {
-		if (system != null) {
-			return system.getUriValue();
-		} else if (coding != null && coding.getSystem() != null) {
-			return coding.getSystem().getUriValue();
-		}
-		return null;
 	}
 
 	public String getVersion() {
 		return version;
 	}
 
+	public void setVersion(final String version) {
+		this.version = version;
+	}
+
 	public Coding getCoding() {
 		return coding;
 	}
 
-	public Date getDate() {
+	public void setCoding(final Coding coding) {
+		this.coding = coding;
+	}
+
+	public DateTimeDt getDate() {
 		return date;
 	}
 
-	public Code getDisplayLanguage() {
+	public void setDate(final DateTimeDt date) {
+		this.date = date;
+	}
+
+	public CodeDt getDisplayLanguage() {
 		return displayLanguage;
 	}
 
-	@JsonProperty("property")
-	public Collection<Code> getProperties() {
-		return property;
+	public void setDisplayLanguage(final CodeDt displayLanguage) {
+		this.displayLanguage = displayLanguage;
 	}
 
-	@JsonIgnore
+	public Set<CodeDt> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(final Iterable<CodeDt> properties) {
+		this.properties = Collections3.toImmutableSet(properties);
+	}
+
+	// ---------------
+	// Utility methods
+	// ---------------
+
 	public Set<String> getPropertyCodes() {
-		return property == null ? Collections.emptySet() : property.stream().map(p -> p.getCodeValue()).collect(Collectors.toSet());
+		return properties.stream()
+			.map(p -> p.getValueAsString())
+			.collect(Collectors.toSet());
 	}
 
 	/**
-	 * @param propertyCode
-	 * @return <code>true</code> if the given code is present in the given collection of properties, returns <code>false</code> otherwise.
+	 * @param propertyCode - the property code to check
+	 * @return <code>true</code> if the given code is present in the given
+	 * collection of properties, returns <code>false</code> otherwise.
 	 */
-	public final boolean containsProperty(Code propertyCode) {
-		return property != null && property.contains(propertyCode);
+	public final boolean containsProperty(final CodeDt propertyCode) {
+		return properties != null && properties.contains(propertyCode);
 	}
 
 	/**
-	 * @param conceptProperty
-	 *            - the property to check
-	 * @return true if the property is requested, <code>false</code> otherwise.
+	 * @param codeSystemProperty - the property to check
+	 * @return <code>true</code> if the property is requested, <code>false</code>
+	 * otherwise.
 	 */
-	public boolean isPropertyRequested(IConceptProperty conceptProperty) {
-		return containsProperty(conceptProperty.getCode());
+	public boolean containsProperty(final CodeSystem.PropertyComponent codeSystemProperty) {
+		return containsProperty(new CodeDt(codeSystemProperty.getCode()));
 	}
 
-	/**
-	 * @return <code>true</code> if the <i>version</i> property is requested to be returned, <code>false</code> otherwise.
-	 */
-	@JsonIgnore
-	public final boolean isVersionPropertyRequested() {
-		return containsProperty(SupportedCodeSystemRequestProperties.VERSION.getCode());
-	}
+	// ----------
+	// Invariants
+	// ----------
 
-	/**
-	 * @return <code>true</code> if the <i>designation</i> property is requested to be returned.
-	 */
-	@JsonIgnore
-	public final boolean isDesignationPropertyRequested() {
-		return containsProperty(SupportedCodeSystemRequestProperties.DESIGNATION.getCode());
-	}
-
-	public static Builder builder() {
-		return new Builder();
-	}
-
-	@AssertTrue(message = "Source needs to be set either via code/system or code or codeable concept")
-	private boolean isSourceValid() {
-		return true;
-	}
-
-	@AssertTrue(message = "Code is not provided for the system")
+	@AssertFalse(message = "Code is not provided for the system")
 	private boolean isCodeMissing() {
 
 		if (system != null && code == null) {
-			return false;
+			return true;
 		}
 
-		if (coding != null && coding.getCodeValue() == null) {
-			return false;
+		if (coding != null && coding.getCode() == null) {
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
-	@AssertTrue(message = "System is missing for provided code")
+	@AssertFalse(message = "System is missing for provided code")
 	private boolean isSystemMissing() {
 
 		if (system == null && code != null) {
-			return false;
+			return true;
 		}
 
 		if (coding != null && coding.getSystem() == null) {
-			return false;
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
-	@AssertTrue(message = "Code/system/version and Coding do not match. Probably would make sense to specify only one of them.")
-	private boolean isCodeOrCodingInvalid() {
+	@AssertFalse(message = "Code, system, version and coding inputs do not match. Probably would make sense to specify only one of them.")
+	private boolean isCodeOrCodingInconsistent() {
 
 		if (code != null && coding != null) {
-			if (!coding.getCode().getCodeValue().equals(code.getCodeValue())) {
-				return false;
+			if (!coding.getCode().equals(code.getValueAsString())) {
+				return true;
 			}
 
-			if (!coding.getSystem().getUriValue().equals(system.getUriValue())) {
-				return false;
+			if (!coding.getSystem().equals(system.getValueAsString())) {
+				return true;
 			}
 
 			if (!Objects.equals(coding.getVersion(), version)) {
-				return false;
+				return true;
 			}
 		}
-		return true;
+
+		return false;
 	}
 
-	@AssertTrue(message = "Both system URI and version tag identifies a version.")
-	private boolean isUriVersionInvalid() {
+	@AssertFalse(message = "System and version inputs both specify a code system version.")
+	private boolean isVersionAmbiguous() {
 
-		// SNOMED CT specific, both the URI and version identifies the version
+		// XXX: Only checking the presence of a (possible) version part in a SNOMED CT URI, not the consistency of the two inputs
 		if (system != null) {
-			if (system.isSnomedUri() && system.getUriValue().contains("version") && version != null) {
-				return false;
+			final String systemValue = system.getValueAsString();
+			if (systemValue.startsWith(SNOMED_BASE_URI) && systemValue.contains("/version/") && version != null) {
+				return true;
 			}
 		}
-		return true;
+
+		return false;
 	}
-
-	@JsonPOJOBuilder(withPrefix = "")
-	public static final class Builder extends ValidatingBuilder<LookupRequest> {
-
-		private Code code;
-		private Uri system;
-		private String version;
-		private Coding coding;
-		private Date date;
-		private Code displayLanguage;
-		private List<Code> properties;
-
-		Builder() {
-		}
-
-		public Builder code(final String code) {
-			this.code = new Code(code);
-			return this;
-		}
-
-		public Builder system(final String system) {
-			this.system = new Uri(system);
-			return this;
-		}
-
-		public Builder version(final String version) {
-			this.version = version;
-			return this;
-		}
-
-		public Builder coding(Coding coding) {
-			this.coding = coding;
-			return this;
-		}
-
-		public Builder date(String date) {
-			try {
-				this.date = FhirDates.parse(date);
-			} catch (SnowowlRuntimeException e) {
-				throw new BadRequestException("Incorrect date format '%s'.", date);
-			}
-			return this;
-		}
-
-		public Builder displayLanguage(final String displayLanguage) {
-			this.displayLanguage = new Code(displayLanguage);
-			return this;
-		}
-
-		/**
-		 * Alternative property deserializer to be used when converting FHIR Parameters representation to LookupRequest. Multi-valued property expand.
-		 */
-		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		Builder property(Collection<Code> props) {
-			properties = Collections3.toImmutableList(props);
-			return this;
-		}
-
-		public Builder properties(Collection<String> properties) {
-			this.properties = properties.stream().map(p -> new Code(p)).collect(Collectors.toList());
-			return this;
-		}
-
-		public Builder codeProperties(Collection<Code> properties) {
-			this.properties = Collections3.toImmutableList(properties);
-			return this;
-		}
-
-		public Builder addProperty(String property) {
-			if (this.properties == null) {
-				this.properties = new ArrayList<>(3);
-			}
-			this.properties.add(new Code(property));
-			return this;
-		}
-
-		@Override
-		protected LookupRequest doBuild() {
-			return new LookupRequest(code, system, version, coding, date, displayLanguage, properties);
-		}
-
-	}
-
 }

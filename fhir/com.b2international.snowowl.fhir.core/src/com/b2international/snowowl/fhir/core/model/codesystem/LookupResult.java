@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,150 +15,99 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
-import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import com.b2international.commons.collections.Collections3;
+import com.google.common.collect.ImmutableList;
 
-import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
-import com.b2international.snowowl.fhir.core.model.dt.FhirType;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Lists;
+import ca.uhn.fhir.model.primitive.UriDt;
 
 /**
- * Model object for the lookup service request response
+ * Model object for the lookup service request response.
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
  */
-@JsonDeserialize(builder = LookupResult.Builder.class)
-@JsonPropertyOrder({ "name", "version", "display", "designation", "property" })
 public final class LookupResult {
 
+	// The URI of the code system requested (1..1)
+	private UriDt system;
+
 	// A display name for the code system (1..1)
-	@NotEmpty
-	private final String name;
+	private String name;
 
 	// The version that these details are based on (0..1)
-	private final String version;
+	private String version;
 
 	// The preferred display for this concept (1..1)
-	@NotEmpty
-	private final String display;
+	private String display;
+
+	// A statement of the meaning of the concept from the code system (0..1)
+	private String definition;
 
 	// Additional representations for this concept (0..*)
-	@FhirType(FhirDataType.PART)
-	private final Collection<Designation> designation;
+	private List<LookupDesignation> designations = ImmutableList.of();
 
 	/*
-	 * One or more properties that contain additional information about the code, including status. For complex terminologies (e.g. SNOMED CT, LOINC,
-	 * medications), these properties serve to decompose the code 0..*
+	 * One or more properties that contain additional information about the code,
+	 * including status. For complex terminologies (e.g. SNOMED CT, LOINC,
+	 * medications), these properties serve to decompose the code (0..*)
 	 */
-	@FhirType(FhirDataType.PART)
-	private final Collection<Property> property;
+	private List<LookupProperty> properties = ImmutableList.of();
 
-	private LookupResult(final String name, final String version, final String display, final Collection<Designation> designation,
-			final Collection<Property> property) {
+	public UriDt getSystem() {
+		return system;
+	}
 
-		this.name = name;
-		this.version = version;
-		this.display = display;
-		this.designation = designation;
-		this.property = property;
+	public void setSystem(final UriDt system) {
+		this.system = system;
 	}
 
 	public String getName() {
 		return name;
 	}
 
+	public void setName(final String name) {
+		this.name = name;
+	}
+
 	public String getVersion() {
 		return version;
+	}
+
+	public void setVersion(final String version) {
+		this.version = version;
 	}
 
 	public String getDisplay() {
 		return display;
 	}
 
-	public Collection<Designation> getDesignation() {
-		return designation;
+	public void setDisplay(final String display) {
+		this.display = display;
 	}
 
-	public Collection<Property> getProperty() {
-		return property;
+	public String getDefinition() {
+		return definition;
 	}
 
-	public static Builder builder() {
-		return new Builder();
+	public void setDefinition(final String definition) {
+		this.definition = definition;
 	}
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static final class Builder extends ValidatingBuilder<LookupResult> {
-
-		private String name;
-		private String version;
-		private String display;
-
-		private List<Designation> designations;
-		private List<Property> properties;
-
-		public Builder name(final String name) {
-			this.name = name;
-			return this;
-		}
-
-		public Builder version(final String version) {
-			this.version = version;
-			return this;
-		}
-
-		public Builder display(final String display) {
-			this.display = display;
-			return this;
-		}
-
-		public Builder value(final String display) {
-			this.display = display;
-			return this;
-		}
-
-		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public Builder designation(final List<Designation> designations) {
-			this.designations = designations;
-			return this;
-		}
-		
-		public Builder addDesignation(Designation designation) {
-			if (designations == null) {
-				designations = Lists.newArrayList();
-			}
-			designations.add(designation);
-			return this;
-		}
-
-		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public Builder property(final List<Property> properties) {
-			this.properties = properties;
-			return this;
-		}
-		
-		public Builder addProperty(Property property) {
-			if (properties == null) {
-				properties = Lists.newArrayList();
-			}
-			properties.add(property);
-			return this;
-		}
-
-		@Override
-		public LookupResult doBuild() {
-			return new LookupResult(name, version, display, designations, properties);
-		}
-
+	public List<LookupDesignation> getDesignations() {
+		return designations;
 	}
 
+	public void setDesignations(final Iterable<LookupDesignation> designations) {
+		this.designations = Collections3.toImmutableList(designations);
+	}
+
+	public List<LookupProperty> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(final Iterable<LookupProperty> properties) {
+		this.properties = Collections3.toImmutableList(properties);
+	}
 }
