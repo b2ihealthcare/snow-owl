@@ -15,113 +15,115 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
-import com.b2international.commons.exceptions.NotFoundException;
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequestProperties;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.google.common.collect.ImmutableSet;
+
+import ca.uhn.fhir.model.primitive.UriDt;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 
 /**
  * Performs the lookup operation based on the parameter-based lookup request.
  * 
- * <p>
- * From the spec:
- * If no properties are specified, the server chooses what to return. The following properties are defined for all code systems: url, name, version (code system info) 
- * and code information: display, definition, designation, parent and child, and for designations, lang.X where X is a designation language code. 
- * Some of the properties are returned explicit in named parameters (when the names match), and the rest (except for lang.X) in the property parameter group
- * </p>
- * @see LookupRequest
- * @see LookupResult
  * @since 8.0
  */
 final class FhirLookupRequest extends FhirRequest<LookupResult> {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final Set<String> LOOKUP_REQUEST_PROPS = Arrays.stream(SupportedCodeSystemRequestProperties.values()).map(SupportedCodeSystemRequestProperties::getCodeValue).collect(Collectors.toSet());
-	
-	@NotNull
-	@Valid
-	@JsonProperty
-	@JsonUnwrapped
-	private LookupRequest request;
+	private static final Set<String> LOOKUP_REQUEST_PROPS = Arrays.stream(LookupRequestProperties.values())
+		.map(prop -> prop.getCode().getValueAsString())
+		.collect(Collectors.toSet());
 
-	FhirLookupRequest(LookupRequest request) {
-		super(request.getSystem(), request.getVersion());
+	@Valid
+	private final LookupRequest request;
+
+	FhirLookupRequest(final LookupRequest request) {
+		super(request.getInputSystem().getValueAsString(), request.getInputVersion());
 		this.request = request;
 	}
 
 	@Override
 	protected LookupResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
-		validateRequestedProperties(codeSystem);
+		validateProperties(codeSystem);
 		
-		final String acceptLanguage = extractLocales(request.getDisplayLanguage());
-
-		FhirCodeSystemLookupConverter converter = context.service(RepositoryManager.class).get(codeSystem.getToolingId())
-				.optionalService(FhirCodeSystemLookupConverter.class)
-				.orElse(FhirCodeSystemLookupConverter.DEFAULT);
+		final String toolingId = codeSystem.getUserString("toolingId");
+		final FhirCodeSystemLookupConverter converter = Optional.ofNullable(toolingId)
+			.map(ti -> context.service(RepositoryManager.class).get(ti))
+			.flatMap(sp -> sp.optionalService(FhirCodeSystemLookupConverter.class))
+			.orElse(FhirCodeSystemLookupConverter.DEFAULT);
 		
+		final String conceptId = request.getInputCode().getValueAsString();
+		final String acceptLanguage = extractLocale(request.getDisplayLanguage());
 		final String conceptExpand = converter.configureConceptExpand(request);
 		
-		Concept concept = CodeSystemRequests.prepareSearchConcepts()
+		final Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
-			.filterByCodeSystemUri(codeSystem.getResourceURI())
-			.filterById(request.getCode())
+			.filterByCodeSystem(codeSystem.getName())
+			.filterById(conceptId)
 			.setLocales(acceptLanguage)
 			.setExpand(conceptExpand)
 			.buildAsync()
 			.execute(context)
 			.first()
-			.orElseThrow(() -> new NotFoundException("Concept", request.getCode()));
+			.orElseThrow(() -> new InvalidRequestException(String.format("Code '%s' not found", conceptId)));
 		
+		final LookupResult result = new LookupResult();
 		
-		return LookupResult.builder()
-				.name(codeSystem.getName())
-				.display(concept.getTerm())
-				.version(codeSystem.getVersion())
-				.designation(converter.expandDesignations(context, codeSystem, concept, request, acceptLanguage))
-				.property(converter.expandProperties(context, codeSystem, concept, request))
-				.build();
+		if (request.containsProperty(LookupRequestProperties.SYSTEM.getCode())) {
+			result.setSystem(new UriDt(codeSystem.getUrl()));
+		}
+		
+		result.setName(codeSystem.getTitle());
+		result.setVersion(codeSystem.getVersion());
+		result.setDisplay(concept.getTerm());
+		// result.setDefinition(...) is not set, for now
+
+		result.setDesignations(converter.expandDesignations(context, codeSystem, concept, request, acceptLanguage));
+		result.setProperties(converter.expandProperties(context, codeSystem, concept, request));
+
+		return result;
 	}
 	
-	private void validateRequestedProperties(CodeSystem codeSystem) {
-		final Set<String> requestedProperties = request.getPropertyCodes();
-		// first check if any of the properties are lookup request properties
-		final Set<String> nonLookupProperties = Sets.difference(requestedProperties, LOOKUP_REQUEST_PROPS);
+	private void validateProperties(CodeSystem codeSystem) {
+		final Set<String> unsupportedProperties = newHashSet(request.getPropertyCodes());
+
+		// Properties defined by the specification are all supported
+		unsupportedProperties.removeAll(LOOKUP_REQUEST_PROPS);
 		
-		// second check if the remaining unsupported properties supported by the CodeSystem either via full URL
-		final Set<String> supportedProperties = codeSystem.getProperties() == null 
-				? Collections.emptySet() 
-				: codeSystem.getProperties().stream().map(SupportedConceptProperty::getUri).map(Uri::getUriValue).collect(Collectors.toSet());
-		final Set<String> unsupportedProperties = Sets.difference(nonLookupProperties, supportedProperties);
+		// Also the ones listed on the code system
+		final Set<String> conceptProperties = codeSystem.getProperty()
+			.stream()
+			.map(pc -> pc.getCode())
+			.collect(Collectors.toSet());
 		
-		// or via their code only
-		final Set<String> supportedCodes = codeSystem.getProperties() == null 
-				? Collections.emptySet() 
-				: codeSystem.getProperties().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
-		final Set<String> unsupportedCodes = Sets.difference(unsupportedProperties, supportedCodes);
+		unsupportedProperties.removeAll(conceptProperties);
 		
-		if (!unsupportedCodes.isEmpty()) {
-			if (unsupportedCodes.size() == 1) {
-				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", unsupportedCodes, supportedProperties), "LookupRequest.property");
-			} else {
-				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", unsupportedCodes, supportedProperties), "LookupRequest.property");
-			}
+		// XXX: In the past we allowed property URIs through, but these should be pure codes only!
+		if (!unsupportedProperties.isEmpty()) {
+			final Set<String> supportedProperties = ImmutableSet.<String>builder()
+				.addAll(LOOKUP_REQUEST_PROPS)
+				.addAll(conceptProperties)
+				.build();
+			
+			throw new InvalidRequestException(String.format("Unrecognized propert%s %s. Supported properties are: %s.", 
+				(unsupportedProperties.size() > 1 ? "ies" : "y"), unsupportedProperties, supportedProperties));
 		}
 	}
-
 }

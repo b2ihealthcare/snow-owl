@@ -176,6 +176,45 @@ public final class LookupRequest {
 		return containsProperty(new CodeDt(codeSystemProperty.getCode()));
 	}
 
+	/**
+	 * @return the code from either "code" or the code part of input "coding"
+	 */
+	public CodeDt getInputCode() {
+		if (code != null) {
+			return code;
+		} else if (coding != null) {
+			return new CodeDt(coding.getCode());
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @return the code system URI from either "system" or the system part of input "coding"
+	 */
+	public UriDt getInputSystem() {
+		if (system != null) {
+			return system;
+		} else if (coding != null && coding.getSystem() != null) {
+			return new UriDt(coding.getSystem());
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @return the version identifier from either "version" or the version part of input "coding"
+	 */
+	public String getInputVersion() {
+		if (version != null) {
+			return version;
+		} else if (coding != null && coding.getVersion() != null) {
+			return coding.getVersion();
+		} else {
+			return null;
+		}
+	}
+
 	// ----------
 	// Invariants
 	// ----------

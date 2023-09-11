@@ -15,81 +15,91 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.exceptions.NotFoundException;
+import java.util.Optional;
+
+import org.hibernate.validator.constraints.NotEmpty;
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
-import com.b2international.snowowl.fhir.core.search.Summary;
+
+import ca.uhn.fhir.model.primitive.CodeDt;
+import ca.uhn.fhir.rest.api.SummaryEnum;
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 
 /**
+ * Superclass for FHIR requests that need an associated resource for completion.
+ * 
+ * @param <R> - the response type
  * @since 8.0
- * @param <R>
  */
 public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	@NotEmpty
 	private final String system;
-	
+
+	// @Nullable
 	private final String version;
 
-	public FhirRequest(String system, String version) {
+	public FhirRequest(final String system, final String version) {
 		this.system = system;
 		this.version = version;
 	}
-	
+
 	@Override
-	public final R execute(ServiceProvider context) {
-		CodeSystem codeSystem = FhirRequests
-				.codeSystems().prepareSearch()
-				.one()
-				.filterByUrl(system)
-				.filterByVersion(version)
-				.setSummary(configureSummary())
-				.buildAsync()
-				.getRequest()
-				.execute(context)
-				.first()
-				.map(ResourceResponseEntry.class::cast)
-				.map(ResourceResponseEntry::getResponseResource)
-				.map(CodeSystem.class::cast)
-				.or(() -> {
-					return FhirRequests
-						.codeSystems().prepareSearch()
-						.one()
-						.filterById(system)
-						.filterByVersion(version)
-						.setSummary(configureSummary())
-						.buildAsync()
-						.getRequest()
-						.execute(context)
-						.first()
-						.map(ResourceResponseEntry.class::cast)
-						.map(ResourceResponseEntry::getResponseResource)
-						.map(CodeSystem.class::cast);
-				})
-				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
-		
+	public final R execute(final ServiceProvider context) {
+
+		// First attempt: use "system" in an URL filter
+		final Optional<CodeSystem> codeSystemByUrl = FhirRequests.codeSystems().prepareSearch()
+			.one()
+			.filterByUrl(system)
+			.filterByVersion(version)
+			.setSummary(configureSummary())
+			.buildAsync()
+			.getRequest()
+			.execute(context)
+			.getEntry()
+			.stream()
+			.findFirst()
+			.map(ec -> (CodeSystem) ec.getResource());
+
+		// Second attempt: treat "system" as an identifier
+		final Optional<CodeSystem> codeSystemByIdOrUrl = codeSystemByUrl.or(() -> FhirRequests.codeSystems().prepareSearch()
+			.one()
+			.filterById(system)
+			.filterByVersion(version)
+			.setSummary(configureSummary())
+			.buildAsync()
+			.getRequest()
+			.execute(context)
+			.getEntry()
+			.stream()
+			.findFirst()
+			.map(ec -> (CodeSystem) ec.getResource()));
+
+		// Ensure that either of the exist
+		final CodeSystem codeSystem = codeSystemByIdOrUrl.orElseThrow(() -> new ResourceNotFoundException(
+			String.format("Code system with ID or URL '%s' could not be found.", system)
+		)); 
+
 		return doExecute(context, codeSystem);
 	}
-	
-	protected String configureSummary() {
-		return Summary.TRUE;
+
+	protected SummaryEnum configureSummary() {
+		return SummaryEnum.TRUE;
 	}
 
-	public static final String extractLocales(Code displayLanguage) {
-		String locales = displayLanguage != null ? displayLanguage.getCodeValue() : null;
-		if (CompareUtils.isEmpty(locales)) {
-			locales = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER;
+	public static final String extractLocale(final CodeDt displayLanguage) {
+		if (displayLanguage != null && !displayLanguage.isEmpty()) {
+			return displayLanguage.getValueAsString();
+		} else {
+			return AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER;
 		}
-		return locales;
 	}
 
 	protected abstract R doExecute(ServiceProvider context, CodeSystem codeSystem);
-
 }

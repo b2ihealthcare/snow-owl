@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,19 +26,18 @@ import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
  * @since 8.0
  */
 public final class FhirLookupRequestBuilder 
-		extends BaseRequestBuilder<FhirLookupRequestBuilder, ServiceProvider, LookupResult>
-		implements SystemRequestBuilder<LookupResult> {
+	extends BaseRequestBuilder<FhirLookupRequestBuilder, ServiceProvider, LookupResult>
+	implements SystemRequestBuilder<LookupResult> {
 
 	private LookupRequest request;
-	
-	public FhirLookupRequestBuilder setRequest(LookupRequest request) {
+
+	public FhirLookupRequestBuilder setRequest(final LookupRequest request) {
 		this.request = request;
 		return getSelf();
 	}
-	
+
 	@Override
 	protected Request<ServiceProvider, LookupResult> doBuild() {
 		return new FhirLookupRequest(request);
 	}
-
 }

@@ -38,9 +38,9 @@ public enum LookupRequestProperties {
 	// Code display name
 	DISPLAY("display"),
 	// Designations
-	DESIGNATION("designation"), 
+	DESIGNATION("designation"); 
 	// Designations by language code prefix (a complete property code should look like eg. "lang.en")
-	LANG_X("lang");
+	// LANG_X("lang");
 
 	private CodeDt code;
 
