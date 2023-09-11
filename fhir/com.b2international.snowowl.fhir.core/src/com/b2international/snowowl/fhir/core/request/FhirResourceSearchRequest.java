@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.hl7.fhir.r5.model.*;
 import org.hl7.fhir.r5.model.Bundle.BundleEntryComponent;
@@ -47,6 +48,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -97,10 +99,11 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 			.filter(ResourceDocument.Expressions.resourceType(getResourceType())); 
 
 		// Filter by ID and URL fields
-		addIdFilter(resourceExpression, ids -> Expressions.bool()
-			.should(ResourceDocument.Expressions.ids(ids))
-			.should(ResourceDocument.Expressions.urls(ids))
-			.build());
+		addIdFilter(resourceExpression, ids -> Expressions.dismaxWithScoreCategories(
+			ResourceDocument.Expressions.ids(ids),
+			ResourceDocument.Expressions.urls(ids),
+			ResourceDocument.Expressions.ids(getPotentialVersionIds(ids))
+		));
 
 		// Apply _name filter to the id fields, we use the same value for both "id" and "name"
 		addFilter(resourceExpression, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); 
@@ -266,11 +269,12 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		//////////////////////
 
 		/*
-		 * For versioned resources the resource ID should not contain a version path --
-		 * the version identifier goes inside the <Meta> element
+		 * For versioned resources the resource ID should not contain a version path separator.
+		 * The business version identifier goes inside the <Version> element. In order to keep
+		 * versioned resources updatable, we add the version identifier to the ID as a suffix.
 		 */
-		final IdType idElement = resource.getIdElement();
-		idElement.setParts(null, resource.fhirType(), fragment.getResourceURI().getResourceId(), fragment.getVersion());
+		resource.setId(getId(fragment));
+		resource.setVersion(fragment.getVersion());
 		
 		resource.setStatus(getPublicationStatus(fragment));
 
@@ -315,6 +319,39 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 
 		expandResourceSpecificFields(context, resource, fragment);
 		return resource;
+	}
+
+	private String getId(ResourceFragment fragment) {
+		final String id = fragment.getId();
+		final int lastSeparatorIdx = id.lastIndexOf('/');
+		
+		// Don't replace a leading or trailing slash, which should not appear in resource IDs anyway 
+		if (lastSeparatorIdx < 1 || lastSeparatorIdx == id.length() - 1) {
+			return id;
+		}
+
+		final StringBuilder builder = new StringBuilder(id);
+		builder.setCharAt(lastSeparatorIdx, '-');
+		return builder.toString();
+	}
+
+	private Collection<String> getPotentialVersionIds(Collection<String> ids) {
+		return ids.stream()
+			.map(id -> {
+				final int lastSeparatorIdx = id.lastIndexOf('-');
+
+				// Don't replace a leading or trailing dash
+				if (lastSeparatorIdx < 1 || lastSeparatorIdx == id.length() - 1) {
+					return null;
+				}
+
+				final StringBuilder builder = new StringBuilder(id);
+				builder.setCharAt(lastSeparatorIdx, '/');
+				return builder.toString();
+			})
+			.filter(Predicates.notNull())
+			.collect(Collectors.toSet());
+			
 	}
 
 	private PublicationStatus getPublicationStatus(ResourceFragment fragment) {

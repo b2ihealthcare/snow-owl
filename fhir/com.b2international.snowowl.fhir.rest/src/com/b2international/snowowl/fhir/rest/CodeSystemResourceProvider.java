@@ -59,7 +59,7 @@ public class CodeSystemResourceProvider implements IResourceProvider {
 		return CodeSystem.class;
 	}
 
-	@Read(version = true)
+	@Read
 	public CodeSystem read(
 		@IdParam IdType id, 
 		SummaryEnum _summary, 
@@ -70,11 +70,7 @@ public class CodeSystemResourceProvider implements IResourceProvider {
 		
 		try {
 			
-			final String resourceId = id.hasVersionIdPart() 
-				? String.format("%s/%s", id.getIdPart(), id.getVersionIdPart())
-				: id.getIdPart();
-			
-			return FhirRequests.codeSystems().prepareGet(resourceId)
+			return FhirRequests.codeSystems().prepareGet(id.getIdPart())
 				.setSummary(_summary)
 				.setElements(_elements != null ? ImmutableList.copyOf(_elements) : null)
 				.setLocales(locales)
