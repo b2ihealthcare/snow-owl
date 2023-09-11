@@ -501,8 +501,7 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		switch (lexicalSearchType) {
 			case MATCH:
 				return termMatchExpression(com.b2international.snowowl.core.request.search.TermFilter.match().term(term)
-						// make sure we disable case sensitivity and synonyms
-						.caseSensitive(false)
+						// make sure we disable synonyms when performing an ECL search
 						.synonyms(false)
 						.build());
 			case WILD:
