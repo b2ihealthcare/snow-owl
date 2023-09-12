@@ -9,12 +9,14 @@ set SCRIPT_DIR=%~dp0
 rem Derive KERNEL_HOME full path from script's parent (no backslash)
 for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME=%%~fsI
 
-set CONFIG_AREA=%KERNEL_HOME%/work
+set CONFIG_AREA=%KERNEL_HOME%\work
 
 IF DEFINED JAVA_HOME (
-	set JAVA_EXECUTABLE=%JAVA_HOME%/bin/java.exe
+	set JAVA_EXECUTABLE=%JAVA_HOME%\bin\java.exe
 ) else (
-	set JAVA_EXECUTABLE=%KERNEL_HOME%/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.*/jre/bin/java.exe
+	for /D %%D in ("%KERNEL_HOME%\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.*") do (
+		set JAVA_EXECUTABLE="%%~D\jre\bin\java.exe"
+	)
 )
 
 REM Heap settings
