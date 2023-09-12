@@ -286,7 +286,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	
 	private ObjectAssert<RevisionBranch> assertBranchCreate(String branchName) {
 		final String branchPath = branching().createBranch(MAIN, branchName, null, false);
-		return assertThat(branching().get(branchPath));
+		return assertThat(branching().getBranch(branchPath));
 	}
 	
 }
