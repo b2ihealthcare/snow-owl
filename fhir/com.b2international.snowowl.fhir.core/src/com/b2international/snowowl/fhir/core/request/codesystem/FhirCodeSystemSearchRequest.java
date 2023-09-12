@@ -18,19 +18,17 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 import static com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequestBuilder.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.hl7.fhir.r5.model.CodeSystem;
 import org.hl7.fhir.r5.model.CodeSystem.ConceptDefinitionComponent;
 import org.hl7.fhir.r5.model.Enumerations.CodeSystemContentMode;
-import org.hl7.fhir.r5.model.Identifier;
-import org.hl7.fhir.r5.model.Identifier.IdentifierUse;
+import org.hl7.fhir.r5.terminologies.CodeSystemUtilities;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.fhir.core.model.ResourceConstants;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 import com.google.common.collect.ImmutableSet;
 
@@ -68,9 +66,11 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 	@Override
 	protected void expandResourceSpecificFields(final RepositoryContext context, final CodeSystem codeSystem, final ResourceFragment fragment) {
 		includeIfFieldSelected(CODE_SYSTEM_COPYRIGHT, fragment::getCopyright, codeSystem::setCopyright);
-		includeIfFieldSelected(CODE_SYSTEM_IDENTIFIER, () -> getOptionalIdentifier(fragment), id -> id.ifPresent(codeSystem::addIdentifier));
+		includeIfFieldSelected(CODE_SYSTEM_IDENTIFIER, fragment::getOid, oid -> { if (oid != null) { CodeSystemUtilities.setOID(codeSystem, oid); } });
 
 		final ResourceURI resourceURI = fragment.getResourceURI();
+		codeSystem.setUserData(ResourceConstants.RESOURCE_URI, resourceURI);
+		
 		final FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
 			.get(fragment.getToolingId())
 			.optionalService(FhirCodeSystemResourceConverter.class)
@@ -106,19 +106,5 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 		// XXX: Previously some commonly accepted properties were filtered out
 		includeIfFieldSelected(CODE_SYSTEM_PROPERTY, () -> converter.expandProperties(context, resourceURI, locales()), codeSystem::setProperty);
 		includeIfFieldSelected(CODE_SYSTEM_FILTER, () -> converter.expandFilters(context, resourceURI, locales()), codeSystem::setFilter);
-	}
-
-	private Optional<Identifier> getOptionalIdentifier(final ResourceFragment fragment) {
-		final String oid = fragment.getOid();
-		if (StringUtils.isEmpty(oid)) {
-			return Optional.empty();
-		}
-
-		final Identifier identifier = new Identifier();
-		identifier.setUse(IdentifierUse.OFFICIAL);
-		identifier.setSystem(fragment.getUrl());
-		identifier.setValue(oid);
-
-		return Optional.of(identifier);
 	}
 }
