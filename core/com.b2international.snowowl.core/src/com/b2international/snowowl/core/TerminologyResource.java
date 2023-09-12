@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchInfo;
-import com.b2international.snowowl.core.codesystem.UpgradeInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
@@ -62,7 +61,6 @@ public abstract class TerminologyResource extends Resource {
 	 */
 	public static abstract class Expand extends Resource.Expand {
 
-		public static final String UPGRADE_INFO = "upgradeInfo";
 		public static final String VERSIONS = "versions";
 		
 		public static final String COMMITS = "commits";
@@ -79,12 +77,6 @@ public abstract class TerminologyResource extends Resource {
 		 * Expand option to expand the current latest branch information based on the current {@link TerminologyResource#getBranchPath()} value.
 		 */
 		public static final String BRANCH = "branch";
-
-		/**
-		 * @deprecated - this expand option has been moved to the new {@link Dependency} model and also to here as {@link #BRANCH}, will be removed
-		 *             from this model in 9.0
-		 */
-		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
 
 	}
 
@@ -114,9 +106,6 @@ public abstract class TerminologyResource extends Resource {
 
 	@Deprecated
 	private List<ResourceURI> availableUpgrades;
-
-	@Deprecated
-	private UpgradeInfo upgradeInfo;
 
 	private Versions versions;
 	private CommitInfos commits;
@@ -251,23 +240,6 @@ public abstract class TerminologyResource extends Resource {
 	 */
 	public void setUpgradeOf(ResourceURI upgradeOf) {
 		this.upgradeOf = upgradeOf;
-	}
-
-	/**
-	 * @return an {@link UpgradeInfo} object representing the state of a currently ongoing upgrade. Can only be expanded on an upgrade version of a
-	 *         {@link TerminologyResource}.
-	 * @deprecated
-	 */
-	public UpgradeInfo getUpgradeInfo() {
-		return upgradeInfo;
-	}
-
-	/**
-	 * @param upgradeInfo
-	 * @deprecated
-	 */
-	public void setUpgradeInfo(UpgradeInfo upgradeInfo) {
-		this.upgradeInfo = upgradeInfo;
 	}
 
 	public Versions getVersions() {
