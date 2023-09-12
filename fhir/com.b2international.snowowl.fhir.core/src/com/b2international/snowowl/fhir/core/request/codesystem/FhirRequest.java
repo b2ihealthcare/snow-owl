@@ -17,20 +17,22 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.Optional;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeType;
+import org.hl7.fhir.r5.model.UriType;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
-import ca.uhn.fhir.model.primitive.CodeDt;
 import ca.uhn.fhir.rest.api.SummaryEnum;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 
 /**
- * Superclass for FHIR requests that need an associated resource for completion.
+ * Superclass for FHIR requests that need an associated code system resource for completion.
  * 
  * @param <R> - the response type
  * @since 8.0
@@ -39,24 +41,28 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 
 	private static final long serialVersionUID = 1L;
 
-	@NotEmpty
-	private final String system;
+	@NotNull
+	private UriType system;
 
 	// @Nullable
-	private final String version;
+	private String version;
 
-	public FhirRequest(final String system, final String version) {
+	protected void setSystem(final UriType system) {
 		this.system = system;
+	}
+	
+	protected void setVersion(final String version) {
 		this.version = version;
 	}
 
 	@Override
 	public final R execute(final ServiceProvider context) {
-
+		final String idOrUrl = system.asStringValue();
+		
 		// First attempt: use "system" in an URL filter
 		final Optional<CodeSystem> codeSystemByUrl = FhirRequests.codeSystems().prepareSearch()
 			.one()
-			.filterByUrl(system)
+			.filterByUrl(idOrUrl)
 			.filterByVersion(version)
 			.setSummary(configureSummary())
 			.buildAsync()
@@ -70,7 +76,7 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 		// Second attempt: treat "system" as an identifier
 		final Optional<CodeSystem> codeSystemByIdOrUrl = codeSystemByUrl.or(() -> FhirRequests.codeSystems().prepareSearch()
 			.one()
-			.filterById(system)
+			.filterById(idOrUrl)
 			.filterByVersion(version)
 			.setSummary(configureSummary())
 			.buildAsync()
@@ -83,7 +89,7 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 
 		// Ensure that either of the exist
 		final CodeSystem codeSystem = codeSystemByIdOrUrl.orElseThrow(() -> new ResourceNotFoundException(
-			String.format("Code system with ID or URL '%s' could not be found.", system)
+			String.format("Code system with ID or URL '%s' could not be found.", idOrUrl)
 		)); 
 
 		return doExecute(context, codeSystem);
@@ -93,7 +99,7 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 		return SummaryEnum.TRUE;
 	}
 
-	public static final String extractLocale(final CodeDt displayLanguage) {
+	public static final String extractLocale(final CodeType displayLanguage) {
 		if (displayLanguage != null && !displayLanguage.isEmpty()) {
 			return displayLanguage.getValueAsString();
 		} else {
