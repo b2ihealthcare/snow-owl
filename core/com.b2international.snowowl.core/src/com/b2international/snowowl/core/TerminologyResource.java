@@ -91,17 +91,6 @@ public abstract class TerminologyResource extends Resource {
 	// identifies a set of resource dependencies this resource depends on
 	private List<Dependency> dependencies;
 
-	// used, when this resource is an extension of another TerminologyResource
-	@Deprecated
-	private ResourceURI extensionOf;
-
-	// used, when this resource is an upgrade of another TerminologyResource to a newer extensionOf resource (aka dependency)
-	@Deprecated
-	private ResourceURI upgradeOf;
-
-	@Deprecated
-	private List<ResourceURI> availableUpgrades;
-
 	private Versions versions;
 	private CommitInfos commits;
 
@@ -184,41 +173,8 @@ public abstract class TerminologyResource extends Resource {
 		return getDependency(scope, settingsKey) != null;
 	}
 
-	/**
-	 * @return the {@link ResourceURI} pointing to a resource this resource is an extension of
-	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public ResourceURI getExtensionOf() {
-		return extensionOf;
-	}
-
-	/**
-	 * @return the {@link ResourceURI} pointing to a resource this resource is an upgrade of, this usually references the current non-upgrade point in
-	 *         time of the same resource
-	 * @deprecated - moved this information to the {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public ResourceURI getUpgradeOf() {
-		return upgradeOf;
-	}
-
 	public void setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
-	}
-
-	/**
-	 * @param extensionOf
-	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public void setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-
-	/**
-	 * @param upgradeOf
-	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public void setUpgradeOf(ResourceURI upgradeOf) {
-		this.upgradeOf = upgradeOf;
 	}
 
 	public Versions getVersions() {
@@ -283,6 +239,23 @@ public abstract class TerminologyResource extends Resource {
 			return getResourceURI();
 		}
 	}
+	
+	/**
+	 * @return the {@link ResourceURI} pointing to a resource this resource is an extension of
+	 */
+	@JsonIgnore
+	public ResourceURI getExtensionOf() {
+		return getDependency(TerminologyResource.DependencyScope.EXTENSION_OF).map(Dependency::getUri).map(ResourceURIWithQuery::getResourceUri).orElse(null);
+	}
+
+	/**
+	 * @return the {@link ResourceURIWithQuery} pointing to a resource this resource is an upgrade of, this usually references the current non-upgrade point in
+	 *         time of the same resource
+	 */
+	@JsonIgnore
+	public ResourceURI getUpgradeOf() {
+		return getDependency(TerminologyResource.DependencyScope.UPGRADE_OF).map(Dependency::getUri).map(ResourceURIWithQuery::getResourceUri).orElse(null);
+	}
 
 	@Override
 	public Builder toDocumentBuilder() {
@@ -310,10 +283,7 @@ public abstract class TerminologyResource extends Resource {
 				.oid(getOid())
 				.toolingId(getToolingId())
 				// since 8.12
-				.dependencies(getDependencies() != null ? getDependencies().stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null)
-				// XXX maintain old model fields until 9.0
-				.upgradeOf(getUpgradeOf())
-				.extensionOf(getExtensionOf());
+				.dependencies(getDependencies() != null ? getDependencies().stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null);
 	}
 
 }
