@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import java.util.SortedSet;
+
 import com.b2international.commons.options.Metadata;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 5.0
@@ -28,13 +31,14 @@ public final class BranchUpdateRequestBuilder extends BaseRequestBuilder<BranchU
 
 	private final String branchPath;
 	private Metadata metadata;
+	private SortedSet<String> nameAliases;
 
 	BranchUpdateRequestBuilder(String branchPath) {
 		this.branchPath = branchPath;
 	}
 	
 	/**
-	 * Update (override) the current {@link Metadata} with the specified {@link Metadata}.  
+	 * Update (override) the current {@link Metadata} with the specified {@link Metadata}. To clear metadata, specify an empty {@link Metadata} object.
 	 * @param metadata
 	 * @return
 	 */
@@ -43,10 +47,21 @@ public final class BranchUpdateRequestBuilder extends BaseRequestBuilder<BranchU
 		return getSelf();
 	}
 	
+	/**
+	 * Update (override) the current set of name aliases assigned to the selected branch. To clear name aliases, specify an empty collection.
+	 * @param nameAliases
+	 * @return
+	 */
+	public BranchUpdateRequestBuilder setNameAliases(Iterable<String> nameAliases) {
+		this.nameAliases = nameAliases == null ? null : ImmutableSortedSet.copyOf(nameAliases);
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
 		final BranchUpdateRequest req = new BranchUpdateRequest(branchPath);
 		req.setMetadata(metadata);
+		req.setNameAliases(nameAliases);
 		return req;
 	}
 

@@ -22,7 +22,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.*;
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.BulkUpdate;
@@ -33,11 +35,15 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.index.revision.RevisionBranch.Fields;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.5
@@ -95,7 +101,7 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	protected void init() {
-		RevisionBranch mainBranch = get(RevisionBranch.MAIN_PATH);
+		RevisionBranch mainBranch = get(RevisionBranch.MAIN_PATH, false);
 		if (mainBranch == null) {
 			final long branchId = getMainBranchId();
 			final long baseTimestamp = getMainBaseTimestamp();
@@ -118,10 +124,17 @@ public abstract class BaseRevisionBranching {
 
 	protected abstract long getMainBranchId();
 
-	public RevisionBranch getBranch(String branchPath) {
-		final RevisionBranch branch = get(branchPath);
+	/**
+	 * Retrieves a branch using either its unique branch path or any of the assigned path aliases.
+	 * 
+	 * @param branchPathOrAlias
+	 * @return {@link RevisionBranch} instance, never <code>null</code>
+	 * @throws NotFoundException - if the branch does not exist in the system
+	 */
+	public RevisionBranch getBranch(String branchPathOrAlias) {
+		final RevisionBranch branch = get(branchPathOrAlias, true);
 		if (branch == null) {
-			throw new NotFoundException("Branch", branchPath);
+			throw new NotFoundException("Branch", branchPathOrAlias);
 		}
 		return branch;
 	}
@@ -138,13 +151,30 @@ public abstract class BaseRevisionBranching {
 	
 	
 	/**
-	 * Returns the revision branch for the given branchPath.
+	 * Retrieves a branch using either its unique branch path or any of the assigned path aliases or <code>null</code> the branch does not exist yet. 
 	 * 
-	 * @param branchPath
-	 * @return
+	 * @param branchPathOrAlias
+	 * @return a {@link RevisionBranch} instance or <code>null</code> if not present
 	 */
-	protected RevisionBranch get(String branchPath) {
-		return index().read(searcher -> searcher.get(RevisionBranch.class, branchPath));
+	protected RevisionBranch get(String branchPathOrAlias, boolean searchPathAliases) {
+		return index().read(searcher -> {
+			// for primary paths always use the doc GET method for fastest retrieval
+			RevisionBranch branch = searcher.get(RevisionBranch.class, branchPathOrAlias);
+			if (branch != null) {
+				return branch;
+			}
+			
+			// only perform path alias search if requested
+			if (!searchPathAliases) {
+				return null;
+			}
+			return Query.select(RevisionBranch.class)
+					.where(Expressions.exactMatch(Fields.PATH_ALIASES, branchPathOrAlias))
+					.limit(1)
+					.build()
+					.search(searcher)
+					.first();
+		});
 	}
 
 	/**
@@ -201,10 +231,6 @@ public abstract class BaseRevisionBranching {
 		});
 	}
 	
-	protected final String toAbsolutePath(final String parentPath, final String name) {
-		return parentPath.concat(RevisionBranch.SEPARATOR).concat(name);
-	}
-	
 	/**
 	 * Creates a new child branch with the given name and metadata under the specified parent branch.
 	 * 
@@ -223,23 +249,24 @@ public abstract class BaseRevisionBranching {
 		if (parentBranch.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parentBranch.getPath());
 		}
-		final String path = toAbsolutePath(parent, name);
-		RevisionBranch existingBranch = get(path);
+		// first check if there is an existing branch using the given name
+		final String path = RevisionBranch.get(parent, name);
+		RevisionBranch existingBranch = get(path, false);
 		if (!force  && existingBranch != null && !existingBranch.isDeleted()) {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
 			throw new AlreadyExistsException("Branch", path);
 		} else {
-			return create(parentBranch, name, metadata, force);
+			return doCreateLocked(parentBranch, name, metadata, force);
 		}
 	}
 	
-	private String create(final RevisionBranch parent, final String name, final Metadata metadata, boolean force) {
+	private String doCreateLocked(final RevisionBranch parent, final String name, final Metadata metadata, boolean force) {
 		// prevents problematic branch creation from multiple threads, but allows them 
 		// to respond back successfully if branch did not exist before creation and it does now
 		final String parentPath = parent.getPath();
 		return locked(parentPath, () -> {
 			// check again and return if exists, otherwise open the child branch
-			final RevisionBranch existingBranch = get(toAbsolutePath(parentPath, name));
+			final RevisionBranch existingBranch = get(RevisionBranch.get(parentPath, name), false);
 			if (!force && existingBranch != null && !existingBranch.isDeleted()) {
 				return existingBranch.getPath();
 			} else {
@@ -524,7 +551,55 @@ public abstract class BaseRevisionBranching {
 	 * @param metadata - the metadata instance to set on the branch
 	 */
 	public final void updateMetadata(String branchPath, Metadata metadata) {
-		commit(update(branchPath, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
+		commit(update(branchPath, RevisionBranch.Scripts.WITH_METADATA, Map.of("metadata", metadata)));
+	}
+	
+	public final boolean updateNameAliases(String branchPath, SortedSet<String> nameAliases) {
+		RevisionBranch branchToUpdate = getBranch(branchPath);
+		return commit(writer -> {
+			RevisionBranch.Builder updated = branchToUpdate.toBuilder();
+			boolean changed = updateNameAliases(branchToUpdate, updated, nameAliases);
+			if (changed) {
+				writer.put(updated.build());
+			}
+			return changed;
+		});
+	}
+
+	// branch field updaters
+	
+	public final boolean updateMetadata(RevisionBranch branchToUpdate, RevisionBranch.Builder updated, Metadata metadata) {
+		if (metadata == null || Objects.equals(branchToUpdate.metadata(), metadata)) {
+			return false;
+		}
+		
+		updated.metadata(metadata);
+		return true;
+	}
+	
+	public final boolean updateNameAliases(RevisionBranch branchToUpdate, RevisionBranch.Builder updated, SortedSet<String> newNameAliases) {
+		if (newNameAliases == null || Objects.equals(branchToUpdate.getNameAliases(), newNameAliases)) {
+			return false;
+		}
+		// check aliases for collision only if we are not clearing name aliases
+		if (!CompareUtils.isEmpty(newNameAliases)) {
+			final Set<String> newPathAliases = newNameAliases.stream().map(nameAlias -> RevisionBranch.get(branchToUpdate.getParentPath(), nameAlias)).collect(Collectors.toSet());
+			final long numberOfExistingPaths = search(Query.select(RevisionBranch.class)
+					.where(Expressions.bool()
+							.should(Expressions.matchAny(RevisionBranch.Fields.PATH, newPathAliases))
+							.should(Expressions.matchAny(RevisionBranch.Fields.PATH_ALIASES, newPathAliases))
+							// make sure we exclude the current branch from the results, so it won't collide with itself
+							.mustNot(Expressions.exactMatch(RevisionBranch.Fields.ID, branchToUpdate.getId()))
+							.build())
+					.limit(0) // hit count only
+					.build()).getTotal();
+			if (numberOfExistingPaths > 0) {
+				throw new BadRequestException("Conflicting path aliases when trying to update nameAliases of '%s' to '%s'", branchToUpdate.getPath(), newNameAliases);
+			}
+		}
+		
+		updated.nameAliases(newNameAliases);
+		return true;
 	}
 	
 }
