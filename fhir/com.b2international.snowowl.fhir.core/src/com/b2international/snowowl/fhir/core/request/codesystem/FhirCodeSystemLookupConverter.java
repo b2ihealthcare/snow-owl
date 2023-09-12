@@ -62,13 +62,7 @@ public interface FhirCodeSystemLookupConverter {
 	 * @param acceptLanguage
 	 * @return
 	 */
-	default List<LookupDesignation> expandDesignations(
-		ServiceProvider context, 
-		CodeSystem codeSystem, 
-		Concept concept, 
-		LookupRequest request, 
-		String acceptLanguage
-	) {
+	default List<LookupDesignation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request, String acceptLanguage) {
 		if (!request.containsProperty(LookupRequestProperties.DESIGNATION.getCode())) {
 			return null;
 		}
@@ -77,9 +71,9 @@ public interface FhirCodeSystemLookupConverter {
 			.stream()
 			.map(term -> {
 				final LookupDesignation designation = new LookupDesignation();
-				// designation.setLanguage(...) can not be set, we don't have enough enformation for it
+				// designation.setLanguage(...) can not be set, we don't have enough information
 				designation.setValue(term);
-				// designation.setUse(...) also can not be set
+				// designation.setUse(...) can not be set either
 				return designation;
 			})
 			.collect(Collectors.toList());
@@ -96,12 +90,7 @@ public interface FhirCodeSystemLookupConverter {
 	 * @param request
 	 * @return
 	 */
-	default List<LookupProperty> expandProperties(
-		ServiceProvider context, 
-		CodeSystem codeSystem, 
-		Concept concept, 
-		LookupRequest request
-	) {
+	default List<LookupProperty> expandProperties(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request) {
 		return null;
 	}
 }

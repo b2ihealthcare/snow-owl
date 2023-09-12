@@ -15,18 +15,24 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hl7.fhir.r5.model.CodeSystem;
-import org.hl7.fhir.r5.model.IdType;
+import org.hl7.fhir.r5.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.id.IDs;
+import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequestBuilder;
 import com.google.common.collect.ImmutableList;
@@ -34,16 +40,15 @@ import com.google.common.collect.Sets;
 import com.google.inject.Provider;
 
 import ca.uhn.fhir.rest.annotation.*;
+import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.api.Constants;
+import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.api.SummaryEnum;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.api.server.RequestDetails;
-import ca.uhn.fhir.rest.param.DateParam;
-import ca.uhn.fhir.rest.param.StringOrListParam;
-import ca.uhn.fhir.rest.param.StringParam;
-import ca.uhn.fhir.rest.param.UriOrListParam;
+import ca.uhn.fhir.rest.param.*;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 
 @Component
@@ -141,6 +146,60 @@ public class CodeSystemResourceProvider implements IResourceProvider {
 			.setLocales(locales);
 		
 		return new SearchAfterBundleProvider(requestBuilder).fetchPage(_pageId, bus.get());
+	}
+
+	@Operation(name = "$lookup", idempotent = true)
+	public Parameters lookupType(
+		@OperationParam(name = "code") CodeType code,
+		@OperationParam(name = "system") UriType system,
+		@OperationParam(name = "version") String version,
+		@OperationParam(name = "coding") Coding coding,
+		@OperationParam(name = "date") DateTimeType date,
+		@OperationParam(name = "displayLanguage") CodeType displayLanguage,
+		@OperationParam(name = "property") List<TokenOrListParam> property
+//		@OperationParam(name = "useSupplement") UriOrListParam useSupplement
+	) {
+	
+		final LookupRequest lookupRequest = new LookupRequest();
+		lookupRequest.setCode(code);
+		lookupRequest.setSystem(system);
+		lookupRequest.setVersion(version);
+		lookupRequest.setCoding(coding);
+		lookupRequest.setDate(date);
+		lookupRequest.setDisplayLanguage(displayLanguage);
+		lookupRequest.setPropertyCodes(getPropertyCodes(property));
+		
+		final LookupResult lookupResult = FhirRequests.codeSystems().prepareLookup()
+			.setRequest(lookupRequest)
+			.buildAsync()
+			.execute(bus.get())
+			.getSync();
+		
+		return lookupResult.toParameters();
+	}
+
+	@Operation(name = "$lookup", idempotent = true)
+	public Parameters lookupInstance(
+		@IdParam IdType id,
+		@OperationParam(name = "code") CodeType code,
+		@OperationParam(name = "coding") Coding coding,
+		@OperationParam(name = "date") DateTimeType date,
+		@OperationParam(name = "displayLanguage") CodeType displayLanguage,
+		@OperationParam(name = "property") List<TokenOrListParam> property
+//		@OperationParam(name = "useSupplement") UriOrListParam useSupplement
+	) {
+		return lookupType(code, new UriType(id.withResourceType(null).getValue()), null, coding, date, displayLanguage, property);
+	}
+
+	private static Set<String> getPropertyCodes(final List<TokenOrListParam> list) {
+		if (list == null) {
+			return null;
+		} else {
+			return list.stream()
+				.flatMap(tolp -> tolp.getValuesAsQueryTokens().stream())
+				.map(TokenParam::getValue)
+				.collect(Collectors.toSet());
+		}
 	}
 
 	private static String asStringValue(DateParam dateParam) {

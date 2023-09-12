@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,15 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
 import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.UriType;
+import org.hl7.fhir.r5.model.CodeSystem.PropertyComponent;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -36,11 +40,10 @@ import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequestPrope
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.google.common.collect.ImmutableSet;
 
-import ca.uhn.fhir.model.primitive.UriDt;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 
 /**
- * Performs the lookup operation based on the parameter-based lookup request.
+ * Performs the lookup operation based on the FHIR input parameter-based lookup request.
  * 
  * @since 8.0
  */
@@ -49,15 +52,16 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 	private static final long serialVersionUID = 1L;
 	
 	private static final Set<String> LOOKUP_REQUEST_PROPS = Arrays.stream(LookupRequestProperties.values())
-		.map(prop -> prop.getCode().getValueAsString())
+		.map(prop -> prop.getCode())
 		.collect(Collectors.toSet());
 
 	@Valid
 	private final LookupRequest request;
 
 	FhirLookupRequest(final LookupRequest request) {
-		super(request.getInputSystem().getValueAsString(), request.getInputVersion());
 		this.request = request;
+		setSystem(request.getInputSystem());
+		setVersion(request.getInputVersion());
 	}
 
 	@Override
@@ -89,7 +93,7 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 		final LookupResult result = new LookupResult();
 		
 		if (request.containsProperty(LookupRequestProperties.SYSTEM.getCode())) {
-			result.setSystem(new UriDt(codeSystem.getUrl()));
+			result.setSystem(new UriType(codeSystem.getUrl()));
 		}
 		
 		result.setName(codeSystem.getTitle());
@@ -99,7 +103,6 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 
 		result.setDesignations(converter.expandDesignations(context, codeSystem, concept, request, acceptLanguage));
 		result.setProperties(converter.expandProperties(context, codeSystem, concept, request));
-
 		return result;
 	}
 	
@@ -112,7 +115,7 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 		// Also the ones listed on the code system
 		final Set<String> conceptProperties = codeSystem.getProperty()
 			.stream()
-			.map(pc -> pc.getCode())
+			.map(PropertyComponent::getCode)
 			.collect(Collectors.toSet());
 		
 		unsupportedProperties.removeAll(conceptProperties);
