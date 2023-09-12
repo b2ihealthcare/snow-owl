@@ -17,12 +17,11 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.List;
 
+import org.hl7.fhir.r5.model.CodeType;
 import org.hl7.fhir.r5.model.Coding;
 
 import com.b2international.commons.collections.Collections3;
 import com.google.common.collect.ImmutableList;
-
-import ca.uhn.fhir.model.primitive.CodeDt;
 
 /**
  * This class represents a FHIR designation in a lookup result object.
@@ -48,7 +47,7 @@ import ca.uhn.fhir.model.primitive.CodeDt;
 public final class LookupDesignation {
 	
 	// The language code this designation is defined for (0..1)
-	private CodeDt language;
+	private CodeType language;
 	
 	// A code that details how this designation would be used (0..1)
 	private Coding use;
@@ -59,11 +58,11 @@ public final class LookupDesignation {
 	//The text value for this designation (1..1)
 	private String value;
 
-	public CodeDt getLanguage() {
+	public CodeType getLanguage() {
 		return language;
 	}
 
-	public void setLanguage(CodeDt language) {
+	public void setLanguage(CodeType language) {
 		this.language = language;
 	}
 

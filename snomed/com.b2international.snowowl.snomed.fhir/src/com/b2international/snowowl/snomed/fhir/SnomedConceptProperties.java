@@ -70,8 +70,12 @@ public enum SnomedConceptProperties {
 		return component;
 	}
 
-	public CodeType getCode() {
+	public CodeType getCodeElement() {
 		return component.getCodeElement();
+	}
+	
+	public String getCode() {
+		return component.getCode();
 	}
 
 	private LookupProperty createProperty() {

@@ -17,22 +17,24 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.AssertFalse;
 
 import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeType;
 import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.DateTimeType;
+import org.hl7.fhir.r5.model.UriType;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.google.common.collect.ImmutableSet;
 
-import ca.uhn.fhir.model.primitive.CodeDt;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.UriDt;
-
 /**
- * This class represents a FHIR lookup operation request's input parameters.
+ * This class represents a FHIR lookup operation request's input parameters. It
+ * is a separate class from FhirLookupRequest because the values need to be
+ * passed to tooling-specific support methods, and requests are package visible
+ * only.
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
@@ -42,10 +44,10 @@ public final class LookupRequest {
 	private static final String SNOMED_BASE_URI = "http://snomed.info/sct/";
 
 	// The code that is to be located. If "code" is provided, "system" must be given as well (0..1)
-	private CodeDt code;
+	private CodeType code;
 
 	// The system for the code that is to be located (0..1)
-	private UriDt system;
+	private UriType system;
 
 	// The version that these details are based on (0..1)
 	private String version;
@@ -62,10 +64,10 @@ public final class LookupRequest {
 	 * record is being edited. Note that which date is appropriate is a matter for
 	 * implementation policy.
 	 */
-	private DateTimeDt date;
+	private DateTimeType date;
 
 	// The requested language for display
-	private CodeDt displayLanguage;
+	private CodeType displayLanguage;
 
 	/*
 	 * A property that the client wishes to be returned in the output. If no
@@ -90,21 +92,21 @@ public final class LookupRequest {
 	 * names match, eg. "display"), and the rest (except for lang.X) in the "property" parameter
 	 * group.
 	 */
-	private Set<CodeDt> properties = ImmutableSet.of();
+	private Set<String> propertyCodes = ImmutableSet.of();
 
-	public CodeDt getCode() {
+	public CodeType getCode() {
 		return code;
 	}
 
-	public void setCode(final CodeDt code) {
+	public void setCode(final CodeType code) {
 		this.code = code;
 	}
 
-	public UriDt getSystem() {
+	public UriType getSystem() {
 		return system;
 	}
 
-	public void setSystem(final UriDt system) {
+	public void setSystem(final UriType system) {
 		this.system = system;
 	}
 
@@ -124,38 +126,28 @@ public final class LookupRequest {
 		this.coding = coding;
 	}
 
-	public DateTimeDt getDate() {
+	public DateTimeType getDate() {
 		return date;
 	}
 
-	public void setDate(final DateTimeDt date) {
+	public void setDate(final DateTimeType date) {
 		this.date = date;
 	}
 
-	public CodeDt getDisplayLanguage() {
+	public CodeType getDisplayLanguage() {
 		return displayLanguage;
 	}
 
-	public void setDisplayLanguage(final CodeDt displayLanguage) {
+	public void setDisplayLanguage(final CodeType displayLanguage) {
 		this.displayLanguage = displayLanguage;
 	}
 
-	public Set<CodeDt> getProperties() {
-		return properties;
-	}
-
-	public void setProperties(final Iterable<CodeDt> properties) {
-		this.properties = Collections3.toImmutableSet(properties);
-	}
-
-	// ---------------
-	// Utility methods
-	// ---------------
-
 	public Set<String> getPropertyCodes() {
-		return properties.stream()
-			.map(p -> p.getValueAsString())
-			.collect(Collectors.toSet());
+		return propertyCodes;
+	}
+
+	public void setPropertyCodes(final Iterable<String> property) {
+		this.propertyCodes = Collections3.toImmutableSet(property);
 	}
 
 	/**
@@ -163,27 +155,36 @@ public final class LookupRequest {
 	 * @return <code>true</code> if the given code is present in the given
 	 * collection of properties, returns <code>false</code> otherwise.
 	 */
-	public final boolean containsProperty(final CodeDt propertyCode) {
-		return properties != null && properties.contains(propertyCode);
+	public boolean containsProperty(final String propertyCode) {
+		return propertyCodes != null && propertyCodes.contains(propertyCode);
+	}
+	
+	/**
+	 * @param propertyElement - the property element to check
+	 * @return <code>true</code> if the given code is present in the given
+	 * collection of properties, returns <code>false</code> otherwise.
+	 */
+	public boolean containsProperty(final CodeType propertyElement) {
+		return containsProperty(propertyElement.getCode());
 	}
 
 	/**
-	 * @param codeSystemProperty - the property to check
+	 * @param propertyComponent - the property to check
 	 * @return <code>true</code> if the property is requested, <code>false</code>
 	 * otherwise.
 	 */
-	public boolean containsProperty(final CodeSystem.PropertyComponent codeSystemProperty) {
-		return containsProperty(new CodeDt(codeSystemProperty.getCode()));
+	public boolean containsProperty(final CodeSystem.PropertyComponent propertyComponent) {
+		return containsProperty(propertyComponent.getCodeElement());
 	}
 
 	/**
 	 * @return the code from either "code" or the code part of input "coding"
 	 */
-	public CodeDt getInputCode() {
+	public CodeType getInputCode() {
 		if (code != null) {
 			return code;
-		} else if (coding != null) {
-			return new CodeDt(coding.getCode());
+		} else if (coding != null && !StringUtils.isEmpty(coding.getCode())) {
+			return coding.getCodeElement();
 		} else {
 			return null;
 		}
@@ -192,11 +193,11 @@ public final class LookupRequest {
 	/**
 	 * @return the code system URI from either "system" or the system part of input "coding"
 	 */
-	public UriDt getInputSystem() {
+	public UriType getInputSystem() {
 		if (system != null) {
 			return system;
-		} else if (coding != null && coding.getSystem() != null) {
-			return new UriDt(coding.getSystem());
+		} else if (coding != null && !StringUtils.isEmpty(coding.getSystem())) {
+			return coding.getSystemElement();
 		} else {
 			return null;
 		}
@@ -208,7 +209,7 @@ public final class LookupRequest {
 	public String getInputVersion() {
 		if (version != null) {
 			return version;
-		} else if (coding != null && coding.getVersion() != null) {
+		} else if (coding != null && !StringUtils.isEmpty(coding.getVersion())) {
 			return coding.getVersion();
 		} else {
 			return null;

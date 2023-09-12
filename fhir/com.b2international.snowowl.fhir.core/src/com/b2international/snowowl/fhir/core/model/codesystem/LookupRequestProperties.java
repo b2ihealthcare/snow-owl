@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
-import ca.uhn.fhir.model.primitive.CodeDt;
+import org.hl7.fhir.r5.model.CodeType;
 
 /**
  * FHIR properties that the client wishes to be returned in the output.
@@ -38,22 +38,27 @@ public enum LookupRequestProperties {
 	// Code display name
 	DISPLAY("display"),
 	// Designations
-	DESIGNATION("designation"); 
+	DESIGNATION("designation"),
 	// Designations by language code prefix (a complete property code should look like eg. "lang.en")
-	// LANG_X("lang");
+	@Deprecated
+	LANG_X("lang");
 
-	private CodeDt code;
+	private CodeType codeElement;
 
 	private LookupRequestProperties(final String code) {
-		this.code = new CodeDt(code);
+		this.codeElement = new CodeType(code);
 	}
 
-	public CodeDt getCode() {
-		return code;
+	public CodeType getCodeElement() {
+		return codeElement;
+	}
+	
+	public String getCode() {
+		return codeElement.getCode();
 	}
 
 	@Override
 	public String toString() {
-		return code.getValueAsString();
+		return getCode();
 	}
 }

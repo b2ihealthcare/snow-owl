@@ -45,21 +45,21 @@ public class Filters {
 	 * http://hl7.org/fhir/concept-properties
 	 */
 	public static final Filter COMMON_STATUS_FILTER = Filter.builder()
-		.code(CommonConceptProperties.INACTIVE.getCode().getValueAsString())
+		.code(CommonConceptProperties.INACTIVE.getCode())
 		.description("Filter that includes concepts with the given status [true|false|TRUE|FALSE].")
 		.addOperator(FilterOperator.EQUALS)
 		.value("boolean status [true|false|TRUE|FALSE]")
 		.build();
 	
 	public static final Filter COMMON_PARENT_FILTER = Filter.builder()
-		.code(CommonConceptProperties.PARENT.getCode().getValueAsString())
+		.code(CommonConceptProperties.PARENT.getCode())
 		.description("Filter to return concepts that are direct children of the given parent specified by the concept ID.")
 		.addOperator(FilterOperator.EQUALS)
 		.value("concept id")
 		.build();
 	
 	public static final Filter COMMON_CHILD_FILTER = Filter.builder()
-		.code(CommonConceptProperties.CHILD.getCode().getValueAsString())
+		.code(CommonConceptProperties.CHILD.getCode())
 		.description("Filter to return concepts that are direct parent(s) of the given child specified by the concept ID.")
 		.addOperator(FilterOperator.EQUALS)
 		.value("concept id")

@@ -52,10 +52,10 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 	public String configureConceptExpand(final LookupRequest request) {
 		final String expandDescriptions = "descriptions(active:true,expand(type(expand(pt()))),sort:\"typeId,term\"),pt()";
 
-		final boolean requestedChild = request.containsProperty(CommonConceptProperties.CHILD.getCode());
+		final boolean requestedChild = request.containsProperty(CommonConceptProperties.CHILD.getCodeElement());
 		final String expandDescendants = requestedChild ? ",descendants(direct:true)" : "";
 
-		final boolean requestedParent = request.containsProperty(CommonConceptProperties.PARENT.getCode());
+		final boolean requestedParent = request.containsProperty(CommonConceptProperties.PARENT.getCodeElement());
 		final String expandAncestors = requestedParent ? ",ancestors(direct:true)" : "";
 
 		return expandDescriptions + expandDescendants + expandAncestors;
@@ -87,29 +87,29 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 	}
 
 	@Override
-	public List<LookupProperty> expandProperties(final ServiceProvider context, final CodeSystem codeSystem, final Concept concept, final LookupRequest lookupRequest) {
+	public List<LookupProperty> expandProperties(final ServiceProvider context, final CodeSystem codeSystem, final Concept concept, final LookupRequest request) {
 		final SnomedConcept snomedConcept = concept.getInternalConceptAs();
 		final List<LookupProperty> properties = newArrayList();
 
 		// SNOMED concept properties
-		if (lookupRequest.containsProperty(SnomedConceptProperties.INACTIVE.getCode())) {
+		if (request.containsProperty(SnomedConceptProperties.INACTIVE.getCodeElement())) {
 			properties.add(SnomedConceptProperties.INACTIVE.withValue(!snomedConcept.isActive()));
 		}
 
-		if (lookupRequest.containsProperty(SnomedConceptProperties.MODULE_ID.getCode())) {
+		if (request.containsProperty(SnomedConceptProperties.MODULE_ID.getCodeElement())) {
 			properties.add(SnomedConceptProperties.MODULE_ID.withValue(snomedConcept.getModuleId()));
 		}
 
-		if (lookupRequest.containsProperty(SnomedConceptProperties.SUFFICIENTLY_DEFINED.getCode())) {
+		if (request.containsProperty(SnomedConceptProperties.SUFFICIENTLY_DEFINED.getCodeElement())) {
 			properties.add(SnomedConceptProperties.SUFFICIENTLY_DEFINED.withValue(!snomedConcept.isPrimitive()));
 		}
 
-		if (lookupRequest.containsProperty(SnomedConceptProperties.EFFECTIVE_TIME.getCode())) {
+		if (request.containsProperty(SnomedConceptProperties.EFFECTIVE_TIME.getCodeElement())) {
 			properties.add(SnomedConceptProperties.EFFECTIVE_TIME.withValue(EffectiveTimes.format(snomedConcept.getEffectiveTime(), DateFormats.SHORT)));
 		}
 
 		// Common properties (requires expansion to be configured)
-		final boolean requestedChild = lookupRequest.containsProperty(CommonConceptProperties.CHILD.getCode());
+		final boolean requestedChild = request.containsProperty(CommonConceptProperties.CHILD.getCodeElement());
 		if (requestedChild && snomedConcept.getDescendants() != null) {
 			for (final SnomedConcept child : snomedConcept.getDescendants()) {
 				// XXX: Unfortunately we can't add label information to a code property :(
@@ -117,7 +117,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 			}
 		}
 
-		final boolean requestedParent = lookupRequest.containsProperty(CommonConceptProperties.PARENT.getCode());
+		final boolean requestedParent = request.containsProperty(CommonConceptProperties.PARENT.getCodeElement());
 		if (requestedParent && snomedConcept.getAncestors() != null) {
 			for (final SnomedConcept parent : snomedConcept.getAncestors()) {
 				properties.add(CommonConceptProperties.PARENT.withValue(new CodeType(parent.getId())));
@@ -125,7 +125,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 		}
 
 		// Relationship types as properties
-		final Set<String> relationshipTypeIds = lookupRequest.getPropertyCodes()
+		final Set<String> relationshipTypeIds = request.getPropertyCodes()
 			.stream()
 			.filter(SnomedIdentifiers::isConceptIdentifier) // only SNOMED CT Concept IDs
 			.collect(Collectors.toSet());

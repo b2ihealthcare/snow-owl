@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.List;
 
-import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.*;
 
 import com.b2international.commons.collections.Collections3;
 import com.google.common.collect.ImmutableList;
@@ -32,15 +32,15 @@ import ca.uhn.fhir.model.primitive.*;
 public final class LookupProperty {
 
 	// Identifies the property returned (1..1)
-	private CodeDt code;
+	private CodeType code;
 
 	// The value of the property returned (0..1)
 	private Coding valueCoding;
-	private BooleanDt valueBoolean;
-	private CodeDt valueCode;
-	private DateTimeDt valueDateTime;
-	private DecimalDt valueDecimal;
-	private IntegerDt valueInteger;
+	private BooleanType valueBoolean;
+	private CodeType valueCode;
+	private DateTimeType valueDateTime;
+	private DecimalType valueDecimal;
+	private IntegerType valueInteger;
 	private String valueString;
 
 	// Human-readable representation of the property value (e.g. display for a code) 0..1
@@ -53,11 +53,24 @@ public final class LookupProperty {
 	// Nested properties (mainly used for SNOMED CT decomposition, for relationship Groups) (0..*)
 	private List<LookupProperty> subProperties = ImmutableList.of();
 
-	public CodeDt getCode() {
+	public LookupProperty(String code) {
+		this(code, null);
+	}
+
+	public LookupProperty(String code, String description) {
+		this(new CodeType(code), description);
+	}
+	
+	public LookupProperty(CodeType code, String description) {
+		this.code = code;
+		this.description = description;
+	}
+
+	public CodeType getCode() {
 		return code;
 	}
 
-	public void setCode(final CodeDt code) {
+	public void setCode(final CodeType code) {
 		this.code = code;
 	}
 
@@ -65,56 +78,63 @@ public final class LookupProperty {
 		return valueCoding;
 	}
 
-	public void setValueCoding(final Coding valueCoding) {
+	public LookupProperty setValueCoding(final Coding valueCoding) {
 		this.valueCoding = valueCoding;
+		return this;
 	}
 
-	public BooleanDt getValueBoolean() {
+	public BooleanType getValueBoolean() {
 		return valueBoolean;
 	}
 
-	public void setValueBoolean(final BooleanDt valueBoolean) {
+	public LookupProperty setValueBoolean(final BooleanType valueBoolean) {
 		this.valueBoolean = valueBoolean;
+		return this;
 	}
 
-	public CodeDt getValueCode() {
+	public CodeType getValueCode() {
 		return valueCode;
 	}
 
-	public void setValueCode(final CodeDt valueCode) {
+	public LookupProperty setValueCode(final CodeType valueCode) {
 		this.valueCode = valueCode;
+		return this;
 	}
 
-	public DateTimeDt getValueDateTime() {
+	public DateTimeType getValueDateTime() {
 		return valueDateTime;
 	}
 
-	public void setValueDateTime(final DateTimeDt valueDateTime) {
+	public LookupProperty setValueDateTime(final DateTimeType valueDateTime) {
 		this.valueDateTime = valueDateTime;
+		return this;
 	}
 
-	public DecimalDt getValueDecimal() {
+	public DecimalType getValueDecimal() {
 		return valueDecimal;
 	}
 
-	public void setValueDecimal(final DecimalDt valueDecimal) {
+	public LookupProperty setValueDecimal(final DecimalType valueDecimal) {
 		this.valueDecimal = valueDecimal;
+		return this;
 	}
 
-	public IntegerDt getValueInteger() {
+	public IntegerType getValueInteger() {
 		return valueInteger;
 	}
 
-	public void setValueInteger(final IntegerDt valueInteger) {
+	public LookupProperty setValueInteger(final IntegerType valueInteger) {
 		this.valueInteger = valueInteger;
+		return this;
 	}
 
 	public String getValueString() {
 		return valueString;
 	}
 
-	public void setValueString(final String valueString) {
+	public LookupProperty setValueString(final String valueString) {
 		this.valueString = valueString;
+		return this;
 	}
 
 	public String getDescription() {
