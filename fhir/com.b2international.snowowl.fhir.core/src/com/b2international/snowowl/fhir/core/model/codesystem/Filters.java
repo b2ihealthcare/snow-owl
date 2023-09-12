@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Locale;
 
-import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 
 /**
@@ -46,21 +45,21 @@ public class Filters {
 	 * http://hl7.org/fhir/concept-properties
 	 */
 	public static final Filter COMMON_STATUS_FILTER = Filter.builder()
-		.code(CommonConceptProperties.INACTIVE.getCodeValue())
+		.code(CommonConceptProperties.INACTIVE.getCode().getValueAsString())
 		.description("Filter that includes concepts with the given status [true|false|TRUE|FALSE].")
 		.addOperator(FilterOperator.EQUALS)
 		.value("boolean status [true|false|TRUE|FALSE]")
 		.build();
 	
 	public static final Filter COMMON_PARENT_FILTER = Filter.builder()
-		.code(CommonConceptProperties.PARENT.getCodeValue())
+		.code(CommonConceptProperties.PARENT.getCode().getValueAsString())
 		.description("Filter to return concepts that are direct children of the given parent specified by the concept ID.")
 		.addOperator(FilterOperator.EQUALS)
 		.value("concept id")
 		.build();
 	
 	public static final Filter COMMON_CHILD_FILTER = Filter.builder()
-		.code(CommonConceptProperties.CHILD.getCodeValue())
+		.code(CommonConceptProperties.CHILD.getCode().getValueAsString())
 		.description("Filter to return concepts that are direct parent(s) of the given child specified by the concept ID.")
 		.addOperator(FilterOperator.EQUALS)
 		.value("concept id")

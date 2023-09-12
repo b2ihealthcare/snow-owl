@@ -20,7 +20,6 @@ import java.util.List;
 import org.hl7.fhir.r5.model.CodeSystem.CodeSystemFilterComponent;
 import org.hl7.fhir.r5.model.CodeSystem.ConceptDefinitionComponent;
 import org.hl7.fhir.r5.model.CodeSystem.PropertyComponent;
-import org.hl7.fhir.r5.model.CodeSystem.PropertyType;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
@@ -31,14 +30,6 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
  * @since 8.0
  */
 public interface FhirCodeSystemResourceConverter {
-
-	// The concept identified in this property is a parent of the concept on which it is a property. 
-	// The property type will be 'code'. The meaning of 'parent' is defined by the hierarchyMeaning attribute
-	PropertyComponent PROPERTY_PARENT = new PropertyComponent("parent", PropertyType.CODE);
-	
-	// The concept identified in this property is a child of the concept on which it is a property. 
-	// The property type will be 'code'. The meaning of 'child' is defined by the hierarchyMeaning attribute
-	PropertyComponent PROPERTY_CHILD = new PropertyComponent("child", PropertyType.CODE);
 	
 	FhirCodeSystemResourceConverter DEFAULT = new FhirCodeSystemResourceConverter() { };
 
