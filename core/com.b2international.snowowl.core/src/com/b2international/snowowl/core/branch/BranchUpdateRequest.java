@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import java.util.SortedSet;
+
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -27,8 +30,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class BranchUpdateRequest extends BranchBaseRequest<Boolean> implements AccessControl {
 
+	private static final long serialVersionUID = 1L;
+
 	@JsonProperty
 	private Metadata metadata;
+	
+	@JsonProperty
+	private SortedSet<String> nameAliases;
 	
 	BranchUpdateRequest(String branchPath) {
 		super(branchPath);
@@ -38,13 +46,26 @@ public final class BranchUpdateRequest extends BranchBaseRequest<Boolean> implem
 		this.metadata = metadata;
 	}
 	
+	void setNameAliases(SortedSet<String> nameAliases) {
+		this.nameAliases = nameAliases;
+	}
+	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		if (metadata != null) {
-			context.service(BaseRevisionBranching.class).updateMetadata(getBranchPath(), metadata);
-			return Boolean.TRUE;
-		}
-		return Boolean.FALSE;
+		BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
+		RevisionBranch branch = branching.getBranch(getBranchPath());
+		return branching.commit(writer -> {
+			boolean changed = false;
+			RevisionBranch.Builder updated = branch.toBuilder();
+			changed |= branching.updateMetadata(branch, updated, metadata);
+			changed |= branching.updateNameAliases(branch, updated, nameAliases);
+			
+			if (changed) {
+				writer.put(updated.build());
+			}
+			
+			return changed;
+		});
 	}
 	
 	@Override

@@ -20,10 +20,12 @@ import static org.junit.Assert.*;
 
 import java.util.*;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.SyntaxException;
+import com.b2international.index.SynonymsRule;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -41,6 +43,11 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
  */
 public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclEvaluationRequestTest {
 
+	@ClassRule
+	public static SynonymsRule synonyms = new SynonymsRule(
+		"history,previous"
+	);
+	
 	@Test
 	public void concept_activeOnly() throws Exception {
 		final Expression actual = eval("* {{ c active = true }}");
@@ -200,6 +207,56 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 				.build());
 			
 		final Expression actual = eval("* {{ term = (match:\"gas\" wild:\"*itis\")}}");
+		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termMatchSynonymsDisabled() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("History related concept")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.SYNONYM)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Concept with previous word in it")
+				.conceptId(Concepts.MODULE_SCT_CORE)
+				.typeId(Concepts.SYNONYM)
+				.build());
+			
+		final Expression actual = eval("* {{ term = \"history\" }}");
+		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termWildCaseInsensitive() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("History related concept")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.SYNONYM)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Concept with history")
+				.conceptId(Concepts.MODULE_SCT_CORE)
+				.typeId(Concepts.SYNONYM)
+				.build());
+			
+		final Expression actual = eval("* {{ term = wild:\"*history*\" }}");
 		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		assertEquals(expected, actual);
 	}

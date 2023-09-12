@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -97,9 +98,13 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
 	public static final class Fields {
 		public static final String ID = "id";
-		public static final String PATH = "path";
 		public static final String NAME = "name";
+		public static final String NAME_ALIASES = "nameAliases";
 		public static final String PARENT_PATH = "parentPath";
+		
+		// derived fields
+		public static final String PATH = "path";
+		public static final String PATH_ALIASES = "pathAliases";
 	}
 	
 	/**
@@ -186,6 +191,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		private long id;
 		private String parentPath;
 		private String name;
+		private SortedSet<String> nameAliases;
 		private boolean deleted;
 		private Metadata metadata;
 		private SortedSet<RevisionSegment> segments;
@@ -205,6 +211,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		
 		public Builder name(String name) {
 			this.name = name;
+			return this;
+		}
+		
+		public Builder nameAliases(SortedSet<String> nameAliases) {
+			this.nameAliases = nameAliases;
 			return this;
 		}
 		
@@ -228,7 +239,12 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			return this;
 		}
 		
+		// derived fields, empty builder methods required for Jackson deserialization
 		Builder path(String path) {
+			return this;
+		}
+		
+		Builder pathAliases(SortedSet<String> path) {
 			return this;
 		}
 		
@@ -237,6 +253,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 					id,
 					parentPath, 
 					name, 
+					nameAliases,
 					deleted, 
 					metadata, 
 					segments,
@@ -247,10 +264,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	
 	private final long id;
 	private final String name;
+	private final SortedSet<String> nameAliases;
+	
     private final String parentPath;
     
     @ID
     private final String path;
+    
+    private final SortedSet<String> pathAliases;
+    
     private final boolean deleted;
 	private final SortedSet<RevisionSegment> segments;
 	private final List<RevisionBranchMergeSource> mergeSources;
@@ -259,6 +281,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		long id,
     		String parentPath, 
     		String name, 
+    		SortedSet<String> nameAliases,
     		boolean deleted, 
     		Metadata metadata,
     		SortedSet<RevisionSegment> segments, 
@@ -268,7 +291,9 @@ public final class RevisionBranch extends MetadataHolderImpl {
     	this.id = id;
 		this.parentPath = parentPath;
 		this.name = name;
-		this.path = CompareUtils.isEmpty(parentPath) ? name : String.join(SEPARATOR, parentPath, name);
+		this.nameAliases = nameAliases;
+		this.path = CompareUtils.isEmpty(parentPath) ? name : get(parentPath, name);
+		this.pathAliases = nameAliases == null ? null : nameAliases.stream().map(nameAlias -> get(parentPath, nameAlias)).collect(Collectors.toCollection(TreeSet::new));
 		this.deleted = deleted;
 		this.segments = ImmutableSortedSet.copyOf(segments);
 		this.mergeSources = Collections3.toImmutableList(mergeSources);
@@ -292,6 +317,13 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	}
     
     /**
+     * @return the calculated path aliases based on the assigned {@link #getNameAliases() name aliases}.
+     */
+    public SortedSet<String> getPathAliases() {
+		return pathAliases;
+	}
+    
+    /**
 	 * Returns the unique path of the parent of this {@link RevisionBranch}.
 	 * 
 	 * @return
@@ -307,6 +339,13 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
     public String getName() {
 		return name;
+	}
+    
+    /**
+     * @return the assigned name aliases for this {@link RevisionBranch}
+     */
+    public SortedSet<String> getNameAliases() {
+		return nameAliases;
 	}
     
     /**
@@ -474,5 +513,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	public RevisionBranch.Builder toBuilder() {
 		return builder(this);
 	}
-
+	
+	/**
+	 * Similarly to {@link Paths#get(String, String...)} this calculates a valid absolute branch path from the given path segments.
+	 * 
+	 * @param pathSegments
+	 * @return a non-null absolute branch path
+	 */
+	public static String get(String...pathSegments) {
+		return String.join(SEPARATOR, pathSegments);
+	}
+	
 }
