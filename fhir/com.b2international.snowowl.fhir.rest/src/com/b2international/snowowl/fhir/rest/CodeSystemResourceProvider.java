@@ -93,6 +93,7 @@ public class CodeSystemResourceProvider implements IResourceProvider {
 		@OptionalParam(name = CodeSystem.SP_URL) UriOrListParam url,
 		@OptionalParam(name = CodeSystem.SP_SYSTEM) UriOrListParam system,
 		@OptionalParam(name = CodeSystem.SP_VERSION) StringOrListParam version,
+		@OptionalParam(name = CodeSystem.SP_STATUS) StringParam status,
 		@Count Integer _count,
 		@Sort SortSpec _sort,
 		SummaryEnum _summary, 
@@ -131,6 +132,7 @@ public class CodeSystemResourceProvider implements IResourceProvider {
 			// values defined in both url and system match the same field, compute intersection to simulate ES behavior here
 			.filterByUrls(intersectionOf(url, system))
 			.filterByVersions(asSet(version))
+			.filterByStatus(asNonNullValue(status))
 			// XXX: _summary=count may override the default _count=10 value, so order of method calls is important here
 			.setLimit(_count)
 			.setSummary(_summary)

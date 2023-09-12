@@ -78,6 +78,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		CONTENT,
 		VERSION,
 		LAST_UPDATED, 
+		STATUS, 
 	}
 
 	@Override
@@ -110,6 +111,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		addFilter(resourceExpression, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); 
 		addFilter(resourceExpression, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
 		addFilter(resourceExpression, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
+		addFilter(resourceExpression, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 
 		if (containsKey(OptionKey.TITLE)) {
 			final String title = getString(OptionKey.TITLE);

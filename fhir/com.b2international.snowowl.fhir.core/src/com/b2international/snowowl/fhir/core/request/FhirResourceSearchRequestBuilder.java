@@ -104,10 +104,14 @@ public abstract class FhirResourceSearchRequestBuilder<B extends FhirResourceSea
 		return addOption(OptionKey.VERSION, versions);
 	}
 
-	public final B filterByTitle(final String titles) {
-		return addOption(OptionKey.TITLE, titles);
+	public final B filterByTitle(final String title) {
+		return addOption(OptionKey.TITLE, title);
 	}
 
+	public final B filterByStatus(final String status) {
+		return addOption(OptionKey.STATUS, status);
+	}
+	
 	public final B sortByFields(final String...sort) {
 		if (CompareUtils.isEmpty(sort)) {
 			return getSelf();
