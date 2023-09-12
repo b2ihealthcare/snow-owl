@@ -18,13 +18,14 @@ package com.b2international.snowowl.fhir.core.request;
 import static com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequestBuilder.*;
 import static com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequestBuilder.CODE_SYSTEM_CONTACT;
 import static com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequestBuilder.CODE_SYSTEM_IDENTIFIER;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.hl7.fhir.r5.model.*;
 import org.hl7.fhir.r5.model.Bundle.BundleEntryComponent;
@@ -49,10 +50,7 @@ import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.fhir.core.model.ResourceConstants;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.*;
 
 /**
  * @since 8.0
@@ -60,7 +58,7 @@ import com.google.common.collect.Iterables;
 public abstract class FhirResourceSearchRequest<T extends CanonicalResource> extends SearchResourceRequest<RepositoryContext, Bundle> {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	// Element names that appear on FHIR resources but should not be used for field selection in ES queries
 	private static final Set<String> COMMON_FHIR_ELEMENTS = ImmutableSet.of(
 		CANONICAL_RESOURCE_NAME, 
@@ -91,7 +89,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 	}
 
 	@Override
-	protected final Bundle doExecute(RepositoryContext context) throws IOException {
+	protected final Bundle doExecute(final RepositoryContext context) throws IOException {
 		// Apply field selection
 		final List<String> fields = replaceFieldsToLoad(fields());
 
@@ -101,11 +99,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 			.filter(ResourceDocument.Expressions.resourceType(getResourceType())); 
 
 		// Filter by ID and URL fields
-		addIdFilter(resourceExpression, ids -> Expressions.dismaxWithScoreCategories(
-			ResourceDocument.Expressions.ids(ids),
-			ResourceDocument.Expressions.urls(ids),
-			ResourceDocument.Expressions.ids(getPotentialVersionIds(ids))
-		));
+		addIdFilter(resourceExpression, ids -> Expressions.dismaxWithScoreCategories(getIdExpressions(ids)));
 
 		// Apply _name filter to the id fields, we use the same value for both "id" and "name"
 		addFilter(resourceExpression, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); 
@@ -136,18 +130,18 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		// Search with partial document mapping (ResourceFragment) that is applicable to both resources and versions
 		final Hits<ResourceFragment> internalResources = context.service(RevisionSearcher.class)
 			.search(Query.select(ResourceFragment.class)
-			.from(ResourceDocument.class, VersionDocument.class)
-			.fields(fields)
-			.where(resourceExpression.build())
-			.searchAfter(searchAfter())
-			.limit(limit())
-			.sortBy(querySortBy(context))
-			.build());
+				.from(ResourceDocument.class, VersionDocument.class)
+				.fields(fields)
+				.where(resourceExpression.build())
+				.searchAfter(searchAfter())
+				.limit(limit())
+				.sortBy(querySortBy(context))
+				.build());
 
 		// Retrieve information that is not present on on version fragments from resource documents, using point-in-time querying
 		fillResourceOnlyProperties(context, internalResources, fields);
 
-		final Bundle searchSet = createEmptyResult(0);
+		final Bundle searchSet = createEmptyResult(limit());
 
 		// Store some information in user data that will come in handy later
 		searchSet.setUserData(ResourceConstants.CURRENT_PAGE_ID, searchAfter());
@@ -162,7 +156,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		return searchSet;
 	}
 
-	private List<String> replaceFieldsToLoad(List<String> fields) {
+	private List<String> replaceFieldsToLoad(final List<String> fields) {
 		final Set<String> fieldsToLoad = newLinkedHashSet(fields);
 
 		// If any fields are set, also add a basic set of fields regardless of whether they were requested or not
@@ -214,7 +208,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 	 * 
 	 * @param fieldsToLoad
 	 */
-	protected void configureFieldsToLoad(Set<String> fieldsToLoad) {
+	protected void configureFieldsToLoad(final Set<String> fieldsToLoad) {
 		return;
 	}
 
@@ -224,7 +218,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 	 */
 	protected abstract String getResourceType();
 
-	private void fillResourceOnlyProperties(RepositoryContext context, Hits<ResourceFragment> internalResources, List<String> fields) throws IOException {
+	private void fillResourceOnlyProperties(final RepositoryContext context, final Hits<ResourceFragment> internalResources, final List<String> fields) throws IOException {
 		for (final ResourceFragment fragment : internalResources) {
 			if (CompareUtils.isEmpty(fragment.getVersion())) {
 				// This fragment was created from a resource document, set resourceDescription and continue
@@ -239,8 +233,8 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 
 			// Retrieve resource representation with the same "created" branch timestamp (we defer to the low-level Searcher for this) 
 			final Hits<ResourceFragment> resourceFragments = context.service(RevisionSearcher.class)
-					.searcher()
-					.search(Query.select(ResourceFragment.class)
+				.searcher()
+				.search(Query.select(ResourceFragment.class)
 					.from(ResourceDocument.class)
 					.fields(fields)
 					.where(Expressions.bool()
@@ -265,7 +259,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		}
 	}
 
-	protected T toFhirResource(RepositoryContext context, ResourceFragment fragment) {
+	protected T toFhirResource(final RepositoryContext context, final ResourceFragment fragment) {
 		final T resource = createEmptyResource();
 
 		// Mandatory fields
@@ -278,7 +272,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		 */
 		resource.setId(getId(fragment));
 		resource.setVersion(fragment.getVersion());
-		
+
 		resource.setStatus(getPublicationStatus(fragment));
 
 		// Tooling ID has no "right" place on a FHIR resource, will store it in user data for now
@@ -308,7 +302,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		includeIfFieldSelected(METADATA_RESOURCE_PURPOSE, fragment::getPurpose, resource::setPurpose);
 
 		if (CompareUtils.isEmpty(fields()) || fields().contains(CODE_SYSTEM_CONTACT)) {
-			ContactDetail contact = getContact(fragment);
+			final ContactDetail contact = getContact(fragment);
 			if (contact != null) {
 				resource.addContact(contact);
 			}
@@ -324,46 +318,56 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		return resource;
 	}
 
-	private String getId(ResourceFragment fragment) {
-		final String id = fragment.getId();
-		final int lastSeparatorIdx = id.lastIndexOf('/');
-		
-		// Don't replace a leading or trailing slash, which should not appear in resource IDs anyway 
-		if (lastSeparatorIdx < 1 || lastSeparatorIdx == id.length() - 1) {
-			return id;
+	private String getId(final ResourceFragment fragment) {
+
+		if (CompareUtils.isEmpty(fragment.getVersion())) {
+			// This fragment was created from a resource document
+			return fragment.getId();
 		}
 
+		// "id" is a full resource ID including the version
+		final String id = fragment.getId();
+		final String versionId = fragment.getVersion();
+
+		// Turn the separator into a dash
 		final StringBuilder builder = new StringBuilder(id);
-		builder.setCharAt(lastSeparatorIdx, '-');
+		builder.setCharAt(id.length() - versionId.length() - 1, '-');
 		return builder.toString();
 	}
 
-	private Collection<String> getPotentialVersionIds(Collection<String> ids) {
-		return ids.stream()
-			.map(id -> {
-				final int lastSeparatorIdx = id.lastIndexOf('-');
+	private Expression[] getIdExpressions(final Collection<String> ids) {
+		// In the best case scenario the received IDs are already full IDs or URLs
+		final List<Expression> idExpressions = newArrayList();
 
-				// Don't replace a leading or trailing dash
-				if (lastSeparatorIdx < 1 || lastSeparatorIdx == id.length() - 1) {
-					return null;
-				}
+		if (containsKey(OptionKey.VERSION)) {
+			idExpressions.add(VersionDocument.Expressions.resourceIds(ids));
+		} else {
+			idExpressions.add(ResourceDocument.Expressions.ids(ids));
+		}
 
-				final StringBuilder builder = new StringBuilder(id);
-				builder.setCharAt(lastSeparatorIdx, '/');
-				return builder.toString();
-			})
-			.filter(Predicates.notNull())
-			.collect(Collectors.toSet());
-			
+		idExpressions.add(ResourceDocument.Expressions.urls(ids));
+
+		// Otherwise check each possible combination, starting with the longest resource ID prefix
+		final Set<String> versionIdCombinations = ids.stream()
+			.filter(id -> id.length() > 2)
+			.flatMap(id -> IntStream
+				// Step backwards, ignoring first and last position 
+				.iterate(id.lastIndexOf("-", id.length() - 2), idx -> idx > 0, idx -> id.lastIndexOf("-", idx - 1))
+				.mapToObj(idx -> id.substring(0, idx) + "/" + id.substring(idx + 1))
+			)
+			.collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+
+		idExpressions.add(VersionDocument.Expressions.ids(versionIdCombinations));
+		return idExpressions.toArray(Expression[]::new);
 	}
 
-	private PublicationStatus getPublicationStatus(ResourceFragment fragment) {
+	private PublicationStatus getPublicationStatus(final ResourceFragment fragment) {
 		return PublicationStatus.isValidCode(fragment.getStatus())
 			? PublicationStatus.fromCode(fragment.getStatus())
 			: PublicationStatus.UNKNOWN;
 	}
 
-	private String getPublisher(ResourceFragment fragment) {
+	private String getPublisher(final ResourceFragment fragment) {
 		final Map<String, Object> settings = fragment.getSettings();
 		if (settings == null) {
 			return null;
@@ -372,7 +376,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		return (String) settings.get(CodeSystem.Fields.PUBLISHER);
 	}
 
-	private Date getDate(ResourceFragment fragment) {
+	private Date getDate(final ResourceFragment fragment) {
 		final Long effectiveTime = fragment.getEffectiveTime();
 		if (effectiveTime == null) {
 			return null;
@@ -381,7 +385,7 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		return new Date(effectiveTime);
 	}
 
-	private ContactDetail getContact(ResourceFragment fragment) {
+	private ContactDetail getContact(final ResourceFragment fragment) {
 		final String contact = fragment.getContact();
 		if (StringUtils.isEmpty(contact)) {
 			return null;
@@ -395,13 +399,13 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		return contactDetail;
 	}
 
-	protected void expandResourceSpecificFields(RepositoryContext context, T resource, ResourceFragment fragment) {
+	protected void expandResourceSpecificFields(final RepositoryContext context, final T resource, final ResourceFragment fragment) {
 		return;
 	}
 
 	protected abstract T createEmptyResource();
 
-	protected final <C> void includeIfFieldSelected(String field, Supplier<C> getter, Consumer<C> setter) {
+	protected final <C> void includeIfFieldSelected(final String field, final Supplier<C> getter, final Consumer<C> setter) {
 		if (CompareUtils.isEmpty(fields()) || fields().contains(field)) {
 			setter.accept(getter.get());
 		}
@@ -518,79 +522,79 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 			return created;
 		}
 
-		public void setId(String id) {
+		public void setId(final String id) {
 			this.id = id;
 		}
 
-		public void setVersion(String version) {
+		public void setVersion(final String version) {
 			this.version = version;
 		}
 
-		public void setDescription(String description) {
+		public void setDescription(final String description) {
 			this.description = description;
 		}
 
-		public void setResourceType(String resourceType) {
+		public void setResourceType(final String resourceType) {
 			this.resourceType = resourceType;
 		}
 
-		public void setCreatedAt(Long createdAt) {
+		public void setCreatedAt(final Long createdAt) {
 			this.createdAt = createdAt;
 		}
 
-		public void setUpdatedAt(Long updatedAt) {
+		public void setUpdatedAt(final Long updatedAt) {
 			this.updatedAt = updatedAt;
 		}
 
-		public void setToolingId(String toolingId) {
+		public void setToolingId(final String toolingId) {
 			this.toolingId = toolingId;
 		}
 
-		public void setUrl(String url) {
+		public void setUrl(final String url) {
 			this.url = url;
 		}
 
-		public void setBranchPath(String branchPath) {
+		public void setBranchPath(final String branchPath) {
 			this.branchPath = branchPath;
 		}
 
-		public void setResourceDescription(String resourceDescription) {
+		public void setResourceDescription(final String resourceDescription) {
 			this.resourceDescription = resourceDescription;
 		}
 
-		public void setTitle(String title) {
+		public void setTitle(final String title) {
 			this.title = title;
 		}
 
-		public void setStatus(String status) {
+		public void setStatus(final String status) {
 			this.status = status;
 		}
 
-		public void setContact(String contact) {
+		public void setContact(final String contact) {
 			this.contact = contact;
 		}
 
-		public void setCopyright(String copyright) {
+		public void setCopyright(final String copyright) {
 			this.copyright = copyright;
 		}
 
-		public void setLanguage(String language) {
+		public void setLanguage(final String language) {
 			this.language = language;
 		}
 
-		public void setPurpose(String purpose) {
+		public void setPurpose(final String purpose) {
 			this.purpose = purpose;
 		}
 
-		public void setOid(String oid) {
+		public void setOid(final String oid) {
 			this.oid = oid;
 		}
 
-		public void setSettings(Map<String, Object> settings) {
+		public void setSettings(final Map<String, Object> settings) {
 			this.settings = settings;
 		}
 
-		public void setCreated(RevisionBranchPoint created) {
+		public void setCreated(final RevisionBranchPoint created) {
 			this.created = created;
 		}
 	}
