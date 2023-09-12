@@ -157,5 +157,6 @@ Bundle-ClassPath: .,
  lib/hapi-fhir-server-6.8.2.jar,
  lib/hapi-fhir-structures-r5-6.8.2.jar,
  lib/org.hl7.fhir.r5-6.0.22.2.jar,
- lib/org.hl7.fhir.utilities-6.0.22.2.jar
+ lib/org.hl7.fhir.utilities-6.0.22.2.jar,
+ lib/ucum-1.0.8.jar
 Bundle-ActivationPolicy: lazy

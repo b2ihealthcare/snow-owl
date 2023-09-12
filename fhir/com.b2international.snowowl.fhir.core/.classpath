@@ -11,6 +11,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/hapi-fhir-structures-r5-6.8.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/org.hl7.fhir.r5-6.0.22.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/org.hl7.fhir.utilities-6.0.22.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ucum-1.0.8.jar"/>	
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src/"/>
 	<classpathentry kind="output" path="target/classes/"/>

@@ -27,6 +27,12 @@
         	<version>${fhir.version}</version>
         	<scope>provided</scope>
 		</dependency>
+		<dependency>
+    		<groupId>org.fhir</groupId>
+    		<artifactId>ucum</artifactId>
+    		<version>1.0.8</version>
+        	<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
     <build>
@@ -50,7 +56,8 @@
 								hapi-fhir-server,
 								hapi-fhir-structures-r5,
 								org.hl7.fhir.r5,
-								org.hl7.fhir.utilities
+								org.hl7.fhir.utilities,
+								ucum
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
