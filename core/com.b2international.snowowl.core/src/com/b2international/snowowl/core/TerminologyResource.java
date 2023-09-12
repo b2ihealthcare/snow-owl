@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
@@ -99,10 +98,6 @@ public abstract class TerminologyResource extends Resource {
 	// used, when this resource is an upgrade of another TerminologyResource to a newer extensionOf resource (aka dependency)
 	@Deprecated
 	private ResourceURI upgradeOf;
-
-	// expandable
-	@Deprecated
-	private BranchInfo extensionOfBranchInfo;
 
 	@Deprecated
 	private List<ResourceURI> availableUpgrades;
@@ -198,14 +193,6 @@ public abstract class TerminologyResource extends Resource {
 	}
 
 	/**
-	 * @return the latest {@link BranchInfo} state of the Resource denoted by the {@link #getExtensionOf()} property.
-	 * @deprecated - moved this information to the {@link Dependency#getResource()} expansion, this method will be removed in 9.0
-	 */
-	public BranchInfo getExtensionOfBranchInfo() {
-		return extensionOfBranchInfo;
-	}
-
-	/**
 	 * @return the {@link ResourceURI} pointing to a resource this resource is an upgrade of, this usually references the current non-upgrade point in
 	 *         time of the same resource
 	 * @deprecated - moved this information to the {@link #getDependencies()}, this method will be removed in 9.0
@@ -224,14 +211,6 @@ public abstract class TerminologyResource extends Resource {
 	 */
 	public void setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
-	}
-
-	/**
-	 * @param extensionOfBranchInfo
-	 * @deprecated - moved this information to the {@link Dependency#getResource()} expansion, this method will be removed in 9.0
-	 */
-	public void setExtensionOfBranchInfo(BranchInfo extensionOfBranchInfo) {
-		this.extensionOfBranchInfo = extensionOfBranchInfo;
 	}
 
 	/**
