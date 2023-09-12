@@ -24,6 +24,7 @@ import org.hl7.fhir.r5.model.InstantType;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.fhir.core.model.ResourceConstants;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequestBuilder;
 
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
@@ -74,14 +75,14 @@ public class SearchAfterBundleProvider implements IBundleProvider {
 		 * need it so that instead of offsets named page IDs are generated in the
 		 * response.
 		 */
-		final String currentPageId = results.getUserString("currentPageId");
+		final String currentPageId = results.getUserString(ResourceConstants.CURRENT_PAGE_ID);
 		return StringUtils.isEmpty(currentPageId) ? FIRST_PAGE_ID : currentPageId; 
 	}
 	
 	@Override
 	public String getNextPageId() {
 		if (searchId != null) {
-			return results.getUserString("nextPageId");
+			return results.getUserString(ResourceConstants.NEXT_PAGE_ID);
 		} else {
 			// This bundle provider was not cached in a paging provider or we have reached the end
 			return null;
