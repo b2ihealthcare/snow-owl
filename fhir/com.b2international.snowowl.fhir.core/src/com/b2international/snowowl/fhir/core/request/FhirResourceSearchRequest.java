@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
+import com.b2international.snowowl.fhir.core.model.ResourceConstants;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -147,8 +148,8 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		final Bundle searchSet = createEmptyResult(0);
 
 		// Store some information in user data that will come in handy later
-		searchSet.setUserData("currentPageId", searchAfter());
-		searchSet.setUserData("nextPageId", internalResources.getSearchAfter());
+		searchSet.setUserData(ResourceConstants.CURRENT_PAGE_ID, searchAfter());
+		searchSet.setUserData(ResourceConstants.NEXT_PAGE_ID, internalResources.getSearchAfter());
 
 		for (final ResourceFragment fragment : internalResources) {
 			final BundleEntryComponent bundleEntry = searchSet.addEntry();
@@ -278,6 +279,9 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 		
 		resource.setStatus(getPublicationStatus(fragment));
 
+		// Tooling ID has no "right" place on a FHIR resource, will store it in user data for now
+		resource.setUserData(ResourceConstants.TOOLING_ID, fragment.getToolingId());
+
 		final Meta meta = resource.getMeta();
 
 		// updatedAt returns version creation time (createdAt and updatedAt is the same) or latest updateAt value from the resource :gold:
@@ -285,9 +289,6 @@ public abstract class FhirResourceSearchRequest<T extends CanonicalResource> ext
 			// fall back to createdAt if updatedAt is not present
 			.or(() -> Optional.ofNullable(fragment.getCreatedAt()))
 			.ifPresent(lastUpdated -> meta.setLastUpdated(new Date(lastUpdated)));
-
-		// Tooling ID has no "right" place on a FHIR resource, will store it in user data for now
-		meta.setUserData("toolingId", fragment.getToolingId());
 
 		// Optional fields
 		/////////////////////

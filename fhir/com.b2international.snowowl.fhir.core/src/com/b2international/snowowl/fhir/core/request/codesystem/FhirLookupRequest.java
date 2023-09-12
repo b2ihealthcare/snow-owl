@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
+import com.b2international.snowowl.fhir.core.model.ResourceConstants;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
@@ -63,7 +64,8 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 	protected LookupResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
 		validateProperties(codeSystem);
 		
-		final String toolingId = codeSystem.getUserString("toolingId");
+		final String toolingId = codeSystem.getUserString(ResourceConstants.TOOLING_ID);
+		
 		final FhirCodeSystemLookupConverter converter = Optional.ofNullable(toolingId)
 			.map(ti -> context.service(RepositoryManager.class).get(ti))
 			.flatMap(sp -> sp.optionalService(FhirCodeSystemLookupConverter.class))
@@ -75,7 +77,7 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 		
 		final Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
-			.filterByCodeSystem(codeSystem.getName())
+			.filterByCodeSystemUri(ResourceConstants.getResourceUri(codeSystem))
 			.filterById(conceptId)
 			.setLocales(acceptLanguage)
 			.setExpand(conceptExpand)
