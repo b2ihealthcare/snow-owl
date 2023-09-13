@@ -108,6 +108,11 @@ public final class Dependency implements Serializable {
 	}
 
 	@JsonIgnore
+	public boolean isDomain() {
+		return TerminologyResource.DependencyScope.DOMAIN.equals(scope);
+	}
+	
+	@JsonIgnore
 	public boolean isExtensionOf() {
 		return TerminologyResource.DependencyScope.EXTENSION_OF.equals(scope);
 	}

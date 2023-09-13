@@ -37,12 +37,14 @@ import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
@@ -195,10 +197,24 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				monitor.worked(1);
 //			});
 			
+			//Find resources that depend on this resource
+			List<String> dependentResourceIds = ResourceRequests.prepareSearch()
+				.setLimit(10_000)
+				.filterByDependency(String.format("uri:%s OR uri:%s/* OR uri:%s\\?*", resource, resource, resource))
+				.setFields(ResourceDocument.Fields.ID)
+				.stream(context)
+				.flatMap(Resources::stream)
+				.map(Resource::getId)
+				.collect(Collectors.toList());
+			
 			// create a version for the resource
 			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
 				new ResourceRepositoryCommitRequestBuilder()
 				.setBody(tx -> {
+					Map<String, ResourceDocument> dependendentResources = tx.lookup(dependentResourceIds, ResourceDocument.class);
+					dependendentResources.values().forEach(oldDocument -> 
+							tx.update(oldDocument, ResourceDocument.builder(oldDocument).hasUpgrade(true).build()));
+					
 					tx.add(VersionDocument.builder()
 						.id(resource.withPath(version).withoutResourceType())
 						.version(version)

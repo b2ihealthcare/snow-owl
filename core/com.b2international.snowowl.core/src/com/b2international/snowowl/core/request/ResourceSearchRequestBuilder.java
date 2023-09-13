@@ -64,6 +64,10 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 	public ResourceSearchRequestBuilder filterByDependency(String dependency) {
 		return addOption(OptionKey.DEPENDENCY, dependency);
 	}
+	
+	public ResourceSearchRequestBuilder filterByHasUpgrade(Boolean hasUpgrade) {
+		return addOption(OptionKey.HAS_UPGRADE, hasUpgrade);
+	}
 
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Resources> createSearch() {

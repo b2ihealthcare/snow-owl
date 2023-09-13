@@ -15,21 +15,10 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.exists;
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.nestedMatch;
-import static com.b2international.index.query.Expressions.prefixMatch;
-import static com.b2international.index.query.Expressions.queryString;
-import static com.b2international.index.query.Expressions.regexp;
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -110,6 +99,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String TYPE_RANK = "typeRank";
 		// since 8.12
 		public static final String DEPENDENCIES = "dependencies";
+		public static final String HAS_UPGRADE = "hasUpgrade";
 		
 		// deprecated in 8.12
 		/**
@@ -237,6 +227,17 @@ public final class ResourceDocument extends RevisionDocument {
 			}
 		}
 		
+		public static Expression hasUpgrade(Boolean hasUpgrade) {
+			if (hasUpgrade) {
+				return match(Fields.HAS_UPGRADE, hasUpgrade);				
+			} else {
+				return com.b2international.index.query.Expressions.bool()
+						.should(match(Fields.HAS_UPGRADE, hasUpgrade))
+						.should(com.b2international.index.query.Expressions.bool().mustNot(exists(Fields.HAS_UPGRADE)).build())
+						.build();
+			}
+		}
+		
 		public static Expression extensionOf(Iterable<ResourceURI> extensionOfs) {
 			return matchAny(Fields.EXTENSION_OF, Collections3.toImmutableSet(extensionOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
@@ -315,13 +316,14 @@ public final class ResourceDocument extends RevisionDocument {
 		private Boolean hidden;
 		private List<String> bundleAncestorIds;
 		private String bundleId;
-		private Map<String, Object> settings;
 		
 		// specialized resource fields
+		private Boolean hasUpgrade;
 		private SortedSet<DependencyDocument> dependencies;
 		private String oid;
 		private String branchPath;
 		private String toolingId;
+		private Map<String, Object> settings;
 		
 		/**
 		 * @deprecated will be removed in 9.0
@@ -462,6 +464,11 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
+		public Builder hasUpgrade(boolean hasUpgrade) {
+			this.hasUpgrade = hasUpgrade;
+			return getSelf();
+		}
+		
 		public Builder dependencies(SortedSet<DependencyDocument> dependencies) {
 			this.dependencies = dependencies;
 			return getSelf();
@@ -499,6 +506,7 @@ public final class ResourceDocument extends RevisionDocument {
 				settings,
 				createdAt,
 				updatedAt,
+				hasUpgrade,
 				dependencies
 			);
 		}
@@ -537,6 +545,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final Map<String, Object> settings;
 	
 	private final SortedSet<DependencyDocument> dependencies;
+	private final Boolean hasUpgrade;
 	
 	// deprecated dependency-like fields, will be removed in 9.0
 	private final ResourceURI extensionOf;
@@ -577,6 +586,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final Map<String, Object> settings,
 			final Long createdAt,
 			final Long updatedAt,
+			final Boolean hasUpgrade,
 			final SortedSet<DependencyDocument> dependencies) {
 		super(id, iconId);
 		this.resourceType = resourceType;
@@ -601,6 +611,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.settings = settings;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.hasUpgrade = hasUpgrade;
 		this.dependencies = dependencies;
 	}
 
@@ -701,6 +712,10 @@ public final class ResourceDocument extends RevisionDocument {
 		return Optional.ofNullable(updatedAt)
 				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
 				.orElse(null);
+	}
+	
+	public Boolean getHasUpgrade() {
+		return hasUpgrade;
 	}
 	
 	public SortedSet<DependencyDocument> getDependencies() {
