@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceCreateRequestBuilder;
 
 /**
@@ -25,8 +24,6 @@ public final class CodeSystemCreateRequestBuilder extends BaseTerminologyResourc
 
 	// specialized resource fields
 	private String toolingId;
-	private ResourceURI extensionOf;
-	private ResourceURI upgradeOf;
 
 	/* package */ CodeSystemCreateRequestBuilder() {
 	}
@@ -36,26 +33,6 @@ public final class CodeSystemCreateRequestBuilder extends BaseTerminologyResourc
 		return getSelf();
 	}
 	
-	/**
-	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
-	 * @param extensionOf
-	 * @return
-	 */
-	public CodeSystemCreateRequestBuilder setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-		return getSelf();
-	}
-	
-	/**
-	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
-	 * @param upgradeOf
-	 * @return
-	 */
-	public CodeSystemCreateRequestBuilder setUpgradeOf(ResourceURI upgradeOf) {
-		this.upgradeOf = upgradeOf;
-		return getSelf();
-	}
-
 	@Override
 	public CodeSystemCreateRequest createResourceRequest() {
 		return new CodeSystemCreateRequest();
@@ -65,7 +42,5 @@ public final class CodeSystemCreateRequestBuilder extends BaseTerminologyResourc
 	protected void init(CodeSystemCreateRequest req) {
 		super.init(req);
 		req.setToolingId(toolingId);
-		req.setExtensionOf(extensionOf);
-		req.setUpgradeOf(upgradeOf);
 	}
 }

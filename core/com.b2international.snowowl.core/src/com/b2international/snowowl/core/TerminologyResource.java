@@ -147,30 +147,11 @@ public abstract class TerminologyResource extends Resource {
 	}
 	
 	/**
-	 * Searches the dependency array for the dependency URI that has the matching scope. If there is no such dependency in the dependency
-	 * array then the system takes the current settings object into account and tries to find the appropriate settingsKeyed value as fallback
-	 * dependency URI. If none of them can be found this method returns <code>null</code>.
-	 * 
-	 * @param scope
-	 * @param settingsKey
-	 * @return
-	 * @deprecated - replaced by {@link #getDependency(String)} as settings is no longer accepted as source of dependencies  
+	 * @param scope - the dependency scope to look for
+	 * @return <code>true</code> if this resource has a dependency entry with the given scope, <code>false</code> otherwise.
 	 */
-	public ResourceURI getDependency(String scope, String settingsKey) {
-		return getDependency(scope)
-				.map(Dependency::getUri)
-				.map(ResourceURIWithQuery::getResourceUri)
-				.orElseGet(() -> (getSettings() == null || !getSettings().containsKey(settingsKey)) ? null : new ResourceURIWithQuery((String) getSettings().get(settingsKey)).getResourceUri());
-	}
-
-	/**
-	 * @param scope
-	 * @param settingsKey
-	 * @return <code>true</code> if this resource has a dependency entry with the given scope or a settings entry with the given settings key,
-	 *         otherwise <code>false</code>.
-	 */
-	public boolean hasDependency(String scope, String settingsKey) {
-		return getDependency(scope, settingsKey) != null;
+	public boolean hasDependency(String scope) {
+		return getDependency(scope) != null;
 	}
 
 	public void setDependencies(List<Dependency> dependencies) {

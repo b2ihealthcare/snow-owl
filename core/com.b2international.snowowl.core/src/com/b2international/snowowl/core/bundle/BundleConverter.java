@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.request.resource.BaseMetadataResourceCon
 /**
  * @since 8.0
  */
-public class BundleConverter extends BaseMetadataResourceConverter<Bundle, Bundles> {
+final class BundleConverter extends BaseMetadataResourceConverter<Bundle, Bundles> {
 
 	public BundleConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);

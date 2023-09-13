@@ -112,8 +112,6 @@ public final class CodeSystem extends TerminologyResource {
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
 				.setToolingId(getToolingId())
-				.setExtensionOf(getExtensionOf())
-				.setUpgradeOf(getUpgradeOf())
 				.setSettings(getSettings());
 	}
 	
@@ -132,27 +130,7 @@ public final class CodeSystem extends TerminologyResource {
 				.setBundleId(getBundleId())
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
-				.setExtensionOf(getExtensionOf())
 				.setSettings(getSettings());
 	}
 
-//	/**
-//	 * Returns all code system short name dependencies and itself.
-//	 */
-//	@JsonIgnore
-//	public SortedSet<String> getDependenciesAndSelf() {
-//		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
-//		affectedCodeSystems.addAll(getDependencies());
-//		affectedCodeSystems.add(shortName);
-//		return affectedCodeSystems.build();
-//	}
-	
-//	/**
-//	 * Returns the short names of all affected code systems
-//	 */
-//	@JsonIgnore
-//	public SortedSet<String> getDependencies() {
-//		return TerminologyRegistry.INSTANCE.getTerminology(terminologyId).getDependencies();
-//	}
-	
 }

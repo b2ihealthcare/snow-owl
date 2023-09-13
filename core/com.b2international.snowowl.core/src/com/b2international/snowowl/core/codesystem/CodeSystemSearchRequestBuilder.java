@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -38,14 +37,6 @@ public final class CodeSystemSearchRequestBuilder extends BaseTerminologyResourc
 		return addOption(OptionKey.TOOLING_ID, toolingIds);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByUpgradeOf(ResourceURI upgradeOf) {
-		return addOption(OptionKey.UPGRADE_OF, upgradeOf);
-	}
-	
-	public CodeSystemSearchRequestBuilder filterByUpgradeOf(Iterable<ResourceURI> upgradeOfs) {
-		return addOption(OptionKey.UPGRADE_OF, upgradeOfs);
-	}
-
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
 		return new CodeSystemSearchRequest();

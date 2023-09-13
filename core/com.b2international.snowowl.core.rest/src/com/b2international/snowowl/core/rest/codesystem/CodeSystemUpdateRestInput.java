@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemUpdateRequestBuilder;
 import com.b2international.snowowl.core.rest.BaseTerminologyResourceUpdateRestInput;
@@ -25,24 +24,6 @@ import com.b2international.snowowl.core.rest.BaseTerminologyResourceUpdateRestIn
  */
 public final class CodeSystemUpdateRestInput extends BaseTerminologyResourceUpdateRestInput {
 	
-	private ResourceURI extensionOf;
-	
-	/**
-	 * @param extensionOf
-	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
-	 */
-	public void setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-	
-	/**
-	 * @return
-	 * @deprecated - replaced by {@link #getDependencies()}, will be removed in 9.0
-	 */
-	public ResourceURI getExtensionOf() {
-		return extensionOf;
-	}
-
 	public CodeSystemUpdateRequestBuilder toCodeSystemUpdateRequest(String codeSystemId) {
 		return CodeSystemRequests.prepareUpdateCodeSystem(codeSystemId)
 			.setUrl(getUrl())
@@ -60,8 +41,6 @@ public final class CodeSystemUpdateRestInput extends BaseTerminologyResourceUpda
 			.setBranchPath(getBranchPath())
 			.setSettings(getSettings())
 			.setDependencies(getDependencies())
-			// XXX maintain old model field options until 9.0
-			.setExtensionOf(getExtensionOf())
 			;
 	}
 }

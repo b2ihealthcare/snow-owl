@@ -178,7 +178,7 @@ public class CodeSystemRestService extends AbstractRestService {
 
 		
 		final String commitComment = Strings.isNullOrEmpty(body.getCommitComment()) ? String.format("Created new Code System %s", body.getChange().getId()) : body.getCommitComment();
-		final String codeSystemId = body.getChange().toCodeSystemCreateRequest()
+		final String codeSystemId = body.getChange().toCreateRequest()
 				.build(author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
