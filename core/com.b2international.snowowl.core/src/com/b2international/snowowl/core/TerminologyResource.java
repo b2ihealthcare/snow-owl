@@ -151,7 +151,7 @@ public abstract class TerminologyResource extends Resource {
 	 * @return <code>true</code> if this resource has a dependency entry with the given scope, <code>false</code> otherwise.
 	 */
 	public boolean hasDependency(String scope) {
-		return getDependency(scope) != null;
+		return getDependency(scope).isPresent();
 	}
 
 	public void setDependencies(List<Dependency> dependencies) {
