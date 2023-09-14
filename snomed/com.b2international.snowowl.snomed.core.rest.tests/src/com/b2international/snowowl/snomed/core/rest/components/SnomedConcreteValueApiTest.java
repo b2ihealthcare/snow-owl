@@ -23,7 +23,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConcreteValueRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcreteValue;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,7 +34,6 @@ import static org.junit.Assert.assertFalse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
