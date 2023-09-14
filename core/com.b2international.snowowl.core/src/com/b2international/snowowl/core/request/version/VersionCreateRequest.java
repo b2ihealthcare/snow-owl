@@ -37,6 +37,8 @@ import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -120,18 +122,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		// validate new path
 		context.service(BranchNameValidator.class).checkName(version);
 		
-		TerminologyResource resourceToVersion = resourcesById.get(resource);
-
-		if (TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resourceToVersion.getStatus())) {
-			throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'", resourceToVersion.getTitle(), resourceToVersion.getStatus());
-		}
-		
-		// TODO resurrect or eliminate tooling dependencies
-		final List<TerminologyResource> resourcesToVersion = List.of(resourcesById.get(resource));
-//		final List<CodeSystem> resourcesToVersion = codeSystem.getDependenciesAndSelf()
-//				.stream()
-//				.map(resourcesById::get)
-//				.collect(Collectors.toList());
+		final Collection<TerminologyResource> resourcesToVersion = resourcesById.values();
 		
 		resourcesToVersion.stream()
 			.filter(cs -> cs.getUpgradeOf() != null)
@@ -140,13 +131,16 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				throw new BadRequestException("Upgrade resource '%s' can not be versioned", cs.getResourceURI());				
 			});
 		
-		for (TerminologyResource terminologyResource : resourcesToVersion) {
+		for (TerminologyResource resourceToVersion : resourcesToVersion) {
+			if (TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resourceToVersion.getStatus())) {
+				throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'", resourceToVersion.getTitle(), resourceToVersion.getStatus());
+			}
 			// check that the specified effective time is valid in this code system
 			// XXX ensure we verify version on all codesystems first before we delete any branches
 			validateVersion(context, resourceToVersion);
 			// check that the new versionId does not conflict with any other currently available branch
-			final String newVersionPath = String.join(Branch.SEPARATOR, terminologyResource.getBranchPath(), version);
-			final String repositoryId = terminologyResource.getToolingId();
+			final String newVersionPath = Branch.get(resourceToVersion.getBranchPath(), version);
+			final String repositoryId = resourceToVersion.getToolingId();
 			
 			if (!force) {
 				// branch needs checking in the non-force cases only
@@ -172,53 +166,54 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 		try {
 			
-//			resourcesToVersion.forEach(resourceToVersion -> {
-				// version components in the given repository
-				new RepositoryRequest<CommitResult>(resourceToVersion.getToolingId(),
-					new BranchSnapshotContentRequest<CommitResult>(resourceToVersion.getBranchPath(),
-							context.service(RepositoryManager.class).get(resourceToVersion.getToolingId())
-								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(author, resourceToVersion.getResourceURI(), version, description, effectiveTime, force))
-					)
-				).execute(context);
-				
-				// tag the repository
-				RepositoryRequests
-					.branching()
-					.prepareCreate()
-					.setParent(resourceToVersion.getBranchPath())
-					.setName(version)
-					// delete the branch if force requested and we get to this point
-					.force(force)
-					.build(resourceToVersion.getToolingId())
-					.execute(context);
-				monitor.worked(1);
-//			});
-			
 			// create a version for the resource
 			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
-				new ResourceRepositoryCommitRequestBuilder()
-				.setBody(tx -> {
-					tx.add(VersionDocument.builder()
-						.id(resource.withPath(version).withoutResourceType())
-						.version(version)
-						.description(description)
-						.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
-						.resource(resource)
-						.branchPath(resourceToVersion.getRelativeBranchPath(version))
-						.author(author)
-						.createdAt(Instant.now().toEpochMilli())
-						.updatedAt(Instant.now().toEpochMilli())
-						.toolingId(resourceToVersion.getToolingId())
-						.url(buildVersionUrl(context, resourceToVersion))
-						.resourceSnapshot(resourceToVersion)
-						.build());
-					
-					return Boolean.TRUE;
-				})
-				.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
-				.setAuthor(author)
-				.build()
+					new ResourceRepositoryCommitRequestBuilder()
+					.setBody(tx -> {
+						// perform tooling/content versions first for earch resource to version
+						resourcesToVersion.forEach(resourceToVersion -> {
+							// version components in the given repository
+							new RepositoryRequest<CommitResult>(resourceToVersion.getToolingId(),
+								new BranchSnapshotContentRequest<CommitResult>(resourceToVersion.getBranchPath(),
+										context.service(RepositoryManager.class).get(resourceToVersion.getToolingId())
+											.service(VersioningRequestBuilder.class)
+											.build(new VersioningConfiguration(author, resourceToVersion.getResourceURI(), version, description, effectiveTime, force))
+								)
+							).execute(context);
+							
+							// tag the repository
+							RepositoryRequests
+								.branching()
+								.prepareCreate()
+								.setParent(resourceToVersion.getBranchPath())
+								.setName(version)
+								// delete the branch if force requested and we get to this point
+								.force(force)
+								.build(resourceToVersion.getToolingId())
+								.execute(context);
+							monitor.worked(1);
+							
+							// generate version document for each resource 
+							tx.add(VersionDocument.builder()
+									.id(resourceToVersion.getResourceURI().withPath(version).withoutResourceType())
+									.version(version)
+									.description(description)
+									.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
+									.resource(resourceToVersion.getResourceURI())
+									.branchPath(resourceToVersion.getRelativeBranchPath(version))
+									.author(author)
+									.createdAt(Instant.now().toEpochMilli())
+									.updatedAt(Instant.now().toEpochMilli())
+									.toolingId(resourceToVersion.getToolingId())
+									.url(buildVersionUrl(context, resourceToVersion))
+									.resourceSnapshot(resourceToVersion)
+									.build());
+						});
+						return Boolean.TRUE;
+					})
+					.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
+					.setAuthor(author)
+					.build()
 			).execute(context).getResultAs(Boolean.class);
 		} finally {
 			releaseLocks(context);
@@ -236,7 +231,9 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	}
 
 	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
-		return ResourceRequests.prepareSearch()
+		final Map<ResourceURI, TerminologyResource> resourcesToVersion = new HashMap<>();
+		
+		ResourceRequests.prepareSearch()
 			.one()
 			.filterById(resource.getResourceId())
 			.buildAsync()
@@ -244,7 +241,33 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
 			.map(TerminologyResource.class::cast)
-			.collect(Collectors.toMap(Resource::getResourceURI, r -> r));
+			.forEach(resource -> {
+				resourcesToVersion.put(resource.getResourceURI(), resource);
+			});
+		
+		// if the resource to version is a collection URI then version all child resources as well
+		TerminologyResource terminologyResource = resourcesToVersion.get(resource);
+		if (terminologyResource instanceof TerminologyResourceCollection resourceCollection) {
+			final var registry = context.service(TerminologyResourceCollectionToolingSupport.Registry.class);
+			final Set<String> childResourceTypes = registry.getAllByToolingId(resourceCollection.getToolingId())
+				.stream()
+				.flatMap(toolingSupport -> toolingSupport.getSupportedChildResourceTypes().stream())
+				.collect(Collectors.toSet());
+			
+			ResourceRequests.prepareSearch()
+				.filterByBundleAncestorId(resourceCollection.getId())
+				.filterByResourceTypes(childResourceTypes)
+				.setLimit(1_000)
+				.streamAsync(context, req -> req.buildAsync())
+				.flatMap(Resources::stream)
+				.filter(TerminologyResource.class::isInstance)
+				.map(TerminologyResource.class::cast)
+				.forEach(resource -> {
+					resourcesToVersion.put(resource.getResourceURI(), resource);
+				});
+		}
+		
+		return resourcesToVersion;
 	}
 	
 	private void validateVersion(RepositoryContext context, TerminologyResource codeSystem) {
