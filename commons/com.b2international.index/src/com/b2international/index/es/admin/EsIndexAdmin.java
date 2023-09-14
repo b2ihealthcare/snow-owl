@@ -224,17 +224,30 @@ public final class EsIndexAdmin implements IndexAdmin {
 					SortedSet<String> incompatibleChanges = Sets.newTreeSet();
 					final JsonDiff schemaChanges = JsonDiff.diff(currentTypeMapping, newTypeMapping);
 					schemaChanges.forEach(change -> {
+						
 						if (change.isAdd()) {
+							
+							// XXX object type is the default type, so if the current mapping does not contain this node, we shouldn't trigger an update
+							if (change.getFieldPath().endsWith("type") && "object".equals(change.serializeValue())) {
+								return;
+							}
+							
 							compatibleChanges.add(change.getFieldPath());
+							
 						} else if (change.isMove() || change.isReplace()) {
 							incompatibleChanges.add(change.getFieldPath());
 						} else if (change.isRemove()) {
+							
 							// XXX while remove is bad it is hard to detect true incompatibility where we try to support dynamic fields (like Maps)
 							// raise the incompatibility warning only when the root field is being reported, not a nested property under the root property
-							if (!change.getFieldPath().contains("/properties")) {
-								incompatibleChanges.add(change.getFieldPath());
+							if (change.getFieldPath().contains("/properties")) {
+								return;
 							}
+							
+							incompatibleChanges.add(change.getFieldPath());
+							
 						}
+						
 					});
 					if (!incompatibleChanges.isEmpty()) {
 						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, incompatibleChanges);
