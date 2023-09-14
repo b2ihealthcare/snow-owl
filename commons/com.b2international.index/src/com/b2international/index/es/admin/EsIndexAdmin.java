@@ -228,7 +228,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						if (change.isAdd()) {
 							
 							// XXX object type is the default type, so if the current mapping does not contain this node, we shouldn't trigger an update
-							if (change.getFieldPath().endsWith("type") && "object".equals(change.serializeValue())) {
+							if (change.getFieldPath().endsWith("/type") && "object".equals(change.serializeValue())) {
 								return;
 							}
 							
