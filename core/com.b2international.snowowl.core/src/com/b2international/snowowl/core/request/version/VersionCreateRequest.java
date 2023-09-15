@@ -248,7 +248,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				.collect(Collectors.toSet());
 			
 			ResourceRequests.prepareSearch()
-				.filterByBundleAncestorId(resourceCollection.getId())
+				.filterByResourceCollectionAncestor(resourceCollection.getId())
 				.filterByResourceTypes(childResourceTypes)
 				.setLimit(1_000)
 				.streamAsync(context, req -> req.buildAsync())

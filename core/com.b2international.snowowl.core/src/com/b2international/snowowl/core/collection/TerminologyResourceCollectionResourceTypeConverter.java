@@ -57,7 +57,7 @@ public final class TerminologyResourceCollectionResourceTypeConverter implements
 			// allow expanding content via content expansion, for now hit count only
 			results.forEach(collection -> {
 				final Resources resources = ResourceRequests.prepareSearch()
-						.filterByBundleAncestorId(collection.getId())
+						.filterByResourceCollectionAncestor(collection.getId())
 						.setLimit(BaseResourceExpander.getLimit(expandOptions))
 						.build()
 						.execute(context);

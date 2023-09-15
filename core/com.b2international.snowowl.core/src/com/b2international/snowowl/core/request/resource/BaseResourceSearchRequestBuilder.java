@@ -112,6 +112,14 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	public final RB filterByBundleAncestorIds(Iterable<String> bundleAncestorIds) {
 		return addOption(OptionKey.BUNDLE_ANCESTOR_ID, bundleAncestorIds);
 	}
+	
+	public RB filterByResourceCollectionAncestor(String collectionAncestorId) {
+		return filterByBundleAncestorId(collectionAncestorId);
+	}
+	
+	public RB filterByResourceCollectionAncestors(Iterable<String> collectionAncestorIds) {
+		return filterByBundleAncestorIds(collectionAncestorIds);
+	}
 
 	public final RB filterByOid(String oid) {
 		return addOption(OptionKey.OID, oid);
