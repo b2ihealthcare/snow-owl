@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.test.commons.codesystem;
 
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.time.LocalDate;
@@ -24,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.version.Version;
@@ -106,10 +105,14 @@ public abstract class CodeSystemVersionRestRequests {
 	}
 	
 	public static ValidatableResponse createVersion(String codeSystemId, String version, LocalDate effectiveTime, boolean force) {
+		return createVersion(CodeSystem.uri(codeSystemId), version, effectiveTime, force);
+	}
+	
+	public static ValidatableResponse createVersion(ResourceURI resourceToVersion, String version, LocalDate effectiveTime, boolean force) {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.contentType(ContentType.JSON)
 				.body(Json.object(
-					"resource", CodeSystem.uri(codeSystemId).toString(),
+					"resource", resourceToVersion.toString(),
 					"version", version,
 					"description", version,
 					"effectiveTime", effectiveTime.toString(),
@@ -168,11 +171,6 @@ public abstract class CodeSystemVersionRestRequests {
 				.map(Version::getEffectiveTime)
 				.map(latestVersion -> latestVersion.isBefore(today) ? today : latestVersion.plus(1, ChronoUnit.DAYS))
 				.orElse(today);
-	}
-
-	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemId, String versionId, LocalDate effectiveTime) {
-		createCodeSystem(branchPath, codeSystemId).statusCode(201);
-		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 	}
 
 	private CodeSystemVersionRestRequests() {

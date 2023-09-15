@@ -24,7 +24,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestReque
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
@@ -84,7 +84,6 @@ import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;

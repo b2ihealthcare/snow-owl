@@ -46,43 +46,6 @@ import com.google.common.collect.Maps;
 public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 
 	@Test
-	public void createWithExtensionOfOldModel() {
-		final String parentCodeSystemId = "cs11";
-		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		createCodeSystem(parentRequestBody);
-		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
-		
-		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-15");
-		assertVersionCreated(versionRequestBody).statusCode(201);
-
-		final String codeSystemId = "cs12";
-		
-		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
-				.without("branchPath")
-				.with("extensionOf", CodeSystem.uri(parentCodeSystemId, "v1"));
-		
-		createCodeSystem(requestBody);
-		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, parentCodeSystemId, "v1", codeSystemId);
-		
-		try {
-			
-			// Check if the branch has been created
-			RepositoryRequests.branching()
-				.prepareGet(expectedBranchPath)
-				.build(TOOLING_ID)
-				.execute(Services.bus())
-				.getSync();
-			
-			assertCodeSystemGet(codeSystemId)
-				.body("extensionOf", equalTo("codesystems/cs11/v1"));
-			
-		} catch (NotFoundException e) {
-			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
-		}
-	}
-	
-	@Test
 	public void createWithExtensionOfNewModel() {
 		final String parentCodeSystemId = "cs34";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
@@ -114,7 +77,6 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 			// check extensionOf value comes back as part of both dependencies and extensionOf
 			assertCodeSystemGet(codeSystemId)
 				.statusCode(200)
-				.body("extensionOf", equalTo("codesystems/cs34/v1"))
 				.body("dependencies", hasItem(Map.of("uri", "codesystems/cs34/v1", "scope", "extensionOf")));
 			
 		} catch (NotFoundException e) {
@@ -123,32 +85,7 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 	}
 	
 	@Test
-	public void updateExtensionOfOldModel() {
-		final String parentCodeSystemId = "cs13";
-		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
-		createCodeSystem(parentRequestBody);
-		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
-		
-		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
-		assertVersionCreated(v3RequestBody).statusCode(201);
-		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "2020-04-17");
-		assertVersionCreated(v4RequestBody).statusCode(201);
-		
-		final String codeSystemId = "cs14";
-		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
-				.without("branchPath")
-				.with("extensionOf", CodeSystem.uri("cs13/v3"));
-		
-		createCodeSystem(requestBody);
-		assertCodeSystemUpdated(codeSystemId, Json.object("extensionOf", CodeSystem.uri("cs13/v4")));
-		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs13", "v4", codeSystemId);
-		assertCodeSystemHasAttributeValue(codeSystemId, "extensionOf", "codesystems/cs13/v4");
-		assertCodeSystemHasAttributeValue(codeSystemId, "branchPath", expectedBranchPath);
-	}
-	
-	@Test
-	public void updateExtensionOf_NewModel() {
+	public void updateExtensionOf() {
 		final String parentCodeSystemId = "cs35";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
 		createCodeSystem(parentRequestBody);
@@ -171,7 +108,6 @@ public class CodeSystemApiDependencyTest extends BaseResourceApiTest {
 
 		assertCodeSystemGet(codeSystemId)
 			.statusCode(200)
-			.body("extensionOf", equalTo("codesystems/cs35/v4"))
 			.body("dependencies", hasItem(Map.of("uri", "codesystems/cs35/v4", "scope", "extensionOf")))
 			.body("branchPath", equalTo(expectedBranchPath));	}
 	

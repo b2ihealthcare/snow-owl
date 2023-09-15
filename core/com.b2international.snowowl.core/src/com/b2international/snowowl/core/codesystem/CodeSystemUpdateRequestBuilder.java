@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceUpdateRequestBuilder;
 
 /**
@@ -24,20 +23,8 @@ import com.b2international.snowowl.core.request.resource.BaseTerminologyResource
 public final class CodeSystemUpdateRequestBuilder
 		extends BaseTerminologyResourceUpdateRequestBuilder<CodeSystemUpdateRequestBuilder, CodeSystemUpdateRequest> {
 
-	private ResourceURI extensionOf;
-
 	CodeSystemUpdateRequestBuilder(String resourceId) {
 		super(resourceId);
-	}
-
-	/**
-	 * @param extensionOf
-	 * @return
-	 * @deprecated - replaced with {@link #setDependencies(java.util.List)}, will be removed in 9.0
-	 */
-	public CodeSystemUpdateRequestBuilder setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-		return getSelf();
 	}
 
 	@Override
@@ -48,6 +35,5 @@ public final class CodeSystemUpdateRequestBuilder
 	@Override
 	protected void init(CodeSystemUpdateRequest req) {
 		super.init(req);
-		req.setExtensionOf(extensionOf);
 	}
 }

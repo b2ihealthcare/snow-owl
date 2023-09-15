@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchInfo;
-import com.b2international.snowowl.core.codesystem.UpgradeInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
@@ -62,7 +60,6 @@ public abstract class TerminologyResource extends Resource {
 	 */
 	public static abstract class Expand extends Resource.Expand {
 
-		public static final String UPGRADE_INFO = "upgradeInfo";
 		public static final String VERSIONS = "versions";
 		
 		public static final String COMMITS = "commits";
@@ -80,19 +77,6 @@ public abstract class TerminologyResource extends Resource {
 		 */
 		public static final String BRANCH = "branch";
 
-		/**
-		 * @deprecated - this expand option has been moved to the new {@link Dependency} model, will be removed from this model in 9.0
-		 */
-		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
-
-		/**
-		 * @deprecated - this expand option has been moved to the new {@link Dependency} model and also to here as {@link #BRANCH}, will be removed
-		 *             from this model in 9.0
-		 */
-		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
-
-		// public static final String DEPENDENCIES =
-
 	}
 
 	// standard oid
@@ -106,23 +90,6 @@ public abstract class TerminologyResource extends Resource {
 
 	// identifies a set of resource dependencies this resource depends on
 	private List<Dependency> dependencies;
-
-	// used, when this resource is an extension of another TerminologyResource
-	@Deprecated
-	private ResourceURI extensionOf;
-
-	// used, when this resource is an upgrade of another TerminologyResource to a newer extensionOf resource (aka dependency)
-	@Deprecated
-	private ResourceURI upgradeOf;
-
-	// expandable
-	@Deprecated
-	private BranchInfo extensionOfBranchInfo;
-
-	@Deprecated
-	private List<ResourceURI> availableUpgrades;
-
-	private UpgradeInfo upgradeInfo;
 
 	private Versions versions;
 	private CommitInfos commits;
@@ -180,112 +147,15 @@ public abstract class TerminologyResource extends Resource {
 	}
 	
 	/**
-	 * Searches the dependency array for the dependency URI that has the matching scope. If there is no such dependency in the dependency
-	 * array then the system takes the current settings object into account and tries to find the appropriate settingsKeyed value as fallback
-	 * dependency URI. If none of them can be found this method returns <code>null</code>.
-	 * 
-	 * @param scope
-	 * @param settingsKey
-	 * @return
+	 * @param scope - the dependency scope to look for
+	 * @return <code>true</code> if this resource has a dependency entry with the given scope, <code>false</code> otherwise.
 	 */
-	public ResourceURI getDependency(String scope, String settingsKey) {
-		return getDependency(scope)
-				.map(Dependency::getUri)
-				.map(ResourceURIWithQuery::getResourceUri)
-				.orElseGet(() -> (getSettings() == null || !getSettings().containsKey(settingsKey)) ? null : new ResourceURIWithQuery((String) getSettings().get(settingsKey)).getResourceUri());
-	}
-
-	/**
-	 * @param scope
-	 * @param settingsKey
-	 * @return <code>true</code> if this resource has a dependency entry with the given scope or a settings entry with the given settings key,
-	 *         otherwise <code>false</code>.
-	 */
-	public boolean hasDependency(String scope, String settingsKey) {
-		return getDependency(scope, settingsKey) != null;
-	}
-
-	/**
-	 * @return the {@link ResourceURI} pointing to a resource this resource is an extension of
-	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public ResourceURI getExtensionOf() {
-		return extensionOf;
-	}
-
-	/**
-	 * @return the latest {@link BranchInfo} state of the Resource denoted by the {@link #getExtensionOf()} property.
-	 * @deprecated - moved this information to the {@link Dependency#getResource()} expansion, this method will be removed in 9.0
-	 */
-	public BranchInfo getExtensionOfBranchInfo() {
-		return extensionOfBranchInfo;
-	}
-
-	/**
-	 * @return the {@link ResourceURI} pointing to a resource this resource is an upgrade of, this usually references the current non-upgrade point in
-	 *         time of the same resource
-	 * @deprecated - moved this information to the {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public ResourceURI getUpgradeOf() {
-		return upgradeOf;
-	}
-
-	/**
-	 * @return a list of {@link ResourceURI}s pointing to resource versions that have been created after the current {{@link #getExtensionOf()}
-	 *         version on the parent resource (can be {@code null} if not requested as part of an expand() option)
-	 * @deprecated - moved this information to each separate dependency instead of allowing expanding it here, see {@link Dependency#getUpgrades()}
-	 */
-	public List<ResourceURI> getAvailableUpgrades() {
-		return availableUpgrades;
+	public boolean hasDependency(String scope) {
+		return getDependency(scope).isPresent();
 	}
 
 	public void setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
-	}
-
-	/**
-	 * @param extensionOf
-	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public void setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-
-	/**
-	 * @param extensionOfBranchInfo
-	 * @deprecated - moved this information to the {@link Dependency#getResource()} expansion, this method will be removed in 9.0
-	 */
-	public void setExtensionOfBranchInfo(BranchInfo extensionOfBranchInfo) {
-		this.extensionOfBranchInfo = extensionOfBranchInfo;
-	}
-
-	/**
-	 * @param availableUpgrades
-	 * @deprecated - moved this information to each separate dependency instead of allowing expanding it here, see
-	 *             {@link Dependency#setUpgrades(List)}
-	 */
-	public void setAvailableUpgrades(List<ResourceURI> availableUpgrades) {
-		this.availableUpgrades = availableUpgrades;
-	}
-
-	/**
-	 * @param upgradeOf
-	 * @deprecated - moved this information to {@link #getDependencies()}, this method will be removed in 9.0
-	 */
-	public void setUpgradeOf(ResourceURI upgradeOf) {
-		this.upgradeOf = upgradeOf;
-	}
-
-	/**
-	 * @return an {@link UpgradeInfo} object representing the state of a currently ongoing upgrade. Can only be expanded on an upgrade version of a
-	 *         {@link TerminologyResource}.
-	 */
-	public UpgradeInfo getUpgradeInfo() {
-		return upgradeInfo;
-	}
-
-	public void setUpgradeInfo(UpgradeInfo upgradeInfo) {
-		this.upgradeInfo = upgradeInfo;
 	}
 
 	public Versions getVersions() {
@@ -350,6 +220,23 @@ public abstract class TerminologyResource extends Resource {
 			return getResourceURI();
 		}
 	}
+	
+	/**
+	 * @return the {@link ResourceURI} pointing to a resource this resource is an extension of
+	 */
+	@JsonIgnore
+	public ResourceURI getExtensionOf() {
+		return getDependency(TerminologyResource.DependencyScope.EXTENSION_OF).map(Dependency::getUri).map(ResourceURIWithQuery::getResourceUri).orElse(null);
+	}
+
+	/**
+	 * @return the {@link ResourceURIWithQuery} pointing to a resource this resource is an upgrade of, this usually references the current non-upgrade point in
+	 *         time of the same resource
+	 */
+	@JsonIgnore
+	public ResourceURI getUpgradeOf() {
+		return getDependency(TerminologyResource.DependencyScope.UPGRADE_OF).map(Dependency::getUri).map(ResourceURIWithQuery::getResourceUri).orElse(null);
+	}
 
 	@Override
 	public Builder toDocumentBuilder() {
@@ -377,10 +264,7 @@ public abstract class TerminologyResource extends Resource {
 				.oid(getOid())
 				.toolingId(getToolingId())
 				// since 8.12
-				.dependencies(getDependencies() != null ? getDependencies().stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null)
-				// XXX maintain old model fields until 9.0
-				.upgradeOf(getUpgradeOf())
-				.extensionOf(getExtensionOf());
+				.dependencies(getDependencies() != null ? getDependencies().stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)) : null);
 	}
 
 }

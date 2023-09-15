@@ -17,6 +17,7 @@ package com.b2international.snowowl.test.commons.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,6 +174,11 @@ public abstract class CodeSystemRestRequests {
 				.post("/search")
 				.then().assertThat().statusCode(200)
 				.extract().as(CodeSystems.class);
+	}
+	
+	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemId, String versionId, LocalDate effectiveTime) {
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
+		CodeSystemVersionRestRequests.createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 	}
 
 	private CodeSystemRestRequests() {

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.rest.resource;
 
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.assertGetVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionCreate;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionGet;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.createTerminologyResourceCollection;
@@ -28,6 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 import org.elasticsearch.core.List;
@@ -37,6 +40,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
 import com.b2international.snowowl.core.collection.TerminologyResourceCollectionToolingSupport;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
@@ -204,6 +208,23 @@ public class TerminologyResourceCollectionApiTest {
 		assertTerminologyResourceCollectionCreate(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("bundleId", collectionId))
 			.statusCode(400)
 			.body("message", equalTo("Nesting terminology collection resources is not supported. Use regular bundles to organize content."));
+	}
+	
+	@Test
+	public void version_CollectionResource() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("settings", Map.of("customSetting", "customSettingValue")));
+		
+		var codeSystemId1 = createCodeSystem(IDs.base62UUID(), collectionId);
+		var codeSystemId2 = createCodeSystem(IDs.base62UUID(), collectionId);
+		
+		createVersion(TerminologyResourceCollection.uri(collectionId), "v1", LocalDate.now(), false)
+			.statusCode(201);
+		
+		// collection versioning should generate versions for each child resource as well
+		assertGetVersion(codeSystemId1, "v1").statusCode(200);
+		assertGetVersion(codeSystemId2, "v1").statusCode(200);
 	}
 	
 }

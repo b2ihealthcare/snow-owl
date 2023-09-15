@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestCreate;
@@ -26,7 +25,6 @@ import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestCreate;
 public final class CodeSystemRestCreate extends BaseTerminologyResourceRestCreate {
 	
 	private String toolingId;
-	private ResourceURI extensionOf;
 	
 	public void setToolingId(String toolingId) {
 		this.toolingId = toolingId;
@@ -36,23 +34,7 @@ public final class CodeSystemRestCreate extends BaseTerminologyResourceRestCreat
 		return toolingId;
 	}
 	
-	/**
-	 * @param extensionOf
-	 * @deprecated - replaced by {@link #setDependencies(java.util.List)}, will be removed in 9.0
-	 */
-	public void setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-	
-	/**
-	 * @return
-	 * @deprecated - replaced by {@link #getDependencies()}, will be removed in 9.0
-	 */
-	public ResourceURI getExtensionOf() {
-		return extensionOf;
-	}
-
-	public CodeSystemCreateRequestBuilder toCodeSystemCreateRequest() {
+	public CodeSystemCreateRequestBuilder toCreateRequest() {
 		return CodeSystemRequests.prepareNewCodeSystem()
 				.setId(getId())
 				.setBundleId(getBundleId())
@@ -70,8 +52,6 @@ public final class CodeSystemRestCreate extends BaseTerminologyResourceRestCreat
 				.setBranchPath(getBranchPath())
 				.setToolingId(getToolingId())
 				.setSettings(getSettings())
-				.setDependencies(getDependencies())
-				// XXX support old model input until 9.0
-				.setExtensionOf(getExtensionOf());
+				.setDependencies(getDependencies());
 	}
 }

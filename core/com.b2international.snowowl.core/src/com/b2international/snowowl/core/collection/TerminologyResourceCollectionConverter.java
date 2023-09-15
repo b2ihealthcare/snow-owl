@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.request.resource.BaseMetadataResourceCon
 /**
  * @since 9.0
  */
-public final class TerminologyResourceCollectionConverter extends BaseMetadataResourceConverter<TerminologyResourceCollection, TerminologyResourceCollections> {
+final class TerminologyResourceCollectionConverter extends BaseMetadataResourceConverter<TerminologyResourceCollection, TerminologyResourceCollections> {
 
 	public TerminologyResourceCollectionConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);

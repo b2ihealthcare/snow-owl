@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
@@ -92,27 +91,7 @@ public final class CodeSystem extends TerminologyResource {
 		codeSystem.setBranchPath(doc.getBranchPath());
 		codeSystem.setToolingId(doc.getToolingId());
 		codeSystem.setSettings(doc.getSettings());
-		// old dependency models are no longer being maintained on the document, use those values only if dependencies array is not defined
-		if (!CompareUtils.isEmpty(doc.getDependencies())) {
-			codeSystem.setDependencies(doc.getDependencies().stream().map(Dependency::from).toList());
-			doc.getDependencies().forEach(dep -> {
-				// maintain old extensionOf and upgradeOf field value from dependencies only if query part is not defined
-				if (dep.getUri().hasQueryPart()) {
-					return;
-				} 
-				
-				if (TerminologyResource.DependencyScope.EXTENSION_OF.equals(dep.getScope())) {
-					codeSystem.setExtensionOf(dep.getUri().getResourceUri());
-				} else if (TerminologyResource.DependencyScope.UPGRADE_OF.equals(dep.getScope())) {
-					codeSystem.setUpgradeOf(dep.getUri().getResourceUri());
-				}
-			});
-		} else {
-			// maintain index entry of either null dependencies or empty list in this case
-			codeSystem.setDependencies(doc.getDependencies() == null ? null : List.of());
-			codeSystem.setExtensionOf(doc.getExtensionOf());
-			codeSystem.setUpgradeOf(doc.getUpgradeOf());
-		}
+		codeSystem.setDependencies(doc.getDependencies() == null ? null : doc.getDependencies().stream().map(Dependency::from).toList());
 		return codeSystem;
 	}
 
@@ -133,8 +112,6 @@ public final class CodeSystem extends TerminologyResource {
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
 				.setToolingId(getToolingId())
-				.setExtensionOf(getExtensionOf())
-				.setUpgradeOf(getUpgradeOf())
 				.setSettings(getSettings());
 	}
 	
@@ -153,27 +130,7 @@ public final class CodeSystem extends TerminologyResource {
 				.setBundleId(getBundleId())
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
-				.setExtensionOf(getExtensionOf())
 				.setSettings(getSettings());
 	}
 
-//	/**
-//	 * Returns all code system short name dependencies and itself.
-//	 */
-//	@JsonIgnore
-//	public SortedSet<String> getDependenciesAndSelf() {
-//		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
-//		affectedCodeSystems.addAll(getDependencies());
-//		affectedCodeSystems.add(shortName);
-//		return affectedCodeSystems.build();
-//	}
-	
-//	/**
-//	 * Returns the short names of all affected code systems
-//	 */
-//	@JsonIgnore
-//	public SortedSet<String> getDependencies() {
-//		return TerminologyRegistry.INSTANCE.getTerminology(terminologyId).getDependencies();
-//	}
-	
 }

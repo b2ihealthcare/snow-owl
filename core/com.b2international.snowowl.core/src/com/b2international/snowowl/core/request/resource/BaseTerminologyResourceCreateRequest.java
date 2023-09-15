@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -33,14 +31,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.core.Dependency;
-import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.Resource;
-import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ResourceURIWithQuery;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
@@ -59,12 +50,7 @@ import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.Version;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * @since 8.12.0
@@ -85,19 +71,10 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	@NotEmpty
 	private String toolingId;
 	
-	@Deprecated
-	@JsonProperty
-	private ResourceURI extensionOf;
-	
-	@Deprecated
-	@JsonProperty
-	private ResourceURI upgradeOf;
-	
 	@JsonProperty
 	private List<Dependency> dependencies;
 
 	// runtime fields
-	private transient List<Dependency> mergedDependencies;
 	private transient String parentPath;
 	
 	public final void setOid(String oid) {
@@ -112,22 +89,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		this.toolingId = toolingId;
 	}
 
-	/**
-	 * @param extensionOf
-	 * @deprecated - replaced by {@link #setDependencies(List)}, will be removed in 9.0
-	 */
-	public final void setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-	
-	/**
-	 * @param upgradeOf
-	 * @deprecated - replaced by {@link #setDependencies(List)}, will be removed in 9.0
-	 */
-	public final void setUpgradeOf(ResourceURI upgradeOf) {
-		this.upgradeOf = upgradeOf;
-	}
-	
 	public final void setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
 	}
@@ -148,22 +109,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		return dependencies;
 	}
 	
-	/**
-	 * @deprecated - replaced by {@link #getDependencies(List)}, will be removed in 9.0
-	 * @return
-	 */
-	protected final ResourceURI getExtensionOf() {
-		return extensionOf;
-	}
-	
-	/**
-	 * @deprecated - replaced by {@link #getDependencies(List)}, will be removed in 9.0
-	 * @return
-	 */
-	protected final ResourceURI getUpgradeOf() {
-		return upgradeOf;
-	}
-	
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	protected Builder completeResource(Builder builder) {
@@ -171,12 +116,8 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.oid(oid)
 				.branchPath(branchPath)
 				.toolingId(toolingId)
-				// we accept deprecated fields as input until 9.0, but they are no longer being maintained in the index
-				// old data will be automatically converted to the new format upon write
-				.extensionOf(null)
-				.upgradeOf(null)
 				// extensionOf and upgradeOf will be merged into the new dependency array when creating new resources
-				.dependencies(mergedDependencies == null ? null : mergedDependencies.stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)));
+				.dependencies(dependencies == null ? null : dependencies.stream().map(Dependency::toDocument).collect(Collectors.toCollection(TreeSet::new)));
 	}
 
 	@Override
@@ -269,26 +210,13 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	}
 	
 	private Optional<Version> checkDependencies(RepositoryContext context, boolean create) {
-		Map<String, ResourceURIWithQuery> deprecatedDependencies = getDeprecatedDependencies();
-		if (!deprecatedDependencies.isEmpty()) {
-			// throw error if using both the old and the new way of attaching dependencies to a resource
-			if (!CompareUtils.isEmpty(dependencies) && !Dependency.isEqual(dependencies, deprecatedDependencies)) {
-				throw new BadRequestException("Using both deprecated dependency parameters (%s) and the new dependencies array is not supported. Stick to the old format or migrate to the new.", ImmutableSortedSet.copyOf(deprecatedDependencies.keySet()));
-			}
-
-			// merge old, deprecated dependencies into a single mergedDependencies List, detect duplicates and old API usage
-			this.mergedDependencies = deprecatedDependencies.entrySet().stream().map(entry -> Dependency.of(entry.getValue(), entry.getKey())).toList(); 
-		} else {
-			this.mergedDependencies = dependencies;
-		}
-		
 		// check dependency duplication first before fetching any data from the server
-		checkDuplicateDependencies(context, mergedDependencies);
+		checkDuplicateDependencies(context, dependencies);
 		
-		checkDependenciesWithSpecialURIs(context, mergedDependencies);
+		checkDependenciesWithSpecialURIs(context, dependencies);
 		
 		// check extensionOf dependency first, if configured
-		Optional<Dependency> extensionOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isExtensionOf).findFirst() : Optional.empty();
+		Optional<Dependency> extensionOfDependency = dependencies != null ? dependencies.stream().filter(Dependency::isExtensionOf).findFirst() : Optional.empty();
 		var extensionOfUri = extensionOfDependency.map(Dependency::getUri).orElse(null);
 		Optional<Version> extensionOfVersion = Optional.empty(); 
 		if (extensionOfUri != null) {
@@ -315,7 +243,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), getId());
 			
 			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
-			Optional<Dependency> upgradeOfDependency = mergedDependencies != null ? mergedDependencies.stream().filter(Dependency::isUpgradeOf).findFirst() : Optional.empty();
+			Optional<Dependency> upgradeOfDependency = dependencies != null ? dependencies.stream().filter(Dependency::isUpgradeOf).findFirst() : Optional.empty();
 			var upgradeOfUri = upgradeOfDependency.map(Dependency::getUri).orElse(null);
 			
 			if (upgradeOfUri == null && !create && !branchPath.equals(newResourceBranchPath)) {
@@ -324,33 +252,9 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		}
 
 		// then check any other dependency reference if present
-		checkNonExtensionOfDependencyReferences(context, mergedDependencies);
+		checkNonExtensionOfDependencyReferences(context, dependencies);
 		
 		return extensionOfVersion;
-	}
-
-	protected final Map<String, ResourceURIWithQuery> getDeprecatedDependencies() {
-		final Map<String, ResourceURIWithQuery> deprecatedDependencies = new HashMap<>();
-		
-		if (extensionOf != null) {
-			deprecatedDependencies.put(TerminologyResource.DependencyScope.EXTENSION_OF, ResourceURIWithQuery.of(extensionOf));
-		}
-		
-		if (upgradeOf != null) {
-			deprecatedDependencies.put(TerminologyResource.DependencyScope.UPGRADE_OF, ResourceURIWithQuery.of(upgradeOf));
-		}
-		
-		collectDeprecatedDependencies(deprecatedDependencies);
-		
-		return deprecatedDependencies;
-	}
-
-	/**
-	 * Subclasses may optionally override this method to provide any deprecated dependency fields they accepted pre-8.12.
-	 * 
-	 * @param deprecatedDependencies - the map to populate with deprecated dependency field keys and values
-	 */
-	protected void collectDeprecatedDependencies(Map<String, ResourceURIWithQuery> deprecatedDependencies) {
 	}
 
 	static void checkNonExtensionOfDependencyReferences(RepositoryContext context, List<Dependency> dependenciesToCheck) {

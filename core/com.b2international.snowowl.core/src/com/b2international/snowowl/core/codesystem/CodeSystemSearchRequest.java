@@ -19,7 +19,6 @@ import java.util.Collections;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceSearchRequest;
@@ -39,11 +38,6 @@ final class CodeSystemSearchRequest extends BaseTerminologyResourceSearchRequest
 	public enum OptionKey {
 		/** Search by specific tooling ID */
 		TOOLING_ID,
-
-		/**
-		 * Match CodeSystem by their Upgrade of property 
-		 */
-		UPGRADE_OF
 	}
 	
 	@Override
@@ -58,7 +52,6 @@ final class CodeSystemSearchRequest extends BaseTerminologyResourceSearchRequest
 		queryBuilder.filter(ResourceDocument.Expressions.resourceType(CodeSystem.RESOURCE_TYPE));
 		
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
-		addFilter(queryBuilder, OptionKey.UPGRADE_OF, ResourceURI.class, ResourceDocument.Expressions::upgradeOfs);
 	}
 	
 	@Override

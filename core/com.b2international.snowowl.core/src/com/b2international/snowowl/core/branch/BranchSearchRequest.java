@@ -37,6 +37,8 @@ import com.google.common.collect.ImmutableList;
  */
 final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, RevisionBranch> {
 
+	private static final long serialVersionUID = 1L;
+
 	enum OptionKey {
 		
 		/**
@@ -66,7 +68,10 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	protected Expression prepareQuery(RepositoryContext context) {
 		ExpressionBuilder queryBuilder = Expressions.bool();
 				
-		addIdFilter(queryBuilder, ids -> Expressions.matchAny(RevisionBranch.Fields.PATH, ids));
+		addIdFilter(queryBuilder, ids -> Expressions.bool()
+				.should(Expressions.matchAny(RevisionBranch.Fields.PATH, ids))
+				.should(Expressions.matchAny(RevisionBranch.Fields.PATH_ALIASES, ids))
+				.build());
 		
 		if (containsKey(OptionKey.PARENT)) {
 			queryBuilder.filter(Expressions.matchAny(RevisionBranch.Fields.PARENT_PATH, getCollection(OptionKey.PARENT, String.class)));

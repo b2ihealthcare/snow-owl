@@ -26,7 +26,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.ExternalResource;
 
+import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -147,7 +149,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setBranchPath(SNOMEDCT.equals(codeSystemId) ? Branch.MAIN_PATH : null)
 			.setUrl(SNOMEDCT.equals(codeSystemId) ? SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + Concepts.MODULE_SCT_CORE : SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId.getResourceId())
 			.setDescription("description")
-			.setExtensionOf(extensionOf)
+			.setDependencies(extensionOf == null ? null : List.of(Dependency.of(extensionOf, TerminologyResource.DependencyScope.EXTENSION_OF)))
 			.setLanguage("ENG")
 			.setTitle(codeSystemId.getResourceId())
 			.setOid("oid:" + codeSystemId)
