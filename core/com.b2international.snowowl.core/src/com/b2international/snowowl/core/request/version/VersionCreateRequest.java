@@ -124,13 +124,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		
 		final Collection<TerminologyResource> resourcesToVersion = resourcesById.values();
 		
-		resourcesToVersion.stream()
-			.filter(cs -> cs.getUpgradeOf() != null)
-			.findAny()
-			.ifPresent(cs -> {
-				throw new BadRequestException("Upgrade resource '%s' can not be versioned", cs.getResourceURI());				
-			});
-		
 		for (TerminologyResource resourceToVersion : resourcesToVersion) {
 			if (TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resourceToVersion.getStatus())) {
 				throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'", resourceToVersion.getTitle(), resourceToVersion.getStatus());
