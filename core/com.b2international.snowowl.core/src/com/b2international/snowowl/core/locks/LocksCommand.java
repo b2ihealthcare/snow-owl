@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.plugin.Component;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
@@ -103,7 +102,7 @@ public final class LocksCommand extends Command {
 		
 		@Override
 		public void run(CommandLineStream out) {
-			final DatastoreLockTarget target = parseLockTarget(repositoryOrAll); 
+			final Lockable target = parseLockTarget(repositoryOrAll); 
 			
 			if (null == target) {
 				out.println("Couldn't find resource '%s' to acquire lock for.", repositoryOrAll);
@@ -135,7 +134,7 @@ public final class LocksCommand extends Command {
 		public void run(CommandLineStream out) {
 			// first try to parse it as LOCK ID and release if succeeded
 			Integer lockId = Ints.tryParse(lockTargetOrLockIdOrAll);
-			DatastoreLockTarget target = null;
+			Lockable target = null;
 			if (lockId == null) {
 				// then try to parse it as lock target
 				target = parseLockTarget(lockTargetOrLockIdOrAll);
@@ -148,7 +147,7 @@ public final class LocksCommand extends Command {
 			if (lockId != null) {
 				getLockManager().unlockById(lockId);
 				out.println("Released lock by ID '%s'.", lockId);
-			} else if (target.equals(DatastoreLockTarget.ALL)) {
+			} else if (target.equals(Lockable.ALL)) {
 				getLockManager().unlockAll();
 				out.println("Released ALL locks.");
 			} else {
@@ -163,9 +162,9 @@ public final class LocksCommand extends Command {
 		return (DefaultOperationLockManager) ApplicationContext.getInstance().getService(IOperationLockManager.class);
 	}
 	
-	private static DatastoreLockTarget parseLockTarget(final String lockTargetOrAll) {
+	private static Lockable parseLockTarget(final String lockTargetOrAll) {
 		if (ALL.equalsIgnoreCase(lockTargetOrAll)) {
-			return DatastoreLockTarget.ALL;
+			return Lockable.ALL;
 		}
 		
 		final String repositoryId;
@@ -191,7 +190,7 @@ public final class LocksCommand extends Command {
 		
 	
 		if (Strings.isNullOrEmpty(path)) {
-			return new DatastoreLockTarget(repositoryId, null);
+			return new Lockable(repositoryId, null);
 		}
 		
 		final IBranchPath branchPath = BranchPathUtils.createPath(path);
@@ -202,7 +201,7 @@ public final class LocksCommand extends Command {
 			return null;
 		}
 		
-		return new DatastoreLockTarget(repositoryId, branchPath.getPath());
+		return new Lockable(repositoryId, branchPath.getPath());
 	}
 	
 }

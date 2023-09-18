@@ -52,5 +52,5 @@ public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResou
 	public String getToolingId() {
 		return SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
-
+	
 }

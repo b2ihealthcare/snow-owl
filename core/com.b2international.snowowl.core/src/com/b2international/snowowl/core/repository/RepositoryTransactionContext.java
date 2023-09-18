@@ -47,8 +47,8 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -254,7 +254,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			parentLockContext = optionalService(Locks.class).map(Locks::lockContext).orElse(DatastoreLockContextDescriptions.ROOT);
 		}
 		final DatastoreLockContext lockContext = createLockContext(service(User.class).getUserId(), parentLockContext);
-		final DatastoreLockTarget lockTarget = createLockTarget(info().id(), path());
+		final Lockable lockTarget = new Lockable(info().id(), path());
 		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;
 		try {
@@ -387,8 +387,4 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		return new DatastoreLockContext(userId, DatastoreLockContextDescriptions.COMMIT, parentContextDescription);
 	}
 	
-	private static DatastoreLockTarget createLockTarget(String repositoryId, String branch) {
-		return new DatastoreLockTarget(repositoryId, branch);
-	}
-
 }

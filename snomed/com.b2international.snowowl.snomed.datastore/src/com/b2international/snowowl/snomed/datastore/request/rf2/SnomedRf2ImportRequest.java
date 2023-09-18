@@ -184,8 +184,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(this.rf2Archive.getAttachmentId());
 		
-		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
-			return doImport(context, rf2Archive, importConfig);
+		try (Locks<BranchContext> locks = Locks.forContext(DatastoreLockContextDescriptions.IMPORT).lock(context)) {
+			return doImport(locks.ctx(), rf2Archive, importConfig);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.google.common.base.MoreObjects;
 
 /**
@@ -33,11 +32,11 @@ public class OperationLockInfo implements Comparable<OperationLockInfo> {
 
 	private final Date creationDate;
 	
-	private final DatastoreLockTarget target;
+	private final Lockable target;
 	
 	private final DatastoreLockContext context;
 
-	public OperationLockInfo(final int id, final int lockLevel, final Date creationDate, final DatastoreLockTarget target, final DatastoreLockContext context) {
+	public OperationLockInfo(final int id, final int lockLevel, final Date creationDate, final Lockable target, final DatastoreLockContext context) {
 		this.id = id;
 		this.level = lockLevel;
 		this.creationDate = creationDate;
@@ -57,7 +56,7 @@ public class OperationLockInfo implements Comparable<OperationLockInfo> {
 		return creationDate;
 	}
 
-	public DatastoreLockTarget getTarget() {
+	public Lockable getTarget() {
 		return target;
 	}
 	

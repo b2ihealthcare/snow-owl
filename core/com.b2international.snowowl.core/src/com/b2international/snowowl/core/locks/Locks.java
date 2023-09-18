@@ -16,112 +16,128 @@
 package com.b2international.snowowl.core.locks;
 
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.ROOT;
-import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.LockedException;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
+import com.b2international.snowowl.core.jobs.RemoteJob;
 
 /**
  * @since 4.6
  */
-public final class Locks implements AutoCloseable {
+public final class Locks<T extends ServiceProvider> implements AutoCloseable {
 
 	/**
 	 * @since 7.5
 	 */
 	public static final class Builder {
+
+		private final String lockContext;
+		private final String parentLockContext;
 		
-		private final RepositoryContext context;
 		private String user;
-		private List<String> branches;
-		
-		public Builder(RepositoryContext context) {
-			this.context = checkNotNull(context, "Context is missing");
-			this.user = context.service(User.class).getUserId();
-			if (context instanceof BranchContext ctx) {
-				this.branches = List.of(ctx.searcher().branch()); 
-			}
+		private Set<Lockable> lockables;
+		private long timeoutMillis = IOperationLockManager.IMMEDIATE;
+
+		public Builder(String lockContext, String parentLockContext) {
+			this.lockContext = lockContext;
+			this.parentLockContext = parentLockContext;
 		}
-		
-		public Builder user(String user) {
+
+		public Builder by(String user) {
 			this.user = user;
 			return this;
 		}
-		
-		public Builder branch(String branch) {
-			return branches(List.of(branch));
+
+		public Builder on(TerminologyResource resourceToLock) {
+			return on(resourceToLock.asLockable());
 		}
 		
-		public Builder branches(String...branches) {
-			return branches(List.of(branches));
+		public Builder on(Collection<TerminologyResource> resourcesToLock) {
+			return on(resourcesToLock.stream().map(TerminologyResource::asLockable)::iterator);
 		}
 		
-		public Builder branches(List<String> branches) {
-			this.branches = branches;
+		public Builder on(String repositoryId, String branchPath) {
+			this.lockables = Set.of(new Lockable(repositoryId, branchPath));
 			return this;
 		}
 		
-		public Locks lock(String lockContext) {
-			return lock(lockContext, DatastoreLockContextDescriptions.ROOT);
+		public Builder on(Lockable lockable) {
+			return on(Set.of(lockable));
 		}
 		
-		public Locks lock(String lockContext, String parentLockContext) {
-			return new Locks(context, user, lockContext, parentLockContext, branches);
+		public Builder on(Iterable<Lockable> lockables) {
+			this.lockables = Collections3.toImmutableSet(lockables);
+			return this;
 		}
-
+		
+		public Builder waitUntil(long timeoutMillis) {
+			this.timeoutMillis = timeoutMillis;
+			return this;
+		}
+		
+		public <T extends ServiceProvider> Locks<T> lock(T context) {
+			if (CompareUtils.isEmpty(lockables) && context instanceof BranchContext bctx) {
+				// by default if no lockable targets have been set, and this is a branch context target the current repository/branch
+				on(bctx.info().id(), bctx.path());
+			}
+			return new Locks<>(context, user, lockContext, parentLockContext, lockables, timeoutMillis);
+		} 
+		
 	}
 	
-	public static Builder on(RepositoryContext context) {
-		return new Builder(context);
+	public static Builder forContext(String lockContext) {
+		return forContext(lockContext, null);
 	}
 	
-	private final String repositoryId;
+	public static Builder forContext(String lockContext, String parentLockContext) {
+		return new Builder(lockContext, parentLockContext);
+	}
+	
 	private final IOperationLockManager lockManager;
 	private final DatastoreLockContext lockContext;
-	private final Map<String, DatastoreLockTarget> lockTargets;
+	private final Set<Lockable> lockables;
+	private final T serviceContext;
 	
-	private Locks(RepositoryContext context, String userId, String description, String parentLockContext, List<String> branchesToLock) throws LockedException {
-		this.repositoryId = context.info().id();
+	private Locks(T context, String userId, String description, String parentLockDescription, Set<Lockable> lockables, long timeoutMillis) throws LockedException {
 		this.lockManager = context.service(IOperationLockManager.class);
-		this.lockContext = new DatastoreLockContext(userId, description, Strings.isNullOrEmpty(parentLockContext) ? ROOT : parentLockContext);
-	
-		this.lockTargets = Maps.newHashMapWithExpectedSize(branchesToLock.size());
-		for (String branch : branchesToLock) {
-			this.lockTargets.put(branch, new DatastoreLockTarget(repositoryId, branch));	
-		}
-		
-		lock();
+		String lockOwner = Optional.ofNullable(userId).or(() -> context.optionalService(RemoteJob.class).map(RemoteJob::getUser)).orElse(context.service(User.class).getUserId());
+		this.lockContext = new DatastoreLockContext(lockOwner, description, Optional.ofNullable(parentLockDescription).or(() -> context.optionalService(Locks.class).map(Locks::lockContext)).orElse(ROOT));
+		this.lockables = new HashSet<>(lockables);
+		this.lockManager.lock(lockContext, Math.max(timeoutMillis, IOperationLockManager.IMMEDIATE), lockables);
+		this.serviceContext = (T) context.inject().bind(Locks.class, this).build();
 	}
 	
 	public String lockContext() {
 		return lockContext.getDescription();
 	}
-
-	private void lock() {
-		lockManager.lock(lockContext, IOperationLockManager.IMMEDIATE, lockTargets.values());
+	
+	public T ctx() {
+		return serviceContext;
 	}
 	
-	public void unlock(String path) {
-		if (lockTargets.containsKey(path)) {
-			lockManager.unlock(lockContext, lockTargets.get(path));
-			lockTargets.remove(path); // Not reached if an exception is thrown above
+	public void unlock(String repositoryId, String branchPath) {
+		Lockable toUnlock = new Lockable(repositoryId, branchPath);
+		if (lockables.contains(toUnlock)) {
+			lockManager.unlock(lockContext, toUnlock);
+			lockables.remove(toUnlock); // Not reached if an exception is thrown above
 		}
 	}
 
 	public void unlockAll() {
-		if (!lockTargets.isEmpty()) {
-			lockManager.unlock(lockContext, lockTargets.values());
-			lockTargets.clear(); // Not reached if an exception is thrown above
+		if (!lockables.isEmpty()) {
+			lockManager.unlock(lockContext, lockables);
+			lockables.clear(); // Not reached if an exception is thrown above
 		}
 	}
 	
@@ -129,4 +145,5 @@ public final class Locks implements AutoCloseable {
 	public void close() {
 		unlockAll();
 	}
+
 }

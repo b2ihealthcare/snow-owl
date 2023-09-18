@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -37,7 +38,7 @@ public class RemoteLockTargetListener implements IHandler<IMessage>, IDisposable
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLockTargetListener.class);
 
-	private final Map<String, Multimap<DatastoreLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
+	private final Map<String, Multimap<Lockable, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
 
 	private final AtomicBoolean active = new AtomicBoolean(false);
 
@@ -50,18 +51,18 @@ public class RemoteLockTargetListener implements IHandler<IMessage>, IDisposable
 		}
 	}
 	
-	public void targetAcquired(final String clientId, final Iterable<DatastoreLockTarget> targets, final DatastoreLockContext context) {
-		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForClient = remotelyLockedContexts.computeIfAbsent(clientId, key -> HashMultimap.create());
+	public void targetAcquired(final String clientId, final Iterable<Lockable> targets, final DatastoreLockContext context) {
+		final Multimap<Lockable, DatastoreLockContext> targetsForClient = remotelyLockedContexts.computeIfAbsent(clientId, key -> HashMultimap.create());
 		targets.forEach(target -> targetsForClient.put(target, context));
 	}
 
-	public void targetRemoved(final String clientId, final Iterable<DatastoreLockTarget> targets, final DatastoreLockContext context) {
-		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForClient = remotelyLockedContexts.computeIfAbsent(clientId, key -> HashMultimap.create());
+	public void targetRemoved(final String clientId, final Iterable<Lockable> targets, final DatastoreLockContext context) {
+		final Multimap<Lockable, DatastoreLockContext> targetsForClient = remotelyLockedContexts.computeIfAbsent(clientId, key -> HashMultimap.create());
 		targets.forEach(target -> targetsForClient.remove(target, context));
 	}
 	
 	private void clientLogout(final String clientId) {
-		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForClient = remotelyLockedContexts.remove(clientId);
+		final Multimap<Lockable, DatastoreLockContext> targetsForClient = remotelyLockedContexts.remove(clientId);
 		if (targetsForClient == null || targetsForClient.isEmpty()) {
 			return;
 		}
@@ -69,7 +70,7 @@ public class RemoteLockTargetListener implements IHandler<IMessage>, IDisposable
 		LOGGER.warn("Disconnected client had locks granted, unlocking.");
 
 		final IOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IOperationLockManager.class);
-		for (final Map.Entry<DatastoreLockTarget, DatastoreLockContext> targetContextPair : targetsForClient.entries()) {
+		for (final Map.Entry<Lockable, DatastoreLockContext> targetContextPair : targetsForClient.entries()) {
 			try {
 				lockManager.unlock(targetContextPair.getValue(), targetContextPair.getKey());
 			} catch (final IllegalArgumentException e) {
