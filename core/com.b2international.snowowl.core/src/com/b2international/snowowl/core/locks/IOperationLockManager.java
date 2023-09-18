@@ -38,59 +38,58 @@ public interface IOperationLockManager {
 	long IMMEDIATE = 0L;
 
 	/**
-	 * Locks one or more {@link IOperationLockTarget targets} for the specified lock context.
+	 * Locks one or more {@link Lockable lockables} for the specified lock context.
 	 * 
 	 * @param context
 	 *            the lock context (may not be {@code null})
 	 * @param timeoutMillis
 	 *            the maximum allowed time in milliseconds in which this call may block (must be {@link #NO_TIMEOUT}, zero or positive)
 	 * @param lockable
-	 *            the first (or only) target to lock (may not be {@code null})
+	 *            the first (or only) lockable target to lock (may not be {@code null})
 	 * @param lockables
-	 *            subsequent targets to lock (may not be {@code null}; individual elements may not be {@code null})
+	 *            subsequent lockable targets to lock (may not be {@code null}; individual elements may not be {@code null})
 	 * @throws LockedException
 	 *             when one or more locks for the given targets can not be acquired for some reason
 	 */
-	void lock(DatastoreLockContext context, long timeoutMillis, Lockable lockable, Lockable... lockables)
-			throws LockedException;
+	void lock(DatastoreLockContext context, long timeoutMillis, Lockable lockable, Lockable... lockables) throws LockedException;
 
 	/**
-	 * Locks one or more {@link IOperationLockTarget targets} for the specified lock context.
+	 * Locks one or more {@link Lockable lockables} for the specified lock context.
 	 * 
 	 * @param context
 	 *            the lock context (may not be {@code null})
 	 * @param timeoutMillis
 	 *            the maximum allowed time in milliseconds in which this call may block (must be {@link #NO_TIMEOUT}, zero or positive)
-	 * @param targets
-	 *            the targets to lock (may not be {@code null}; can be empty)
+	 * @param lockable
+	 *            the lockable targets to lock (may not be {@code null}; can be empty)
 	 * @throws LockedException
 	 *             when one or more locks for the given targets can not be acquired for some reason
 	 */
-	void lock(DatastoreLockContext context, long timeoutMillis, Iterable<Lockable> targets) throws LockedException;
+	void lock(DatastoreLockContext context, long timeoutMillis, Iterable<Lockable> lockable) throws LockedException;
 
 	/**
-	 * Unlocks one or more {@link IOperationLockTarget targets} with the specified lock context.
+	 * Unlocks one or more {@link Lockable lockables} with the specified lock context.
 	 * 
 	 * @param context
 	 *            the lock context (may not be {@code null})
-	 * @param firstTarget
-	 *            the first (or only) target to unlock (may not be {@code null})
-	 * @param restTargets
-	 *            subsequent targets to unlock (may not be {@code null}; individual elements may not be {@code null})
+	 * @param lockable
+	 *            the first (or only) lockable target to unlock (may not be {@code null})
+	 * @param lockables
+	 *            subsequent lockable targets to unlock (may not be {@code null}; individual elements may not be {@code null})
 	 * @throws IllegalArgumentException
 	 *             when one or more locks for the given targets could not be released for some reason
 	 */
-	void unlock(DatastoreLockContext context, Lockable firstTarget, Lockable... restTargets) throws IllegalArgumentException;
+	void unlock(DatastoreLockContext context, Lockable lockable, Lockable... lockables) throws IllegalArgumentException;
 
 	/**
-	 * Unlocks one or more {@link IOperationLockTarget targets} with the specified lock context.
+	 * Unlocks one or more {@link Lockable lockables} with the specified lock context.
 	 * 
 	 * @param context
 	 *            the lock context (may not be {@code null})
-	 * @param targets
-	 *            the targets to unlock (may not be {@code null}; can be empty)
+	 * @param lockable
+	 *            the lockable targets to unlock (may not be {@code null}; can be empty)
 	 * @throws IllegalArgumentException
 	 *             when one or more locks for the given targets could not be released for some reason
 	 */
-	void unlock(DatastoreLockContext context, Iterable<Lockable> targets) throws IllegalArgumentException;
+	void unlock(DatastoreLockContext context, Iterable<Lockable> lockable) throws IllegalArgumentException;
 }
