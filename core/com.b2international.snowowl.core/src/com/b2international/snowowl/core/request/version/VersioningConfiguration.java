@@ -35,7 +35,7 @@ public final class VersioningConfiguration {
 	private final String description;
 	private final LocalDate effectiveTime;
 	private final boolean force;
-	private final boolean versioningAsChildResource;
+	private final boolean childResource;
 	
 	public VersioningConfiguration(
 			String user,
@@ -44,14 +44,14 @@ public final class VersioningConfiguration {
 			String description,
 			LocalDate effectiveTime,
 			boolean force,
-			boolean versioningAsChildResource) {
+			boolean childResource) {
 		this.user = user;
 		this.resource = resource;
 		this.version = version;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
 		this.force = force;
-		this.versioningAsChildResource = versioningAsChildResource;
+		this.childResource = childResource;
 	}
 	
 	public String getUser() {
@@ -78,8 +78,8 @@ public final class VersioningConfiguration {
 		return force;
 	}
 	
-	public boolean isVersioningAsChildResource() {
-		return versioningAsChildResource;
+	public boolean isChildResource() {
+		return childResource;
 	}
 	
 	@Override
@@ -90,7 +90,7 @@ public final class VersioningConfiguration {
 				.add("effectiveTime", EffectiveTimes.format(effectiveTime))
 				.add("description", nullToEmpty(description))
 				.add("force", force)
-				.add("versioningAsChildResource", versioningAsChildResource)
+				.add("childResource", childResource)
 				.toString();
 	}
 
