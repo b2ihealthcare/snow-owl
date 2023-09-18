@@ -26,9 +26,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.internal.locks.RemoteLockTargetListener;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.eventbus.netty.EventBusNettyUtil;
 
 /**
@@ -49,7 +49,7 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 	private final String parentDescription;
 
 	@NotEmpty
-	private final List<DatastoreLockTarget> targets;
+	private final List<Lockable> targets;
 
 	// Nullable
 	private String userId;
@@ -59,7 +59,7 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 		final String description, 
 		final String parentDescription, 
 		final String userId, 
-		final List<DatastoreLockTarget> targets) {
+		final List<Lockable> targets) {
 		
 		this.lock = lock;
 		this.description = description;

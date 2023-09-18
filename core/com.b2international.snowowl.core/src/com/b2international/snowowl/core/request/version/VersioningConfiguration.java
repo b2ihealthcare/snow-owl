@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ public final class VersioningConfiguration {
 	private final String description;
 	private final LocalDate effectiveTime;
 	private final boolean force;
+	private final boolean versioningAsChildResource;
 	
 	public VersioningConfiguration(
 			String user,
@@ -42,13 +43,15 @@ public final class VersioningConfiguration {
 			String version, 
 			String description,
 			LocalDate effectiveTime,
-			boolean force) {
+			boolean force,
+			boolean versioningAsChildResource) {
 		this.user = user;
 		this.resource = resource;
 		this.version = version;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
 		this.force = force;
+		this.versioningAsChildResource = versioningAsChildResource;
 	}
 	
 	public String getUser() {
@@ -75,6 +78,10 @@ public final class VersioningConfiguration {
 		return force;
 	}
 	
+	public boolean isVersioningAsChildResource() {
+		return versioningAsChildResource;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
@@ -82,6 +89,8 @@ public final class VersioningConfiguration {
 				.add("version", version)
 				.add("effectiveTime", EffectiveTimes.format(effectiveTime))
 				.add("description", nullToEmpty(description))
+				.add("force", force)
+				.add("versioningAsChildResource", versioningAsChildResource)
 				.toString();
 	}
 

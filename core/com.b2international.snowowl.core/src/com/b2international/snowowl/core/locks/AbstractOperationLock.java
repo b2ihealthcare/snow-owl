@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.Deque;
 
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -37,7 +36,7 @@ public abstract class AbstractOperationLock implements IOperationLock {
 	private final int id;
 	private final Date creationDate = new Date();
 	private final Deque<DatastoreLockContext> contextStack = new ArrayDeque<DatastoreLockContext>(); 
-	private final DatastoreLockTarget target;
+	private final Lockable target;
 
 	/**
 	 * Creates a new abstract lock instance.
@@ -45,7 +44,7 @@ public abstract class AbstractOperationLock implements IOperationLock {
 	 * @param id the lock identifier
 	 * @param target the lock target (may not be {@code null})
 	 */
-	protected AbstractOperationLock(final int id, final DatastoreLockTarget target) {
+	protected AbstractOperationLock(final int id, final Lockable target) {
 		Preconditions.checkNotNull(target, "Lock target may not be null.");
 		
 		this.id = id;
@@ -83,17 +82,17 @@ public abstract class AbstractOperationLock implements IOperationLock {
 	}
 
 	@Override
-	public DatastoreLockTarget getTarget() {
+	public Lockable getTarget() {
 		return target;
 	}
 
 	@Override
-	public boolean targetConflicts(final DatastoreLockTarget otherTarget) {
+	public boolean targetConflicts(final Lockable otherTarget) {
 		return target.conflicts(otherTarget);
 	}
 	
 	@Override
-	public boolean targetEquals(final DatastoreLockTarget otherTarget) {
+	public boolean targetEquals(final Lockable otherTarget) {
 		return target.equals(otherTarget);
 	}
 	

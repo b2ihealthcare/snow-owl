@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.locks;
 
 import java.text.MessageFormat;
 
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-
 /**
  * Represents a reentrant lock that can be acquired and released in a balanced fashion multiple times by the same context.
  *
@@ -35,7 +33,7 @@ public class OperationLock extends AbstractOperationLock {
 	 * @param id the lock identifier
 	 * @param target the lock target (may not be {@code null})
 	 */
-	public OperationLock(final int id, final DatastoreLockTarget target) {
+	public OperationLock(final int id, final Lockable target) {
 		super(id, target);
 	}
 

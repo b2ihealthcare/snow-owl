@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
@@ -37,7 +37,7 @@ public class LockChangeRequestBuilder
 	private String description;
 	private String parentDescription = DatastoreLockContextDescriptions.ROOT;
 	private String userId;
-	private List<DatastoreLockTarget> targets = List.of();
+	private List<Lockable> targets = List.of();
 
 
 	/*package*/ LockChangeRequestBuilder(final boolean lock) {
@@ -59,7 +59,7 @@ public class LockChangeRequestBuilder
 		return getSelf();
 	}
 	
-	public LockChangeRequestBuilder setTargets(final DatastoreLockTarget... targets) {
+	public LockChangeRequestBuilder setTargets(final Lockable... targets) {
 		this.targets = Collections3.toImmutableList(targets);
 		return getSelf();
 	}

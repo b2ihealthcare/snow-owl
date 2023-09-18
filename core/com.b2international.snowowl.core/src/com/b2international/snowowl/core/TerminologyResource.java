@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.core.version.Versions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -252,6 +253,13 @@ public abstract class TerminologyResource extends Resource {
 	@JsonIgnore
 	public List<String> getLocales() {
 		return getSettings() == null ? null : (List<String>) getSettings().get(CommonSettings.LOCALES);
+	}
+	
+	/**
+	 * @return a {@link Lockable} instance with this resource's tooling ID and branchPath, never <code>null</code>.
+	 */
+	public Lockable asLockable() {
+		return new Lockable(getToolingId(), getBranchPath());
 	}
 
 	@Override

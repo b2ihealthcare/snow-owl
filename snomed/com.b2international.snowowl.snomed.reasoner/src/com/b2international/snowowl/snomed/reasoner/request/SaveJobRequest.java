@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -156,10 +155,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			.getIndexConfiguration()
 			.getPageSize();
 		
-		try (Locks locks = Locks.on(context)
-				.user(user)
-				.lock(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext)) {
-			return persistChanges(context, monitor);
+		try (Locks<BranchContext> locks = Locks.forContext(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext)
+				.by(user)
+				.lock(context)) {
+			return persistChanges(locks.ctx(), monitor);
 		} catch (final LockedException e) {
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for persisting classification changes; %s", e.getMessage(), e);

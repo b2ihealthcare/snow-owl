@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.locks.IOperationLockTargetListener;
+import com.b2international.snowowl.core.locks.Lockable;
 
 /**
  * A lock target listener implementation that outputs log messages whenever a lock target is added or removed.
@@ -28,12 +29,12 @@ public class Slf4jOperationLockTargetListener implements IOperationLockTargetLis
 	private static final Logger LOGGER = LoggerFactory.getLogger("lock");
 	
 	@Override
-	public void targetAcquired(final DatastoreLockTarget target, final DatastoreLockContext context) {
+	public void targetAcquired(final Lockable target, final DatastoreLockContext context) {
 		LOGGER.info("Lock acquired for {} ({}).", target, context.getDescription());
 	}
 
 	@Override
-	public void targetReleased(final DatastoreLockTarget target, final DatastoreLockContext context) {
+	public void targetReleased(final Lockable target, final DatastoreLockContext context) {
 		LOGGER.info("Lock released for {} ({}).", target, context.getDescription());
 	}
 	

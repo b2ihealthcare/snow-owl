@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.locks;
 
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 
 /**
  * Represents a lock target listener that receives notifications of an appearing or disappearing {@link IOperationLockTarget} in
@@ -31,7 +30,7 @@ public interface IOperationLockTargetListener {
 	 * @param target the added lock target (may not be {@code null})
 	 * @param context the lock context (may not be {@code null})
 	 */
-	void targetAcquired(DatastoreLockTarget target, DatastoreLockContext context);
+	void targetAcquired(Lockable target, DatastoreLockContext context);
 
 	/**
 	 * Called when a lock for a target is released in an {@link AbstractOperationLockManager}.
@@ -39,5 +38,5 @@ public interface IOperationLockTargetListener {
 	 * @param target the removed lock target (may not be {@code null})
 	 * @param context the lock context (may not be {@code null})
 	 */
-	void targetReleased(DatastoreLockTarget target, DatastoreLockContext context);
+	void targetReleased(Lockable target, DatastoreLockContext context);
 }

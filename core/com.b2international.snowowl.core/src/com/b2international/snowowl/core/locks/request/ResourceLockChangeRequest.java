@@ -23,7 +23,7 @@ import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
+import com.b2international.snowowl.core.locks.Lockable;
 
 /**
  * @since 9.0
@@ -58,7 +58,7 @@ final class ResourceLockChangeRequest implements Request<BranchContext, Boolean>
 	@Override
 	public Boolean execute(final BranchContext context) throws LockedException, IllegalArgumentException {
 		final String repositoryId = context.service(Repository.class).id();
-		final List<DatastoreLockTarget> targets = List.of(new DatastoreLockTarget(repositoryId, context.path()));
+		final List<Lockable> targets = List.of(new Lockable(repositoryId, context.path()));
 		final LockChangeRequest delegateLockRequest = new LockChangeRequest(lock, description, parentDescription, userId, targets);
 		return delegateLockRequest.execute(context);
 	}

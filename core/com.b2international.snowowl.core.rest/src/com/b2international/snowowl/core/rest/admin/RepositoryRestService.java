@@ -30,8 +30,8 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.CoreApiConfig;
@@ -107,7 +107,7 @@ public class RepositoryRestService extends AbstractRestService {
 		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), 
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
-		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
+		final Lockable target = Lockable.ALL;
 		doLock(timeoutMillis, context, target);
 	}
 
@@ -122,7 +122,7 @@ public class RepositoryRestService extends AbstractRestService {
 	@PostMapping("/unlock")
 	public void unlockGlobal() {
 		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUserId(), DatastoreLockContextDescriptions.CREATE_BACKUP);
-		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
+		final Lockable target = Lockable.ALL;
 		doUnlock(context, target);
 	}
 
@@ -154,7 +154,7 @@ public class RepositoryRestService extends AbstractRestService {
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
-		final DatastoreLockTarget target = new DatastoreLockTarget(id, null);
+		final Lockable target = new Lockable(id, null);
 		doLock(timeoutMillis, context, target);
 	}
 
@@ -179,7 +179,7 @@ public class RepositoryRestService extends AbstractRestService {
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
-		final DatastoreLockTarget target = new DatastoreLockTarget(repositoryUuid, null);
+		final Lockable target = new Lockable(repositoryUuid, null);
 		doUnlock(context, target);
 	}
 	
@@ -196,7 +196,7 @@ public class RepositoryRestService extends AbstractRestService {
 		checkArgument(timeoutMillis >= 0, "Timeout in milliseconds may not be negative.");
 	}
 
-	private void doUnlock(final DatastoreLockContext context, final DatastoreLockTarget target) {
+	private void doUnlock(final DatastoreLockContext context, final Lockable target) {
 		try {
 			getLockManager().unlock(context, target);
 		} catch (final LockedException e) {
@@ -204,7 +204,7 @@ public class RepositoryRestService extends AbstractRestService {
 		}
 	}
 	
-	private void doLock(final int timeoutMillis, final DatastoreLockContext context, final DatastoreLockTarget target) {
+	private void doLock(final int timeoutMillis, final DatastoreLockContext context, final Lockable target) {
 		try {
 			getLockManager().lock(context, timeoutMillis, target);
 		} catch (final LockedException e) {

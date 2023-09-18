@@ -20,7 +20,6 @@ import static com.b2international.snowowl.core.internal.locks.DatastoreLockConte
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -45,9 +44,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
@@ -58,8 +55,6 @@ import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 5.7
@@ -95,7 +90,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	String author;
 	
 	// local execution variables
-	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	private transient Map<ResourceURI, TerminologyResource> resourcesById;
 	
 	@Override
@@ -154,10 +148,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			}
 		}
 		
-		acquireLocks(context, submitter, resourcesToVersion);
-		
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
-		try {
+
+		try (Locks<RepositoryContext> locks = Locks.forContext(CREATE_VERSION).by(submitter).on(resourcesToVersion).lock(context)) {
+			RepositoryContext lockContext = locks.ctx();
 			
 			// create a version for the resource
 			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
@@ -168,11 +162,11 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							// version components in the given repository
 							new RepositoryRequest<CommitResult>(resourceToVersion.getToolingId(),
 								new BranchSnapshotContentRequest<CommitResult>(resourceToVersion.getBranchPath(),
-										context.service(RepositoryManager.class).get(resourceToVersion.getToolingId())
-											.service(VersioningRequestBuilder.class)
-											.build(new VersioningConfiguration(author, resourceToVersion.getResourceURI(), version, description, effectiveTime, force))
+									lockContext.service(RepositoryManager.class).get(resourceToVersion.getToolingId())
+										.service(VersioningRequestBuilder.class)
+										.build(new VersioningConfiguration(author, resourceToVersion.getResourceURI(), version, description, effectiveTime, force, !resourceToVersion.getResourceURI().equals(resource)))
 								)
-							).execute(context);
+							).execute(lockContext);
 							
 							// tag the repository
 							RepositoryRequests
@@ -183,7 +177,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 								// delete the branch if force requested and we get to this point
 								.force(force)
 								.build(resourceToVersion.getToolingId())
-								.execute(context);
+								.execute(lockContext);
 							monitor.worked(1);
 							
 							// generate version document for each resource 
@@ -198,7 +192,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 									.createdAt(Instant.now().toEpochMilli())
 									.updatedAt(Instant.now().toEpochMilli())
 									.toolingId(resourceToVersion.getToolingId())
-									.url(buildVersionUrl(context, resourceToVersion))
+									.url(buildVersionUrl(lockContext, resourceToVersion))
 									.resourceSnapshot(resourceToVersion)
 									.build());
 						});
@@ -207,9 +201,8 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					.setCommitComment(CompareUtils.isEmpty(commitComment)? String.format("Version '%s' as of '%s'", resource, version) : commitComment)
 					.setAuthor(author)
 					.build()
-			).execute(context).getResultAs(Boolean.class);
+			).execute(lockContext).getResultAs(Boolean.class);
 		} finally {
-			releaseLocks(context);
 			if (null != monitor) {
 				monitor.done();
 			}
@@ -300,25 +293,6 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.execute(context)
 			.stream()
 			.findFirst();
-	}
-	
-	private void acquireLocks(ServiceProvider context, String user, Collection<TerminologyResource> codeSystems) {
-		this.lockTargetsByContext = HashMultimap.create();
-		
-		final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-		for (TerminologyResource codeSystem : codeSystems) {
-			final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getToolingId(), codeSystem.getBranchPath());
-			
-			context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
-
-			lockTargetsByContext.put(lockContext, lockTarget);
-		}
-	}
-	
-	private void releaseLocks(ServiceProvider context) {
-		for (Entry<DatastoreLockContext, DatastoreLockTarget> entry : lockTargetsByContext.entries()) {
-			context.service(IOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
-		}
 	}
 	
 	@Override

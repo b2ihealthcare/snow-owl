@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ public abstract class AbstractLockRequest<C extends RepositoryContext, R> implem
 	
 	@Override
 	public final R execute(C context) {
-		try (Locks locks = Locks.on(context).lock(lockContext(), parentLockContext)) {
-			return doExecute((C) context.inject().bind(Locks.class, locks).build());
+		try (Locks<C> locks = Locks.forContext(lockContext(), parentLockContext).lock(context)) {
+			return doExecute(locks.ctx());
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;

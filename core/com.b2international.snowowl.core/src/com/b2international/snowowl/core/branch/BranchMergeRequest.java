@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.ConflictException;
@@ -23,6 +24,7 @@ import com.b2international.index.revision.BranchMergeException;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.google.common.base.Strings;
@@ -54,19 +56,19 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 	@Override
 	protected Commit applyChanges(RepositoryContext context, Branch source, Branch target) {
 		final String author = userId(context);
-		try (Locks locks = Locks
-				.on(context)
-				.branches(source.path(), target.path())
-				.user(author)
-				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
-			return context.service(BaseRevisionBranching.class)
+		try (Locks<RepositoryContext> locks = Locks
+				.forContext(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)
+				.by(author)
+				.on(List.of(new Lockable(context.info().id(), source.path()), new Lockable(context.info().id(), target.path())))
+				.lock(context)) {
+			return locks.ctx().service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
 				.exclude(exclusions)
 				.author(author)
 				.commitMessage(commitMessage)
 				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))
 				.squash(squash)
-				.context(context)
+				.context(locks.ctx())
 				.merge();
 		} catch (BranchMergeException e) {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import java.util.List;
+
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -22,6 +24,7 @@ import com.b2international.index.revision.BranchMergeException;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.Lockable;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.google.common.base.Strings;
@@ -59,17 +62,17 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 		}
 		
 		final String author = userId(context);
-		try (Locks locks = Locks
-				.on(context)
-				.branches(source.path(), target.path())
-				.user(author)
-				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
-			return context.service(BaseRevisionBranching.class)
+		try (Locks<RepositoryContext> locks = Locks
+				.forContext(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)
+				.by(author)
+				.on(List.of(new Lockable(context.info().id(), source.path()), new Lockable(context.info().id(), target.path())))
+				.lock(context)) {
+			return locks.ctx().service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
 				.author(author)
 				.commitMessage(commitMessage)
 				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))
-				.context(context)
+				.context(locks.ctx())
 				.merge();
 		} catch (BranchMergeException e) {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);
