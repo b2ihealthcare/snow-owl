@@ -55,8 +55,6 @@ import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.branch.Branches;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -235,7 +233,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		this.nrcCountryCode = nrcCountryCode;
 	}
 	
-	private String getCountryNamespaceElement(BranchContext context, CodeSystem codeSystem, Rf2MaintainerType maintainerType, String nrcCountryCode) {
+	private String getCountryNamespaceElement(BranchContext context, TerminologyResource codeSystem, Rf2MaintainerType maintainerType, String nrcCountryCode) {
 		final StringBuilder builder = new StringBuilder();
 		
 		switch (maintainerType) {
@@ -256,7 +254,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return builder.toString();
 	}
 	
-	private String getNamespace(BranchContext context, CodeSystem resource) {
+	private String getNamespace(BranchContext context, TerminologyResource resource) {
 		String namespaceConceptId = (String) resource.getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY);
 		if (CompareUtils.isEmpty(namespaceConceptId)) {
 			return "";
@@ -290,7 +288,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		final long exportStartTime = Instant.now().toEpochMilli();
 
 		// Step 1: check if the export reference branch is a working branch path descendant
-		final CodeSystem referenceCodeSystem = (CodeSystem) context.service(TerminologyResource.class);
+		final TerminologyResource referenceCodeSystem = context.service(TerminologyResource.class);
 
 		if (!CompareUtils.isEmpty(referenceCodeSystem.getSettings())) {
 			if (Strings.isNullOrEmpty(countryNamespaceElement)) {
@@ -644,7 +642,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<Version> versionsToExport, final TerminologyResource codeSystem,
 			final String referenceBranch) {
 		
-		final List<Version> candidateVersions = newArrayList(getCodeSystemVersions(context, codeSystem.getResourceURI()));
+		final List<Version> candidateVersions = newArrayList(getResourceVersions(context, codeSystem.getResourceURI()));
 		
 		if (candidateVersions.isEmpty()) {
 			return;
@@ -665,21 +663,21 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				.get();
 		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(context, cutoffBranch, latestVersionParentBranch);
 
-		// Remove all code system versions which were created after the cut-off date, or don't have a corresponding branch 
+		// Remove all resource versions which were created after the cut-off date, or don't have a corresponding branch 
 		candidateVersions.removeIf(v -> false
 				|| !versionBranchesByPath.containsKey(v.getBranchPath())
 				|| versionBranchesByPath.get(v.getBranchPath()).baseTimestamp() > cutoffBaseTimestamp);
 
 		versionsToExport.addAll(candidateVersions);
 
-		// Exit early if only an extension code system should be exported, or we are already at the "base" code system
+		// Exit early if only an extension code system should be exported, or we are already at the "base" resource
 		final ResourceURI extensionOfUri = codeSystem.getExtensionOf();
 		if (extensionOnly || extensionOfUri == null) {
 			return;
 		}
 
-		// Otherwise, collect applicable versions using this code system's working path
-		final CodeSystem extensionOfCodeSystem = CodeSystemRequests.prepareGetCodeSystem(extensionOfUri.getResourceId()).buildAsync().execute(context);
+		// Otherwise, collect applicable versions using this resource's working path
+		final TerminologyResource extensionOfCodeSystem = (TerminologyResource) ResourceRequests.prepareGet(extensionOfUri).buildAsync().execute(context);
 		collectExportableCodeSystemVersions(context, versionsToExport, extensionOfCodeSystem, codeSystem.getBranchPath());
 	}
 
@@ -1119,7 +1117,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 	}
 
-	private static Versions getCodeSystemVersions(final RepositoryContext context, final ResourceURI resource) {
+	private static Versions getResourceVersions(final RepositoryContext context, final ResourceURI resource) {
 		return ResourceRequests.prepareSearchVersion()
 				.all()
 				.filterByResource(resource)
