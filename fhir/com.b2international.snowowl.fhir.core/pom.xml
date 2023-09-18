@@ -60,6 +60,7 @@
 								hapi-fhir-structures-r5,
 								org.hl7.fhir.r5,
 								org.hl7.fhir.utilities,
+								owasp-java-html-sanitizer,
 								ucum
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
