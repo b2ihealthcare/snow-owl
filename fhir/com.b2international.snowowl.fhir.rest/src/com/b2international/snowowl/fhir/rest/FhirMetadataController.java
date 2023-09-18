@@ -243,7 +243,7 @@ public class FhirMetadataController extends AbstractFhirController {
 				final String key = e.getKey();
 				final PathItem value = e.getValue();
 				
-				return key.startsWith(config.getApiBaseUrl())
+				return key.startsWith(config.fhirApiBaseUrl())
 					&& key.contains("$")
 					&& (value.getGet() != null);
 			})
