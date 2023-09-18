@@ -38,24 +38,9 @@ public final class CodeSystem extends TerminologyResource {
 	
 	public static final String RESOURCE_TYPE = "codesystems";
 	
-	/**
-	 * @since 8.0
-	 */
-	public static final class CommonSettings {
-		public static final String LOCALES = "locales";
-	}
-
 	@Override
 	public String getResourceType() {
 		return RESOURCE_TYPE;
-	}
-	
-	/**
-	 * @return the list of {@link String} formatted as {@link ExtendedLocale} representing the language content this code system carries (can be {@code null})
-	 */
-	@JsonIgnore
-	public List<String> getLocales() {
-		return getSettings() == null ? null : (List<String>) getSettings().get(CommonSettings.LOCALES);
 	}
 	
 	public static ResourceURI uri(String codeSystemId) {

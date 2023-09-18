@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.commit.CommitInfos;
@@ -78,7 +79,14 @@ public abstract class TerminologyResource extends Resource {
 		public static final String BRANCH = "branch";
 
 	}
-
+	
+	/**
+	 * @since 9.0
+	 */
+	public static final class CommonSettings {
+		public static final String LOCALES = "locales";
+	}
+	
 	// standard oid
 	private String oid;
 
@@ -236,6 +244,14 @@ public abstract class TerminologyResource extends Resource {
 	@JsonIgnore
 	public ResourceURI getUpgradeOf() {
 		return getDependency(TerminologyResource.DependencyScope.UPGRADE_OF).map(Dependency::getUri).map(ResourceURIWithQuery::getResourceUri).orElse(null);
+	}
+	
+	/**
+	 * @return the list of {@link String} formatted as {@link ExtendedLocale} representing the language content this resource carries (can be {@code null})
+	 */
+	@JsonIgnore
+	public List<String> getLocales() {
+		return getSettings() == null ? null : (List<String>) getSettings().get(CommonSettings.LOCALES);
 	}
 
 	@Override
