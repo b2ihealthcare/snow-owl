@@ -82,9 +82,15 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	@Summary
 	@Valid
 	private Signature signature;
+
+	@JsonIgnore
+	private String currentPageId;
+
+	@JsonIgnore
+	private String nextPageId;
 	
 	private Bundle(Id id, final String resourceType, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, 
-			Instant timestamp, Code type, int total, Collection<Link> links, List<Entry> entries, final Signature signature) {
+			Instant timestamp, Code type, int total, Collection<Link> links, List<Entry> entries, final Signature signature, String currentPageId, String nextPageId) {
 		super(id, meta, impliciteRules, language);
 		this.resourceType = resourceType;
 		this.identifier = identifier;
@@ -93,6 +99,8 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		this.total = total;
 		this.link = links;
 		this.entry = entries;
+		this.currentPageId = currentPageId;
+		this.nextPageId = nextPageId;
 	}
 	
 	@AssertTrue(message = "Resource type must be 'Bundle'")
@@ -126,6 +134,10 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		private List<Entry> entries;
 		
 		private Signature signature;
+
+		private String currentPageId;
+
+		private String nextPageId;
 		
 		Builder() {
 		}
@@ -200,6 +212,16 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 			return getSelf();
 		}
 
+		public Builder currentPageId(String currentPageId) {
+			this.currentPageId = currentPageId;
+			return getSelf();
+		}
+
+		public Builder nextPageId(String nextPageId) {
+			this.nextPageId = nextPageId;
+			return getSelf();
+		}
+
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -208,9 +230,8 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		@Override
 		protected Bundle doBuild() {
 			return new Bundle(id, resourceType, meta, implicitRules, language, identifier, timestamp, 
-					type, total, links, entries, signature);
+					type, total, links, entries, signature, currentPageId, nextPageId);
 		}
-
 	}
 	
 	@JsonIgnore
@@ -247,4 +268,11 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		return total;
 	}
 	
+	public String getCurrentPageId() {
+		return currentPageId;
+	}
+	
+	public String getNextPageId() {
+		return nextPageId;
+	}
 }

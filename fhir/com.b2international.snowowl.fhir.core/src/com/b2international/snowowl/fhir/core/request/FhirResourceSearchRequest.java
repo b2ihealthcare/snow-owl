@@ -129,7 +129,8 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			
 		return prepareBundle()
 				.entry(internalResources.stream().map(codeSystem -> toFhirResourceEntry(context, codeSystem)).collect(Collectors.toList()))
-//				.after(internalResources.getSearchAfter())
+				.currentPageId(searchAfter())
+				.nextPageId(internalResources.getSearchAfter())
 				.total(internalResources.getTotal())
 				.build();
 	}
