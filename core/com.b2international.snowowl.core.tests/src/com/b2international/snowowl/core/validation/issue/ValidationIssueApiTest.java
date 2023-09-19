@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package com.b2international.snowowl.core.validation.issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -25,18 +27,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.options.Options;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
@@ -55,33 +53,6 @@ import com.google.common.collect.ImmutableMap;
  */
 public class ValidationIssueApiTest {
 
-	private static final String TEST_TOOLING_ID = "TerminologyToolingId";
-
-	/**
-	 * Usage of this class intended for testing purposes only
-	 */
-	private static final class TestValidationDetailExtension implements ValidationIssueDetailExtension {
-
-		@Override
-		public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
-			final Set<String> keySet = options.keySet();
-			if (!keySet.isEmpty()) {
-				for (String key : keySet) {
-					queryBuilder.filter(Expressions.matchAny(key, options.getCollection(key, String.class)));
-				}
-			}
-		}
-
-		@Override
-		public void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {}
-
-		@Override
-		public String getToolingId() { 
-			return TEST_TOOLING_ID; 
-		}
-		
-	}
-	
 	private ServiceProvider context;
 	
 	@Before
@@ -97,8 +68,6 @@ public class ValidationIssueApiTest {
 				.bind(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
 				.bind(ResourceURIPathResolver.class, ResourceURIPathResolver.fromMap(Map.of("SNOMEDCT", Branch.MAIN_PATH)))
 				.build();
-		
-		context.service(ValidationIssueDetailExtensionProvider.class).addExtension(new TestValidationDetailExtension());
 	}
 	
 	@After
@@ -117,7 +86,7 @@ public class ValidationIssueApiTest {
 		
 		final String ruleId = ValidationRequests.rules().prepareCreate()
 				.setId(UUID.randomUUID().toString())
-				.setToolingId(TEST_TOOLING_ID)
+				.setToolingId("any")
 				.setMessageTemplate("Error message")
 				.setSeverity(Severity.ERROR)
 				.setType("snomed-query")
@@ -131,7 +100,6 @@ public class ValidationIssueApiTest {
 		
 		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 			.all()
-			.filterByTooling(TEST_TOOLING_ID)
 			.filterByDetails(details)
 			.buildAsync()
 			.getRequest()
@@ -145,7 +113,7 @@ public class ValidationIssueApiTest {
 	public void filterIssueByResultId() {
 		final String ruleId = ValidationRequests.rules().prepareCreate()
 			.setId(UUID.randomUUID().toString())
-			.setToolingId(TEST_TOOLING_ID)
+			.setToolingId("any")
 			.setMessageTemplate("Error message")
 			.setSeverity(Severity.ERROR)
 			.setType("snomed-query")
@@ -172,7 +140,6 @@ public class ValidationIssueApiTest {
 			.prepareSearch()
 			.all()
 			.filterByResultId("custom-validation-results")
-			.filterByTooling(TEST_TOOLING_ID)
 			.buildAsync()
 			.getRequest()
 			.execute(context);

@@ -194,12 +194,15 @@ public final class ValidationIssue implements Serializable {
 	/**
 	 * @return any additional details that help the resolution of the issue
 	 */
-	@JsonAnyGetter
 	public Map<String, Object> getDetails() {
 		return details;
 	}
 	
-	@JsonAnySetter
+	public void setDetails(Map<String, Object> details) {
+		this.details = details;
+	}
+	
+	@JsonIgnore
 	public void putDetails(String key, Object value) {
 		if (details == null) {
 			this.details = newHashMap();
@@ -208,10 +211,6 @@ public final class ValidationIssue implements Serializable {
 		if (value != null) {
 			this.details.put(key, value);
 		}
-	}
-	
-	public void setDetails(Map<String, Object> details) {
-		this.details = details;
 	}
 	
 	@Override

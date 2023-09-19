@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.validation.issue;
 
 import java.util.Map;
 
-import com.b2international.commons.options.Options;
+import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
@@ -79,8 +79,7 @@ public final class ValidationIssueSearchRequestBuilder
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByDetails(Map<String, Object> details) {
-		final Options options = Options.from(details);
-		return addOption(OptionKey.DETAILS, options);
+		return addOption(OptionKey.DETAILS, details == null ? null : details.entrySet().stream().map(e -> Expressions.toDynamicFieldFilter(e.getKey(), e.getValue())).toList());
 	}
 	
 	@Override
