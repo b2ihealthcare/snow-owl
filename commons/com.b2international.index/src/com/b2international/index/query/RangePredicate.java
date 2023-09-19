@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Objects;
 /**
  * @since 5.4
  */
-public abstract class RangePredicate<T> extends Predicate {
+public final class RangePredicate<T> extends Predicate {
 
 	private static final String LT = "<";
 	private static final String LTE = "<=";

@@ -23,8 +23,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -33,6 +35,18 @@ import com.google.common.collect.Lists;
  */
 public class Expressions {
 	
+	// special 
+	private static final String DYNAMIC_VALUE_DELIMITER = "#";
+	
+	// special in: syntax support
+	private static final String IN_CLAUSE = "in:";
+	private static final Splitter COMMA_SPLITTER = Splitter.on(",");
+
+	// special range: syntax support 
+	private static final String RANGE_CLAUSE = "range:";
+	private static final String RANGE_EXPRESSION_DELIMITER = "..";
+	private static final Splitter RANGE_SPLITTER = Splitter.on(RANGE_EXPRESSION_DELIMITER);
+
 	public static final class ExpressionBuilder extends AbstractExpressionBuilder<ExpressionBuilder> {
 		
 		@Override
@@ -41,6 +55,7 @@ public class Expressions {
 		}
 
 	}
+
 	
 	/**
 	 * @return a new boolean query expression builder
@@ -114,46 +129,14 @@ public class Expressions {
 		return new HasParentPredicate(parentType, expression);
 	}
 
-	public static Expression matchRange(String fieldName, Long from, Long to) {
+	public static Expression matchRange(String fieldName, Object from, Object to) {
 		return matchRange(fieldName, from, to, true, true);
 	}
 	
-	public static Expression matchRange(String fieldName, Long from, Long to, boolean includeFrom, boolean includeTo) {
-		return new LongRangePredicate(fieldName, from, to, includeFrom, includeTo);
+	public static <T> Expression matchRange(String fieldName, T from, T to, boolean includeFrom, boolean includeTo) {
+		return new RangePredicate<>(fieldName, from, to, includeFrom, includeTo);
 	}
 	
-	public static Expression matchRange(String fieldName, Integer from, Integer to) {
-		return matchRange(fieldName, from, to, true, true);
-	}
-	
-	public static Expression matchRange(String fieldName, Integer from, Integer to, boolean includeFrom, boolean includeTo) {
-		return new IntRangePredicate(fieldName, from, to, includeFrom, includeTo);
-	}
-
-	public static Expression matchRange(String field, String from, String to) {
-		return matchRange(field, from, to, true, true);
-	}
-	
-	public static Expression matchRange(String field, String from, String to, boolean includeFrom, boolean includeTo) {
-		return new StringRangePredicate(field, from, to, includeFrom, includeTo);
-	}
-	
-	public static Expression matchRange(String field, BigDecimal from, BigDecimal to) {
-		return matchRange(field, from, to, true, true);
-	}
-	
-	public static Expression matchRange(String field, BigDecimal from, BigDecimal to, boolean includeFrom, boolean includeTo) {
-		return new DecimalRangePredicate(field, from, to, includeFrom, includeTo);
-	}
-	
-	public static Expression matchRange(String field, Double from, Double to) {
-		return matchRange(field, from, to, true, true);
-	}
-	
-	public static Expression matchRange(String field, Double from, Double to, boolean includeFrom, boolean includeTo) {
-		return new DoubleRangePredicate(field, from, to, includeFrom, includeTo);
-	}
-
 	public static Expression matchAnyInt(String field, Iterable<Integer> values) {
 		if (Iterables.size(values) == 1) {
 			return new IntPredicate(field, Iterables.getFirst(values, null));
@@ -315,6 +298,56 @@ public class Expressions {
 	public static QueryStringExpression queryString(String query, String defaultField) {
 		return new QueryStringExpression(query, defaultField);
 	}
-	
+
+	public static Expression matchDynamic(String field, Collection<String> dynamicFieldFilters) {
+		ExpressionBuilder bool = bool();
+		for (String dynamicFieldFilter : dynamicFieldFilters) {
+			if (dynamicFieldFilter.contains(DYNAMIC_VALUE_DELIMITER)) {
+				final String propertyName = dynamicFieldFilter.split(DYNAMIC_VALUE_DELIMITER)[0];
+				final String propertyValue = dynamicFieldFilter.substring(propertyName.length() + 1, dynamicFieldFilter.length());
+				if (Strings.isNullOrEmpty(propertyValue)) {
+					throw new BadRequestException("'%s' filter argument '%s' is not allowed. Expected format is propertyName" + DYNAMIC_VALUE_DELIMITER + "propertyValue.", field, dynamicFieldFilter);
+				}
+				
+				final String fieldToMatch = String.join(".", field, propertyName);
+
+				// check special syntax first
+				if (propertyValue.startsWith(IN_CLAUSE)) {
+					// multi-valued -> terms query
+					bool.filter(Expressions.matchAny(fieldToMatch, COMMA_SPLITTER.splitToList(propertyValue.substring(IN_CLAUSE.length()))));
+				} else if (propertyValue.startsWith(RANGE_CLAUSE)) {
+					// range -> range query
+					final List<String> rangeValues = RANGE_SPLITTER.splitToList(propertyValue.substring(RANGE_CLAUSE.length()));
+					if (rangeValues.size() > 2) {
+						throw new BadRequestException("Multiple range expressions (<min>...<max>) are found in property value match. Only a single <min>...<max> expression is allowed.", propertyValue);
+					} else if (rangeValues.size() <= 1) {
+						throw new BadRequestException("At least one range expression (<min>...<max>) is required to match a value range.", propertyValue);
+					} else {
+						String lower = Strings.emptyToNull(rangeValues.get(0));
+						String upper = Strings.emptyToNull(rangeValues.get(1));
+						bool.filter(Expressions.matchRange(fieldToMatch, lower, upper));
+					}
+				} else if (propertyValue.endsWith("*")) {
+					// wildcard at the end -> prefix query
+					bool.filter(Expressions.prefixMatch(fieldToMatch, propertyValue.substring(0, (propertyValue.length() - 1))));						
+				} else {
+					// no special character -> standard term query
+					bool.filter(Expressions.exactMatch(fieldToMatch, propertyValue));
+				}
+			} else {
+				//Check if property exists
+				bool.filter(Expressions.exists(String.join(".", field, dynamicFieldFilter)));
+			}
+		}
+		return bool.build();
+	}
+
+	public static String toDynamicFieldFilter(String field, Object value) {
+		if (field == null || value == null) {
+			return null;
+		} else {
+			return String.join(DYNAMIC_VALUE_DELIMITER, field, String.valueOf(value));
+		}
+	}
 
 }

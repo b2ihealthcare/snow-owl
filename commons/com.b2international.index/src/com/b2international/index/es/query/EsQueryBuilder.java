@@ -17,6 +17,7 @@ package com.b2international.index.es.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -92,10 +93,6 @@ public final class EsQueryBuilder {
 			visit((StringPredicate) expression);
 		} else if (expression instanceof LongPredicate) {
 			visit((LongPredicate) expression);
-		} else if (expression instanceof LongRangePredicate) {
-			visit((LongRangePredicate) expression);
-		} else if (expression instanceof StringRangePredicate) {
-			visit((StringRangePredicate) expression);
 		} else if (expression instanceof NestedPredicate) {
 			visit((NestedPredicate) expression);
 		} else if (expression instanceof HasParentPredicate) {
@@ -116,8 +113,8 @@ public final class EsQueryBuilder {
 			visit((BoolExpression) expression);
 		} else if (expression instanceof BooleanPredicate) {
 			visit((BooleanPredicate) expression);
-		} else if (expression instanceof IntRangePredicate) {
-			visit((IntRangePredicate) expression);
+		} else if (expression instanceof RangePredicate) {
+			visit((RangePredicate<?>) expression);
 		} else if (expression instanceof TextPredicate) {
 			visit((TextPredicate) expression);
 		} else if (expression instanceof DisMaxPredicate) {
@@ -128,14 +125,10 @@ public final class EsQueryBuilder {
 			visit((ScriptScoreExpression) expression);
 		} else if (expression instanceof DecimalPredicate) {
 			visit((DecimalPredicate) expression);
-		} else if (expression instanceof DecimalRangePredicate) {
-			visit((DecimalRangePredicate) expression);
 		} else if (expression instanceof DecimalSetPredicate) {
 			visit((DecimalSetPredicate) expression);
 		} else if (expression instanceof DoublePredicate) {
 			visit((DoublePredicate) expression);
-		} else if (expression instanceof DoubleRangePredicate) {
-			visit((DoubleRangePredicate) expression);
 		} else if (expression instanceof DoubleSetPredicate) {
 			visit((DoubleSetPredicate) expression);
 		} else if (expression instanceof ScriptQueryExpression){
@@ -396,12 +389,8 @@ public final class EsQueryBuilder {
 	}
 	
 	private void visit(RangePredicate<?> range) {
-		deque.push(QueryBuilders.rangeQuery(toFieldPath(range)).from(range.lower()).to(range.upper()).includeLower(range.isIncludeLower()).includeUpper(range.isIncludeUpper()));
-	}
-	
-	private void visit(DecimalRangePredicate range) {
-		final String lower = range.lower() == null ? null : DecimalUtils.encode(range.lower());
-		final String upper = range.upper() == null ? null : DecimalUtils.encode(range.upper());
+		final Object lower = range.lower() instanceof BigDecimal ? DecimalUtils.encode((BigDecimal) range.lower()) : range.lower();
+		final Object upper = range.upper() instanceof BigDecimal ? DecimalUtils.encode((BigDecimal) range.upper()) : range.upper();
 		deque.push(QueryBuilders.rangeQuery(toFieldPath(range)).from(lower).to(upper).includeLower(range.isIncludeLower()).includeUpper(range.isIncludeUpper()));
 	}
 	

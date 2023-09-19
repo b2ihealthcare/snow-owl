@@ -24,7 +24,6 @@ import java.util.*;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
@@ -42,7 +41,6 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 /**
@@ -143,24 +141,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 
 		if (containsKey(OptionKey.SETTINGS)) {
 			final Collection<String> properties = getCollection(OptionKey.SETTINGS, String.class);
-			properties.forEach( property -> {
-				if (property.contains(Resource.SETTINGS_DELIMITER)) {
-					final String propertyName = property.split(Resource.SETTINGS_DELIMITER)[0];
-					final String propertyValue = property.substring(propertyName.length() + 1, property.length());
-					if (Strings.isNullOrEmpty(propertyValue)) {
-						throw new BadRequestException("Settings argument %s is not allowed. Expected format is propertyName" + Resource.SETTINGS_DELIMITER + "propertyValue.", property);
-					}
-					//Check if property has specified value
-					if (propertyValue.endsWith("*")) {
-						queryBuilder.filter(Expressions.prefixMatch(String.format("settings.%s", propertyName), propertyValue.substring(0, (propertyValue.length() - 1))));						
-					} else {
-						queryBuilder.filter(Expressions.exactMatch(String.format("settings.%s", propertyName), propertyValue));															
-					}
-				} else {
-					//Check if property exists
-					queryBuilder.filter(Expressions.exists(String.format("settings.%s", property)));
-				}
-			});
+			queryBuilder.filter(Expressions.matchDynamic(ResourceDocument.Fields.SETTINGS, properties));
 		}
 		
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);

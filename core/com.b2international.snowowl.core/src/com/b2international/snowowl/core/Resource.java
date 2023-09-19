@@ -42,8 +42,6 @@ public abstract class Resource implements Serializable {
 	public static final String DRAFT_STATUS = "draft";
 	public static final String SNOMED_FIRST = "snomedFirst";
 
-	public static final String SETTINGS_DELIMITER = "#";
-
 	public static final class Settings {
 
 		public static final String PUBLISHER = "publisher";
