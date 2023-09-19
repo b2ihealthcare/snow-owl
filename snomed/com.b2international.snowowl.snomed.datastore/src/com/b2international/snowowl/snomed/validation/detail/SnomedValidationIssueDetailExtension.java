@@ -19,23 +19,21 @@ import static com.b2international.snowowl.core.terminology.ComponentCategory.CON
 import static com.b2international.snowowl.core.terminology.ComponentCategory.DESCRIPTION;
 import static com.b2international.snowowl.core.terminology.ComponentCategory.RELATIONSHIP;
 import static com.b2international.snowowl.core.terminology.ComponentCategory.SET_MEMBER;
-import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.*;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_STATUS;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.options.Options;
-import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.util.DecimalUtils;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
@@ -65,58 +63,12 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		public static final String COMPONENT_STATUS = "componentStatus";
 		public static final String COMPONENT_MODULE_ID = "componentModuleId";
-		public static final String COMPONENT_EFFECTIVE_TIME_START = "effectiveTimeStart";
-		public static final String COMPONENT_EFFECTIVE_TIME_END = "effectiveTimeEnd";
+		public static final String COMPONENT_EFFECTIVE_TIME = "effectiveTime";
 		public static final String CONCEPT_STATUS = "conceptStatus";
-		public static final String CONTENT_TYPE = "contentType";
 		
 	}
 
 	private int pageSize;
-	
-	@Override
-	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
-		if (options.containsKey(COMPONENT_STATUS)) {
-			final Boolean isActive = options.get(COMPONENT_STATUS, Boolean.class);
-			queryBuilder.filter(Expressions.match(COMPONENT_STATUS, isActive));
-		}
-
-		if (options.containsKey(COMPONENT_MODULE_ID)) {
-			final Collection<String> moduleIds = options.getCollection(COMPONENT_MODULE_ID, String.class);
-			queryBuilder.filter(Expressions.matchAny(COMPONENT_MODULE_ID, moduleIds));
-		}
-		
-		if (options.containsKey(CONCEPT_STATUS)) {
-			final Boolean isConceptActive = options.get(CONCEPT_STATUS, Boolean.class);
-			queryBuilder.filter(Expressions.match(CONCEPT_STATUS, isConceptActive));
-		}
-		
-		if (options.containsKey(CONTENT_TYPE)) {
-			final Boolean contentTypeFilter = options.get(CONTENT_TYPE, Boolean.class);
-			if (contentTypeFilter != null && contentTypeFilter) {
-				// published only
-				if (options.containsKey(COMPONENT_EFFECTIVE_TIME_START) || options.containsKey(COMPONENT_EFFECTIVE_TIME_END)) {
-					final Long start = options.get(COMPONENT_EFFECTIVE_TIME_START, Long.class);
-					final Long end = options.get(COMPONENT_EFFECTIVE_TIME_END, Long.class);
-
-					final Expression effectiveTimeExpression = Expressions.matchRange(SnomedDocument.Fields.EFFECTIVE_TIME,
-						start == null ? 0L : start,
-						end == null ? Long.MAX_VALUE : end
-					);
-					
-					queryBuilder.filter(effectiveTimeExpression);
-				} else {
-					queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(0L, Long.MAX_VALUE));
-				}
-
-			} else if (contentTypeFilter != null && !contentTypeFilter) {
-				// unpublished only 
-				queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
-			}
-			// Both
-		}
-		
-	}
 	
 	@Override
 	public void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
