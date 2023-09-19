@@ -17,6 +17,8 @@ class App extends React.Component {
       .then((response) => response.json())
       .then((data) => {
         const queryParams = parse(window.location.search, { ignoreQueryPrefix: true, parameterLimit: 1 })
+        data.items.push({ id: "fhir", title: "FHIR API" })
+        
         this.setState({
           apis: data.items,
           selectedKey: queryParams?.api || 'core',
@@ -29,16 +31,20 @@ class App extends React.Component {
       selectedKey: e.target.value,
     })
   }
-
+  
   render() {
     const { apis, serverUrl, selectedKey } = this.state
+    const specUrl = ("fhir" === selectedKey) 
+		? `${serverUrl}/fhir/api-docs` 
+		: `${serverUrl}/api-docs/${selectedKey}` 
+
     return (
       <>
         <BackTop />
         <rapi-doc
           key="api-docs"
           theme="light"
-          spec-url={`${serverUrl}/api-docs/${this.state.selectedKey}`}
+          spec-url={specUrl}
           server-url={`${serverUrl}`}
           route-prefix={`?api=${this.state.selectedKey}#`}
           render-style="focused"
