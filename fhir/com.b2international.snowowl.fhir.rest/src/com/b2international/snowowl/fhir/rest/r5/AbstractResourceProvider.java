@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.fhir.rest.r5;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.CodeType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -61,14 +63,14 @@ public abstract class AbstractResourceProvider<R extends IBaseResource> implemen
 	public Class<R> getResourceType() {
 		return resourceType;
 	}
-
-	protected Set<String> getUniqueOrListTokens(final List<TokenOrListParam> orListParams) {
+	
+	protected Set<String> getUniqueOrListTokens(final TokenOrListParam orListParams) {
 		if (orListParams == null) {
 			return null;
 		}
 		
-		return orListParams.stream()
-			.flatMap(tolp -> tolp.getValuesAsQueryTokens().stream())
+		return orListParams.getValuesAsQueryTokens()
+			.stream()
 			.map(TokenParam::getValue)
 			.collect(Collectors.toSet());
 	}
@@ -126,8 +128,25 @@ public abstract class AbstractResourceProvider<R extends IBaseResource> implemen
 		}
 	}
 	
+	protected com.b2international.snowowl.fhir.core.model.dt.Code asCode(final CodeType code) {
+		return com.b2international.snowowl.fhir.core.model.dt.Code.valueOf(code.getCode());
+	}
+	
 	protected com.b2international.snowowl.fhir.core.model.dt.Coding asCoding(final Coding coding) {
 		return com.b2international.snowowl.fhir.core.model.dt.Coding.of(coding.getSystem(), coding.getCode());
+	}
+	
+	protected com.b2international.snowowl.fhir.core.model.dt.CodeableConcept asCodeableConcept(final CodeableConcept codeableConcept) {
+		final var codeableConceptBuilder = com.b2international.snowowl.fhir.core.model.dt.CodeableConcept.builder();
+		
+		codeableConceptBuilder.text(codeableConcept.getText());
+		
+		final Collection<Coding> codings = codeableConcept.getCoding();
+		for (final Coding coding : codings) {
+			codeableConceptBuilder.addCoding(asCoding(coding));
+		}
+		
+		return codeableConceptBuilder.build();
 	}
 	
 	protected boolean isForceDelete(final RequestDetails requestDetails) {
@@ -146,5 +165,16 @@ public abstract class AbstractResourceProvider<R extends IBaseResource> implemen
 		
 		// Otherwise check first occurrence
 		return Boolean.parseBoolean(forceValues[0]);
+	}
+	
+	protected String getParameter(final RequestDetails requestDetails, final String name) {
+		final Map<String, String[]> parameters = requestDetails.getParameters();
+		final String[] values = parameters.get(name);
+		
+		if (values == null || values.length < 1) {
+			return null;
+		} else {
+			return values[1];
+		}
 	}
 }

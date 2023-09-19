@@ -16,13 +16,11 @@
 package com.b2international.snowowl.fhir.rest.r5;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.hl7.fhir.r5.model.*;
-import org.hl7.fhir.r5.model.CodeSystem;
 import org.springframework.stereotype.Component;
 
 import com.b2international.commons.CompareUtils;
@@ -31,12 +29,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
-import com.b2international.snowowl.fhir.core.model.r5.FhirLookupConverter;
-import com.b2international.snowowl.fhir.core.model.r5.FhirResourceConverter;
-import com.b2international.snowowl.fhir.core.model.r5.FhirSubsumptionConverter;
-import com.b2international.snowowl.fhir.core.model.r5.FhirValidateCodeConverter;
+import com.b2international.snowowl.fhir.core.model.r5.*;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequestBuilder;
@@ -106,11 +99,11 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 			? LocalDate.parse(effectiveDateHeader)
 			: null;
 		
-		com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem soCodeSystem = null;
+		final var coreCodeSystem = FhirResourceInputConverter.toCodeSystem(codeSystem);
 		
 		return FhirRequests.codeSystems()
 			.prepareUpdate()
-			.setFhirCodeSystem(soCodeSystem)
+			.setFhirCodeSystem(coreCodeSystem)
 			.setAuthor(author)
 			.setOwner(owner)
 			.setOwnerProfileName(ownerProfileName)
@@ -132,7 +125,8 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		
 		try {
 			
-			final com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem soCodeSystem = FhirRequests.codeSystems().prepareGet(id.getIdPart())
+			final String idOrUrl = id.getValue();
+			final var codeSystem = FhirRequests.codeSystems().prepareGet(idOrUrl)
 				.setSummary(_summary != null ? _summary.getCode() : null)
 				.setElements(_elements != null ? ImmutableList.copyOf(_elements) : null)
 				.setLocales(locales)
@@ -140,7 +134,7 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 				.execute(bus.get())
 				.getSync();
 			
-			return (CodeSystem) FhirResourceConverter.toFhirResource(soCodeSystem);
+			return FhirResourceConverter.toFhirCodeSystem(codeSystem);
 			
 		} catch (NotFoundException e) {
 			return null;
@@ -157,7 +151,7 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		@OptionalParam(name = CodeSystem.SP_URL) UriOrListParam url,
 		@OptionalParam(name = CodeSystem.SP_SYSTEM) UriOrListParam system,
 		@OptionalParam(name = CodeSystem.SP_VERSION) StringOrListParam version,
-		@OptionalParam(name = CodeSystem.SP_STATUS) StringParam status,
+//		@OptionalParam(name = CodeSystem.SP_STATUS) StringParam status,
 		@Count Integer _count,
 		@Sort SortSpec _sort,
 		SummaryEnum _summary, 
@@ -187,7 +181,8 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 			sortByFields = null;
 		}
 		
-		final FhirCodeSystemSearchRequestBuilder requestBuilder = FhirRequests.codeSystems().prepareSearch()
+		final FhirCodeSystemSearchRequestBuilder requestBuilder = FhirRequests.codeSystems()
+			.prepareSearch()
 			.filterByIds(asSet(_id))
 			.filterByNames(asSet(name))
 			.filterByTitle(asString(title))
@@ -238,38 +233,39 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		@OperationParam(name = "coding") Coding coding,
 		@OperationParam(name = "date") DateTimeType date,
 		@OperationParam(name = "displayLanguage") CodeType displayLanguage,
-		@OperationParam(name = "property") List<TokenOrListParam> property
+		@OperationParam(name = "property") TokenOrListParam property
 //		@OperationParam(name = "useSupplement") UriOrListParam useSupplement
 	) {
-		final LookupRequest.Builder lookupRequest = LookupRequest.builder();
+		final var lookupRequestBuilder = com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.builder();
+		
 		if (code != null) {
-			lookupRequest.code(code.getCode());
+			lookupRequestBuilder.code(code.getCode());
 		}
 		
 		if (system != null) {
-			lookupRequest.system(system.getValue());
+			lookupRequestBuilder.system(system.getValue());
 		}
 		
-		lookupRequest.version(version);
+		lookupRequestBuilder.version(version);
 		
 		if (coding != null) {
-			lookupRequest.coding(asCoding(coding));
+			lookupRequestBuilder.coding(asCoding(coding));
 		}
 		
 		if (date != null) {
-			lookupRequest.date(date.getValueAsString());
+			lookupRequestBuilder.date(date.getValueAsString());
 		}
 
 		if (displayLanguage != null) {
-			lookupRequest.displayLanguage(displayLanguage.getCode());
+			lookupRequestBuilder.displayLanguage(displayLanguage.getCode());
 		}
 
-		if (property != null) {
-			lookupRequest.properties(getUniqueOrListTokens(property));
+		if (property != null && property.size() > 0) {
+			lookupRequestBuilder.properties(getUniqueOrListTokens(property));
 		}
 		
-		final LookupResult lookupResult = FhirRequests.codeSystems().prepareLookup()
-			.setRequest(lookupRequest.build())
+		final var lookupResult = FhirRequests.codeSystems().prepareLookup()
+			.setRequest(lookupRequestBuilder.build())
 			.buildAsync()
 			.execute(bus.get())
 			.getSync();
@@ -284,10 +280,17 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		@OperationParam(name = "coding") Coding coding,
 		@OperationParam(name = "date") DateTimeType date,
 		@OperationParam(name = "displayLanguage") CodeType displayLanguage,
-		@OperationParam(name = "property") List<TokenOrListParam> property
+		@OperationParam(name = "property") TokenOrListParam property
 //		@OperationParam(name = "useSupplement") UriOrListParam useSupplement
 	) {
-		return lookupType(code, new UriType(id.withResourceType(null).getValue()), null, coding, date, displayLanguage, property);
+		return lookupType(
+			code, 
+			new UriType(id.withResourceType(null).getValue()), 
+			null, 
+			coding, 
+			date, 
+			displayLanguage, 
+			property);
 	}
 	
 	@Operation(name = "$subsumes", idempotent = true)
@@ -299,32 +302,32 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		@OperationParam(name = "codingA") Coding codingA,
 		@OperationParam(name = "codingB") Coding codingB
 	) {
-		final SubsumptionRequest.Builder subsumptionRequest = SubsumptionRequest.builder();
+		final var subsumptionRequestBuilder = com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest.builder();
 		
 		if (codeA != null) {
-			subsumptionRequest.codeA(codeA.getCode());
+			subsumptionRequestBuilder.codeA(codeA.getCode());
 		}
 		
 		if (codeB != null) {
-			subsumptionRequest.codeB(codeB.getCode());
+			subsumptionRequestBuilder.codeB(codeB.getCode());
 		}
 		
 		if (system != null) {
-			subsumptionRequest.system(system.getValue());
+			subsumptionRequestBuilder.system(system.getValue());
 		}
 		
-		subsumptionRequest.version(version);
+		subsumptionRequestBuilder.version(version);
 		
 		if (codingA != null) {
-			subsumptionRequest.codingA(asCoding(codingA));
+			subsumptionRequestBuilder.codingA(asCoding(codingA));
 		}
 		
 		if (codingB != null) {
-			subsumptionRequest.codingB(asCoding(codingB));
+			subsumptionRequestBuilder.codingB(asCoding(codingB));
 		}
 		
-		final SubsumptionResult subsumptionResult = FhirRequests.codeSystems().prepareSubsumes()
-			.setRequest(subsumptionRequest.build())
+		final var subsumptionResult = FhirRequests.codeSystems().prepareSubsumes()
+			.setRequest(subsumptionRequestBuilder.build())
 			.buildAsync()
 			.execute(bus.get())
 			.getSync();
@@ -340,26 +343,59 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		@OperationParam(name = "codingA") Coding codingA,
 		@OperationParam(name = "codingB") Coding codingB
 	) {
-		return subsumesType(codeA, codeB, new UriType(id.withResourceType(null).getValue()), null, codingA, codingB);
+		return subsumesType(
+			codeA, 
+			codeB, 
+			new UriType(id.withResourceType(null).getValue()), 
+			null, 
+			codingA, 
+			codingB);
 	}	
 	
 	@Operation(name = "$validate-code", idempotent = true)
 	public Parameters validateCodeType(
 		@OperationParam(name = "url") UriType url,
-		@OperationParam(name = "codeSystem") CodeSystem codeSystem,
+//		@OperationParam(name = "codeSystem") CodeSystem codeSystem,
 		@OperationParam(name = "code") CodeType code,
 		@OperationParam(name = "version") String version,
 		@OperationParam(name = "display") String display,
 		@OperationParam(name = "coding") Coding coding,
 		@OperationParam(name = "codeableConcept") CodeableConcept codeableConcept,
 		@OperationParam(name = "date") DateTimeType date,
-		@OperationParam(name = "abstract") BooleanType isAbstract,
-		@OperationParam(name = "displayLanguage") CodeType displayLanguage
+		@OperationParam(name = "abstract") BooleanType isAbstract
+//		@OperationParam(name = "displayLanguage") CodeType displayLanguage
 	) {
-		final ValidateCodeRequest.Builder validateCodeBuilder = ValidateCodeRequest.builder();
+		final var validateCodeRequestBuilder = com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest.builder();
+
+		if (url != null) {
+			validateCodeRequestBuilder.url(url.getValue());
+		}
 		
-		final ValidateCodeResult validateCodeResult = FhirRequests.codeSystems().prepareValidateCode()
-			.setRequest(validateCodeBuilder.build())
+		if (code != null) {
+			validateCodeRequestBuilder.code(code.getCode());
+		}
+		
+		if (coding != null) {
+			validateCodeRequestBuilder.coding(asCoding(coding));
+		}
+		
+		if (codeableConcept != null) {
+			validateCodeRequestBuilder.codeableConcept(asCodeableConcept(codeableConcept));
+		}
+		
+		validateCodeRequestBuilder.version(version);
+		validateCodeRequestBuilder.display(display);
+		
+		if (isAbstract != null) {
+			validateCodeRequestBuilder.isAbstract(isAbstract.getValue());
+		}
+		
+		if (date != null) {
+			validateCodeRequestBuilder.date(date.getValueAsString());
+		}
+		
+		final var validateCodeResult = FhirRequests.codeSystems().prepareValidateCode()
+			.setRequest(validateCodeRequestBuilder.build())
 			.buildAsync()
 			.execute(bus.get())
 			.getSync();
@@ -375,9 +411,17 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		@OperationParam(name = "coding") Coding coding,
 		@OperationParam(name = "codeableConcept") CodeableConcept codeableConcept,
 		@OperationParam(name = "date") DateTimeType date,
-		@OperationParam(name = "abstract") BooleanType isAbstract,
-		@OperationParam(name = "displayLanguage") CodeType displayLanguage
+		@OperationParam(name = "abstract") BooleanType isAbstract
+//		@OperationParam(name = "displayLanguage") CodeType displayLanguage
 	) {
-		return validateCodeType(new UriType(id.withResourceType(null).getValue()), null, code, null, display, coding, codeableConcept, date, isAbstract, displayLanguage);
+		return validateCodeType(
+			new UriType(id.withResourceType(null).getValue()), 
+			code, 
+			null, 
+			display, 
+			coding, 
+			codeableConcept, 
+			date, 
+			isAbstract);
 	}
 }
