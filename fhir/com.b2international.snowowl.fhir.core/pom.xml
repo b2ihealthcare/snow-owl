@@ -30,6 +30,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-server-openapi</artifactId>
+			<version>${fhir.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.fhir</groupId>
 			<artifactId>ucum</artifactId>
 			<version>${ucum.version}</version>
@@ -61,6 +67,9 @@
 								org.hl7.fhir.r5,
 								org.hl7.fhir.utilities,
 								owasp-java-html-sanitizer,
+								swagger-annotations,
+								swagger-core,
+								swagger-models,
 								ucum
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>

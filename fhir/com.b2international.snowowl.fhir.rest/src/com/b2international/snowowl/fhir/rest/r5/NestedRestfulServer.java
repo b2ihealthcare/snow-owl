@@ -31,6 +31,7 @@ import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.context.ServletConfigAware;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.fhir.core.OpenApiInterceptorNoUi;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.EncodingEnum;
@@ -74,6 +75,8 @@ public class NestedRestfulServer extends RestfulServer implements HttpRequestHan
 		setServerVersion("9.0");
 
 		registerInterceptor(new ResponseHighlighterInterceptor());
+		registerInterceptor(new OpenApiInterceptorNoUi());
+		
 		setResourceProviders(resourceProviders);
 		setPagingProvider(pagingProvider);
 	}
