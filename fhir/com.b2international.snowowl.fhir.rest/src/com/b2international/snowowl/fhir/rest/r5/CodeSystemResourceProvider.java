@@ -125,7 +125,7 @@ public class CodeSystemResourceProvider extends AbstractResourceProvider<CodeSys
 		
 		try {
 			
-			final String idOrUrl = id.getValue();
+			final String idOrUrl = id.withResourceType(null).getValue();
 			final var codeSystem = FhirRequests.codeSystems().prepareGet(idOrUrl)
 				.setSummary(_summary != null ? _summary.getCode() : null)
 				.setElements(_elements != null ? ImmutableList.copyOf(_elements) : null)

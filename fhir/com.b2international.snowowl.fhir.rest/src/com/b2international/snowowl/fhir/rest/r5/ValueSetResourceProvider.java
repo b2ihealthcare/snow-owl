@@ -232,16 +232,16 @@ public class ValueSetResourceProvider extends AbstractResourceProvider<ValueSet>
 //		@OperationParam(name = "contextDirection") CodeType contextDirection,
 		@OperationParam(name = "filter") String filter,
 //		@OperationParam(name = "date") DateTimeType date,
-//		@OperationParam(name = "offset") Integer offset,
-		@OperationParam(name = "count") Integer count,
-		@OperationParam(name = "includeDesignations") Boolean includeDesignations,
+//		@OperationParam(name = "offset") IntegerType offset,
+		@OperationParam(name = "count") IntegerType count,
+		@OperationParam(name = "includeDesignations") BooleanType includeDesignations,
 //		@OperationParam(name = "designation") TokenOrListParam designation,
-//		@OperationParam(name = "includeDefinition") Boolean includeDefinition,
-		@OperationParam(name = "activeOnly") Boolean activeOnly,
+//		@OperationParam(name = "includeDefinition") BooleanType includeDefinition,
+		@OperationParam(name = "activeOnly") BooleanType activeOnly,
 //		@OperationParam(name = "useSupplement") List<CanonicalType> useSupplement,
-//		@OperationParam(name = "excludeNested") Boolean excludeNested,
-//		@OperationParam(name = "excludeNotForUI") Boolean excludeNotForUI,
-//		@OperationParam(name = "excludePostCoordinated") Boolean excludePostCoordinated,
+//		@OperationParam(name = "excludeNested") BooleanType excludeNested,
+//		@OperationParam(name = "excludeNotForUI") BooleanType excludeNotForUI,
+//		@OperationParam(name = "excludePostCoordinated") BooleanType excludePostCoordinated,
 		@OperationParam(name = "displayLanguage") CodeType displayLanguage,
 //		@OperationParam(name = "property") List<TokenOrListParam> property,
 //		@OperationParam(name = "exclude-system") List<CanonicalType> excludeSystem,
@@ -250,7 +250,7 @@ public class ValueSetResourceProvider extends AbstractResourceProvider<ValueSet>
 //		@OperationParam(name = "force-system-version") List<CanonicalType> forceSystemVersion,
 		// Additional non-standard parameters
 		@OperationParam(name = "after") String after,
-		@OperationParam(name = "withHistorySupplements") Boolean withHistorySupplements
+		@OperationParam(name = "withHistorySupplements") BooleanType withHistorySupplements
 	) {
 		final var expandRequestBuilder = com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest.builder();
 
@@ -261,15 +261,26 @@ public class ValueSetResourceProvider extends AbstractResourceProvider<ValueSet>
 		expandRequestBuilder.valueSetVersion(valueSetVersion);
 		expandRequestBuilder.filter(filter);
 		expandRequestBuilder.after(after);
-		expandRequestBuilder.activeOnly(activeOnly);
-		expandRequestBuilder.count(count);
+		
+		if (activeOnly != null) {
+			expandRequestBuilder.activeOnly(activeOnly.getValue());
+		}
+		
+		if (count != null) {
+			expandRequestBuilder.count(count.getValue());
+		}
 
 		if (displayLanguage != null) {
 			expandRequestBuilder.displayLanguage(asCode(displayLanguage));
 		}
 		
-		expandRequestBuilder.includeDesignations(includeDesignations);
-		expandRequestBuilder.withHistorySupplements(withHistorySupplements);
+		if (includeDesignations != null) {
+			expandRequestBuilder.includeDesignations(includeDesignations.getValue());
+		}
+		
+		if (withHistorySupplements != null) {
+			expandRequestBuilder.withHistorySupplements(withHistorySupplements.getValue());
+		}
 		
 		// expandRequestBuilder.checkSystemVersion(...)
 		// expandRequestBuilder.context(...)
@@ -303,16 +314,16 @@ public class ValueSetResourceProvider extends AbstractResourceProvider<ValueSet>
 //		@OperationParam(name = "contextDirection") CodeType contextDirection,
 		@OperationParam(name = "filter") String filter,
 //		@OperationParam(name = "date") DateTimeType date,
-//		@OperationParam(name = "offset") Integer offset,
-		@OperationParam(name = "count") Integer count,
-		@OperationParam(name = "includeDesignations") Boolean includeDesignations,
+//		@OperationParam(name = "offset") IntegerType offset,
+		@OperationParam(name = "count") IntegerType count,
+		@OperationParam(name = "includeDesignations") BooleanType includeDesignations,
 //		@OperationParam(name = "designation") TokenOrListParam designation,
-//		@OperationParam(name = "includeDefinition") Boolean includeDefinition,
-		@OperationParam(name = "activeOnly") Boolean activeOnly,
+//		@OperationParam(name = "includeDefinition") BooleanType includeDefinition,
+		@OperationParam(name = "activeOnly") BooleanType activeOnly,
 //		@OperationParam(name = "useSupplement") List<CanonicalType> useSupplement,
-//		@OperationParam(name = "excludeNested") Boolean excludeNested,
-//		@OperationParam(name = "excludeNotForUI") Boolean excludeNotForUI,
-//		@OperationParam(name = "excludePostCoordinated") Boolean excludePostCoordinated,
+//		@OperationParam(name = "excludeNested") BooleanType excludeNested,
+//		@OperationParam(name = "excludeNotForUI") BooleanType excludeNotForUI,
+//		@OperationParam(name = "excludePostCoordinated") BooleanType excludePostCoordinated,
 		@OperationParam(name = "displayLanguage") CodeType displayLanguage,
 //		@OperationParam(name = "property") List<TokenOrListParam> property,
 //		@OperationParam(name = "exclude-system") List<CanonicalType> excludeSystem,
@@ -321,7 +332,7 @@ public class ValueSetResourceProvider extends AbstractResourceProvider<ValueSet>
 //		@OperationParam(name = "force-system-version") List<CanonicalType> forceSystemVersion,
 		// Additional non-standard parameters
 		@OperationParam(name = "after") String after,
-		@OperationParam(name = "withHistorySupplements") Boolean withHistorySupplements
+		@OperationParam(name = "withHistorySupplements") BooleanType withHistorySupplements
 	) {
 		return expandType(
 			new UriType(id.withResourceType(null).getValue()), 
