@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
@@ -184,27 +183,7 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		}
 		
 		if (containsKey(OptionKey.DETAILS)) {
-			if (!containsKey(OptionKey.TOOLING_ID)) {
-				throw new BadRequestException("At least one toolingId is required to be able to filter issues by details.");
-			}
-			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
-			final Options options = getOptions(OptionKey.DETAILS);
-			final ExpressionBuilder toolingQuery = Expressions.bool();
-			final Collection<ValidationIssueDetailExtension> extensions = context.service(ValidationIssueDetailExtensionProvider.class).getExtensions();
-			for (String toolingId : toolingIds) {
-				extensions
-						.stream()
-						.filter(ext -> toolingId.equals(ext.getToolingId()))
-						.findFirst()
-						.ifPresent(extension -> {
-							final ExpressionBuilder extensionQuery = Expressions.bool(); 
-							extension.prepareQuery(extensionQuery, options);
-							toolingQuery.should(extensionQuery.build());
-						});
-			}
-			// at least one tooling should match
-			toolingQuery.setMinimumNumberShouldMatch(1);
-			queryBuilder.filter(toolingQuery.build());
+			queryBuilder.filter(Expressions.matchDynamic(ValidationIssue.Fields.DETAILS, getCollection(OptionKey.DETAILS, String.class)));
 		}
 		
 		return queryBuilder.build();

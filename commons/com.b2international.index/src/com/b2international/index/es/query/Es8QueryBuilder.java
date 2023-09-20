@@ -17,6 +17,7 @@ package com.b2international.index.es.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,7 +30,6 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.*;
-import com.b2international.index.query.MoreLikeThisPredicate;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
 import com.google.common.collect.*;
@@ -104,10 +104,6 @@ public class Es8QueryBuilder {
 			visit((StringPredicate) expression);
 		} else if (expression instanceof LongPredicate) {
 			visit((LongPredicate) expression);
-		} else if (expression instanceof LongRangePredicate) {
-			visit((LongRangePredicate) expression);
-		} else if (expression instanceof StringRangePredicate) {
-			visit((StringRangePredicate) expression);
 		} else if (expression instanceof NestedPredicate) {
 			visit((NestedPredicate) expression);
 		} else if (expression instanceof HasParentPredicate) {
@@ -128,8 +124,8 @@ public class Es8QueryBuilder {
 			visit((BoolExpression) expression);
 		} else if (expression instanceof BooleanPredicate) {
 			visit((BooleanPredicate) expression);
-		} else if (expression instanceof IntRangePredicate) {
-			visit((IntRangePredicate) expression);
+		} else if (expression instanceof RangePredicate) {
+			visit((RangePredicate<?>) expression);
 		} else if (expression instanceof TextPredicate) {
 			visit((TextPredicate) expression);
 		} else if (expression instanceof DisMaxPredicate) {
@@ -138,14 +134,10 @@ public class Es8QueryBuilder {
 			visit((ScriptScoreExpression) expression);
 		} else if (expression instanceof DecimalPredicate) {
 			visit((DecimalPredicate) expression);
-		} else if (expression instanceof DecimalRangePredicate) {
-			visit((DecimalRangePredicate) expression);
 		} else if (expression instanceof DecimalSetPredicate) {
 			visit((DecimalSetPredicate) expression);
 		} else if (expression instanceof DoublePredicate) {
 			visit((DoublePredicate) expression);
-		} else if (expression instanceof DoubleRangePredicate) {
-			visit((DoubleRangePredicate) expression);
 		} else if (expression instanceof DoubleSetPredicate) {
 			visit((DoubleSetPredicate) expression);
 		} else if (expression instanceof ScriptQueryExpression){
@@ -482,28 +474,7 @@ public class Es8QueryBuilder {
 		deque.push(QueryBuilders.range(r -> {
 			r.boost(this.boost);
 			if (range.lower() != null) {
-				if (range.isIncludeLower()) {
-					r.gte(JsonData.of(range.lower()));
-				} else {
-					r.gt(JsonData.of(range.lower()));
-				}
-			}
-			if (range.upper() != null) {
-				if (range.isIncludeUpper()) {
-					r.lte(JsonData.of(range.upper()));
-				} else {
-					r.lt(JsonData.of(range.upper()));
-				}
-			}
-			return r.field(toFieldPath(range));
-		}));
-	}
-	
-	private void visit(DecimalRangePredicate range) {
-		deque.push(QueryBuilders.range(r -> {
-			r.boost(this.boost);
-			if (range.lower() != null) {
-				final String lower = DecimalUtils.encode(range.lower());
+				final Object lower = range.lower() instanceof BigDecimal ? DecimalUtils.encode((BigDecimal) range.lower()) : range.lower();
 				if (range.isIncludeLower()) {
 					r.gte(JsonData.of(lower));
 				} else {
@@ -511,7 +482,7 @@ public class Es8QueryBuilder {
 				}
 			}
 			if (range.upper() != null) {
-				final String upper = DecimalUtils.encode(range.upper());
+				final Object upper = range.upper() instanceof BigDecimal ? DecimalUtils.encode((BigDecimal) range.upper()) : range.upper();
 				if (range.isIncludeUpper()) {
 					r.lte(JsonData.of(upper));
 				} else {

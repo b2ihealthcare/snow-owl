@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import java.util.List;
+
+import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -138,14 +141,20 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	}
 	
 	/**
-	 * 
-	 * 
-	 * @param settings
+	 * @param filters - key-value pairs separated by '#' character
 	 * @return
 	 */
-	public final RB filterBySettings(Iterable<String> settings) {
-		return addOption(OptionKey.SETTINGS, settings);
-	}	
+	public final RB filterBySettings(Iterable<String> filters) {
+		return addOption(OptionKey.SETTINGS, filters);
+	}
+	
+	public final RB filterBySettings(String...filters) {
+		return addOption(OptionKey.SETTINGS, filters == null ? null : List.of(filters));
+	}
+	
+	public final RB filterBySettings(String settingsKey, String value) {
+		return filterBySettings(Expressions.toDynamicFieldFilter(settingsKey, value));
+	}
 
 	public final RB filterByOwner(Iterable<String> owner) {
 		return addOption(OptionKey.OWNER, owner);

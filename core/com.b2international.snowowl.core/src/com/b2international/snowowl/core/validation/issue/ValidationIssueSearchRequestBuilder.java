@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.List;
 import java.util.Map;
 
-import com.b2international.commons.options.Options;
+import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
@@ -79,9 +80,12 @@ public final class ValidationIssueSearchRequestBuilder
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByDetails(Map<String, Object> details) {
-		final Options options = Options.from(details);
-		return addOption(OptionKey.DETAILS, options);
+		return filterByDetails(details == null ? null : details.entrySet().stream().map(e -> Expressions.toDynamicFieldFilter(e.getKey(), e.getValue())).toList());
 	}
+	
+	public ValidationIssueSearchRequestBuilder filterByDetails(List<String> detailPropertyFilters) {
+		return addOption(OptionKey.DETAILS, detailPropertyFilters);
+	} 
 	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, ValidationIssues> createSearch() {
