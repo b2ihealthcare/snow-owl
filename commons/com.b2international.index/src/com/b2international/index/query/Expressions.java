@@ -25,10 +25,12 @@ import java.util.stream.IntStream;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.query.TextPredicate.MatchType;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 /**
  * @since 4.7
@@ -41,11 +43,13 @@ public class Expressions {
 	// special in: syntax support
 	private static final String IN_CLAUSE = "in:";
 	private static final Splitter COMMA_SPLITTER = Splitter.on(",");
+	private static final Joiner COMMA_JOINER = Joiner.on(",");
 
 	// special range: syntax support 
 	private static final String RANGE_CLAUSE = "range:";
 	private static final String RANGE_EXPRESSION_DELIMITER = "..";
 	private static final Splitter RANGE_SPLITTER = Splitter.on(RANGE_EXPRESSION_DELIMITER);
+	private static final Joiner RANGE_JOINER = Joiner.on(RANGE_EXPRESSION_DELIMITER);
 
 	public static final class ExpressionBuilder extends AbstractExpressionBuilder<ExpressionBuilder> {
 		
@@ -346,7 +350,19 @@ public class Expressions {
 		if (field == null || value == null) {
 			return null;
 		} else {
-			return String.join(DYNAMIC_VALUE_DELIMITER, field, String.valueOf(value));
+			// convert Object value 
+			final String filterValue;
+			if (value instanceof Iterable<?> iterable) {
+				// to valid in: expression if it is an iterable type
+				filterValue = IN_CLAUSE.concat(COMMA_JOINER.join(iterable));
+			} else if (value instanceof Range<?> range) {
+				// or to range: expression if is is a Guava Range object
+				filterValue = RANGE_CLAUSE.concat(RANGE_JOINER.join(range.lowerEndpoint(), range.upperEndpoint()));
+			} else {
+				// otherwise convert it to string to be able to join with the field name
+				filterValue = String.valueOf(value);
+			}
+			return String.join(DYNAMIC_VALUE_DELIMITER, field, filterValue);
 		}
 	}
 
