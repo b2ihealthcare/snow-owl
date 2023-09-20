@@ -37,6 +37,7 @@ public abstract class Resource implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String ACTIVE_STATUS = "active";
 	// known retired status value from FHIR, TODO make it configurable when needed
 	public static final String RETIRED_STATUS = "retired";
 	public static final String DRAFT_STATUS = "draft";

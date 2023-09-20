@@ -180,6 +180,11 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 								.execute(lockContext);
 							monitor.worked(1);
 							
+							// move all draft resources to active status after versioning
+							if (Resource.DRAFT_STATUS.equals(resourceToVersion.getStatus())) {
+								tx.update(resourceToVersion.toDocumentBuilder().build(), resourceToVersion.toDocumentBuilder().status(Resource.ACTIVE_STATUS).build());
+							}
+							
 							// generate version document for each resource 
 							tx.add(VersionDocument.builder()
 									.id(resourceToVersion.getResourceURI().withPath(version).withoutResourceType())
