@@ -62,6 +62,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConf
 import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import com.b2international.commons.jackson.CustomXmlAnnotationIntrospector;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
@@ -298,9 +299,10 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		final XmlMapper mapper = xmlFactory.isPresent() ? new XmlMapper(xmlFactory.get()) : new XmlMapper();
 		
 		mapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+		mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		mapper.registerModule(new JavaTimeModule());
 		mapper.setDateFormat(new StdDateFormat());
-		
+		mapper.setAnnotationIntrospector(new CustomXmlAnnotationIntrospector());
 		mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 		
 		xmlConverter.setObjectMapper(mapper);
