@@ -184,6 +184,7 @@ public class FhirMetadataController extends AbstractFhirController {
 				.description(description)
 			.build())
 			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_JSON))
+			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_XML))
 			.addRest(restBuilder.build())
 			.build();
 		
