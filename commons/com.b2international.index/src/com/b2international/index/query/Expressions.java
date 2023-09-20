@@ -323,9 +323,9 @@ public class Expressions {
 					// range -> range query
 					final List<String> rangeValues = RANGE_SPLITTER.splitToList(propertyValue.substring(RANGE_CLAUSE.length()));
 					if (rangeValues.size() > 2) {
-						throw new BadRequestException("Multiple range expressions (<min>...<max>) are found in property value match. Only a single <min>...<max> expression is allowed.", propertyValue);
+						throw new BadRequestException("Multiple range expressions (<min>..<max>) are found in property value match. Only a single <min>..<max> expression is allowed.", propertyValue);
 					} else if (rangeValues.size() <= 1) {
-						throw new BadRequestException("At least one range expression (<min>...<max>) is required to match a value range.", propertyValue);
+						throw new BadRequestException("At least one range expression (<min>..<max>) is required to match a value range.", propertyValue);
 					} else {
 						String lower = Strings.emptyToNull(rangeValues.get(0));
 						String upper = Strings.emptyToNull(rangeValues.get(1));
