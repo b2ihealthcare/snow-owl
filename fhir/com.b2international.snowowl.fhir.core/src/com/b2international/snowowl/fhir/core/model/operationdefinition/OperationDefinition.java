@@ -22,6 +22,7 @@ import java.util.Date;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.jackson.XmlIgnore;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
@@ -50,6 +51,7 @@ public class OperationDefinition extends MetadataResource {
 	
 	@Mandatory
 	@JsonProperty
+	@XmlIgnore
 	private final String resourceType;
 	
 	@NotNull

@@ -24,6 +24,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.jackson.XmlIgnore;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
@@ -49,6 +50,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * This class represents a FHIR code system. The CodeSystem resource is used to
@@ -123,6 +126,7 @@ public class CodeSystem extends MetadataResource {
 	
 	@Mandatory
 	@JsonProperty
+	@XmlIgnore
 	private String resourceType;
 	
 	@Summary

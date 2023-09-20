@@ -22,6 +22,7 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import com.b2international.commons.jackson.XmlIgnore;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
@@ -95,6 +96,7 @@ public class ValueSet extends MetadataResource {
 	//FHIR header "resourceType" : "ValueSet",
 	@Mandatory
 	@JsonProperty
+	@XmlIgnore
 	private final String resourceType;
 	
 	@Summary

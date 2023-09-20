@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 
+import com.b2international.commons.jackson.XmlIgnore;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
@@ -97,6 +98,7 @@ public class ConceptMap extends MetadataResource {
 	// FHIR header "resourceType" : "ConceptMap",
 	@Mandatory
 	@JsonProperty
+	@XmlIgnore
 	private final String resourceType;
 
 	@Summary

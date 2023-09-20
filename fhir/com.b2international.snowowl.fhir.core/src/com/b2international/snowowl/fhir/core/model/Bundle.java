@@ -25,6 +25,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.jackson.XmlIgnore;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -55,6 +56,7 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 
 	//FHIR Json header "resourceType" : "Bundle",
 	@JsonProperty
+	@XmlIgnore
 	private String resourceType;
 
 	@Summary

@@ -24,6 +24,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.jackson.XmlIgnore;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
@@ -39,6 +40,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
+
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * This class represents a FHIR Capability Statement.  
@@ -56,6 +59,7 @@ public class CapabilityStatement extends MetadataResource {
 	
 	@Mandatory
 	@JsonProperty
+	@XmlIgnore
 	private final String resourceType;
 	
 	@Summary
