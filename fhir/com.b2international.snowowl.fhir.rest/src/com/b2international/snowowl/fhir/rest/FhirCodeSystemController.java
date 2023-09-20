@@ -63,7 +63,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 	)}
 )})
 @RestController
-@RequestMapping(value = "/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value = "/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirCodeSystemController extends AbstractFhirController {
 	
 	/**
@@ -88,7 +88,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "201", description = "Resource created"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
-	@PostMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@PostMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public ResponseEntity<Void> create(
 		@Parameter(description = "The code system resource, with optional commit comment")
 		@RequestBody 
@@ -186,7 +186,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "201", description = "Resource created"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
-	@PutMapping(value = "/{id:**}", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@PutMapping(value = "/{id:**}", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public ResponseEntity<Void> update(
 		@Parameter(description = "The identifier of the code system")
 		@PathVariable(value = "id") 

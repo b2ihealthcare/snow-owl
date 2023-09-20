@@ -40,7 +40,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "CodeSystem", name = FhirApiConfig.CODESYSTEM)
 @RestController
-@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
 
 	/**
@@ -127,7 +127,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value = "/$lookup", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
+	@PostMapping(value = "/$lookup", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public Promise<Parameters.Fhir> lookup(
 			@Parameter(description = "The lookup request parameters")
 			@RequestBody 

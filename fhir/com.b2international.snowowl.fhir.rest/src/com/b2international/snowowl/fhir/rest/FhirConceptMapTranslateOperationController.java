@@ -39,7 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "ConceptMap", name = FhirApiConfig.CONCEPTMAP)
 @RestController
-@RequestMapping(value="/ConceptMap", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/ConceptMap", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirConceptMapTranslateOperationController extends AbstractFhirController {
 
 	/**
@@ -110,7 +110,7 @@ public class FhirConceptMapTranslateOperationController extends AbstractFhirCont
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value="/{conceptMapId:**}/$translate", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/{conceptMapId:**}/$translate", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public Promise<Parameters.Fhir> translate(
 		@Parameter(description = "The id of the conceptMap to base the translation on") 
 		@PathVariable("conceptMapId") 
@@ -189,7 +189,7 @@ public class FhirConceptMapTranslateOperationController extends AbstractFhirCont
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value="/$translate", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/$translate", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public Promise<Parameters.Fhir> translate(
 			@Parameter(description = "The translate request parameters")
 			@RequestBody 

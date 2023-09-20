@@ -59,7 +59,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "ConceptMap", name = FhirApiConfig.CONCEPTMAP)
 @RestController
-@RequestMapping(value="/ConceptMap", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/ConceptMap", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirConceptMapController extends AbstractFhirController {
 
 	/**
@@ -84,7 +84,7 @@ public class FhirConceptMapController extends AbstractFhirController {
 		@ApiResponse(responseCode = "201", description = "Resource created"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
-	@PostMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@PostMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public ResponseEntity<Void> create(
 		@Parameter(description = "The concept map resource, with optional commit comment")
 		@RequestBody 
@@ -177,7 +177,7 @@ public class FhirConceptMapController extends AbstractFhirController {
 		@ApiResponse(responseCode = "201", description = "Resource created"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
-	@PutMapping(value = "/{id:**}", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@PutMapping(value = "/{id:**}", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public ResponseEntity<Void> update(
 		@Parameter(description = "The identifier of the concept map")
 		@PathVariable(value = "id") 

@@ -41,7 +41,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "StructureDefinition", name = FhirApiConfig.STRUCTURE_DEFINITION)
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/StructureDefinition", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/StructureDefinition", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirStructureDefinitionController extends AbstractFhirController {
 	
 	/**

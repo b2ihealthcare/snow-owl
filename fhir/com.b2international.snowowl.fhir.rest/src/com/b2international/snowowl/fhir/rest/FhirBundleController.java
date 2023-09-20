@@ -47,7 +47,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = FhirApiConfig.BUNDLE, description="Bundle Resource and batch operations")
 @RestController
-@RequestMapping(value="/", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirBundleController extends AbstractFhirController {
 	
 	@Autowired
@@ -60,7 +60,7 @@ public class FhirBundleController extends AbstractFhirController {
 		@ApiResponse(responseCode = "200" , description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
-	@RequestMapping(value="/", method=RequestMethod.POST, consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="/", method=RequestMethod.POST, consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public Promise<Bundle> getBatchResponse(
 			@Parameter(name = "bundle", description = "The bundle including the list of requests to perform")
 			@RequestBody final Bundle bundle, 

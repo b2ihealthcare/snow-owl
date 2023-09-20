@@ -39,7 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "ValueSet", name = FhirApiConfig.VALUESET)
 @RestController
-@RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirValueSetExpandOperationController extends AbstractFhirController {
 
 	@Operation(
@@ -164,7 +164,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
-	@PostMapping(value="/$expand", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/$expand", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public Promise<ValueSet> expandByPost(
 			@Parameter(description = "The expansion request parameters")
 			@RequestBody 

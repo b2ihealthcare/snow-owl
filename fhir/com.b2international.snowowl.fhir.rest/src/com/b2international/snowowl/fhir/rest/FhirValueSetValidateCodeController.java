@@ -36,7 +36,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "ValueSet", name = FhirApiConfig.VALUESET)
 @RestController
-@RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirValueSetValidateCodeController extends AbstractFhirController {
 
 	

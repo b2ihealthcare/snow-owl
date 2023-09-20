@@ -41,7 +41,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "CodeSystem", name = FhirApiConfig.CODESYSTEM)
 @RestController
-@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirController {
 
 	/**
@@ -111,7 +111,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value="/$validate-code", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/$validate-code", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public Promise<Parameters.Fhir> validateCode(
 			@Parameter(description = "The validate-code request parameters") 
 			@RequestBody 
@@ -195,7 +195,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
-	@PostMapping(value="/{codeSystemId:**}/$validate-code", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/{codeSystemId:**}/$validate-code", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON, AbstractFhirController.APPLICATION_FHIR_XML })
 	public Promise<Parameters.Fhir> validateCode(
 			@Parameter(description = "The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
 			@Parameter(description = "The validate-code request parameters")
