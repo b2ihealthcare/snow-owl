@@ -306,9 +306,10 @@ public class Expressions {
 	public static Expression matchDynamic(String field, Collection<String> dynamicFieldFilters) {
 		ExpressionBuilder bool = bool();
 		for (String dynamicFieldFilter : dynamicFieldFilters) {
-			if (dynamicFieldFilter.contains(DYNAMIC_VALUE_DELIMITER)) {
-				final String propertyName = dynamicFieldFilter.split(DYNAMIC_VALUE_DELIMITER)[0];
-				final String propertyValue = dynamicFieldFilter.substring(propertyName.length() + 1, dynamicFieldFilter.length());
+			int indexOfDynamicValueSeparator = dynamicFieldFilter.indexOf(DYNAMIC_VALUE_DELIMITER);
+			if (indexOfDynamicValueSeparator != -1) {
+				final String propertyName = dynamicFieldFilter.substring(0, indexOfDynamicValueSeparator);
+				final String propertyValue = dynamicFieldFilter.substring(indexOfDynamicValueSeparator + 1);
 				if (Strings.isNullOrEmpty(propertyValue)) {
 					throw new BadRequestException("'%s' filter argument '%s' is not allowed. Expected format is propertyName" + DYNAMIC_VALUE_DELIMITER + "propertyValue.", field, dynamicFieldFilter);
 				}
