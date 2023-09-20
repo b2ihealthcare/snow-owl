@@ -50,7 +50,12 @@ public abstract class AbstractFhirController extends AbstractRestService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractFhirController.class);
 	
-	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
+	/*
+	 * XXX: Media types without a "charset" parameter will still be processed, but
+	 * if it is present, it must be set to "UTF-8".
+	 */
+	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=UTF-8";
+	public static final String APPLICATION_FHIR_XML = "application/fhir+xml;charset=UTF-8";
 	
 	private static final String GENERIC_USER_MESSAGE = "Something went wrong during the processing of your request.";
 
