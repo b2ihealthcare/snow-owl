@@ -62,6 +62,10 @@ public abstract class FhirResourceSearchRequestBuilder<B extends FhirResourceSea
 		return addOption(OptionKey.VERSION, versions);
 	}
 	
+	public final B filterByStatus(Iterable<String> statuses) {
+		return addOption(OptionKey.STATUS, statuses);
+	}
+	
 	public final B filterByTitle(String titles) {
 		return addOption(OptionKey.TITLE, titles);
 	}
