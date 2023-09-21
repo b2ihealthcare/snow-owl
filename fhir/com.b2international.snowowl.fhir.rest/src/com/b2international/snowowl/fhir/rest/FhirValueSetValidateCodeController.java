@@ -64,7 +64,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 			@Parameter(description = "The id of the value set to validate against") @PathVariable("id") String id, 
 			@Parameter(description = "The code to to be validated") @RequestParam(value="code") final String code,
 			@Parameter(description = "The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
+			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="systemVersion", required=false) final String systemVersion) {
 		
 		ValidateCodeRequest request = ValidateCodeRequest.builder()
 				.url(id)
@@ -104,7 +104,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 			@Parameter(description = "Canonical URL of the value set") @RequestParam(value="url") final String url,
 			@Parameter(description = "The code to to be validated") @RequestParam(value="code") final String code,
 			@Parameter(description = "The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
+			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="systemVersion", required=false) final String systemVersion) {
 		
 		ValidateCodeRequest request = ValidateCodeRequest.builder()
 			.url(url)
