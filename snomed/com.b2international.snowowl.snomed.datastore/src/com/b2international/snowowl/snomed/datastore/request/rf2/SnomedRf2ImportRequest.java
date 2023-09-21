@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +43,7 @@ import org.mapdb.DBMaker.Maker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -428,6 +431,20 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	@SuppressWarnings("deprecation")
 	private void updateCodeSystemSettings(final BranchContext context, final ResourceURI codeSystemUri) throws Exception {
+		
+		// fetch codesystem to get the latest settings 
+		CodeSystem currentSnomedCodeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemUri.getResourceId())
+				.buildAsync()
+				.get(context);
+		
+		/////////////
+		// Locales //
+		/////////////
+		
+		/*
+		 * Given that we have no better approach to calculate proper locales, we can collect the active language reference sets
+		 * on the current branch
+		 */
 		SnomedReferenceSets languageReferenceSets = SnomedRequests.prepareSearchRefSet()
 			.all()
 			.filterByType(SnomedRefSetType.LANGUAGE)
@@ -438,20 +455,36 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			.execute(context);
 		
 		/*
-		 * XXX: The default language in locales is always "en", as there is no
-		 * machine-readable information about what language code each language type
-		 * reference set is associated with.
+		 * XXX: The default language in locales is always "en", as there is no machine-readable information about what language
+		 * code each language type reference set is associated with.
 		 */
-		final List<ExtendedLocale> locales = languageReferenceSets
+		final List<ExtendedLocale> computedLocales = languageReferenceSets
 			.stream()
 			.map(refSet -> new ExtendedLocale("en", "", refSet.getId()))
 			.collect(Collectors.toList());
 		
-		// fetch codesystem again to get the latest settings 
-		CodeSystem currentSnomedCodeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemUri.getResourceId())
-			.buildAsync()
-			.get(context);
+		/*
+		 * Append the current locale settings if any of the computed locales are missing 
+		 */
 		
+		List<ExtendedLocale> currentLocales = newArrayList();
+		
+		if (!CompareUtils.isEmpty(currentSnomedCodeSystem.getLocales())) {
+			currentSnomedCodeSystem.getLocales().stream()
+				.map(locale -> ExtendedLocale.valueOf(locale))
+				.forEach(currentLocales::add);
+		}
+		
+		computedLocales.forEach( computedLocale -> {
+			if (!currentLocales.contains(computedLocale)) {
+				currentLocales.add(computedLocale);
+			}
+		});
+		
+		////////////////////////////
+		// Language configuration //
+		////////////////////////////
+
 		Map<String, SnomedLanguageConfig> mergedLanguagesConfiguration = Maps.newLinkedHashMap(); 
 		SnomedDescriptionUtils.getLanguagesConfiguration(context.service(ObjectMapper.class), currentSnomedCodeSystem).forEach(config -> {
 			mergedLanguagesConfiguration.put(config.getLanguageTag(), config);
@@ -469,7 +502,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		CodeSystemRequests.prepareUpdateCodeSystem(codeSystemUri.getResourceId())
 				.setSettings(Map.of(
-					CodeSystem.CommonSettings.LOCALES, locales,
+					CodeSystem.CommonSettings.LOCALES, currentLocales,
 					SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, mergedLanguagesConfiguration.values()
 				))
 				.build(author, String.format("Update '%s' settings based on RF2 import", codeSystemUri.getResourceId()))

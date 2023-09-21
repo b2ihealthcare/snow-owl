@@ -25,6 +25,7 @@ import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVers
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -42,8 +43,11 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -686,6 +690,67 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 			.body("status", equalTo(RemoteJobState.FINISHED.name()))
 			.body("response.error", equalTo("There are '1' issues with the import file."));
 	}
+  	
+  	@Test
+  	public void import40AssertCodeSystemLocalesAreKeptAfterImport() {
+
+  		var codeSystemId = branchPath.lastSegment();
+  		
+  		ExtendedLocale customLocale1 = ExtendedLocale.valueOf(String.format("en-x-%s", Concepts.REFSET_LANGUAGE_TYPE_ES));
+  		ExtendedLocale customLocale2 = ExtendedLocale.valueOf(String.format("en-x-%s", Concepts.REFSET_LANGUAGE_TYPE_US));
+  		
+		CodeSystemRequests.prepareNewCodeSystem()
+			.setBranchPath(branchPath.getPath())
+			.setId(codeSystemId)
+			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+			.setTitle(codeSystemId)
+			.setSettings(
+				Map.of(
+					TerminologyResource.CommonSettings.LOCALES,
+					List.of(customLocale1, customLocale2)
+				)
+			)
+			.build(RestExtensions.USER, "Created new code system " + codeSystemId)
+			.execute(getBus())
+			.getSync(1L, TimeUnit.MINUTES);
+  		
+  		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1L, TimeUnit.MINUTES);
+  		
+  		assertThat(codeSystem.getSettings()).containsOnly(
+			Map.entry(
+				TerminologyResource.CommonSettings.LOCALES,
+				List.of(customLocale1.toString(), customLocale2.toString())
+			)
+  		);
+  		
+  		importArchive("SnomedCT_Release_INT_20220623_new_concept_w_empty_line.zip");
+  		
+		/*
+		 * the GB language refset is already present in the parent code system, so locales will be updated by the
+		 * import, but the custom locale setting must be kept, new entries are appended to the end of the list
+		 */
+  		
+  		CodeSystem codeSystemAfterImport = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+  				.buildAsync()
+  				.execute(getBus())
+  				.getSync(1L, TimeUnit.MINUTES);
+  		
+  		assertThat(codeSystemAfterImport.getSettings()).contains(
+			Map.entry(
+				TerminologyResource.CommonSettings.LOCALES,
+				List.of(
+					customLocale1.toString(),
+					customLocale2.toString(),
+					ExtendedLocale.valueOf(String.format("en-x-%s", Concepts.REFSET_LANGUAGE_TYPE_UK)).toString()
+				)
+			)
+  		);
+  		
+  	}
   	
 	private void importDeltaAndValidateBranchHeadTimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
