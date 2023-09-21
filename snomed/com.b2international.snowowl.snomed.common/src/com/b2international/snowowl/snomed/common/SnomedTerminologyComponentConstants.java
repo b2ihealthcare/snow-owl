@@ -61,6 +61,7 @@ public abstract class SnomedTerminologyComponentConstants {
 		Map.entry("900000000000508004", "en-gb"),
 		Map.entry("21000220103", "en-ie"),
 		Map.entry("271000210107", "en-nz"),
+		Map.entry("281000210109", "en-nz-pat"),
 		Map.entry("900000000000509007", "en-us"),
 		Map.entry("608771002", "en-int-gmdn"),
 		Map.entry("999001261000000100", "en-nhs-clinical"),
@@ -68,11 +69,15 @@ public abstract class SnomedTerminologyComponentConstants {
 		Map.entry("999000691000001104", "en-nhs-pharmacy"),
 		Map.entry("999000681000001101", "en-uk-drug"),
 		Map.entry("999001251000000103", "en-uk-ext"),
+			/*
+			 * SNOMED Int uses the Latin American Spanish language refset (450828004) for 'es', but we are keeping the regular
+			 * Spanish language refset, because it makes more sense and to avoid duplicate keys in the map
+			 */
 		Map.entry("448879004", "es"),
 		Map.entry("450828004", "es-ar"),
 		Map.entry("5641000179103", "es-uy"),
 		Map.entry("71000181105", "et-ee"),
-		Map.entry("722130004", "dr"),
+		Map.entry("722130004", "de"),
 		Map.entry("722131000", "fr"),
 		Map.entry("21000172104", "fr-be"),
 		Map.entry("20581000087109", "fr-ca"),
