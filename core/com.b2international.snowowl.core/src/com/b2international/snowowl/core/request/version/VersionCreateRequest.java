@@ -199,6 +199,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 									.toolingId(resourceToVersion.getToolingId())
 									.url(buildVersionUrl(lockContext, resourceToVersion))
 									.resourceSnapshot(resourceToVersion)
+									.status(Resource.ACTIVE_STATUS)
 									.build());
 						});
 						return Boolean.TRUE;

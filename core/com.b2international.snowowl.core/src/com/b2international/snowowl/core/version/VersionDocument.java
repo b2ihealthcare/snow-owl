@@ -299,6 +299,7 @@ public final class VersionDocument implements Serializable {
 					.language(null)
 					.purpose(null)
 					.oid(null)
+					.dependencies(null)
 					.settings(null);
 			}
 		}
