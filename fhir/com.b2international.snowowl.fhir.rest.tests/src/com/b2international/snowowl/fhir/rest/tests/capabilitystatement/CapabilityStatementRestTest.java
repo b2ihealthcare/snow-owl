@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind;
 import com.b2international.snowowl.fhir.core.model.capabilitystatement.CapabilityStatement;
 import com.b2international.snowowl.fhir.core.model.operationdefinition.OperationDefinition;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
@@ -40,6 +41,15 @@ public class CapabilityStatementRestTest extends FhirRestTest {
 			.assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("CapabilityStatement"))
+			.body("url", notNullValue())
+			.body("version", notNullValue())
+			.body("name", notNullValue())
+			.body("title", notNullValue())
+			.body("status", notNullValue())
+			.body("date", notNullValue())
+			.body("description", notNullValue())
+			.body("kind", equalTo(CapabilityStatementKind.INSTANCE.getCodeValue()))
+			.body("fhirVersion", equalTo("4.0.1"))
 			.body("rest[0]", notNullValue())
 			.body("rest[0].resource[0]", notNullValue());
 			

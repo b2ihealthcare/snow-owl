@@ -67,6 +67,10 @@ public class Implementation {
 		return custodian;
 	}
 	
+	public Implementation withUrl(final Uri url) {
+		return new Implementation(getDescription(), url, getCustodian());
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
