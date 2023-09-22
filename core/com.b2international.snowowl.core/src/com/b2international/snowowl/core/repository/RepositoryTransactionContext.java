@@ -38,6 +38,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.*;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
@@ -61,7 +62,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-public final class RepositoryTransactionContext extends DelegatingBranchContext implements TransactionContext {
+public final class RepositoryTransactionContext extends DelegatingBranchContext implements TransactionContext, CommitSubjectSupplier {
 
 	private final String author;
 	private final String commitComment;
@@ -85,6 +86,11 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		this.parentLockContext = parentLockContext;
 		this.staging = context.service(RevisionIndex.class).prepareCommit(path()).withContext(this);
 		bind(StagingArea.class, this.staging);
+	}
+	
+	@Override
+	public Set<String> getSubjectIds() {
+		return Set.of(service(ResourceURI.class).toString());
 	}
 	
 	@Override
