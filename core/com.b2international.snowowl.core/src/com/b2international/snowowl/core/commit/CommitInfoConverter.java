@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package com.b2international.snowowl.core.commit;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,9 +27,13 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.CommitDetail;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.commit.CommitInfo.Builder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.google.common.base.Strings;
 
 /**
@@ -67,6 +69,38 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		}
 		
 		return builder.build();
+	}
+	
+	@Override
+	public void expand(List<CommitInfo> results) {
+		expandResources(results);
+	}
+
+	private void expandResources(List<CommitInfo> results) {
+		if (expand().containsKey(CommitInfo.Expand.RESOURCES)) {
+			final Options expandOptions = expand().getOptions(CommitInfo.Expand.RESOURCES);
+			
+			final Set<String> resourceIds = results.stream().flatMap(c -> c.getSubjects().stream())
+					// convert to generic resource URI and extract the ID from it (this will handle both resources and their versions)
+					.map(subject -> ResourceURI.of("any", subject).getResourceId())
+					.collect(Collectors.toSet());
+			
+			final Map<String, Resource> resourcesById = new HashMap<>(resourceIds.size());
+			ResourceRequests.prepareSearch()
+				.filterByIds(resourceIds)
+				.setExpand(expandOptions.containsKey(EXPAND_OPTION_KEY) ? expandOptions.getOptions(EXPAND_OPTION_KEY) : null)
+				.setFields(expandOptions.containsKey(FIELD_OPTION_KEY) ? expandOptions.getList(FIELD_OPTION_KEY, String.class) : null)
+				.setLimit(1_000)
+				.streamAsync(context(), req -> req.buildAsync())
+				.flatMap(Resources::stream)
+				.forEach(resource -> resourcesById.put(resource.getId(), resource));
+
+			for (CommitInfo commitInfo : results) {
+				// for each subject extract a resource entry from the map
+				final List<Resource> resources = commitInfo.getSubjects().stream().map(subject -> ResourceURI.of("any", subject).getResourceId()).map(resourcesById::get).toList();
+				commitInfo.setResources(new Resources(resources, null, resources.size(), resources.size()));
+			}
+		}
 	}
 
 	private Collection<CommitDetail> getCommitDetails(final Commit commit, Options detailsExpandOptions) {
@@ -130,4 +164,5 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		default: return ChangeKind.UNCHANGED;
 		}
 	}
+	
 }

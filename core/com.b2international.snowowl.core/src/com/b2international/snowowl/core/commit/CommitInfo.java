@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranchPoint;
+import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.repository.RepositoryCommitNotification;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -30,10 +31,11 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder=CommitInfo.Builder.class)
 public final class CommitInfo implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	public static final class Expand {
 		public static final String DETAILS = "details";
+		public static final String RESOURCES = "resources";
 	}
 	
 	public static final class Fields {
@@ -88,6 +90,7 @@ public final class CommitInfo implements Serializable {
 		private Long timestamp;
 		private String groupId;
 		private RevisionBranchPoint mergeSource;
+		private List<String> subjects;
 		private CommitInfoDetails details;
 		
 		public Builder id(final String id) {
@@ -125,6 +128,11 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
+		public Builder subjects(List<String> subjects) {
+			this.subjects = subjects;
+			return this;
+		}
+		
 		public Builder details(CommitInfoDetails details) {
 			this.details = details;
 			return this;
@@ -135,7 +143,7 @@ public final class CommitInfo implements Serializable {
 		}
 		
 		public CommitInfo build() {
-			return new CommitInfo(id, branch, author, comment, timestamp, groupId, mergeSource, details);
+			return new CommitInfo(id, branch, author, comment, timestamp, groupId, mergeSource, subjects, details);
 		}
 
 	}
@@ -147,7 +155,14 @@ public final class CommitInfo implements Serializable {
 	private final Long timestamp;
 	private final String groupId;
 	private final RevisionBranchPoint mergeSource;
+	private final List<String> subjects;
 	private final CommitInfoDetails details;
+	
+	///////////////////////
+	// EXPANDABLE FIELDS //
+	///////////////////////
+	
+	private Resources resources;
 	
 	CommitInfo(
 			final String id,
@@ -157,6 +172,7 @@ public final class CommitInfo implements Serializable {
 			final Long timestamp, 
 			final String groupId,
 			final RevisionBranchPoint mergeSource,
+			final List<String> subjects,
 			final CommitInfoDetails details) {
 		this.id = id;
 		this.branch = branch;
@@ -165,6 +181,7 @@ public final class CommitInfo implements Serializable {
 		this.timestamp = timestamp;
 		this.groupId = groupId;
 		this.mergeSource = mergeSource;
+		this.subjects = subjects;
 		this.details = details;
 	}
 
@@ -200,8 +217,20 @@ public final class CommitInfo implements Serializable {
 		return mergeSource;
 	}
 	
+	public List<String> getSubjects() {
+		return subjects;
+	}
+	
 	public CommitInfoDetails getDetails() {
 		return details;
+	}
+	
+	public Resources getResources() {
+		return resources;
+	}
+	
+	public void setResources(Resources resources) {
+		this.resources = resources;
 	}
 
 }
