@@ -30,6 +30,7 @@ import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.CommitSubject;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
@@ -66,7 +67,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Script(
 		name="snomedFirst", 
 		script="return (doc[\"toolingId\"].size() != 0 && doc.toolingId.value.equals(\"snomed\")) ? \"0\" : \"1\"")
-public final class ResourceDocument extends RevisionDocument {
+public final class ResourceDocument extends RevisionDocument implements CommitSubject {
 
 	public static final String TYPE = "resource";
 	
@@ -673,6 +674,11 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public SortedSet<DependencyDocument> getDependencies() {
 		return dependencies;
+	}
+	
+	@Override
+	public String extractSubjectId() {
+		return getResourceURI().toString();
 	}
 	
 }

@@ -28,6 +28,7 @@ import com.b2international.index.Doc;
 import com.b2international.index.ID;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.CommitSubject;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.Dependency;
@@ -49,7 +50,7 @@ import com.google.common.base.MoreObjects;
  */
 @Doc(type = VersionDocument.TYPE)
 @JsonDeserialize(builder = VersionDocument.Builder.class)
-public final class VersionDocument implements Serializable {
+public final class VersionDocument implements CommitSubject, Serializable {
 
 	private static final long serialVersionUID = 2L;
 
@@ -550,6 +551,11 @@ public final class VersionDocument implements Serializable {
 	
 	public SortedSet<DependencyDocument> getDependencies() {
 		return dependencies;
+	}
+	
+	@Override
+	public String extractSubjectId() {
+		return getResource().toString();
 	}
 	
 	// additional helpers

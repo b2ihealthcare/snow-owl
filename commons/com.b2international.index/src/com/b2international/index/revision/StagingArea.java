@@ -78,7 +78,7 @@ public final class StagingArea {
 	private SetMultimap<Class<?>, String> revisionsToReviseOnMergeSource;
 	private SetMultimap<Class<?>, String> externalRevisionsToReviseOnMergeSource;
 	private Object context;
-
+	
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
 		this.mappings = index.admin().mappings();
@@ -366,6 +366,7 @@ public final class StagingArea {
 		final Multimap<ObjectId, ObjectId> changedComponentsByContainer = HashMultimap.create();
 		final Multimap<ObjectId, ObjectId> removedComponentsByContainer = HashMultimap.create();
 		final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
+		final SortedSet<String> subjects = new TreeSet<>();
 
 		stagedObjects.entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
@@ -405,6 +406,9 @@ public final class StagingArea {
 					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(document.getClass(), key.id());
 					}
+					if (rev instanceof CommitSubject subject) {
+						subjects.add(subject.extractSubjectId());
+					}
 				} else {
 					newComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getDocType(document.getClass())), key);
 				}
@@ -428,6 +432,10 @@ public final class StagingArea {
 					
 					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+					}
+					
+					if (rev instanceof CommitSubject subject) {
+						subjects.add(subject.extractSubjectId());
 					}
 					
 					writer.put(rev);
@@ -548,7 +556,7 @@ public final class StagingArea {
 		} else {
 			details = Collections.emptyList();
 		}
-		
+
 		// free up memory before committing 
 		clear();
 		newComponentsByContainer.clear();
@@ -564,6 +572,11 @@ public final class StagingArea {
 		// raise watermark logs if above thresholds
 		reportWarningIfCommitWatermarkExceeded(details, author, commitComment);
 		
+		// make sure we populate subjects from the current supplied context, if it is a CommitSubjectSupplier
+		if (context instanceof CommitSubjectSupplier css) {
+			subjects.addAll(css.getSubjectIds());
+		}
+		
 		// generate a commit entry that marks the end of the commit and contains all changes in a details property
 		Commit commitDoc = commit
 				.id(UUIDs.randomBase64UUID())
@@ -573,6 +586,7 @@ public final class StagingArea {
 				.comment(commitComment)
 				.timestamp(timestamp)
 				.details(details)
+				.subjects(subjects)
 				.mergeSource(!CompareUtils.isEmpty(mergeSources) ? mergeSources.last() : null)
 				.squashMerge(!CompareUtils.isEmpty(mergeSources) ? squashMerge : null)
 				.build();

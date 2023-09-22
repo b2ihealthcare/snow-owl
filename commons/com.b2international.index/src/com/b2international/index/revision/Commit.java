@@ -65,6 +65,7 @@ public final class Commit implements WithScore {
 		private String groupId;
 		private RevisionBranchPoint mergeSource;
 		private Boolean squashMerge;
+		private SortedSet<String> subjects;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -91,7 +92,7 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
-		public Builder groupId(String groupId) {
+		public Builder groupId(final String groupId) {
 			this.groupId = groupId;
 			return this;
 		}
@@ -106,13 +107,18 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
-		public Builder squashMerge(Boolean squashMerge) {
+		public Builder squashMerge(final Boolean squashMerge) {
 			this.squashMerge = squashMerge;
 			return this;
 		}
 		
+		public Builder subjects(final SortedSet<String> subjects) {
+			this.subjects = subjects;
+			return this;
+		}
+		
 		public Commit build() {
-			return new Commit(id, branch, author, comment, timestamp, groupId, details, mergeSource, squashMerge);
+			return new Commit(id, branch, author, comment, timestamp, groupId, details, mergeSource, squashMerge, subjects);
 		}
 
 	}
@@ -206,6 +212,9 @@ public final class Commit implements WithScore {
 		public static final String MERGE_SOURCE = "mergeSource";
 		private static final String DETAILS_OBJECT = "details.objects";
 		private static final String DETAILS_COMPONENT = "details.components";
+		
+		public static final String SUBJECTS = "subjects";
+		
 		// Sort keys
 		public static final Set<String> ALL = ImmutableSet.of(BRANCH, AUTHOR, TIMESTAMP);
 	}
@@ -230,6 +239,8 @@ public final class Commit implements WithScore {
 	
 	private float score = 0.0f;
 	
+	private final SortedSet<String> subjects; 
+	
 	@JsonIgnore
 	private transient Multimap<String, CommitDetail> detailsByObject;
 	
@@ -242,7 +253,8 @@ public final class Commit implements WithScore {
 			final String groupId,
 			final List<CommitDetail> details, 
 			final RevisionBranchPoint mergeSource,
-			final Boolean squashMerge) {
+			final Boolean squashMerge,
+			final SortedSet<String> subjects) {
 		this.id = id;
 		this.branch = branch;
 		this.author = author;
@@ -251,6 +263,7 @@ public final class Commit implements WithScore {
 		this.groupId = groupId;
 		this.mergeSource = mergeSource;
 		this.squashMerge = squashMerge;
+		this.subjects = subjects;
 		this.details = Collections3.toImmutableList(details);
 	}
 
@@ -299,6 +312,10 @@ public final class Commit implements WithScore {
 	
 	public Boolean getSquashMerge() {
 		return squashMerge;
+	}
+	
+	public SortedSet<String> getSubjects() {
+		return subjects;
 	}
 	
 	@JsonIgnore

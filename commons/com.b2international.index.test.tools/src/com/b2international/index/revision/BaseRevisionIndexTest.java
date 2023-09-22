@@ -139,8 +139,8 @@ public abstract class BaseRevisionIndexTest {
 		return index().read(branch, index -> index.get(type, key));
 	}
 	
-	protected final void indexRevision(final String branchPath, final Revision... revisions) {
-		commit(branchPath, Arrays.asList(revisions));
+	protected final Commit indexRevision(final String branchPath, final Revision... revisions) {
+		return commit(branchPath, Arrays.asList(revisions));
 	}
 	
 	protected final <T extends Revision> Commit indexChange(final String branchPath, final T oldRevision, final T newRevision) {
