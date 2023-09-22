@@ -402,7 +402,7 @@ public final class DocumentMapping {
 	}
 	
 	public static boolean isValidField(Field field) {
-		return !Modifier.isStatic(field.getModifiers()) && !field.isAnnotationPresent(JsonIgnore.class);
+		return !Modifier.isStatic(field.getModifiers()) && !field.isAnnotationPresent(JsonIgnore.class) && (!field.isAnnotationPresent(com.b2international.index.mapping.Field.class) || !field.getAnnotation(com.b2international.index.mapping.Field.class).ignore());
 	}
 
 	public String getIdFieldValue(Object object) {

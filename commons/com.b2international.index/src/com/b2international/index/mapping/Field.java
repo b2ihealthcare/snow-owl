@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,5 +48,10 @@ public @interface Field {
 	 * @return whether to make the field available in search or just store only, defaults to make any field available for search always.
 	 */
 	boolean index() default true;
+
+	/**
+	 * @return whether to ignore the field during index mapping or add it to the schema
+	 */
+	boolean ignore() default false;
 
 }
