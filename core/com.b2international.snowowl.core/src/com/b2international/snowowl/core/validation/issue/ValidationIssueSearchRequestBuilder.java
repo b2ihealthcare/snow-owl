@@ -38,6 +38,10 @@ public final class ValidationIssueSearchRequestBuilder
 	public ValidationIssueSearchRequestBuilder filterByResultId(final String resultId) {
 		return addOption(OptionKey.RESULT_ID, resultId);
 	}
+	
+	public ValidationIssueSearchRequestBuilder filterByResultIds(final Iterable<String> resultIds) {
+		return addOption(OptionKey.RESULT_ID, resultIds);
+	}
 
 	public ValidationIssueSearchRequestBuilder filterByRule(final String ruleId) {
 		return addOption(OptionKey.RULE_ID, ruleId);

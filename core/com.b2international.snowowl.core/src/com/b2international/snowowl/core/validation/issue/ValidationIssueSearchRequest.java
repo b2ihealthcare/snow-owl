@@ -106,7 +106,7 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationIssue.Fields.ID, ids));
 		
 		if (containsKey(OptionKey.RESULT_ID)) {
-			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.RESULT_ID, getString(OptionKey.RESULT_ID)));
+			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RESULT_ID, getCollection(OptionKey.RESULT_ID, String.class)));
 		} else {
 			// Use "shared" result ID as the default value if not specified
 			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.RESULT_ID, ValidationRequests.SHARED_VALIDATION_RESULT_ID));
