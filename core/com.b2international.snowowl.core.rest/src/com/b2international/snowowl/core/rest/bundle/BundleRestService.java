@@ -110,16 +110,13 @@ public class BundleRestService extends AbstractRestService {
 		@PathVariable(value="bundleId", required = true) 
 		final String bundleId,
 
-		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
-		final Long timestamp,
-		
 		@ParameterObject
 		final ResourceSelectors selectors) {
 		
-		return ResourceRequests.bundles().prepareGet(bundleId.contains(RevisionIndex.AT_CHAR) || timestamp == null ? Bundle.uri(bundleId) : Bundle.uri(bundleId).withTimestampPart(RevisionIndex.AT_CHAR + timestamp))
+		return ResourceRequests.bundles().prepareGet(Bundle.uri(bundleId))
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
-			.buildAsync(timestamp)
+			.buildAsync()
 			.execute(getBus());
 	}
 	

@@ -24,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -117,13 +116,10 @@ public class CodeSystemRestService extends AbstractRestService {
 		@PathVariable(value="codeSystemId", required = true) 
 		final String codeSystemId,
 		
-		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
-		final Long timestamp,
-		
 		@ParameterObject
 		final ResourceSelectors selectors) {
 		
-		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId.contains(RevisionIndex.AT_CHAR) || timestamp == null ? CodeSystem.uri(codeSystemId) : CodeSystem.uri(codeSystemId).withTimestampPart(RevisionIndex.AT_CHAR + timestamp))
+		return CodeSystemRequests.prepareGetCodeSystem(CodeSystem.uri(codeSystemId))
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
 			.buildAsync()
