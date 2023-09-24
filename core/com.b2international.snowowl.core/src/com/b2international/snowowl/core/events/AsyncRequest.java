@@ -54,18 +54,22 @@ public final class AsyncRequest<R> {
 		this.requestHeaders = requestHeaders == null ? null : ImmutableMap.copyOf(requestHeaders);
 		return this;
 	}
+
+	public AsyncRequest<R> withContext(ServiceProvider context) {
+		User user = context.optionalService(User.class).orElse(null);
+		if (user != null) {
+			return withContext(Map.of(User.class, user));	
+		} else {
+			return this;
+		}
+	}
 	
 	public AsyncRequest<R> withContext(Map<Class<?>, Object> context) {
 		return context == null ? this : new AsyncRequest<>(new RequestWithContext<ServiceProvider, R>(request, context));
 	}
-
+	
 	public Promise<R> executeWithContext(ServiceProvider context) {
-		User user = context.optionalService(User.class).orElse(null);
-		if (user != null) {
-			return withContext(Map.of(User.class, user)).execute(context.service(IEventBus.class));	
-		} else {
-			return execute(context.service(IEventBus.class));
-		}
+		return withContext(context).execute(context.service(IEventBus.class));
 	}
 	
 	/**
