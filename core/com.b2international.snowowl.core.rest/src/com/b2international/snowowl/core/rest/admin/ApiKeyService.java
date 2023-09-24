@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.UnauthorizedException;
-import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -41,25 +40,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class ApiKeyService extends AbstractRestService {
 
-	@Operation(deprecated = true, description = "Use the `POST /token` endpoint instead")
-	@PostMapping("/login")
-	public User login(
-			@Parameter(name = "credentials", description = "The user credentials.", required = true) 
-			@RequestBody Credentials credentials) {
-		try {
-			return UserRequests.prepareGenerateApiKey()
-					.setUsername(credentials.getUsername())
-					.setPassword(credentials.getPassword())
-					.setToken(credentials.getToken())
-					.buildAsync()
-					.execute(getBus())
-					.getSync();
-		} catch (UnauthorizedException e) {
-			// convert HTTP 401 to HTTP 400 in this endpoint
-			throw new BadRequestException(e.getMessage());
-		}
-	}
-	
 	@Operation(description = "Generates a new API key using the given configuration.")
 	@PostMapping("/token")
 	public User token(
