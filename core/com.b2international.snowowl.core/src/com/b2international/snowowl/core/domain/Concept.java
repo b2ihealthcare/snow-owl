@@ -84,14 +84,6 @@ public final class Concept extends BaseComponent {
 		return codeSystemUri;
 	}
 	
-	/**
-	 * @return the codeSystem URI this concept is coming from
-	 * @deprecated - since all code systems identifiable via URIs we can simplify the API and say {@link #getCodeSystem()} or in FHIR terms just system, but we don't go that far
-	 */
-	public ResourceURI getCodeSystemUri() {
-		return codeSystemUri;
-	}
-	
 	public String getTerm() {
 		return term;
 	}
