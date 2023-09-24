@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
@@ -231,7 +232,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 							
 							if (issueToCopy == null) {
 								validationIssue = new ValidationIssue(
-									UUID.randomUUID().toString(),
+									IDs.base62UUID(),
 									resultId,
 									ruleId,
 									ComponentURI.of(resourceURI, componentIdentifier),

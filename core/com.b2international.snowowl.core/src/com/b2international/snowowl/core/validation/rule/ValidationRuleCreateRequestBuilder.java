@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
  */
 package com.b2international.snowowl.core.validation.rule;
 
-import java.util.UUID;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
@@ -80,7 +79,7 @@ public final class ValidationRuleCreateRequestBuilder
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
 		ValidationRuleCreateRequest req = new ValidationRuleCreateRequest();
-		req.setId(Strings.isNullOrEmpty(id) ? UUID.randomUUID().toString() : id);
+		req.setId(Strings.isNullOrEmpty(id) ? IDs.base62UUID() : id);
 		req.setToolingId(toolingId);
 		req.setMessageTemplate(messageTemplate);
 		req.setSeverity(severity);
