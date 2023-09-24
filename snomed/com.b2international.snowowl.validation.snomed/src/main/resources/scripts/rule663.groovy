@@ -25,7 +25,7 @@ if (params.isUnpublishedOnly) {
 		.from(SnomedRelationshipIndexEntry.class)
 		.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.TYPE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 		.where(
-			Expressions.builder()
+			Expressions.bool()
 				.filter(SnomedRelationshipIndexEntry.Expressions.active())
 				.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 			.build()
@@ -54,7 +54,7 @@ if (params.isUnpublishedOnly) {
 					.from(SnomedConceptDocument.class)
 					.fields(SnomedConceptDocument.Fields.ID)
 					.where(
-						Expressions.builder()
+						Expressions.bool()
 							.filter(SnomedConceptDocument.Expressions.ids(ids))
 							.filter(SnomedConceptDocument.Expressions.inactive())
 						.build()
@@ -85,7 +85,7 @@ if (params.isUnpublishedOnly) {
 				.from(SnomedRelationshipIndexEntry.class)
 				.fields(SnomedRelationshipIndexEntry.Fields.ID)
 				.where(
-					Expressions.builder()
+					Expressions.bool()
 						.filter(SnomedRelationshipIndexEntry.Expressions.active())
 						.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactiveConceptIds))
 						.should(SnomedRelationshipIndexEntry.Expressions.typeIds(inactiveConceptIds))

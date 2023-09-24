@@ -38,10 +38,10 @@ if (attributeHierarchyConceptIds.isEmpty()) {
 Set<ComponentIdentifier> issues = Sets.newHashSet()
 
 ExpressionBuilder owlAxiomMemberQuery = Expressions
-	.builder()
+	.bool()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
-	.filter(Expressions.builder()
+	.filter(Expressions.bool()
 		.should(nestedMatch("classAxiomRelationships", exists("typeId")))
 		.should(nestedMatch("gciAxiomRelationships", exists("typeId")))
 	.build())
@@ -67,7 +67,7 @@ owlAxiomMemberQueryResult.forEachOrdered({relHits ->
 })
 
 ExpressionBuilder relationshipQuery = Expressions
-	.builder()
+	.bool()
 	.filter(SnomedRelationshipIndexEntry.Expressions.active())
 	.mustNot(SnomedRelationshipIndexEntry.Expressions.typeIds(attributeHierarchyConceptIds))
 

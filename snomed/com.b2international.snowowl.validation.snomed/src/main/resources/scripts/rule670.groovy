@@ -26,7 +26,7 @@ final String script = String.format("return %s + '_' + %s + '_' + %s",
 					"doc.referencedComponentId.value",
 					"doc.targetComponentId.value")
 
-final ExpressionBuilder queryBuilder = Expressions.builder()
+final ExpressionBuilder queryBuilder = Expressions.bool()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.ASSOCIATION)))
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active(true))
 	

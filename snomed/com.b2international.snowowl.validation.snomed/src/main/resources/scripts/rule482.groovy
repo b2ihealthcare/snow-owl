@@ -29,7 +29,7 @@ def modules = SnomedRequests.prepareSearchConcept()
 	.execute(ctx)
 	.collect({it.getId()})
 
-ExpressionBuilder filterExpressionBuilder = Expressions.builder()
+ExpressionBuilder filterExpressionBuilder = Expressions.bool()
 	.filter(SnomedDescriptionIndexEntry.Expressions.active())
 	.filter(SnomedDescriptionIndexEntry.Expressions.modules(modules))
 	

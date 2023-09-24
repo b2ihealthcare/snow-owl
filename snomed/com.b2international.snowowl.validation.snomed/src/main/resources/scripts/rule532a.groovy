@@ -41,11 +41,11 @@ def pendingMoveDescriptions = SnomedRequests.prepareSearchMember()
 	.execute(ctx)
 	.collect({SnomedReferenceSetMember member -> member.getReferencedComponent().getId()})
 
-ExpressionBuilder filterExpressionBuilder = Expressions.builder()
+ExpressionBuilder filterExpressionBuilder = Expressions.bool()
 		.filter(SnomedDescriptionIndexEntry.Expressions.active())
 		.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
 		.should(SnomedDescriptionIndexEntry.Expressions.ids(pendingMoveDescriptions)) // either pending move or no description inactivity indicator
-		.should(Expressions.builder()
+		.should(Expressions.bool()
 			.mustNot(SnomedDescriptionIndexEntry.Expressions.activeMemberOf(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 			.build())
 

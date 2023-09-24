@@ -44,7 +44,7 @@ if (params.isUnpublishedOnly) {
 	// otherwise iterate over them and check the invalid ID reference
 	Hits<SnomedRefSetMemberIndexEntry> unpublishedFirstHits = searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
 		.where(
-			Expressions.builder()
+			Expressions.bool()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_OWL_AXIOM))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
@@ -78,7 +78,7 @@ if (params.isUnpublishedOnly) {
 	}
 }
 
-ExpressionBuilder invalidOWLAxiomExpression = Expressions.builder()
+ExpressionBuilder invalidOWLAxiomExpression = Expressions.bool()
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_OWL_AXIOM))
 		.should(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept(inactiveConceptIds.get()))

@@ -17,7 +17,7 @@ import com.google.common.collect.Lists
 
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
-ExpressionBuilder effectiveTimeExpressionBuilder =  Expressions.builder().filter(SnomedRelationshipIndexEntry.Expressions.active())
+ExpressionBuilder effectiveTimeExpressionBuilder =  Expressions.bool().filter(SnomedRelationshipIndexEntry.Expressions.active())
 if (params.isUnpublishedOnly) {
 	effectiveTimeExpressionBuilder.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }

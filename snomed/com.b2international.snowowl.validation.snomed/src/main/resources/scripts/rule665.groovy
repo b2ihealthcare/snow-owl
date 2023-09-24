@@ -31,7 +31,7 @@ Set<String> deprecatedCharacheristicTypes = SnomedRequests.prepareSearchConcept(
 	.execute(ctx)
 	.collect({ SnomedConcept c -> c.getId() })
 	
-ExpressionBuilder fitlerExpressionBuilder = Expressions.builder()
+ExpressionBuilder fitlerExpressionBuilder = Expressions.bool()
 		.filter(SnomedRelationshipIndexEntry.Expressions.active())
 		.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(deprecatedCharacheristicTypes))
 		

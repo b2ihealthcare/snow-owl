@@ -60,15 +60,6 @@ public class Expressions {
 
 	}
 
-	
-	/**
-	 * @return a new boolean query expression builder
-	 * @deprecated - use {@link Expressions#bool()} instead
-	 */
-	public static ExpressionBuilder builder() {
-		return bool();
-	}
-	
 	/**
 	 * @return a new boolean query expression builder
 	 */

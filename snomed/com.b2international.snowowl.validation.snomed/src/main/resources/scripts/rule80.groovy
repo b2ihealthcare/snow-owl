@@ -18,7 +18,7 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 	
 List<ComponentIdentifier> issues = Lists.newArrayList();
 
-ExpressionBuilder filterExpressionBuilder = Expressions.builder()
+ExpressionBuilder filterExpressionBuilder = Expressions.bool()
 	.filter(SnomedComponentDocument.Expressions.active())
 	.filter(SnomedComponentDocument.Expressions.modules([Concepts.MODULE_SCT_CORE, Concepts.MODULE_SCT_MODEL_COMPONENT]))
 
@@ -39,7 +39,7 @@ Set<String> coreConceptIds = searcher
 Set<String> coreConceptsWithCoreParent = searcher.search(Query.select(String.class)
 	.from(SnomedRelationshipIndexEntry.class)
 	.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
-	.where(Expressions.builder()
+	.where(Expressions.bool()
 		.filter(SnomedRelationshipIndexEntry.Expressions.active())
 		.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
 		.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(coreConceptIds))
@@ -53,7 +53,7 @@ Set<String> coreConceptsWithCoreParent = searcher.search(Query.select(String.cla
 searcher.search(Query.select(String.class)
 	.from(SnomedRefSetMemberIndexEntry.class)
 	.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
-	.where(Expressions.builder()
+	.where(Expressions.bool()
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetIds([REFSET_OWL_AXIOM]))
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(coreConceptIds))

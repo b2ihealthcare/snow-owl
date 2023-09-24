@@ -29,7 +29,7 @@ if (params.isUnpublishedOnly) {
 			.from(SnomedDescriptionIndexEntry.class)
 			.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 			.where(
-				Expressions.builder()
+				Expressions.bool()
 					.filter(SnomedDescriptionIndexEntry.Expressions.ids(descriptionIds))
 					.filter(SnomedDescriptionIndexEntry.Expressions.active(active))
 				.build()
@@ -48,7 +48,7 @@ if (params.isUnpublishedOnly) {
 			.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedRefSetMemberIndexEntry.Fields.VALUE_ID)
 			.where(
 				// active, unpublished description inactivation refset members only
-				Expressions.builder()
+				Expressions.bool()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
@@ -85,7 +85,7 @@ if (params.isUnpublishedOnly) {
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.ID)
 				.where(
-					Expressions.builder()
+					Expressions.bool()
 						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactiveConceptIds))
 						.filter(SnomedDescriptionIndexEntry.Expressions.active(active))
 					.build()
@@ -98,7 +98,7 @@ if (params.isUnpublishedOnly) {
 					
 		//	println "Found ${descriptionIds.size()} ${active ? 'active' : 'inactive'} descriptions on inactive concepts..."
 		
-		ExpressionBuilder memberQuery = Expressions.builder()
+		ExpressionBuilder memberQuery = Expressions.bool()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
@@ -132,7 +132,7 @@ if (params.isUnpublishedOnly) {
 		//	println "Found ${issues.size()} issues"
 	}
 	
-	ExpressionBuilder filterInactiveConceptsExpressionBuilder = Expressions.builder()
+	ExpressionBuilder filterInactiveConceptsExpressionBuilder = Expressions.bool()
 			.filter(SnomedConceptDocument.Expressions.inactive())
 	
 	List<String> inactiveConceptIds = []

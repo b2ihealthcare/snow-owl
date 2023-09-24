@@ -22,7 +22,7 @@ def RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 def Set<ComponentIdentifier> issues = []
 
 // common query part
-final ExpressionBuilder queryBuilder = Expressions.builder()
+final ExpressionBuilder queryBuilder = Expressions.bool()
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active(true))
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.SIMPLE, SnomedRefSetType.LANGUAGE, SnomedRefSetType.ATTRIBUTE_VALUE]))
 
@@ -36,7 +36,7 @@ if (params.isUnpublishedOnly) {
 		.from(SnomedRefSetMemberIndexEntry.class)
 		.fields(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 		.where(
-			Expressions.builder()
+			Expressions.bool()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.filter(queryBuilder.build())
 			.build()

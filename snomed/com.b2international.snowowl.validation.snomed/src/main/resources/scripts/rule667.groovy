@@ -43,7 +43,7 @@ final List<ComponentIdentifier> issues =  new ArrayList<>();
 for (Integer length : descriptionTypesByMaxLength.keySet()) {
     final Collection<String> descriptionTypes = descriptionTypesByMaxLength.get(length)
 
-    final ExpressionBuilder activeDescriptionFilter = Expressions.builder()
+    final ExpressionBuilder activeDescriptionFilter = Expressions.bool()
             .filter(SnomedDescriptionIndexEntry.Expressions.active())
             .filter(SnomedDescriptionIndexEntry.Expressions.types(descriptionTypes))
             .filter(Expressions.scriptQuery("doc['term'].value.length() > params.length", ImmutableMap.of("length", length)))

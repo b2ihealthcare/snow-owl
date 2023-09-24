@@ -46,7 +46,7 @@ if (params.isUnpublishedOnly) {
 		.from(SnomedDescriptionIndexEntry.class)
 		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.TERM, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 		.where(
-			Expressions.builder()
+			Expressions.bool()
 				.filter(SnomedDescriptionIndexEntry.Expressions.active())
 				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
 				.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
@@ -80,7 +80,7 @@ if (params.isUnpublishedOnly) {
 		.from(SnomedDescriptionIndexEntry.class)
 		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, SnomedDescriptionIndexEntry.Fields.TERM)
 		.where(
-			Expressions.builder()
+			Expressions.bool()
 				.filter(SnomedDescriptionIndexEntry.Expressions.active())
 				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
 				.filter(SnomedDescriptionIndexEntry.Expressions.matchTerm(descriptionsByTerm.keySet())) // send in all unpublished terms
@@ -109,7 +109,7 @@ if (params.isUnpublishedOnly) {
 	searcher
 		.aggregate(AggregationBuilder.bucket("rule664", String.class, SnomedDescriptionIndexEntry.class)
 				.query(
-						Expressions.builder()
+						Expressions.bool()
 						.filter(SnomedDescriptionIndexEntry.Expressions.active())
 						.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
 						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(activeConceptIds.get()))
