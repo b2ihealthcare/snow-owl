@@ -170,8 +170,4 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		return index.isEmpty();
 	}
 	
-	private String generateRevisionId() {
-		return UUID.randomUUID().toString();
-	}
-
 }
