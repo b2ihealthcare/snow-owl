@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 package com.b2international.snowowl.fhir.core.request.bundle;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -46,7 +46,7 @@ public class FhirBundleSearchRequest extends SearchResourceRequest<RepositoryCon
 	}
 	
 	private Builder prepareBundle() {
-		return Bundle.builder(UUID.randomUUID().toString())
+		return Bundle.builder(IDs.base62UUID())
 				.type(BundleType.SEARCHSET)
 				.meta(Meta.builder()
 						.addTag(CompareUtils.isEmpty(fields()) ? null : Coding.CODING_SUBSETTED)

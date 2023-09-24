@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.util.UUID;
-
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -61,7 +60,7 @@ public class FhirStructureDefinitionController extends AbstractFhirController {
 		
 		String uri = MvcUriComponentsBuilder.fromController(FhirStructureDefinitionController.class).build().toString();
 		
-		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
+		Bundle.Builder builder = Bundle.builder(IDs.base62UUID())
 			.type(BundleType.SEARCHSET)
 			.addLink(uri);
 		
