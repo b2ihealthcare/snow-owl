@@ -16,10 +16,8 @@
 package com.b2international.snowowl.core.rest.suggest;
 
 import java.util.List;
-import java.util.Map;
 
 import org.elasticsearch.common.Strings;
-import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +27,6 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.suggest.ConceptSuggestionBulkRequestBuilder;
 import com.b2international.snowowl.core.request.suggest.ConceptSuggestionRequestBuilder;
-import com.b2international.snowowl.core.request.suggest.Suggester;
 import com.b2international.snowowl.core.request.suggest.Suggestions;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.CoreApiConfig;
@@ -50,29 +47,6 @@ public class SuggestRestService extends AbstractRestService {
 	
 	@Operation(
 		summary = "Concept suggestion", 
-		description = "Returns an actual concept of the specified code system based on the source term. Deprecated: due to the introduction of the selectable suggester implementation, the GET endpoint is no longer supported. Use the POST endpoint to properly configure your request.",
-		deprecated = true
-	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "400", description = "Bad Request") 
-	})
-	@GetMapping
-	public Promise<Suggestions> getSuggest(
-		@ParameterObject
-		final SuggestRestParameters params,
-		
-		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
-		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
-		final String acceptLanguage) {
-		
-		return prepareSuggestRequest(params, acceptLanguage)
-				.buildAsync()
-				.execute(getBus());
-	}
-
-	@Operation(
-		summary = "Concept suggestion", 
 		description = "Returns an actual concept of the specified code system based on the source term.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
@@ -86,7 +60,9 @@ public class SuggestRestService extends AbstractRestService {
 		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
 		@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
 		final String acceptLanguage) {
-		return getSuggest(body, acceptLanguage);
+		return prepareSuggestRequest(body, acceptLanguage)
+				.buildAsync()
+				.execute(getBus());
 	}
 	
 	@Operation(
@@ -132,27 +108,10 @@ public class SuggestRestService extends AbstractRestService {
 	
 	private ConceptSuggestionRequestBuilder prepareSuggestRequest(final SuggestRestParameters params, final String acceptLanguage) {
 		return CodeSystemRequests.prepareSuggestConcepts()
-				// set the old parameters first, then if any new parameters present, override the old ones
-				// configure from
-				.setFrom(params.getCodeSystemPath())
 				.setFrom(params.getFrom())
-				
-				// configure like
-				.filterByTerm(params.getTerm())
-				.filterByQuery(params.getQuery())
-				.setLike(params.getQuery() == null ? null : List.of(params.getQuery()))
 				.setLike(params.getLike())
-				
-				// configure unlike
-				.filterByExclusion(params.getMustNotQuery())
-				.setUnlike(params.getMustNotQuery() == null ? null : List.of(params.getMustNotQuery()))
 				.setUnlike(params.getUnlike())
-				
-				// configure suggester
-				.setMinOccurrenceCount(params.getMinOccurrenceCount())
-				.setSuggester(params.getSuggester() == null && params.getTerm() != null ? Suggester.of("term", Map.of()) : params.getSuggester())
-
-				// configure limits, locales, display
+				.setSuggester(params.getSuggester())
 				.setLimit(params.getLimit())
 				.setLocales(Strings.isNullOrEmpty(params.getAcceptLanguage()) ? acceptLanguage : params.getAcceptLanguage())
 				.setPreferredDisplay(params.getPreferredDisplay());

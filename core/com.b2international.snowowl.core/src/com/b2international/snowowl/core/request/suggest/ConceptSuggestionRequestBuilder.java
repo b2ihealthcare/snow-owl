@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,6 @@ public final class ConceptSuggestionRequestBuilder
 		implements SystemRequestBuilder<Suggestions> {
 
 	private Suggester suggester;
-	
-	@Deprecated
-	private Integer topTokenCount;
-	
-	@Deprecated
-	private Integer minOccurrenceCount;
 	
 	/**
 	 * Selects the substrate where the suggestions can come from. 
@@ -105,66 +99,6 @@ public final class ConceptSuggestionRequestBuilder
 	}
 	
 	/**
-	 * Filters matches by a query expression defined in the target code system's query language.
-	 * 
-	 * @param query
-	 *            - the query expression
-	 * @return
-	 * @deprecated - replaced with {@link #setLike(String)} configuration parameter, will be removed in Snow Owl 9
-	 */
-	public ConceptSuggestionRequestBuilder filterByQuery(String query) {
-		return setLike(query);
-	}
-
-	/**
-	 * Filter by multiple query expressions defined in the target code system's query language.
-	 * 
-	 * @param inclusions
-	 *            - query expressions that include matches
-	 * @return
-	 * @deprecated - replaced with {@link #setLike(Iterable)} configuration parameter, will be removed in Snow Owl 9
-	 */
-	public ConceptSuggestionRequestBuilder filterByInclusions(Iterable<String> inclusions) {
-		return setLike(inclusions);
-	}
-
-	/**
-	 * Exclude matches by specifying one exclusion query defined in the target code system's query language.
-	 * 
-	 * @param exclusion
-	 *            - query expression that exclude matches
-	 * @return
-	 * @deprecated - replaced with {@link #setUnlike(String)} configuration parameter, will be removed in Snow Owl 9
-	 */
-	public ConceptSuggestionRequestBuilder filterByExclusion(String exclusion) {
-		return setUnlike(exclusion);
-	}
-	
-	/**
-	 * Exclude matches by specifying one or more exclusion queries defined in the target code system's query language.
-	 * 
-	 * @param exclusions
-	 *            - query expression that exclude matches
-	 * @return
-	 * @deprecated - replaced with {@link #setUnlike(Iterable)} configuration parameter, will be removed in Snow Owl 9
-	 */
-	public ConceptSuggestionRequestBuilder filterByExclusions(Iterable<String> exclusions) {
-		return setUnlike(exclusions);
-	}
-	
-	/**
-	 * Filter matches by a specified term. Please note that since Snow Owl 8.5 calling this method automatically configures the default term-based suggester, overriding the current suggester value.
-	 * 
-	 * @param term
-	 *            - term to filter matches by
-	 * @return
-	 * @deprecated - replaced with {@link #setLike(String)}, will be removed in Snow Owl 9
-	 */
-	public ConceptSuggestionRequestBuilder filterByTerm(final String term) {
-		return setLike(term);
-	}
-	
-	/**
 	 * Set the {@link SnomedDisplayTermType} of the returning term in case of SNOMED.
 	 * 
 	 * @param display
@@ -175,43 +109,8 @@ public final class ConceptSuggestionRequestBuilder
 		return addOption(OptionKey.DISPLAY, display);
 	}
 	
-	/**
-	 * Suggested concepts are based on term queries that use the top "n" tokens most frequently occurring in 
-	 * the suggestion base set, defined by the method above. The cut-off value of "n" is set by this method.
-	 * 
-	 * @param topTokenCount the number of tokens to consider for suggestions (default is 9)
-	 * @return
-	 * @deprecated - replaced with specific suggester algorithm configuration, will be removed in Snow Owl 9
-	 */
-	public ConceptSuggestionRequestBuilder setTopTokenCount(Integer topTokenCount) {
-		this.topTokenCount = topTokenCount;
-		return getSelf();
-	}
-	
-	/**
-	 * Sets the minimum number of occurrences of the top "n" token list that a concept must have in order
-	 * to consider it for inclusion in the suggestions list.  
-	 * 
-	 * @param minOccurrenceCount the minimum number of occurrences to use (default is 3)
-	 * @return
-	 * @deprecated - replaced with specific suggester algorithm configuration, will be removed in Snow Owl 9
-	 */
-	public ConceptSuggestionRequestBuilder setMinOccurrenceCount(Integer minOccurrenceCount) {
-		this.minOccurrenceCount = minOccurrenceCount;
-		return getSelf();
-	}
-	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, Suggestions> createSearch() {
-		// XXX API backward compatibility, channel topTokenCount and minOccurenceCount to suggester settings if suggester is defined, remove in Snow Owl 9
-		// if configured, specify the values here, otherwise let the suggester implementation use its defaults
-		if (suggester != null && topTokenCount != null) {
-			suggester.setSettings("topTokenCount", topTokenCount);
-		}
-		if (suggester != null && minOccurrenceCount != null) {
-			suggester.setSettings("minOccurenceCount", minOccurrenceCount);
-		}
-		
 		ConceptSuggestionRequest req = new ConceptSuggestionRequest();
 		req.setSuggester(suggester);
 		return req;

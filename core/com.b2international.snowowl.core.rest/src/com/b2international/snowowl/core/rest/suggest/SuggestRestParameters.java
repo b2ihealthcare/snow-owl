@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,28 +27,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 public class SuggestRestParameters {
 
-	// old, deprecated API, to be removed in Snow Owl 9
-	@Deprecated
-	@Parameter(description = "Code System path to find the concept in. Deprecated, use from configuration parameter instead.", deprecated = true)
-	private String codeSystemPath;
-	
-	@Deprecated
-	@Parameter(description = "The term to match. Deprecated, use like configuration parameter instead.", deprecated = true)
-	private String term;
-
-	@Deprecated
-	@Parameter(description = "The query to match. Deprecated, use like configuration parameter instead.", deprecated = true)
-	private String query;
-	
-	@Deprecated
-	@Parameter(description = "Exclude elements by query. Deprecated, use unlike configuration parameter instead.", deprecated = true)
-	private String mustNotQuery;
-	
-	@Deprecated
-	@Parameter(description = "The minimum number of words that should match. Deprecated, use suggesterConfig parameter instead.", deprecated = true)
-	private Integer minOccurrenceCount;
-	
-	// preferred API since 8.5
 	@Parameter(description = "Code System path (or URI with query) to suggest concepts from.")
 	private String from;
 	
@@ -61,7 +39,6 @@ public class SuggestRestParameters {
 	@Parameter(description = "Configuration for the selected suggester to tweak the returned suggestions")
 	private Suggester suggester;
 	
-	// Unchanged parameters
 	@Parameter(description = "The maximum number of items to return", example = "1", schema = @Schema(defaultValue = "1"))
 	private int limit = 1;
 
@@ -102,56 +79,6 @@ public class SuggestRestParameters {
 	
 	public void setSuggester(Suggester suggester) {
 		this.suggester = suggester;
-	}
-	
-	@Deprecated
-	public String getCodeSystemPath() {
-		return codeSystemPath;
-	}
-
-	@Deprecated
-	public void setCodeSystemPath(String codeSystemPath) {
-		this.codeSystemPath = codeSystemPath;
-	}
-
-	@Deprecated
-	public String getTerm() {
-		return term;
-	}
-
-	@Deprecated
-	public void setTerm(String term) {
-		this.term = term;
-	}
-
-	@Deprecated
-	public Integer getMinOccurrenceCount() {
-		return minOccurrenceCount;
-	}
-
-	@Deprecated
-	public void setMinOccurrenceCount(Integer minOccurrenceCount) {
-		this.minOccurrenceCount = minOccurrenceCount;
-	}
-
-	@Deprecated
-	public String getQuery() {
-		return query;
-	}
-	
-	@Deprecated
-	public void setQuery(String query) {
-		this.query = query;
-	}
-	
-	@Deprecated
-	public String getMustNotQuery() {
-		return mustNotQuery;
-	}
-	
-	@Deprecated
-	public void setMustNotQuery(String mustNotQuery) {
-		this.mustNotQuery = mustNotQuery;
 	}
 	
 	public int getLimit() {
