@@ -47,8 +47,7 @@ public class ResourceApiAssert {
 	
 	public static ValidatableResponse assertResourceGet(final String resourceId, final long timestamp) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-			.queryParam("timestamp", timestamp)
-			.get("/{id}", resourceId)
+			.get("/{id}@{timestamp}", resourceId)
 			.then();
 	}
 }
