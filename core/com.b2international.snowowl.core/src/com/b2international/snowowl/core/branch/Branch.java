@@ -198,14 +198,6 @@ public final class Branch implements MetadataHolder, Serializable {
 	}
 
 	/**
-	 * @return
-	 * @deprecated - backward compatible API support, use {@link #path()} instead.
-	 */
-	public IBranchPath branchPath() {
-		return branchPath;
-	}
-
-	/**
 	 * Returns all child branches of this branch (direct and indirect children both). If not expanded this method returns a <code>null</code> object.
 	 * @return
 	 */
