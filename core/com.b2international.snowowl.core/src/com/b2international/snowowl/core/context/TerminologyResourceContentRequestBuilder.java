@@ -27,25 +27,15 @@ import com.b2international.snowowl.core.request.AllowedHealthStates;
  */
 public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
-	/**
-	 * @param toolingId
-	 * @param resourcePath
-	 * @return
-	 * @deprecated - since 8.0 clients should prefer to use Resource URI paths instead of using tooling and branchPath combinations
-	 */
-	default AsyncRequest<R> build(String toolingId, String resourcePath) {
+	default AsyncRequest<R> build(String resourcePath) {
 		return new AsyncRequest<>(
-			new TerminologyResourceRequest<>(toolingId, resourcePath,
+			new TerminologyResourceRequest<>(getToolingId(), resourcePath,
 				new TerminologyResourceContentRequest<>(
 					wrap(build()),
 					snapshot()
 				)
 			)
 		);
-	}
-	
-	default AsyncRequest<R> build(String resourcePath) {
-		return build(getToolingId(), resourcePath);
 	}
 	
 	default AsyncRequest<R> build(ResourceURI resourceUri) {
