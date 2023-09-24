@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.ResourceURI;
@@ -51,12 +53,16 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.RULE_ID, ruleIds);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByResourceUri(String resourceURI) {
-		return addOption(OptionKey.RESOURCE_URI, resourceURI);
+	public ValidationIssueSearchRequestBuilder filterByResourceUri(String resourceUri) {
+		return addOption(OptionKey.RESOURCE_URI, resourceUri);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByResourceUri(ResourceURI resourceURI) {
-		return addOption(OptionKey.RESOURCE_URI, resourceURI.toString());
+	public ValidationIssueSearchRequestBuilder filterByResourceUri(ResourceURI resourceUri) {
+		return addOption(OptionKey.RESOURCE_URI, resourceUri == null ? null : resourceUri.toString());
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByResourceUris(Collection<ResourceURI> resourceUris) {
+		return addOption(OptionKey.RESOURCE_URI, resourceUris == null ? null : resourceUris.stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByTooling(String toolingId) {
