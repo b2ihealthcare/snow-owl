@@ -146,7 +146,7 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 					.setLimit(0)
 					.filterByOid(oid)
 					.build()
-					.execute(context)
+					.executeAsAdmin(context)
 					.getTotal() > 0;
 			
 			if (oidExist) {

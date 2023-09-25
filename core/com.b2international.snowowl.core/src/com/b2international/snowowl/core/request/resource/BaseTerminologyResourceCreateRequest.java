@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.collection.TerminologyResourceCollection
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
@@ -339,19 +338,11 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 	private void checkOid(final RepositoryContext context) {
 		// OID must be unique if defined
 		if (!Strings.isNullOrEmpty(oid)) {
-			/*
-			 * Impersonate the system user to be able to look at all resources having the
-			 * same OID, even the ones the requesting user does not have access to
-			 */
-			final RepositoryContext adminContext = context.inject()
-				.bind(User.class, User.SYSTEM)
-				.build();
-			
 			final boolean existingOid = ResourceRequests.prepareSearch()
 					.setLimit(0)
 					.filterByOid(oid)
 					.build()
-					.execute(adminContext)
+					.executeAsAdmin(context)
 					.getTotal() > 0;
 			if (existingOid) {
 				throw new AlreadyExistsException("Resource", "oid", oid);

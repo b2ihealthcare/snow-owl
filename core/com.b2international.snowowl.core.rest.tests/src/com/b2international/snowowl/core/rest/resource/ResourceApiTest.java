@@ -23,6 +23,7 @@ import static com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert.
 import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceGet;
 import static com.b2international.snowowl.test.commons.rest.ResourceApiAssert.assertResourceSearch;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenRequestWithToken;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.Matchers.*;
@@ -38,20 +39,28 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.resource.ResourceConverter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.rest.BundleApiAssert;
 import com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
+
+import io.restassured.http.ContentType;
 
 /**
  * @since 8.0
@@ -452,6 +461,127 @@ public class ResourceApiTest {
 	@Test(expected = ConflictException.class)
 	public void tryToCreateRootBundle() throws Exception {
 		createCodeSystemWithStatus(IComponent.ROOT_ID, "draft");
+	}
+	
+	@Test
+	public void ensureIdIsUniqueGlobally() throws Exception {
+		// create a resource with ID
+		var codeSystemId = IDs.base62UUID();
+		CodeSystemRestRequests.createCodeSystem(codeSystemId).statusCode(201);
+		
+		// simulate that the user only has access to another resource
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, "another-resource"));
+		
+		String branchPathToUse = RepositoryRequests.branching().prepareCreate().setParent(Branch.MAIN_PATH).setName(IDs.base62UUID()).build(SnomedTerminologyComponentConstants.TOOLING_ID).execute(bus).getSync();
+		
+		// creating a resource with the same existing ID should not complete
+		givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
+			.contentType(ContentType.JSON)
+			.body(Json.object(
+				"id", codeSystemId,
+				// make sure we use a random url, OID and a separate dedicated branch so it won't report collision there
+				"url", "http://snomed.info/sct/" + IDs.base62UUID(), 
+				"oid", IDs.base62UUID(),
+				"branchPath", branchPathToUse,
+				// rest of the params
+				"title", "Title of Resource",
+				"description", "<div>Markdown supported</div>",
+				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
+				"language", "ENG",
+				"owner", "owner",
+				"contact", "https://b2ihealthcare.com"
+			))
+			.post()
+			.then().assertThat()
+			.statusCode(409)
+			.body("message", equalTo(String.format("Resource with identifier '%s' already exists.", codeSystemId)));
+	}
+	
+	@Test
+	public void ensureUrlIsUniqueGlobally() throws Exception {
+		// create a resource with ID
+		var codeSystemId = IDs.base62UUID();
+		CodeSystemRestRequests.createCodeSystem(codeSystemId).statusCode(201);
+		var codeSystemUrlToUse = CodeSystemRestRequests.getCodeSystemUrl(codeSystemId);
+		
+		// simulate that the user only has access to another resource
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, "another-resource"));
+		
+		String branchPathToUse = RepositoryRequests.branching().prepareCreate().setParent(Branch.MAIN_PATH).setName(IDs.base62UUID()).build(SnomedTerminologyComponentConstants.TOOLING_ID).execute(bus).getSync();
+		
+		// creating a resource with the same existing ID should not complete
+		givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
+			.contentType(ContentType.JSON)
+			.body(Json.object(
+				// the field that will report conflict
+				"url", codeSystemUrlToUse,
+				// make sure we use a random ID, OID and a separate dedicated branch so it won't report collision there
+				"id", IDs.base62UUID(),
+				"oid", IDs.base62UUID(),
+				"branchPath", branchPathToUse,
+				// rest of the params
+				"title", "Title of Resource",
+				"description", "<div>Markdown supported</div>",
+				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
+				"language", "ENG",
+				"owner", "owner",
+				"contact", "https://b2ihealthcare.com"
+			))
+			.post()
+			.then().assertThat()
+			.statusCode(409)
+			.body("message", equalTo(String.format("Resource with url '%s' already exists.", codeSystemUrlToUse)));
+	}
+	
+	@Test
+	public void ensureOidIsUniqueGlobally() throws Exception {
+		// create a resource with ID
+		var oidToUse = IDs.base62UUID();
+		givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
+			.contentType(ContentType.JSON)
+			.body(Json.object(
+				// the field that will report conflict
+				"oid", oidToUse,
+				"id", IDs.base62UUID(),
+				"url", "http://snomed.info/sct/" + IDs.base62UUID(),
+				"title", "Title of Resource",
+				"description", "<div>Markdown supported</div>",
+				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
+				"language", "ENG",
+				"owner", "owner",
+				"contact", "https://b2ihealthcare.com"
+			))
+			.post()
+			.then().assertThat()
+			.statusCode(201);
+		
+		// simulate that the user only has access to another resource
+		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, "another-resource"));
+		
+		String branchPathToUse = RepositoryRequests.branching().prepareCreate().setParent(Branch.MAIN_PATH).setName(IDs.base62UUID()).build(SnomedTerminologyComponentConstants.TOOLING_ID).execute(bus).getSync();
+		
+		// creating a resource with the same existing ID should not complete
+		givenRequestWithToken(ApiTestConstants.CODESYSTEMS_API, token)
+			.contentType(ContentType.JSON)
+			.body(Json.object(
+				// the field that will report conflict
+				"oid", oidToUse,
+				// make sure we use a random ID, OID and a separate dedicated branch so it won't report collision there
+				"id", IDs.base62UUID(),
+				"url", "http://snomed.info/sct/" + IDs.base62UUID(),
+				"branchPath", branchPathToUse,
+				// rest of the params
+				"title", "Title of Resource",
+				"description", "<div>Markdown supported</div>",
+				"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
+				"language", "ENG",
+				"owner", "owner",
+				"contact", "https://b2ihealthcare.com"
+			))
+			.post()
+			.then().assertThat()
+			.statusCode(409)
+			.body("message", equalTo(String.format("Resource with oid '%s' already exists.", oidToUse)));
 	}
 	
 }

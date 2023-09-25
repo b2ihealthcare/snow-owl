@@ -49,7 +49,7 @@ public class AlreadyExistsException extends ConflictException {
 	 *            - the conflicting non-unique property value
 	 */
 	public AlreadyExistsException(final String type, final String property, final String propertyValue) {
-		super("%s with '%s' %s already exists.", checkNotNull(type, "type"), checkNotNull(propertyValue, "propertyValue"), checkNotNull(property, "property"));
+		super("%s with %s '%s' already exists.", checkNotNull(type, "type"), checkNotNull(property, "property"), checkNotNull(propertyValue, "propertyValue"));
 	}
 
 }

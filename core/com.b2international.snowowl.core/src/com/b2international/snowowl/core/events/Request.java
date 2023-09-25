@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -65,6 +66,25 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	 * @return - the result of the {@link Request}, never <code>null</code>.
 	 */
 	R execute(C context);
+	
+	/**
+	 * Executes the request as an administrator user.
+	 * 
+	 * @param context - the original context to use
+	 * @return
+	 * @see #execute(ServiceProvider)
+	 */
+	default R executeAsAdmin(C context) {
+		/*
+		 * Impersonate the system user to be able to look at all resources having the
+		 * same OID, even the ones the requesting user does not have access to
+		 */
+		final C adminContext = (C) context.inject()
+			.bind(User.class, User.SYSTEM)
+			.build();
+		
+		return execute(adminContext);
+	}
 	
 	/**
 	 * @return the type of the request for serialization in log messages

@@ -214,7 +214,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 			.setLimit(0)
 			.filterById(getId())
 			.build()
-			.execute(context)
+			.executeAsAdmin(context)
 			.getTotal() > 0;
 			
 		if (existingId) {
@@ -226,7 +226,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 			.setLimit(0)
 			.filterByUrl(getUrl())
 			.build()
-			.execute(context)
+			.executeAsAdmin(context)
 			.getTotal() > 0;
 			
 		if (existingUrl) {
