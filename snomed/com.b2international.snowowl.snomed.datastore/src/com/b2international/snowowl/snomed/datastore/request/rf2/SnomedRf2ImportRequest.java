@@ -50,6 +50,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -58,7 +59,6 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -430,12 +430,16 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	}
 	
 	@SuppressWarnings("deprecation")
-	private void updateCodeSystemSettings(final BranchContext context, final ResourceURI codeSystemUri) throws Exception {
+	private void updateCodeSystemSettings(final BranchContext context, final ResourceURI resourceUri) throws Exception {
 		
 		// fetch codesystem to get the latest settings 
-		CodeSystem currentSnomedCodeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemUri.getResourceId())
-				.buildAsync()
-				.get(context);
+		Resource resource = ResourceRequests.prepareGet(resourceUri)
+			.buildAsync()
+			.get(context);
+		
+		if (!(resource instanceof TerminologyResource currentResource)) {
+			return;
+		}
 		
 		/////////////
 		// Locales //
@@ -469,8 +473,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		List<ExtendedLocale> currentLocales = newArrayList();
 		
-		if (!CompareUtils.isEmpty(currentSnomedCodeSystem.getLocales())) {
-			currentSnomedCodeSystem.getLocales().stream()
+		if (!CompareUtils.isEmpty(currentResource.getLocales())) {
+			currentResource.getLocales().stream()
 				.map(locale -> ExtendedLocale.valueOf(locale))
 				.forEach(currentLocales::add);
 		}
@@ -486,7 +490,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		////////////////////////////
 
 		Map<String, SnomedLanguageConfig> mergedLanguagesConfiguration = Maps.newLinkedHashMap(); 
-		SnomedDescriptionUtils.getLanguagesConfiguration(context.service(ObjectMapper.class), currentSnomedCodeSystem).forEach(config -> {
+		SnomedDescriptionUtils.getLanguagesConfiguration(context.service(ObjectMapper.class), currentResource).forEach(config -> {
 			mergedLanguagesConfiguration.put(config.getLanguageTag(), config);
 		});
 		
@@ -500,12 +504,12 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					
 				});
 		
-		CodeSystemRequests.prepareUpdateCodeSystem(codeSystemUri.getResourceId())
+		ResourceRequests.prepareUpdate(resourceUri.getResourceId())
 				.setSettings(Map.of(
 					CodeSystem.CommonSettings.LOCALES, currentLocales,
 					SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, mergedLanguagesConfiguration.values()
 				))
-				.build(author, String.format("Update '%s' settings based on RF2 import", codeSystemUri.getResourceId()))
+				.build(author, String.format("Update '%s' settings based on RF2 import", resourceUri.getResourceId()))
 				.execute(context.service(IEventBus.class))
 				.getSync(2, TimeUnit.MINUTES);
 	}
