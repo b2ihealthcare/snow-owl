@@ -437,11 +437,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			.buildAsync()
 			.get(context);
 		
-		if (!(resource instanceof TerminologyResource)) {
+		if (!(resource instanceof TerminologyResource currentResource)) {
 			return;
 		}
-		
-		TerminologyResource currentResource = (TerminologyResource) resource;
 		
 		/////////////
 		// Locales //
