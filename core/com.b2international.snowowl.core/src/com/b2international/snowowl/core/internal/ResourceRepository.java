@@ -163,7 +163,7 @@ public final class ResourceRepository implements RevisionIndex {
 						branching.delete(version.getBranchPath());
 					});
 				
-				// also delete branch of the code system and all possible task or child branches
+				// also delete branch of the resource and all possible task or child branches
 				resourceUrisByTooling.get(toolingId)
 					.stream()
 					.map(ResourceDocument::getBranchPath)

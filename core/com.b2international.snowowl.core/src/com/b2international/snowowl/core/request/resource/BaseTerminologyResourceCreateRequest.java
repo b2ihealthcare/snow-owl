@@ -242,7 +242,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 			// The working branch prefix is determined by the extensionOf code system version's path
 			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), getId());
 			
-			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
+			// Resource upgrade branches are managed by resource upgrades and they can have different paths than the usual extension branch paths, skip check
 			Optional<Dependency> upgradeOfDependency = dependencies != null ? dependencies.stream().filter(Dependency::isUpgradeOf).findFirst() : Optional.empty();
 			var upgradeOfUri = upgradeOfDependency.map(Dependency::getUri).orElse(null);
 			
@@ -331,7 +331,7 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		if (create) {
 			final String newBranchPath = Branch.get(parentPath, getId());
 			if (branchExists(newBranchPath, context)) {
-				throw new AlreadyExistsException("CodeSystem Branch", newBranchPath);
+				throw new AlreadyExistsException("Resource Branch", newBranchPath);
 			}
 		}
 	}
@@ -365,7 +365,6 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 				.setLimit(1)
 				.filterById(path)
 				.build(toolingId)
-				.getRequest()
 				.execute(context);
 		
 		if (branches.isEmpty()) {
