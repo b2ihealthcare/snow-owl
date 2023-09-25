@@ -141,7 +141,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		assertCodeSystemCreate(SNOMED)
 			.statusCode(409)
-			.body("message", containsString("Resource with 'SNOMEDCT' identifier already exists."));
+			.body("message", containsString("Resource with identifier 'SNOMEDCT' already exists"));
 	}
 	
 	@Test
@@ -151,7 +151,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other"))
 			.statusCode(409)
-			.body("message", containsString("Resource with 'http://snomed.info/sct' url already exists."));
+			.body("message", containsString("Resource with url 'http://snomed.info/sct' already exists."));
 	}
 	
 	@Test
@@ -161,7 +161,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("url", SnomedTerminologyComponentConstants.SNOMED_URI_DEV))
 			.statusCode(409)
-			.body("message", containsString("Resource with '2.16.840.1.113883.6.96' oid already exists."));
+			.body("message", containsString("Resource with oid '2.16.840.1.113883.6.96' already exists."));
 	}
 	
 	@Test
