@@ -141,7 +141,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		assertCodeSystemCreate(SNOMED)
 			.statusCode(409)
-			.body("message", containsString("Resource with identifier 'SNOMEDCT' already exists"));
+			.body("message", containsString("Resource with identifier 'SNOMEDCT' already exists."));
 	}
 	
 	@Test
