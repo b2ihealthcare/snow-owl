@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class ResourceApiAssert {
 	
 	public static ValidatableResponse assertResourceGet(final String resourceId, final long timestamp) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-			.get("/{id}@{timestamp}", resourceId)
+			.get("/{id}@{timestamp}", resourceId, timestamp)
 			.then();
 	}
 }
