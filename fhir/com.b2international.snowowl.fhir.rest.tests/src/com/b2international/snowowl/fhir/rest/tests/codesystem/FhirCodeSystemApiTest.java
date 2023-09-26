@@ -506,7 +506,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
-			.body("total", equalTo(38))
+			.body("total", equalTo(39))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("GET_CodeSystem_Status_Match_Multiple"))
 			.body("entry[0].resource.url", equalTo(SNOMEDCT_URL + "/GET_CodeSystem_Status_Match_Multiple"))
