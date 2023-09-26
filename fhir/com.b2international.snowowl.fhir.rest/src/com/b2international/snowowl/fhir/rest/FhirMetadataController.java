@@ -21,14 +21,12 @@ import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAP
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Version;
 import org.springdoc.webmvc.api.OpenApiWebMvcResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
@@ -43,6 +42,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.core.rest.SnowOwlOpenApiWebMvcResource;
 import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind;
@@ -87,12 +87,12 @@ public class FhirMetadataController extends AbstractFhirController {
 	@Autowired
 	private FhirApiConfig config; 
 	
-	private static class Holder {
-		CapabilityStatement capabilityStatement;
-		Map<String, OperationDefinition> operationMap;
-	}
+	private record StatementAndOperations (
+		CapabilityStatement capabilityStatement,
+		Map<String, OperationDefinition> operationMap
+	) { }
 	
-	private final Supplier<Holder> capabilityStatementSupplier = Suppliers.memoize(this::initCache);
+	private final Supplier<StatementAndOperations> capabilityStatementSupplier = Suppliers.memoize(this::initCache);
 
 	@Operation(
 		summary="Retrieve the capability statement", 
@@ -108,7 +108,11 @@ public class FhirMetadataController extends AbstractFhirController {
 	})
 	@GetMapping(value="/metadata")
 	public CapabilityStatement metadata() {
-		return capabilityStatementSupplier.get().capabilityStatement;
+		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "metadata").toUriString();
+		final String baseUrl = MvcUriComponentsBuilder.fromController(FhirMetadataController.class).toUriString();
+		
+		final CapabilityStatement capabilityStatement = capabilityStatementSupplier.get().capabilityStatement();
+		return capabilityStatement.withUrl(new Uri(resourceUrl), new Uri(baseUrl));
 	}
 	
 	/**
@@ -137,8 +141,7 @@ public class FhirMetadataController extends AbstractFhirController {
 		return operationDefinition;
 	}
 	
-	private Holder initCache() {
-		final Holder holder = new Holder();
+	private StatementAndOperations initCache() {
 		// XXX: we know that the subclass is instantiated (in SnowOwlApiConfig)
 		final OpenAPI openAPI = ((SnowOwlOpenApiWebMvcResource) openApiWebMvcResource).getOpenApi();
 		final Collection<Resource> resources = collectResources(openAPI);
@@ -148,12 +151,12 @@ public class FhirMetadataController extends AbstractFhirController {
 			.mode(RestfulCapabilityMode.SERVER)
 			.resources(resources);
 
-		holder.operationMap = newHashMap();
+		final Map<String, OperationDefinition> operationMap = newHashMap();
 
 		for (final OperationDefinition operationDefinition : operationDefinitions) {
 			for (final Code code : operationDefinition.getResources()) {
 				final String key = code.getCodeValue() + operationDefinition.getName();
-				holder.operationMap.put(key, operationDefinition);
+				operationMap.put(key, operationDefinition);
 				
 				restBuilder.addOperation(com.b2international.snowowl.fhir.core.model.capabilitystatement.Operation.builder()
 					.name(operationDefinition.getName())
@@ -162,34 +165,58 @@ public class FhirMetadataController extends AbstractFhirController {
 			}
 		}
 
-		final String serverVersion = Platform.getBundle(CoreActivator.PLUGIN_ID)
-			.getVersion()
-			.toString();
+		CapabilityStatement capabilityStatement = createCapabilityStatement(restBuilder);
 		
-		String description = ApplicationContext.getServiceForClass(SnowOwlConfiguration.class).getDescription();
+		return new StatementAndOperations(capabilityStatement, operationMap);
+	}
+
+	private CapabilityStatement createCapabilityStatement(final Rest.Builder restBuilder) {
 		
-		holder.capabilityStatement = CapabilityStatement.builder()
-			.name("FHIR Capability statement for Snow Owl© Terminology Server")
+		final Version bundleVersion = Platform.getBundle(CoreActivator.PLUGIN_ID).getVersion();
+		final String softwareVersion = bundleVersion.toString();
+		final String qualifier = bundleVersion.getQualifier();
+		final Date date = getDateFromQualifier(qualifier);
+		
+		final String description = ApplicationContext.getServiceForClass(SnowOwlConfiguration.class)
+			.getDescription();
+
+		return CapabilityStatement.builder()
+			// .url(...) is added later
+			.version(softwareVersion)
+			.name("snow-owl-capability-statement")
+			.title("FHIR Capability statement for Snow Owl© Terminology Server")
+			.description("This statement describes FHIR resource types and operations supported by the terminology server.")
 			.status(PublicationStatus.ACTIVE)
-			.experimental(false)
+			.date(date)
 			.kind(CapabilityStatementKind.INSTANCE.getCode())
 			.fhirVersion("4.0.1")
+			.experimental(false)
 			.addInstantiate(new Uri("http://hl7.org/fhir/CapabilityStatement/terminology-server"))
 			.software(Software.builder()
 				.name("Snow Owl©")
-				.version(serverVersion)
-			.build()) 
+				.version(softwareVersion)
+				.build()) 
 			.implementation(Implementation.builder()
 				.url("https://b2ihealthcare.com")
 				.description(description)
-			.build())
+				.build())
 			.addFormat(new Code(AbstractFhirController.APPLICATION_FHIR_JSON))
 			.addRest(restBuilder.build())
 			.build();
-		
-		return holder;
 	}
 	
+	private Date getDateFromQualifier(final String qualifier) {
+		if (StringUtils.isEmpty(qualifier) || "qualifier".equals(qualifier)) {
+			return Dates.todayGmt();
+		}
+			
+		try {
+			return Dates.parse(qualifier, "yyyyMMddHHmm");
+		} catch (IllegalArgumentException e) {
+			return Dates.todayGmt();
+		}
+	}
+
 	private Collection<Resource> collectResources(final OpenAPI openAPI) {
 		final Paths paths = openAPI.getPaths();
 		final List<io.swagger.v3.oas.models.tags.Tag> tags = openAPI.getTags();

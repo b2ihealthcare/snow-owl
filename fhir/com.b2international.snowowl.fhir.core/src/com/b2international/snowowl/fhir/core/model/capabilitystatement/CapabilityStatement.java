@@ -262,6 +262,45 @@ public class CapabilityStatement extends MetadataResource {
 		return documents;
 	}
 	
+	public CapabilityStatement withUrl(Uri resourceUrl, Uri baseUrl) {
+		return new CapabilityStatement(
+			getId(), 
+			getMeta(), 
+			getImplicitRules(), 
+			getLanguage(), 
+			getText(), 
+			resourceUrl, 
+			getVersion(),
+			getName(),
+			getTitle(),
+			getStatus(),
+			getExperimental(),
+			getDate(),
+			getPublisher(),
+			getContacts(),
+			getDescription(), 
+			getUsageContexts(), 
+			getJurisdictions(),
+			getPurpose(),
+			getToolingId(),
+			
+			getResourceType(),
+			getIdentifiers(),
+			getCopyright(),
+			getKind(),
+			getInstantiates(),
+			getImports(),
+			getSoftware(),
+			getImplementation().withUrl(baseUrl),
+			getFhirVersion(),
+			getFormats(),
+			getPatchFormats(),
+			getImplementationGuides(),
+			getRests(),
+			getMessagings(),
+			getDocuments());
+	}
+	
 	public static Builder builder(String id) {
 		return new Builder(id);
 	}
