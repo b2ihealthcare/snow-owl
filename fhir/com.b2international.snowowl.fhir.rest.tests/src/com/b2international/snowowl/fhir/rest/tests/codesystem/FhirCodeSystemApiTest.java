@@ -25,9 +25,11 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
  * FHIR /CodeSystem Resource API Tests
@@ -458,6 +460,64 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	}
 	
 	@Test
+	public void GET_CodeSystem_Status_NoMatch() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("status", "unknown")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Status_Match_Single() throws Exception {
+		CodeSystemRestRequests.updateCodeSystem(getTestCodeSystemId(), Json.object("status", "mysterious"))
+			.statusCode(204);
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("status", "mysterious")
+			.queryParam("_sort", "id")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("GET_CodeSystem_Status_Match_Single"))
+			.body("entry[0].resource.url", equalTo(SNOMEDCT_URL + "/GET_CodeSystem_Status_Match_Single"))
+			// This is the PublicationStatus code "mysterious" maps to
+			.body("entry[0].resource.status", equalTo("unknown"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Status_Match_Multiple() throws Exception {
+		CodeSystemRestRequests.updateCodeSystem(getTestCodeSystemId(), Json.object("status", "mysterious"))
+			.statusCode(204);
+
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("status", "active", "mysterious")
+			.queryParam("_sort", "id")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(38))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("GET_CodeSystem_Status_Match_Multiple"))
+			.body("entry[0].resource.url", equalTo(SNOMEDCT_URL + "/GET_CodeSystem_Status_Match_Multiple"))
+			// This is the PublicationStatus code "mysterious" maps to
+			.body("entry[0].resource.status", equalTo("unknown"))
+			.body("entry[1].resource.id", equalTo("SNOMEDCT"))
+			.body("entry[1].resource.url", equalTo(SNOMEDCT_URL))
+			.body("entry[1].resource.status", equalTo("active"));
+	}
+	
+	@Test
 	public void GET_CodeSystemId() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get(CODESYSTEM_ID, getTestCodeSystemId())
@@ -499,5 +559,4 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"));
 	}
-
 }

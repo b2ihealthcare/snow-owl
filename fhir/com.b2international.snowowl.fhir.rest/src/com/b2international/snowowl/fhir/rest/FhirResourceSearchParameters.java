@@ -52,6 +52,9 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 	@Parameter(description = "version")
 	private List<String> version;
 	
+	@Parameter(description = "status")
+	private List<String> status;
+	
 	// paging
 	@Parameter(description = "The maximum number of items to return", schema = @Schema(defaultValue = "10"))
 	private int _count = 10;
@@ -107,6 +110,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		return version;
 	}
 	
+	public List<String> getStatus() {
+		return status;
+	}
+	
 	public void set_id(String[] _id) {
 		this._id = _id;
 	}
@@ -151,23 +158,28 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		this.version = version;
 	}
 	
+	public void setStatus(List<String> status) {
+		this.status = status;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
-				.omitNullValues()
-				.add("_id", _id)
-				.add("name", name)
-				.add("title", title)
-				.add("_lastUpdated", _lastUpdated)
-				.add("_content", _content)
-				.add("url", url)
-				.add("system", system)
-				.add("_summary", get_summary())
-				.add("_elements", get_elements())
-				.add("_count", _count)
-				.add("_sort", _sort)
-				.add("_after", _after)
-				.toString();
+			.omitNullValues()
+			.add("_id", _id)
+			.add("name", name)
+			.add("title", title)
+			.add("_lastUpdated", _lastUpdated)
+			.add("_content", _content)
+			.add("url", url)
+			.add("system", system)
+			.add("version", version)
+			.add("status", status)
+			.add("_count", _count)
+			.add("_sort", _sort)
+			.add("_after", _after)
+			.add("_summary", get_summary())
+			.add("_elements", get_elements())
+			.toString();
 	}
-	
 }

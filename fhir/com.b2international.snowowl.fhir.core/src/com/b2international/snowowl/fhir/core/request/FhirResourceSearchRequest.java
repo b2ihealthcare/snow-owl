@@ -70,6 +70,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		TITLE, 
 		CONTENT,
 		VERSION,
+		STATUS,
 		
 		LAST_UPDATED, 
 	}
@@ -97,6 +98,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		// apply _name filter to the id fields, we use the same value for both id and name
 		addFilter(resourcesQuery, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); 
 		addFilter(resourcesQuery, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
+		addFilter(resourcesQuery, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addFilter(resourcesQuery, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		
 		if (containsKey(OptionKey.TITLE)) {
