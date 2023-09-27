@@ -18,10 +18,8 @@ package com.b2international.snowowl.core.internal.validation;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +40,7 @@ import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.validation.ValidationRequests;
+import com.b2international.snowowl.core.validation.ValidationRuleDirectoryProvider;
 import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -73,6 +72,16 @@ public final class ValidationPlugin extends Plugin {
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer()) {
+			final List<Path> validationDirectories = new ArrayList<>();
+			// default directory is the server configuration dir
+			validationDirectories.add(env.getConfigPath());
+			// support additional directories to be appended by plug-ins during the init method via the ValidationRuleDirectoryProvider
+			env.plugins().getPlugins().forEach(plugin -> {
+				if (plugin instanceof ValidationRuleDirectoryProvider vrdp) {
+					validationDirectories.addAll(vrdp.getDirectories());
+				}
+			});
+			
 			final ObjectMapper mapper = env.service(ObjectMapper.class);
 			final Index validationIndex = Indexes.createIndex(
 				VALIDATIONS_INDEX, 
@@ -85,7 +94,7 @@ public final class ValidationPlugin extends Plugin {
 			env.services().registerService(ValidationRepository.class, repository);
 			
 			// register always available validation rule evaluators
-			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(env.getConfigPath()));
+			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(validationDirectories));
 			
 			// initialize validation thread pool
 			final ValidationConfiguration validationConfig = configuration.getModuleConfig(ValidationConfiguration.class);
@@ -98,7 +107,7 @@ public final class ValidationPlugin extends Plugin {
 			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
 			env.services().registerService(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(env.service(ClassPathScanner.class)));
 			
-			final List<File> listOfFiles = Arrays.asList(env.getConfigPath().toFile().listFiles());
+			final List<File> listOfFiles = validationDirectories.stream().flatMap(path -> Arrays.asList(path.toFile().listFiles()).stream()).toList();
 			final Set<File> validationRuleFiles = Sets.newHashSet();
 			final Pattern validationFilenamePattern = Pattern.compile("(validation-rules)-(\\w+).(json)");
 			for (File file : listOfFiles) {
@@ -142,9 +151,9 @@ public final class ValidationPlugin extends Plugin {
 							.build())
 							.getHits());
 					writer.removeAll(ImmutableMap.<Class<?>, Set<String>>of(
-							ValidationRule.class, rulesToDelete,
-							ValidationIssue.class, issuesToDelete
-							));
+						ValidationRule.class, rulesToDelete,
+						ValidationIssue.class, issuesToDelete
+					));
 				}
 				
 				writer.commit();

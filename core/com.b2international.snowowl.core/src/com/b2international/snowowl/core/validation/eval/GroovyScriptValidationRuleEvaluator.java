@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation.eval;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -37,25 +38,30 @@ import com.google.common.collect.ImmutableMap.Builder;
  */
 public final class GroovyScriptValidationRuleEvaluator implements ValidationRuleEvaluator {
 
-	private Path validationResourcesDirectory;
+	private List<Path> validationResourcesDirectories;
 
-	public GroovyScriptValidationRuleEvaluator(Path validationResourcesDirectory) {
-		this.validationResourcesDirectory = validationResourcesDirectory;
+	public GroovyScriptValidationRuleEvaluator(List<Path> validationResourcesDirectories) {
+		this.validationResourcesDirectories = validationResourcesDirectories;
 	}
 	
 	@VisibleForTesting
-	public void setValidationResourcesDirectory(Path validationResourcesDirectory) {
-		this.validationResourcesDirectory = validationResourcesDirectory;
+	public void setValidationResourcesDirectory(List<Path> validationResourcesDirectories) {
+		this.validationResourcesDirectories = validationResourcesDirectories;
 	}
 	
 	@Override
 	public List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws IOException {
-		final Path validationRuleFilePath = validationResourcesDirectory.resolve(rule.getImplementation());
+		final Path validationRuleFilePath = validationResourcesDirectories.stream()
+				.map(dir -> dir.resolve(rule.getImplementation()))
+				.filter(Files::exists)
+				.findFirst()
+				.orElseThrow(() -> new NoSuchFileException(String.format("Validation rule implementation file '%s' could not be found.", rule.getImplementation())));
+		
 		try (final Stream<String> lines = Files.lines(validationRuleFilePath)) {
 			
 			final String script = lines.collect(Collectors.joining(System.getProperty("line.separator")));
 			
-			final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourcesDir", validationResourcesDirectory);
+			final Builder<String, Object> paramsBuilder = ImmutableMap.builder();
 			
 			if (filterParams != null && !filterParams.isEmpty()) {
 				paramsBuilder.putAll(filterParams);
