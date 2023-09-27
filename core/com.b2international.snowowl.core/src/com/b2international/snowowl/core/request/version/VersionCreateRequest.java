@@ -223,19 +223,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	}
 
 	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
-		final Map<ResourceURI, TerminologyResource> resourcesToVersion = new HashMap<>();
-		
-		ResourceRequests.prepareSearch()
-			.one()
-			.filterById(resource.getResourceId())
-			.buildAsync()
-			.execute(context)
-			.stream()
-			.filter(TerminologyResource.class::isInstance)
-			.map(TerminologyResource.class::cast)
-			.forEach(resource -> {
-				resourcesToVersion.put(resource.getResourceURI(), resource);
-			});
+		final Map<ResourceURI, TerminologyResource> resourcesToVersion = new LinkedHashMap<>();
 		
 		// if the resource to version is a collection URI then version all child resources as well
 		TerminologyResource terminologyResource = resourcesToVersion.get(resource);
@@ -258,7 +246,20 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					resourcesToVersion.put(resource.getResourceURI(), resource);
 				});
 		}
-		
+
+		// add the "main" resource to the end of the map (preserving iteration order) 
+		ResourceRequests.prepareSearch()
+			.one()
+			.filterById(resource.getResourceId())
+			.buildAsync()
+			.execute(context)
+			.stream()
+			.filter(TerminologyResource.class::isInstance)
+			.map(TerminologyResource.class::cast)
+			.forEach(resource -> {
+				resourcesToVersion.put(resource.getResourceURI(), resource);
+			});
+
 		return resourcesToVersion;
 	}
 	
