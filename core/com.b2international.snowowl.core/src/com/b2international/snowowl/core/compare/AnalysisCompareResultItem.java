@@ -18,10 +18,15 @@ package com.b2international.snowowl.core.compare;
 /**
  * @since 9.0
  */
-public record AnalysisCompareResultItem(String id, String label, AnalysisCompareChangeKind changeKind) {
+public record AnalysisCompareResultItem(String id, String label, String iconId, AnalysisCompareChangeKind changeKind) {
 
-	// Short constructor for label-less items
+	// Short constructor for label and icon-less items
 	public AnalysisCompareResultItem(final String id, final AnalysisCompareChangeKind changeKind) {
-		this(id, null, changeKind);
+		this(id, null, null, changeKind);
+	}
+
+	// Short constructor for icon-less items
+	public AnalysisCompareResultItem(final String id, final String label, final AnalysisCompareChangeKind changeKind) {
+		this(id, label, null, changeKind);
 	}
 }
