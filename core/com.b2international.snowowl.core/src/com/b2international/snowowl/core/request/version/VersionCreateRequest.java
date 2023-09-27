@@ -108,7 +108,8 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			resourcesById = fetchResources(context);
 		}
 		
-		if (!resourcesById.containsKey(resource)) {
+		final TerminologyResource primaryResource = resourcesById.remove(resource);
+		if (primaryResource == null) {
 			context.log().warn("Resource cannot be found during versioning: " + resourcesById + ", uri: " + resource);
 			throw new BadRequestException("Resource '%s' does not exist in the system.", resource);
 		}
@@ -119,34 +120,11 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		final Collection<TerminologyResource> resourcesToVersion = resourcesById.values();
 		
 		for (TerminologyResource resourceToVersion : resourcesToVersion) {
-			if (TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resourceToVersion.getStatus())) {
-				throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'", resourceToVersion.getTitle(), resourceToVersion.getStatus());
-			}
-			// check that the specified effective time is valid in this code system
-			// XXX ensure we verify version on all codesystems first before we delete any branches
-			validateVersion(context, resourceToVersion);
-			// check that the new versionId does not conflict with any other currently available branch
-			final String newVersionPath = Branch.get(resourceToVersion.getBranchPath(), version);
-			final String repositoryId = resourceToVersion.getToolingId();
-			
-			if (!force) {
-				// branch needs checking in the non-force cases only
-				try {
-					
-					Branch branch = RepositoryRequests.branching()
-						.prepareGet(newVersionPath)
-						.build(repositoryId)
-						.execute(context);
-					
-					if (!branch.isDeleted()) {
-						throw new ConflictException("An existing version or branch with path '%s' conflicts with the specified version identifier", newVersionPath);
-					}
-
-				} catch (NotFoundException e) {
-					// branch does not exist, ignore
-				}
-			}
+			versionResource(context, resourceToVersion);
 		}
+		
+		// The resource that was the initial subject of the request should be versioned last
+		versionResource(context, primaryResource);
 		
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 
@@ -211,6 +189,36 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		} finally {
 			if (null != monitor) {
 				monitor.done();
+			}
+		}
+	}
+
+	private void versionResource(RepositoryContext context, TerminologyResource resourceToVersion) {
+		if (TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resourceToVersion.getStatus())) {
+			throw new BadRequestException("Resource '%s' cannot be versioned in its current status '%s'", resourceToVersion.getTitle(), resourceToVersion.getStatus());
+		}
+		// check that the specified effective time is valid in this code system
+		// XXX ensure we verify version on all codesystems first before we delete any branches
+		validateVersion(context, resourceToVersion);
+		// check that the new versionId does not conflict with any other currently available branch
+		final String newVersionPath = Branch.get(resourceToVersion.getBranchPath(), version);
+		final String repositoryId = resourceToVersion.getToolingId();
+		
+		if (!force) {
+			// branch needs checking in the non-force cases only
+			try {
+				
+				Branch branch = RepositoryRequests.branching()
+					.prepareGet(newVersionPath)
+					.build(repositoryId)
+					.execute(context);
+				
+				if (!branch.isDeleted()) {
+					throw new ConflictException("An existing version or branch with path '%s' conflicts with the specified version identifier", newVersionPath);
+				}
+
+			} catch (NotFoundException e) {
+				// branch does not exist, ignore
 			}
 		}
 	}
