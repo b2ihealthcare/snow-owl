@@ -51,17 +51,19 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	
 	@Override
 	public List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws IOException {
-		final Path validationRuleFilePath = validationResourcesDirectories.stream()
-				.map(dir -> dir.resolve(rule.getImplementation()))
-				.filter(Files::exists)
+		final Path scriptDirectory = validationResourcesDirectories.stream()
+				.filter(dir -> Files.exists(dir.resolve(rule.getImplementation())))
 				.findFirst()
 				.orElseThrow(() -> new NoSuchFileException(String.format("Validation rule implementation file '%s' could not be found.", rule.getImplementation())));
+		
+		final Path validationRuleFilePath = scriptDirectory.resolve(rule.getImplementation());
 		
 		try (final Stream<String> lines = Files.lines(validationRuleFilePath)) {
 			
 			final String script = lines.collect(Collectors.joining(System.getProperty("line.separator")));
 			
-			final Builder<String, Object> paramsBuilder = ImmutableMap.builder();
+			// always attach the current parent directory so that rules can use additional files if needed
+			final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourcesDir", scriptDirectory);
 			
 			if (filterParams != null && !filterParams.isEmpty()) {
 				paramsBuilder.putAll(filterParams);
