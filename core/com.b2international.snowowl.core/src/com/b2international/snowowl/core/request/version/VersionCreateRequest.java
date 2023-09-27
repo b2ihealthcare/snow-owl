@@ -224,31 +224,8 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 
 	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
 		final Map<ResourceURI, TerminologyResource> resourcesToVersion = new LinkedHashMap<>();
-		
-		// if the resource to version is a collection URI then version all child resources as well
-		TerminologyResource terminologyResource = resourcesToVersion.get(resource);
-		if (terminologyResource instanceof TerminologyResourceCollection resourceCollection) {
-			final var registry = context.service(TerminologyResourceCollectionToolingSupport.Registry.class);
-			final Set<String> childResourceTypes = registry.getAllByToolingId(resourceCollection.getToolingId())
-				.stream()
-				.flatMap(toolingSupport -> toolingSupport.getSupportedChildResourceTypes().stream())
-				.collect(Collectors.toSet());
-			
-			ResourceRequests.prepareSearch()
-				.filterByResourceCollectionAncestor(resourceCollection.getId())
-				.filterByResourceTypes(childResourceTypes)
-				.setLimit(1_000)
-				.streamAsync(context, req -> req.buildAsync())
-				.flatMap(Resources::stream)
-				.filter(TerminologyResource.class::isInstance)
-				.map(TerminologyResource.class::cast)
-				.forEach(resource -> {
-					resourcesToVersion.put(resource.getResourceURI(), resource);
-				});
-		}
 
-		// add the "main" resource to the end of the map (preserving iteration order) 
-		ResourceRequests.prepareSearch()
+		final Optional<TerminologyResource> optionalResource = ResourceRequests.prepareSearch()
 			.one()
 			.filterById(resource.getResourceId())
 			.buildAsync()
@@ -256,9 +233,33 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.stream()
 			.filter(TerminologyResource.class::isInstance)
 			.map(TerminologyResource.class::cast)
-			.forEach(resource -> {
-				resourcesToVersion.put(resource.getResourceURI(), resource);
-			});
+			.findFirst();
+
+		// if the resource to version is a collection URI then version all child resources as well
+		optionalResource.ifPresent(terminologyResource -> {
+			if (terminologyResource instanceof TerminologyResourceCollection resourceCollection) {
+				final var registry = context.service(TerminologyResourceCollectionToolingSupport.Registry.class);
+				final Set<String> childResourceTypes = registry.getAllByToolingId(resourceCollection.getToolingId())
+					.stream()
+					.flatMap(toolingSupport -> toolingSupport.getSupportedChildResourceTypes().stream())
+					.collect(Collectors.toSet());
+				
+				ResourceRequests.prepareSearch()
+					.filterByResourceCollectionAncestor(resourceCollection.getId())
+					.filterByResourceTypes(childResourceTypes)
+					.setLimit(1_000)
+					.streamAsync(context, req -> req.buildAsync())
+					.flatMap(Resources::stream)
+					.filter(TerminologyResource.class::isInstance)
+					.map(TerminologyResource.class::cast)
+					.forEach(resource -> {
+						resourcesToVersion.put(resource.getResourceURI(), resource);
+					});
+			}
+
+			// add the "main" resource to the end of the map (preserving iteration order)
+			resourcesToVersion.put(terminologyResource.getResourceURI(), terminologyResource);
+		});
 
 		return resourcesToVersion;
 	}
