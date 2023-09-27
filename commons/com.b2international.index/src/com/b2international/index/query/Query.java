@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,6 +199,16 @@ public final class Query<T> {
 	
 	void setSearchAfter(String searchAfter) {
 		this.searchAfter = searchAfter;
+	}
+	
+	public AfterWhereBuilder<T> withSearchAfter(String searchAfter) {
+		return Query.select(getSelect())
+				.fields(getFields())
+				.where(getWhere())
+				.sortBy(getSortBy())
+				.limit(getLimit())
+				.searchAfter(searchAfter)
+				.withScores(isWithScores());
 	}
 	
 	@Override
