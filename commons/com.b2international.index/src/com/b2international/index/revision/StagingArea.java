@@ -1210,6 +1210,12 @@ public final class StagingArea {
 			return !Sets.intersection(knownPropertyDiffs, propertyNames).isEmpty();
 		}
 		
+		public boolean isEffectiveTimeChangeOnly() {
+			boolean hasEffectiveTimeChanges = getRevisionPropertyDiffs().containsKey("effectiveTime") ;
+			boolean isSingleChange = getRevisionPropertyDiffs().keySet().size() == 1;
+			return hasEffectiveTimeChanges && isSingleChange;
+		}
+		
 	}
 	
 	public static final class RevisionPropertyDiff {

@@ -43,9 +43,17 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	@Override
 	public void run(StagingArea staging) {
 		staging.read(index -> {
-			updateDocuments(staging, index);
+			if (needsDocumentUpdate(staging)) {
+				updateDocuments(staging, index);
+			}
 			return null;
 		});
+	}
+	
+	protected boolean needsDocumentUpdate(StagingArea staging) {
+		return staging.getNewObjects().count()== 0L &&
+				staging.getRemovedObjects().count() == 0L &&
+				staging.getChangedRevisions().values().stream().allMatch(diff -> !diff.isEffectiveTimeChangeOnly());
 	}
 	
 	private final void updateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
