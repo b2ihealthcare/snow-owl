@@ -1,16 +1,3 @@
-package com.b2international.snowowl.fhir.core.model.capabilitystatement;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.b2international.snowowl.fhir.core.codesystems.EventCapabilityMode;
-import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.search.Mandatory;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 /*
  * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
@@ -26,6 +13,19 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.b2international.snowowl.fhir.core.model.capabilitystatement;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import com.b2international.snowowl.fhir.core.codesystems.EventCapabilityMode;
+import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
