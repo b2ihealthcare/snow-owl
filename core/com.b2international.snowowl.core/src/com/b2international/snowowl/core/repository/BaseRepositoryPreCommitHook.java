@@ -25,6 +25,7 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 
 /**
  * Base {@link Repository} pre-commit hook. It allows terminology plugin developers to attach custom precommit hooks to the underlying
@@ -42,20 +43,22 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	
 	@Override
 	public void run(StagingArea staging) {
+		boolean needsDocumentUpdate;
+		if (staging.getContext() instanceof RepositoryTransactionContext) {
+			RepositoryTransactionContext transactionContext = (RepositoryTransactionContext) staging.getContext();
+			needsDocumentUpdate = !DatastoreLockContextDescriptions.CREATE_VERSION.equals(transactionContext.parentLock());
+		} else {
+			needsDocumentUpdate = true;
+		}
+
 		staging.read(index -> {
-			if (needsDocumentUpdate(staging)) {
+			if (needsDocumentUpdate) {
 				updateDocuments(staging, index);
 			}
 			return null;
 		});
 	}
-	
-	protected boolean needsDocumentUpdate(StagingArea staging) {
-		return staging.getNewObjects().count()== 0L &&
-				staging.getRemovedObjects().count() == 0L &&
-				staging.getChangedRevisions().values().stream().allMatch(diff -> !diff.isEffectiveTimeChangeOnly());
-	}
-	
+		
 	private final void updateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		log.info("Processing changes...");
 		preUpdateDocuments(staging, index);
