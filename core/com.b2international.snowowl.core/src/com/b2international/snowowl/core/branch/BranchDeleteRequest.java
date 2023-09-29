@@ -15,11 +15,16 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import org.elasticsearch.core.List;
+
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
+import com.b2international.snowowl.core.validation.ValidationRequests;
 
 /**
  * @since 4.1
@@ -33,6 +38,13 @@ public final class BranchDeleteRequest extends BranchBaseRequest<Boolean> implem
 	@Override
 	public Boolean execute(RepositoryContext context) {
 		try {
+			
+			//Remove issues corresponding to this branch
+			TerminologyResource resource = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), getBranchPath());
+			String resourceURI = resource.getResourceURI(getBranchPath()).toString();			
+			ValidationRequests.issues().prepareDelete().setCodeSystemURIs(List.of(resourceURI)).build().execute(context);
+			
+			//Remove branch
 			context.service(BaseRevisionBranching.class).delete(getBranchPath());
 		} catch (NotFoundException e) {
 			// ignore
