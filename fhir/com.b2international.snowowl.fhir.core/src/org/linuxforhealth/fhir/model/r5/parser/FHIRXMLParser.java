@@ -6,13 +6,7 @@
 
 package org.linuxforhealth.fhir.model.r5.parser;
 
-import static org.linuxforhealth.fhir.model.util.XMLSupport.FHIR_NS_URI;
-import static org.linuxforhealth.fhir.model.util.XMLSupport.XHTML_NS_URI;
-import static org.linuxforhealth.fhir.model.util.XMLSupport.checkElementOrder;
-import static org.linuxforhealth.fhir.model.util.XMLSupport.createStreamReaderDelegate;
-import static org.linuxforhealth.fhir.model.util.XMLSupport.isResourceContainer;
-import static org.linuxforhealth.fhir.model.util.XMLSupport.parseDiv;
-import static org.linuxforhealth.fhir.model.util.XMLSupport.requireNamespace;
+import static org.linuxforhealth.fhir.model.util.XMLSupport.*;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -24,14 +18,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.linuxforhealth.fhir.core.ResourceType;
-
 import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
 import org.linuxforhealth.fhir.model.r5.resource.*;
 import org.linuxforhealth.fhir.model.r5.type.*;
-import org.linuxforhealth.fhir.model.r5.type.code.*;
 import org.linuxforhealth.fhir.model.r5.type.Boolean;
 import org.linuxforhealth.fhir.model.r5.type.Integer;
 import org.linuxforhealth.fhir.model.r5.type.String;
+import org.linuxforhealth.fhir.model.r5.type.code.*;
 import org.linuxforhealth.fhir.model.util.XMLSupport.StreamReaderDelegate;
 
 //import net.jcip.annotations.NotThreadSafe;
@@ -4237,7 +4230,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private Base64Binary parseBase64Binary(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
+	private Base64Binary parseBase64Binary(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Base64Binary.Builder builder = Base64Binary.builder();
         builder.setValidating(validating);
@@ -5355,7 +5348,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     break;
                 case "method":
                     position = checkElementOrder("method", 2, position, false);
-                    builder.method(parseHTTPVerb("method", reader, -1));
+                    builder.method((HTTPVerb) parseString(HTTPVerb.builder(), "method", reader, -1));
                     break;
                 case "url":
                     position = checkElementOrder("url", 3, position, false);
@@ -5487,7 +5480,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     break;
                 case "mode":
                     position = checkElementOrder("mode", 2, position, false);
-                    builder.mode(parseSearchEntryMode("mode", reader, -1));
+                    builder.mode((SearchEntryMode) parseString(SearchEntryMode.builder(), "mode", reader, -1));
                     break;
                 case "score":
                     position = checkElementOrder("score", 3, position, false);
@@ -5539,7 +5532,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     break;
                 case "relation":
                     position = checkElementOrder("relation", 2, position, false);
-                    builder.relation(parseOrglinuxforhealthfhirmodeltypeCode("relation", reader, -1));
+                    builder.relation((Code) parseString(Code.builder(), "relation", reader, -1));
                     break;
                 case "url":
                     position = checkElementOrder("url", 3, position, false);
@@ -20939,11 +20932,11 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     break;
                 case "color":
                     position = checkElementOrder("color", 13, position, false);
-                    builder.color(parseOrglinuxforhealthfhirmodeltypeCode("color", reader, -1));
+                    builder.color((Code) parseString(Code.builder(), "color", reader, -1));
                     break;
                 case "category":
                     position = checkElementOrder("category", 14, position, false);
-                    builder.category(parseDeviceMetricCategory("category", reader, -1));
+                    builder.category((DeviceMetricCategory) parseString(DeviceMetricCategory.builder(), "category", reader, -1));
                     break;
                 case "measurementFrequency":
                     position = checkElementOrder("measurementFrequency", 15, position, false);
@@ -20999,11 +20992,11 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     break;
                 case "type":
                     position = checkElementOrder("type", 2, position, false);
-                    builder.type(parseDeviceMetricCalibrationType("type", reader, -1));
+                    builder.type((DeviceMetricCalibrationType) parseString(DeviceMetricCalibrationType.builder(),"type", reader, -1));
                     break;
                 case "state":
                     position = checkElementOrder("state", 3, position, false);
-                    builder.state(parseDeviceMetricCalibrationState("state", reader, -1));
+                    builder.state((DeviceMetricCalibrationState) parseString(DeviceMetricCalibrationState.builder(),"state", reader, -1));
                     break;
                 case "time":
                     position = checkElementOrder("time", 4, position, false);
@@ -31835,7 +31828,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     break;
                 case "membership":
                     position = checkElementOrder("membership", 11, position, false);
-                    builder.membership(parseOrglinuxforhealthfhirmodeltypeCode("membership", reader, -1));
+                    builder.membership((Code) parseString(Code.builder(), "membership", reader, -1));
                     break;
                 case "code":
                     position = checkElementOrder("code", 12, position, false);
@@ -53281,7 +53274,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     break;
                 case "conformance":
                     position = checkElementOrder("conformance", 4, position, true);
-                    builder.conformance(parseConfor??("conformance", reader, conformanceElementIndex++));
+                    builder.conformance((ConformanceExpectation) parseString(ConformanceExpectation.builder(), "conformance", reader, conformanceElementIndex++));
                     break;
                 case "conditionality":
                     position = checkElementOrder("conditionality", 5, position, false);
@@ -68168,6 +68161,10 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         stackPop();
         return builder.build();
     }
+    
+    private Element parseElement(java.lang.String elementName, XMLStreamReader reader, int elementIndex) {
+		throw new UnsupportedOperationException("Element " + elementName + " is not modeled.");
+	}
 
     private void stackPush(java.lang.String elementName, int elementIndex) {
         if (elementIndex != -1) {

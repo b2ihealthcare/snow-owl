@@ -78,7 +78,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.AppointmentResponse.class,
         org.linuxforhealth.fhir.model.r5.resource.AuditEvent.class,
         org.linuxforhealth.fhir.model.r5.resource.AuditEvent.Agent.class,
-        org.linuxforhealth.fhir.model.r5.resource.AuditEvent.Agent.Network.class,
         org.linuxforhealth.fhir.model.r5.resource.AuditEvent.Entity.class,
         org.linuxforhealth.fhir.model.r5.resource.AuditEvent.Entity.Detail.class,
         org.linuxforhealth.fhir.model.r5.resource.AuditEvent.Source.class,
@@ -86,9 +85,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.Binary.class,
         org.linuxforhealth.fhir.model.r5.resource.BiologicallyDerivedProduct.class,
         org.linuxforhealth.fhir.model.r5.resource.BiologicallyDerivedProduct.Collection.class,
-        org.linuxforhealth.fhir.model.r5.resource.BiologicallyDerivedProduct.Manipulation.class,
-        org.linuxforhealth.fhir.model.r5.resource.BiologicallyDerivedProduct.Processing.class,
-        org.linuxforhealth.fhir.model.r5.resource.BiologicallyDerivedProduct.Storage.class,
         org.linuxforhealth.fhir.model.r5.resource.BodyStructure.class,
         org.linuxforhealth.fhir.model.r5.resource.Bundle.class,
         org.linuxforhealth.fhir.model.r5.resource.Bundle.Entry.class,
@@ -112,31 +108,23 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.CapabilityStatement.Software.class,
         org.linuxforhealth.fhir.model.r5.resource.CarePlan.class,
         org.linuxforhealth.fhir.model.r5.resource.CarePlan.Activity.class,
-        org.linuxforhealth.fhir.model.r5.resource.CarePlan.Activity.Detail.class,
         org.linuxforhealth.fhir.model.r5.resource.CareTeam.class,
         org.linuxforhealth.fhir.model.r5.resource.CareTeam.Participant.class,
-        org.linuxforhealth.fhir.model.r5.resource.CatalogEntry.class,
-        org.linuxforhealth.fhir.model.r5.resource.CatalogEntry.RelatedEntry.class,
         org.linuxforhealth.fhir.model.r5.resource.ChargeItem.class,
         org.linuxforhealth.fhir.model.r5.resource.ChargeItem.Performer.class,
         org.linuxforhealth.fhir.model.r5.resource.ChargeItemDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.ChargeItemDefinition.Applicability.class,
         org.linuxforhealth.fhir.model.r5.resource.ChargeItemDefinition.PropertyGroup.class,
-        org.linuxforhealth.fhir.model.r5.resource.ChargeItemDefinition.PropertyGroup.PriceComponent.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Abstract.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Classification.class,
-        org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Classification.WhoClassified.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Contributorship.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Contributorship.Entry.class,
-        org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Contributorship.Entry.AffiliationInfo.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Contributorship.Entry.ContributionInstance.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Contributorship.Summary.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Part.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.PublicationForm.class,
-        org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.PublicationForm.PeriodicRelease.class,
-        org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.PublicationForm.PeriodicRelease.DateOfPublication.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.PublicationForm.PublishedIn.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.RelatesTo.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.StatusDate.class,
@@ -144,7 +132,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.Version.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.CitedArtifact.WebLocation.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.Classification.class,
-        org.linuxforhealth.fhir.model.r5.resource.Citation.RelatesTo.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.Summary.class,
         org.linuxforhealth.fhir.model.r5.resource.Citation.StatusDate.class,
         org.linuxforhealth.fhir.model.r5.resource.Claim.class,
@@ -174,7 +161,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.ClaimResponse.Total.class,
         org.linuxforhealth.fhir.model.r5.resource.ClinicalImpression.class,
         org.linuxforhealth.fhir.model.r5.resource.ClinicalImpression.Finding.class,
-        org.linuxforhealth.fhir.model.r5.resource.ClinicalImpression.Investigation.class,
         org.linuxforhealth.fhir.model.r5.resource.ClinicalUseDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.ClinicalUseDefinition.Contraindication.class,
         org.linuxforhealth.fhir.model.r5.resource.ClinicalUseDefinition.Contraindication.OtherTherapy.class,
@@ -198,7 +184,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.Composition.class,
         org.linuxforhealth.fhir.model.r5.resource.Composition.Attester.class,
         org.linuxforhealth.fhir.model.r5.resource.Composition.Event.class,
-        org.linuxforhealth.fhir.model.r5.resource.Composition.RelatesTo.class,
         org.linuxforhealth.fhir.model.r5.resource.Composition.Section.class,
         org.linuxforhealth.fhir.model.r5.resource.ConceptMap.class,
         org.linuxforhealth.fhir.model.r5.resource.ConceptMap.Group.class,
@@ -207,10 +192,8 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.ConceptMap.Group.Element.Target.DependsOn.class,
         org.linuxforhealth.fhir.model.r5.resource.ConceptMap.Group.Unmapped.class,
         org.linuxforhealth.fhir.model.r5.resource.Condition.class,
-        org.linuxforhealth.fhir.model.r5.resource.Condition.Evidence.class,
         org.linuxforhealth.fhir.model.r5.resource.Condition.Stage.class,
         org.linuxforhealth.fhir.model.r5.resource.Consent.class,
-        org.linuxforhealth.fhir.model.r5.resource.Consent.Policy.class,
         org.linuxforhealth.fhir.model.r5.resource.Consent.Provision.class,
         org.linuxforhealth.fhir.model.r5.resource.Consent.Provision.Actor.class,
         org.linuxforhealth.fhir.model.r5.resource.Consent.Provision.Data.class,
@@ -249,39 +232,28 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.DetectedIssue.Evidence.class,
         org.linuxforhealth.fhir.model.r5.resource.DetectedIssue.Mitigation.class,
         org.linuxforhealth.fhir.model.r5.resource.Device.class,
-        org.linuxforhealth.fhir.model.r5.resource.Device.DeviceName.class,
         org.linuxforhealth.fhir.model.r5.resource.Device.Property.class,
-        org.linuxforhealth.fhir.model.r5.resource.Device.Specialization.class,
         org.linuxforhealth.fhir.model.r5.resource.Device.UdiCarrier.class,
         org.linuxforhealth.fhir.model.r5.resource.Device.Version.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceDefinition.class,
-        org.linuxforhealth.fhir.model.r5.resource.DeviceDefinition.Capability.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceDefinition.DeviceName.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceDefinition.Material.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceDefinition.Property.class,
-        org.linuxforhealth.fhir.model.r5.resource.DeviceDefinition.Specialization.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceDefinition.UdiDeviceIdentifier.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceMetric.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceMetric.Calibration.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceRequest.class,
         org.linuxforhealth.fhir.model.r5.resource.DeviceRequest.Parameter.class,
-        org.linuxforhealth.fhir.model.r5.resource.DeviceUseStatement.class,
         org.linuxforhealth.fhir.model.r5.resource.DiagnosticReport.class,
         org.linuxforhealth.fhir.model.r5.resource.DiagnosticReport.Media.class,
-        org.linuxforhealth.fhir.model.r5.resource.DocumentManifest.class,
-        org.linuxforhealth.fhir.model.r5.resource.DocumentManifest.Related.class,
         org.linuxforhealth.fhir.model.r5.resource.DocumentReference.class,
         org.linuxforhealth.fhir.model.r5.resource.DocumentReference.Content.class,
-        org.linuxforhealth.fhir.model.r5.resource.DocumentReference.Context.class,
         org.linuxforhealth.fhir.model.r5.resource.DocumentReference.RelatesTo.class,
         org.linuxforhealth.fhir.model.r5.resource.DomainResource.class,
         org.linuxforhealth.fhir.model.r5.resource.Encounter.class,
-        org.linuxforhealth.fhir.model.r5.resource.Encounter.ClassHistory.class,
         org.linuxforhealth.fhir.model.r5.resource.Encounter.Diagnosis.class,
-        org.linuxforhealth.fhir.model.r5.resource.Encounter.Hospitalization.class,
         org.linuxforhealth.fhir.model.r5.resource.Encounter.Location.class,
         org.linuxforhealth.fhir.model.r5.resource.Encounter.Participant.class,
-        org.linuxforhealth.fhir.model.r5.resource.Encounter.StatusHistory.class,
         org.linuxforhealth.fhir.model.r5.resource.Endpoint.class,
         org.linuxforhealth.fhir.model.r5.resource.EnrollmentRequest.class,
         org.linuxforhealth.fhir.model.r5.resource.EnrollmentResponse.class,
@@ -305,7 +277,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.EvidenceVariable.class,
         org.linuxforhealth.fhir.model.r5.resource.EvidenceVariable.Category.class,
         org.linuxforhealth.fhir.model.r5.resource.EvidenceVariable.Characteristic.class,
-        org.linuxforhealth.fhir.model.r5.resource.EvidenceVariable.Characteristic.TimeFromStart.class,
         org.linuxforhealth.fhir.model.r5.resource.ExampleScenario.class,
         org.linuxforhealth.fhir.model.r5.resource.ExampleScenario.Actor.class,
         org.linuxforhealth.fhir.model.r5.resource.ExampleScenario.Instance.class,
@@ -343,22 +314,17 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.Goal.Target.class,
         org.linuxforhealth.fhir.model.r5.resource.GraphDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.GraphDefinition.Link.class,
-        org.linuxforhealth.fhir.model.r5.resource.GraphDefinition.Link.Target.class,
-        org.linuxforhealth.fhir.model.r5.resource.GraphDefinition.Link.Target.Compartment.class,
         org.linuxforhealth.fhir.model.r5.resource.Group.class,
         org.linuxforhealth.fhir.model.r5.resource.Group.Characteristic.class,
         org.linuxforhealth.fhir.model.r5.resource.Group.Member.class,
         org.linuxforhealth.fhir.model.r5.resource.GuidanceResponse.class,
         org.linuxforhealth.fhir.model.r5.resource.HealthcareService.class,
-        org.linuxforhealth.fhir.model.r5.resource.HealthcareService.AvailableTime.class,
         org.linuxforhealth.fhir.model.r5.resource.HealthcareService.Eligibility.class,
-        org.linuxforhealth.fhir.model.r5.resource.HealthcareService.NotAvailable.class,
         org.linuxforhealth.fhir.model.r5.resource.ImagingStudy.class,
         org.linuxforhealth.fhir.model.r5.resource.ImagingStudy.Series.class,
         org.linuxforhealth.fhir.model.r5.resource.ImagingStudy.Series.Instance.class,
         org.linuxforhealth.fhir.model.r5.resource.ImagingStudy.Series.Performer.class,
         org.linuxforhealth.fhir.model.r5.resource.Immunization.class,
-        org.linuxforhealth.fhir.model.r5.resource.Immunization.Education.class,
         org.linuxforhealth.fhir.model.r5.resource.Immunization.Performer.class,
         org.linuxforhealth.fhir.model.r5.resource.Immunization.ProtocolApplied.class,
         org.linuxforhealth.fhir.model.r5.resource.Immunization.Reaction.class,
@@ -384,7 +350,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.Ingredient.Substance.Strength.class,
         org.linuxforhealth.fhir.model.r5.resource.Ingredient.Substance.Strength.ReferenceStrength.class,
         org.linuxforhealth.fhir.model.r5.resource.InsurancePlan.class,
-        org.linuxforhealth.fhir.model.r5.resource.InsurancePlan.Contact.class,
         org.linuxforhealth.fhir.model.r5.resource.InsurancePlan.Coverage.class,
         org.linuxforhealth.fhir.model.r5.resource.InsurancePlan.Coverage.Benefit.class,
         org.linuxforhealth.fhir.model.r5.resource.InsurancePlan.Coverage.Benefit.Limit.class,
@@ -395,7 +360,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.InsurancePlan.Plan.SpecificCost.Benefit.Cost.class,
         org.linuxforhealth.fhir.model.r5.resource.Invoice.class,
         org.linuxforhealth.fhir.model.r5.resource.Invoice.LineItem.class,
-        org.linuxforhealth.fhir.model.r5.resource.Invoice.LineItem.PriceComponent.class,
         org.linuxforhealth.fhir.model.r5.resource.Invoice.Participant.class,
         org.linuxforhealth.fhir.model.r5.resource.Library.class,
         org.linuxforhealth.fhir.model.r5.resource.Linkage.class,
@@ -403,7 +367,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.List.class,
         org.linuxforhealth.fhir.model.r5.resource.List.Entry.class,
         org.linuxforhealth.fhir.model.r5.resource.Location.class,
-        org.linuxforhealth.fhir.model.r5.resource.Location.HoursOfOperation.class,
         org.linuxforhealth.fhir.model.r5.resource.Location.Position.class,
         org.linuxforhealth.fhir.model.r5.resource.ManufacturedItemDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.ManufacturedItemDefinition.Property.class,
@@ -420,7 +383,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.MeasureReport.Group.Stratifier.Stratum.class,
         org.linuxforhealth.fhir.model.r5.resource.MeasureReport.Group.Stratifier.Stratum.Component.class,
         org.linuxforhealth.fhir.model.r5.resource.MeasureReport.Group.Stratifier.Stratum.Population.class,
-        org.linuxforhealth.fhir.model.r5.resource.Media.class,
         org.linuxforhealth.fhir.model.r5.resource.Medication.class,
         org.linuxforhealth.fhir.model.r5.resource.Medication.Batch.class,
         org.linuxforhealth.fhir.model.r5.resource.Medication.Ingredient.class,
@@ -431,20 +393,13 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.MedicationDispense.Performer.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationDispense.Substitution.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.AdministrationGuidelines.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.AdministrationGuidelines.Dosage.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.AdministrationGuidelines.PatientCharacteristics.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Cost.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.DrugCharacteristic.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Ingredient.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Kinetics.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.MedicineClassification.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.MonitoringProgram.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Monograph.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Packaging.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Regulatory.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Regulatory.MaxDispense.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Regulatory.Schedule.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.Regulatory.Substitution.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationKnowledge.RelatedMedicationKnowledge.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicationRequest.class,
@@ -457,8 +412,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.MedicinalProductDefinition.Contact.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicinalProductDefinition.CrossReference.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicinalProductDefinition.Name.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicinalProductDefinition.Name.CountryLanguage.class,
-        org.linuxforhealth.fhir.model.r5.resource.MedicinalProductDefinition.Name.NamePart.class,
         org.linuxforhealth.fhir.model.r5.resource.MedicinalProductDefinition.Operation.class,
         org.linuxforhealth.fhir.model.r5.resource.MessageDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.MessageDefinition.AllowedResponse.class,
@@ -468,14 +421,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.MessageHeader.Response.class,
         org.linuxforhealth.fhir.model.r5.resource.MessageHeader.Source.class,
         org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.Quality.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.Quality.Roc.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.ReferenceSeq.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.Repository.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.StructureVariant.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.StructureVariant.Inner.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.StructureVariant.Outer.class,
-        org.linuxforhealth.fhir.model.r5.resource.MolecularSequence.Variant.class,
         org.linuxforhealth.fhir.model.r5.resource.NamingSystem.class,
         org.linuxforhealth.fhir.model.r5.resource.NamingSystem.UniqueId.class,
         org.linuxforhealth.fhir.model.r5.resource.NutritionOrder.class,
@@ -489,13 +434,10 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.NutritionProduct.Ingredient.class,
         org.linuxforhealth.fhir.model.r5.resource.NutritionProduct.Instance.class,
         org.linuxforhealth.fhir.model.r5.resource.NutritionProduct.Nutrient.class,
-        org.linuxforhealth.fhir.model.r5.resource.NutritionProduct.ProductCharacteristic.class,
         org.linuxforhealth.fhir.model.r5.resource.Observation.class,
         org.linuxforhealth.fhir.model.r5.resource.Observation.Component.class,
         org.linuxforhealth.fhir.model.r5.resource.Observation.ReferenceRange.class,
         org.linuxforhealth.fhir.model.r5.resource.ObservationDefinition.class,
-        org.linuxforhealth.fhir.model.r5.resource.ObservationDefinition.QualifiedInterval.class,
-        org.linuxforhealth.fhir.model.r5.resource.ObservationDefinition.QuantitativeDetails.class,
         org.linuxforhealth.fhir.model.r5.resource.OperationDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.OperationDefinition.Overload.class,
         org.linuxforhealth.fhir.model.r5.resource.OperationDefinition.Parameter.class,
@@ -504,14 +446,9 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.OperationOutcome.class,
         org.linuxforhealth.fhir.model.r5.resource.OperationOutcome.Issue.class,
         org.linuxforhealth.fhir.model.r5.resource.Organization.class,
-        org.linuxforhealth.fhir.model.r5.resource.Organization.Contact.class,
         org.linuxforhealth.fhir.model.r5.resource.OrganizationAffiliation.class,
         org.linuxforhealth.fhir.model.r5.resource.PackagedProductDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.PackagedProductDefinition.LegalStatusOfSupply.class,
-        org.linuxforhealth.fhir.model.r5.resource.PackagedProductDefinition.Package.class,
-        org.linuxforhealth.fhir.model.r5.resource.PackagedProductDefinition.Package.ContainedItem.class,
-        org.linuxforhealth.fhir.model.r5.resource.PackagedProductDefinition.Package.Property.class,
-        org.linuxforhealth.fhir.model.r5.resource.PackagedProductDefinition.Package.ShelfLifeStorage.class,
         org.linuxforhealth.fhir.model.r5.resource.Parameters.class,
         org.linuxforhealth.fhir.model.r5.resource.Parameters.Parameter.class,
         org.linuxforhealth.fhir.model.r5.resource.Patient.class,
@@ -520,7 +457,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.Patient.Link.class,
         org.linuxforhealth.fhir.model.r5.resource.PaymentNotice.class,
         org.linuxforhealth.fhir.model.r5.resource.PaymentReconciliation.class,
-        org.linuxforhealth.fhir.model.r5.resource.PaymentReconciliation.Detail.class,
         org.linuxforhealth.fhir.model.r5.resource.PaymentReconciliation.ProcessNote.class,
         org.linuxforhealth.fhir.model.r5.resource.Person.class,
         org.linuxforhealth.fhir.model.r5.resource.Person.Link.class,
@@ -535,8 +471,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.Practitioner.class,
         org.linuxforhealth.fhir.model.r5.resource.Practitioner.Qualification.class,
         org.linuxforhealth.fhir.model.r5.resource.PractitionerRole.class,
-        org.linuxforhealth.fhir.model.r5.resource.PractitionerRole.AvailableTime.class,
-        org.linuxforhealth.fhir.model.r5.resource.PractitionerRole.NotAvailable.class,
         org.linuxforhealth.fhir.model.r5.resource.Procedure.class,
         org.linuxforhealth.fhir.model.r5.resource.Procedure.FocalDevice.class,
         org.linuxforhealth.fhir.model.r5.resource.Procedure.Performer.class,
@@ -555,15 +489,7 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.RegulatedAuthorization.Case.class,
         org.linuxforhealth.fhir.model.r5.resource.RelatedPerson.class,
         org.linuxforhealth.fhir.model.r5.resource.RelatedPerson.Communication.class,
-        org.linuxforhealth.fhir.model.r5.resource.RequestGroup.class,
-        org.linuxforhealth.fhir.model.r5.resource.RequestGroup.Action.class,
-        org.linuxforhealth.fhir.model.r5.resource.RequestGroup.Action.Condition.class,
-        org.linuxforhealth.fhir.model.r5.resource.RequestGroup.Action.RelatedAction.class,
-        org.linuxforhealth.fhir.model.r5.resource.ResearchDefinition.class,
-        org.linuxforhealth.fhir.model.r5.resource.ResearchElementDefinition.class,
-        org.linuxforhealth.fhir.model.r5.resource.ResearchElementDefinition.Characteristic.class,
         org.linuxforhealth.fhir.model.r5.resource.ResearchStudy.class,
-        org.linuxforhealth.fhir.model.r5.resource.ResearchStudy.Arm.class,
         org.linuxforhealth.fhir.model.r5.resource.ResearchStudy.Objective.class,
         org.linuxforhealth.fhir.model.r5.resource.ResearchSubject.class,
         org.linuxforhealth.fhir.model.r5.resource.Resource.class,
@@ -598,7 +524,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.StructureMap.Group.Rule.Target.Parameter.class,
         org.linuxforhealth.fhir.model.r5.resource.StructureMap.Structure.class,
         org.linuxforhealth.fhir.model.r5.resource.Subscription.class,
-        org.linuxforhealth.fhir.model.r5.resource.Subscription.Channel.class,
         org.linuxforhealth.fhir.model.r5.resource.SubscriptionStatus.class,
         org.linuxforhealth.fhir.model.r5.resource.SubscriptionStatus.NotificationEvent.class,
         org.linuxforhealth.fhir.model.r5.resource.SubscriptionTopic.class,
@@ -609,7 +534,6 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.SubscriptionTopic.ResourceTrigger.QueryCriteria.class,
         org.linuxforhealth.fhir.model.r5.resource.Substance.class,
         org.linuxforhealth.fhir.model.r5.resource.Substance.Ingredient.class,
-        org.linuxforhealth.fhir.model.r5.resource.Substance.Instance.class,
         org.linuxforhealth.fhir.model.r5.resource.SubstanceDefinition.class,
         org.linuxforhealth.fhir.model.r5.resource.SubstanceDefinition.Code.class,
         org.linuxforhealth.fhir.model.r5.resource.SubstanceDefinition.Moiety.class,
@@ -736,9 +660,7 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.type.Oid.class,
         org.linuxforhealth.fhir.model.r5.type.ParameterDefinition.class,
         org.linuxforhealth.fhir.model.r5.type.Period.class,
-        org.linuxforhealth.fhir.model.r5.type.Population.class,
         org.linuxforhealth.fhir.model.r5.type.PositiveInt.class,
-        org.linuxforhealth.fhir.model.r5.type.ProdCharacteristic.class,
         org.linuxforhealth.fhir.model.r5.type.ProductShelfLife.class,
         org.linuxforhealth.fhir.model.r5.type.Quantity.class,
         org.linuxforhealth.fhir.model.r5.type.Range.class,
@@ -832,9 +754,7 @@ public final class ModelSupport {
         dataTypes.add(Extension.class);
         dataTypes.add(ElementDefinition.class);
         dataTypes.add(MarketingStatus.class);
-        dataTypes.add(Population.class);
         dataTypes.add(ProductShelfLife.class);
-        dataTypes.add(ProdCharacteristic.class);
         DATA_TYPES = Collections.unmodifiableSet(dataTypes);
     }
     private static final Map<String, Class<?>> DATA_TYPE_MAP = buildDataTypeMap();
@@ -989,7 +909,6 @@ public final class ModelSupport {
         codeSubtypeMap.put("ActionCardinalityBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionCardinalityBehavior.class);
         codeSubtypeMap.put("ActionConditionKind", org.linuxforhealth.fhir.model.r5.type.code.ActionConditionKind.class);
         codeSubtypeMap.put("ActionGroupingBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionGroupingBehavior.class);
-        codeSubtypeMap.put("ActionParticipantType", org.linuxforhealth.fhir.model.r5.type.code.ActionParticipantType.class);
         codeSubtypeMap.put("ActionPrecheckBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionPrecheckBehavior.class);
         codeSubtypeMap.put("ActionRelationshipType", org.linuxforhealth.fhir.model.r5.type.code.ActionRelationshipType.class);
         codeSubtypeMap.put("ActionRequiredBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionRequiredBehavior.class);
@@ -1004,28 +923,18 @@ public final class ModelSupport {
         codeSubtypeMap.put("AllergyIntoleranceCategory", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceCategory.class);
         codeSubtypeMap.put("AllergyIntoleranceCriticality", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceCriticality.class);
         codeSubtypeMap.put("AllergyIntoleranceSeverity", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceSeverity.class);
-        codeSubtypeMap.put("AllergyIntoleranceType", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceType.class);
         codeSubtypeMap.put("AppointmentStatus", org.linuxforhealth.fhir.model.r5.type.code.AppointmentStatus.class);
         codeSubtypeMap.put("AssertionDirectionType", org.linuxforhealth.fhir.model.r5.type.code.AssertionDirectionType.class);
         codeSubtypeMap.put("AssertionOperatorType", org.linuxforhealth.fhir.model.r5.type.code.AssertionOperatorType.class);
         codeSubtypeMap.put("AssertionResponseTypes", org.linuxforhealth.fhir.model.r5.type.code.AssertionResponseTypes.class);
         codeSubtypeMap.put("AuditEventAction", org.linuxforhealth.fhir.model.r5.type.code.AuditEventAction.class);
-        codeSubtypeMap.put("AuditEventAgentNetworkType", org.linuxforhealth.fhir.model.r5.type.code.AuditEventAgentNetworkType.class);
-        codeSubtypeMap.put("AuditEventOutcome", org.linuxforhealth.fhir.model.r5.type.code.AuditEventOutcome.class);
         codeSubtypeMap.put("BindingStrength", org.linuxforhealth.fhir.model.r5.type.code.BindingStrength.class);
-        codeSubtypeMap.put("BiologicallyDerivedProductCategory", org.linuxforhealth.fhir.model.r5.type.code.BiologicallyDerivedProductCategory.class);
-        codeSubtypeMap.put("BiologicallyDerivedProductStatus", org.linuxforhealth.fhir.model.r5.type.code.BiologicallyDerivedProductStatus.class);
-        codeSubtypeMap.put("BiologicallyDerivedProductStorageScale", org.linuxforhealth.fhir.model.r5.type.code.BiologicallyDerivedProductStorageScale.class);
         codeSubtypeMap.put("BundleType", org.linuxforhealth.fhir.model.r5.type.code.BundleType.class);
         codeSubtypeMap.put("CapabilityStatementKind", org.linuxforhealth.fhir.model.r5.type.code.CapabilityStatementKind.class);
-        codeSubtypeMap.put("CarePlanActivityKind", org.linuxforhealth.fhir.model.r5.type.code.CarePlanActivityKind.class);
-        codeSubtypeMap.put("CarePlanActivityStatus", org.linuxforhealth.fhir.model.r5.type.code.CarePlanActivityStatus.class);
         codeSubtypeMap.put("CarePlanIntent", org.linuxforhealth.fhir.model.r5.type.code.CarePlanIntent.class);
         codeSubtypeMap.put("CarePlanStatus", org.linuxforhealth.fhir.model.r5.type.code.CarePlanStatus.class);
         codeSubtypeMap.put("CareTeamStatus", org.linuxforhealth.fhir.model.r5.type.code.CareTeamStatus.class);
-        codeSubtypeMap.put("CatalogEntryRelationType", org.linuxforhealth.fhir.model.r5.type.code.CatalogEntryRelationType.class);
         codeSubtypeMap.put("CharacteristicCombination", org.linuxforhealth.fhir.model.r5.type.code.CharacteristicCombination.class);
-        codeSubtypeMap.put("ChargeItemDefinitionPriceComponentType", org.linuxforhealth.fhir.model.r5.type.code.ChargeItemDefinitionPriceComponentType.class);
         codeSubtypeMap.put("ChargeItemStatus", org.linuxforhealth.fhir.model.r5.type.code.ChargeItemStatus.class);
         codeSubtypeMap.put("ClaimResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.ClaimResponseStatus.class);
         codeSubtypeMap.put("ClaimStatus", org.linuxforhealth.fhir.model.r5.type.code.ClaimStatus.class);
@@ -1039,9 +948,7 @@ public final class ModelSupport {
         codeSubtypeMap.put("CommunicationStatus", org.linuxforhealth.fhir.model.r5.type.code.CommunicationStatus.class);
         codeSubtypeMap.put("CompartmentCode", org.linuxforhealth.fhir.model.r5.type.code.CompartmentCode.class);
         codeSubtypeMap.put("CompartmentType", org.linuxforhealth.fhir.model.r5.type.code.CompartmentType.class);
-        codeSubtypeMap.put("CompositionAttestationMode", org.linuxforhealth.fhir.model.r5.type.code.CompositionAttestationMode.class);
         codeSubtypeMap.put("CompositionStatus", org.linuxforhealth.fhir.model.r5.type.code.CompositionStatus.class);
-        codeSubtypeMap.put("ConceptMapEquivalence", org.linuxforhealth.fhir.model.r5.type.code.ConceptMapEquivalence.class);
         codeSubtypeMap.put("ConceptMapGroupUnmappedMode", org.linuxforhealth.fhir.model.r5.type.code.ConceptMapGroupUnmappedMode.class);
         codeSubtypeMap.put("ConceptSubsumptionOutcome", org.linuxforhealth.fhir.model.r5.type.code.ConceptSubsumptionOutcome.class);
         codeSubtypeMap.put("ConditionalDeleteStatus", org.linuxforhealth.fhir.model.r5.type.code.ConditionalDeleteStatus.class);
@@ -1065,17 +972,13 @@ public final class ModelSupport {
         codeSubtypeMap.put("DeviceMetricCalibrationState", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCalibrationState.class);
         codeSubtypeMap.put("DeviceMetricCalibrationType", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCalibrationType.class);
         codeSubtypeMap.put("DeviceMetricCategory", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCategory.class);
-        codeSubtypeMap.put("DeviceMetricColor", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricColor.class);
         codeSubtypeMap.put("DeviceMetricOperationalStatus", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricOperationalStatus.class);
         codeSubtypeMap.put("DeviceNameType", org.linuxforhealth.fhir.model.r5.type.code.DeviceNameType.class);
         codeSubtypeMap.put("DeviceRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.DeviceRequestStatus.class);
-        codeSubtypeMap.put("DeviceUseStatementStatus", org.linuxforhealth.fhir.model.r5.type.code.DeviceUseStatementStatus.class);
         codeSubtypeMap.put("DiagnosticReportStatus", org.linuxforhealth.fhir.model.r5.type.code.DiagnosticReportStatus.class);
         codeSubtypeMap.put("DiscriminatorType", org.linuxforhealth.fhir.model.r5.type.code.DiscriminatorType.class);
-        codeSubtypeMap.put("DocumentConfidentiality", org.linuxforhealth.fhir.model.r5.type.code.DocumentConfidentiality.class);
         codeSubtypeMap.put("DocumentMode", org.linuxforhealth.fhir.model.r5.type.code.DocumentMode.class);
         codeSubtypeMap.put("DocumentReferenceStatus", org.linuxforhealth.fhir.model.r5.type.code.DocumentReferenceStatus.class);
-        codeSubtypeMap.put("DocumentRelationshipType", org.linuxforhealth.fhir.model.r5.type.code.DocumentRelationshipType.class);
         codeSubtypeMap.put("EligibilityRequestPurpose", org.linuxforhealth.fhir.model.r5.type.code.EligibilityRequestPurpose.class);
         codeSubtypeMap.put("EligibilityRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.EligibilityRequestStatus.class);
         codeSubtypeMap.put("EligibilityResponsePurpose", org.linuxforhealth.fhir.model.r5.type.code.EligibilityResponsePurpose.class);
@@ -1095,7 +998,6 @@ public final class ModelSupport {
         codeSubtypeMap.put("ExtensionContextType", org.linuxforhealth.fhir.model.r5.type.code.ExtensionContextType.class);
         codeSubtypeMap.put("FamilyHistoryStatus", org.linuxforhealth.fhir.model.r5.type.code.FamilyHistoryStatus.class);
         codeSubtypeMap.put("FHIRAllTypes", org.linuxforhealth.fhir.model.r5.type.code.FHIRAllTypes.class);
-        codeSubtypeMap.put("FHIRDefinedType", org.linuxforhealth.fhir.model.r5.type.code.FHIRDefinedType.class);
         codeSubtypeMap.put("FHIRDeviceStatus", org.linuxforhealth.fhir.model.r5.type.code.FHIRDeviceStatus.class);
         codeSubtypeMap.put("FHIRSubstanceStatus", org.linuxforhealth.fhir.model.r5.type.code.FHIRSubstanceStatus.class);
         codeSubtypeMap.put("FHIRVersion", org.linuxforhealth.fhir.model.r5.type.code.FHIRVersion.class);
@@ -1104,18 +1006,15 @@ public final class ModelSupport {
         codeSubtypeMap.put("GoalLifecycleStatus", org.linuxforhealth.fhir.model.r5.type.code.GoalLifecycleStatus.class);
         codeSubtypeMap.put("GraphCompartmentRule", org.linuxforhealth.fhir.model.r5.type.code.GraphCompartmentRule.class);
         codeSubtypeMap.put("GraphCompartmentUse", org.linuxforhealth.fhir.model.r5.type.code.GraphCompartmentUse.class);
-        codeSubtypeMap.put("GroupMeasure", org.linuxforhealth.fhir.model.r5.type.code.GroupMeasure.class);
         codeSubtypeMap.put("GroupType", org.linuxforhealth.fhir.model.r5.type.code.GroupType.class);
         codeSubtypeMap.put("GuidanceResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.GuidanceResponseStatus.class);
         codeSubtypeMap.put("GuidePageGeneration", org.linuxforhealth.fhir.model.r5.type.code.GuidePageGeneration.class);
-        codeSubtypeMap.put("GuideParameterCode", org.linuxforhealth.fhir.model.r5.type.code.GuideParameterCode.class);
         codeSubtypeMap.put("HTTPVerb", org.linuxforhealth.fhir.model.r5.type.code.HTTPVerb.class);
         codeSubtypeMap.put("IdentifierUse", org.linuxforhealth.fhir.model.r5.type.code.IdentifierUse.class);
         codeSubtypeMap.put("IdentityAssuranceLevel", org.linuxforhealth.fhir.model.r5.type.code.IdentityAssuranceLevel.class);
         codeSubtypeMap.put("ImagingStudyStatus", org.linuxforhealth.fhir.model.r5.type.code.ImagingStudyStatus.class);
         codeSubtypeMap.put("ImmunizationEvaluationStatus", org.linuxforhealth.fhir.model.r5.type.code.ImmunizationEvaluationStatus.class);
         codeSubtypeMap.put("ImmunizationStatus", org.linuxforhealth.fhir.model.r5.type.code.ImmunizationStatus.class);
-        codeSubtypeMap.put("InvoicePriceComponentType", org.linuxforhealth.fhir.model.r5.type.code.InvoicePriceComponentType.class);
         codeSubtypeMap.put("InvoiceStatus", org.linuxforhealth.fhir.model.r5.type.code.InvoiceStatus.class);
         codeSubtypeMap.put("IssueSeverity", org.linuxforhealth.fhir.model.r5.type.code.IssueSeverity.class);
         codeSubtypeMap.put("IssueType", org.linuxforhealth.fhir.model.r5.type.code.IssueType.class);
@@ -1127,7 +1026,6 @@ public final class ModelSupport {
         codeSubtypeMap.put("LocationStatus", org.linuxforhealth.fhir.model.r5.type.code.LocationStatus.class);
         codeSubtypeMap.put("MeasureReportStatus", org.linuxforhealth.fhir.model.r5.type.code.MeasureReportStatus.class);
         codeSubtypeMap.put("MeasureReportType", org.linuxforhealth.fhir.model.r5.type.code.MeasureReportType.class);
-        codeSubtypeMap.put("MediaStatus", org.linuxforhealth.fhir.model.r5.type.code.MediaStatus.class);
         codeSubtypeMap.put("MedicationAdministrationStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationAdministrationStatus.class);
         codeSubtypeMap.put("MedicationDispenseStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationDispenseStatus.class);
         codeSubtypeMap.put("MedicationKnowledgeStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationKnowledgeStatus.class);
@@ -1154,7 +1052,6 @@ public final class ModelSupport {
         codeSubtypeMap.put("OperationParameterUse", org.linuxforhealth.fhir.model.r5.type.code.OperationParameterUse.class);
         codeSubtypeMap.put("OrientationType", org.linuxforhealth.fhir.model.r5.type.code.OrientationType.class);
         codeSubtypeMap.put("ParameterUse", org.linuxforhealth.fhir.model.r5.type.code.ParameterUse.class);
-        codeSubtypeMap.put("ParticipantRequired", org.linuxforhealth.fhir.model.r5.type.code.ParticipantRequired.class);
         codeSubtypeMap.put("ParticipantStatus", org.linuxforhealth.fhir.model.r5.type.code.ParticipantStatus.class);
         codeSubtypeMap.put("ParticipationStatus", org.linuxforhealth.fhir.model.r5.type.code.ParticipationStatus.class);
         codeSubtypeMap.put("PaymentNoticeStatus", org.linuxforhealth.fhir.model.r5.type.code.PaymentNoticeStatus.class);
@@ -1164,7 +1061,6 @@ public final class ModelSupport {
         codeSubtypeMap.put("PropertyType", org.linuxforhealth.fhir.model.r5.type.code.PropertyType.class);
         codeSubtypeMap.put("ProvenanceEntityRole", org.linuxforhealth.fhir.model.r5.type.code.ProvenanceEntityRole.class);
         codeSubtypeMap.put("PublicationStatus", org.linuxforhealth.fhir.model.r5.type.code.PublicationStatus.class);
-        codeSubtypeMap.put("QualityType", org.linuxforhealth.fhir.model.r5.type.code.QualityType.class);
         codeSubtypeMap.put("QuantityComparator", org.linuxforhealth.fhir.model.r5.type.code.QuantityComparator.class);
         codeSubtypeMap.put("QuestionnaireItemOperator", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireItemOperator.class);
         codeSubtypeMap.put("QuestionnaireItemType", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireItemType.class);
@@ -1175,13 +1071,9 @@ public final class ModelSupport {
         codeSubtypeMap.put("RelatedArtifactType", org.linuxforhealth.fhir.model.r5.type.code.RelatedArtifactType.class);
         codeSubtypeMap.put("RemittanceOutcome", org.linuxforhealth.fhir.model.r5.type.code.RemittanceOutcome.class);
         codeSubtypeMap.put("ReportRelationshipType", org.linuxforhealth.fhir.model.r5.type.code.ReportRelationshipType.class);
-        codeSubtypeMap.put("RepositoryType", org.linuxforhealth.fhir.model.r5.type.code.RepositoryType.class);
         codeSubtypeMap.put("RequestIntent", org.linuxforhealth.fhir.model.r5.type.code.RequestIntent.class);
         codeSubtypeMap.put("RequestPriority", org.linuxforhealth.fhir.model.r5.type.code.RequestPriority.class);
         codeSubtypeMap.put("RequestStatus", org.linuxforhealth.fhir.model.r5.type.code.RequestStatus.class);
-        codeSubtypeMap.put("ResearchElementType", org.linuxforhealth.fhir.model.r5.type.code.ResearchElementType.class);
-        codeSubtypeMap.put("ResearchStudyStatus", org.linuxforhealth.fhir.model.r5.type.code.ResearchStudyStatus.class);
-        codeSubtypeMap.put("ResearchSubjectStatus", org.linuxforhealth.fhir.model.r5.type.code.ResearchSubjectStatus.class);
         codeSubtypeMap.put("ResourceTypeCode", org.linuxforhealth.fhir.model.r5.type.code.ResourceTypeCode.class);
         codeSubtypeMap.put("ResourceVersionPolicy", org.linuxforhealth.fhir.model.r5.type.code.ResourceVersionPolicy.class);
         codeSubtypeMap.put("ResponseType", org.linuxforhealth.fhir.model.r5.type.code.ResponseType.class);
@@ -1206,17 +1098,14 @@ public final class ModelSupport {
         codeSubtypeMap.put("Status", org.linuxforhealth.fhir.model.r5.type.code.Status.class);
         codeSubtypeMap.put("StrandType", org.linuxforhealth.fhir.model.r5.type.code.StrandType.class);
         codeSubtypeMap.put("StructureDefinitionKind", org.linuxforhealth.fhir.model.r5.type.code.StructureDefinitionKind.class);
-        codeSubtypeMap.put("StructureMapContextType", org.linuxforhealth.fhir.model.r5.type.code.StructureMapContextType.class);
         codeSubtypeMap.put("StructureMapGroupTypeMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapGroupTypeMode.class);
         codeSubtypeMap.put("StructureMapInputMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapInputMode.class);
         codeSubtypeMap.put("StructureMapModelMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapModelMode.class);
         codeSubtypeMap.put("StructureMapSourceListMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapSourceListMode.class);
         codeSubtypeMap.put("StructureMapTargetListMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapTargetListMode.class);
         codeSubtypeMap.put("StructureMapTransform", org.linuxforhealth.fhir.model.r5.type.code.StructureMapTransform.class);
-        codeSubtypeMap.put("SubscriptionChannelType", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionChannelType.class);
         codeSubtypeMap.put("SubscriptionNotificationType", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionNotificationType.class);
         codeSubtypeMap.put("SubscriptionStatusCode", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionStatusCode.class);
-        codeSubtypeMap.put("SubscriptionTopicFilterBySearchModifier", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionTopicFilterBySearchModifier.class);
         codeSubtypeMap.put("SupplyDeliveryStatus", org.linuxforhealth.fhir.model.r5.type.code.SupplyDeliveryStatus.class);
         codeSubtypeMap.put("SupplyRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.SupplyRequestStatus.class);
         codeSubtypeMap.put("SystemRestfulInteraction", org.linuxforhealth.fhir.model.r5.type.code.SystemRestfulInteraction.class);
@@ -1234,11 +1123,9 @@ public final class ModelSupport {
         codeSubtypeMap.put("UDIEntryType", org.linuxforhealth.fhir.model.r5.type.code.UDIEntryType.class);
         codeSubtypeMap.put("UnitsOfTime", org.linuxforhealth.fhir.model.r5.type.code.UnitsOfTime.class);
         codeSubtypeMap.put("Use", org.linuxforhealth.fhir.model.r5.type.code.Use.class);
-        codeSubtypeMap.put("VariableType", org.linuxforhealth.fhir.model.r5.type.code.VariableType.class);
         codeSubtypeMap.put("VisionBase", org.linuxforhealth.fhir.model.r5.type.code.VisionBase.class);
         codeSubtypeMap.put("VisionEyes", org.linuxforhealth.fhir.model.r5.type.code.VisionEyes.class);
         codeSubtypeMap.put("VisionStatus", org.linuxforhealth.fhir.model.r5.type.code.VisionStatus.class);
-        codeSubtypeMap.put("XPathUsageType", org.linuxforhealth.fhir.model.r5.type.code.XPathUsageType.class);
         return Collections.unmodifiableMap(codeSubtypeMap);
     }
 
