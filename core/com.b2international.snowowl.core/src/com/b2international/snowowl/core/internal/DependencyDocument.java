@@ -55,4 +55,18 @@ public final class DependencyDocument implements Comparable<DependencyDocument> 
 		return COMPARATOR.compare(this, other);
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(uri, scope);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		DependencyDocument other = (DependencyDocument) obj;
+		return Objects.equals(uri, other.uri) && Objects.equals(scope, other.scope);
+	}
+	
 }
