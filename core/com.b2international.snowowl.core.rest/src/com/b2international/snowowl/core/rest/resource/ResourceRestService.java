@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -111,9 +112,6 @@ public class ResourceRestService extends AbstractRestService {
 		@PathVariable(value = "resourceId") 
 		final String resourceId,
 		
-		@Parameter(description = "The timestamp to use for historical ('as of') queries")
-		final Long timestamp,
-		
 		@ParameterObject
 		final ResourceSelectors selectors) {
 		
@@ -122,7 +120,38 @@ public class ResourceRestService extends AbstractRestService {
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
 			.setAllowHiddenResources(false)
-			.buildAsync(timestamp)
+			.buildAsync()
+			.execute(getBus());
+	}
+	
+	@Operation(
+		summary = "Retrieve versioned resource by its unique identifier and version", 
+		description = "Returns generic information about a single resource associated to the given unique identifier."
+	)
+	@ApiResponses({ 
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"), 
+		@ApiResponse(responseCode = "404", description = "Not Found") 
+	})
+	@GetMapping("/{resourceId}/{versionId}")
+	public Promise<Resource> getVersioned(
+		@Parameter(description = "The resource identifier") 
+		@PathVariable(value = "resourceId") 
+		final String resourceId,
+		
+		@Parameter(description = "The version identifier") 
+		@PathVariable(value = "versionId") 
+		final String versionId,
+		
+		@ParameterObject
+		final ResourceSelectors selectors) {
+		
+		return ResourceRequests
+			.prepareGet(ResourceURI.branch("any", resourceId, versionId))
+			.setExpand(selectors.getExpand())
+			.setFields(selectors.getField())
+			.setAllowHiddenResources(false)
+			.buildAsync()
 			.execute(getBus());
 	}
 	
