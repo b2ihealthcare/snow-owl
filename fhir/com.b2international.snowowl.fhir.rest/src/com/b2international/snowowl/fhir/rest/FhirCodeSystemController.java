@@ -17,14 +17,19 @@ package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.time.LocalDate;
 
+import org.linuxforhealth.fhir.model.format.Format;
+import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
+import org.linuxforhealth.fhir.model.r4b.generator.FHIRGenerator;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
@@ -36,8 +41,9 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.converter.BundleConverter_43;
+import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_43;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
@@ -274,7 +280,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
 	@GetMapping
-	public Promise<Bundle> getCodeSystems(
+	public Promise<ResponseEntity<byte[]>> getCodeSystems(
 			@ParameterObject 
 			FhirCodeSystemSearchParameters params,
 
@@ -286,27 +292,49 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
 //		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
 		
-		return FhirRequests.codeSystems().prepareSearch()
-				.filterByIds(asList(params.get_id()))
-				.filterByNames(asList(params.getName()))
-				.filterByTitle(params.getTitle())
+		return FhirRequests.codeSystems()
+			.prepareSearch()
+			.filterByIds(asList(params.get_id()))
+			.filterByNames(asList(params.getName()))
+			.filterByTitle(params.getTitle())
 //				.filterByContent(params.get_content())
-				.filterByLastUpdated(params.get_lastUpdated())
-				.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
-				.filterByVersions(params.getVersion())
-				.filterByStatus(params.getStatus())
-				.setSearchAfter(params.get_after())
-				.setCount(params.get_count())
-				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
-				.setSummary(params.get_summary())
-				.setElements(params.get_elements())
-				.sortByFields(params.get_sort())
-				.setLocales(acceptLanguage)
-				.buildAsync()
-				.execute(getBus());
+			.filterByLastUpdated(params.get_lastUpdated())
+			.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
+			.filterByVersions(params.getVersion())
+			.filterByStatus(params.getStatus())
+			.setSearchAfter(params.get_after())
+			.setCount(params.get_count())
+			// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
+			.setSummary(params.get_summary())
+			.setElements(params.get_elements())
+			.sortByFields(params.get_sort())
+			.setLocales(acceptLanguage)
+			.buildAsync()
+			.execute(getBus())
+			.then(soBundle -> {
+				var fhirBundle = BundleConverter_43.INSTANCE.fromInternal(soBundle);
+				
+				final Format format = Format.JSON;
+				final boolean prettyPrinting = true;
+				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
+
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);
+
+				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				
+				try {
+					generator.generate(fhirBundle, baos);
+				} catch (FHIRGeneratorException e) {
+					e.printStackTrace();
+				}
+
+				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+			});
+		
 		// TODO convert returned Bundle entries to have a fullUrl, either here or supply current url to request via header param
-//				String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
-//				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
+		// String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
+		// Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
 	}
 	
 	/**
@@ -325,7 +353,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
 	@GetMapping(value="/{id:**}")
-	public Promise<CodeSystem> getCodeSystem(
+	public Promise<ResponseEntity<byte[]>> getCodeSystem(
 			@Parameter(description = "The identifier of the Code System resource")
 			@PathVariable(value = "id") 
 			final String id,
@@ -336,13 +364,34 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
 			final String acceptLanguage) {
-		
-		return FhirRequests.codeSystems().prepareGet(id)
-				.setSummary(selectors.get_summary())
-				.setElements(selectors.get_elements())
-				.setLocales(acceptLanguage)
-				.buildAsync()
-				.execute(getBus());
+
+		return FhirRequests.codeSystems()
+			.prepareGet(id)
+			.setSummary(selectors.get_summary())
+			.setElements(selectors.get_elements())
+			.setLocales(acceptLanguage)
+			.buildAsync()
+			.execute(getBus())
+			.then(soCodeSystem -> {
+				var fhirCodeSystem = CodeSystemConverter_43.INSTANCE.fromInternal(soCodeSystem);
+				
+				final Format format = Format.JSON;
+				final boolean prettyPrinting = true;
+				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
+
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);
+
+				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				
+				try {
+					generator.generate(fhirCodeSystem, baos);
+				} catch (FHIRGeneratorException e) {
+					e.printStackTrace();
+				}
+
+				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+			});
 	}
 	
 	/**
