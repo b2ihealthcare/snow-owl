@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core;
 
+import org.linuxforhealth.fhir.model.lang.util.LanguageRegistryUtil;
+
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 
 /**
@@ -23,4 +27,9 @@ import com.b2international.snowowl.core.setup.Plugin;
  */
 @Component
 public final class FhirCorePlugin extends Plugin {
+	
+	@Override
+	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		LanguageRegistryUtil.init();
+	}
 }
