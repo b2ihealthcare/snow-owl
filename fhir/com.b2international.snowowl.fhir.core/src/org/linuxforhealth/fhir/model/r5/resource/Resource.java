@@ -18,6 +18,12 @@ import org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 import org.linuxforhealth.fhir.model.r5.visitor.AbstractVisitable;
 
+/*
+ * Modifications:
+ * 
+ * - Introduced inner class for field names
+ */
+
 /**
  * This is the base resource type for everything.
  * 
@@ -29,6 +35,12 @@ import org.linuxforhealth.fhir.model.r5.visitor.AbstractVisitable;
 )
 @Generated("org.linuxforhealth.fhir.tools.CodeGenerator")
 public abstract class Resource extends AbstractVisitable {
+	
+	public static abstract class Fields {
+		public static final java.lang.String META = "meta";
+		public static final java.lang.String LANGUAGE = "language";
+	}
+	
     @Summary
     protected final java.lang.String id;
     @Summary

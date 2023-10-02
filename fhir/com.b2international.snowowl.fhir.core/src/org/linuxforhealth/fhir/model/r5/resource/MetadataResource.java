@@ -56,23 +56,23 @@ import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 )
 @Generated("org.linuxforhealth.fhir.tools.CodeGenerator")
 public abstract class MetadataResource extends CanonicalResource {
-    private final Date approvalDate;
-    private final Date lastReviewDate;
+	protected final Date approvalDate;
+    protected final Date lastReviewDate;
     @Summary
-    private final Period effectivePeriod;
+    protected final Period effectivePeriod;
     @Binding(
         bindingName = "DefinitionTopic",
         strength = BindingStrength.Value.EXAMPLE,
         valueSet = "http://hl7.org/fhir/ValueSet/definition-topic"
     )
-    private final List<CodeableConcept> topic;
-    private final List<ContactDetail> author;
-    private final List<ContactDetail> editor;
-    private final List<ContactDetail> reviewer;
-    private final List<ContactDetail> endorser;
-    private final List<RelatedArtifact> relatedArtifact;
+    protected final List<CodeableConcept> topic;
+    protected final List<ContactDetail> author;
+    protected final List<ContactDetail> editor;
+    protected final List<ContactDetail> reviewer;
+    protected final List<ContactDetail> endorser;
+    protected final List<RelatedArtifact> relatedArtifact;
 
-    private MetadataResource(Builder builder) {
+    protected MetadataResource(Builder builder) {
         super(builder);
         approvalDate = builder.approvalDate;
         lastReviewDate = builder.lastReviewDate;
@@ -209,7 +209,7 @@ public abstract class MetadataResource extends CanonicalResource {
         private List<ContactDetail> endorser = new ArrayList<>();
         private List<RelatedArtifact> relatedArtifact = new ArrayList<>();
 
-        private Builder() {
+        protected Builder() {
             super();
         }
 

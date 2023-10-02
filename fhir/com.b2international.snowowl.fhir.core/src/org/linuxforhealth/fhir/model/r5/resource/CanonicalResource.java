@@ -39,6 +39,12 @@ import org.linuxforhealth.fhir.model.r5.type.code.PublicationStatus;
 import org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 
+/*
+ * Modifications:
+ * 
+ * - Introduced inner class for field names
+ */
+
 /**
  * Common Interface declaration for conformance and knowledge artifact resources.
  * 
@@ -84,23 +90,37 @@ import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 )
 @Generated("org.linuxforhealth.fhir.tools.CodeGenerator")
 public abstract class CanonicalResource extends DomainResource {
+	
+	public static abstract class Fields extends DomainResource.Fields {
+		public static final java.lang.String URL = "url";
+		public static final java.lang.String VERSION = "version";
+		public static final java.lang.String NAME = "name";
+		public static final java.lang.String TITLE = "title";
+		public static final java.lang.String DATE = "date";
+		public static final java.lang.String PUBLISHER = "publisher";
+		public static final java.lang.String CONTACT = "contact";
+		public static final java.lang.String DESCRIPTION = "description";
+		public static final java.lang.String PURPOSE = "purpose";
+		public static final java.lang.String COPYRIGHT = "copyright";
+	}
+
     @Summary
-    private final Uri url;
+    protected final Uri url;
     @Summary
-    private final List<Identifier> identifier;
+    protected final List<Identifier> identifier;
     @Summary
-    private final String version;
+    protected final String version;
     @Summary
     @Choice({ String.class, Coding.class })
     @Binding(
         strength = BindingStrength.Value.EXTENSIBLE,
         valueSet = "http://hl7.org/fhir/ValueSet/version-algorithm"
     )
-    private final Element versionAlgorithm;
+    protected final Element versionAlgorithm;
     @Summary
-    private final String name;
+    protected final String name;
     @Summary
-    private final String title;
+    protected final String title;
     @Summary
     @Binding(
         bindingName = "PublicationStatus",
@@ -109,18 +129,18 @@ public abstract class CanonicalResource extends DomainResource {
         valueSet = "http://hl7.org/fhir/ValueSet/publication-status|5.0.0"
     )
     @Required
-    private final PublicationStatus status;
+    protected final PublicationStatus status;
     @Summary
-    private final Boolean experimental;
+    protected final Boolean experimental;
     @Summary
-    private final DateTime date;
+    protected final DateTime date;
     @Summary
-    private final String publisher;
+    protected final String publisher;
     @Summary
-    private final List<ContactDetail> contact;
-    private final Markdown description;
+    protected final List<ContactDetail> contact;
+    protected final Markdown description;
     @Summary
-    private final List<UsageContext> useContext;
+    protected final List<UsageContext> useContext;
     @Summary
     @Binding(
         bindingName = "Jurisdiction",
@@ -128,10 +148,10 @@ public abstract class CanonicalResource extends DomainResource {
         description = "Countries and regions within which this artifact is targeted for use.",
         valueSet = "http://hl7.org/fhir/ValueSet/jurisdiction"
     )
-    private final List<CodeableConcept> jurisdiction;
-    private final Markdown purpose;
-    private final Markdown copyright;
-    private final String copyrightLabel;
+    protected final List<CodeableConcept> jurisdiction;
+    protected final Markdown purpose;
+    protected final Markdown copyright;
+    protected final String copyrightLabel;
 
     protected CanonicalResource(Builder builder) {
         super(builder);

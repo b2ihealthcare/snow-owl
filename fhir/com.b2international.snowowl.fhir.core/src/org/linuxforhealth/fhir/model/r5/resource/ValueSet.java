@@ -14,40 +14,29 @@ import java.util.Objects;
 
 import javax.annotation.Generated;
 
-import org.linuxforhealth.fhir.model.r5.annotation.Binding;
 import org.linuxforhealth.fhir.model.annotation.Choice;
-import org.linuxforhealth.fhir.model.r5.annotation.Constraint;
-import org.linuxforhealth.fhir.model.r5.annotation.Maturity;
 import org.linuxforhealth.fhir.model.annotation.Required;
 import org.linuxforhealth.fhir.model.annotation.Summary;
-import org.linuxforhealth.fhir.model.r5.type.BackboneElement;
+import org.linuxforhealth.fhir.model.r5.annotation.Binding;
+import org.linuxforhealth.fhir.model.r5.annotation.Constraint;
+import org.linuxforhealth.fhir.model.r5.annotation.Maturity;
+import org.linuxforhealth.fhir.model.r5.type.*;
 import org.linuxforhealth.fhir.model.r5.type.Boolean;
-import org.linuxforhealth.fhir.model.r5.type.Canonical;
-import org.linuxforhealth.fhir.model.r5.type.Code;
-import org.linuxforhealth.fhir.model.r5.type.CodeableConcept;
-import org.linuxforhealth.fhir.model.r5.type.Coding;
-import org.linuxforhealth.fhir.model.r5.type.ContactDetail;
-import org.linuxforhealth.fhir.model.r5.type.Date;
-import org.linuxforhealth.fhir.model.r5.type.DateTime;
-import org.linuxforhealth.fhir.model.r5.type.Decimal;
-import org.linuxforhealth.fhir.model.r5.type.Element;
-import org.linuxforhealth.fhir.model.r5.type.Extension;
-import org.linuxforhealth.fhir.model.r5.type.Identifier;
 import org.linuxforhealth.fhir.model.r5.type.Integer;
-import org.linuxforhealth.fhir.model.r5.type.Markdown;
-import org.linuxforhealth.fhir.model.r5.type.Meta;
-import org.linuxforhealth.fhir.model.r5.type.Narrative;
-import org.linuxforhealth.fhir.model.r5.type.Period;
-import org.linuxforhealth.fhir.model.r5.type.RelatedArtifact;
 import org.linuxforhealth.fhir.model.r5.type.String;
-import org.linuxforhealth.fhir.model.r5.type.Uri;
-import org.linuxforhealth.fhir.model.r5.type.UsageContext;
 import org.linuxforhealth.fhir.model.r5.type.code.BindingStrength;
 import org.linuxforhealth.fhir.model.r5.type.code.FilterOperator;
 import org.linuxforhealth.fhir.model.r5.type.code.PublicationStatus;
 import org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
+
+/*
+ * Modifications:
+ * 
+ * - Changed superclass to MetadataResource even though it is an interface (in FHIR terms); the code generator could
+ *   not map this to Java in the expected manner
+ */
 
 /**
  * A ValueSet resource instance specifies a set of codes drawn from one or more code systems, intended for use in a 
@@ -169,265 +158,21 @@ import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
     generated = true
 )
 @Generated("org.linuxforhealth.fhir.tools.CodeGenerator")
-public class ValueSet extends DomainResource {
-    @Summary
-    private final Uri url;
-    @Summary
-    private final List<Identifier> identifier;
-    @Summary
-    private final String version;
-    @Summary
-    @Choice({ String.class, Coding.class })
-    @Binding(
-        strength = BindingStrength.Value.EXTENSIBLE,
-        valueSet = "http://hl7.org/fhir/ValueSet/version-algorithm"
-    )
-    private final Element versionAlgorithm;
-    @Summary
-    private final String name;
-    @Summary
-    private final String title;
-    @Summary
-    @Binding(
-        bindingName = "PublicationStatus",
-        strength = BindingStrength.Value.REQUIRED,
-        description = "The lifecycle status of an artifact.",
-        valueSet = "http://hl7.org/fhir/ValueSet/publication-status|5.0.0"
-    )
-    @Required
-    private final PublicationStatus status;
-    @Summary
-    private final Boolean experimental;
-    @Summary
-    private final DateTime date;
-    @Summary
-    private final String publisher;
-    @Summary
-    private final List<ContactDetail> contact;
-    private final Markdown description;
-    @Summary
-    private final List<UsageContext> useContext;
-    @Summary
-    @Binding(
-        bindingName = "Jurisdiction",
-        strength = BindingStrength.Value.EXTENSIBLE,
-        description = "Countries and regions within which this artifact is targeted for use.",
-        valueSet = "http://hl7.org/fhir/ValueSet/jurisdiction"
-    )
-    private final List<CodeableConcept> jurisdiction;
-    @Summary
-    private final Boolean immutable;
-    private final Markdown purpose;
-    private final Markdown copyright;
-    private final String copyrightLabel;
-    private final Date approvalDate;
-    private final Date lastReviewDate;
-    @Summary
-    private final Period effectivePeriod;
-    @Binding(
-        bindingName = "DefinitionTopic",
-        strength = BindingStrength.Value.EXAMPLE,
-        valueSet = "http://hl7.org/fhir/ValueSet/definition-topic"
-    )
-    private final List<CodeableConcept> topic;
-    private final List<ContactDetail> author;
-    private final List<ContactDetail> editor;
-    private final List<ContactDetail> reviewer;
-    private final List<ContactDetail> endorser;
-    private final List<RelatedArtifact> relatedArtifact;
+public class ValueSet extends MetadataResource {
+	@Summary
+	private final Boolean immutable;
     private final Compose compose;
     private final Expansion expansion;
     private final Scope scope;
 
     private ValueSet(Builder builder) {
         super(builder);
-        url = builder.url;
-        identifier = Collections.unmodifiableList(builder.identifier);
-        version = builder.version;
-        versionAlgorithm = builder.versionAlgorithm;
-        name = builder.name;
-        title = builder.title;
-        status = builder.status;
-        experimental = builder.experimental;
-        date = builder.date;
-        publisher = builder.publisher;
-        contact = Collections.unmodifiableList(builder.contact);
-        description = builder.description;
-        useContext = Collections.unmodifiableList(builder.useContext);
-        jurisdiction = Collections.unmodifiableList(builder.jurisdiction);
         immutable = builder.immutable;
-        purpose = builder.purpose;
-        copyright = builder.copyright;
-        copyrightLabel = builder.copyrightLabel;
-        approvalDate = builder.approvalDate;
-        lastReviewDate = builder.lastReviewDate;
-        effectivePeriod = builder.effectivePeriod;
-        topic = Collections.unmodifiableList(builder.topic);
-        author = Collections.unmodifiableList(builder.author);
-        editor = Collections.unmodifiableList(builder.editor);
-        reviewer = Collections.unmodifiableList(builder.reviewer);
-        endorser = Collections.unmodifiableList(builder.endorser);
-        relatedArtifact = Collections.unmodifiableList(builder.relatedArtifact);
         compose = builder.compose;
         expansion = builder.expansion;
         scope = builder.scope;
     }
-
-    /**
-     * An absolute URI that is used to identify this value set when it is referenced in a specification, model, design or an 
-     * instance; also called its canonical identifier. This SHOULD be globally unique and SHOULD be a literal address at 
-     * which an authoritative instance of this value set is (or will be) published. This URL can be the target of a canonical 
-     * reference. It SHALL remain the same when the value set is stored on different servers.
-     * 
-     * @return
-     *     An immutable object of type {@link Uri} that may be null.
-     */
-    public Uri getUrl() {
-        return url;
-    }
-
-    /**
-     * A formal identifier that is used to identify this value set when it is represented in other formats, or referenced in 
-     * a specification, model, design or an instance.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link Identifier} that may be empty.
-     */
-    public List<Identifier> getIdentifier() {
-        return identifier;
-    }
-
-    /**
-     * The identifier that is used to identify this version of the value set when it is referenced in a specification, model, 
-     * design or instance. This is an arbitrary value managed by the value set author and is not expected to be globally 
-     * unique. For example, it might be a timestamp (e.g. yyyymmdd) if a managed version is not available. There is also no 
-     * expectation that versions can be placed in a lexicographical sequence.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Indicates the mechanism used to compare versions to determine which ValueSet is more current.
-     * 
-     * @return
-     *     An immutable object of type {@link String} or {@link Coding} that may be null.
-     */
-    public Element getVersionAlgorithm() {
-        return versionAlgorithm;
-    }
-
-    /**
-     * A natural language name identifying the value set. This name should be usable as an identifier for the module by 
-     * machine processing applications such as code generation.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * A short, descriptive, user-friendly title for the value set.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * The status of this value set. Enables tracking the life-cycle of the content. The status of the value set applies to 
-     * the value set definition (ValueSet.compose) and the associated ValueSet metadata. Expansions do not have a state.
-     * 
-     * @return
-     *     An immutable object of type {@link PublicationStatus} that is non-null.
-     */
-    public PublicationStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * A Boolean value to indicate that this value set is authored for testing purposes (or education/evaluation/marketing) 
-     * and is not intended to be used for genuine usage.
-     * 
-     * @return
-     *     An immutable object of type {@link Boolean} that may be null.
-     */
-    public Boolean getExperimental() {
-        return experimental;
-    }
-
-    /**
-     * The date (and optionally time) when the value set metadata or content logical definition (.compose) was created or 
-     * revised.
-     * 
-     * @return
-     *     An immutable object of type {@link DateTime} that may be null.
-     */
-    public DateTime getDate() {
-        return date;
-    }
-
-    /**
-     * The name of the organization or individual responsible for the release and ongoing maintenance of the value set.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getPublisher() {
-        return publisher;
-    }
-
-    /**
-     * Contact details to assist a user in finding and communicating with the publisher.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getContact() {
-        return contact;
-    }
-
-    /**
-     * A free text natural language description of the value set from a consumer's perspective. The textual description 
-     * specifies the span of meanings for concepts to be included within the Value Set Expansion, and also may specify the 
-     * intended use and limitations of the Value Set.
-     * 
-     * @return
-     *     An immutable object of type {@link Markdown} that may be null.
-     */
-    public Markdown getDescription() {
-        return description;
-    }
-
-    /**
-     * The content was developed with a focus and intent of supporting the contexts that are listed. These contexts may be 
-     * general categories (gender, age, ...) or may be references to specific programs (insurance plans, studies, ...) and 
-     * may be used to assist with indexing and searching for appropriate value set instances.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link UsageContext} that may be empty.
-     */
-    public List<UsageContext> getUseContext() {
-        return useContext;
-    }
-
-    /**
-     * A legal or geographic region in which the value set is intended to be used.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link CodeableConcept} that may be empty.
-     */
-    public List<CodeableConcept> getJurisdiction() {
-        return jurisdiction;
-    }
-
+    
     /**
      * If this is set to 'true', then no new versions of the content logical definition can be created. Note: Other metadata 
      * might still change.
@@ -437,134 +182,6 @@ public class ValueSet extends DomainResource {
      */
     public Boolean getImmutable() {
         return immutable;
-    }
-
-    /**
-     * Explanation of why this value set is needed and why it has been designed as it has.
-     * 
-     * @return
-     *     An immutable object of type {@link Markdown} that may be null.
-     */
-    public Markdown getPurpose() {
-        return purpose;
-    }
-
-    /**
-     * A copyright statement relating to the value set and/or its contents. Copyright statements are generally legal 
-     * restrictions on the use and publishing of the value set.
-     * 
-     * @return
-     *     An immutable object of type {@link Markdown} that may be null.
-     */
-    public Markdown getCopyright() {
-        return copyright;
-    }
-
-    /**
-     * A short string (&lt;50 characters), suitable for inclusion in a page footer that identifies the copyright holder, 
-     * effective period, and optionally whether rights are resctricted. (e.g. 'All rights reserved', 'Some rights reserved').
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getCopyrightLabel() {
-        return copyrightLabel;
-    }
-
-    /**
-     * The date on which the resource content was approved by the publisher. Approval happens once when the content is 
-     * officially approved for usage.
-     * 
-     * @return
-     *     An immutable object of type {@link Date} that may be null.
-     */
-    public Date getApprovalDate() {
-        return approvalDate;
-    }
-
-    /**
-     * The date on which the resource content was last reviewed. Review happens periodically after approval but does not 
-     * change the original approval date.
-     * 
-     * @return
-     *     An immutable object of type {@link Date} that may be null.
-     */
-    public Date getLastReviewDate() {
-        return lastReviewDate;
-    }
-
-    /**
-     * The period during which the ValueSet content was or is planned to be in active use.
-     * 
-     * @return
-     *     An immutable object of type {@link Period} that may be null.
-     */
-    public Period getEffectivePeriod() {
-        return effectivePeriod;
-    }
-
-    /**
-     * Descriptions related to the content of the ValueSet. Topics provide a high-level categorization as well as keywords 
-     * for the ValueSet that can be useful for filtering and searching.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link CodeableConcept} that may be empty.
-     */
-    public List<CodeableConcept> getTopic() {
-        return topic;
-    }
-
-    /**
-     * An individiual or organization primarily involved in the creation and maintenance of the ValueSet.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getAuthor() {
-        return author;
-    }
-
-    /**
-     * An individual or organization primarily responsible for internal coherence of the ValueSet.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getEditor() {
-        return editor;
-    }
-
-    /**
-     * An individual or organization asserted by the publisher to be primarily responsible for review of some aspect of the 
-     * ValueSet.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getReviewer() {
-        return reviewer;
-    }
-
-    /**
-     * An individual or organization asserted by the publisher to be responsible for officially endorsing the ValueSet for 
-     * use in some setting.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getEndorser() {
-        return endorser;
-    }
-
-    /**
-     * Related artifacts such as additional documentation, justification, dependencies, bibliographic references, and 
-     * predecessor and successor artifacts.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link RelatedArtifact} that may be empty.
-     */
-    public List<RelatedArtifact> getRelatedArtifact() {
-        return relatedArtifact;
     }
 
     /**
@@ -603,33 +220,7 @@ public class ValueSet extends DomainResource {
     @Override
     public boolean hasChildren() {
         return super.hasChildren() || 
-            (url != null) || 
-            !identifier.isEmpty() || 
-            (version != null) || 
-            (versionAlgorithm != null) || 
-            (name != null) || 
-            (title != null) || 
-            (status != null) || 
-            (experimental != null) || 
-            (date != null) || 
-            (publisher != null) || 
-            !contact.isEmpty() || 
-            (description != null) || 
-            !useContext.isEmpty() || 
-            !jurisdiction.isEmpty() || 
             (immutable != null) || 
-            (purpose != null) || 
-            (copyright != null) || 
-            (copyrightLabel != null) || 
-            (approvalDate != null) || 
-            (lastReviewDate != null) || 
-            (effectivePeriod != null) || 
-            !topic.isEmpty() || 
-            !author.isEmpty() || 
-            !editor.isEmpty() || 
-            !reviewer.isEmpty() || 
-            !endorser.isEmpty() || 
-            !relatedArtifact.isEmpty() || 
             (compose != null) || 
             (expansion != null) || 
             (scope != null);
@@ -793,34 +384,8 @@ public class ValueSet extends DomainResource {
         return new Builder();
     }
 
-    public static class Builder extends DomainResource.Builder {
-        private Uri url;
-        private List<Identifier> identifier = new ArrayList<>();
-        private String version;
-        private Element versionAlgorithm;
-        private String name;
-        private String title;
-        private PublicationStatus status;
-        private Boolean experimental;
-        private DateTime date;
-        private String publisher;
-        private List<ContactDetail> contact = new ArrayList<>();
-        private Markdown description;
-        private List<UsageContext> useContext = new ArrayList<>();
-        private List<CodeableConcept> jurisdiction = new ArrayList<>();
-        private Boolean immutable;
-        private Markdown purpose;
-        private Markdown copyright;
-        private String copyrightLabel;
-        private Date approvalDate;
-        private Date lastReviewDate;
-        private Period effectivePeriod;
-        private List<CodeableConcept> topic = new ArrayList<>();
-        private List<ContactDetail> author = new ArrayList<>();
-        private List<ContactDetail> editor = new ArrayList<>();
-        private List<ContactDetail> reviewer = new ArrayList<>();
-        private List<ContactDetail> endorser = new ArrayList<>();
-        private List<RelatedArtifact> relatedArtifact = new ArrayList<>();
+    public static class Builder extends MetadataResource.Builder {
+    	private Boolean immutable;
         private Compose compose;
         private Expansion expansion;
         private Scope scope;
@@ -1045,51 +610,50 @@ Modifier extensions
         }
 
         /**
-         * An absolute URI that is used to identify this value set when it is referenced in a specification, model, design or an 
-         * instance; also called its canonical identifier. This SHOULD be globally unique and SHOULD be a literal address at 
-         * which an authoritative instance of this value set is (or will be) published. This URL can be the target of a canonical 
-         * reference. It SHALL remain the same when the value set is stored on different servers.
+         * An absolute URI that is used to identify this code system when it is referenced in a specification, model, design or 
+         * an instance; also called its canonical identifier. This SHOULD be globally unique and SHOULD be a literal address at 
+         * which an authoritative instance of this code system is (or will be) published. This URL can be the target of a 
+         * canonical reference. It SHALL remain the same when the code system is stored on different servers. This is used in 
+         * [Coding](datatypes.html#Coding).system.
          * 
          * @param url
-         *     Canonical identifier for this value set, represented as a URI (globally unique)
+         *     Canonical identifier for this code system, represented as a URI (globally unique) (Coding.system)
          * 
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder url(Uri url) {
-            this.url = url;
-            return this;
+            return (Builder) super.url(url);
         }
 
         /**
-         * A formal identifier that is used to identify this value set when it is represented in other formats, or referenced in 
-         * a specification, model, design or an instance.
+         * A formal identifier that is used to identify this code system when it is represented in other formats, or referenced 
+         * in a specification, model, design or an instance.
          * 
          * <p>Adds new element(s) to the existing list.
          * If any of the elements are null, calling {@link #build()} will fail.
          * 
          * @param identifier
-         *     Additional identifier for the value set (business identifier)
+         *     Additional identifier for the code system (business identifier)
          * 
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder identifier(Identifier... identifier) {
-            for (Identifier value : identifier) {
-                this.identifier.add(value);
-            }
-            return this;
+            return (Builder) super.identifier(identifier);
         }
 
         /**
-         * A formal identifier that is used to identify this value set when it is represented in other formats, or referenced in 
-         * a specification, model, design or an instance.
+         * A formal identifier that is used to identify this code system when it is represented in other formats, or referenced 
+         * in a specification, model, design or an instance.
          * 
          * <p>Replaces the existing list with a new one containing elements from the Collection.
          * If any of the elements are null, calling {@link #build()} will fail.
          * 
          * @param identifier
-         *     Additional identifier for the value set (business identifier)
+         *     Additional identifier for the code system (business identifier)
          * 
          * @return
          *     A reference to this Builder instance
@@ -1097,42 +661,43 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder identifier(Collection<Identifier> identifier) {
-            this.identifier = new ArrayList<>(identifier);
-            return this;
+            return (Builder) super.identifier(identifier);
         }
 
         /**
          * Convenience method for setting {@code version}.
          * 
          * @param version
-         *     Business version of the value set
+         *     Business version of the code system (Coding.version)
          * 
          * @return
          *     A reference to this Builder instance
          * 
          * @see #version(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder version(java.lang.String version) {
-            this.version = (version == null) ? null : String.of(version);
-            return this;
+            return (Builder) super.version(version);
         }
 
         /**
-         * The identifier that is used to identify this version of the value set when it is referenced in a specification, model, 
-         * design or instance. This is an arbitrary value managed by the value set author and is not expected to be globally 
-         * unique. For example, it might be a timestamp (e.g. yyyymmdd) if a managed version is not available. There is also no 
-         * expectation that versions can be placed in a lexicographical sequence.
+         * The identifier that is used to identify this version of the code system when it is referenced in a specification, 
+         * model, design or instance. This is an arbitrary value managed by the code system author and is not expected to be 
+         * globally unique. For example, it might be a timestamp (e.g. yyyymmdd) if a managed version is not available. There is 
+         * also no expectation that versions can be placed in a lexicographical sequence. This is used in [Coding](datatypes.
+         * html#Coding).version.
          * 
          * @param version
-         *     Business version of the value set
+         *     Business version of the code system (Coding.version)
          * 
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder version(String version) {
-            this.version = version;
-            return this;
+            return (Builder) super.version(version);
         }
 
         /**
@@ -1146,13 +711,13 @@ Modifier extensions
          * 
          * @see #versionAlgorithm(Element)
          */
+        @Override
         public Builder versionAlgorithm(java.lang.String versionAlgorithm) {
-            this.versionAlgorithm = (versionAlgorithm == null) ? null : String.of(versionAlgorithm);
-            return this;
+            return (Builder) super.versionAlgorithm(versionAlgorithm);
         }
 
         /**
-         * Indicates the mechanism used to compare versions to determine which ValueSet is more current.
+         * Indicates the mechanism used to compare versions to determine which CodeSystem is more current.
          * 
          * <p>This is a choice element with the following allowed types:
          * <ul>
@@ -1166,75 +731,74 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder versionAlgorithm(Element versionAlgorithm) {
-            this.versionAlgorithm = versionAlgorithm;
-            return this;
+            return (Builder) super.versionAlgorithm(versionAlgorithm);
         }
 
         /**
          * Convenience method for setting {@code name}.
          * 
          * @param name
-         *     Name for this value set (computer friendly)
+         *     Name for this code system (computer friendly)
          * 
          * @return
          *     A reference to this Builder instance
          * 
          * @see #name(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder name(java.lang.String name) {
-            this.name = (name == null) ? null : String.of(name);
-            return this;
+            return (Builder) super.name(name);
         }
 
         /**
-         * A natural language name identifying the value set. This name should be usable as an identifier for the module by 
+         * A natural language name identifying the code system. This name should be usable as an identifier for the module by 
          * machine processing applications such as code generation.
          * 
          * @param name
-         *     Name for this value set (computer friendly)
+         *     Name for this code system (computer friendly)
          * 
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder name(String name) {
-            this.name = name;
-            return this;
+            return (Builder) super.name(name);
         }
 
         /**
          * Convenience method for setting {@code title}.
          * 
          * @param title
-         *     Name for this value set (human friendly)
+         *     Name for this code system (human friendly)
          * 
          * @return
          *     A reference to this Builder instance
          * 
          * @see #title(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder title(java.lang.String title) {
-            this.title = (title == null) ? null : String.of(title);
-            return this;
+            return (Builder) super.title(title);
         }
 
         /**
-         * A short, descriptive, user-friendly title for the value set.
+         * A short, descriptive, user-friendly title for the code system.
          * 
          * @param title
-         *     Name for this value set (human friendly)
+         *     Name for this code system (human friendly)
          * 
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder title(String title) {
-            this.title = title;
-            return this;
+            return (Builder) super.title(title);
         }
 
         /**
-         * The status of this value set. Enables tracking the life-cycle of the content. The status of the value set applies to 
-         * the value set definition (ValueSet.compose) and the associated ValueSet metadata. Expansions do not have a state.
+         * The status of this code system. Enables tracking the life-cycle of the content.
          * 
          * <p>This element is required.
          * 
@@ -1244,9 +808,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder status(PublicationStatus status) {
-            this.status = status;
-            return this;
+            return (Builder) super.status(status);
         }
 
         /**
@@ -1260,13 +824,13 @@ Modifier extensions
          * 
          * @see #experimental(org.linuxforhealth.fhir.model.type.Boolean)
          */
+        @Override
         public Builder experimental(java.lang.Boolean experimental) {
-            this.experimental = (experimental == null) ? null : Boolean.of(experimental);
-            return this;
+            return (Builder) super.experimental(experimental);
         }
 
         /**
-         * A Boolean value to indicate that this value set is authored for testing purposes (or education/evaluation/marketing) 
+         * A Boolean value to indicate that this code system is authored for testing purposes (or education/evaluation/marketing) 
          * and is not intended to be used for genuine usage.
          * 
          * @param experimental
@@ -1275,14 +839,15 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder experimental(Boolean experimental) {
-            this.experimental = experimental;
-            return this;
+            return (Builder) super.experimental(experimental);
         }
 
         /**
-         * The date (and optionally time) when the value set metadata or content logical definition (.compose) was created or 
-         * revised.
+         * The date (and optionally time) when the code system was last significantly changed. The date must change when the 
+         * business version changes and it must change if the status code changes. In addition, it should change when the 
+         * substantive content of the code system changes.
          * 
          * @param date
          *     Date last changed
@@ -1290,9 +855,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder date(DateTime date) {
-            this.date = date;
-            return this;
+            return (Builder) super.date(date);
         }
 
         /**
@@ -1306,13 +871,13 @@ Modifier extensions
          * 
          * @see #publisher(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder publisher(java.lang.String publisher) {
-            this.publisher = (publisher == null) ? null : String.of(publisher);
-            return this;
+            return (Builder) super.publisher(publisher);
         }
 
         /**
-         * The name of the organization or individual responsible for the release and ongoing maintenance of the value set.
+         * The name of the organization or individual responsible for the release and ongoing maintenance of the code system.
          * 
          * @param publisher
          *     Name of the publisher/steward (organization or individual)
@@ -1320,9 +885,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder publisher(String publisher) {
-            this.publisher = publisher;
-            return this;
+            return (Builder) super.publisher(publisher);
         }
 
         /**
@@ -1337,11 +902,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder contact(ContactDetail... contact) {
-            for (ContactDetail value : contact) {
-                this.contact.add(value);
-            }
-            return this;
+        	return (Builder) super.contact(contact);
         }
 
         /**
@@ -1359,31 +922,29 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder contact(Collection<ContactDetail> contact) {
-            this.contact = new ArrayList<>(contact);
-            return this;
+            return (Builder) super.contact(contact);
         }
 
         /**
-         * A free text natural language description of the value set from a consumer's perspective. The textual description 
-         * specifies the span of meanings for concepts to be included within the Value Set Expansion, and also may specify the 
-         * intended use and limitations of the Value Set.
+         * A free text natural language description of the code system from a consumer's perspective.
          * 
          * @param description
-         *     Natural language description of the value set
+         *     Natural language description of the code system
          * 
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder description(Markdown description) {
-            this.description = description;
-            return this;
+            return (Builder) super.description(description);
         }
 
         /**
          * The content was developed with a focus and intent of supporting the contexts that are listed. These contexts may be 
          * general categories (gender, age, ...) or may be references to specific programs (insurance plans, studies, ...) and 
-         * may be used to assist with indexing and searching for appropriate value set instances.
+         * may be used to assist with indexing and searching for appropriate code system instances.
          * 
          * <p>Adds new element(s) to the existing list.
          * If any of the elements are null, calling {@link #build()} will fail.
@@ -1394,17 +955,15 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder useContext(UsageContext... useContext) {
-            for (UsageContext value : useContext) {
-                this.useContext.add(value);
-            }
-            return this;
+        	return (Builder) super.useContext(useContext);
         }
 
         /**
          * The content was developed with a focus and intent of supporting the contexts that are listed. These contexts may be 
          * general categories (gender, age, ...) or may be references to specific programs (insurance plans, studies, ...) and 
-         * may be used to assist with indexing and searching for appropriate value set instances.
+         * may be used to assist with indexing and searching for appropriate code system instances.
          * 
          * <p>Replaces the existing list with a new one containing elements from the Collection.
          * If any of the elements are null, calling {@link #build()} will fail.
@@ -1418,38 +977,36 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder useContext(Collection<UsageContext> useContext) {
-            this.useContext = new ArrayList<>(useContext);
-            return this;
+            return (Builder) super.useContext(useContext);
         }
 
         /**
-         * A legal or geographic region in which the value set is intended to be used.
+         * A legal or geographic region in which the code system is intended to be used.
          * 
          * <p>Adds new element(s) to the existing list.
          * If any of the elements are null, calling {@link #build()} will fail.
          * 
          * @param jurisdiction
-         *     Intended jurisdiction for value set (if applicable)
+         *     Intended jurisdiction for code system (if applicable)
          * 
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder jurisdiction(CodeableConcept... jurisdiction) {
-            for (CodeableConcept value : jurisdiction) {
-                this.jurisdiction.add(value);
-            }
-            return this;
+        	return (Builder) super.jurisdiction(jurisdiction);
         }
 
         /**
-         * A legal or geographic region in which the value set is intended to be used.
+         * A legal or geographic region in which the code system is intended to be used.
          * 
          * <p>Replaces the existing list with a new one containing elements from the Collection.
          * If any of the elements are null, calling {@link #build()} will fail.
          * 
          * @param jurisdiction
-         *     Intended jurisdiction for value set (if applicable)
+         *     Intended jurisdiction for code system (if applicable)
          * 
          * @return
          *     A reference to this Builder instance
@@ -1457,9 +1014,375 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder jurisdiction(Collection<CodeableConcept> jurisdiction) {
-            this.jurisdiction = new ArrayList<>(jurisdiction);
-            return this;
+            return (Builder) super.jurisdiction(jurisdiction);
+        }
+
+        /**
+         * Explanation of why this code system is needed and why it has been designed as it has.
+         * 
+         * @param purpose
+         *     Why this code system is defined
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder purpose(Markdown purpose) {
+            return (Builder) super.purpose(purpose);
+        }
+
+        /**
+         * A copyright statement relating to the code system and/or its contents. Copyright statements are generally legal 
+         * restrictions on the use and publishing of the code system.
+         * 
+         * @param copyright
+         *     Use and/or publishing restrictions
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder copyright(Markdown copyright) {
+            return (Builder) super.copyright(copyright);
+        }
+
+        /**
+         * Convenience method for setting {@code copyrightLabel}.
+         * 
+         * @param copyrightLabel
+         *     Copyright holder and year(s)
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @see #copyrightLabel(org.linuxforhealth.fhir.model.type.String)
+         */
+        @Override
+        public Builder copyrightLabel(java.lang.String copyrightLabel) {
+            return (Builder) super.copyrightLabel(copyrightLabel);
+        }
+
+        /**
+         * A short string (&lt;50 characters), suitable for inclusion in a page footer that identifies the copyright holder, 
+         * effective period, and optionally whether rights are resctricted. (e.g. 'All rights reserved', 'Some rights reserved').
+         * 
+         * @param copyrightLabel
+         *     Copyright holder and year(s)
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder copyrightLabel(String copyrightLabel) {
+            return (Builder) super.copyrightLabel(copyrightLabel);
+        }
+
+        /**
+         * Convenience method for setting {@code approvalDate}.
+         * 
+         * @param approvalDate
+         *     When the CodeSystem was approved by publisher
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @see #approvalDate(org.linuxforhealth.fhir.model.type.Date)
+         */
+        @Override
+        public Builder approvalDate(java.time.LocalDate approvalDate) {
+            return (Builder) super.approvalDate(approvalDate);
+        }
+
+        /**
+         * The date on which the resource content was approved by the publisher. Approval happens once when the content is 
+         * officially approved for usage.
+         * 
+         * @param approvalDate
+         *     When the CodeSystem was approved by publisher
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder approvalDate(Date approvalDate) {
+            return (Builder) super.approvalDate(approvalDate);
+        }
+
+        /**
+         * Convenience method for setting {@code lastReviewDate}.
+         * 
+         * @param lastReviewDate
+         *     When the CodeSystem was last reviewed by the publisher
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @see #lastReviewDate(org.linuxforhealth.fhir.model.type.Date)
+         */
+        @Override
+        public Builder lastReviewDate(java.time.LocalDate lastReviewDate) {
+            return (Builder) super.lastReviewDate(lastReviewDate);
+        }
+
+        /**
+         * The date on which the resource content was last reviewed. Review happens periodically after approval but does not 
+         * change the original approval date.
+         * 
+         * @param lastReviewDate
+         *     When the CodeSystem was last reviewed by the publisher
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder lastReviewDate(Date lastReviewDate) {
+            return (Builder) super.lastReviewDate(lastReviewDate);
+        }
+
+        /**
+         * The period during which the CodeSystem content was or is planned to be in active use.
+         * 
+         * @param effectivePeriod
+         *     When the CodeSystem is expected to be used
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder effectivePeriod(Period effectivePeriod) {
+            return (Builder) super.effectivePeriod(effectivePeriod);
+        }
+
+        /**
+         * Descriptions related to the content of the CodeSystem. Topics provide a high-level categorization as well as keywords 
+         * for the CodeSystem that can be useful for filtering and searching.
+         * 
+         * <p>Adds new element(s) to the existing list.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param topic
+         *     E.g. Education, Treatment, Assessment, etc
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder topic(CodeableConcept... topic) {
+        	return (Builder) super.topic(topic);
+        }
+
+        /**
+         * Descriptions related to the content of the CodeSystem. Topics provide a high-level categorization as well as keywords 
+         * for the CodeSystem that can be useful for filtering and searching.
+         * 
+         * <p>Replaces the existing list with a new one containing elements from the Collection.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param topic
+         *     E.g. Education, Treatment, Assessment, etc
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @throws NullPointerException
+         *     If the passed collection is null
+         */
+        @Override
+        public Builder topic(Collection<CodeableConcept> topic) {
+            return (Builder) super.topic(topic);
+        }
+
+        /**
+         * An individiual or organization primarily involved in the creation and maintenance of the CodeSystem.
+         * 
+         * <p>Adds new element(s) to the existing list.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param author
+         *     Who authored the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder author(ContactDetail... author) {
+        	return (Builder) super.author(author);
+        }
+
+        /**
+         * An individiual or organization primarily involved in the creation and maintenance of the CodeSystem.
+         * 
+         * <p>Replaces the existing list with a new one containing elements from the Collection.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param author
+         *     Who authored the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @throws NullPointerException
+         *     If the passed collection is null
+         */
+        @Override
+        public Builder author(Collection<ContactDetail> author) {
+            return (Builder) super.author(author);
+        }
+
+        /**
+         * An individual or organization primarily responsible for internal coherence of the CodeSystem.
+         * 
+         * <p>Adds new element(s) to the existing list.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param editor
+         *     Who edited the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder editor(ContactDetail... editor) {
+        	return (Builder) super.editor(editor);
+        }
+
+        /**
+         * An individual or organization primarily responsible for internal coherence of the CodeSystem.
+         * 
+         * <p>Replaces the existing list with a new one containing elements from the Collection.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param editor
+         *     Who edited the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @throws NullPointerException
+         *     If the passed collection is null
+         */
+        @Override
+        public Builder editor(Collection<ContactDetail> editor) {
+            return (Builder) super.editor(editor);
+        }
+
+        /**
+         * An individual or organization asserted by the publisher to be primarily responsible for review of some aspect of the 
+         * CodeSystem.
+         * 
+         * <p>Adds new element(s) to the existing list.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param reviewer
+         *     Who reviewed the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder reviewer(ContactDetail... reviewer) {
+        	return (Builder) super.reviewer(reviewer);
+        }
+
+        /**
+         * An individual or organization asserted by the publisher to be primarily responsible for review of some aspect of the 
+         * CodeSystem.
+         * 
+         * <p>Replaces the existing list with a new one containing elements from the Collection.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param reviewer
+         *     Who reviewed the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @throws NullPointerException
+         *     If the passed collection is null
+         */
+        @Override
+        public Builder reviewer(Collection<ContactDetail> reviewer) {
+            return (Builder) super.reviewer(reviewer);
+        }
+
+        /**
+         * An individual or organization asserted by the publisher to be responsible for officially endorsing the CodeSystem for 
+         * use in some setting.
+         * 
+         * <p>Adds new element(s) to the existing list.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param endorser
+         *     Who endorsed the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder endorser(ContactDetail... endorser) {
+        	return (Builder) super.endorser(endorser);
+        }
+
+        /**
+         * An individual or organization asserted by the publisher to be responsible for officially endorsing the CodeSystem for 
+         * use in some setting.
+         * 
+         * <p>Replaces the existing list with a new one containing elements from the Collection.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param endorser
+         *     Who endorsed the CodeSystem
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @throws NullPointerException
+         *     If the passed collection is null
+         */
+        @Override
+        public Builder endorser(Collection<ContactDetail> endorser) {
+            return (Builder) super.endorser(endorser);
+        }
+
+        /**
+         * Related artifacts such as additional documentation, justification, dependencies, bibliographic references, and 
+         * predecessor and successor artifacts.
+         * 
+         * <p>Adds new element(s) to the existing list.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param relatedArtifact
+         *     Additional documentation, citations, etc
+         * 
+         * @return
+         *     A reference to this Builder instance
+         */
+        @Override
+        public Builder relatedArtifact(RelatedArtifact... relatedArtifact) {
+        	return (Builder) super.relatedArtifact(relatedArtifact);
+        }
+
+        /**
+         * Related artifacts such as additional documentation, justification, dependencies, bibliographic references, and 
+         * predecessor and successor artifacts.
+         * 
+         * <p>Replaces the existing list with a new one containing elements from the Collection.
+         * If any of the elements are null, calling {@link #build()} will fail.
+         * 
+         * @param relatedArtifact
+         *     Additional documentation, citations, etc
+         * 
+         * @return
+         *     A reference to this Builder instance
+         * 
+         * @throws NullPointerException
+         *     If the passed collection is null
+         */
+        @Override
+        public Builder relatedArtifact(Collection<RelatedArtifact> relatedArtifact) {
+            return (Builder) super.relatedArtifact(relatedArtifact);
         }
 
         /**
@@ -1490,384 +1413,6 @@ Modifier extensions
          */
         public Builder immutable(Boolean immutable) {
             this.immutable = immutable;
-            return this;
-        }
-
-        /**
-         * Explanation of why this value set is needed and why it has been designed as it has.
-         * 
-         * @param purpose
-         *     Why this value set is defined
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder purpose(Markdown purpose) {
-            this.purpose = purpose;
-            return this;
-        }
-
-        /**
-         * A copyright statement relating to the value set and/or its contents. Copyright statements are generally legal 
-         * restrictions on the use and publishing of the value set.
-         * 
-         * @param copyright
-         *     Use and/or publishing restrictions
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder copyright(Markdown copyright) {
-            this.copyright = copyright;
-            return this;
-        }
-
-        /**
-         * Convenience method for setting {@code copyrightLabel}.
-         * 
-         * @param copyrightLabel
-         *     Copyright holder and year(s)
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @see #copyrightLabel(org.linuxforhealth.fhir.model.type.String)
-         */
-        public Builder copyrightLabel(java.lang.String copyrightLabel) {
-            this.copyrightLabel = (copyrightLabel == null) ? null : String.of(copyrightLabel);
-            return this;
-        }
-
-        /**
-         * A short string (&lt;50 characters), suitable for inclusion in a page footer that identifies the copyright holder, 
-         * effective period, and optionally whether rights are resctricted. (e.g. 'All rights reserved', 'Some rights reserved').
-         * 
-         * @param copyrightLabel
-         *     Copyright holder and year(s)
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder copyrightLabel(String copyrightLabel) {
-            this.copyrightLabel = copyrightLabel;
-            return this;
-        }
-
-        /**
-         * Convenience method for setting {@code approvalDate}.
-         * 
-         * @param approvalDate
-         *     When the ValueSet was approved by publisher
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @see #approvalDate(org.linuxforhealth.fhir.model.type.Date)
-         */
-        public Builder approvalDate(java.time.LocalDate approvalDate) {
-            this.approvalDate = (approvalDate == null) ? null : Date.of(approvalDate);
-            return this;
-        }
-
-        /**
-         * The date on which the resource content was approved by the publisher. Approval happens once when the content is 
-         * officially approved for usage.
-         * 
-         * @param approvalDate
-         *     When the ValueSet was approved by publisher
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder approvalDate(Date approvalDate) {
-            this.approvalDate = approvalDate;
-            return this;
-        }
-
-        /**
-         * Convenience method for setting {@code lastReviewDate}.
-         * 
-         * @param lastReviewDate
-         *     When the ValueSet was last reviewed by the publisher
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @see #lastReviewDate(org.linuxforhealth.fhir.model.type.Date)
-         */
-        public Builder lastReviewDate(java.time.LocalDate lastReviewDate) {
-            this.lastReviewDate = (lastReviewDate == null) ? null : Date.of(lastReviewDate);
-            return this;
-        }
-
-        /**
-         * The date on which the resource content was last reviewed. Review happens periodically after approval but does not 
-         * change the original approval date.
-         * 
-         * @param lastReviewDate
-         *     When the ValueSet was last reviewed by the publisher
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder lastReviewDate(Date lastReviewDate) {
-            this.lastReviewDate = lastReviewDate;
-            return this;
-        }
-
-        /**
-         * The period during which the ValueSet content was or is planned to be in active use.
-         * 
-         * @param effectivePeriod
-         *     When the ValueSet is expected to be used
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder effectivePeriod(Period effectivePeriod) {
-            this.effectivePeriod = effectivePeriod;
-            return this;
-        }
-
-        /**
-         * Descriptions related to the content of the ValueSet. Topics provide a high-level categorization as well as keywords 
-         * for the ValueSet that can be useful for filtering and searching.
-         * 
-         * <p>Adds new element(s) to the existing list.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param topic
-         *     E.g. Education, Treatment, Assessment, etc
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder topic(CodeableConcept... topic) {
-            for (CodeableConcept value : topic) {
-                this.topic.add(value);
-            }
-            return this;
-        }
-
-        /**
-         * Descriptions related to the content of the ValueSet. Topics provide a high-level categorization as well as keywords 
-         * for the ValueSet that can be useful for filtering and searching.
-         * 
-         * <p>Replaces the existing list with a new one containing elements from the Collection.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param topic
-         *     E.g. Education, Treatment, Assessment, etc
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @throws NullPointerException
-         *     If the passed collection is null
-         */
-        public Builder topic(Collection<CodeableConcept> topic) {
-            this.topic = new ArrayList<>(topic);
-            return this;
-        }
-
-        /**
-         * An individiual or organization primarily involved in the creation and maintenance of the ValueSet.
-         * 
-         * <p>Adds new element(s) to the existing list.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param author
-         *     Who authored the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder author(ContactDetail... author) {
-            for (ContactDetail value : author) {
-                this.author.add(value);
-            }
-            return this;
-        }
-
-        /**
-         * An individiual or organization primarily involved in the creation and maintenance of the ValueSet.
-         * 
-         * <p>Replaces the existing list with a new one containing elements from the Collection.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param author
-         *     Who authored the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @throws NullPointerException
-         *     If the passed collection is null
-         */
-        public Builder author(Collection<ContactDetail> author) {
-            this.author = new ArrayList<>(author);
-            return this;
-        }
-
-        /**
-         * An individual or organization primarily responsible for internal coherence of the ValueSet.
-         * 
-         * <p>Adds new element(s) to the existing list.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param editor
-         *     Who edited the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder editor(ContactDetail... editor) {
-            for (ContactDetail value : editor) {
-                this.editor.add(value);
-            }
-            return this;
-        }
-
-        /**
-         * An individual or organization primarily responsible for internal coherence of the ValueSet.
-         * 
-         * <p>Replaces the existing list with a new one containing elements from the Collection.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param editor
-         *     Who edited the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @throws NullPointerException
-         *     If the passed collection is null
-         */
-        public Builder editor(Collection<ContactDetail> editor) {
-            this.editor = new ArrayList<>(editor);
-            return this;
-        }
-
-        /**
-         * An individual or organization asserted by the publisher to be primarily responsible for review of some aspect of the 
-         * ValueSet.
-         * 
-         * <p>Adds new element(s) to the existing list.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param reviewer
-         *     Who reviewed the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder reviewer(ContactDetail... reviewer) {
-            for (ContactDetail value : reviewer) {
-                this.reviewer.add(value);
-            }
-            return this;
-        }
-
-        /**
-         * An individual or organization asserted by the publisher to be primarily responsible for review of some aspect of the 
-         * ValueSet.
-         * 
-         * <p>Replaces the existing list with a new one containing elements from the Collection.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param reviewer
-         *     Who reviewed the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @throws NullPointerException
-         *     If the passed collection is null
-         */
-        public Builder reviewer(Collection<ContactDetail> reviewer) {
-            this.reviewer = new ArrayList<>(reviewer);
-            return this;
-        }
-
-        /**
-         * An individual or organization asserted by the publisher to be responsible for officially endorsing the ValueSet for 
-         * use in some setting.
-         * 
-         * <p>Adds new element(s) to the existing list.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param endorser
-         *     Who endorsed the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder endorser(ContactDetail... endorser) {
-            for (ContactDetail value : endorser) {
-                this.endorser.add(value);
-            }
-            return this;
-        }
-
-        /**
-         * An individual or organization asserted by the publisher to be responsible for officially endorsing the ValueSet for 
-         * use in some setting.
-         * 
-         * <p>Replaces the existing list with a new one containing elements from the Collection.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param endorser
-         *     Who endorsed the ValueSet
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @throws NullPointerException
-         *     If the passed collection is null
-         */
-        public Builder endorser(Collection<ContactDetail> endorser) {
-            this.endorser = new ArrayList<>(endorser);
-            return this;
-        }
-
-        /**
-         * Related artifacts such as additional documentation, justification, dependencies, bibliographic references, and 
-         * predecessor and successor artifacts.
-         * 
-         * <p>Adds new element(s) to the existing list.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param relatedArtifact
-         *     Additional documentation, citations, etc
-         * 
-         * @return
-         *     A reference to this Builder instance
-         */
-        public Builder relatedArtifact(RelatedArtifact... relatedArtifact) {
-            for (RelatedArtifact value : relatedArtifact) {
-                this.relatedArtifact.add(value);
-            }
-            return this;
-        }
-
-        /**
-         * Related artifacts such as additional documentation, justification, dependencies, bibliographic references, and 
-         * predecessor and successor artifacts.
-         * 
-         * <p>Replaces the existing list with a new one containing elements from the Collection.
-         * If any of the elements are null, calling {@link #build()} will fail.
-         * 
-         * @param relatedArtifact
-         *     Additional documentation, citations, etc
-         * 
-         * @return
-         *     A reference to this Builder instance
-         * 
-         * @throws NullPointerException
-         *     If the passed collection is null
-         */
-        public Builder relatedArtifact(Collection<RelatedArtifact> relatedArtifact) {
-            this.relatedArtifact = new ArrayList<>(relatedArtifact);
             return this;
         }
 
@@ -1957,33 +1502,7 @@ Modifier extensions
 
         protected Builder from(ValueSet valueSet) {
             super.from(valueSet);
-            url = valueSet.url;
-            identifier.addAll(valueSet.identifier);
-            version = valueSet.version;
-            versionAlgorithm = valueSet.versionAlgorithm;
-            name = valueSet.name;
-            title = valueSet.title;
-            status = valueSet.status;
-            experimental = valueSet.experimental;
-            date = valueSet.date;
-            publisher = valueSet.publisher;
-            contact.addAll(valueSet.contact);
-            description = valueSet.description;
-            useContext.addAll(valueSet.useContext);
-            jurisdiction.addAll(valueSet.jurisdiction);
             immutable = valueSet.immutable;
-            purpose = valueSet.purpose;
-            copyright = valueSet.copyright;
-            copyrightLabel = valueSet.copyrightLabel;
-            approvalDate = valueSet.approvalDate;
-            lastReviewDate = valueSet.lastReviewDate;
-            effectivePeriod = valueSet.effectivePeriod;
-            topic.addAll(valueSet.topic);
-            author.addAll(valueSet.author);
-            editor.addAll(valueSet.editor);
-            reviewer.addAll(valueSet.reviewer);
-            endorser.addAll(valueSet.endorser);
-            relatedArtifact.addAll(valueSet.relatedArtifact);
             compose = valueSet.compose;
             expansion = valueSet.expansion;
             scope = valueSet.scope;

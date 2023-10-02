@@ -24,6 +24,12 @@ import org.linuxforhealth.fhir.model.r5.type.Uri;
 import org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 
+/*
+ * Modifications:
+ * 
+ * - Introduced inner class for field names
+ */
+
 /**
  * A resource that includes narrative, extensions, and contained resources.
  * 
@@ -75,6 +81,11 @@ import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 )
 @Generated("org.linuxforhealth.fhir.tools.CodeGenerator")
 public abstract class DomainResource extends Resource {
+	
+	public static abstract class Fields extends Resource.Fields {
+		public static final String TEXT = "text";
+	}
+
     protected final Narrative text;
     protected final List<Resource> contained;
     protected final List<Extension> extension;

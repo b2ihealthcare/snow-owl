@@ -5,9 +5,9 @@ import java.io.InputStream;
 import org.linuxforhealth.fhir.model.format.Format;
 import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
 import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
-import org.linuxforhealth.fhir.model.r4b.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r4b.parser.FHIRParser;
-import org.linuxforhealth.fhir.model.r4b.resource.Resource;
+import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
+import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
+import org.linuxforhealth.fhir.model.r5.resource.Resource;
 
 public class FhirExerciser {
 

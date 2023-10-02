@@ -19,22 +19,9 @@ import org.linuxforhealth.fhir.model.r5.annotation.Constraint;
 import org.linuxforhealth.fhir.model.r5.annotation.Maturity;
 import org.linuxforhealth.fhir.model.annotation.Required;
 import org.linuxforhealth.fhir.model.annotation.Summary;
-import org.linuxforhealth.fhir.model.r5.type.BackboneElement;
-import org.linuxforhealth.fhir.model.r5.type.Code;
-import org.linuxforhealth.fhir.model.r5.type.Decimal;
-import org.linuxforhealth.fhir.model.r5.type.Extension;
-import org.linuxforhealth.fhir.model.r5.type.Identifier;
-import org.linuxforhealth.fhir.model.r5.type.Instant;
-import org.linuxforhealth.fhir.model.r5.type.Meta;
-import org.linuxforhealth.fhir.model.r5.type.Signature;
+import org.linuxforhealth.fhir.model.r5.type.*;
 import org.linuxforhealth.fhir.model.r5.type.String;
-import org.linuxforhealth.fhir.model.r5.type.UnsignedInt;
-import org.linuxforhealth.fhir.model.r5.type.Uri;
-import org.linuxforhealth.fhir.model.r5.type.code.BindingStrength;
-import org.linuxforhealth.fhir.model.r5.type.code.BundleType;
-import org.linuxforhealth.fhir.model.r5.type.code.HTTPVerb;
-import org.linuxforhealth.fhir.model.r5.type.code.SearchEntryMode;
-import org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus;
+import org.linuxforhealth.fhir.model.r5.type.code.*;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
 
@@ -201,7 +188,17 @@ import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
 )
 @Generated("org.linuxforhealth.fhir.tools.CodeGenerator")
 public class Bundle extends Resource {
-    @Summary
+    
+	/**
+	 * Code to indicate that only a subset of fields are returned with each result.
+	 */
+	public static final Coding CODING_SUBSETTED = Coding.builder()
+		.system(Uri.of("http://hl7.org/fhir/v3/ObservationValue"))
+		.code(Code.of("SUBSETTED"))
+		.display("As requested, resource is not fully detailed.")
+		.build();
+		
+	@Summary
     private final Identifier identifier;
     @Summary
     @Binding(

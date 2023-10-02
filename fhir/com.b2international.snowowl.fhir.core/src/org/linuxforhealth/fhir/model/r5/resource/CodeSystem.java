@@ -53,6 +53,13 @@ import org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
 
+/*
+ * Modifications:
+ * 
+ * - Changed superclass to MetadataResource even though it is an interface (in FHIR terms); the code generator could
+ *   not map this to Java in the expected manner
+ */
+
 /**
  * The CodeSystem resource is used to declare the existence of and describe a code system or code system supplement and 
  * its key properties, and optionally define a part or all of its content.
@@ -156,70 +163,7 @@ import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
     generated = true
 )
 @Generated("org.linuxforhealth.fhir.tools.CodeGenerator")
-public class CodeSystem extends DomainResource {
-    @Summary
-    private final Uri url;
-    @Summary
-    private final List<Identifier> identifier;
-    @Summary
-    private final String version;
-    @Summary
-    @Choice({ String.class, Coding.class })
-    @Binding(
-        strength = BindingStrength.Value.EXTENSIBLE,
-        valueSet = "http://hl7.org/fhir/ValueSet/version-algorithm"
-    )
-    private final Element versionAlgorithm;
-    @Summary
-    private final String name;
-    @Summary
-    private final String title;
-    @Summary
-    @Binding(
-        bindingName = "PublicationStatus",
-        strength = BindingStrength.Value.REQUIRED,
-        description = "The lifecycle status of an artifact.",
-        valueSet = "http://hl7.org/fhir/ValueSet/publication-status|5.0.0"
-    )
-    @Required
-    private final PublicationStatus status;
-    @Summary
-    private final Boolean experimental;
-    @Summary
-    private final DateTime date;
-    @Summary
-    private final String publisher;
-    @Summary
-    private final List<ContactDetail> contact;
-    private final Markdown description;
-    @Summary
-    private final List<UsageContext> useContext;
-    @Summary
-    @Binding(
-        bindingName = "Jurisdiction",
-        strength = BindingStrength.Value.EXTENSIBLE,
-        description = "Countries and regions within which this artifact is targeted for use.",
-        valueSet = "http://hl7.org/fhir/ValueSet/jurisdiction"
-    )
-    private final List<CodeableConcept> jurisdiction;
-    private final Markdown purpose;
-    private final Markdown copyright;
-    private final String copyrightLabel;
-    private final Date approvalDate;
-    private final Date lastReviewDate;
-    @Summary
-    private final Period effectivePeriod;
-    @Binding(
-        bindingName = "DefinitionTopic",
-        strength = BindingStrength.Value.EXAMPLE,
-        valueSet = "http://hl7.org/fhir/ValueSet/definition-topic"
-    )
-    private final List<CodeableConcept> topic;
-    private final List<ContactDetail> author;
-    private final List<ContactDetail> editor;
-    private final List<ContactDetail> reviewer;
-    private final List<ContactDetail> endorser;
-    private final List<RelatedArtifact> relatedArtifact;
+public class CodeSystem extends MetadataResource {
     @Summary
     private final Boolean caseSensitive;
     @Summary
@@ -257,32 +201,6 @@ public class CodeSystem extends DomainResource {
 
     private CodeSystem(Builder builder) {
         super(builder);
-        url = builder.url;
-        identifier = Collections.unmodifiableList(builder.identifier);
-        version = builder.version;
-        versionAlgorithm = builder.versionAlgorithm;
-        name = builder.name;
-        title = builder.title;
-        status = builder.status;
-        experimental = builder.experimental;
-        date = builder.date;
-        publisher = builder.publisher;
-        contact = Collections.unmodifiableList(builder.contact);
-        description = builder.description;
-        useContext = Collections.unmodifiableList(builder.useContext);
-        jurisdiction = Collections.unmodifiableList(builder.jurisdiction);
-        purpose = builder.purpose;
-        copyright = builder.copyright;
-        copyrightLabel = builder.copyrightLabel;
-        approvalDate = builder.approvalDate;
-        lastReviewDate = builder.lastReviewDate;
-        effectivePeriod = builder.effectivePeriod;
-        topic = Collections.unmodifiableList(builder.topic);
-        author = Collections.unmodifiableList(builder.author);
-        editor = Collections.unmodifiableList(builder.editor);
-        reviewer = Collections.unmodifiableList(builder.reviewer);
-        endorser = Collections.unmodifiableList(builder.endorser);
-        relatedArtifact = Collections.unmodifiableList(builder.relatedArtifact);
         caseSensitive = builder.caseSensitive;
         valueSet = builder.valueSet;
         hierarchyMeaning = builder.hierarchyMeaning;
@@ -294,289 +212,6 @@ public class CodeSystem extends DomainResource {
         filter = Collections.unmodifiableList(builder.filter);
         property = Collections.unmodifiableList(builder.property);
         concept = Collections.unmodifiableList(builder.concept);
-    }
-
-    /**
-     * An absolute URI that is used to identify this code system when it is referenced in a specification, model, design or 
-     * an instance; also called its canonical identifier. This SHOULD be globally unique and SHOULD be a literal address at 
-     * which an authoritative instance of this code system is (or will be) published. This URL can be the target of a 
-     * canonical reference. It SHALL remain the same when the code system is stored on different servers. This is used in 
-     * [Coding](datatypes.html#Coding).system.
-     * 
-     * @return
-     *     An immutable object of type {@link Uri} that may be null.
-     */
-    public Uri getUrl() {
-        return url;
-    }
-
-    /**
-     * A formal identifier that is used to identify this code system when it is represented in other formats, or referenced 
-     * in a specification, model, design or an instance.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link Identifier} that may be empty.
-     */
-    public List<Identifier> getIdentifier() {
-        return identifier;
-    }
-
-    /**
-     * The identifier that is used to identify this version of the code system when it is referenced in a specification, 
-     * model, design or instance. This is an arbitrary value managed by the code system author and is not expected to be 
-     * globally unique. For example, it might be a timestamp (e.g. yyyymmdd) if a managed version is not available. There is 
-     * also no expectation that versions can be placed in a lexicographical sequence. This is used in [Coding](datatypes.
-     * html#Coding).version.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Indicates the mechanism used to compare versions to determine which CodeSystem is more current.
-     * 
-     * @return
-     *     An immutable object of type {@link String} or {@link Coding} that may be null.
-     */
-    public Element getVersionAlgorithm() {
-        return versionAlgorithm;
-    }
-
-    /**
-     * A natural language name identifying the code system. This name should be usable as an identifier for the module by 
-     * machine processing applications such as code generation.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * A short, descriptive, user-friendly title for the code system.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * The status of this code system. Enables tracking the life-cycle of the content.
-     * 
-     * @return
-     *     An immutable object of type {@link PublicationStatus} that is non-null.
-     */
-    public PublicationStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * A Boolean value to indicate that this code system is authored for testing purposes (or education/evaluation/marketing) 
-     * and is not intended to be used for genuine usage.
-     * 
-     * @return
-     *     An immutable object of type {@link Boolean} that may be null.
-     */
-    public Boolean getExperimental() {
-        return experimental;
-    }
-
-    /**
-     * The date (and optionally time) when the code system was last significantly changed. The date must change when the 
-     * business version changes and it must change if the status code changes. In addition, it should change when the 
-     * substantive content of the code system changes.
-     * 
-     * @return
-     *     An immutable object of type {@link DateTime} that may be null.
-     */
-    public DateTime getDate() {
-        return date;
-    }
-
-    /**
-     * The name of the organization or individual responsible for the release and ongoing maintenance of the code system.
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getPublisher() {
-        return publisher;
-    }
-
-    /**
-     * Contact details to assist a user in finding and communicating with the publisher.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getContact() {
-        return contact;
-    }
-
-    /**
-     * A free text natural language description of the code system from a consumer's perspective.
-     * 
-     * @return
-     *     An immutable object of type {@link Markdown} that may be null.
-     */
-    public Markdown getDescription() {
-        return description;
-    }
-
-    /**
-     * The content was developed with a focus and intent of supporting the contexts that are listed. These contexts may be 
-     * general categories (gender, age, ...) or may be references to specific programs (insurance plans, studies, ...) and 
-     * may be used to assist with indexing and searching for appropriate code system instances.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link UsageContext} that may be empty.
-     */
-    public List<UsageContext> getUseContext() {
-        return useContext;
-    }
-
-    /**
-     * A legal or geographic region in which the code system is intended to be used.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link CodeableConcept} that may be empty.
-     */
-    public List<CodeableConcept> getJurisdiction() {
-        return jurisdiction;
-    }
-
-    /**
-     * Explanation of why this code system is needed and why it has been designed as it has.
-     * 
-     * @return
-     *     An immutable object of type {@link Markdown} that may be null.
-     */
-    public Markdown getPurpose() {
-        return purpose;
-    }
-
-    /**
-     * A copyright statement relating to the code system and/or its contents. Copyright statements are generally legal 
-     * restrictions on the use and publishing of the code system.
-     * 
-     * @return
-     *     An immutable object of type {@link Markdown} that may be null.
-     */
-    public Markdown getCopyright() {
-        return copyright;
-    }
-
-    /**
-     * A short string (&lt;50 characters), suitable for inclusion in a page footer that identifies the copyright holder, 
-     * effective period, and optionally whether rights are resctricted. (e.g. 'All rights reserved', 'Some rights reserved').
-     * 
-     * @return
-     *     An immutable object of type {@link String} that may be null.
-     */
-    public String getCopyrightLabel() {
-        return copyrightLabel;
-    }
-
-    /**
-     * The date on which the resource content was approved by the publisher. Approval happens once when the content is 
-     * officially approved for usage.
-     * 
-     * @return
-     *     An immutable object of type {@link Date} that may be null.
-     */
-    public Date getApprovalDate() {
-        return approvalDate;
-    }
-
-    /**
-     * The date on which the resource content was last reviewed. Review happens periodically after approval but does not 
-     * change the original approval date.
-     * 
-     * @return
-     *     An immutable object of type {@link Date} that may be null.
-     */
-    public Date getLastReviewDate() {
-        return lastReviewDate;
-    }
-
-    /**
-     * The period during which the CodeSystem content was or is planned to be in active use.
-     * 
-     * @return
-     *     An immutable object of type {@link Period} that may be null.
-     */
-    public Period getEffectivePeriod() {
-        return effectivePeriod;
-    }
-
-    /**
-     * Descriptions related to the content of the CodeSystem. Topics provide a high-level categorization as well as keywords 
-     * for the CodeSystem that can be useful for filtering and searching.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link CodeableConcept} that may be empty.
-     */
-    public List<CodeableConcept> getTopic() {
-        return topic;
-    }
-
-    /**
-     * An individiual or organization primarily involved in the creation and maintenance of the CodeSystem.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getAuthor() {
-        return author;
-    }
-
-    /**
-     * An individual or organization primarily responsible for internal coherence of the CodeSystem.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getEditor() {
-        return editor;
-    }
-
-    /**
-     * An individual or organization asserted by the publisher to be primarily responsible for review of some aspect of the 
-     * CodeSystem.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getReviewer() {
-        return reviewer;
-    }
-
-    /**
-     * An individual or organization asserted by the publisher to be responsible for officially endorsing the CodeSystem for 
-     * use in some setting.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link ContactDetail} that may be empty.
-     */
-    public List<ContactDetail> getEndorser() {
-        return endorser;
-    }
-
-    /**
-     * Related artifacts such as additional documentation, justification, dependencies, bibliographic references, and 
-     * predecessor and successor artifacts.
-     * 
-     * @return
-     *     An unmodifiable list containing immutable objects of type {@link RelatedArtifact} that may be empty.
-     */
-    public List<RelatedArtifact> getRelatedArtifact() {
-        return relatedArtifact;
     }
 
     /**
@@ -696,32 +331,6 @@ public class CodeSystem extends DomainResource {
     @Override
     public boolean hasChildren() {
         return super.hasChildren() || 
-            (url != null) || 
-            !identifier.isEmpty() || 
-            (version != null) || 
-            (versionAlgorithm != null) || 
-            (name != null) || 
-            (title != null) || 
-            (status != null) || 
-            (experimental != null) || 
-            (date != null) || 
-            (publisher != null) || 
-            !contact.isEmpty() || 
-            (description != null) || 
-            !useContext.isEmpty() || 
-            !jurisdiction.isEmpty() || 
-            (purpose != null) || 
-            (copyright != null) || 
-            (copyrightLabel != null) || 
-            (approvalDate != null) || 
-            (lastReviewDate != null) || 
-            (effectivePeriod != null) || 
-            !topic.isEmpty() || 
-            !author.isEmpty() || 
-            !editor.isEmpty() || 
-            !reviewer.isEmpty() || 
-            !endorser.isEmpty() || 
-            !relatedArtifact.isEmpty() || 
             (caseSensitive != null) || 
             (valueSet != null) || 
             (hierarchyMeaning != null) || 
@@ -914,33 +523,7 @@ public class CodeSystem extends DomainResource {
         return new Builder();
     }
 
-    public static class Builder extends DomainResource.Builder {
-        private Uri url;
-        private List<Identifier> identifier = new ArrayList<>();
-        private String version;
-        private Element versionAlgorithm;
-        private String name;
-        private String title;
-        private PublicationStatus status;
-        private Boolean experimental;
-        private DateTime date;
-        private String publisher;
-        private List<ContactDetail> contact = new ArrayList<>();
-        private Markdown description;
-        private List<UsageContext> useContext = new ArrayList<>();
-        private List<CodeableConcept> jurisdiction = new ArrayList<>();
-        private Markdown purpose;
-        private Markdown copyright;
-        private String copyrightLabel;
-        private Date approvalDate;
-        private Date lastReviewDate;
-        private Period effectivePeriod;
-        private List<CodeableConcept> topic = new ArrayList<>();
-        private List<ContactDetail> author = new ArrayList<>();
-        private List<ContactDetail> editor = new ArrayList<>();
-        private List<ContactDetail> reviewer = new ArrayList<>();
-        private List<ContactDetail> endorser = new ArrayList<>();
-        private List<RelatedArtifact> relatedArtifact = new ArrayList<>();
+    public static class Builder extends MetadataResource.Builder {
         private Boolean caseSensitive;
         private Canonical valueSet;
         private CodeSystemHierarchyMeaning hierarchyMeaning;
@@ -1185,9 +768,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder url(Uri url) {
-            this.url = url;
-            return this;
+            return (Builder) super.url(url);
         }
 
         /**
@@ -1203,11 +786,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder identifier(Identifier... identifier) {
-            for (Identifier value : identifier) {
-                this.identifier.add(value);
-            }
-            return this;
+            return (Builder) super.identifier(identifier);
         }
 
         /**
@@ -1226,9 +807,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder identifier(Collection<Identifier> identifier) {
-            this.identifier = new ArrayList<>(identifier);
-            return this;
+            return (Builder) super.identifier(identifier);
         }
 
         /**
@@ -1242,9 +823,9 @@ Modifier extensions
          * 
          * @see #version(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder version(java.lang.String version) {
-            this.version = (version == null) ? null : String.of(version);
-            return this;
+            return (Builder) super.version(version);
         }
 
         /**
@@ -1260,9 +841,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder version(String version) {
-            this.version = version;
-            return this;
+            return (Builder) super.version(version);
         }
 
         /**
@@ -1276,9 +857,9 @@ Modifier extensions
          * 
          * @see #versionAlgorithm(Element)
          */
+        @Override
         public Builder versionAlgorithm(java.lang.String versionAlgorithm) {
-            this.versionAlgorithm = (versionAlgorithm == null) ? null : String.of(versionAlgorithm);
-            return this;
+            return (Builder) super.versionAlgorithm(versionAlgorithm);
         }
 
         /**
@@ -1296,9 +877,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder versionAlgorithm(Element versionAlgorithm) {
-            this.versionAlgorithm = versionAlgorithm;
-            return this;
+            return (Builder) super.versionAlgorithm(versionAlgorithm);
         }
 
         /**
@@ -1312,9 +893,9 @@ Modifier extensions
          * 
          * @see #name(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder name(java.lang.String name) {
-            this.name = (name == null) ? null : String.of(name);
-            return this;
+            return (Builder) super.name(name);
         }
 
         /**
@@ -1327,9 +908,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder name(String name) {
-            this.name = name;
-            return this;
+            return (Builder) super.name(name);
         }
 
         /**
@@ -1343,9 +924,9 @@ Modifier extensions
          * 
          * @see #title(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder title(java.lang.String title) {
-            this.title = (title == null) ? null : String.of(title);
-            return this;
+            return (Builder) super.title(title);
         }
 
         /**
@@ -1357,9 +938,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder title(String title) {
-            this.title = title;
-            return this;
+            return (Builder) super.title(title);
         }
 
         /**
@@ -1373,9 +954,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder status(PublicationStatus status) {
-            this.status = status;
-            return this;
+            return (Builder) super.status(status);
         }
 
         /**
@@ -1389,9 +970,9 @@ Modifier extensions
          * 
          * @see #experimental(org.linuxforhealth.fhir.model.type.Boolean)
          */
+        @Override
         public Builder experimental(java.lang.Boolean experimental) {
-            this.experimental = (experimental == null) ? null : Boolean.of(experimental);
-            return this;
+            return (Builder) super.experimental(experimental);
         }
 
         /**
@@ -1404,9 +985,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder experimental(Boolean experimental) {
-            this.experimental = experimental;
-            return this;
+            return (Builder) super.experimental(experimental);
         }
 
         /**
@@ -1420,9 +1001,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder date(DateTime date) {
-            this.date = date;
-            return this;
+            return (Builder) super.date(date);
         }
 
         /**
@@ -1436,9 +1017,9 @@ Modifier extensions
          * 
          * @see #publisher(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder publisher(java.lang.String publisher) {
-            this.publisher = (publisher == null) ? null : String.of(publisher);
-            return this;
+            return (Builder) super.publisher(publisher);
         }
 
         /**
@@ -1450,9 +1031,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder publisher(String publisher) {
-            this.publisher = publisher;
-            return this;
+            return (Builder) super.publisher(publisher);
         }
 
         /**
@@ -1467,11 +1048,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder contact(ContactDetail... contact) {
-            for (ContactDetail value : contact) {
-                this.contact.add(value);
-            }
-            return this;
+        	return (Builder) super.contact(contact);
         }
 
         /**
@@ -1489,9 +1068,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder contact(Collection<ContactDetail> contact) {
-            this.contact = new ArrayList<>(contact);
-            return this;
+            return (Builder) super.contact(contact);
         }
 
         /**
@@ -1503,9 +1082,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder description(Markdown description) {
-            this.description = description;
-            return this;
+            return (Builder) super.description(description);
         }
 
         /**
@@ -1522,11 +1101,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder useContext(UsageContext... useContext) {
-            for (UsageContext value : useContext) {
-                this.useContext.add(value);
-            }
-            return this;
+        	return (Builder) super.useContext(useContext);
         }
 
         /**
@@ -1546,9 +1123,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder useContext(Collection<UsageContext> useContext) {
-            this.useContext = new ArrayList<>(useContext);
-            return this;
+            return (Builder) super.useContext(useContext);
         }
 
         /**
@@ -1563,11 +1140,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder jurisdiction(CodeableConcept... jurisdiction) {
-            for (CodeableConcept value : jurisdiction) {
-                this.jurisdiction.add(value);
-            }
-            return this;
+        	return (Builder) super.jurisdiction(jurisdiction);
         }
 
         /**
@@ -1585,9 +1160,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder jurisdiction(Collection<CodeableConcept> jurisdiction) {
-            this.jurisdiction = new ArrayList<>(jurisdiction);
-            return this;
+            return (Builder) super.jurisdiction(jurisdiction);
         }
 
         /**
@@ -1599,9 +1174,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder purpose(Markdown purpose) {
-            this.purpose = purpose;
-            return this;
+            return (Builder) super.purpose(purpose);
         }
 
         /**
@@ -1614,9 +1189,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder copyright(Markdown copyright) {
-            this.copyright = copyright;
-            return this;
+            return (Builder) super.copyright(copyright);
         }
 
         /**
@@ -1630,9 +1205,9 @@ Modifier extensions
          * 
          * @see #copyrightLabel(org.linuxforhealth.fhir.model.type.String)
          */
+        @Override
         public Builder copyrightLabel(java.lang.String copyrightLabel) {
-            this.copyrightLabel = (copyrightLabel == null) ? null : String.of(copyrightLabel);
-            return this;
+            return (Builder) super.copyrightLabel(copyrightLabel);
         }
 
         /**
@@ -1645,9 +1220,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder copyrightLabel(String copyrightLabel) {
-            this.copyrightLabel = copyrightLabel;
-            return this;
+            return (Builder) super.copyrightLabel(copyrightLabel);
         }
 
         /**
@@ -1661,9 +1236,9 @@ Modifier extensions
          * 
          * @see #approvalDate(org.linuxforhealth.fhir.model.type.Date)
          */
+        @Override
         public Builder approvalDate(java.time.LocalDate approvalDate) {
-            this.approvalDate = (approvalDate == null) ? null : Date.of(approvalDate);
-            return this;
+            return (Builder) super.approvalDate(approvalDate);
         }
 
         /**
@@ -1676,9 +1251,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder approvalDate(Date approvalDate) {
-            this.approvalDate = approvalDate;
-            return this;
+            return (Builder) super.approvalDate(approvalDate);
         }
 
         /**
@@ -1692,9 +1267,9 @@ Modifier extensions
          * 
          * @see #lastReviewDate(org.linuxforhealth.fhir.model.type.Date)
          */
+        @Override
         public Builder lastReviewDate(java.time.LocalDate lastReviewDate) {
-            this.lastReviewDate = (lastReviewDate == null) ? null : Date.of(lastReviewDate);
-            return this;
+            return (Builder) super.lastReviewDate(lastReviewDate);
         }
 
         /**
@@ -1707,9 +1282,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder lastReviewDate(Date lastReviewDate) {
-            this.lastReviewDate = lastReviewDate;
-            return this;
+            return (Builder) super.lastReviewDate(lastReviewDate);
         }
 
         /**
@@ -1721,9 +1296,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder effectivePeriod(Period effectivePeriod) {
-            this.effectivePeriod = effectivePeriod;
-            return this;
+            return (Builder) super.effectivePeriod(effectivePeriod);
         }
 
         /**
@@ -1739,11 +1314,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder topic(CodeableConcept... topic) {
-            for (CodeableConcept value : topic) {
-                this.topic.add(value);
-            }
-            return this;
+        	return (Builder) super.topic(topic);
         }
 
         /**
@@ -1762,9 +1335,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder topic(Collection<CodeableConcept> topic) {
-            this.topic = new ArrayList<>(topic);
-            return this;
+            return (Builder) super.topic(topic);
         }
 
         /**
@@ -1779,11 +1352,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder author(ContactDetail... author) {
-            for (ContactDetail value : author) {
-                this.author.add(value);
-            }
-            return this;
+        	return (Builder) super.author(author);
         }
 
         /**
@@ -1801,9 +1372,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder author(Collection<ContactDetail> author) {
-            this.author = new ArrayList<>(author);
-            return this;
+            return (Builder) super.author(author);
         }
 
         /**
@@ -1818,11 +1389,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder editor(ContactDetail... editor) {
-            for (ContactDetail value : editor) {
-                this.editor.add(value);
-            }
-            return this;
+        	return (Builder) super.editor(editor);
         }
 
         /**
@@ -1840,9 +1409,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder editor(Collection<ContactDetail> editor) {
-            this.editor = new ArrayList<>(editor);
-            return this;
+            return (Builder) super.editor(editor);
         }
 
         /**
@@ -1858,11 +1427,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder reviewer(ContactDetail... reviewer) {
-            for (ContactDetail value : reviewer) {
-                this.reviewer.add(value);
-            }
-            return this;
+        	return (Builder) super.reviewer(reviewer);
         }
 
         /**
@@ -1881,9 +1448,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder reviewer(Collection<ContactDetail> reviewer) {
-            this.reviewer = new ArrayList<>(reviewer);
-            return this;
+            return (Builder) super.reviewer(reviewer);
         }
 
         /**
@@ -1899,11 +1466,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder endorser(ContactDetail... endorser) {
-            for (ContactDetail value : endorser) {
-                this.endorser.add(value);
-            }
-            return this;
+        	return (Builder) super.endorser(endorser);
         }
 
         /**
@@ -1922,9 +1487,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder endorser(Collection<ContactDetail> endorser) {
-            this.endorser = new ArrayList<>(endorser);
-            return this;
+            return (Builder) super.endorser(endorser);
         }
 
         /**
@@ -1940,11 +1505,9 @@ Modifier extensions
          * @return
          *     A reference to this Builder instance
          */
+        @Override
         public Builder relatedArtifact(RelatedArtifact... relatedArtifact) {
-            for (RelatedArtifact value : relatedArtifact) {
-                this.relatedArtifact.add(value);
-            }
-            return this;
+        	return (Builder) super.relatedArtifact(relatedArtifact);
         }
 
         /**
@@ -1963,9 +1526,9 @@ Modifier extensions
          * @throws NullPointerException
          *     If the passed collection is null
          */
+        @Override
         public Builder relatedArtifact(Collection<RelatedArtifact> relatedArtifact) {
-            this.relatedArtifact = new ArrayList<>(relatedArtifact);
-            return this;
+            return (Builder) super.relatedArtifact(relatedArtifact);
         }
 
         /**
@@ -2297,32 +1860,6 @@ Modifier extensions
 
         protected Builder from(CodeSystem codeSystem) {
             super.from(codeSystem);
-            url = codeSystem.url;
-            identifier.addAll(codeSystem.identifier);
-            version = codeSystem.version;
-            versionAlgorithm = codeSystem.versionAlgorithm;
-            name = codeSystem.name;
-            title = codeSystem.title;
-            status = codeSystem.status;
-            experimental = codeSystem.experimental;
-            date = codeSystem.date;
-            publisher = codeSystem.publisher;
-            contact.addAll(codeSystem.contact);
-            description = codeSystem.description;
-            useContext.addAll(codeSystem.useContext);
-            jurisdiction.addAll(codeSystem.jurisdiction);
-            purpose = codeSystem.purpose;
-            copyright = codeSystem.copyright;
-            copyrightLabel = codeSystem.copyrightLabel;
-            approvalDate = codeSystem.approvalDate;
-            lastReviewDate = codeSystem.lastReviewDate;
-            effectivePeriod = codeSystem.effectivePeriod;
-            topic.addAll(codeSystem.topic);
-            author.addAll(codeSystem.author);
-            editor.addAll(codeSystem.editor);
-            reviewer.addAll(codeSystem.reviewer);
-            endorser.addAll(codeSystem.endorser);
-            relatedArtifact.addAll(codeSystem.relatedArtifact);
             caseSensitive = codeSystem.caseSensitive;
             valueSet = codeSystem.valueSet;
             hierarchyMeaning = codeSystem.hierarchyMeaning;
