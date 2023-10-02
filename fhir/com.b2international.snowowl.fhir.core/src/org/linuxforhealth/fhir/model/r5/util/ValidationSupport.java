@@ -39,6 +39,12 @@ import org.linuxforhealth.fhir.model.r5.type.Reference;
 import org.linuxforhealth.fhir.model.r5.type.Uri;
 import org.linuxforhealth.fhir.model.ucum.util.UCUMUtil;
 
+/*
+ * Modifications:
+ * 
+ * - Changed "checkId" to allow forward slash characters
+ */
+
 /**
  * Static helper methods for validating model objects during construction
  *
@@ -237,7 +243,9 @@ public final class ValidationSupport {
             //90 = 'Z'
             //97 = 'a'
             //122 = 'z'
-            if (c < 45 || c == 47 || (c > 57 && c < 65) || (c > 90 && c < 97) || c > 122 ) {
+            
+            // XXX: Also allow 47 == '/' for versioned IDs, although this is not permitted by the specification
+            if (c < 45 || /* c == 47 || */ (c > 57 && c < 65) || (c > 90 && c < 97) || c > 122 ) {
                 throw new IllegalStateException(String.format("Id value: '%s' contain invalid character '%s'", s, c));
             }
         }

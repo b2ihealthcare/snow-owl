@@ -23,7 +23,7 @@ import java.time.LocalDate;
 
 import org.linuxforhealth.fhir.model.format.Format;
 import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
-import org.linuxforhealth.fhir.model.r4b.generator.FHIRGenerator;
+import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -43,7 +43,9 @@ import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.converter.BundleConverter_43;
+import com.b2international.snowowl.fhir.core.model.converter.BundleConverter_50;
 import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_43;
+import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
@@ -312,7 +314,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			.buildAsync()
 			.execute(getBus())
 			.then(soBundle -> {
-				var fhirBundle = BundleConverter_43.INSTANCE.fromInternal(soBundle);
+				var fhirBundle = BundleConverter_50.INSTANCE.fromInternal(soBundle);
 				
 				final Format format = Format.JSON;
 				final boolean prettyPrinting = true;
@@ -373,7 +375,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			.buildAsync()
 			.execute(getBus())
 			.then(soCodeSystem -> {
-				var fhirCodeSystem = CodeSystemConverter_43.INSTANCE.fromInternal(soCodeSystem);
+				var fhirCodeSystem = CodeSystemConverter_50.INSTANCE.fromInternal(soCodeSystem);
 				
 				final Format format = Format.JSON;
 				final boolean prettyPrinting = true;
