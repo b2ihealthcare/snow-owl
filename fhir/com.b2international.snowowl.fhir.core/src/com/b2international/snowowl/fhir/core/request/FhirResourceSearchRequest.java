@@ -280,7 +280,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		includeIfFieldSelected(MetadataResource.Fields.NAME, resource::getId, entry::name);
 		includeIfFieldSelected(MetadataResource.Fields.TITLE, resource::getTitle, entry::title);
 		includeIfFieldSelected(MetadataResource.Fields.URL, resource::getUrl, entry::url);
-		includeIfFieldSelected(DomainResource.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
+		includeIfFieldSelected(DomainResource.Fields.TEXT, () -> Narrative.builder().div("<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(MetadataResource.Fields.VERSION, resource::getVersion, entry::version);
 		includeIfFieldSelected(MetadataResource.Fields.PUBLISHER, () -> getPublisher(resource), entry::publisher);
 		includeIfFieldSelected(FhirResource.Fields.LANGUAGE, resource::getLanguage, entry::language);
