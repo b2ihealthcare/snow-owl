@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import java.io.InputStream;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.BitSet;
@@ -113,7 +114,9 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	private static final int PRETTY_IDX = 1;
 
 	static {
-		SpringDocUtils.getConfig().addResponseWrapperToIgnore(Promise.class);
+		SpringDocUtils.getConfig()
+			.removeRequestWrapperToIgnore(InputStream.class)
+			.addResponseWrapperToIgnore(Promise.class);
 	}
 	
 	@Autowired
