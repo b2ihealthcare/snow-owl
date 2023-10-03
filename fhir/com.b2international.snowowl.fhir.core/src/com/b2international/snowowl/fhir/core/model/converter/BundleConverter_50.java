@@ -46,11 +46,7 @@ public class BundleConverter_50 extends AbstractConverter_50 implements BundleCo
 		
 		Bundle.Builder builder = Bundle.builder();
 		
-		// Resource properties 
-		builder.id(fromInternalToString(bundle.getId()));
-		builder.meta(fromInternal(bundle.getMeta()));
-		builder.implicitRules(fromInternal(bundle.getImplicitRules()));
-		builder.language(fromInternal(bundle.getLanguage()));
+		fromInternalResource(builder, bundle);
 
 		// Bundle properties
 		builder.identifier(fromInternal(bundle.getIdentifier()));
@@ -131,11 +127,7 @@ public class BundleConverter_50 extends AbstractConverter_50 implements BundleCo
 		
 		var builder = com.b2international.snowowl.fhir.core.model.Bundle.builder();
 
-		// Resource properties 
-		builder.id(bundle.getId());
-		builder.meta(toInternal(bundle.getMeta()));
-		builder.implicitRules(toInternal(bundle.getImplicitRules()));
-		builder.language(toInternal(bundle.getLanguage()));
+		toInternalResource(builder, bundle);
 
 		// Bundle properties
 		builder.identifier(toInternal(bundle.getIdentifier()));

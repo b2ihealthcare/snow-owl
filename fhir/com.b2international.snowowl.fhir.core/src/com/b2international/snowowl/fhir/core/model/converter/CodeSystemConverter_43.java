@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.model.converter;
 import java.util.List;
 
 import org.linuxforhealth.fhir.model.r4b.resource.CodeSystem;
-import org.linuxforhealth.fhir.model.r4b.resource.CodeSystem.Filter;
 import org.linuxforhealth.fhir.model.r4b.type.*;
 import org.linuxforhealth.fhir.model.r4b.type.Boolean;
 import org.linuxforhealth.fhir.model.r4b.type.Integer;
@@ -47,17 +46,8 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		
 		CodeSystem.Builder builder = CodeSystem.builder();
 		
-		// Resource properties 
-		builder.id(fromInternalToString(codeSystem.getId()));
-		builder.meta(fromInternal(codeSystem.getMeta()));
-		builder.implicitRules(fromInternal(codeSystem.getImplicitRules()));
-		builder.language(fromInternal(codeSystem.getLanguage()));
-		
-		// DomainResource properties
-		builder.text(fromInternal(codeSystem.getText()));
-		// "contained" is not converted
-		// "extension" is not converted
-		// "modifierExtension" is not converted
+		fromInternalResource(builder, codeSystem);
+		fromInternalDomainResource(builder, codeSystem);
 		
 		// CodeSystem properties
 		builder.url(fromInternal(codeSystem.getUrl()));
@@ -147,6 +137,10 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		
 		return builder.build();
 	}
+
+	
+
+	
 	
 	// Elements
 
@@ -296,17 +290,8 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		
 		var builder = com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.builder();
 		
-		// Resource properties 
-		builder.id(codeSystem.getId());
-		builder.meta(toInternal(codeSystem.getMeta()));
-		builder.implicitRules(toInternal(codeSystem.getImplicitRules()));
-		builder.language(toInternal(codeSystem.getLanguage()));
-		
-		// DomainResource properties
-		builder.text(toInternal(codeSystem.getText()));
-		// "contained" is not converted
-		// "extension" is not converted
-		// "modifierExtension" is not converted
+		toInternalResource(builder, codeSystem);
+		toInternalDomainResource(builder, codeSystem);
 		
 		// CodeSystem properties
 		builder.url(toInternal(codeSystem.getUrl()));
@@ -322,7 +307,7 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		
 		var status = toInternal(codeSystem.getStatus());
 		if (status != null) {
-			builder.status(com.b2international.snowowl.fhir.core.codesystems.PublicationStatus.valueOf(status.getCodeValue()));
+			builder.status(com.b2international.snowowl.fhir.core.codesystems.PublicationStatus.getByCodeValue(status.getCodeValue()));
 		}
 		
 		builder.experimental(toInternal(codeSystem.getExperimental()));
@@ -360,7 +345,7 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		builder.count(toInternal(codeSystem.getCount()));
 		
 		List<CodeSystem.Filter> filters = codeSystem.getFilter();
-		for (Filter filter : filters) {
+		for (CodeSystem.Filter filter : filters) {
 			builder.addFilter(toInternal(filter));
 		}
 		

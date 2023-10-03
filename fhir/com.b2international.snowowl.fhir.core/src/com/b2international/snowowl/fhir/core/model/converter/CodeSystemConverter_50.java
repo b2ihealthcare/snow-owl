@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.model.converter;
 import java.util.List;
 
 import org.linuxforhealth.fhir.model.r5.resource.CodeSystem;
-import org.linuxforhealth.fhir.model.r5.resource.CodeSystem.Filter;
 import org.linuxforhealth.fhir.model.r5.type.*;
 import org.linuxforhealth.fhir.model.r5.type.Boolean;
 import org.linuxforhealth.fhir.model.r5.type.Integer;
@@ -47,20 +46,11 @@ public class CodeSystemConverter_50 extends AbstractConverter_50 implements Code
 		
 		CodeSystem.Builder builder = CodeSystem.builder();
 		
-		// Resource properties 
-		builder.id(fromInternalToString(codeSystem.getId()));
-		builder.meta(fromInternal(codeSystem.getMeta()));
-		builder.implicitRules(fromInternal(codeSystem.getImplicitRules()));
-		builder.language(fromInternal(codeSystem.getLanguage()));
+		fromInternalResource(builder, codeSystem);
+		fromInternalDomainResource(builder, codeSystem);
+		fromInternalCanonicalResource(builder, codeSystem);
 		
-		// DomainResource properties
-		builder.text(fromInternal(codeSystem.getText()));
-		// "contained" is not converted
-		// "extension" is not converted
-		// "modifierExtension" is not converted
-		
-		// CodeSystem properties
-		builder.url(fromInternal(codeSystem.getUrl()));
+		// CanonicalResource properties not handled above
 		
 		var identifiers = codeSystem.getIdentifiers();
 		if (!CompareUtils.isEmpty(identifiers)) {
@@ -71,33 +61,11 @@ public class CodeSystemConverter_50 extends AbstractConverter_50 implements Code
 			}
 		}
 		
-		builder.version(codeSystem.getVersion());
-		builder.name(codeSystem.getName());
-		builder.title(codeSystem.getTitle());
-		
-		Code status = fromInternal(codeSystem.getStatus());
-		if (status != null) {
-			builder.status(PublicationStatus.of(status.getValue()));
-		}
-		
-		builder.experimental(codeSystem.getExperimental());
-		builder.date(fromInternal(codeSystem.getDate()));
-		builder.publisher(codeSystem.getPublisher());
-		
-		var contacts = codeSystem.getContacts();
-		if (!CompareUtils.isEmpty(contacts)) {
-			for (var contact : contacts) {
-				if (contact != null) {
-					builder.contact(fromInternal(contact));
-				}
-			}
-		}
-		
-		builder.description(fromInternalToMarkdown(codeSystem.getDescription()));
-		// "useContext" is not converted
-		// "jurisdiction" is not converted
-		builder.purpose(fromInternalToMarkdown(codeSystem.getPurpose()));
 		builder.copyright(fromInternalToMarkdown(codeSystem.getCopyright()));
+
+		// MetadataResource properties (none of them are converted)
+		
+		// CodeSystem properties
 		
 		builder.caseSensitive(codeSystem.getCaseSensitive());
 		builder.valueSet(fromInternalToCanonical(codeSystem.getValueSet()));
@@ -147,7 +115,7 @@ public class CodeSystemConverter_50 extends AbstractConverter_50 implements Code
 		
 		return builder.build();
 	}
-	
+
 	// Elements
 
 	private CodeSystem.Filter fromInternal(com.b2international.snowowl.fhir.core.model.codesystem.Filter filter) {
@@ -296,49 +264,20 @@ public class CodeSystemConverter_50 extends AbstractConverter_50 implements Code
 		
 		var builder = com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.builder();
 		
-		// Resource properties 
-		builder.id(codeSystem.getId());
-		builder.meta(toInternal(codeSystem.getMeta()));
-		builder.implicitRules(toInternal(codeSystem.getImplicitRules()));
-		builder.language(toInternal(codeSystem.getLanguage()));
+		toInternalResource(builder, codeSystem);
+		toInternalDomainResource(builder, codeSystem);
+		toInternalCanonicalResource(builder, codeSystem);
 		
-		// DomainResource properties
-		builder.text(toInternal(codeSystem.getText()));
-		// "contained" is not converted
-		// "extension" is not converted
-		// "modifierExtension" is not converted
-		
-		// CodeSystem properties
-		builder.url(toInternal(codeSystem.getUrl()));
+		// CanonicalResource properties not handled above
 		
 		List<Identifier> identifiers = codeSystem.getIdentifier();
 		for (Identifier identifier : identifiers) {
 			builder.addIdentifier(toInternal(identifier));
 		}
 		
-		builder.version(toInternal(codeSystem.getVersion()));
-		builder.name(toInternal(codeSystem.getName()));
-		builder.title(toInternal(codeSystem.getTitle()));
-		
-		var status = toInternal(codeSystem.getStatus());
-		if (status != null) {
-			builder.status(com.b2international.snowowl.fhir.core.codesystems.PublicationStatus.valueOf(status.getCodeValue()));
-		}
-		
-		builder.experimental(toInternal(codeSystem.getExperimental()));
-		builder.date(toInternal(codeSystem.getDate()));
-		builder.publisher(toInternal(codeSystem.getPublisher()));
-		
-		List<ContactDetail> contacts = codeSystem.getContact();
-		for (ContactDetail contact : contacts) {
-			builder.addContact(toInternal(contact));
-		}
-		
-		builder.description(toInternal(codeSystem.getDescription()));
-		// "useContext" is not converted
-		// "jurisdiction" is not converted
-		builder.purpose(toInternal(codeSystem.getPurpose()));
 		builder.copyright(toInternal(codeSystem.getCopyright()));
+		
+		// CodeSystem properties
 		
 		builder.caseSensitive(toInternal(codeSystem.getCaseSensitive()));
 		builder.valueSet(toInternal(codeSystem.getValueSet()));
@@ -360,7 +299,7 @@ public class CodeSystemConverter_50 extends AbstractConverter_50 implements Code
 		builder.count(toInternal(codeSystem.getCount()));
 		
 		List<CodeSystem.Filter> filters = codeSystem.getFilter();
-		for (Filter filter : filters) {
+		for (CodeSystem.Filter filter : filters) {
 			builder.addFilter(toInternal(filter));
 		}
 		

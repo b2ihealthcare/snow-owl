@@ -20,7 +20,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.linuxforhealth.fhir.model.r4b.resource.CodeSystem;
+import org.linuxforhealth.fhir.model.r4b.resource.DomainResource;
 import org.linuxforhealth.fhir.model.r4b.resource.Resource;
+import org.linuxforhealth.fhir.model.r4b.resource.ValueSet;
 import org.linuxforhealth.fhir.model.r4b.type.*;
 import org.linuxforhealth.fhir.model.r4b.type.Boolean;
 import org.linuxforhealth.fhir.model.r4b.type.Integer;
@@ -45,7 +47,7 @@ public abstract class AbstractConverter_43 {
 	
 	// Primitive data types
 
-	protected Id fromInternal(com.b2international.snowowl.fhir.core.model.dt.Id id) {
+	protected final Id fromInternal(com.b2international.snowowl.fhir.core.model.dt.Id id) {
 		if (id == null || StringUtils.isEmpty(id.getIdValue())) {
 			return null;
 		}
@@ -53,7 +55,7 @@ public abstract class AbstractConverter_43 {
 		return Id.of(id.getIdValue());
 	}
 	
-	protected java.lang.String fromInternalToString(com.b2international.snowowl.fhir.core.model.dt.Id id) {
+	protected final java.lang.String fromInternalToString(com.b2international.snowowl.fhir.core.model.dt.Id id) {
 		if (id == null || StringUtils.isEmpty(id.getIdValue())) {
 			return null;
 		}
@@ -61,7 +63,7 @@ public abstract class AbstractConverter_43 {
 		return id.getIdValue();
 	}
 
-	protected Uri fromInternal(com.b2international.snowowl.fhir.core.model.dt.Uri uri) {
+	protected final Uri fromInternal(com.b2international.snowowl.fhir.core.model.dt.Uri uri) {
 		if (uri == null || StringUtils.isEmpty(uri.getUriValue())) {
 			return null;
 		}
@@ -69,7 +71,7 @@ public abstract class AbstractConverter_43 {
 		return Uri.of(uri.getUriValue());
 	}
 
-	protected Canonical fromInternalToCanonical(com.b2international.snowowl.fhir.core.model.dt.Uri uri) {
+	protected final Canonical fromInternalToCanonical(com.b2international.snowowl.fhir.core.model.dt.Uri uri) {
 		if (uri == null || StringUtils.isEmpty(uri.getUriValue())) {
 			return null;
 		}
@@ -77,23 +79,23 @@ public abstract class AbstractConverter_43 {
 		return Canonical.of(uri.getUriValue());
 	}
 	
-	protected String fromInternal(java.lang.String value) {
-		if (StringUtils.isEmpty(value)) {
-			return null;
-		}
-		
-		return String.of(value);
-	}
-	
-	protected Code fromInternal(com.b2international.snowowl.fhir.core.model.dt.Code code) {
+	protected final Code fromInternal(com.b2international.snowowl.fhir.core.model.dt.Code code) {
 		if (code == null || StringUtils.isEmpty(code.getCodeValue())) {
 			return null;
 		}
 		
 		return Code.of(code.getCodeValue());
 	}
+	
+	protected final String fromInternal(java.lang.String value) {
+		if (StringUtils.isEmpty(value)) {
+			return null;
+		}
+		
+		return String.of(value);
+	}
 
-	protected Coding fromInternal(com.b2international.snowowl.fhir.core.model.dt.Coding coding) {
+	protected final Coding fromInternal(com.b2international.snowowl.fhir.core.model.dt.Coding coding) {
 		if (coding == null) {
 			return null;
 		}
@@ -109,7 +111,7 @@ public abstract class AbstractConverter_43 {
 	}
 
 	
-	protected DateTime fromInternal(Date date) {
+	protected final DateTime fromInternal(Date date) {
 		if (date == null) {
 			return null;
 		}
@@ -117,7 +119,7 @@ public abstract class AbstractConverter_43 {
 		return DateTime.of(date.toInstant().atZone(ZoneOffset.UTC));
 	}
 
-	protected Instant fromInternal(com.b2international.snowowl.fhir.core.model.dt.Instant instant) {
+	protected final Instant fromInternal(com.b2international.snowowl.fhir.core.model.dt.Instant instant) {
 		if (instant == null) {
 			return null;
 		}
@@ -125,7 +127,7 @@ public abstract class AbstractConverter_43 {
 		return Instant.of(instant.getInstant());
 	}
 
-	protected Decimal fromInternal(Float value) {
+	protected final Decimal fromInternal(Float value) {
 		if (value == null) {
 			return null;
 		}
@@ -133,7 +135,7 @@ public abstract class AbstractConverter_43 {
 		return Decimal.of(value);
 	}
 
-	protected Markdown fromInternalToMarkdown(java.lang.String value) {
+	protected final Markdown fromInternalToMarkdown(java.lang.String value) {
 		if (StringUtils.isEmpty(value)) {
 			return null;
 		}
@@ -141,7 +143,7 @@ public abstract class AbstractConverter_43 {
 		return Markdown.of(value);
 	}
 	
-	protected UnsignedInt fromInternalToUnsignedInt(java.lang.Integer value) {
+	protected final UnsignedInt fromInternalToUnsignedInt(java.lang.Integer value) {
 		if (value == null) {
 			return null;
 		}
@@ -151,7 +153,7 @@ public abstract class AbstractConverter_43 {
 	
 	// Elements
 
-	protected Meta fromInternal(com.b2international.snowowl.fhir.core.model.Meta meta) {
+	protected final Meta fromInternal(com.b2international.snowowl.fhir.core.model.Meta meta) {
 		if (meta == null) {
 			return null;
 		}
@@ -173,7 +175,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected Narrative fromInternal(com.b2international.snowowl.fhir.core.model.dt.Narrative narrative) {
+	protected final Narrative fromInternal(com.b2international.snowowl.fhir.core.model.dt.Narrative narrative) {
 		if (narrative == null) {
 			return null;
 		}
@@ -193,7 +195,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 	
-	protected Identifier fromInternal(com.b2international.snowowl.fhir.core.model.dt.Identifier identifier) {
+	protected final Identifier fromInternal(com.b2international.snowowl.fhir.core.model.dt.Identifier identifier) {
 		if (identifier == null) {
 			return null;
 		}
@@ -211,7 +213,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected ContactDetail fromInternal(com.b2international.snowowl.fhir.core.model.ContactDetail contactDetail) {
+	protected final ContactDetail fromInternal(com.b2international.snowowl.fhir.core.model.ContactDetail contactDetail) {
 		if (contactDetail == null) {
 			return null;
 		}
@@ -234,7 +236,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected ContactPoint fromInternal(com.b2international.snowowl.fhir.core.model.dt.ContactPoint contactPoint) {
+	protected final ContactPoint fromInternal(com.b2international.snowowl.fhir.core.model.dt.ContactPoint contactPoint) {
 		if (contactPoint == null) {
 			return null;
 		}
@@ -264,21 +266,37 @@ public abstract class AbstractConverter_43 {
 	
 	// Resources
 	
-	protected Resource fromInternal(com.b2international.snowowl.fhir.core.model.FhirResource resource) {
+	protected final Resource fromInternal(com.b2international.snowowl.fhir.core.model.FhirResource resource) {
 		if (resource == null) {
 			return null;
 		}
 		
 		if (resource instanceof com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem codeSystem) {
 			return CodeSystemConverter_43.INSTANCE.fromInternal(codeSystem);
+		} else if (resource instanceof com.b2international.snowowl.fhir.core.model.valueset.ValueSet valueSet) {
+			return ValueSetConverter_43.INSTANCE.fromInternal(valueSet);
 		} else {
 			throw new IllegalArgumentException("Unsupported resource type '" + resource.getClass().getSimpleName() + "'.");
 		}
 	}
 
+	protected final void fromInternalResource(Resource.Builder builder, com.b2international.snowowl.fhir.core.model.FhirResource resource) {
+		builder.id(fromInternalToString(resource.getId()));
+		builder.meta(fromInternal(resource.getMeta()));
+		builder.implicitRules(fromInternal(resource.getImplicitRules()));
+		builder.language(fromInternal(resource.getLanguage()));
+	}
+
+	protected final void fromInternalDomainResource(DomainResource.Builder builder, com.b2international.snowowl.fhir.core.model.DomainResource domainResource) {
+		builder.text(fromInternal(domainResource.getText()));
+		// "contained" is not converted
+		// "extension" is not converted
+		// "modifierExtension" is not converted
+	}
+
 	// Primitive data types
 	
-	protected com.b2international.snowowl.fhir.core.model.dt.Id toInternalId(Id id) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Id toInternalId(Id id) {
 		if (id == null) {
 			return null;
 		}
@@ -286,7 +304,7 @@ public abstract class AbstractConverter_43 {
 		return new com.b2international.snowowl.fhir.core.model.dt.Id(id.getValue());
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.Uri toInternal(Uri uri) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Uri toInternal(Uri uri) {
 		if (uri == null) {
 			return null;
 		}
@@ -294,7 +312,7 @@ public abstract class AbstractConverter_43 {
 		return new com.b2international.snowowl.fhir.core.model.dt.Uri(uri.getValue());
 	}
 
-	protected java.lang.String toInternalString(Uri uri) {
+	protected final java.lang.String toInternalString(Uri uri) {
 		if (uri == null) {
 			return null;
 		}
@@ -302,7 +320,7 @@ public abstract class AbstractConverter_43 {
 		return uri.getValue();
 	}
 	
-	protected java.lang.String toInternal(String string) {
+	protected final java.lang.String toInternal(String string) {
 		if (string == null) {
 			return null;
 		}
@@ -310,7 +328,7 @@ public abstract class AbstractConverter_43 {
 		return string.getValue();
 	}
 	
-	protected java.lang.Boolean toInternal(Boolean b) {
+	protected final java.lang.Boolean toInternal(Boolean b) {
 		if (b == null) {
 			return null;
 		}
@@ -318,7 +336,7 @@ public abstract class AbstractConverter_43 {
 		return b.getValue();
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.Uri toInternal(Canonical canonical) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Uri toInternal(Canonical canonical) {
 		if (canonical == null) {
 			return null;
 		}
@@ -326,7 +344,7 @@ public abstract class AbstractConverter_43 {
 		return new com.b2international.snowowl.fhir.core.model.dt.Uri(canonical.getValue());
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.Code toInternal(Code code) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Code toInternal(Code code) {
 		if (code == null) {
 			return null;
 		}
@@ -334,7 +352,7 @@ public abstract class AbstractConverter_43 {
 		return com.b2international.snowowl.fhir.core.model.dt.Code.valueOf(code.getValue());
 	}
 	
-	protected java.lang.String toInternalString(Code code) {
+	protected final java.lang.String toInternalString(Code code) {
 		if (code == null) {
 			return null;
 		}
@@ -342,7 +360,7 @@ public abstract class AbstractConverter_43 {
 		return code.getValue();
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.Coding toInternal(Coding coding) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Coding toInternal(Coding coding) {
 		if (coding == null) {
 			return null;
 		}
@@ -357,7 +375,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected Date toInternal(DateTime dateTime) {
+	protected final Date toInternal(DateTime dateTime) {
 		if (dateTime == null) {
 			return null;
 		}
@@ -366,7 +384,7 @@ public abstract class AbstractConverter_43 {
 		return FhirDates.parse(value);
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.Instant toInternal(Instant instant) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Instant toInternal(Instant instant) {
 		if (instant == null) {
 			return null;
 		}
@@ -376,7 +394,7 @@ public abstract class AbstractConverter_43 {
 			.build();
 	}
 
-	protected java.lang.Float toInternal(Decimal value) {
+	protected final java.lang.Float toInternal(Decimal value) {
 		if (value == null) {
 			return null;
 		}
@@ -384,8 +402,17 @@ public abstract class AbstractConverter_43 {
 		// XXX: Precision will be truncated
 		return value.getValue().floatValue();
 	}
+	
+	protected final java.lang.Double toInternalAsDouble(Decimal value) {
+		if (value == null) {
+			return null;
+		}
+		
+		// XXX: Precision can potentially be truncated
+		return value.getValue().doubleValue();
+	}
 
-	protected java.lang.String toInternal(Markdown markdown) {
+	protected final java.lang.String toInternal(Markdown markdown) {
 		if (markdown == null) {
 			return null;
 		}
@@ -393,7 +420,7 @@ public abstract class AbstractConverter_43 {
 		return markdown.getValue();
 	}
 
-	protected java.lang.Integer toInternal(Integer value) {
+	protected final java.lang.Integer toInternal(Integer value) {
 		if (value == null) {
 			return null;
 		}
@@ -401,7 +428,7 @@ public abstract class AbstractConverter_43 {
 		return value.getValue();
 	}
 	
-	protected java.lang.Integer toInternal(UnsignedInt value) {
+	protected final java.lang.Integer toInternal(UnsignedInt value) {
 		if (value == null) {
 			return null;
 		}
@@ -411,7 +438,7 @@ public abstract class AbstractConverter_43 {
 
 	// Elements
 	
-	protected com.b2international.snowowl.fhir.core.model.Meta toInternal(Meta meta) {
+	protected final com.b2international.snowowl.fhir.core.model.Meta toInternal(Meta meta) {
 		if (meta == null) {
 			return null;
 		}
@@ -429,7 +456,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.Narrative toInternal(Narrative narrative) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Narrative toInternal(Narrative narrative) {
 		if (narrative == null) {
 			return null;
 		}
@@ -449,7 +476,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.Identifier toInternal(Identifier identifier) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.Identifier toInternal(Identifier identifier) {
 		if (identifier == null) {
 			return null;
 		}
@@ -467,7 +494,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.ContactDetail toInternal(ContactDetail contactDetail) {
+	protected final com.b2international.snowowl.fhir.core.model.ContactDetail toInternal(ContactDetail contactDetail) {
 		if (contactDetail == null) {
 			return null;
 		}
@@ -486,7 +513,7 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
-	protected com.b2international.snowowl.fhir.core.model.dt.ContactPoint toInternal(ContactPoint contactPoint) {
+	protected final com.b2international.snowowl.fhir.core.model.dt.ContactPoint toInternal(ContactPoint contactPoint) {
 		if (contactPoint == null) {
 			return null;
 		}
@@ -516,15 +543,31 @@ public abstract class AbstractConverter_43 {
 
 	// Resources
 	
-	protected com.b2international.snowowl.fhir.core.model.FhirResource toInternal(Resource resource) {
+	protected final com.b2international.snowowl.fhir.core.model.FhirResource toInternal(Resource resource) {
 		if (resource == null) {
 			return null;
 		}
 		
 		if (resource instanceof CodeSystem codeSystem) {
 			return CodeSystemConverter_43.INSTANCE.toInternal(codeSystem);
+		} else if (resource instanceof ValueSet valueSet) {
+			return ValueSetConverter_43.INSTANCE.toInternal(valueSet);
 		} else {
 			throw new IllegalArgumentException("Unsupported resource type '" + resource.getClass().getSimpleName() + "'.");
 		}
+	}
+
+	protected final void toInternalResource(com.b2international.snowowl.fhir.core.model.FhirResource.Builder<?, ?> builder, Resource resource) {
+		builder.id(resource.getId());
+		builder.meta(toInternal(resource.getMeta()));
+		builder.implicitRules(toInternal(resource.getImplicitRules()));
+		builder.language(toInternal(resource.getLanguage()));
+	}
+
+	protected final void toInternalDomainResource(com.b2international.snowowl.fhir.core.model.DomainResource.Builder<?, ?> builder, DomainResource domainResource) {
+		builder.text(toInternal(domainResource.getText()));
+		// "contained" is not converted
+		// "extension" is not converted
+		// "modifierExtension" is not converted
 	}
 }
