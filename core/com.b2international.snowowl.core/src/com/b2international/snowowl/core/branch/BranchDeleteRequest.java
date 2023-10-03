@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.core.branch;
 
-import org.elasticsearch.core.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -24,12 +25,14 @@ import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
-import com.b2international.snowowl.core.validation.ValidationRequests;
 
 /**
  * @since 4.1
  */
 public final class BranchDeleteRequest extends BranchBaseRequest<Boolean> implements AccessControl {
+
+	private static final long serialVersionUID = 1L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(BranchDeleteRequest.class);
 
 	public BranchDeleteRequest(final String branchPath) {
 		super(branchPath);
@@ -38,14 +41,18 @@ public final class BranchDeleteRequest extends BranchBaseRequest<Boolean> implem
 	@Override
 	public Boolean execute(RepositoryContext context) {
 		try {
-			
-			//Remove issues corresponding to this branch
-			TerminologyResource resource = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), getBranchPath());
-			String resourceURI = resource.getResourceURI(getBranchPath()).toString();			
-			ValidationRequests.issues().prepareDelete().setCodeSystemURIs(List.of(resourceURI)).build().execute(context);
-			
 			//Remove branch
 			context.service(BaseRevisionBranching.class).delete(getBranchPath());
+			
+			try {
+				//Schedule a job to remove issues corresponding to this branch
+				TerminologyResource resource = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), getBranchPath());
+				String resourceURI = resource.getResourceURI(getBranchPath()).toString();
+				context.service(ValidationCleanupService.class).removeStaleIssues(context, resourceURI);				
+			} catch (Exception e) {
+				LOGGER.trace("Failed to remove validation issues associated with deleted branch {}", getBranchPath(), e);
+			}
+			
 		} catch (NotFoundException e) {
 			// ignore
 		}
