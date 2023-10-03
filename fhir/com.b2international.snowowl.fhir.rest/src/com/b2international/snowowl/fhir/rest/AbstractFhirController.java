@@ -55,6 +55,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	private static final String GENERIC_USER_MESSAGE = "Something went wrong during the processing of your request.";
 
 	// Headers used in resource creation/udpate requests 
+	protected static final String X_COMMIT_COMMENT = "X-Commit-Comment";
 	protected static final String X_EFFECTIVE_DATE = "X-Effective-Date";
 	protected static final String X_OWNER = "X-Owner";
 	protected static final String X_OWNER_PROFILE_NAME = "X-Owner-Profile-Name";

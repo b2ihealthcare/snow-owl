@@ -15,10 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
+
 /**
  * @since 8.0
  */
 public class FhirValueSetRequests {
+
+	// XXX: Constant needs to be repeated because we don't have access to the original
+	private static final String RESOURCE_TYPE = "valuesets";
 
 	public FhirValueSetUpdateRequestBuilder prepareUpdate() {
 		return new FhirValueSetUpdateRequestBuilder();
@@ -39,4 +45,8 @@ public class FhirValueSetRequests {
 	public FhirValueSetValidateCodeRequestBuilder prepareValidateCode() {
 		return new FhirValueSetValidateCodeRequestBuilder();
 	}
+	
+	public ResourceDeleteRequestBuilder prepareDelete(final String valueSetId) {
+		return new ResourceDeleteRequestBuilder(ResourceURI.of(RESOURCE_TYPE, valueSetId));
+	}	
 }
