@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public enum ConceptMapEquivalence implements FhirCodeSystem {
 	
 	//The concepts are related to each other, and have at least some overlap in meaning, but the exact relationship is not known
-	//@JsonProperty("forgot password")
 	RELATEDTO("Related To"),
 	
 	//The definitions of the concepts mean the same thing (including when structural implications of meaning are considered) 

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.linuxforhealth.fhir.model.r4b.resource.CodeSystem;
+import org.linuxforhealth.fhir.model.r4b.resource.ConceptMap;
 import org.linuxforhealth.fhir.model.r4b.resource.DomainResource;
 import org.linuxforhealth.fhir.model.r4b.resource.Resource;
 import org.linuxforhealth.fhir.model.r4b.resource.ValueSet;
@@ -275,6 +276,8 @@ public abstract class AbstractConverter_43 {
 			return CodeSystemConverter_43.INSTANCE.fromInternal(codeSystem);
 		} else if (resource instanceof com.b2international.snowowl.fhir.core.model.valueset.ValueSet valueSet) {
 			return ValueSetConverter_43.INSTANCE.fromInternal(valueSet);
+		} else if (resource instanceof com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap conceptMap) {
+			return ConceptMapConverter_43.INSTANCE.fromInternal(conceptMap);
 		} else {
 			throw new IllegalArgumentException("Unsupported resource type '" + resource.getClass().getSimpleName() + "'.");
 		}
@@ -552,6 +555,8 @@ public abstract class AbstractConverter_43 {
 			return CodeSystemConverter_43.INSTANCE.toInternal(codeSystem);
 		} else if (resource instanceof ValueSet valueSet) {
 			return ValueSetConverter_43.INSTANCE.toInternal(valueSet);
+		} else if (resource instanceof ConceptMap conceptMap) {
+			return ConceptMapConverter_43.INSTANCE.toInternal(conceptMap);
 		} else {
 			throw new IllegalArgumentException("Unsupported resource type '" + resource.getClass().getSimpleName() + "'.");
 		}

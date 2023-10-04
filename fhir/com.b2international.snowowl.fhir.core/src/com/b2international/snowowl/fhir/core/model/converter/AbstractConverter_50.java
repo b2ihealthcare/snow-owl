@@ -19,11 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 
-import org.linuxforhealth.fhir.model.r5.resource.DomainResource;
-import org.linuxforhealth.fhir.model.r5.resource.ValueSet;
-import org.linuxforhealth.fhir.model.r5.resource.CanonicalResource;
-import org.linuxforhealth.fhir.model.r5.resource.CodeSystem;
-import org.linuxforhealth.fhir.model.r5.resource.Resource;
+import org.linuxforhealth.fhir.model.r5.resource.*;
 import org.linuxforhealth.fhir.model.r5.type.*;
 import org.linuxforhealth.fhir.model.r5.type.Boolean;
 import org.linuxforhealth.fhir.model.r5.type.Integer;
@@ -289,6 +285,8 @@ public abstract class AbstractConverter_50 {
 			return CodeSystemConverter_50.INSTANCE.fromInternal(codeSystem);
 		} else if (resource instanceof com.b2international.snowowl.fhir.core.model.valueset.ValueSet valueSet) {
 			return ValueSetConverter_50.INSTANCE.fromInternal(valueSet);
+		} else if (resource instanceof com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap conceptMap) {
+			return ConceptMapConverter_50.INSTANCE.fromInternal(conceptMap);
 		} else {
 			throw new IllegalArgumentException("Unsupported resource type '" + resource.getClass().getSimpleName() + "'.");
 		}
@@ -393,6 +391,14 @@ public abstract class AbstractConverter_50 {
 		return b.getValue();
 	}
 
+	protected final java.lang.String toInternalString(Boolean b) {
+		if (b == null) {
+			return null;
+		}
+		
+		return b.getValue().toString();
+	}
+	
 	protected final com.b2international.snowowl.fhir.core.model.dt.Uri toInternal(Canonical canonical) {
 		if (canonical == null) {
 			return null;
@@ -609,6 +615,8 @@ public abstract class AbstractConverter_50 {
 			return CodeSystemConverter_50.INSTANCE.toInternal(codeSystem);
 		} else if (resource instanceof ValueSet valueSet) {
 			return ValueSetConverter_50.INSTANCE.toInternal(valueSet);
+		} else if (resource instanceof ConceptMap conceptMap) {
+			return ConceptMapConverter_50.INSTANCE.toInternal(conceptMap);
 		} else {
 			throw new IllegalArgumentException("Unsupported resource type '" + resource.getClass().getSimpleName() + "'.");
 		}
