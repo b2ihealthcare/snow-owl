@@ -68,6 +68,7 @@ public abstract class TerminologyResource extends Resource {
 		// Expand parameters for expand option "commits" (both inclusive) 
 		public static final String TIMESTAMP_FROM_OPTION_KEY = "timestampFrom";
 		public static final String TIMESTAMP_TO_OPTION_KEY = "timestampTo";
+		public static final String RELATIVE_BRANCH_OPTION_KEY = "relativeBranch";
 
 		/**
 		 * Expand option to expand dependencies of a resource.

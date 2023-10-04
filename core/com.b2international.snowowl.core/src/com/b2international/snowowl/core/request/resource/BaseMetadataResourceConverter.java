@@ -38,7 +38,10 @@ import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
 
 /**
  * @since 8.12
@@ -215,8 +218,11 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 				.filter(TerminologyResource.class::isInstance)
 				.map(TerminologyResource.class::cast)
 				.map(res -> {
+					final String branchFilter = expandOptions.containsKey(TerminologyResource.Expand.RELATIVE_BRANCH_OPTION_KEY)
+								? res.getRelativeBranchPath(expandOptions.getString(TerminologyResource.Expand.RELATIVE_BRANCH_OPTION_KEY))
+								: res.getBranchPath();
 					return RepositoryRequests.commitInfos().prepareSearchCommitInfo()
-						.filterByBranch(res.getBranchPath())
+						.filterByBranch(branchFilter)
 						.filterByTimestamp(
 							expandOptions.get(TerminologyResource.Expand.TIMESTAMP_FROM_OPTION_KEY, Long.class), 
 							expandOptions.get(TerminologyResource.Expand.TIMESTAMP_TO_OPTION_KEY, Long.class))
