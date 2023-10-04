@@ -175,5 +175,10 @@ public final class Version implements Serializable {
 	public ResourceURI getVersionResourceURI() {
 		return getResource().withPath(version);
 	}
+	
+	@JsonSetter
+	void setVersionResourceURI() {
+		// ignore
+	}
 
 }
