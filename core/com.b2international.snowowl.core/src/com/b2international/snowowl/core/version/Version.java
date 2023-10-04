@@ -177,7 +177,7 @@ public final class Version implements Serializable {
 	}
 	
 	@JsonSetter
-	void setVersionResourceURI() {
+	void setVersionResourceURI(ResourceURI versionResourceURI) {
 		// ignore
 	}
 
