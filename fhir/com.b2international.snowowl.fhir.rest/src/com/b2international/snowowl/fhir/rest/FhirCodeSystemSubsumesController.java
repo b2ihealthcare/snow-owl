@@ -51,7 +51,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(description = "CodeSystem", name= FhirApiConfig.CODESYSTEM)
 @RestController
 @RequestMapping(value = "/CodeSystem")
-public class FhirCodeSystemSubsumesOperationController extends AbstractFhirController {
+public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 
 	/**
 	 * <code><b>GET /CodeSystem/$subsumes</b></code>
