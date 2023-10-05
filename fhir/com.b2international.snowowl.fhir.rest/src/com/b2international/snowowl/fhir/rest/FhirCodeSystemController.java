@@ -92,8 +92,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			final var fhirCodeSystem = fhirResource.as(org.linuxforhealth.fhir.model.r5.resource.CodeSystem.class);
 			return CodeSystemConverter_50.INSTANCE.toInternal(fhirCodeSystem);
 		} catch (FHIRParserException e) {
-			throw (BadRequestException) new BadRequestException("Failed to parse request body as a complete CodeSystem resource.")
-				.initCause(e);
+			throw new BadRequestException("Failed to parse request body as a complete CodeSystem resource.");
 		}
 	}
 
@@ -400,8 +399,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 				try {
 					generator.generate(fhirBundle, baos);
 				} catch (FHIRGeneratorException e) {
-					throw (BadRequestException) new BadRequestException("Failed to convert response body to a Bundle resource.")
-						.initCause(e);
+					throw new BadRequestException("Failed to convert response body to a Bundle resource.");
 				}
 
 				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
@@ -468,8 +466,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 				try {
 					generator.generate(fhirCodeSystem, baos);
 				} catch (FHIRGeneratorException e) {
-					throw (BadRequestException) new BadRequestException("Failed to convert response body to a CodeSystem resource.")
-						.initCause(e);
+					throw new BadRequestException("Failed to convert response body to a CodeSystem resource.");
 				}
 
 				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);

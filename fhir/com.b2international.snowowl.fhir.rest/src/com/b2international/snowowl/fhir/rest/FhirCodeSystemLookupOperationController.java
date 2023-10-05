@@ -52,7 +52,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "CodeSystem", name = FhirApiConfig.CODESYSTEM)
 @RestController
-@RequestMapping(value="/CodeSystem")
+@RequestMapping(value = "/CodeSystem")
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
 
 	/**
@@ -155,10 +155,10 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	)
 	public Promise<ResponseEntity<byte[]>> lookup(
 			
-			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-				@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
-			})
-			final InputStream requestBody
+		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+		})
+		final InputStream requestBody
 
 	) {
 		final LookupRequest request;
@@ -176,8 +176,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 			request = CodeSystemConverter_50.INSTANCE.toLookupRequest(fhirParameters);
 			
 		} catch (FHIRParserException e) {
-			throw (BadRequestException) new BadRequestException("Failed to parse request body as a complete Parameters resource.")
-				.initCause(e);
+			throw new BadRequestException("Failed to parse request body as a complete Parameters resource.");
 		}
 		
 		return lookup(request);
@@ -203,8 +202,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 				try {
 					generator.generate(fhirLookupResult, baos);
 				} catch (FHIRGeneratorException e) {
-					throw (BadRequestException) new BadRequestException("Failed to convert response body to a Parameters resource.")
-						.initCause(e);
+					throw new BadRequestException("Failed to convert response body to a Parameters resource.");
 				}
 
 				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
