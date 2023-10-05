@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.*;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -137,8 +137,8 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 		String extensionBranch = staging.getMergeFromBranchPath();
 		String donationBranch = staging.getBranchPath();
 		
-		CodeSystem extensionCodeSystem = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), extensionBranch);
-		CodeSystem donationCodeSystem = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), donationBranch);
+		TerminologyResource extensionCodeSystem = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), extensionBranch);
+		TerminologyResource donationCodeSystem = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), donationBranch);
 		
 		// donation Code System should be marked as extension CodeSystem to be able to detect donation changes, otherwise skip donation check and report all conflicts
 		// extensionOf is a required property for Code Systems that would like to participate in content donation
