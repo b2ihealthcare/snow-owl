@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.converter;
 
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.*;
 
 /**
@@ -65,4 +66,18 @@ public interface CodeSystemConverter<T, P> {
 	 * @return
 	 */
 	SubsumptionRequest toSubsumptionRequest(P parameters);
+	
+	// $validate-code operation
+	
+	/**
+	 * @param validateCodeResult
+	 * @return
+	 */
+	P fromValidateCodeResult(ValidateCodeResult validateCodeResult);
+	
+	/**
+	 * @param parameters
+	 * @return
+	 */
+	ValidateCodeRequest toValidateCodeRequest(P parameters);
 }

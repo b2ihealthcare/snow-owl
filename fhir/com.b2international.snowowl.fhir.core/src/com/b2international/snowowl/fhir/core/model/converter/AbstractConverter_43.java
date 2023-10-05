@@ -24,6 +24,7 @@ import org.linuxforhealth.fhir.model.r4b.resource.ConceptMap;
 import org.linuxforhealth.fhir.model.r4b.resource.DomainResource;
 import org.linuxforhealth.fhir.model.r4b.resource.Resource;
 import org.linuxforhealth.fhir.model.r4b.resource.ValueSet;
+import org.linuxforhealth.fhir.model.r4b.resource.Parameters;
 import org.linuxforhealth.fhir.model.r4b.type.*;
 import org.linuxforhealth.fhir.model.r4b.type.Boolean;
 import org.linuxforhealth.fhir.model.r4b.type.Integer;
@@ -402,6 +403,21 @@ public abstract class AbstractConverter_43 {
 		return builder.build();
 	}
 
+	protected final com.b2international.snowowl.fhir.core.model.dt.CodeableConcept toInternal(CodeableConcept codeableConcept) {
+		if (codeableConcept == null) {
+			return null;
+		}
+		
+		var builder = com.b2international.snowowl.fhir.core.model.dt.CodeableConcept.builder();
+		
+		List<Coding> codingElements = codeableConcept.getCoding();
+		for (Coding coding : codingElements) {
+			builder.addCoding(toInternal(coding));
+		}
+		
+		return builder.build();
+	}
+
 	protected final Date toInternal(DateTime dateTime) {
 		if (dateTime == null) {
 			return null;
@@ -598,5 +614,29 @@ public abstract class AbstractConverter_43 {
 		// "contained" is not converted
 		// "extension" is not converted
 		// "modifierExtension" is not converted
+	}
+
+	protected final void addParameter(Parameters.Builder builder, java.lang.String name, Element value) {
+		if (value == null) {
+			return;
+		}
+		
+		Parameters.Parameter parameter = Parameters.Parameter.builder()
+			.name(name)
+			.value(value)
+			.build();
+		
+		builder.parameter(parameter);
+	}
+
+	protected final void addPart(Parameters.Parameter.Builder builder, java.lang.String name, Element value) {
+		if (value == null) {
+			return;
+		}
+		
+		builder.part(Parameters.Parameter.builder()
+			.name(name)
+			.value(value)
+			.build());
 	}
 }

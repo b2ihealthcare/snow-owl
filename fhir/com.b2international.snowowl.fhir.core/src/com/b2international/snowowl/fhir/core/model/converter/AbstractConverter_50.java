@@ -462,6 +462,21 @@ public abstract class AbstractConverter_50 {
 		return builder.build();
 	}
 
+	protected final com.b2international.snowowl.fhir.core.model.dt.CodeableConcept toInternal(CodeableConcept codeableConcept) {
+		if (codeableConcept == null) {
+			return null;
+		}
+		
+		var builder = com.b2international.snowowl.fhir.core.model.dt.CodeableConcept.builder();
+		
+		List<Coding> codingElements = codeableConcept.getCoding();
+		for (Coding coding : codingElements) {
+			builder.addCoding(toInternal(coding));
+		}
+		
+		return builder.build();
+	}
+	
 	protected final Date toInternal(DateTime dateTime) {
 		if (dateTime == null) {
 			return null;
@@ -697,5 +712,29 @@ public abstract class AbstractConverter_50 {
 		builder.purpose(toInternal(canonicalResource.getPurpose()));
 		// "copyright" is pushed down to individual resources, not present in builder of superclass
 		// "copyrightLabel" is not converted
-	}	
+	}
+
+	protected final void addParameter(Parameters.Builder builder, java.lang.String name, Element value) {
+		if (value == null) {
+			return;
+		}
+		
+		Parameters.Parameter parameter = Parameters.Parameter.builder()
+			.name(name)
+			.value(value)
+			.build();
+		
+		builder.parameter(parameter);
+	}
+
+	protected final void addPart(Parameters.Parameter.Builder builder, java.lang.String name, Element value) {
+		if (value == null) {
+			return;
+		}
+		
+		builder.part(Parameters.Parameter.builder()
+			.name(name)
+			.value(value)
+			.build());
+	}
 }
