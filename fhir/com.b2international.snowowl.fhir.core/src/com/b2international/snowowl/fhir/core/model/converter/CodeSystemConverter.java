@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.converter;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.*;
 
 /**
  * @param <T> the FHIR representation of a code system
@@ -53,4 +51,18 @@ public interface CodeSystemConverter<T, P> {
 	 * @return
 	 */
 	LookupRequest toLookupRequest(P parameters);
+	
+	// $subsumes operation
+	
+	/**
+	 * @param subsumptionResult
+	 * @return
+	 */
+	P fromSubsumptionResult(SubsumptionResult subsumptionResult);
+	
+	/**
+	 * @param parameters
+	 * @return
+	 */
+	SubsumptionRequest toSubsumptionRequest(P parameters);
 }
