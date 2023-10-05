@@ -15,24 +15,36 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Optional;
 import java.util.Set;
 
+import org.linuxforhealth.fhir.model.format.Format;
+import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
+import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
+import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
+import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -40,57 +52,63 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(description = "CodeSystem", name = FhirApiConfig.CODESYSTEM)
 @RestController
-@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/CodeSystem")
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
 
 	/**
-	 * GET-based FHIR lookup endpoint.
+	 * <code><b>GET /CodeSystem/$lookup</b></code>
+	 * <p>
+	 * Given a code/system, or a Coding, get additional details about the concept,
+	 * including definition, status, designations, and properties. One of the
+	 * products of this operation is a full decomposition of a code from a
+	 * structured terminology.
+	 * 
 	 * @param code
 	 * @param system
 	 * @param version
 	 * @param date
 	 * @param displayLanguage
 	 * @param properties
-	 * @throws ParseException 
+	 * 
+	 * @throws ParseException
 	 */
 	@Operation(
-		summary="Concept lookup and decomposition",
-		description="Given a code/version/system, or a Coding, get additional details about the concept."
+		summary = "Concept lookup and decomposition",
+		description = "Given a code/version/system, or a Coding, get additional details about the concept."
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "404", description = "Code system not found")
-	})
-	@GetMapping("/$lookup")
-	public Promise<Parameters.Fhir> lookup(
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "400", description = "Bad request")
+	@ApiResponse(responseCode = "404", description = "Code system not found")
+	@GetMapping(value = "/$lookup", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	public Promise<ResponseEntity<byte[]>> lookup(
 		
-		@Parameter(description = "The code to look up", required = true) 
-		@RequestParam(value="code") 
+		@Parameter(description = "The code to look up") 
+		@RequestParam(value = "code", required = true) 
 		final String code,
 		
-		@Parameter(description = "The code system's uri") 
-		@RequestParam(value="system") 
+		@Parameter(description = "The code system's URI") 
+		@RequestParam(value = "system", required = true) 
 		final String system,
 		
 		@Parameter(description = "The code system version") 
-		@RequestParam(value="version") 
+		@RequestParam(value = "version") 
 		final Optional<String> version,
 		
 		@Parameter(description = "Lookup date in datetime format") 
-		@RequestParam(value="date") 
+		@RequestParam(value = "date") 
 		final Optional<String> date,
 		
 		@Parameter(description = "Language code for display") 
-		@RequestParam(value="displayLanguage", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
+		@RequestParam(value = "displayLanguage", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
 		final Optional<String> displayLanguage,
 		
-		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
 		@Parameter(description = "Properties to return in the output") 
-		@RequestParam(value="property", required = false) 
-		Set<String> properties) {
+		@RequestParam(value = "property", required = false) 
+		final Set<String> properties
 		
-		Builder builder = LookupRequest.builder()
+	) {
+		
+		LookupRequest.Builder builder = LookupRequest.builder()
 			.code(code)
 			.system(system);
 		
@@ -110,39 +128,86 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 			builder.properties(properties);
 		}
 		
-		//all good, now do something
 		return lookup(builder.build());
 	}
 	
 	/**
-	 * POST-based lookup end-point. Parameters are in the request body.
-	 * @param body - FHIR parameters
+	 * <code><b>POST /CodeSystem/$lookup</b></code>
+	 * <p>
+	 * Given a code/system, or a Coding, get additional details about the concept,
+	 * including definition, status, designations, and properties. One of the
+	 * products of this operation is a full decomposition of a code from a
+	 * structured terminology.
+	 * 
+	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
 	 */
 	@Operation(
-		summary="Concept lookup and decomposition", 
-		description="Given a code/version/system, or a Coding, get additional details about the concept."
+		summary = "Concept lookup and decomposition", 
+		description = "Given a code/version/system, or a Coding, get additional details about the concept."
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "404", description = "Not found"),
-		@ApiResponse(responseCode = "400", description = "Bad request")
-	})
-	@PostMapping(value = "/$lookup", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
-	public Promise<Parameters.Fhir> lookup(
-			@Parameter(description = "The lookup request parameters")
-			@RequestBody 
-			final Parameters.Fhir body) {
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@ApiResponse(responseCode = "400", description = "Bad request")
+	@PostMapping(
+		value = "/$lookup", 
+		consumes = { AbstractFhirController.APPLICATION_FHIR_JSON },
+		produces = { AbstractFhirController.APPLICATION_FHIR_JSON }
+	)
+	public Promise<ResponseEntity<byte[]>> lookup(
+			
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
+				@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			})
+			final InputStream requestBody
+
+	) {
+		final LookupRequest request;
 		
-		final LookupRequest req = toRequest(body, LookupRequest.class);
-		return lookup(req);
+		try {
+			
+			final var parameters = FHIRParser.parser(Format.JSON).parse(requestBody);
+		
+			if (!parameters.is(org.linuxforhealth.fhir.model.r5.resource.Parameters.class)) {
+				throw new BadRequestException("Expected a complete Parameters resource as the request body, got '" 
+					+ parameters.getClass().getSimpleName() + "'.");
+			}
+			
+			final var fhirParameters = parameters.as(org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
+			request = CodeSystemConverter_50.INSTANCE.toLookupRequest(fhirParameters);
+			
+		} catch (FHIRParserException e) {
+			throw (BadRequestException) new BadRequestException("Failed to parse request body as a complete Parameters resource.")
+				.initCause(e);
+		}
+		
+		return lookup(request);
 	}
 	
-	private Promise<Parameters.Fhir> lookup(LookupRequest lookupRequest) {
+	private Promise<ResponseEntity<byte[]>> lookup(LookupRequest lookupRequest) {
 		return FhirRequests.codeSystems().prepareLookup()
-				.setRequest(lookupRequest)
-				.buildAsync()
-				.execute(getBus())
-				.then(this::toResponse);
+			.setRequest(lookupRequest)
+			.buildAsync()
+			.execute(getBus())
+			.then(soLookupResult -> {
+				var fhirLookupResult = CodeSystemConverter_50.INSTANCE.fromLookupResult(soLookupResult);
+				
+				final Format format = Format.JSON;
+				final boolean prettyPrinting = true;
+				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
+
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);
+
+				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				
+				try {
+					generator.generate(fhirLookupResult, baos);
+				} catch (FHIRGeneratorException e) {
+					throw (BadRequestException) new BadRequestException("Failed to convert response body to a Parameters resource.")
+						.initCause(e);
+				}
+
+				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+			});
 	}
-	
 }

@@ -97,6 +97,14 @@ public abstract class AbstractConverter_50 {
 		return Code.of(code.getCodeValue());
 	}
 	
+	protected final Boolean fromInternal(java.lang.Boolean value) {
+		if (value == null) {
+			return null;
+		}
+		
+		return Boolean.of(value);
+	}
+	
 	protected final String fromInternal(java.lang.String value) {
 		if (StringUtils.isEmpty(value)) {
 			return null;
@@ -137,7 +145,15 @@ public abstract class AbstractConverter_50 {
 		return Instant.of(instant.getInstant());
 	}
 
-	protected final Decimal fromInternal(Float value) {
+	protected final Integer fromInternal(java.lang.Integer value) {
+		if (value == null) {
+			return null;
+		}
+		
+		return Integer.of(value);
+	}
+	
+	protected final Decimal fromInternal(java.lang.Float value) {
 		if (value == null) {
 			return null;
 		}
@@ -145,6 +161,14 @@ public abstract class AbstractConverter_50 {
 		return Decimal.of(value);
 	}
 
+	protected final Decimal fromInternal(java.lang.Double value) {
+		if (value == null) {
+			return null;
+		}
+		
+		return Decimal.of(value);
+	}
+	
 	protected final Markdown fromInternalToMarkdown(java.lang.String value) {
 		if (StringUtils.isEmpty(value)) {
 			return null;

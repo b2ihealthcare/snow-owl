@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.converter;
 import java.util.List;
 
 import org.linuxforhealth.fhir.model.r4b.resource.CodeSystem;
+import org.linuxforhealth.fhir.model.r4b.resource.Parameters;
 import org.linuxforhealth.fhir.model.r4b.type.*;
 import org.linuxforhealth.fhir.model.r4b.type.Boolean;
 import org.linuxforhealth.fhir.model.r4b.type.Integer;
@@ -25,14 +26,17 @@ import org.linuxforhealth.fhir.model.r4b.type.String;
 import org.linuxforhealth.fhir.model.r4b.type.code.*;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.property.*;
 
 /**
  * @since 9.0
  */
-public class CodeSystemConverter_43 extends AbstractConverter_43 implements CodeSystemConverter<CodeSystem> {
+public class CodeSystemConverter_43 extends AbstractConverter_43 implements CodeSystemConverter<CodeSystem, Parameters> {
 
-	public static final CodeSystemConverter<CodeSystem> INSTANCE = new CodeSystemConverter_43();
+	public static final CodeSystemConverter<CodeSystem, Parameters> INSTANCE = new CodeSystemConverter_43();
 	
 	private CodeSystemConverter_43() {
 		super();
@@ -479,4 +483,254 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		
 		return builder.build();
 	}
+
+	@Override
+	public Parameters fromLookupResult(LookupResult lookupResult) {
+		if (lookupResult == null) {
+			return null;
+		}
+		
+		Parameters.Builder builder = Parameters.builder();
+		
+		addParameter(builder, "name", fromInternal(lookupResult.getName()));
+		addParameter(builder, "name", fromInternal(lookupResult.getVersion()));
+		addParameter(builder, "name", fromInternal(lookupResult.getDisplay()));
+		
+		var designations = lookupResult.getDesignation();
+		if (!CompareUtils.isEmpty(designations)) {
+			for (var designation : designations) {
+				if (designation != null) {
+					addDesignationParameter(builder, designation);
+				}
+			}
+		}
+		
+		var properties = lookupResult.getProperty();
+		if (!CompareUtils.isEmpty(properties)) {
+			for (var property : properties) {
+				if (property != null) {
+					addPropertyParameter(builder, property);
+				}
+			}
+		}
+		
+		return builder.build();
+	}
+
+	private void addParameter(Parameters.Builder builder, java.lang.String name, Element value) {
+		if (value == null) {
+			return;
+		}
+		
+		Parameters.Parameter parameter = Parameters.Parameter.builder()
+			.name(name)
+			.value(value)
+			.build();
+		
+		builder.parameter(parameter);
+	}
+
+	private void addDesignationParameter(
+		Parameters.Builder builder, 
+		com.b2international.snowowl.fhir.core.model.Designation designation
+	) {
+		if (designation == null) {
+			return;
+		}
+		
+		Parameters.Parameter.Builder designationBuilder = Parameters.Parameter.builder();
+		designationBuilder.name("designation");
+		
+		addPart(designationBuilder, "language", fromInternal(designation.getLanguageCode()));
+		addPart(designationBuilder, "use", fromInternal(designation.getUse()));
+		addPart(designationBuilder, "value", fromInternal(designation.getValue()));
+		
+		builder.parameter(designationBuilder.build());
+	}
+
+	private void addPropertyParameter(
+		Parameters.Builder builder, 
+		com.b2international.snowowl.fhir.core.model.codesystem.Property property
+	) {
+		if (property == null) {
+			return;
+		}
+		
+		Parameters.Parameter.Builder propertyBuilder = Parameters.Parameter.builder();
+		propertyBuilder.name("property");
+		
+		addPart(propertyBuilder, "code", fromInternal(property.getCode()));
+		
+		var type = property.getType();
+		switch (type) {
+			case CODING:
+				addPart(propertyBuilder, "value", fromInternal((com.b2international.snowowl.fhir.core.model.dt.Coding) property.getValue()));
+				break;
+			case BOOLEAN:
+				addPart(propertyBuilder, "value", fromInternal((java.lang.Boolean) property.getValue()));
+				break;
+			case CODE:
+				addPart(propertyBuilder, "value", fromInternal((com.b2international.snowowl.fhir.core.model.dt.Code) property.getValue()));
+				break;
+			case DATETIME:
+				addPart(propertyBuilder, "value", fromInternal((java.util.Date) property.getValue()));
+				break;
+			case DECIMAL:
+				addPart(propertyBuilder, "value", fromInternal((java.lang.Double) property.getValue()));
+				break;
+			case INTEGER:
+				addPart(propertyBuilder, "value", fromInternal((java.lang.Integer) property.getValue()));
+				break;
+			case STRING:
+				addPart(propertyBuilder, "value", fromInternal((java.lang.String) property.getValue()));
+				break;
+			default:
+				throw new IllegalStateException("Unexpected out parameter type '" + type + "'.");
+		}
+		
+		addPart(propertyBuilder, "description", fromInternal(property.getDescription()));
+	
+		var subProperties = property.getSubProperty();
+		if (!CompareUtils.isEmpty(subProperties)) {
+			for (var subProperty : subProperties) {
+				if (subProperty != null) {
+					addSubPropertyPart(propertyBuilder, subProperty);
+				}
+			}
+		}
+		
+		builder.parameter(propertyBuilder.build());
+	}
+
+	private void addPart(
+		Parameters.Parameter.Builder builder,
+		java.lang.String name, 
+		Element value
+	) {
+		if (value == null) {
+			return;
+		}
+		
+		builder.part(Parameters.Parameter.builder()
+			.name(name)
+			.value(value)
+			.build());
+	}
+
+	private void addSubPropertyPart(
+		Parameters.Parameter.Builder propertyBuilder, 
+		com.b2international.snowowl.fhir.core.model.dt.SubProperty subProperty
+	) {
+		if (subProperty == null) {
+			return;
+		}
+		
+		Parameters.Parameter.Builder subPropertyBuilder = Parameters.Parameter.builder();
+		subPropertyBuilder.name("property");
+		
+		addPart(subPropertyBuilder, "code", fromInternal(subProperty.getCode()));
+		
+		var type = subProperty.getType();
+		switch (type) {
+			case CODING:
+				addPart(subPropertyBuilder, "value", fromInternal((com.b2international.snowowl.fhir.core.model.dt.Coding) subProperty.getValue()));
+				break;
+			case BOOLEAN:
+				addPart(subPropertyBuilder, "value", fromInternal((java.lang.Boolean) subProperty.getValue()));
+				break;
+			case CODE:
+				addPart(subPropertyBuilder, "value", fromInternal((com.b2international.snowowl.fhir.core.model.dt.Code) subProperty.getValue()));
+				break;
+			case DATETIME:
+				addPart(subPropertyBuilder, "value", fromInternal((java.util.Date) subProperty.getValue()));
+				break;
+			case DECIMAL:
+				addPart(subPropertyBuilder, "value", fromInternal((java.lang.Double) subProperty.getValue()));
+				break;
+			case INTEGER:
+				addPart(subPropertyBuilder, "value", fromInternal((java.lang.Integer) subProperty.getValue()));
+				break;
+			case STRING:
+				addPart(subPropertyBuilder, "value", fromInternal((java.lang.String) subProperty.getValue()));
+				break;
+			default:
+				throw new IllegalStateException("Unexpected out parameter type '" + type + "'.");
+		}
+		
+		addPart(subPropertyBuilder, "description", fromInternal(subProperty.getDescription()));
+		
+		propertyBuilder.part(subPropertyBuilder.build());
+	}
+
+	@Override
+	public LookupRequest toLookupRequest(Parameters parameters) {
+		if (parameters == null) {
+			return null;
+		}
+		
+		var builder = LookupRequest.builder();
+		
+		List<Parameters.Parameter> parameterElements = parameters.getParameter();
+		for (Parameters.Parameter parameter : parameterElements) {
+			java.lang.String parameterName = toInternal(parameter.getName());
+			
+			switch (parameterName) {
+				case "code":
+					var code = toInternal(parameter.getValue().as(Code.class));
+					if (code != null) {
+						builder.code(code.getCodeValue());
+					}
+					break;
+					
+				case "system":
+					var system = toInternal(parameter.getValue().as(Uri.class));
+					if (system != null) {
+						builder.system(system.getUriValue());
+					}
+					break;
+					
+				case "version":
+					var version = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(version)) {
+						builder.version(version);
+					}
+					break;
+					
+				case "coding":
+					var coding = toInternal(parameter.getValue().as(Coding.class));
+					if (coding != null) {
+						builder.coding(coding);
+					}
+					break;
+					
+				case "date":
+					DateTime dateTime = parameter.getValue().as(DateTime.class);
+					if (dateTime != null) {
+						builder.date(DateTime.PARSER_FORMATTER.format(dateTime.getValue()));
+					}
+					break;
+	
+				case "displayLanguage":
+					var displayLanguage = toInternal(parameter.getValue().as(Code.class));
+					if (displayLanguage != null) {
+						builder.displayLanguage(displayLanguage.getCodeValue());
+					}
+					break;
+	
+				case "property":
+					var property = toInternal(parameter.getValue().as(Code.class));
+					if (property != null) {
+						builder.addProperty(property.getCodeValue());
+					}
+					break;
+					
+				default:
+					throw new IllegalStateException("Unexpected in parameter '" + parameterName + "'.");
+			}
+		}
+		
+		return builder.build();
+	}
+	
+	
 }

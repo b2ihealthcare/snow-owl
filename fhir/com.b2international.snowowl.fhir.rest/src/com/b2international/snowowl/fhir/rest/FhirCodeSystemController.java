@@ -400,7 +400,8 @@ public class FhirCodeSystemController extends AbstractFhirController {
 				try {
 					generator.generate(fhirBundle, baos);
 				} catch (FHIRGeneratorException e) {
-					e.printStackTrace();
+					throw (BadRequestException) new BadRequestException("Failed to convert response body to a Bundle resource.")
+						.initCause(e);
 				}
 
 				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
@@ -467,7 +468,8 @@ public class FhirCodeSystemController extends AbstractFhirController {
 				try {
 					generator.generate(fhirCodeSystem, baos);
 				} catch (FHIRGeneratorException e) {
-					e.printStackTrace();
+					throw (BadRequestException) new BadRequestException("Failed to convert response body to a CodeSystem resource.")
+						.initCause(e);
 				}
 
 				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);

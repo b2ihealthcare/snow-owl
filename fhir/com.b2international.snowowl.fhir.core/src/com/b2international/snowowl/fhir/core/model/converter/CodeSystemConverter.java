@@ -16,13 +16,18 @@
 package com.b2international.snowowl.fhir.core.model.converter;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 
 /**
  * @param <T> the FHIR representation of a code system
+ * @param <P> the FHIR representation of a parameter list
  * @since 9.0
  */
-public interface CodeSystemConverter<T> {
+public interface CodeSystemConverter<T, P> {
 
+	// Resource conversion
+	
 	/**
 	 * @param codeSystem
 	 * @return
@@ -34,4 +39,18 @@ public interface CodeSystemConverter<T> {
 	 * @return
 	 */
 	CodeSystem toInternal(T codeSystem);
+
+	// $lookup operation
+
+	/**
+	 * @param lookupResult
+	 * @return
+	 */
+	P fromLookupResult(LookupResult lookupResult);
+	
+	/**
+	 * @param parameters
+	 * @return
+	 */
+	LookupRequest toLookupRequest(P parameters);
 }
