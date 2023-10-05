@@ -15,13 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.model.converter;
 
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 
 /**
  * @param <T> the FHIR representation of a value set
+ * @param <P> the FHIR representation of a parameter list
  * @since 9.0
  */
-public interface ValueSetConverter<T> {
+public interface ValueSetConverter<T, P> {
 
 	/**
 	 * @param codeSystem
@@ -34,4 +37,18 @@ public interface ValueSetConverter<T> {
 	 * @return
 	 */
 	ValueSet toInternal(T codeSystem);
+	
+	// $validate-code operation
+	
+	/**
+	 * @param validateCodeResult
+	 * @return
+	 */
+	P fromValidateCodeResult(ValidateCodeResult validateCodeResult);
+	
+	/**
+	 * @param parameters
+	 * @return
+	 */
+	ValidateCodeRequest toValidateCodeRequest(P parameters);	
 }

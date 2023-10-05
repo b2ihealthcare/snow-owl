@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.converter;
 import java.util.List;
 
 import org.linuxforhealth.fhir.model.r4b.resource.ValueSet;
+import org.linuxforhealth.fhir.model.r4b.resource.Parameters;
 import org.linuxforhealth.fhir.model.r4b.type.*;
 import org.linuxforhealth.fhir.model.r4b.type.Boolean;
 import org.linuxforhealth.fhir.model.r4b.type.Integer;
@@ -26,14 +27,18 @@ import org.linuxforhealth.fhir.model.r4b.type.code.FilterOperator;
 import org.linuxforhealth.fhir.model.r4b.type.code.PublicationStatus;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.*;
 
 /**
  * @since 9.0
  */
-public class ValueSetConverter_43 extends AbstractConverter_43 implements ValueSetConverter<ValueSet> {
+public class ValueSetConverter_43 extends AbstractConverter_43 implements ValueSetConverter<ValueSet, Parameters> {
 
-	public static final ValueSetConverter<ValueSet> INSTANCE = new ValueSetConverter_43();
+	public static final ValueSetConverter<ValueSet, Parameters> INSTANCE = new ValueSetConverter_43();
 	
 	private ValueSetConverter_43() {
 		super();
@@ -574,6 +579,119 @@ public class ValueSetConverter_43 extends AbstractConverter_43 implements ValueS
 			}
 		}
 	
+		return builder.build();
+	}
+
+	@Override
+	public Parameters fromValidateCodeResult(ValidateCodeResult validateCodeResult) {
+		return super.fromValidateCodeResult(validateCodeResult);
+	}
+
+	@Override
+	public ValidateCodeRequest toValidateCodeRequest(Parameters parameters) {
+		if (parameters == null) {
+			return null;
+		}
+		
+		var builder = ValidateCodeRequest.builder();
+		
+		List<Parameters.Parameter> parameterElements = parameters.getParameter();
+		for (Parameters.Parameter parameter : parameterElements) {
+			java.lang.String parameterName = toInternal(parameter.getName());
+			
+			switch (parameterName) {
+				case "url":
+					var url = toInternal(parameter.getValue().as(Uri.class));
+					if (url != null) {
+						builder.url(url.getUriValue());
+					}
+					break;
+					
+				case "context":
+					var context = toInternal(parameter.getValue().as(Uri.class));
+					if (context != null) {
+						builder.context(context);
+					}
+					break;
+					
+				case "valueSet":
+					throw new BadRequestException("Inline input parameter 'valueSet' is not supported.");
+					
+				case "valueSetVersion":
+					var valueSetVersion = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(valueSetVersion)) {
+						builder.valueSetVersion(valueSetVersion);
+					}
+					break;
+	
+				case "code":
+					var code = toInternal(parameter.getValue().as(Code.class));
+					if (code != null) {
+						builder.code(code.getCodeValue());
+					}
+					break;
+	
+				case "system":
+					var system = toInternal(parameter.getValue().as(Uri.class));
+					if (system != null) {
+						builder.system(system.getUriValue());
+					}
+					break;
+	
+				case "systemVersion":
+					var systemVersion = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(systemVersion)) {
+						builder.systemVersion(systemVersion);
+					}
+					break;
+	
+				case "display":
+					var display = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(display)) {
+						builder.display(display);
+					}
+					break;
+					
+				case "coding":
+					var coding = toInternal(parameter.getValue().as(Coding.class));
+					if (coding != null) {
+						builder.coding(coding);
+					}
+					break;
+					
+				case "codeableConcept":
+					var codeableConcept = toInternal(parameter.getValue().as(CodeableConcept.class));
+					if (codeableConcept != null) {
+						builder.codeableConcept(codeableConcept);
+					}
+					break;
+					
+				case "date":
+					DateTime dateTime = parameter.getValue().as(DateTime.class);
+					if (dateTime != null) {
+						builder.date(DateTime.PARSER_FORMATTER.format(dateTime.getValue()));
+					}
+					break;
+	
+				case "abstract":
+					var isAbstract = toInternal(parameter.getValue().as(Boolean.class));
+					if (isAbstract != null) {
+						builder.isAbstract(isAbstract);
+					}
+					break;
+					
+				case "displayLanguage":
+					var displayLanguage = toInternal(parameter.getValue().as(Code.class));
+					if (displayLanguage != null) {
+						builder.displayLanguage(displayLanguage);
+					}
+					break;
+	
+				default:
+					throw new IllegalStateException("Unexpected in parameter '" + parameterName + "'.");
+			}
+		}
+		
 		return builder.build();
 	}
 }

@@ -785,22 +785,7 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 
 	@Override
 	public Parameters fromValidateCodeResult(ValidateCodeResult validateCodeResult) {
-		if (validateCodeResult == null) {
-			return null;
-		}
-		
-		Parameters.Builder builder = Parameters.builder();
-		
-		addParameter(builder, "result", fromInternal(validateCodeResult.getResult()));
-		addParameter(builder, "display", fromInternal(validateCodeResult.getDisplay()));
-		addParameter(builder, "message", fromInternal(validateCodeResult.getMessage()));
-		// "code" is not converted (new in R5)
-		// "system" is not converted (new in R5)
-		// "version" is not converted (new in R5)
-		// "codeableConcept" is not converted (new in R5)
-		// "issues" is not converted (new in R5)
-		
-		return builder.build();
+		return super.fromValidateCodeResult(validateCodeResult);
 	}
 
 	@Override

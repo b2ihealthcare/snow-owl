@@ -42,7 +42,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 public class ValidateCodeRequest {
 	
 	//Value set Canonical URL. The server must know the value set (e.g. it is defined explicitly in the server's value sets, or it is defined implicitly by some code system known to the server
-	private final Uri url;
+	private Uri url;
 	
 	private final Uri context;
 	
@@ -116,6 +116,10 @@ public class ValidateCodeRequest {
 	
 	public Uri getUrl() {
 		return url;
+	}
+	
+	public void setUrl(Uri url) {
+		this.url = url;
 	}
 	
 	public Uri getContext() {

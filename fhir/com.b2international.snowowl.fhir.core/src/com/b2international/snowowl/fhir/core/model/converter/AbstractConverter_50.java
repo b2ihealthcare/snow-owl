@@ -29,6 +29,7 @@ import org.linuxforhealth.fhir.model.r5.type.code.*;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.FhirDates;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 
 /**
  * @since 9.0
@@ -371,6 +372,25 @@ public abstract class AbstractConverter_50 {
 		builder.purpose(fromInternalToMarkdown(metadataResource.getPurpose()));
 		// "copyright" is pushed down to individual resources, not present in superclass
 		// "copyrightLabel" is not converted
+	}
+	
+	protected Parameters fromValidateCodeResult(ValidateCodeResult validateCodeResult) {
+		if (validateCodeResult == null) {
+			return null;
+		}
+		
+		Parameters.Builder builder = Parameters.builder();
+		
+		addParameter(builder, "result", fromInternal(validateCodeResult.getResult()));
+		addParameter(builder, "display", fromInternal(validateCodeResult.getDisplay()));
+		addParameter(builder, "message", fromInternal(validateCodeResult.getMessage()));
+		// "code" is not converted (new in R5)
+		// "system" is not converted (new in R5)
+		// "version" is not converted (new in R5)
+		// "codeableConcept" is not converted (new in R5)
+		// "issues" is not converted (new in R5)
+		
+		return builder.build();
 	}
 	
 	// Primitive data types

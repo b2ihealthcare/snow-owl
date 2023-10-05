@@ -37,6 +37,7 @@ import org.linuxforhealth.fhir.model.r4b.type.code.NarrativeStatus;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.FhirDates;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 
 /**
  * @since 9.0
@@ -321,6 +322,21 @@ public abstract class AbstractConverter_43 {
 		// "extension" is not converted
 		// "modifierExtension" is not converted
 	}
+	
+	protected Parameters fromValidateCodeResult(ValidateCodeResult validateCodeResult) {
+		if (validateCodeResult == null) {
+			return null;
+		}
+		
+		Parameters.Builder builder = Parameters.builder();
+		
+		addParameter(builder, "result", fromInternal(validateCodeResult.getResult()));
+		addParameter(builder, "display", fromInternal(validateCodeResult.getDisplay()));
+		addParameter(builder, "message", fromInternal(validateCodeResult.getMessage()));
+		
+		return builder.build();
+	}
+
 
 	// Primitive data types
 	
