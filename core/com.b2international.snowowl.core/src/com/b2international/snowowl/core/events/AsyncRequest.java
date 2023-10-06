@@ -68,6 +68,10 @@ public final class AsyncRequest<R> {
 		return context == null ? this : new AsyncRequest<>(new RequestWithContext<ServiceProvider, R>(request, context));
 	}
 	
+	public Promise<R> executeAsAdmin(ServiceProvider context) {
+		return withContext(Map.of(User.class, User.SYSTEM)).execute(context.service(IEventBus.class));
+	}
+	
 	public Promise<R> executeWithContext(ServiceProvider context) {
 		return withContext(context).execute(context.service(IEventBus.class));
 	}
