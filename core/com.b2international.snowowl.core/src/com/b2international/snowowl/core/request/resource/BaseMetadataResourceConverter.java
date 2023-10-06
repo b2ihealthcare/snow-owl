@@ -231,7 +231,8 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 						.sortBy(expandOptions.containsKey(SORT_OPTION_KEY) ? expandOptions.getString(SORT_OPTION_KEY) : null)
 						.setLocales(locales())
 						.build(res.getToolingId())
-						.executeWithContext(context())
+						// we have already verified access here for the given resource, ensure we are skipping any security checks and performing only the commit info search
+						.executeAsAdmin(context())
 						.then(commits -> {
 							res.setCommits(commits);
 							return commits;
