@@ -15,13 +15,18 @@
  */
 package com.b2international.snowowl.core.request.version;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
@@ -96,7 +101,6 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 
 		addIdFilter(query, VersionDocument.Expressions::ids);
 		addFilter(query, OptionKey.RESOURCE_TYPE, String.class, VersionDocument.Expressions::resourceTypes);
-		// TODO add a security filter to return commits from resources that can be accessed by the current user
 		addFilter(query, OptionKey.RESOURCE, String.class, resources -> Expressions.bool()
 				.should(VersionDocument.Expressions.resources(resources))
 				.should(VersionDocument.Expressions.resourceIds(resources))
@@ -121,7 +125,37 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 
 		return query.build();
 	}
-
+	
+	protected final void addResourcesFilter(ExpressionBuilder queryBuilder, RepositoryContext context) {
+		User user = context.service(User.class);
+		
+		if (containsKey(OptionKey.RESOURCE)) {
+			Collection<String> resources = getCollection(OptionKey.RESOURCE, String.class);
+			Collection<String> resourceIds = resources.stream()
+					.map(resource -> resource.contains("/") ? new ResourceURI(resource).getResourceId() : resource)
+					.toList();
+			
+			if (user.isAdministrator()) {
+				queryBuilder.filter(VersionDocument.Expressions.resourceIds(resourceIds));
+			} else {
+				final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
+				Set<String> accessibleResources = authz.getAccessibleResources(context, context.service(User.class));
+				
+				resourceIds.removeIf(resourceId -> !accessibleResources.contains(resourceId));
+				queryBuilder.filter(VersionDocument.Expressions.resourceIds(resourceIds));
+			}
+			
+			return;
+		}
+		
+		if (!user.isAdministrator()) {
+			final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
+			Set<String> accessibleResources = authz.getAccessibleResources(context, context.service(User.class));
+			
+			queryBuilder.filter(VersionDocument.Expressions.resourceIds(accessibleResources));
+		}		
+	}
+	
 	@Override
 	protected Class<VersionDocument> getDocumentType() {
 		return VersionDocument.class;
