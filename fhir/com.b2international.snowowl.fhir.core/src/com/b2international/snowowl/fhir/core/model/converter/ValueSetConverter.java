@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model.converter;
 
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 
@@ -50,5 +51,13 @@ public interface ValueSetConverter<T, P> {
 	 * @param parameters
 	 * @return
 	 */
-	ValidateCodeRequest toValidateCodeRequest(P parameters);	
+	ValidateCodeRequest toValidateCodeRequest(P parameters);
+
+	// $expand operation
+	
+	/**
+	 * @param parameters
+	 * @return
+	 */
+	ExpandValueSetRequest toExpandRequest(P parameters);	
 }

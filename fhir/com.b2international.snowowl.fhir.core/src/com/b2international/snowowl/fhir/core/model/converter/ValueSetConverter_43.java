@@ -30,6 +30,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.*;
 
@@ -689,6 +690,183 @@ public class ValueSetConverter_43 extends AbstractConverter_43 implements ValueS
 	
 				default:
 					throw new IllegalStateException("Unexpected in parameter '" + parameterName + "'.");
+			}
+		}
+		
+		return builder.build();
+	}
+
+	@Override
+	public ExpandValueSetRequest toExpandRequest(Parameters parameters) {
+		if (parameters == null) {
+			return null;
+		}
+		
+		var builder = ExpandValueSetRequest.builder();
+		
+		List<Parameters.Parameter> parameterElements = parameters.getParameter();
+		for (Parameters.Parameter parameter : parameterElements) {
+			java.lang.String parameterName = toInternal(parameter.getName());
+			
+			switch (parameterName) {
+			case "url":
+				var url = toInternal(parameter.getValue().as(Uri.class));
+				if (url != null) {
+					builder.url(url.getUriValue());
+				}
+				break;
+				
+			case "valueSet":
+				throw new BadRequestException("Inline input parameter 'valueSet' is not supported.");
+				
+			case "valueSetVersion":
+				var valueSetVersion = toInternal(parameter.getValue().as(String.class));
+				if (!StringUtils.isEmpty(valueSetVersion)) {
+					builder.valueSetVersion(valueSetVersion);
+				}
+				break;
+				
+			case "context":
+				var context = toInternal(parameter.getValue().as(Uri.class));
+				if (context != null) {
+					builder.context(context);
+				}
+				break;
+				
+			case "contextDirection":
+				var contextDirection = toInternal(parameter.getValue().as(Code.class));
+				if (contextDirection != null) {
+					builder.contextDirection(contextDirection.getCodeValue());
+				}
+				break;
+				
+			case "filter":
+				var filter = toInternal(parameter.getValue().as(String.class));
+				if (!StringUtils.isEmpty(filter)) {
+					builder.filter(filter);
+				}
+				break;
+				
+			case "date":
+				DateTime dateTime = parameter.getValue().as(DateTime.class);
+				if (dateTime != null) {
+					builder.date(DateTime.PARSER_FORMATTER.format(dateTime.getValue()));
+				}
+				break;
+	
+			case "offset":
+				throw new BadRequestException("Input parameter 'offset' is not supported.");
+				
+			case "count":
+				Integer count = parameter.getValue().as(Integer.class);
+				if (count != null) {
+					builder.count(count.getValue());
+				}
+				break;
+				
+			case "includeDesignations":
+				var includeDesignations = toInternal(parameter.getValue().as(Boolean.class));
+				if (includeDesignations != null) {
+					builder.includeDesignations(includeDesignations);
+				}
+				break;
+				
+			case "designation":
+				var designation = toInternal(parameter.getValue().as(String.class));
+				if (!StringUtils.isEmpty(designation)) {
+					builder.addDesignation(designation);
+				}
+				break;
+	
+			case "includeDefinition":
+				var includeDefinition = toInternal(parameter.getValue().as(Boolean.class));
+				if (includeDefinition != null) {
+					builder.includeDefinition(includeDefinition);
+				}
+				break;
+	
+			case "activeOnly":
+				var activeOnly = toInternal(parameter.getValue().as(Boolean.class));
+				if (activeOnly != null) {
+					builder.activeOnly(activeOnly);
+				}
+				break;
+				
+			case "excludeNested":
+				var excludeNested = toInternal(parameter.getValue().as(Boolean.class));
+				if (excludeNested != null) {
+					builder.excludeNested(excludeNested);
+				}
+				break;
+				
+			case "excludeNotForUI":
+				var excludeNotForUI = toInternal(parameter.getValue().as(Boolean.class));
+				if (excludeNotForUI != null) {
+					builder.excludeNotForUI(excludeNotForUI);
+				}
+				break;
+				
+			case "excludePostCoordinated":
+				var excludePostCoordinated = toInternal(parameter.getValue().as(Boolean.class));
+				if (excludePostCoordinated != null) {
+					builder.excludePostCoordinated(excludePostCoordinated);
+				}
+				break;
+				
+			case "displayLanguage":
+				var displayLanguage = toInternal(parameter.getValue().as(Code.class));
+				if (displayLanguage != null) {
+					builder.excludeSystem(null);
+				}
+				break;
+	
+			case "exclude-system":
+				// FIXME: This has 0..* cardinality in the specification, but we only accept a single value, so last one wins
+				var excludeSystem = toInternal(parameter.getValue().as(Canonical.class));
+				if (excludeSystem != null) {
+					builder.excludeSystem(excludeSystem);
+				}
+				break;
+				
+			case "system-version":
+				var systemVersion = toInternal(parameter.getValue().as(Canonical.class));
+				if (systemVersion != null) {
+					builder.systemVersion(systemVersion);
+				}
+				break;
+				
+			case "check-system-version":
+				var checkSystemVersion = toInternal(parameter.getValue().as(Canonical.class));
+				if (checkSystemVersion != null) {
+					builder.checkSystemVersion(checkSystemVersion);
+				}
+				break;
+				
+			case "force-system-version":
+				var forceSystemVersion = toInternal(parameter.getValue().as(Canonical.class));
+				if (forceSystemVersion != null) {
+					builder.forceSystemVersion(forceSystemVersion);
+				}
+				break;
+	
+			// XXX: Additional parameters not in the specification
+				
+			case "after":
+				var after = toInternal(parameter.getValue().as(String.class));
+				if (!StringUtils.isEmpty(after)) {
+					builder.after(after);
+				}
+				break;
+				
+			case "withHistorySupplements":
+				var withHistorySupplements = toInternal(parameter.getValue().as(Boolean.class));
+				if (withHistorySupplements != null) {
+					builder.withHistorySupplements(withHistorySupplements);
+				}
+				break;
+				
+			default:
+				throw new IllegalStateException("Unexpected in parameter '" + parameterName + "'.");
 			}
 		}
 		
