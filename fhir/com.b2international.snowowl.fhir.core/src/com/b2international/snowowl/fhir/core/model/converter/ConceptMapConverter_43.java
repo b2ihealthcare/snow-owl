@@ -18,22 +18,27 @@ package com.b2international.snowowl.fhir.core.model.converter;
 import java.util.List;
 
 import org.linuxforhealth.fhir.model.r4b.resource.ConceptMap;
-import org.linuxforhealth.fhir.model.r4b.type.Canonical;
-import org.linuxforhealth.fhir.model.r4b.type.Code;
-import org.linuxforhealth.fhir.model.r4b.type.ContactDetail;
-import org.linuxforhealth.fhir.model.r4b.type.Uri;
+import org.linuxforhealth.fhir.model.r4b.resource.Parameters;
+import org.linuxforhealth.fhir.model.r4b.type.*;
+import org.linuxforhealth.fhir.model.r4b.type.Boolean;
+import org.linuxforhealth.fhir.model.r4b.type.String;
 import org.linuxforhealth.fhir.model.r4b.type.code.ConceptMapEquivalence;
 import org.linuxforhealth.fhir.model.r4b.type.code.ConceptMapGroupUnmappedMode;
 import org.linuxforhealth.fhir.model.r4b.type.code.PublicationStatus;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.conceptmap.Dependency;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 
 /**
  * @since 9.0
  */
-public class ConceptMapConverter_43 extends AbstractConverter_43 implements ConceptMapConverter<ConceptMap> {
+public class ConceptMapConverter_43 extends AbstractConverter_43 implements ConceptMapConverter<ConceptMap, Parameters> {
 
-	public static final ConceptMapConverter<ConceptMap> INSTANCE = new ConceptMapConverter_43();
+	public static final ConceptMapConverter<ConceptMap, Parameters> INSTANCE = new ConceptMapConverter_43();
 	
 	private ConceptMapConverter_43() {
 		super();
@@ -415,4 +420,207 @@ public class ConceptMapConverter_43 extends AbstractConverter_43 implements Conc
 		
 		return builder.build();
 	}
+	
+	@Override
+	public Parameters fromTranslateResult(TranslateResult translateResult) {
+		if (translateResult == null) {
+			return null;
+		}
+		
+		Parameters.Builder builder = Parameters.builder();
+		
+		addParameter(builder, "result", fromInternal(translateResult.getResult()));
+		addParameter(builder, "message", fromInternal(translateResult.getMessage()));
+		
+		var matches = translateResult.getMatches();
+		if (!CompareUtils.isEmpty(matches)) {
+			for (var match : matches) {
+				addMatchPart(builder, match);
+			}
+		}
+		
+		return builder.build();
+	}
+	
+	private void addMatchPart(
+		Parameters.Builder builder, 
+		com.b2international.snowowl.fhir.core.model.conceptmap.Match match
+	) {
+		if (match == null) {
+			return;
+		}
+		
+		Parameters.Parameter.Builder matchBuilder = Parameters.Parameter.builder();
+		matchBuilder.name("match");
+		
+		addPart(matchBuilder, "equivalence", fromInternal(match.getEquivalence()));
+		addPart(matchBuilder, "concept", fromInternal(match.getConcept()));
+		
+		var products = match.getProduct();
+		if (!CompareUtils.isEmpty(products)) {
+			for (var product : products) {
+				addProductPart(matchBuilder, product);
+			}
+		}
+		
+		addPart(matchBuilder, "source", fromInternal(match.getSource()));
+		
+		builder.parameter(matchBuilder.build());
+	}
+
+	private void addProductPart(
+		Parameters.Parameter.Builder matchBuilder, 
+		com.b2international.snowowl.fhir.core.model.conceptmap.Product product
+	) {
+		if (product == null) {
+			return;
+		}
+
+		Parameters.Parameter.Builder productBuilder = Parameters.Parameter.builder();
+		productBuilder.name("product");
+		
+		addPart(productBuilder, "element", fromInternal(product.getElement()));
+		addPart(productBuilder, "concept", fromInternal(product.getConcept()));
+		
+		matchBuilder.part(productBuilder.build());
+	}
+
+	@Override
+	public TranslateRequest toTranslateRequest(Parameters parameters) {
+		if (parameters == null) {
+			return null;
+		}
+		
+		var builder = TranslateRequest.builder();
+		
+		List<Parameters.Parameter> parameterElements = parameters.getParameter();
+		for (Parameters.Parameter parameter : parameterElements) {
+			java.lang.String parameterName = toInternal(parameter.getName());
+			
+			switch (parameterName) {
+				case "url":
+					var url = toInternal(parameter.getValue().as(Uri.class));
+					if (url != null) {
+						builder.url(url.getUriValue());
+					}
+					break;
+
+				case "conceptMap":
+					throw new BadRequestException("Inline input parameter 'conceptMap' is not supported.");
+					
+				case "conceptMapVersion":
+					var conceptMapVersion = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(conceptMapVersion)) {
+						builder.conceptMapVersion(conceptMapVersion);
+					}
+					break;
+
+				case "code":
+					var code = toInternal(parameter.getValue().as(Code.class));
+					if (code != null) {
+						builder.code(code.getCodeValue());
+					}
+					break;
+	
+				case "system":
+					var system = toInternal(parameter.getValue().as(Uri.class));
+					if (system != null) {
+						builder.system(system.getUriValue());
+					}
+					break;
+	
+				case "version":
+					var version = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(version)) {
+						builder.version(version);
+					}
+					break;
+	
+				case "source":
+					var source = toInternal(parameter.getValue().as(Uri.class));
+					if (source != null) {
+						builder.source(source.getUriValue());
+					}
+					break;
+
+				case "coding":
+					var coding = toInternal(parameter.getValue().as(Coding.class));
+					if (coding != null) {
+						builder.coding(coding);
+					}
+					break;
+					
+				case "codeableConcept":
+					var codeableConcept = toInternal(parameter.getValue().as(CodeableConcept.class));
+					if (codeableConcept != null) {
+						builder.codeableConcept(codeableConcept);
+					}
+					break;
+					
+				case "target":
+					var target = toInternal(parameter.getValue().as(Code.class));
+					if (target != null) {
+						builder.target(target.getCodeValue());
+					}
+					break;
+
+				case "targetSystem":
+					var targetSystem = toInternal(parameter.getValue().as(Uri.class));
+					if (targetSystem != null) {
+						builder.targetSystem(targetSystem.getUriValue());
+					}
+					break;
+
+				case "dependency":
+					addDependency(builder, parameter);
+					break;
+					
+				case "reverse":
+					var isReverse = toInternal(parameter.getValue().as(Boolean.class));
+					if (isReverse != null) {
+						builder.isReverse(isReverse);
+					}
+					break;
+	
+				default:
+					throw new IllegalStateException("Unexpected in parameter '" + parameterName + "'.");
+			}
+		}
+		
+		return builder.build();
+	}
+
+	private void addDependency(TranslateRequest.Builder builder, Parameters.Parameter parameter) {
+		if (parameter == null) {
+			return;
+		}
+		
+		Dependency.Builder dependencyBuilder = Dependency.builder();
+		
+		List<Parameters.Parameter> parts = parameter.getPart();
+		for (Parameters.Parameter part : parts) {
+			java.lang.String partName = toInternal(part.getName());
+
+			switch (partName) {
+				case "element":
+					var element = toInternal(parameter.getValue().as(Uri.class));
+					if (element != null) {
+						dependencyBuilder.element(element);
+					}
+					break;
+
+				case "concept":
+					var concept = toInternal(parameter.getValue().as(CodeableConcept.class));
+					if (concept != null) {
+						dependencyBuilder.concept(concept);
+					}
+					break;
+
+				default:
+					throw new IllegalStateException("Unexpected dependency part name '" + partName + "'.");
+			}
+		}
+		
+		builder.addDependency(dependencyBuilder.build());
+	}	
 }

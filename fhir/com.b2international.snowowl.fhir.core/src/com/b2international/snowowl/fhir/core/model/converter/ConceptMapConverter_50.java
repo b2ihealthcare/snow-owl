@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.linuxforhealth.fhir.model.r5.resource.ConceptMap;
+import org.linuxforhealth.fhir.model.r5.resource.Parameters;
 import org.linuxforhealth.fhir.model.r5.type.*;
 import org.linuxforhealth.fhir.model.r5.type.Boolean;
 import org.linuxforhealth.fhir.model.r5.type.String;
@@ -30,14 +31,19 @@ import org.linuxforhealth.fhir.model.r5.type.code.ConceptMapRelationship;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.conceptmap.Dependency;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.google.common.collect.Maps;
 
 /**
  * @since 9.0
  */
-public class ConceptMapConverter_50 extends AbstractConverter_50 implements ConceptMapConverter<ConceptMap> {
+public class ConceptMapConverter_50 extends AbstractConverter_50 implements ConceptMapConverter<ConceptMap, Parameters> {
 
-	public static final ConceptMapConverter<ConceptMap> INSTANCE = new ConceptMapConverter_50();
+	public static final ConceptMapConverter<ConceptMap, Parameters> INSTANCE = new ConceptMapConverter_50();
 	
 	private ConceptMapConverter_50() {
 		super();
@@ -218,42 +224,7 @@ public class ConceptMapConverter_50 extends AbstractConverter_50 implements Conc
 		var equivalenceCode = target.getEquivalence();
 		if (equivalenceCode != null) {
 			var equivalence = com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence.forValue(equivalenceCode.getCodeValue());
-			final ConceptMapRelationship relationship;
-			
-			switch (equivalence) {
-				case RELATEDTO: //$FALL-THROUGH$
-				case INEXACT:
-					relationship = ConceptMapRelationship.RELATED_TO;
-					break;
-
-				case EQUAL: //$FALL-THROUGH$
-				case EQUIVALENT:
-					relationship = ConceptMapRelationship.EQUIVALENT;
-					break;
-
-				// "target" is wider -> "source" is narrower
-				case WIDER: //$FALL-THROUGH$
-				case SUBSUMES:
-					relationship = ConceptMapRelationship.SOURCE_IS_NARROWER_THAN_TARGET;
-					break;
-				
-				// "target" is narrower -> "source" is broader
-				case NARROWER:
-				case SPECIALIZES:
-					relationship = ConceptMapRelationship.SOURCE_IS_BROADER_THAN_TARGET;
-					break;
-					
-				// XXX: "disjoint" does not appear in the specification's conversion table, but I think it fits here
-				case DISJOINT:
-				case UNMATCHED:
-					relationship = ConceptMapRelationship.NOT_RELATED_TO;
-					break;
-				
-				default:
-					throw new IllegalArgumentException("Unexpected concept map equivalence value '" + equivalence + "'.");
-			}
-			
-			builder.relationship(relationship);
+			builder.relationship(fromInternal(equivalence));
 		}
 		
 		builder.comment(fromInternal(target.getComment()));
@@ -280,6 +251,40 @@ public class ConceptMapConverter_50 extends AbstractConverter_50 implements Conc
 		}
 		
 		return builder.build();
+	}
+
+	private ConceptMapRelationship fromInternal(ConceptMapEquivalence equivalence) {
+		if (equivalence == null) {
+			return null;
+		}
+		
+		switch (equivalence) {
+			case RELATEDTO: //$FALL-THROUGH$
+			case INEXACT:
+				return ConceptMapRelationship.RELATED_TO;
+
+			case EQUAL: //$FALL-THROUGH$
+			case EQUIVALENT:
+				return ConceptMapRelationship.EQUIVALENT;
+
+			// "target" is wider -> "source" is narrower
+			case WIDER: //$FALL-THROUGH$
+			case SUBSUMES:
+				return ConceptMapRelationship.SOURCE_IS_NARROWER_THAN_TARGET;
+			
+			// "target" is narrower -> "source" is broader
+			case NARROWER:
+			case SPECIALIZES:
+				return ConceptMapRelationship.SOURCE_IS_BROADER_THAN_TARGET;
+				
+			// XXX: "disjoint" does not appear in the specification's conversion table, but I think it fits here
+			case DISJOINT:
+			case UNMATCHED:
+				return ConceptMapRelationship.NOT_RELATED_TO;
+			
+			default:
+				throw new IllegalArgumentException("Unexpected concept map equivalence value '" + equivalence + "'.");
+		}
 	}
 
 	/*
@@ -678,5 +683,272 @@ public class ConceptMapConverter_50 extends AbstractConverter_50 implements Conc
 		// "relationship" on an Unmapped element is not converted (new in R5)
 		
 		return builder.build();
+	}
+
+	@Override
+	public Parameters fromTranslateResult(TranslateResult translateResult) {
+		if (translateResult == null) {
+			return null;
+		}
+		
+		Parameters.Builder builder = Parameters.builder();
+		
+		addParameter(builder, "result", fromInternal(translateResult.getResult()));
+		addParameter(builder, "message", fromInternal(translateResult.getMessage()));
+		
+		var matches = translateResult.getMatches();
+		if (!CompareUtils.isEmpty(matches)) {
+			for (var match : matches) {
+				addMatchPart(builder, match);
+			}
+		}
+		
+		return builder.build();
+	}
+
+	private void addMatchPart(
+		Parameters.Builder builder, 
+		com.b2international.snowowl.fhir.core.model.conceptmap.Match match
+	) {
+		if (match == null) {
+			return;
+		}
+		
+		Parameters.Parameter.Builder matchBuilder = Parameters.Parameter.builder();
+		matchBuilder.name("match");
+		
+		var equivalenceCode = fromInternal(match.getEquivalence());
+		if (equivalenceCode != null) {
+			var equivalence = com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence.forValue(equivalenceCode.getValue()); 
+			addPart(matchBuilder, "relationship", fromInternal(equivalence));
+		}
+		
+		addPart(matchBuilder, "concept", fromInternal(match.getConcept()));
+		
+		// XXX: "property" parts are not added to "match" (new in R5) 
+		
+		var products = match.getProduct();
+		if (!CompareUtils.isEmpty(products)) {
+			for (var product : products) {
+				addProductPart(matchBuilder, product);
+			}
+		}
+
+		// XXX: "dependsOn" parts are not added to "match" (new in R5)
+		// XXX: "source" is now named "originMap" in R5
+		addPart(matchBuilder, "originMap", fromInternal(match.getSource()));
+		
+		builder.parameter(matchBuilder.build());
+	}
+
+	private void addProductPart(
+		Parameters.Parameter.Builder matchBuilder, 
+		com.b2international.snowowl.fhir.core.model.conceptmap.Product product
+	) {
+		if (product == null) {
+			return;
+		}
+	
+		Parameters.Parameter.Builder productBuilder = Parameters.Parameter.builder();
+		productBuilder.name("product");
+		
+		addPart(productBuilder, "element", fromInternal(product.getElement()));
+		addPart(productBuilder, "concept", fromInternal(product.getConcept()));
+		
+		matchBuilder.part(productBuilder.build());
+	}
+
+	@Override
+	public TranslateRequest toTranslateRequest(Parameters parameters) {
+		if (parameters == null) {
+			return null;
+		}
+		
+		var builder = TranslateRequest.builder();
+		
+		List<Parameters.Parameter> parameterElements = parameters.getParameter();
+		for (Parameters.Parameter parameter : parameterElements) {
+			java.lang.String parameterName = toInternal(parameter.getName());
+			
+			switch (parameterName) {
+				case "url":
+					var url = toInternal(parameter.getValue().as(Uri.class));
+					if (url != null) {
+						builder.url(url.getUriValue());
+					}
+					break;
+	
+				case "conceptMap":
+					throw new BadRequestException("Inline input parameter 'conceptMap' is not supported.");
+					
+				case "conceptMapVersion":
+					var conceptMapVersion = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(conceptMapVersion)) {
+						builder.conceptMapVersion(conceptMapVersion);
+					}
+					break;
+	
+				// XXX: Any mention of a "source*" parameter assumes a forward translation request...
+					
+				case "sourceCode":
+					var code = toInternal(parameter.getValue().as(Code.class));
+					if (code != null) {
+						builder.code(code.getCodeValue());
+						builder.isReverse(false);
+					}
+					break;
+	
+				case "system":
+					var system = toInternal(parameter.getValue().as(Uri.class));
+					if (system != null) {
+						builder.system(system.getUriValue());
+						builder.isReverse(false);
+					}
+					break;
+	
+				case "version":
+					var version = toInternal(parameter.getValue().as(String.class));
+					if (!StringUtils.isEmpty(version)) {
+						builder.version(version);
+						builder.isReverse(false);
+					}
+					break;
+	
+				// ...except "sourceScope" which could also be supplied for reverse translations to restrict scope.
+					
+				case "sourceScope":
+					var source = toInternal(parameter.getValue().as(Uri.class));
+					if (source != null) {
+						builder.source(source.getUriValue());
+					}
+					break;
+	
+				case "sourceCoding":
+					var sourceCoding = toInternal(parameter.getValue().as(Coding.class));
+					if (sourceCoding != null) {
+						builder.coding(sourceCoding);
+						builder.isReverse(false);
+					}
+					break;
+					
+				case "sourceCodeableConcept":
+					var sourceCodeableConcept = toInternal(parameter.getValue().as(CodeableConcept.class));
+					if (sourceCodeableConcept != null) {
+						builder.codeableConcept(sourceCodeableConcept);
+						builder.isReverse(false);
+					}
+					break;
+					
+				// XXX: Any mention of a "target*" parameter assumes a reverse translation request...
+					
+				case "targetCode":
+					var target = toInternal(parameter.getValue().as(Uri.class));
+					if (target != null) {
+						builder.target(target.getUriValue());
+						builder.isReverse(true);
+					}
+					break;
+	
+				case "targetCoding":
+					var targetCoding = toInternal(parameter.getValue().as(Coding.class));
+					if (targetCoding != null) {
+						builder.target(targetCoding.getCodeValue());
+						builder.targetSystem(targetCoding.getSystemValue());
+						builder.isReverse(true);
+					}
+					break;
+					
+				case "targetCodeableConcept":
+					var targetCodeableConcept = toInternal(parameter.getValue().as(CodeableConcept.class));
+					if (targetCodeableConcept != null) {
+						var targetCodings = targetCodeableConcept.getCodings();
+						if (!CompareUtils.isEmpty(targetCodings)) {
+							for (var targetCodingInCodeableConcept : targetCodings) {
+								// Use the first available coding
+								if (targetCodingInCodeableConcept != null) {
+									builder.target(targetCodingInCodeableConcept.getCodeValue());
+									builder.targetSystem(targetCodingInCodeableConcept.getSystemValue());
+									builder.isReverse(true);
+									break;
+								}
+							}
+						}
+					}
+					break;
+				
+				// ...but similar to "sourceScope", "targetSystem" does not imply reverse translation
+					
+				case "targetSystem":
+					var targetSystem = toInternal(parameter.getValue().as(Uri.class));
+					if (targetSystem != null) {
+						builder.targetSystem(targetSystem.getUriValue());
+					}
+					break;
+
+				case "targetScope":
+					throw new BadRequestException("Input parameter 'targetScope' is not supported.");
+					
+				case "dependency":
+					addDependency(builder, parameter);
+					break;
+	
+				default:
+					throw new IllegalStateException("Unexpected 'in' parameter '" + parameterName + "'.");
+			}
+		}
+		
+		return builder.build();
+	}
+
+	private void addDependency(TranslateRequest.Builder builder, Parameters.Parameter parameter) {
+		if (parameter == null) {
+			return;
+		}
+		
+		Dependency.Builder dependencyBuilder = Dependency.builder();
+		
+		List<Parameters.Parameter> parts = parameter.getPart();
+		for (Parameters.Parameter part : parts) {
+			java.lang.String partName = toInternal(part.getName());
+	
+			switch (partName) {
+				case "attribute":
+					var element = toInternal(parameter.getValue().as(Uri.class));
+					if (element != null) {
+						dependencyBuilder.element(element);
+					}
+					break;
+	
+				case "value":
+					Element value = parameter.getValue();
+					
+					if (value instanceof Code code) {
+						var coding = com.b2international.snowowl.fhir.core.model.dt.Coding.builder()
+							.code(toInternal(code))
+							.build();
+						
+						var codeableConcept = com.b2international.snowowl.fhir.core.model.dt.CodeableConcept.builder()
+							.addCoding(coding)
+							.build();
+						
+						dependencyBuilder.concept(codeableConcept);
+					} else if (value instanceof Coding coding) {
+						var codeableConcept = com.b2international.snowowl.fhir.core.model.dt.CodeableConcept.builder()
+							.addCoding(toInternal(coding))
+							.build();
+							
+						dependencyBuilder.concept(codeableConcept);
+					} else {
+						throw new IllegalArgumentException("Unsupported dependency value type '" + value.getClass().getSimpleName() + "'.");			
+					}
+
+					break;
+	
+				default:
+					throw new IllegalStateException("Unexpected dependency part name '" + partName + "'.");
+			}
+		}
+		
+		builder.addDependency(dependencyBuilder.build());
 	}
 }
