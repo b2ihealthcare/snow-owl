@@ -42,7 +42,7 @@ import org.linuxforhealth.fhir.model.ucum.util.UCUMUtil;
 /*
  * Modifications:
  * 
- * - Changed "checkId" to allow forward slash characters
+ * - Changed "checkId" to allow forward slash characters and underscores
  */
 
 /**
@@ -244,8 +244,8 @@ public final class ValidationSupport {
             //97 = 'a'
             //122 = 'z'
             
-            // XXX: Also allow 47 == '/' for versioned IDs, although this is not permitted by the specification 
-            if (c < 45 || /* c == 47 || */ (c > 57 && c < 65) || (c > 90 && c < 97) || c > 122 ) {
+            // XXX: Allow 95 == '_' and 47 == '/' for versioned IDs, although neither of them can appear according to the specification
+            if (c < 45 || /* c == 47 || */ (c > 57 && c < 65) || (c > 90 && c < 95) || c == 96 || c > 122 ) {
                 throw new IllegalStateException(String.format("Id value: '%s' contain invalid character '%s'", s, c));
             }
         }
@@ -611,13 +611,15 @@ public final class ValidationSupport {
                 if (system != null && !BCP_47_URN.equals(system)) {
                     throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid system for value set '%s'", elementName, system, valueSet));
                 } else if (!LanguageRegistryUtil.isValidLanguageTag(code)) {
-                    throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid code for value set '%s'", elementName, code, valueSet));
+                	// XXX: Allow non-conformant language tags
+                    // throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid code for value set '%s'", elementName, code, valueSet));
                 }
             } else if (UCUM_UNITS_VALUE_SET_URL.equals(valueSet)) {
                 if (system != null && !UCUM_CODE_SYSTEM_URL.equals(system)) {
                     throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid system for value set '%s'", elementName, system, valueSet));
                 } else if (!UCUMUtil.isValidUcum(code)) {
-                    throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid code for value set '%s'", elementName, code, valueSet));
+                	// XXX: Allow non-conformant UCUM units (the grammar parser is already disabled)                	
+                    // throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid code for value set '%s'", elementName, code, valueSet));
                 }
             }
         }
