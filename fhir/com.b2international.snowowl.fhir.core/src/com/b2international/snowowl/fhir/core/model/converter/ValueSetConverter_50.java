@@ -235,7 +235,7 @@ public class ValueSetConverter_50 extends AbstractConverter_50 implements ValueS
 		// "offset" is not converted as we are using opaque "searchAfter" keys
 		
 		var parameters = expansion.getParameters();
-		if (CompareUtils.isEmpty(parameters)) {
+		if (!CompareUtils.isEmpty(parameters)) {
 			for (var parameter : parameters) {
 				if (parameter != null) {
 					builder.parameter(fromInternal(parameter));
@@ -246,7 +246,7 @@ public class ValueSetConverter_50 extends AbstractConverter_50 implements ValueS
 		// "property" is not converted (new in R5)
 
 		var containedConcepts = expansion.getContains();
-		if (CompareUtils.isEmpty(containedConcepts)) {
+		if (!CompareUtils.isEmpty(containedConcepts)) {
 			for (var containedConcept : containedConcepts) {
 				if (containedConcept != null) {
 					builder.contains(fromInternal(containedConcept));
@@ -321,7 +321,7 @@ public class ValueSetConverter_50 extends AbstractConverter_50 implements ValueS
 		// "property" is not converted (new in R5)
 		
 		var nestedConcepts = contains.getContains();
-		if (CompareUtils.isEmpty(nestedConcepts)) {
+		if (!CompareUtils.isEmpty(nestedConcepts)) {
 			for (var nestedConcept : nestedConcepts) {
 				if (nestedConcept != null) {
 					builder.contains(fromInternal(nestedConcept));
@@ -557,7 +557,7 @@ public class ValueSetConverter_50 extends AbstractConverter_50 implements ValueS
 		// "property" is not converted (new in R5)
 		
 		var nestedConcepts = contains.getContains();
-		if (CompareUtils.isEmpty(nestedConcepts)) {
+		if (!CompareUtils.isEmpty(nestedConcepts)) {
 			for (var nestedConcept : nestedConcepts) {
 				if (nestedConcept != null) {
 					builder.addContains(toInternal(nestedConcept));
