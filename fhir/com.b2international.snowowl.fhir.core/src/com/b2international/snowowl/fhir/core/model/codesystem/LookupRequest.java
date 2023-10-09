@@ -72,7 +72,6 @@ public class LookupRequest {
 	 * designation, parent and child, and for designations, lang.X where X is a designation language code. Some of the properties are returned
 	 * explicit in named parameters (when the names match), and the rest (except for lang.X) in the property parameter group
 	 */
-	@FhirType(FhirDataType.PART)
 	private final Collection<Code> property;
 
 	LookupRequest(Code code, Uri system, String version, Coding coding, Date date, Code displayLanguage, Collection<Code> properties) {
