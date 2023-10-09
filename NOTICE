@@ -32,3 +32,4 @@ This software includes third party software subject to the following licenses:
 - Improved wildcard path matching from Spring Framework - under Apache License v2.0
 - XSSF parsing from Apache POI - under Apache License v2.0
 - Relationship Normal Form generation from SNOMED International - under Apache License v2.0
+- Generated model classes for FHIR R4B and R5 - Apache License v2.0
