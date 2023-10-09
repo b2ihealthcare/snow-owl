@@ -57,6 +57,11 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	 * HEAD or NEXT???
 	 */
 	public static final String NEXT = "NEXT";
+
+	/**
+	 * Special resource URI character that denotes an altered version of a resource, be it a version, a special in progress content branch that needs to be addressed or any other special path.
+	 */
+	public static final String TILDE = "~";
 	
 	// the original value
 	private final String uri;
@@ -91,8 +96,19 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		this.uri = uri.replaceFirst("/HEAD", ""); 
 		this.resourceType = matcher.group(1);
 		this.resourceId = matcher.group(2);
-		// remove leading slash from match
-		this.path = CompareUtils.isEmpty(matcher.group(3)) ? HEAD : matcher.group(3).substring(1);
+		
+		
+		if (CompareUtils.isEmpty(matcher.group(3))) {
+			this.path = HEAD;			
+		} else {
+			// remove leading slash from match
+			this.path = matcher.group(3).substring(1);
+			if (hasSpecialResourceIdPart()) {
+				throw new BadRequestException("Resource URIs cannot use both the special tilde ('~') character and a branch path.")
+					.withDeveloperMessage("For child paths use either the '~' or the '/path' alternatives. For nested deeper branch paths always use the forward slash separator.");
+			}
+		}
+		
 		
 		try {
 
@@ -175,11 +191,36 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	public String withoutResourceType() {
 		return isHead() ? resourceId : String.join(Branch.SEPARATOR, resourceId, path);
 	}
+	
+	// SPECIAL TILDE ID handling
+	
+	@JsonIgnore
+	public boolean hasSpecialResourceIdPart() {
+		return this.resourceId.contains(TILDE);
+	}
+	
+	@JsonIgnore
+	public ResourceURI withoutSpecialResourceIdPart() {
+		final String resourceId = getResourceId();
+		final int separatorIdx = resourceId.lastIndexOf(TILDE);
+		
+		if (separatorIdx > 0) {
+			return ResourceURI.of(getResourceType(), resourceId.substring(0, separatorIdx));
+		} else {
+			return this;
+		}
+	}
+	
+	public ResourceURI withSpecialResourceIdPart(String specialResourceIdPart) {
+		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, String.join(TILDE, withoutSpecialResourceIdPart(this.resourceId), specialResourceIdPart)));
+	}
 
+	@JsonIgnore
 	public ResourceURI asLatest() {
 		return ResourceURI.latest(resourceType, resourceId);
 	}
 	
+	@JsonIgnore
 	public ResourceURI asNext() {
 		return ResourceURI.next(resourceType, resourceId);
 	}
@@ -232,6 +273,19 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 
 	public ResourceURIWithQuery withQuery(String query) {
 		return new ResourceURIWithQuery(this, query);
+	}
+	
+	public static String withoutSpecialResourceIdPart(String resourceIdWithPotentialTildePath) {
+		return resourceIdWithPotentialTildePath.split(TILDE)[0];
+	}
+	
+	public static String extractSpecialResourceIdPart(String resourceIdWithTilde) {
+		Preconditions.checkArgument(isSpecialResourceId(resourceIdWithTilde), "Argument '%s' does not look like a resource ID with the special tilde ('~') character.", resourceIdWithTilde);
+		return resourceIdWithTilde.split(TILDE)[1];
+	}
+	
+	public static boolean isSpecialResourceId(String resourceIdWithTilde) {
+		return resourceIdWithTilde != null && resourceIdWithTilde.contains(TILDE);
 	}
 
 }

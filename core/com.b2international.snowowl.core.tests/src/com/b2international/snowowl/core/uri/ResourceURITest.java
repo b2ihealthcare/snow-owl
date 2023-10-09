@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.uri;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -75,4 +75,31 @@ public class ResourceURITest {
 	public void timestampPartValidation() throws Exception {
 		CodeSystem.uri("SNOMEDCT-EXT/a/b@yesterday");
 	}
+	
+	@Test
+	public void specialIdPart() throws Exception {
+		ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT~2022-01-31");
+		assertEquals("SNOMEDCT-EXT~2022-01-31", uri.getResourceId());
+		assertEquals(ResourceURI.HEAD, uri.getPath());
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void specialIdPartAndPath() throws Exception {
+		CodeSystem.uri("SNOMEDCT-EXT~2022-01-31/child");
+	}
+	
+	@Test
+	public void removeSpecialIdPart() throws Exception {
+		ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT~2022-01-31").withoutSpecialResourceIdPart();
+		assertEquals("SNOMEDCT-EXT", uri.getResourceId());
+		assertEquals(ResourceURI.HEAD, uri.getPath());
+	}
+	
+	@Test
+	public void appendSpecialIdPart() throws Exception {
+		ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT").withSpecialResourceIdPart("2022-01-31");
+		assertEquals("SNOMEDCT-EXT~2022-01-31", uri.getResourceId());
+		assertEquals(ResourceURI.HEAD, uri.getPath());
+	}
+	
 }
