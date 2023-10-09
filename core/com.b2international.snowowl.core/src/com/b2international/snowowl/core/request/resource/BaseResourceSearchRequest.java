@@ -33,6 +33,7 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -196,7 +197,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		
 		final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
 		// TODO make this configurable via plugins
-		final Set<String> specialResourceIdCharacters = Set.of("~");
+		final Set<String> specialResourceIdCharacters = Set.of(ResourceURI.TILDE);
 		
 		// special check for a single resource content access request to not lookup all the visible resources for the user but to check only the one needed for faster execution
 		if (!CompareUtils.isEmpty(componentIds()) && componentIds().size() == 1) {
@@ -207,7 +208,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				final String componentIdToCheck = specialResourceIdCharacters.stream()
 						.filter(componentIdValue::contains)
 						.findFirst()
-						.map(specialResourceIdCharacter -> componentIdValue.split(specialResourceIdCharacter)[0])
+						.map(ResourceURI::withoutSpecialResourceIdPart)
 						.orElse(componentIdValue);
 				
 				
