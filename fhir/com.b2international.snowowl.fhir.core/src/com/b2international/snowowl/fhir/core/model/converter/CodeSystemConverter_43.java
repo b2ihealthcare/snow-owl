@@ -547,7 +547,10 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		Parameters.Parameter.Builder propertyBuilder = Parameters.Parameter.builder();
 		propertyBuilder.name("property");
 		
-		addPart(propertyBuilder, "code", fromInternal(property.getCode()));
+		java.lang.String code = property.getCode();
+		if (!StringUtils.isEmpty(code)) {
+			addPart(propertyBuilder, "code", Code.of(code));
+		}
 		
 		var type = property.getType();
 		switch (type) {
@@ -601,7 +604,10 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		Parameters.Parameter.Builder subPropertyBuilder = Parameters.Parameter.builder();
 		subPropertyBuilder.name("property");
 		
-		addPart(subPropertyBuilder, "code", fromInternal(subProperty.getCode()));
+		java.lang.String code = subProperty.getCode();
+		if (!StringUtils.isEmpty(code)) {
+			addPart(subPropertyBuilder, "code", Code.of(code));
+		}
 		
 		var type = subProperty.getType();
 		switch (type) {
@@ -647,51 +653,56 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		for (Parameters.Parameter parameter : parameterElements) {
 			java.lang.String parameterName = toInternal(parameter.getName());
 			
+			Element value = parameter.getValue();
+			if (value == null) {
+				throw new BadRequestException("Lookup input parameter '" + parameterName + "' has no value.");
+			}
+
 			switch (parameterName) {
 				case "code":
-					var code = toInternal(parameter.getValue().as(Code.class));
+					var code = toInternal(value.as(Code.class));
 					if (code != null) {
 						builder.code(code.getCodeValue());
 					}
 					break;
 					
 				case "system":
-					var system = toInternal(parameter.getValue().as(Uri.class));
+					var system = toInternal(value.as(Uri.class));
 					if (system != null) {
 						builder.system(system.getUriValue());
 					}
 					break;
 					
 				case "version":
-					var version = toInternal(parameter.getValue().as(String.class));
+					var version = toInternal(value.as(String.class));
 					if (!StringUtils.isEmpty(version)) {
 						builder.version(version);
 					}
 					break;
 					
 				case "coding":
-					var coding = toInternal(parameter.getValue().as(Coding.class));
+					var coding = toInternal(value.as(Coding.class));
 					if (coding != null) {
 						builder.coding(coding);
 					}
 					break;
 					
 				case "date":
-					DateTime dateTime = parameter.getValue().as(DateTime.class);
+					DateTime dateTime = value.as(DateTime.class);
 					if (dateTime != null) {
 						builder.date(DateTime.PARSER_FORMATTER.format(dateTime.getValue()));
 					}
 					break;
 	
 				case "displayLanguage":
-					var displayLanguage = toInternal(parameter.getValue().as(Code.class));
+					var displayLanguage = toInternal(value.as(Code.class));
 					if (displayLanguage != null) {
 						builder.displayLanguage(displayLanguage.getCodeValue());
 					}
 					break;
 	
 				case "property":
-					var property = toInternal(parameter.getValue().as(Code.class));
+					var property = toInternal(value.as(Code.class));
 					if (property != null) {
 						builder.addProperty(property.getCodeValue());
 					}
@@ -732,44 +743,49 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		for (Parameters.Parameter parameter : parameterElements) {
 			java.lang.String parameterName = toInternal(parameter.getName());
 			
+			Element value = parameter.getValue();
+			if (value == null) {
+				throw new BadRequestException("Subsumption input parameter '" + parameterName + "' has no value.");
+			}
+
 			switch (parameterName) {
 				case "codeA":
-					var codeA = toInternal(parameter.getValue().as(Code.class));
+					var codeA = toInternal(value.as(Code.class));
 					if (codeA != null) {
 						builder.codeA(codeA.getCodeValue());
 					}
 					break;
 					
 				case "codeB":
-					var codeB = toInternal(parameter.getValue().as(Code.class));
+					var codeB = toInternal(value.as(Code.class));
 					if (codeB != null) {
 						builder.codeB(codeB.getCodeValue());
 					}
 					break;
 					
 				case "system":
-					var system = toInternal(parameter.getValue().as(Uri.class));
+					var system = toInternal(value.as(Uri.class));
 					if (system != null) {
 						builder.system(system.getUriValue());
 					}
 					break;
 					
 				case "version":
-					var version = toInternal(parameter.getValue().as(String.class));
+					var version = toInternal(value.as(String.class));
 					if (!StringUtils.isEmpty(version)) {
 						builder.version(version);
 					}
 					break;
 					
 				case "codingA":
-					var codingA = toInternal(parameter.getValue().as(Coding.class));
+					var codingA = toInternal(value.as(Coding.class));
 					if (codingA != null) {
 						builder.codingA(codingA);
 					}
 					break;
 					
 				case "codingB":
-					var codingB = toInternal(parameter.getValue().as(Coding.class));
+					var codingB = toInternal(value.as(Coding.class));
 					if (codingB != null) {
 						builder.codingB(codingB);
 					}
@@ -800,9 +816,14 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 		for (Parameters.Parameter parameter : parameterElements) {
 			java.lang.String parameterName = toInternal(parameter.getName());
 			
+			Element value = parameter.getValue();
+			if (value == null) {
+				throw new BadRequestException("Validate-code input parameter '" + parameterName + "' has no value.");
+			}
+
 			switch (parameterName) {
 				case "url":
-					var url = toInternal(parameter.getValue().as(Uri.class));
+					var url = toInternal(value.as(Uri.class));
 					if (url != null) {
 						builder.url(url.getUriValue());
 					}
@@ -812,56 +833,56 @@ public class CodeSystemConverter_43 extends AbstractConverter_43 implements Code
 					throw new BadRequestException("Inline input parameter 'codeSystem' is not supported.");
 					
 				case "code":
-					var code = toInternal(parameter.getValue().as(Code.class));
+					var code = toInternal(value.as(Code.class));
 					if (code != null) {
 						builder.code(code.getCodeValue());
 					}
 					break;
 	
 				case "version":
-					var version = toInternal(parameter.getValue().as(String.class));
+					var version = toInternal(value.as(String.class));
 					if (!StringUtils.isEmpty(version)) {
 						builder.version(version);
 					}
 					break;
 	
 				case "display":
-					var display = toInternal(parameter.getValue().as(String.class));
+					var display = toInternal(value.as(String.class));
 					if (!StringUtils.isEmpty(display)) {
 						builder.display(display);
 					}
 					break;
 					
 				case "coding":
-					var coding = toInternal(parameter.getValue().as(Coding.class));
+					var coding = toInternal(value.as(Coding.class));
 					if (coding != null) {
 						builder.coding(coding);
 					}
 					break;
 					
 				case "codeableConcept":
-					var codeableConcept = toInternal(parameter.getValue().as(CodeableConcept.class));
+					var codeableConcept = toInternal(value.as(CodeableConcept.class));
 					if (codeableConcept != null) {
 						builder.codeableConcept(codeableConcept);
 					}
 					break;
 					
 				case "date":
-					DateTime dateTime = parameter.getValue().as(DateTime.class);
+					DateTime dateTime = value.as(DateTime.class);
 					if (dateTime != null) {
 						builder.date(DateTime.PARSER_FORMATTER.format(dateTime.getValue()));
 					}
 					break;
 					
 				case "abstract":
-					var isAbstract = toInternal(parameter.getValue().as(Boolean.class));
+					var isAbstract = toInternal(value.as(Boolean.class));
 					if (isAbstract != null) {
 						builder.isAbstract(isAbstract);
 					}
 					break;
 					
 				case "displayLanguage":
-					var displayLanguage = toInternal(parameter.getValue().as(Code.class));
+					var displayLanguage = toInternal(value.as(Code.class));
 					if (displayLanguage != null) {
 						builder.displayLanguage(displayLanguage);
 					}
