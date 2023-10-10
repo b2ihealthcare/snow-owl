@@ -84,4 +84,8 @@ public abstract class FHIRAbstractParser implements FHIRParser {
     public <T extends FHIRParser> T as(Class<T> parserClass) {
         return parserClass.cast(this);
     }
+    
+    protected final <T> T throwUnsupportedElement(String name) {
+    	throw new IllegalArgumentException("Parsing '" + name + "' is not supported.");
+    }
 }
