@@ -55,6 +55,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
+	// Core API test cases requiring actual terminology data, make sure it is the first test class to run
+	ResourceURITildeSupportTest.class,
 	// RF2 release handling, imported content verification
 	SnomedRf2NextReleaseImportTest.class,
 	SnomedRf2ContentImportTest.class,

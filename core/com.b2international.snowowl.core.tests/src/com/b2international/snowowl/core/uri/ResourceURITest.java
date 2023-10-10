@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.uri;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -75,4 +76,54 @@ public class ResourceURITest {
 	public void timestampPartValidation() throws Exception {
 		CodeSystem.uri("SNOMEDCT-EXT/a/b@yesterday");
 	}
+	
+	@Test
+	public void specialIdPart() throws Exception {
+		ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT~2022-01-31");
+		assertEquals("SNOMEDCT-EXT~2022-01-31", uri.getResourceId());
+		assertThat(uri.getPath()).isNull();
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void specialIdPartAndPath() throws Exception {
+		CodeSystem.uri("SNOMEDCT-EXT~2022-01-31/child");
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void specialIdPartAndEmptyPath() throws Exception {
+		CodeSystem.uri("SNOMEDCT-EXT~2022-01-31/");
+	}
+	
+	@Test
+	public void removeSpecialIdPart() throws Exception {
+		ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT~2022-01-31").withoutSpecialResourceIdPart();
+		assertThat(uri.toString()).isEqualTo("codesystems/SNOMEDCT-EXT");
+		assertThat(uri.getResourceId()).isEqualTo("SNOMEDCT-EXT");
+		assertThat(uri.getPath()).isEqualTo(ResourceURI.HEAD);
+	}
+	
+	@Test
+	public void appendSpecialIdPart() throws Exception {
+		ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT").withSpecialResourceIdPart("2022-01-31");
+		assertThat(uri.toString()).isEqualTo("codesystems/SNOMEDCT-EXT~2022-01-31");
+		assertThat(uri.getResourceId()).isEqualTo("SNOMEDCT-EXT~2022-01-31");
+		assertThat(uri.getPath()).isNull();
+	}
+	
+	@Test
+	public void convertTimestampedSpecialURIToRegular() throws Exception {
+		ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT").withSpecialResourceIdPart("2022-01-31").withTimestampPart("@123123123");
+		ResourceURI regularForm = uri.toRegularURI();
+		
+		assertThat(uri.toString()).isEqualTo("codesystems/SNOMEDCT-EXT~2022-01-31@123123123");
+		assertThat(uri.getResourceId()).isEqualTo("SNOMEDCT-EXT~2022-01-31");
+		assertThat(uri.getPath()).isNull();
+		assertThat(uri.getTimestampPart()).isEqualTo("@123123123");
+		
+		assertThat(regularForm.toString()).isEqualTo("codesystems/SNOMEDCT-EXT/2022-01-31@123123123");
+		assertThat(regularForm.getResourceId()).isEqualTo("SNOMEDCT-EXT");
+		assertThat(regularForm.getPath()).isEqualTo("2022-01-31");
+		assertThat(regularForm.getTimestampPart()).isEqualTo("@123123123");
+	}
+	
 }

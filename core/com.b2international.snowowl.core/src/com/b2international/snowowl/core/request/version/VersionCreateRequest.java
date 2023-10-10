@@ -99,7 +99,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			author = submitter;			
 		}
 		
-		if (!resource.isHead()) {
+		if (resource.getPath() != null && !resource.isHead()) {
 			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'", version, resource)
 				.withDeveloperMessage("Did you mean to version '%s'?", resource.withoutPath());
 		}

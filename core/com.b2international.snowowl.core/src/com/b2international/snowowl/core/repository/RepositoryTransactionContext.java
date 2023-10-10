@@ -90,7 +90,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public Set<String> getSubjectIds() {
-		return optionalService(ResourceURI.class).map(ResourceURI::toString).map(Set::of).orElse(Set.of());
+		return optionalService(ResourceURI.class).map(ResourceURI::withoutResourceType).map(Set::of).orElse(Set.of());
 	}
 	
 	@Override

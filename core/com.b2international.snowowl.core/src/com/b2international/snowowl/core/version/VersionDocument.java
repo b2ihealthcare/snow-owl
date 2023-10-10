@@ -565,7 +565,7 @@ public final class VersionDocument implements CommitSubject, Serializable {
 	 */
 	@JsonIgnore
 	public LocalDate getEffectiveTimeAsLocalDate() {
-		return EffectiveTimes.toDate(effectiveTime);
+		return effectiveTime == null ? null : EffectiveTimes.toDate(effectiveTime);
 	}
 	
 	/**

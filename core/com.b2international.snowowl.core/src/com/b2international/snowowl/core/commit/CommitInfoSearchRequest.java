@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,8 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		TIME_STAMP_FROM,
 		TIME_STAMP_TO,
 		TIME_STAMP,
-		AFFECTED_COMPONENT_ID
+		AFFECTED_COMPONENT_ID,
+		SUBJECT,
 		
 	}
 	
@@ -79,6 +80,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		addSecurityFilter(context, queryBuilder);
 		addBranchClause(queryBuilder, context);
 		addBranchPrefixClause(queryBuilder);
+		addSubjectClause(queryBuilder);
 		addUserIdClause(queryBuilder);
 		addCommentClause(queryBuilder);
 		addTimeStampClause(queryBuilder);
@@ -196,6 +198,13 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		if (containsKey(OptionKey.BRANCH)) {
 			final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
 			builder.filter(branches(branchPaths));
+		}
+	}
+	
+	private void addSubjectClause(final ExpressionBuilder builder) {
+		if (containsKey(OptionKey.SUBJECT)) {
+			final Collection<String> subjects = getCollection(OptionKey.SUBJECT, String.class);
+			builder.filter(subjects(subjects));
 		}
 	}
 	

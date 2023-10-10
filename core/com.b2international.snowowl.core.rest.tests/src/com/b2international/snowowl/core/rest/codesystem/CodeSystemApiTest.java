@@ -25,8 +25,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -579,6 +578,13 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			.buildAsync()
 			.execute(Services.bus())
 			.getSync();
+	}
+	
+	@Test
+	public void codesystem34_DisallowUsingSpecialTildeCharacterInResourceIds() throws Exception {
+		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody("cs~34"))
+			.statusCode(400)
+			.body("message", equalTo("CodeSystem.id 'cs~34' uses an illegal character. Allowed characters are 'A-Za-z0-9-_'."));
 	}
 	
 	private long getCodeSystemCreatedAt(final String id) {

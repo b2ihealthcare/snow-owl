@@ -75,18 +75,16 @@ public interface AccessControl {
 		if (terminologyResourceRequest != null) {
 			TerminologyResource resource = terminologyResourceRequest.getResource(context);
 			// fetch the currently accessed (versioned, branch or base resource URI) and the base resource URI
-			ResourceURI accessedResourceURI = terminologyResourceRequest.getResourceURI(context);
-			ResourceURI resourceURI = resource.getResourceURI();
+			ResourceURI accessedResourceUri = terminologyResourceRequest.getResourceURI(context);
+			ResourceURI resourceUri = resource.getResourceURI().withoutSpecialResourceIdPart(); // always remove the special ID parts when checking entire collection access
 
 			// if the user is accessing a version branch or subbranch of the resource always check for authorization of the entire resource and then check for direct version/branch access only
-			if (!accessedResourceURI.equals(resourceURI)) {
+			if (!accessedResourceUri.equals(resourceUri)) {
 				// accept both full resourceURI as resource and without resource type (as ID/path is often enough), but always check the typeless ID first, then the full one
-				accessedResources.add(Permission.asResource(resourceURI.withoutResourceType()));
-				accessedResources.add(Permission.asResource(resourceURI.toString()));
+				registerAccessedResourceUri(accessedResources, resourceUri);
 			}
 			// accept both full resourceURI as resource and without resource type (as ID/path is often enough), but always check the typeless ID first, then the full one
-			accessedResources.add(Permission.asResource(accessedResourceURI.withoutResourceType()));
-			accessedResources.add(Permission.asResource(accessedResourceURI.toString()));
+			registerAccessedResourceUri(accessedResources, accessedResourceUri);
 			
 			
 			// if a resource that is being accessed is part of a bundle and the user has access to that bundle then it has access to the resource as well
@@ -95,6 +93,11 @@ public interface AccessControl {
 			// ensure Root bundle is not present when checking access
 			accessedResources.remove(IComponent.ROOT_ID);
 		}
+	}
+	
+	static void registerAccessedResourceUri(List<String> accessedResources, ResourceURI resourceUri) {
+		accessedResources.add(Permission.asResource(resourceUri.withoutResourceType()));
+		accessedResources.add(Permission.asResource(resourceUri.toString()));		
 	}
 
 	/**
