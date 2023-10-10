@@ -50,7 +50,7 @@ import org.linuxforhealth.fhir.model.r5.type.Reference;
 import org.linuxforhealth.fhir.model.r5.type.Uri;
 import org.linuxforhealth.fhir.model.r5.type.Uuid;
 import org.linuxforhealth.fhir.model.r5.type.code.BundleType;
-import org.linuxforhealth.fhir.model.r5.type.code.DataAbsentReason;
+//import org.linuxforhealth.fhir.model.r5.type.code.DataAbsentReason;
 import org.linuxforhealth.fhir.model.r5.type.code.IssueSeverity;
 import org.linuxforhealth.fhir.model.r5.type.code.IssueType;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitable;
@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
  * 
  * - Removed unused utility method related to Jakarta JSON-P
  * - Changed logging to use SLF4J
+ * - Removed DataAbsentReason constants
  */
 
 /**
@@ -72,14 +73,14 @@ public class FHIRUtil {
     
     public static final Pattern REFERENCE_PATTERN = buildReferencePattern();
     
-    public static final Extension DATA_ABSENT_REASON_UNKNOWN = Extension.builder()
-            .url("http://hl7.org/fhir/StructureDefinition/data-absent-reason")
-            .value(DataAbsentReason.UNKNOWN)
-            .build();
+//    public static final Extension DATA_ABSENT_REASON_UNKNOWN = Extension.builder()
+//            .url("http://hl7.org/fhir/StructureDefinition/data-absent-reason")
+//            .value(DataAbsentReason.UNKNOWN)
+//            .build();
     
-    public static final org.linuxforhealth.fhir.model.r5.type.String STRING_DATA_ABSENT_REASON_UNKNOWN = org.linuxforhealth.fhir.model.r5.type.String.builder()
-            .extension(DATA_ABSENT_REASON_UNKNOWN)
-            .build();
+//    public static final org.linuxforhealth.fhir.model.r5.type.String STRING_DATA_ABSENT_REASON_UNKNOWN = org.linuxforhealth.fhir.model.r5.type.String.builder()
+//            .extension(DATA_ABSENT_REASON_UNKNOWN)
+//            .build();
 
     public static final OperationOutcome ALL_OK = OperationOutcome.builder()
         .issue(Issue.builder()

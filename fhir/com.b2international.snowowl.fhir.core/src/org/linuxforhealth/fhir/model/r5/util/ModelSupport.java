@@ -44,6 +44,7 @@ import org.linuxforhealth.fhir.model.r5.type.*;
  * Modifications:
  * 
  * - Disable unused instance of JUL logger
+ * - Removed references to data types, bound value sets and resources unrelated to terminology services
  */
 
 public final class ModelSupport {
@@ -125,9 +126,9 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.resource.ValueSet.Expansion.class,
         org.linuxforhealth.fhir.model.r5.resource.ValueSet.Expansion.Contains.class,
         org.linuxforhealth.fhir.model.r5.resource.ValueSet.Expansion.Parameter.class,
-        org.linuxforhealth.fhir.model.r5.type.Address.class,
-        org.linuxforhealth.fhir.model.r5.type.Age.class,
-        org.linuxforhealth.fhir.model.r5.type.Annotation.class,
+//        org.linuxforhealth.fhir.model.r5.type.Address.class,
+//        org.linuxforhealth.fhir.model.r5.type.Age.class,
+//        org.linuxforhealth.fhir.model.r5.type.Annotation.class,
         org.linuxforhealth.fhir.model.r5.type.Attachment.class,
         org.linuxforhealth.fhir.model.r5.type.BackboneElement.class,
         org.linuxforhealth.fhir.model.r5.type.Base64Binary.class,
@@ -139,19 +140,19 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.type.Coding.class,
         org.linuxforhealth.fhir.model.r5.type.ContactDetail.class,
         org.linuxforhealth.fhir.model.r5.type.ContactPoint.class,
-        org.linuxforhealth.fhir.model.r5.type.Contributor.class,
-        org.linuxforhealth.fhir.model.r5.type.Count.class,
-        org.linuxforhealth.fhir.model.r5.type.DataRequirement.class,
-        org.linuxforhealth.fhir.model.r5.type.DataRequirement.CodeFilter.class,
-        org.linuxforhealth.fhir.model.r5.type.DataRequirement.DateFilter.class,
-        org.linuxforhealth.fhir.model.r5.type.DataRequirement.Sort.class,
+//        org.linuxforhealth.fhir.model.r5.type.Contributor.class,
+//        org.linuxforhealth.fhir.model.r5.type.Count.class,
+//        org.linuxforhealth.fhir.model.r5.type.DataRequirement.class,
+//        org.linuxforhealth.fhir.model.r5.type.DataRequirement.CodeFilter.class,
+//        org.linuxforhealth.fhir.model.r5.type.DataRequirement.DateFilter.class,
+//        org.linuxforhealth.fhir.model.r5.type.DataRequirement.Sort.class,
         org.linuxforhealth.fhir.model.r5.type.Date.class,
         org.linuxforhealth.fhir.model.r5.type.DateTime.class,
         org.linuxforhealth.fhir.model.r5.type.Decimal.class,
-        org.linuxforhealth.fhir.model.r5.type.Distance.class,
-        org.linuxforhealth.fhir.model.r5.type.Dosage.class,
-        org.linuxforhealth.fhir.model.r5.type.Dosage.DoseAndRate.class,
-        org.linuxforhealth.fhir.model.r5.type.Duration.class,
+//        org.linuxforhealth.fhir.model.r5.type.Distance.class,
+//        org.linuxforhealth.fhir.model.r5.type.Dosage.class,
+//        org.linuxforhealth.fhir.model.r5.type.Dosage.DoseAndRate.class,
+//        org.linuxforhealth.fhir.model.r5.type.Duration.class,
         org.linuxforhealth.fhir.model.r5.type.Element.class,
         org.linuxforhealth.fhir.model.r5.type.ElementDefinition.class,
         org.linuxforhealth.fhir.model.r5.type.ElementDefinition.Base.class,
@@ -162,38 +163,38 @@ public final class ModelSupport {
         org.linuxforhealth.fhir.model.r5.type.ElementDefinition.Slicing.class,
         org.linuxforhealth.fhir.model.r5.type.ElementDefinition.Slicing.Discriminator.class,
         org.linuxforhealth.fhir.model.r5.type.ElementDefinition.Type.class,
-        org.linuxforhealth.fhir.model.r5.type.Expression.class,
+//        org.linuxforhealth.fhir.model.r5.type.Expression.class,
         org.linuxforhealth.fhir.model.r5.type.Extension.class,
-        org.linuxforhealth.fhir.model.r5.type.HumanName.class,
+//        org.linuxforhealth.fhir.model.r5.type.HumanName.class,
         org.linuxforhealth.fhir.model.r5.type.Id.class,
         org.linuxforhealth.fhir.model.r5.type.Identifier.class,
         org.linuxforhealth.fhir.model.r5.type.Instant.class,
         org.linuxforhealth.fhir.model.r5.type.Integer.class,
         org.linuxforhealth.fhir.model.r5.type.Markdown.class,
-        org.linuxforhealth.fhir.model.r5.type.MarketingStatus.class,
+//        org.linuxforhealth.fhir.model.r5.type.MarketingStatus.class,
         org.linuxforhealth.fhir.model.r5.type.Meta.class,
-        org.linuxforhealth.fhir.model.r5.type.Money.class,
-        org.linuxforhealth.fhir.model.r5.type.MoneyQuantity.class,
+//        org.linuxforhealth.fhir.model.r5.type.Money.class,
+//        org.linuxforhealth.fhir.model.r5.type.MoneyQuantity.class,
         org.linuxforhealth.fhir.model.r5.type.Narrative.class,
         org.linuxforhealth.fhir.model.r5.type.Oid.class,
-        org.linuxforhealth.fhir.model.r5.type.ParameterDefinition.class,
+//        org.linuxforhealth.fhir.model.r5.type.ParameterDefinition.class,
         org.linuxforhealth.fhir.model.r5.type.Period.class,
         org.linuxforhealth.fhir.model.r5.type.PositiveInt.class,
-        org.linuxforhealth.fhir.model.r5.type.ProductShelfLife.class,
+//        org.linuxforhealth.fhir.model.r5.type.ProductShelfLife.class,
         org.linuxforhealth.fhir.model.r5.type.Quantity.class,
-        org.linuxforhealth.fhir.model.r5.type.Range.class,
-        org.linuxforhealth.fhir.model.r5.type.Ratio.class,
-        org.linuxforhealth.fhir.model.r5.type.RatioRange.class,
+//        org.linuxforhealth.fhir.model.r5.type.Range.class,
+//        org.linuxforhealth.fhir.model.r5.type.Ratio.class,
+//        org.linuxforhealth.fhir.model.r5.type.RatioRange.class,
         org.linuxforhealth.fhir.model.r5.type.Reference.class,
         org.linuxforhealth.fhir.model.r5.type.RelatedArtifact.class,
-        org.linuxforhealth.fhir.model.r5.type.SampledData.class,
+//        org.linuxforhealth.fhir.model.r5.type.SampledData.class,
         org.linuxforhealth.fhir.model.r5.type.Signature.class,
         org.linuxforhealth.fhir.model.r5.type.SimpleQuantity.class,
         org.linuxforhealth.fhir.model.r5.type.String.class,
         org.linuxforhealth.fhir.model.r5.type.Time.class,
-        org.linuxforhealth.fhir.model.r5.type.Timing.class,
-        org.linuxforhealth.fhir.model.r5.type.Timing.Repeat.class,
-        org.linuxforhealth.fhir.model.r5.type.TriggerDefinition.class,
+//        org.linuxforhealth.fhir.model.r5.type.Timing.class,
+//        org.linuxforhealth.fhir.model.r5.type.Timing.Repeat.class,
+//        org.linuxforhealth.fhir.model.r5.type.TriggerDefinition.class,
         org.linuxforhealth.fhir.model.r5.type.UnsignedInt.class,
         org.linuxforhealth.fhir.model.r5.type.Uri.class,
         org.linuxforhealth.fhir.model.r5.type.Url.class,
@@ -228,40 +229,40 @@ public final class ModelSupport {
             Uri.class,
             Url.class,
             Uuid.class,
-            Address.class,
-            Age.class,
-            Annotation.class,
+//            Address.class,
+//            Age.class,
+//            Annotation.class,
             Attachment.class,
             CodeableConcept.class,
             CodeableReference.class,
             Coding.class,
             ContactPoint.class,
-            Count.class,
-            Distance.class,
-            Duration.class,
-            HumanName.class,
+//            Count.class,
+//            Distance.class,
+//            Duration.class,
+//            HumanName.class,
             Identifier.class,
-            Money.class,
-            MoneyQuantity.class, // profiled type
+//            Money.class,
+//            MoneyQuantity.class, // profiled type
             Period.class,
             Quantity.class,
-            Range.class,
-            Ratio.class,
-            RatioRange.class,
+//            Range.class,
+//            Ratio.class,
+//            RatioRange.class,
             Reference.class,
-            SampledData.class,
+//            SampledData.class,
             SimpleQuantity.class, // profiled type
             Signature.class,
-            Timing.class,
+//            Timing.class,
             ContactDetail.class,
-            Contributor.class,
-            DataRequirement.class,
-            Expression.class,
-            ParameterDefinition.class,
+//            Contributor.class,
+//            DataRequirement.class,
+//            Expression.class,
+//            ParameterDefinition.class,
             RelatedArtifact.class,
-            TriggerDefinition.class,
+//            TriggerDefinition.class,
             UsageContext.class,
-            Dosage.class,
+//            Dosage.class,
             Meta.class));
     private static final Set<Class<? extends Element>> DATA_TYPES;
     static {
@@ -271,8 +272,8 @@ public final class ModelSupport {
         dataTypes.add(Narrative.class);
         dataTypes.add(Extension.class);
         dataTypes.add(ElementDefinition.class);
-        dataTypes.add(MarketingStatus.class);
-        dataTypes.add(ProductShelfLife.class);
+//        dataTypes.add(MarketingStatus.class);
+//        dataTypes.add(ProductShelfLife.class);
         DATA_TYPES = Collections.unmodifiableSet(dataTypes);
     }
     private static final Map<String, Class<?>> DATA_TYPE_MAP = buildDataTypeMap();
@@ -423,227 +424,227 @@ public final class ModelSupport {
 
     private static Map<String, Class<?>> buildCodeSubtypeMap() {
         Map<String, Class<?>> codeSubtypeMap = new LinkedHashMap<>();
-        codeSubtypeMap.put("AccountStatus", org.linuxforhealth.fhir.model.r5.type.code.AccountStatus.class);
-        codeSubtypeMap.put("ActionCardinalityBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionCardinalityBehavior.class);
-        codeSubtypeMap.put("ActionConditionKind", org.linuxforhealth.fhir.model.r5.type.code.ActionConditionKind.class);
-        codeSubtypeMap.put("ActionGroupingBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionGroupingBehavior.class);
-        codeSubtypeMap.put("ActionPrecheckBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionPrecheckBehavior.class);
-        codeSubtypeMap.put("ActionRelationshipType", org.linuxforhealth.fhir.model.r5.type.code.ActionRelationshipType.class);
-        codeSubtypeMap.put("ActionRequiredBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionRequiredBehavior.class);
-        codeSubtypeMap.put("ActionSelectionBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionSelectionBehavior.class);
-        codeSubtypeMap.put("ActivityDefinitionKind", org.linuxforhealth.fhir.model.r5.type.code.ActivityDefinitionKind.class);
-        codeSubtypeMap.put("ActivityParticipantType", org.linuxforhealth.fhir.model.r5.type.code.ActivityParticipantType.class);
-        codeSubtypeMap.put("AddressType", org.linuxforhealth.fhir.model.r5.type.code.AddressType.class);
-        codeSubtypeMap.put("AddressUse", org.linuxforhealth.fhir.model.r5.type.code.AddressUse.class);
-        codeSubtypeMap.put("AdministrativeGender", org.linuxforhealth.fhir.model.r5.type.code.AdministrativeGender.class);
-        codeSubtypeMap.put("AdverseEventActuality", org.linuxforhealth.fhir.model.r5.type.code.AdverseEventActuality.class);
+//        codeSubtypeMap.put("AccountStatus", org.linuxforhealth.fhir.model.r5.type.code.AccountStatus.class);
+//        codeSubtypeMap.put("ActionCardinalityBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionCardinalityBehavior.class);
+//        codeSubtypeMap.put("ActionConditionKind", org.linuxforhealth.fhir.model.r5.type.code.ActionConditionKind.class);
+//        codeSubtypeMap.put("ActionGroupingBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionGroupingBehavior.class);
+//        codeSubtypeMap.put("ActionPrecheckBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionPrecheckBehavior.class);
+//        codeSubtypeMap.put("ActionRelationshipType", org.linuxforhealth.fhir.model.r5.type.code.ActionRelationshipType.class);
+//        codeSubtypeMap.put("ActionRequiredBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionRequiredBehavior.class);
+//        codeSubtypeMap.put("ActionSelectionBehavior", org.linuxforhealth.fhir.model.r5.type.code.ActionSelectionBehavior.class);
+//        codeSubtypeMap.put("ActivityDefinitionKind", org.linuxforhealth.fhir.model.r5.type.code.ActivityDefinitionKind.class);
+//        codeSubtypeMap.put("ActivityParticipantType", org.linuxforhealth.fhir.model.r5.type.code.ActivityParticipantType.class);
+//        codeSubtypeMap.put("AddressType", org.linuxforhealth.fhir.model.r5.type.code.AddressType.class);
+//        codeSubtypeMap.put("AddressUse", org.linuxforhealth.fhir.model.r5.type.code.AddressUse.class);
+//        codeSubtypeMap.put("AdministrativeGender", org.linuxforhealth.fhir.model.r5.type.code.AdministrativeGender.class);
+//        codeSubtypeMap.put("AdverseEventActuality", org.linuxforhealth.fhir.model.r5.type.code.AdverseEventActuality.class);
         codeSubtypeMap.put("AggregationMode", org.linuxforhealth.fhir.model.r5.type.code.AggregationMode.class);
-        codeSubtypeMap.put("AllergyIntoleranceCategory", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceCategory.class);
-        codeSubtypeMap.put("AllergyIntoleranceCriticality", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceCriticality.class);
-        codeSubtypeMap.put("AllergyIntoleranceSeverity", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceSeverity.class);
-        codeSubtypeMap.put("AppointmentStatus", org.linuxforhealth.fhir.model.r5.type.code.AppointmentStatus.class);
-        codeSubtypeMap.put("AssertionDirectionType", org.linuxforhealth.fhir.model.r5.type.code.AssertionDirectionType.class);
-        codeSubtypeMap.put("AssertionOperatorType", org.linuxforhealth.fhir.model.r5.type.code.AssertionOperatorType.class);
-        codeSubtypeMap.put("AssertionResponseTypes", org.linuxforhealth.fhir.model.r5.type.code.AssertionResponseTypes.class);
-        codeSubtypeMap.put("AuditEventAction", org.linuxforhealth.fhir.model.r5.type.code.AuditEventAction.class);
+//        codeSubtypeMap.put("AllergyIntoleranceCategory", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceCategory.class);
+//        codeSubtypeMap.put("AllergyIntoleranceCriticality", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceCriticality.class);
+//        codeSubtypeMap.put("AllergyIntoleranceSeverity", org.linuxforhealth.fhir.model.r5.type.code.AllergyIntoleranceSeverity.class);
+//        codeSubtypeMap.put("AppointmentStatus", org.linuxforhealth.fhir.model.r5.type.code.AppointmentStatus.class);
+//        codeSubtypeMap.put("AssertionDirectionType", org.linuxforhealth.fhir.model.r5.type.code.AssertionDirectionType.class);
+//        codeSubtypeMap.put("AssertionOperatorType", org.linuxforhealth.fhir.model.r5.type.code.AssertionOperatorType.class);
+//        codeSubtypeMap.put("AssertionResponseTypes", org.linuxforhealth.fhir.model.r5.type.code.AssertionResponseTypes.class);
+//        codeSubtypeMap.put("AuditEventAction", org.linuxforhealth.fhir.model.r5.type.code.AuditEventAction.class);
         codeSubtypeMap.put("BindingStrength", org.linuxforhealth.fhir.model.r5.type.code.BindingStrength.class);
         codeSubtypeMap.put("BundleType", org.linuxforhealth.fhir.model.r5.type.code.BundleType.class);
         codeSubtypeMap.put("CapabilityStatementKind", org.linuxforhealth.fhir.model.r5.type.code.CapabilityStatementKind.class);
-        codeSubtypeMap.put("CarePlanIntent", org.linuxforhealth.fhir.model.r5.type.code.CarePlanIntent.class);
-        codeSubtypeMap.put("CarePlanStatus", org.linuxforhealth.fhir.model.r5.type.code.CarePlanStatus.class);
-        codeSubtypeMap.put("CareTeamStatus", org.linuxforhealth.fhir.model.r5.type.code.CareTeamStatus.class);
-        codeSubtypeMap.put("CharacteristicCombination", org.linuxforhealth.fhir.model.r5.type.code.CharacteristicCombination.class);
-        codeSubtypeMap.put("ChargeItemStatus", org.linuxforhealth.fhir.model.r5.type.code.ChargeItemStatus.class);
-        codeSubtypeMap.put("ClaimResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.ClaimResponseStatus.class);
-        codeSubtypeMap.put("ClaimStatus", org.linuxforhealth.fhir.model.r5.type.code.ClaimStatus.class);
-        codeSubtypeMap.put("ClinicalImpressionStatus", org.linuxforhealth.fhir.model.r5.type.code.ClinicalImpressionStatus.class);
-        codeSubtypeMap.put("ClinicalUseDefinitionType", org.linuxforhealth.fhir.model.r5.type.code.ClinicalUseDefinitionType.class);
+//        codeSubtypeMap.put("CarePlanIntent", org.linuxforhealth.fhir.model.r5.type.code.CarePlanIntent.class);
+//        codeSubtypeMap.put("CarePlanStatus", org.linuxforhealth.fhir.model.r5.type.code.CarePlanStatus.class);
+//        codeSubtypeMap.put("CareTeamStatus", org.linuxforhealth.fhir.model.r5.type.code.CareTeamStatus.class);
+//        codeSubtypeMap.put("CharacteristicCombination", org.linuxforhealth.fhir.model.r5.type.code.CharacteristicCombination.class);
+//        codeSubtypeMap.put("ChargeItemStatus", org.linuxforhealth.fhir.model.r5.type.code.ChargeItemStatus.class);
+//        codeSubtypeMap.put("ClaimResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.ClaimResponseStatus.class);
+//        codeSubtypeMap.put("ClaimStatus", org.linuxforhealth.fhir.model.r5.type.code.ClaimStatus.class);
+//        codeSubtypeMap.put("ClinicalImpressionStatus", org.linuxforhealth.fhir.model.r5.type.code.ClinicalImpressionStatus.class);
+//        codeSubtypeMap.put("ClinicalUseDefinitionType", org.linuxforhealth.fhir.model.r5.type.code.ClinicalUseDefinitionType.class);
         codeSubtypeMap.put("CodeSearchSupport", org.linuxforhealth.fhir.model.r5.type.code.CodeSearchSupport.class);
         codeSubtypeMap.put("CodeSystemContentMode", org.linuxforhealth.fhir.model.r5.type.code.CodeSystemContentMode.class);
         codeSubtypeMap.put("CodeSystemHierarchyMeaning", org.linuxforhealth.fhir.model.r5.type.code.CodeSystemHierarchyMeaning.class);
-        codeSubtypeMap.put("CommunicationPriority", org.linuxforhealth.fhir.model.r5.type.code.CommunicationPriority.class);
-        codeSubtypeMap.put("CommunicationRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.CommunicationRequestStatus.class);
-        codeSubtypeMap.put("CommunicationStatus", org.linuxforhealth.fhir.model.r5.type.code.CommunicationStatus.class);
-        codeSubtypeMap.put("CompartmentCode", org.linuxforhealth.fhir.model.r5.type.code.CompartmentCode.class);
-        codeSubtypeMap.put("CompartmentType", org.linuxforhealth.fhir.model.r5.type.code.CompartmentType.class);
-        codeSubtypeMap.put("CompositionStatus", org.linuxforhealth.fhir.model.r5.type.code.CompositionStatus.class);
+//        codeSubtypeMap.put("CommunicationPriority", org.linuxforhealth.fhir.model.r5.type.code.CommunicationPriority.class);
+//        codeSubtypeMap.put("CommunicationRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.CommunicationRequestStatus.class);
+//        codeSubtypeMap.put("CommunicationStatus", org.linuxforhealth.fhir.model.r5.type.code.CommunicationStatus.class);
+//        codeSubtypeMap.put("CompartmentCode", org.linuxforhealth.fhir.model.r5.type.code.CompartmentCode.class);
+//        codeSubtypeMap.put("CompartmentType", org.linuxforhealth.fhir.model.r5.type.code.CompartmentType.class);
+//        codeSubtypeMap.put("CompositionStatus", org.linuxforhealth.fhir.model.r5.type.code.CompositionStatus.class);
         codeSubtypeMap.put("ConceptMapGroupUnmappedMode", org.linuxforhealth.fhir.model.r5.type.code.ConceptMapGroupUnmappedMode.class);
         codeSubtypeMap.put("ConceptSubsumptionOutcome", org.linuxforhealth.fhir.model.r5.type.code.ConceptSubsumptionOutcome.class);
         codeSubtypeMap.put("ConditionalDeleteStatus", org.linuxforhealth.fhir.model.r5.type.code.ConditionalDeleteStatus.class);
         codeSubtypeMap.put("ConditionalReadStatus", org.linuxforhealth.fhir.model.r5.type.code.ConditionalReadStatus.class);
-        codeSubtypeMap.put("ConsentDataMeaning", org.linuxforhealth.fhir.model.r5.type.code.ConsentDataMeaning.class);
-        codeSubtypeMap.put("ConsentProvisionType", org.linuxforhealth.fhir.model.r5.type.code.ConsentProvisionType.class);
-        codeSubtypeMap.put("ConsentState", org.linuxforhealth.fhir.model.r5.type.code.ConsentState.class);
+//        codeSubtypeMap.put("ConsentDataMeaning", org.linuxforhealth.fhir.model.r5.type.code.ConsentDataMeaning.class);
+//        codeSubtypeMap.put("ConsentProvisionType", org.linuxforhealth.fhir.model.r5.type.code.ConsentProvisionType.class);
+//        codeSubtypeMap.put("ConsentState", org.linuxforhealth.fhir.model.r5.type.code.ConsentState.class);
         codeSubtypeMap.put("ConstraintSeverity", org.linuxforhealth.fhir.model.r5.type.code.ConstraintSeverity.class);
         codeSubtypeMap.put("ContactPointSystem", org.linuxforhealth.fhir.model.r5.type.code.ContactPointSystem.class);
         codeSubtypeMap.put("ContactPointUse", org.linuxforhealth.fhir.model.r5.type.code.ContactPointUse.class);
-        codeSubtypeMap.put("ContractPublicationStatus", org.linuxforhealth.fhir.model.r5.type.code.ContractPublicationStatus.class);
-        codeSubtypeMap.put("ContractStatus", org.linuxforhealth.fhir.model.r5.type.code.ContractStatus.class);
-        codeSubtypeMap.put("ContributorType", org.linuxforhealth.fhir.model.r5.type.code.ContributorType.class);
-        codeSubtypeMap.put("CoverageStatus", org.linuxforhealth.fhir.model.r5.type.code.CoverageStatus.class);
-        codeSubtypeMap.put("CriteriaNotExistsBehavior", org.linuxforhealth.fhir.model.r5.type.code.CriteriaNotExistsBehavior.class);
-        codeSubtypeMap.put("DataAbsentReason", org.linuxforhealth.fhir.model.r5.type.code.DataAbsentReason.class);
-        codeSubtypeMap.put("DayOfWeek", org.linuxforhealth.fhir.model.r5.type.code.DayOfWeek.class);
-        codeSubtypeMap.put("DaysOfWeek", org.linuxforhealth.fhir.model.r5.type.code.DaysOfWeek.class);
-        codeSubtypeMap.put("DetectedIssueSeverity", org.linuxforhealth.fhir.model.r5.type.code.DetectedIssueSeverity.class);
-        codeSubtypeMap.put("DetectedIssueStatus", org.linuxforhealth.fhir.model.r5.type.code.DetectedIssueStatus.class);
-        codeSubtypeMap.put("DeviceMetricCalibrationState", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCalibrationState.class);
-        codeSubtypeMap.put("DeviceMetricCalibrationType", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCalibrationType.class);
-        codeSubtypeMap.put("DeviceMetricCategory", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCategory.class);
-        codeSubtypeMap.put("DeviceMetricOperationalStatus", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricOperationalStatus.class);
-        codeSubtypeMap.put("DeviceNameType", org.linuxforhealth.fhir.model.r5.type.code.DeviceNameType.class);
-        codeSubtypeMap.put("DeviceRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.DeviceRequestStatus.class);
-        codeSubtypeMap.put("DiagnosticReportStatus", org.linuxforhealth.fhir.model.r5.type.code.DiagnosticReportStatus.class);
+//        codeSubtypeMap.put("ContractPublicationStatus", org.linuxforhealth.fhir.model.r5.type.code.ContractPublicationStatus.class);
+//        codeSubtypeMap.put("ContractStatus", org.linuxforhealth.fhir.model.r5.type.code.ContractStatus.class);
+//        codeSubtypeMap.put("ContributorType", org.linuxforhealth.fhir.model.r5.type.code.ContributorType.class);
+//        codeSubtypeMap.put("CoverageStatus", org.linuxforhealth.fhir.model.r5.type.code.CoverageStatus.class);
+//        codeSubtypeMap.put("CriteriaNotExistsBehavior", org.linuxforhealth.fhir.model.r5.type.code.CriteriaNotExistsBehavior.class);
+//        codeSubtypeMap.put("DataAbsentReason", org.linuxforhealth.fhir.model.r5.type.code.DataAbsentReason.class);
+//        codeSubtypeMap.put("DayOfWeek", org.linuxforhealth.fhir.model.r5.type.code.DayOfWeek.class);
+//        codeSubtypeMap.put("DaysOfWeek", org.linuxforhealth.fhir.model.r5.type.code.DaysOfWeek.class);
+//        codeSubtypeMap.put("DetectedIssueSeverity", org.linuxforhealth.fhir.model.r5.type.code.DetectedIssueSeverity.class);
+//        codeSubtypeMap.put("DetectedIssueStatus", org.linuxforhealth.fhir.model.r5.type.code.DetectedIssueStatus.class);
+//        codeSubtypeMap.put("DeviceMetricCalibrationState", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCalibrationState.class);
+//        codeSubtypeMap.put("DeviceMetricCalibrationType", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCalibrationType.class);
+//        codeSubtypeMap.put("DeviceMetricCategory", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricCategory.class);
+//        codeSubtypeMap.put("DeviceMetricOperationalStatus", org.linuxforhealth.fhir.model.r5.type.code.DeviceMetricOperationalStatus.class);
+//        codeSubtypeMap.put("DeviceNameType", org.linuxforhealth.fhir.model.r5.type.code.DeviceNameType.class);
+//        codeSubtypeMap.put("DeviceRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.DeviceRequestStatus.class);
+//        codeSubtypeMap.put("DiagnosticReportStatus", org.linuxforhealth.fhir.model.r5.type.code.DiagnosticReportStatus.class);
         codeSubtypeMap.put("DiscriminatorType", org.linuxforhealth.fhir.model.r5.type.code.DiscriminatorType.class);
         codeSubtypeMap.put("DocumentMode", org.linuxforhealth.fhir.model.r5.type.code.DocumentMode.class);
-        codeSubtypeMap.put("DocumentReferenceStatus", org.linuxforhealth.fhir.model.r5.type.code.DocumentReferenceStatus.class);
-        codeSubtypeMap.put("EligibilityRequestPurpose", org.linuxforhealth.fhir.model.r5.type.code.EligibilityRequestPurpose.class);
-        codeSubtypeMap.put("EligibilityRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.EligibilityRequestStatus.class);
-        codeSubtypeMap.put("EligibilityResponsePurpose", org.linuxforhealth.fhir.model.r5.type.code.EligibilityResponsePurpose.class);
-        codeSubtypeMap.put("EligibilityResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.EligibilityResponseStatus.class);
-        codeSubtypeMap.put("EnableWhenBehavior", org.linuxforhealth.fhir.model.r5.type.code.EnableWhenBehavior.class);
-        codeSubtypeMap.put("EncounterLocationStatus", org.linuxforhealth.fhir.model.r5.type.code.EncounterLocationStatus.class);
-        codeSubtypeMap.put("EncounterStatus", org.linuxforhealth.fhir.model.r5.type.code.EncounterStatus.class);
-        codeSubtypeMap.put("EndpointStatus", org.linuxforhealth.fhir.model.r5.type.code.EndpointStatus.class);
-        codeSubtypeMap.put("EnrollmentRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.EnrollmentRequestStatus.class);
-        codeSubtypeMap.put("EnrollmentResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.EnrollmentResponseStatus.class);
-        codeSubtypeMap.put("EpisodeOfCareStatus", org.linuxforhealth.fhir.model.r5.type.code.EpisodeOfCareStatus.class);
+//        codeSubtypeMap.put("DocumentReferenceStatus", org.linuxforhealth.fhir.model.r5.type.code.DocumentReferenceStatus.class);
+//        codeSubtypeMap.put("EligibilityRequestPurpose", org.linuxforhealth.fhir.model.r5.type.code.EligibilityRequestPurpose.class);
+//        codeSubtypeMap.put("EligibilityRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.EligibilityRequestStatus.class);
+//        codeSubtypeMap.put("EligibilityResponsePurpose", org.linuxforhealth.fhir.model.r5.type.code.EligibilityResponsePurpose.class);
+//        codeSubtypeMap.put("EligibilityResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.EligibilityResponseStatus.class);
+//        codeSubtypeMap.put("EnableWhenBehavior", org.linuxforhealth.fhir.model.r5.type.code.EnableWhenBehavior.class);
+//        codeSubtypeMap.put("EncounterLocationStatus", org.linuxforhealth.fhir.model.r5.type.code.EncounterLocationStatus.class);
+//        codeSubtypeMap.put("EncounterStatus", org.linuxforhealth.fhir.model.r5.type.code.EncounterStatus.class);
+//        codeSubtypeMap.put("EndpointStatus", org.linuxforhealth.fhir.model.r5.type.code.EndpointStatus.class);
+//        codeSubtypeMap.put("EnrollmentRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.EnrollmentRequestStatus.class);
+//        codeSubtypeMap.put("EnrollmentResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.EnrollmentResponseStatus.class);
+//        codeSubtypeMap.put("EpisodeOfCareStatus", org.linuxforhealth.fhir.model.r5.type.code.EpisodeOfCareStatus.class);
         codeSubtypeMap.put("EventCapabilityMode", org.linuxforhealth.fhir.model.r5.type.code.EventCapabilityMode.class);
-        codeSubtypeMap.put("EventTiming", org.linuxforhealth.fhir.model.r5.type.code.EventTiming.class);
-        codeSubtypeMap.put("EvidenceVariableHandling", org.linuxforhealth.fhir.model.r5.type.code.EvidenceVariableHandling.class);
-        codeSubtypeMap.put("ExampleScenarioActorType", org.linuxforhealth.fhir.model.r5.type.code.ExampleScenarioActorType.class);
-        codeSubtypeMap.put("ExplanationOfBenefitStatus", org.linuxforhealth.fhir.model.r5.type.code.ExplanationOfBenefitStatus.class);
+//        codeSubtypeMap.put("EventTiming", org.linuxforhealth.fhir.model.r5.type.code.EventTiming.class);
+//        codeSubtypeMap.put("EvidenceVariableHandling", org.linuxforhealth.fhir.model.r5.type.code.EvidenceVariableHandling.class);
+//        codeSubtypeMap.put("ExampleScenarioActorType", org.linuxforhealth.fhir.model.r5.type.code.ExampleScenarioActorType.class);
+//        codeSubtypeMap.put("ExplanationOfBenefitStatus", org.linuxforhealth.fhir.model.r5.type.code.ExplanationOfBenefitStatus.class);
         codeSubtypeMap.put("ExtensionContextType", org.linuxforhealth.fhir.model.r5.type.code.ExtensionContextType.class);
-        codeSubtypeMap.put("FamilyHistoryStatus", org.linuxforhealth.fhir.model.r5.type.code.FamilyHistoryStatus.class);
+//        codeSubtypeMap.put("FamilyHistoryStatus", org.linuxforhealth.fhir.model.r5.type.code.FamilyHistoryStatus.class);
         codeSubtypeMap.put("FHIRAllTypes", org.linuxforhealth.fhir.model.r5.type.code.FHIRAllTypes.class);
-        codeSubtypeMap.put("FHIRDeviceStatus", org.linuxforhealth.fhir.model.r5.type.code.FHIRDeviceStatus.class);
-        codeSubtypeMap.put("FHIRSubstanceStatus", org.linuxforhealth.fhir.model.r5.type.code.FHIRSubstanceStatus.class);
+//        codeSubtypeMap.put("FHIRDeviceStatus", org.linuxforhealth.fhir.model.r5.type.code.FHIRDeviceStatus.class);
+//        codeSubtypeMap.put("FHIRSubstanceStatus", org.linuxforhealth.fhir.model.r5.type.code.FHIRSubstanceStatus.class);
         codeSubtypeMap.put("FHIRVersion", org.linuxforhealth.fhir.model.r5.type.code.FHIRVersion.class);
         codeSubtypeMap.put("FilterOperator", org.linuxforhealth.fhir.model.r5.type.code.FilterOperator.class);
-        codeSubtypeMap.put("FlagStatus", org.linuxforhealth.fhir.model.r5.type.code.FlagStatus.class);
-        codeSubtypeMap.put("GoalLifecycleStatus", org.linuxforhealth.fhir.model.r5.type.code.GoalLifecycleStatus.class);
-        codeSubtypeMap.put("GraphCompartmentRule", org.linuxforhealth.fhir.model.r5.type.code.GraphCompartmentRule.class);
-        codeSubtypeMap.put("GraphCompartmentUse", org.linuxforhealth.fhir.model.r5.type.code.GraphCompartmentUse.class);
-        codeSubtypeMap.put("GroupType", org.linuxforhealth.fhir.model.r5.type.code.GroupType.class);
-        codeSubtypeMap.put("GuidanceResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.GuidanceResponseStatus.class);
-        codeSubtypeMap.put("GuidePageGeneration", org.linuxforhealth.fhir.model.r5.type.code.GuidePageGeneration.class);
+//        codeSubtypeMap.put("FlagStatus", org.linuxforhealth.fhir.model.r5.type.code.FlagStatus.class);
+//        codeSubtypeMap.put("GoalLifecycleStatus", org.linuxforhealth.fhir.model.r5.type.code.GoalLifecycleStatus.class);
+//        codeSubtypeMap.put("GraphCompartmentRule", org.linuxforhealth.fhir.model.r5.type.code.GraphCompartmentRule.class);
+//        codeSubtypeMap.put("GraphCompartmentUse", org.linuxforhealth.fhir.model.r5.type.code.GraphCompartmentUse.class);
+//        codeSubtypeMap.put("GroupType", org.linuxforhealth.fhir.model.r5.type.code.GroupType.class);
+//        codeSubtypeMap.put("GuidanceResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.GuidanceResponseStatus.class);
+//        codeSubtypeMap.put("GuidePageGeneration", org.linuxforhealth.fhir.model.r5.type.code.GuidePageGeneration.class);
         codeSubtypeMap.put("HTTPVerb", org.linuxforhealth.fhir.model.r5.type.code.HTTPVerb.class);
         codeSubtypeMap.put("IdentifierUse", org.linuxforhealth.fhir.model.r5.type.code.IdentifierUse.class);
-        codeSubtypeMap.put("IdentityAssuranceLevel", org.linuxforhealth.fhir.model.r5.type.code.IdentityAssuranceLevel.class);
-        codeSubtypeMap.put("ImagingStudyStatus", org.linuxforhealth.fhir.model.r5.type.code.ImagingStudyStatus.class);
-        codeSubtypeMap.put("ImmunizationEvaluationStatus", org.linuxforhealth.fhir.model.r5.type.code.ImmunizationEvaluationStatus.class);
-        codeSubtypeMap.put("ImmunizationStatus", org.linuxforhealth.fhir.model.r5.type.code.ImmunizationStatus.class);
-        codeSubtypeMap.put("InvoiceStatus", org.linuxforhealth.fhir.model.r5.type.code.InvoiceStatus.class);
+//        codeSubtypeMap.put("IdentityAssuranceLevel", org.linuxforhealth.fhir.model.r5.type.code.IdentityAssuranceLevel.class);
+//        codeSubtypeMap.put("ImagingStudyStatus", org.linuxforhealth.fhir.model.r5.type.code.ImagingStudyStatus.class);
+//        codeSubtypeMap.put("ImmunizationEvaluationStatus", org.linuxforhealth.fhir.model.r5.type.code.ImmunizationEvaluationStatus.class);
+//        codeSubtypeMap.put("ImmunizationStatus", org.linuxforhealth.fhir.model.r5.type.code.ImmunizationStatus.class);
+//        codeSubtypeMap.put("InvoiceStatus", org.linuxforhealth.fhir.model.r5.type.code.InvoiceStatus.class);
         codeSubtypeMap.put("IssueSeverity", org.linuxforhealth.fhir.model.r5.type.code.IssueSeverity.class);
         codeSubtypeMap.put("IssueType", org.linuxforhealth.fhir.model.r5.type.code.IssueType.class);
-        codeSubtypeMap.put("LinkageType", org.linuxforhealth.fhir.model.r5.type.code.LinkageType.class);
-        codeSubtypeMap.put("LinkType", org.linuxforhealth.fhir.model.r5.type.code.LinkType.class);
-        codeSubtypeMap.put("ListMode", org.linuxforhealth.fhir.model.r5.type.code.ListMode.class);
-        codeSubtypeMap.put("ListStatus", org.linuxforhealth.fhir.model.r5.type.code.ListStatus.class);
-        codeSubtypeMap.put("LocationMode", org.linuxforhealth.fhir.model.r5.type.code.LocationMode.class);
-        codeSubtypeMap.put("LocationStatus", org.linuxforhealth.fhir.model.r5.type.code.LocationStatus.class);
-        codeSubtypeMap.put("MeasureReportStatus", org.linuxforhealth.fhir.model.r5.type.code.MeasureReportStatus.class);
-        codeSubtypeMap.put("MeasureReportType", org.linuxforhealth.fhir.model.r5.type.code.MeasureReportType.class);
-        codeSubtypeMap.put("MedicationAdministrationStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationAdministrationStatus.class);
-        codeSubtypeMap.put("MedicationDispenseStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationDispenseStatus.class);
-        codeSubtypeMap.put("MedicationKnowledgeStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationKnowledgeStatus.class);
-        codeSubtypeMap.put("MedicationRequestIntent", org.linuxforhealth.fhir.model.r5.type.code.MedicationRequestIntent.class);
-        codeSubtypeMap.put("MedicationRequestPriority", org.linuxforhealth.fhir.model.r5.type.code.MedicationRequestPriority.class);
-        codeSubtypeMap.put("MedicationRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationRequestStatus.class);
-        codeSubtypeMap.put("MedicationStatementStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationStatementStatus.class);
-        codeSubtypeMap.put("MedicationStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationStatus.class);
-        codeSubtypeMap.put("MessageHeaderResponseRequest", org.linuxforhealth.fhir.model.r5.type.code.MessageHeaderResponseRequest.class);
-        codeSubtypeMap.put("MessageSignificanceCategory", org.linuxforhealth.fhir.model.r5.type.code.MessageSignificanceCategory.class);
-        codeSubtypeMap.put("MethodCode", org.linuxforhealth.fhir.model.r5.type.code.MethodCode.class);
-        codeSubtypeMap.put("NameUse", org.linuxforhealth.fhir.model.r5.type.code.NameUse.class);
-        codeSubtypeMap.put("NamingSystemIdentifierType", org.linuxforhealth.fhir.model.r5.type.code.NamingSystemIdentifierType.class);
-        codeSubtypeMap.put("NamingSystemType", org.linuxforhealth.fhir.model.r5.type.code.NamingSystemType.class);
+//        codeSubtypeMap.put("LinkageType", org.linuxforhealth.fhir.model.r5.type.code.LinkageType.class);
+//        codeSubtypeMap.put("LinkType", org.linuxforhealth.fhir.model.r5.type.code.LinkType.class);
+//        codeSubtypeMap.put("ListMode", org.linuxforhealth.fhir.model.r5.type.code.ListMode.class);
+//        codeSubtypeMap.put("ListStatus", org.linuxforhealth.fhir.model.r5.type.code.ListStatus.class);
+//        codeSubtypeMap.put("LocationMode", org.linuxforhealth.fhir.model.r5.type.code.LocationMode.class);
+//        codeSubtypeMap.put("LocationStatus", org.linuxforhealth.fhir.model.r5.type.code.LocationStatus.class);
+//        codeSubtypeMap.put("MeasureReportStatus", org.linuxforhealth.fhir.model.r5.type.code.MeasureReportStatus.class);
+//        codeSubtypeMap.put("MeasureReportType", org.linuxforhealth.fhir.model.r5.type.code.MeasureReportType.class);
+//        codeSubtypeMap.put("MedicationAdministrationStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationAdministrationStatus.class);
+//        codeSubtypeMap.put("MedicationDispenseStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationDispenseStatus.class);
+//        codeSubtypeMap.put("MedicationKnowledgeStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationKnowledgeStatus.class);
+//        codeSubtypeMap.put("MedicationRequestIntent", org.linuxforhealth.fhir.model.r5.type.code.MedicationRequestIntent.class);
+//        codeSubtypeMap.put("MedicationRequestPriority", org.linuxforhealth.fhir.model.r5.type.code.MedicationRequestPriority.class);
+//        codeSubtypeMap.put("MedicationRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationRequestStatus.class);
+//        codeSubtypeMap.put("MedicationStatementStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationStatementStatus.class);
+//        codeSubtypeMap.put("MedicationStatus", org.linuxforhealth.fhir.model.r5.type.code.MedicationStatus.class);
+//        codeSubtypeMap.put("MessageHeaderResponseRequest", org.linuxforhealth.fhir.model.r5.type.code.MessageHeaderResponseRequest.class);
+//        codeSubtypeMap.put("MessageSignificanceCategory", org.linuxforhealth.fhir.model.r5.type.code.MessageSignificanceCategory.class);
+//        codeSubtypeMap.put("MethodCode", org.linuxforhealth.fhir.model.r5.type.code.MethodCode.class);
+//        codeSubtypeMap.put("NameUse", org.linuxforhealth.fhir.model.r5.type.code.NameUse.class);
+//        codeSubtypeMap.put("NamingSystemIdentifierType", org.linuxforhealth.fhir.model.r5.type.code.NamingSystemIdentifierType.class);
+//        codeSubtypeMap.put("NamingSystemType", org.linuxforhealth.fhir.model.r5.type.code.NamingSystemType.class);
         codeSubtypeMap.put("NarrativeStatus", org.linuxforhealth.fhir.model.r5.type.code.NarrativeStatus.class);
-        codeSubtypeMap.put("NoteType", org.linuxforhealth.fhir.model.r5.type.code.NoteType.class);
-        codeSubtypeMap.put("NutritionOrderIntent", org.linuxforhealth.fhir.model.r5.type.code.NutritionOrderIntent.class);
-        codeSubtypeMap.put("NutritionOrderStatus", org.linuxforhealth.fhir.model.r5.type.code.NutritionOrderStatus.class);
-        codeSubtypeMap.put("NutritionProductStatus", org.linuxforhealth.fhir.model.r5.type.code.NutritionProductStatus.class);
-        codeSubtypeMap.put("ObservationDataType", org.linuxforhealth.fhir.model.r5.type.code.ObservationDataType.class);
-        codeSubtypeMap.put("ObservationRangeCategory", org.linuxforhealth.fhir.model.r5.type.code.ObservationRangeCategory.class);
-        codeSubtypeMap.put("ObservationStatus", org.linuxforhealth.fhir.model.r5.type.code.ObservationStatus.class);
+//        codeSubtypeMap.put("NoteType", org.linuxforhealth.fhir.model.r5.type.code.NoteType.class);
+//        codeSubtypeMap.put("NutritionOrderIntent", org.linuxforhealth.fhir.model.r5.type.code.NutritionOrderIntent.class);
+//        codeSubtypeMap.put("NutritionOrderStatus", org.linuxforhealth.fhir.model.r5.type.code.NutritionOrderStatus.class);
+//        codeSubtypeMap.put("NutritionProductStatus", org.linuxforhealth.fhir.model.r5.type.code.NutritionProductStatus.class);
+//        codeSubtypeMap.put("ObservationDataType", org.linuxforhealth.fhir.model.r5.type.code.ObservationDataType.class);
+//        codeSubtypeMap.put("ObservationRangeCategory", org.linuxforhealth.fhir.model.r5.type.code.ObservationRangeCategory.class);
+//        codeSubtypeMap.put("ObservationStatus", org.linuxforhealth.fhir.model.r5.type.code.ObservationStatus.class);
         codeSubtypeMap.put("OperationKind", org.linuxforhealth.fhir.model.r5.type.code.OperationKind.class);
         codeSubtypeMap.put("OperationParameterUse", org.linuxforhealth.fhir.model.r5.type.code.OperationParameterUse.class);
-        codeSubtypeMap.put("OrientationType", org.linuxforhealth.fhir.model.r5.type.code.OrientationType.class);
-        codeSubtypeMap.put("ParameterUse", org.linuxforhealth.fhir.model.r5.type.code.ParameterUse.class);
-        codeSubtypeMap.put("ParticipantStatus", org.linuxforhealth.fhir.model.r5.type.code.ParticipantStatus.class);
-        codeSubtypeMap.put("ParticipationStatus", org.linuxforhealth.fhir.model.r5.type.code.ParticipationStatus.class);
-        codeSubtypeMap.put("PaymentNoticeStatus", org.linuxforhealth.fhir.model.r5.type.code.PaymentNoticeStatus.class);
-        codeSubtypeMap.put("PaymentReconciliationStatus", org.linuxforhealth.fhir.model.r5.type.code.PaymentReconciliationStatus.class);
-        codeSubtypeMap.put("ProcedureStatus", org.linuxforhealth.fhir.model.r5.type.code.ProcedureStatus.class);
+//        codeSubtypeMap.put("OrientationType", org.linuxforhealth.fhir.model.r5.type.code.OrientationType.class);
+//        codeSubtypeMap.put("ParameterUse", org.linuxforhealth.fhir.model.r5.type.code.ParameterUse.class);
+//        codeSubtypeMap.put("ParticipantStatus", org.linuxforhealth.fhir.model.r5.type.code.ParticipantStatus.class);
+//        codeSubtypeMap.put("ParticipationStatus", org.linuxforhealth.fhir.model.r5.type.code.ParticipationStatus.class);
+//        codeSubtypeMap.put("PaymentNoticeStatus", org.linuxforhealth.fhir.model.r5.type.code.PaymentNoticeStatus.class);
+//        codeSubtypeMap.put("PaymentReconciliationStatus", org.linuxforhealth.fhir.model.r5.type.code.PaymentReconciliationStatus.class);
+//        codeSubtypeMap.put("ProcedureStatus", org.linuxforhealth.fhir.model.r5.type.code.ProcedureStatus.class);
         codeSubtypeMap.put("PropertyRepresentation", org.linuxforhealth.fhir.model.r5.type.code.PropertyRepresentation.class);
         codeSubtypeMap.put("PropertyType", org.linuxforhealth.fhir.model.r5.type.code.PropertyType.class);
-        codeSubtypeMap.put("ProvenanceEntityRole", org.linuxforhealth.fhir.model.r5.type.code.ProvenanceEntityRole.class);
+//        codeSubtypeMap.put("ProvenanceEntityRole", org.linuxforhealth.fhir.model.r5.type.code.ProvenanceEntityRole.class);
         codeSubtypeMap.put("PublicationStatus", org.linuxforhealth.fhir.model.r5.type.code.PublicationStatus.class);
         codeSubtypeMap.put("QuantityComparator", org.linuxforhealth.fhir.model.r5.type.code.QuantityComparator.class);
-        codeSubtypeMap.put("QuestionnaireItemOperator", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireItemOperator.class);
-        codeSubtypeMap.put("QuestionnaireItemType", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireItemType.class);
-        codeSubtypeMap.put("QuestionnaireResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireResponseStatus.class);
+//        codeSubtypeMap.put("QuestionnaireItemOperator", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireItemOperator.class);
+//        codeSubtypeMap.put("QuestionnaireItemType", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireItemType.class);
+//        codeSubtypeMap.put("QuestionnaireResponseStatus", org.linuxforhealth.fhir.model.r5.type.code.QuestionnaireResponseStatus.class);
         codeSubtypeMap.put("ReferenceHandlingPolicy", org.linuxforhealth.fhir.model.r5.type.code.ReferenceHandlingPolicy.class);
         codeSubtypeMap.put("ReferenceVersionRules", org.linuxforhealth.fhir.model.r5.type.code.ReferenceVersionRules.class);
-        codeSubtypeMap.put("ReferredDocumentStatus", org.linuxforhealth.fhir.model.r5.type.code.ReferredDocumentStatus.class);
+//        codeSubtypeMap.put("ReferredDocumentStatus", org.linuxforhealth.fhir.model.r5.type.code.ReferredDocumentStatus.class);
         codeSubtypeMap.put("RelatedArtifactType", org.linuxforhealth.fhir.model.r5.type.code.RelatedArtifactType.class);
-        codeSubtypeMap.put("RemittanceOutcome", org.linuxforhealth.fhir.model.r5.type.code.RemittanceOutcome.class);
-        codeSubtypeMap.put("ReportRelationshipType", org.linuxforhealth.fhir.model.r5.type.code.ReportRelationshipType.class);
-        codeSubtypeMap.put("RequestIntent", org.linuxforhealth.fhir.model.r5.type.code.RequestIntent.class);
-        codeSubtypeMap.put("RequestPriority", org.linuxforhealth.fhir.model.r5.type.code.RequestPriority.class);
-        codeSubtypeMap.put("RequestStatus", org.linuxforhealth.fhir.model.r5.type.code.RequestStatus.class);
+//        codeSubtypeMap.put("RemittanceOutcome", org.linuxforhealth.fhir.model.r5.type.code.RemittanceOutcome.class);
+//        codeSubtypeMap.put("ReportRelationshipType", org.linuxforhealth.fhir.model.r5.type.code.ReportRelationshipType.class);
+//        codeSubtypeMap.put("RequestIntent", org.linuxforhealth.fhir.model.r5.type.code.RequestIntent.class);
+//        codeSubtypeMap.put("RequestPriority", org.linuxforhealth.fhir.model.r5.type.code.RequestPriority.class);
+//        codeSubtypeMap.put("RequestStatus", org.linuxforhealth.fhir.model.r5.type.code.RequestStatus.class);
         codeSubtypeMap.put("ResourceTypeCode", org.linuxforhealth.fhir.model.r5.type.code.ResourceTypeCode.class);
         codeSubtypeMap.put("ResourceVersionPolicy", org.linuxforhealth.fhir.model.r5.type.code.ResourceVersionPolicy.class);
-        codeSubtypeMap.put("ResponseType", org.linuxforhealth.fhir.model.r5.type.code.ResponseType.class);
+//        codeSubtypeMap.put("ResponseType", org.linuxforhealth.fhir.model.r5.type.code.ResponseType.class);
         codeSubtypeMap.put("RestfulCapabilityMode", org.linuxforhealth.fhir.model.r5.type.code.RestfulCapabilityMode.class);
-        codeSubtypeMap.put("RiskAssessmentStatus", org.linuxforhealth.fhir.model.r5.type.code.RiskAssessmentStatus.class);
-        codeSubtypeMap.put("SearchComparator", org.linuxforhealth.fhir.model.r5.type.code.SearchComparator.class);
+//        codeSubtypeMap.put("RiskAssessmentStatus", org.linuxforhealth.fhir.model.r5.type.code.RiskAssessmentStatus.class);
+//        codeSubtypeMap.put("SearchComparator", org.linuxforhealth.fhir.model.r5.type.code.SearchComparator.class);
         codeSubtypeMap.put("SearchEntryMode", org.linuxforhealth.fhir.model.r5.type.code.SearchEntryMode.class);
-        codeSubtypeMap.put("SearchModifierCode", org.linuxforhealth.fhir.model.r5.type.code.SearchModifierCode.class);
+//        codeSubtypeMap.put("SearchModifierCode", org.linuxforhealth.fhir.model.r5.type.code.SearchModifierCode.class);
         codeSubtypeMap.put("SearchParamType", org.linuxforhealth.fhir.model.r5.type.code.SearchParamType.class);
-        codeSubtypeMap.put("SectionMode", org.linuxforhealth.fhir.model.r5.type.code.SectionMode.class);
-        codeSubtypeMap.put("SequenceType", org.linuxforhealth.fhir.model.r5.type.code.SequenceType.class);
-        codeSubtypeMap.put("ServiceRequestIntent", org.linuxforhealth.fhir.model.r5.type.code.ServiceRequestIntent.class);
-        codeSubtypeMap.put("ServiceRequestPriority", org.linuxforhealth.fhir.model.r5.type.code.ServiceRequestPriority.class);
-        codeSubtypeMap.put("ServiceRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.ServiceRequestStatus.class);
+//        codeSubtypeMap.put("SectionMode", org.linuxforhealth.fhir.model.r5.type.code.SectionMode.class);
+//        codeSubtypeMap.put("SequenceType", org.linuxforhealth.fhir.model.r5.type.code.SequenceType.class);
+//        codeSubtypeMap.put("ServiceRequestIntent", org.linuxforhealth.fhir.model.r5.type.code.ServiceRequestIntent.class);
+//        codeSubtypeMap.put("ServiceRequestPriority", org.linuxforhealth.fhir.model.r5.type.code.ServiceRequestPriority.class);
+//        codeSubtypeMap.put("ServiceRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.ServiceRequestStatus.class);
         codeSubtypeMap.put("SlicingRules", org.linuxforhealth.fhir.model.r5.type.code.SlicingRules.class);
-        codeSubtypeMap.put("SlotStatus", org.linuxforhealth.fhir.model.r5.type.code.SlotStatus.class);
-        codeSubtypeMap.put("SortDirection", org.linuxforhealth.fhir.model.r5.type.code.SortDirection.class);
-        codeSubtypeMap.put("SPDXLicense", org.linuxforhealth.fhir.model.r5.type.code.SPDXLicense.class);
-        codeSubtypeMap.put("SpecimenContainedPreference", org.linuxforhealth.fhir.model.r5.type.code.SpecimenContainedPreference.class);
-        codeSubtypeMap.put("SpecimenStatus", org.linuxforhealth.fhir.model.r5.type.code.SpecimenStatus.class);
+//        codeSubtypeMap.put("SlotStatus", org.linuxforhealth.fhir.model.r5.type.code.SlotStatus.class);
+//        codeSubtypeMap.put("SortDirection", org.linuxforhealth.fhir.model.r5.type.code.SortDirection.class);
+//        codeSubtypeMap.put("SPDXLicense", org.linuxforhealth.fhir.model.r5.type.code.SPDXLicense.class);
+//        codeSubtypeMap.put("SpecimenContainedPreference", org.linuxforhealth.fhir.model.r5.type.code.SpecimenContainedPreference.class);
+//        codeSubtypeMap.put("SpecimenStatus", org.linuxforhealth.fhir.model.r5.type.code.SpecimenStatus.class);
         codeSubtypeMap.put("StandardsStatus", org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus.class);
-        codeSubtypeMap.put("Status", org.linuxforhealth.fhir.model.r5.type.code.Status.class);
-        codeSubtypeMap.put("StrandType", org.linuxforhealth.fhir.model.r5.type.code.StrandType.class);
+//        codeSubtypeMap.put("Status", org.linuxforhealth.fhir.model.r5.type.code.Status.class);
+//        codeSubtypeMap.put("StrandType", org.linuxforhealth.fhir.model.r5.type.code.StrandType.class);
         codeSubtypeMap.put("StructureDefinitionKind", org.linuxforhealth.fhir.model.r5.type.code.StructureDefinitionKind.class);
-        codeSubtypeMap.put("StructureMapGroupTypeMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapGroupTypeMode.class);
-        codeSubtypeMap.put("StructureMapInputMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapInputMode.class);
-        codeSubtypeMap.put("StructureMapModelMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapModelMode.class);
-        codeSubtypeMap.put("StructureMapSourceListMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapSourceListMode.class);
-        codeSubtypeMap.put("StructureMapTargetListMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapTargetListMode.class);
-        codeSubtypeMap.put("StructureMapTransform", org.linuxforhealth.fhir.model.r5.type.code.StructureMapTransform.class);
-        codeSubtypeMap.put("SubscriptionNotificationType", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionNotificationType.class);
-        codeSubtypeMap.put("SubscriptionStatusCode", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionStatusCode.class);
-        codeSubtypeMap.put("SupplyDeliveryStatus", org.linuxforhealth.fhir.model.r5.type.code.SupplyDeliveryStatus.class);
-        codeSubtypeMap.put("SupplyRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.SupplyRequestStatus.class);
+//        codeSubtypeMap.put("StructureMapGroupTypeMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapGroupTypeMode.class);
+//        codeSubtypeMap.put("StructureMapInputMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapInputMode.class);
+//        codeSubtypeMap.put("StructureMapModelMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapModelMode.class);
+//        codeSubtypeMap.put("StructureMapSourceListMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapSourceListMode.class);
+//        codeSubtypeMap.put("StructureMapTargetListMode", org.linuxforhealth.fhir.model.r5.type.code.StructureMapTargetListMode.class);
+//        codeSubtypeMap.put("StructureMapTransform", org.linuxforhealth.fhir.model.r5.type.code.StructureMapTransform.class);
+//        codeSubtypeMap.put("SubscriptionNotificationType", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionNotificationType.class);
+//        codeSubtypeMap.put("SubscriptionStatusCode", org.linuxforhealth.fhir.model.r5.type.code.SubscriptionStatusCode.class);
+//        codeSubtypeMap.put("SupplyDeliveryStatus", org.linuxforhealth.fhir.model.r5.type.code.SupplyDeliveryStatus.class);
+//        codeSubtypeMap.put("SupplyRequestStatus", org.linuxforhealth.fhir.model.r5.type.code.SupplyRequestStatus.class);
         codeSubtypeMap.put("SystemRestfulInteraction", org.linuxforhealth.fhir.model.r5.type.code.SystemRestfulInteraction.class);
-        codeSubtypeMap.put("TaskIntent", org.linuxforhealth.fhir.model.r5.type.code.TaskIntent.class);
-        codeSubtypeMap.put("TaskPriority", org.linuxforhealth.fhir.model.r5.type.code.TaskPriority.class);
-        codeSubtypeMap.put("TaskStatus", org.linuxforhealth.fhir.model.r5.type.code.TaskStatus.class);
-        codeSubtypeMap.put("TestReportActionResult", org.linuxforhealth.fhir.model.r5.type.code.TestReportActionResult.class);
-        codeSubtypeMap.put("TestReportParticipantType", org.linuxforhealth.fhir.model.r5.type.code.TestReportParticipantType.class);
-        codeSubtypeMap.put("TestReportResult", org.linuxforhealth.fhir.model.r5.type.code.TestReportResult.class);
-        codeSubtypeMap.put("TestReportStatus", org.linuxforhealth.fhir.model.r5.type.code.TestReportStatus.class);
-        codeSubtypeMap.put("TestScriptRequestMethodCode", org.linuxforhealth.fhir.model.r5.type.code.TestScriptRequestMethodCode.class);
-        codeSubtypeMap.put("TriggerType", org.linuxforhealth.fhir.model.r5.type.code.TriggerType.class);
+//        codeSubtypeMap.put("TaskIntent", org.linuxforhealth.fhir.model.r5.type.code.TaskIntent.class);
+//        codeSubtypeMap.put("TaskPriority", org.linuxforhealth.fhir.model.r5.type.code.TaskPriority.class);
+//        codeSubtypeMap.put("TaskStatus", org.linuxforhealth.fhir.model.r5.type.code.TaskStatus.class);
+//        codeSubtypeMap.put("TestReportActionResult", org.linuxforhealth.fhir.model.r5.type.code.TestReportActionResult.class);
+//        codeSubtypeMap.put("TestReportParticipantType", org.linuxforhealth.fhir.model.r5.type.code.TestReportParticipantType.class);
+//        codeSubtypeMap.put("TestReportResult", org.linuxforhealth.fhir.model.r5.type.code.TestReportResult.class);
+//        codeSubtypeMap.put("TestReportStatus", org.linuxforhealth.fhir.model.r5.type.code.TestReportStatus.class);
+//        codeSubtypeMap.put("TestScriptRequestMethodCode", org.linuxforhealth.fhir.model.r5.type.code.TestScriptRequestMethodCode.class);
+//        codeSubtypeMap.put("TriggerType", org.linuxforhealth.fhir.model.r5.type.code.TriggerType.class);
         codeSubtypeMap.put("TypeDerivationRule", org.linuxforhealth.fhir.model.r5.type.code.TypeDerivationRule.class);
         codeSubtypeMap.put("TypeRestfulInteraction", org.linuxforhealth.fhir.model.r5.type.code.TypeRestfulInteraction.class);
-        codeSubtypeMap.put("UDIEntryType", org.linuxforhealth.fhir.model.r5.type.code.UDIEntryType.class);
-        codeSubtypeMap.put("UnitsOfTime", org.linuxforhealth.fhir.model.r5.type.code.UnitsOfTime.class);
-        codeSubtypeMap.put("Use", org.linuxforhealth.fhir.model.r5.type.code.Use.class);
-        codeSubtypeMap.put("VisionBase", org.linuxforhealth.fhir.model.r5.type.code.VisionBase.class);
-        codeSubtypeMap.put("VisionEyes", org.linuxforhealth.fhir.model.r5.type.code.VisionEyes.class);
-        codeSubtypeMap.put("VisionStatus", org.linuxforhealth.fhir.model.r5.type.code.VisionStatus.class);
+//        codeSubtypeMap.put("UDIEntryType", org.linuxforhealth.fhir.model.r5.type.code.UDIEntryType.class);
+//        codeSubtypeMap.put("UnitsOfTime", org.linuxforhealth.fhir.model.r5.type.code.UnitsOfTime.class);
+//        codeSubtypeMap.put("Use", org.linuxforhealth.fhir.model.r5.type.code.Use.class);
+//        codeSubtypeMap.put("VisionBase", org.linuxforhealth.fhir.model.r5.type.code.VisionBase.class);
+//        codeSubtypeMap.put("VisionEyes", org.linuxforhealth.fhir.model.r5.type.code.VisionEyes.class);
+//        codeSubtypeMap.put("VisionStatus", org.linuxforhealth.fhir.model.r5.type.code.VisionStatus.class);
         return Collections.unmodifiableMap(codeSubtypeMap);
     }
 
@@ -658,7 +659,7 @@ public final class ModelSupport {
     private static Map<Class<?>, Class<?>> buildConcreteTypeMap() {
         Map<Class<?>, Class<?>> concreteTypeMap = new LinkedHashMap<>();
         concreteTypeMap.put(SimpleQuantity.class, Quantity.class);
-        concreteTypeMap.put(MoneyQuantity.class, Quantity.class);
+//        concreteTypeMap.put(MoneyQuantity.class, Quantity.class);
         return Collections.unmodifiableMap(concreteTypeMap);
     }
 
@@ -1107,13 +1108,13 @@ public final class ModelSupport {
      */
     public static boolean isMetadataType(Class<?> type) {
         return ContactDetail.class.equals(type) ||
-                Contributor.class.equals(type) ||
-                DataRequirement.class.isAssignableFrom(type) ||
-                RelatedArtifact.class.isAssignableFrom(type) ||
-                UsageContext.class.equals(type) ||
-                ParameterDefinition.class.equals(type) ||
-                Expression.class.equals(type) ||
-                TriggerDefinition.class.equals(type);
+        		RelatedArtifact.class.isAssignableFrom(type) ||
+        		UsageContext.class.equals(type);
+//                Contributor.class.equals(type) ||
+//                DataRequirement.class.isAssignableFrom(type) ||
+//                ParameterDefinition.class.equals(type) ||
+//                Expression.class.equals(type) ||
+//                TriggerDefinition.class.equals(type)
     }
 
     /**
