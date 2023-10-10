@@ -57,7 +57,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	 * A singleton {@link Joiner} that can be used to concatenate branch path segments into a fully usable branch path.
 	 * @see #get(String...)
 	 */
-	public static final Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR);
+	public static final Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR).skipNulls();
 	
 	/**
 	 * A singleton {@link Splitter} that can be used to break an existing branch path into its constituent segments.
