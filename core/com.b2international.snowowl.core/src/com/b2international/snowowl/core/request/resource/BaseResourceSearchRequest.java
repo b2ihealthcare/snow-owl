@@ -196,8 +196,6 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		}
 		
 		final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
-		// TODO make this configurable via plugins
-		final Set<String> specialResourceIdCharacters = Set.of(ResourceURI.TILDE);
 		
 		// special check for a single resource content access request to not lookup all the visible resources for the user but to check only the one needed for faster execution
 		if (!CompareUtils.isEmpty(componentIds()) && componentIds().size() == 1) {
@@ -205,12 +203,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 				final String componentIdValue = Iterables.getOnlyElement(componentIds());
 				
 				// special resources denoted by their special IDs are accessible when their original resource is accessible
-				final String componentIdToCheck = specialResourceIdCharacters.stream()
-						.filter(componentIdValue::contains)
-						.findFirst()
-						.map(ResourceURI::withoutSpecialResourceIdPart)
-						.orElse(componentIdValue);
-				
+				final String componentIdToCheck = ResourceURI.withoutSpecialResourceIdPart(componentIdValue);
 				
 				authz.checkPermission(context, user, List.of(Permission.requireAll(Permission.OPERATION_BROWSE, componentIdToCheck)));
 				return;
@@ -237,7 +230,7 @@ public abstract class BaseResourceSearchRequest<R> extends SearchIndexResourceRe
 		if (hasValue(OptionKey.HIDDEN, ResourceHiddenFilter.ALL, ResourceHiddenFilter.HIDDEN_ONLY)) {
 			accessibleResources.stream()
 				.filter(resource -> !resource.endsWith("*"))
-				.flatMap(resource -> specialResourceIdCharacters.stream().map(specialCharacter -> resource.concat(specialCharacter)))
+				.map(resource -> resource.concat(ResourceURI.TILDE))
 				.forEach(resourceIdPrefixes::add);
 		}
 		
