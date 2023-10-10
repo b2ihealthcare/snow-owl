@@ -415,39 +415,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         return builder.build();
     }
 
-    private Availability parseAvailability(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Availability.class, jsonNode);
-        }
-        Availability.Builder builder = Availability.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        ArrayNode availableTimeArray = getArrayNode(jsonNode, "availableTime");
-        if (availableTimeArray != null) {
-            for (int i = 0; i < availableTimeArray.size(); i++) {
-                if (availableTimeArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + availableTimeArray.get(i).getNodeType() + " for element: availableTime");
-                }
-                builder.availableTime(parseElement("availableTime", availableTimeArray.get(i), i));
-            }
-        }
-        ArrayNode notAvailableTimeArray = getArrayNode(jsonNode, "notAvailableTime");
-        if (notAvailableTimeArray != null) {
-            for (int i = 0; i < notAvailableTimeArray.size(); i++) {
-                if (notAvailableTimeArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + notAvailableTimeArray.get(i).getNodeType() + " for element: notAvailableTime");
-                }
-                builder.notAvailableTime(parseElement("notAvailableTime", notAvailableTimeArray.get(i), i));
-            }
-        }
-        stackPop();
-        return builder.build();
-    }
-
     private void parseBackboneElement(BackboneElement.Builder builder, JsonNode jsonNode) {
         builder.setValidating(validating);
         parseElement(builder, jsonNode);
@@ -668,60 +635,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         builder.url(parseUri("url", getJsonNode(jsonNode, "url", TextNode.class), jsonNode.get("_url"), -1));
         stackPop();
         return builder.build();
-    }
-
-    private void parseCanonicalResource(CanonicalResource.Builder builder, JsonNode jsonNode) {
-        builder.setValidating(validating);
-        parseDomainResource(builder, jsonNode);
-        builder.url(parseUri("url", getJsonNode(jsonNode, "url", TextNode.class), jsonNode.get("_url"), -1));
-        ArrayNode identifierArray = getArrayNode(jsonNode, "identifier");
-        if (identifierArray != null) {
-            for (int i = 0; i < identifierArray.size(); i++) {
-                if (identifierArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + identifierArray.get(i).getNodeType() + " for element: identifier");
-                }
-                builder.identifier(parseIdentifier("identifier", identifierArray.get(i), i));
-            }
-        }
-        builder.version(parseString("version", getJsonNode(jsonNode, "version", TextNode.class), jsonNode.get("_version"), -1));
-        builder.versionAlgorithm(parseChoiceElement("versionAlgorithm", jsonNode, String.class, Coding.class));
-        builder.name(parseString("name", getJsonNode(jsonNode, "name", TextNode.class), jsonNode.get("_name"), -1));
-        builder.title(parseString("title", getJsonNode(jsonNode, "title", TextNode.class), jsonNode.get("_title"), -1));
-        builder.status((PublicationStatus) parseString(PublicationStatus.builder(), "status", getJsonNode(jsonNode, "status", TextNode.class), jsonNode.get("_status"), -1));
-        builder.experimental(parseBoolean("experimental", getJsonNode(jsonNode, "experimental", JsonNode.class), jsonNode.get("_experimental"), -1));
-        builder.date(parseDateTime("date", getJsonNode(jsonNode, "date", TextNode.class), jsonNode.get("_date"), -1));
-        builder.publisher(parseString("publisher", getJsonNode(jsonNode, "publisher", TextNode.class), jsonNode.get("_publisher"), -1));
-        ArrayNode contactArray = getArrayNode(jsonNode, "contact");
-        if (contactArray != null) {
-            for (int i = 0; i < contactArray.size(); i++) {
-                if (contactArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + contactArray.get(i).getNodeType() + " for element: contact");
-                }
-                builder.contact(parseContactDetail("contact", contactArray.get(i), i));
-            }
-        }
-        builder.description((Markdown) parseString(Markdown.builder(), "description", getJsonNode(jsonNode, "description", TextNode.class), jsonNode.get("_description"), -1));
-        ArrayNode useContextArray = getArrayNode(jsonNode, "useContext");
-        if (useContextArray != null) {
-            for (int i = 0; i < useContextArray.size(); i++) {
-                if (useContextArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + useContextArray.get(i).getNodeType() + " for element: useContext");
-                }
-                builder.useContext(parseUsageContext("useContext", useContextArray.get(i), i));
-            }
-        }
-        ArrayNode jurisdictionArray = getArrayNode(jsonNode, "jurisdiction");
-        if (jurisdictionArray != null) {
-            for (int i = 0; i < jurisdictionArray.size(); i++) {
-                if (jurisdictionArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + jurisdictionArray.get(i).getNodeType() + " for element: jurisdiction");
-                }
-                builder.jurisdiction(parseCodeableConcept("jurisdiction", jurisdictionArray.get(i), i));
-            }
-        }
-        builder.purpose((Markdown) parseString(Markdown.builder(), "purpose", getJsonNode(jsonNode, "purpose", TextNode.class), jsonNode.get("_purpose"), -1));
-        builder.copyright((Markdown) parseString(Markdown.builder(), "copyright", getJsonNode(jsonNode, "copyright", TextNode.class), jsonNode.get("_copyright"), -1));
-        builder.copyrightLabel(parseString("copyrightLabel", getJsonNode(jsonNode, "copyrightLabel", TextNode.class), jsonNode.get("_copyrightLabel"), -1));
     }
 
     private CapabilityStatement parseCapabilityStatement(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
@@ -2651,43 +2564,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         return builder.build();
     }
 
-    private ExtendedContactDetail parseExtendedContactDetail(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(ExtendedContactDetail.class, jsonNode);
-        }
-        ExtendedContactDetail.Builder builder = ExtendedContactDetail.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.purpose(parseCodeableConcept("purpose", getJsonNode(jsonNode, "purpose", JsonNode.class), -1));
-        ArrayNode nameArray = getArrayNode(jsonNode, "name");
-        if (nameArray != null) {
-            for (int i = 0; i < nameArray.size(); i++) {
-                if (nameArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + nameArray.get(i).getNodeType() + " for element: name");
-                }
-                builder.name(parseHumanName("name", nameArray.get(i), i));
-            }
-        }
-        ArrayNode telecomArray = getArrayNode(jsonNode, "telecom");
-        if (telecomArray != null) {
-            for (int i = 0; i < telecomArray.size(); i++) {
-                if (telecomArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + telecomArray.get(i).getNodeType() + " for element: telecom");
-                }
-                builder.telecom(parseContactPoint("telecom", telecomArray.get(i), i));
-            }
-        }
-        builder.address(parseAddress("address", getJsonNode(jsonNode, "address", JsonNode.class), -1));
-        builder.organization(parseReference("organization", getJsonNode(jsonNode, "organization", JsonNode.class), -1));
-        builder.period(parsePeriod("period", getJsonNode(jsonNode, "period", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
-    }
-
     private Extension parseExtension(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
         if (jsonNode == null) {
             return null;
@@ -2842,26 +2718,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         return builder.build();
     }
 
-    private MarketingStatus parseMarketingStatus(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(MarketingStatus.class, jsonNode);
-        }
-        MarketingStatus.Builder builder = MarketingStatus.builder();
-        builder.setValidating(validating);
-        parseBackboneType(builder, jsonNode);
-        builder.country(parseCodeableConcept("country", getJsonNode(jsonNode, "country", JsonNode.class), -1));
-        builder.jurisdiction(parseCodeableConcept("jurisdiction", getJsonNode(jsonNode, "jurisdiction", JsonNode.class), -1));
-        builder.status(parseCodeableConcept("status", getJsonNode(jsonNode, "status", JsonNode.class), -1));
-        builder.dateRange(parsePeriod("dateRange", getJsonNode(jsonNode, "dateRange", JsonNode.class), -1));
-        builder.restoreDate(parseDateTime("restoreDate", getJsonNode(jsonNode, "restoreDate", TextNode.class), jsonNode.get("_restoreDate"), -1));
-        stackPop();
-        return builder.build();
-    }
-
     private Meta parseMeta(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
         if (jsonNode == null) {
             return null;
@@ -2901,87 +2757,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
                 builder.tag(parseCoding("tag", tagArray.get(i), i));
             }
         }
-        stackPop();
-        return builder.build();
-    }
-
-    private void parseMetadataResource(MetadataResource.Builder builder, JsonNode jsonNode) {
-        builder.setValidating(validating);
-        parseDomainResource(builder, jsonNode);
-        builder.approvalDate(parseDate("approvalDate", getJsonNode(jsonNode, "approvalDate", TextNode.class), jsonNode.get("_approvalDate"), -1));
-        builder.lastReviewDate(parseDate("lastReviewDate", getJsonNode(jsonNode, "lastReviewDate", TextNode.class), jsonNode.get("_lastReviewDate"), -1));
-        builder.effectivePeriod(parsePeriod("effectivePeriod", getJsonNode(jsonNode, "effectivePeriod", JsonNode.class), -1));
-        ArrayNode topicArray = getArrayNode(jsonNode, "topic");
-        if (topicArray != null) {
-            for (int i = 0; i < topicArray.size(); i++) {
-                if (topicArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + topicArray.get(i).getNodeType() + " for element: topic");
-                }
-                builder.topic(parseCodeableConcept("topic", topicArray.get(i), i));
-            }
-        }
-        ArrayNode authorArray = getArrayNode(jsonNode, "author");
-        if (authorArray != null) {
-            for (int i = 0; i < authorArray.size(); i++) {
-                if (authorArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + authorArray.get(i).getNodeType() + " for element: author");
-                }
-                builder.author(parseContactDetail("author", authorArray.get(i), i));
-            }
-        }
-        ArrayNode editorArray = getArrayNode(jsonNode, "editor");
-        if (editorArray != null) {
-            for (int i = 0; i < editorArray.size(); i++) {
-                if (editorArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + editorArray.get(i).getNodeType() + " for element: editor");
-                }
-                builder.editor(parseContactDetail("editor", editorArray.get(i), i));
-            }
-        }
-        ArrayNode reviewerArray = getArrayNode(jsonNode, "reviewer");
-        if (reviewerArray != null) {
-            for (int i = 0; i < reviewerArray.size(); i++) {
-                if (reviewerArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + reviewerArray.get(i).getNodeType() + " for element: reviewer");
-                }
-                builder.reviewer(parseContactDetail("reviewer", reviewerArray.get(i), i));
-            }
-        }
-        ArrayNode endorserArray = getArrayNode(jsonNode, "endorser");
-        if (endorserArray != null) {
-            for (int i = 0; i < endorserArray.size(); i++) {
-                if (endorserArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + endorserArray.get(i).getNodeType() + " for element: endorser");
-                }
-                builder.endorser(parseContactDetail("endorser", endorserArray.get(i), i));
-            }
-        }
-        ArrayNode relatedArtifactArray = getArrayNode(jsonNode, "relatedArtifact");
-        if (relatedArtifactArray != null) {
-            for (int i = 0; i < relatedArtifactArray.size(); i++) {
-                if (relatedArtifactArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + relatedArtifactArray.get(i).getNodeType() + " for element: relatedArtifact");
-                }
-                builder.relatedArtifact(parseRelatedArtifact("relatedArtifact", relatedArtifactArray.get(i), i));
-            }
-        }
-    }
-
-    private MonetaryComponent parseMonetaryComponent(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(MonetaryComponent.class, jsonNode);
-        }
-        MonetaryComponent.Builder builder = MonetaryComponent.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.type((PriceComponentType) parseString(PriceComponentType.builder(), "type", getJsonNode(jsonNode, "type", TextNode.class), jsonNode.get("_type"), -1));
-        builder.code(parseCodeableConcept("code", getJsonNode(jsonNode, "code", JsonNode.class), -1));
-        builder.factor(parseDecimal("factor", getJsonNode(jsonNode, "factor", NumericNode.class), jsonNode.get("_factor"), -1));
-        builder.amount(parseMoney("amount", getJsonNode(jsonNode, "amount", JsonNode.class), -1));
         stackPop();
         return builder.build();
     }
@@ -3381,37 +3156,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         parseDataType(builder, jsonNode);
         builder.start(parseDateTime("start", getJsonNode(jsonNode, "start", TextNode.class), jsonNode.get("_start"), -1));
         builder.end(parseDateTime("end", getJsonNode(jsonNode, "end", TextNode.class), jsonNode.get("_end"), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private void parsePrimitiveType(PrimitiveType.Builder builder, JsonNode jsonNode) {
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-    }
-
-    private ProductShelfLife parseProductShelfLife(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(ProductShelfLife.class, jsonNode);
-        }
-        ProductShelfLife.Builder builder = ProductShelfLife.builder();
-        builder.setValidating(validating);
-        parseBackboneType(builder, jsonNode);
-        builder.type(parseCodeableConcept("type", getJsonNode(jsonNode, "type", JsonNode.class), -1));
-        builder.period(parseChoiceElement("period", jsonNode, Duration.class, String.class));
-        ArrayNode specialPrecautionsForStorageArray = getArrayNode(jsonNode, "specialPrecautionsForStorage");
-        if (specialPrecautionsForStorageArray != null) {
-            for (int i = 0; i < specialPrecautionsForStorageArray.size(); i++) {
-                if (specialPrecautionsForStorageArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + specialPrecautionsForStorageArray.get(i).getNodeType() + " for element: specialPrecautionsForStorage");
-                }
-                builder.specialPrecautionsForStorage(parseCodeableConcept("specialPrecautionsForStorage", specialPrecautionsForStorageArray.get(i), i));
-            }
-        }
         stackPop();
         return builder.build();
     }
@@ -4765,32 +4509,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         parseBackboneElement(builder, jsonNode);
         builder.inclusionCriteria(parseString("inclusionCriteria", getJsonNode(jsonNode, "inclusionCriteria", TextNode.class), jsonNode.get("_inclusionCriteria"), -1));
         builder.exclusionCriteria(parseString("exclusionCriteria", getJsonNode(jsonNode, "exclusionCriteria", TextNode.class), jsonNode.get("_exclusionCriteria"), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private VirtualServiceDetail parseVirtualServiceDetail(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(VirtualServiceDetail.class, jsonNode);
-        }
-        VirtualServiceDetail.Builder builder = VirtualServiceDetail.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.channelType(parseCoding("channelType", getJsonNode(jsonNode, "channelType", JsonNode.class), -1));
-        builder.address(parseChoiceElement("address", jsonNode, Url.class, String.class, ContactPoint.class, ExtendedContactDetail.class));
-        ArrayNode additionalInfoArray = getArrayNode(jsonNode, "additionalInfo", true);
-        if (additionalInfoArray != null) {
-            ArrayNode _additionalInfoArray = getArrayNode(jsonNode, "_additionalInfo");
-            for (int i = 0; i < additionalInfoArray.size(); i++) {
-                builder.additionalInfo((Url) parseUri(Url.builder(), "additionalInfo", additionalInfoArray.get(i), getJsonNode(_additionalInfoArray, i), i));
-            }
-        }
-        builder.maxParticipants((PositiveInt) parseInteger(PositiveInt.builder(), "maxParticipants", getJsonNode(jsonNode, "maxParticipants", NumericNode.class), jsonNode.get("_maxParticipants"), -1));
-        builder.sessionKey(parseString("sessionKey", getJsonNode(jsonNode, "sessionKey", TextNode.class), jsonNode.get("_sessionKey"), -1));
         stackPop();
         return builder.build();
     }

@@ -3549,58 +3549,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private Contributor parseContributor(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Contributor.Builder builder = Contributor.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, contactElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 1, position, false);
-                    builder.type((ContributorType) parseString(ContributorType.builder(), "type", reader, -1));
-                    break;
-                case "name":
-                    position = checkElementOrder("name", 2, position, false);
-                    builder.name(parseString("name", reader, -1));
-                    break;
-                case "contact":
-                    position = checkElementOrder("contact", 3, position, true);
-                    builder.contact(parseContactDetail("contact", reader, contactElementIndex++));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private DataRequirement parseDataRequirement(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         DataRequirement.Builder builder = DataRequirement.builder();
@@ -6392,70 +6340,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private MarketingStatus parseMarketingStatus(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        MarketingStatus.Builder builder = MarketingStatus.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "country":
-                    position = checkElementOrder("country", 2, position, false);
-                    builder.country(parseCodeableConcept("country", reader, -1));
-                    break;
-                case "jurisdiction":
-                    position = checkElementOrder("jurisdiction", 3, position, false);
-                    builder.jurisdiction(parseCodeableConcept("jurisdiction", reader, -1));
-                    break;
-                case "status":
-                    position = checkElementOrder("status", 4, position, false);
-                    builder.status(parseCodeableConcept("status", reader, -1));
-                    break;
-                case "dateRange":
-                    position = checkElementOrder("dateRange", 5, position, false);
-                    builder.dateRange(parsePeriod("dateRange", reader, -1));
-                    break;
-                case "restoreDate":
-                    position = checkElementOrder("restoreDate", 6, position, false);
-                    builder.restoreDate(parseDateTime("restoreDate", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private Meta parseMeta(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Meta.Builder builder = Meta.builder();
@@ -6500,62 +6384,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                 case "tag":
                     position = checkElementOrder("tag", 6, position, true);
                     builder.tag(parseCoding("tag", reader, tagElementIndex++));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private MonetaryComponent parseMonetaryComponent(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        MonetaryComponent.Builder builder = MonetaryComponent.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 1, position, false);
-                    builder.type((PriceComponentType) parseString(PriceComponentType.builder(), "type", reader, -1));
-                    break;
-                case "code":
-                    position = checkElementOrder("code", 2, position, false);
-                    builder.code(parseCodeableConcept("code", reader, -1));
-                    break;
-                case "factor":
-                    position = checkElementOrder("factor", 3, position, false);
-                    builder.factor(parseDecimal("factor", reader, -1));
-                    break;
-                case "amount":
-                    position = checkElementOrder("amount", 4, position, false);
-                    builder.amount(parseMoney("amount", reader, -1));
                     break;
                 default:
                     if (!ignoringUnrecognizedElements) {
@@ -7692,66 +7520,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private ProductShelfLife parseProductShelfLife(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        ProductShelfLife.Builder builder = ProductShelfLife.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0, specialPrecautionsForStorageElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 2, position, false);
-                    builder.type(parseCodeableConcept("type", reader, -1));
-                    break;
-                case "periodDuration":
-                    position = checkElementOrder("period[x]", 3, position, false);
-                    builder.period((Duration) parseQuantity(Duration.builder(), "periodDuration", reader, -1));
-                    break;
-                case "periodString":
-                    position = checkElementOrder("period[x]", 3, position, false);
-                    builder.period(parseString("periodString", reader, -1));
-                    break;
-                case "specialPrecautionsForStorage":
-                    position = checkElementOrder("specialPrecautionsForStorage", 4, position, true);
-                    builder.specialPrecautionsForStorage(parseCodeableConcept("specialPrecautionsForStorage", reader, specialPrecautionsForStorageElementIndex++));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-    
     private Quantity parseQuantity(Quantity.Builder builder, java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         builder.setValidating(validating);
@@ -10769,78 +10537,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                 case "exclusionCriteria":
                     position = checkElementOrder("exclusionCriteria", 3, position, false);
                     builder.exclusionCriteria(parseString("exclusionCriteria", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private VirtualServiceDetail parseVirtualServiceDetail(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        VirtualServiceDetail.Builder builder = VirtualServiceDetail.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, additionalInfoElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "channelType":
-                    position = checkElementOrder("channelType", 1, position, false);
-                    builder.channelType(parseCoding("channelType", reader, -1));
-                    break;
-                case "addressUrl":
-                    position = checkElementOrder("address[x]", 2, position, false);
-                    builder.address((Url) parseUri(Url.builder(), "addressUrl", reader, -1));
-                    break;
-                case "addressString":
-                    position = checkElementOrder("address[x]", 2, position, false);
-                    builder.address(parseString("addressString", reader, -1));
-                    break;
-                case "addressContactPoint":
-                    position = checkElementOrder("address[x]", 2, position, false);
-                    builder.address(parseContactPoint("addressContactPoint", reader, -1));
-                    break;
-                case "addressExtendedContactDetail":
-                    position = checkElementOrder("address[x]", 2, position, false);
-                    builder.address(parseExtendedContactDetail("addressExtendedContactDetail", reader, -1));
-                    break;
-                case "additionalInfo":
-                    position = checkElementOrder("additionalInfo", 3, position, true);
-                    builder.additionalInfo((Url) parseUri(Url.builder(), "additionalInfo", reader, additionalInfoElementIndex++));
-                    break;
-                case "maxParticipants":
-                    position = checkElementOrder("maxParticipants", 4, position, false);
-                    builder.maxParticipants((PositiveInt) parseInteger(PositiveInt.builder(), "maxParticipants", reader, -1));
-                    break;
-                case "sessionKey":
-                    position = checkElementOrder("sessionKey", 5, position, false);
-                    builder.sessionKey(parseString("sessionKey", reader, -1));
                     break;
                 default:
                     if (!ignoringUnrecognizedElements) {
