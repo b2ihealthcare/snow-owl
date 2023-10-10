@@ -20,7 +20,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.elasticsearch.core.Map;
 import org.junit.Test;
 
+import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.commit.CommitInfo;
+import com.b2international.snowowl.core.commit.CommitInfos;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.BranchBase;
@@ -48,6 +56,39 @@ public class ResourceURITildeSupportTest extends AbstractSnomedApiTest {
 		SnomedConcepts conceptsFromTilde = searchConcepts(SnomedContentRule.SNOMEDCT.withSpecialResourceIdPart(childBranchName), Map.of(), 0);
 		assertThat(conceptsFromPath.getTotal()).isEqualTo(1999);
 		assertThat(conceptsFromTilde.getTotal()).isEqualTo(1999);
+	}
+	
+	@Test
+	public void commitShouldRegisterSubjectUsingTheTildeUri() throws Exception {
+		String childBranchName = "commitShouldRegisterSubjectUsingTheTildeUri";
+		branching.createBranch(BranchPathUtils.createMainPath().child(childBranchName)).statusCode(201);
+		
+		ResourceURI target = SnomedContentRule.SNOMEDCT.withSpecialResourceIdPart(childBranchName);
+		createDescription(target, Json.object(
+			"term", "RandomTerm",
+			"languageCode", "en",
+			"typeId", Concepts.SYNONYM,
+			"conceptId", Concepts.ROOT_CONCEPT,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"acceptability", Map.of(
+				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED
+			)
+		));
+		
+		// fetch the most recent commit
+		CommitInfos commits = RepositoryRequests.commitInfos().prepareSearchCommitInfo()
+			.one()
+			.filterBySubject(target.withoutResourceType().toString())
+			.sortBy("timestamp:desc") 
+			.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.execute(getBus())
+			.getSync();
+		
+		assertThat(commits)
+			.hasSize(1)
+			.flatExtracting(CommitInfo::getSubjects)
+			.contains(target.withoutResourceType().toString());
+			
 	}
 	
 }
