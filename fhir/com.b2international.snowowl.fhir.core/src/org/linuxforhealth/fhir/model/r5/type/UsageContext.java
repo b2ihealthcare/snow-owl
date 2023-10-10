@@ -21,6 +21,13 @@ import org.linuxforhealth.fhir.model.r5.type.code.BindingStrength;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
 
+/*
+ * Changes:
+ * 
+ * - Disallowed certain datatypes appearing in a UsageContext
+ *   + Range
+ */
+
 /**
  * Specifies clinical/business/etc. metadata that can be used to retrieve, index and/or categorize an artifact. This 
  * metadata can either be specific to the applicable population (e.g., age category, DRG) or the specific context of care 
@@ -48,7 +55,12 @@ public class UsageContext extends DataType {
     private final Coding code;
     @Summary
     @ReferenceTarget({ "PlanDefinition", "ResearchStudy", "InsurancePlan", "HealthcareService", "Group", "Location", "Organization" })
-    @Choice({ CodeableConcept.class, Quantity.class, Range.class, Reference.class })
+    @Choice({ 
+    	CodeableConcept.class, 
+    	Quantity.class, 
+    	// Range.class, 
+    	Reference.class 
+	})
     @Binding(
         bindingName = "UsageContextValue",
         strength = BindingStrength.Value.EXAMPLE,
@@ -293,7 +305,12 @@ public class UsageContext extends DataType {
         protected void validate(UsageContext usageContext) {
             super.validate(usageContext);
             ValidationSupport.requireNonNull(usageContext.code, "code");
-            ValidationSupport.requireChoiceElement(usageContext.value, "value", CodeableConcept.class, Quantity.class, Range.class, Reference.class);
+            ValidationSupport.requireChoiceElement(usageContext.value, "value", 
+        		CodeableConcept.class, 
+        		Quantity.class, 
+        		// Range.class, 
+        		Reference.class
+    		);
             ValidationSupport.checkReferenceType(usageContext.value, "value", "PlanDefinition", "ResearchStudy", "InsurancePlan", "HealthcareService", "Group", "Location", "Organization");
             ValidationSupport.requireValueOrChildren(usageContext);
         }

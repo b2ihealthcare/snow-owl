@@ -19,11 +19,11 @@ import org.linuxforhealth.fhir.model.r5.annotation.Constraint;
 import org.linuxforhealth.fhir.model.r5.annotation.Maturity;
 import org.linuxforhealth.fhir.model.annotation.Required;
 import org.linuxforhealth.fhir.model.annotation.Summary;
-import org.linuxforhealth.fhir.model.r5.type.Address;
-import org.linuxforhealth.fhir.model.r5.type.Age;
-import org.linuxforhealth.fhir.model.r5.type.Annotation;
+//import org.linuxforhealth.fhir.model.r5.type.Address;
+//import org.linuxforhealth.fhir.model.r5.type.Age;
+//import org.linuxforhealth.fhir.model.r5.type.Annotation;
 import org.linuxforhealth.fhir.model.r5.type.Attachment;
-import org.linuxforhealth.fhir.model.r5.type.Availability;
+//import org.linuxforhealth.fhir.model.r5.type.Availability;
 import org.linuxforhealth.fhir.model.r5.type.BackboneElement;
 import org.linuxforhealth.fhir.model.r5.type.Base64Binary;
 import org.linuxforhealth.fhir.model.r5.type.Boolean;
@@ -34,19 +34,19 @@ import org.linuxforhealth.fhir.model.r5.type.CodeableReference;
 import org.linuxforhealth.fhir.model.r5.type.Coding;
 import org.linuxforhealth.fhir.model.r5.type.ContactDetail;
 import org.linuxforhealth.fhir.model.r5.type.ContactPoint;
-import org.linuxforhealth.fhir.model.r5.type.Count;
-import org.linuxforhealth.fhir.model.r5.type.DataRequirement;
+//import org.linuxforhealth.fhir.model.r5.type.Count;
+//import org.linuxforhealth.fhir.model.r5.type.DataRequirement;
 import org.linuxforhealth.fhir.model.r5.type.Date;
 import org.linuxforhealth.fhir.model.r5.type.DateTime;
 import org.linuxforhealth.fhir.model.r5.type.Decimal;
-import org.linuxforhealth.fhir.model.r5.type.Distance;
-import org.linuxforhealth.fhir.model.r5.type.Dosage;
-import org.linuxforhealth.fhir.model.r5.type.Duration;
+//import org.linuxforhealth.fhir.model.r5.type.Distance;
+//import org.linuxforhealth.fhir.model.r5.type.Dosage;
+//import org.linuxforhealth.fhir.model.r5.type.Duration;
 import org.linuxforhealth.fhir.model.r5.type.Element;
-import org.linuxforhealth.fhir.model.r5.type.Expression;
-import org.linuxforhealth.fhir.model.r5.type.ExtendedContactDetail;
+//import org.linuxforhealth.fhir.model.r5.type.Expression;
+//import org.linuxforhealth.fhir.model.r5.type.ExtendedContactDetail;
 import org.linuxforhealth.fhir.model.r5.type.Extension;
-import org.linuxforhealth.fhir.model.r5.type.HumanName;
+//import org.linuxforhealth.fhir.model.r5.type.HumanName;
 import org.linuxforhealth.fhir.model.r5.type.Id;
 import org.linuxforhealth.fhir.model.r5.type.Identifier;
 import org.linuxforhealth.fhir.model.r5.type.Instant;
@@ -54,23 +54,23 @@ import org.linuxforhealth.fhir.model.r5.type.Integer;
 import org.linuxforhealth.fhir.model.r5.type.Integer64;
 import org.linuxforhealth.fhir.model.r5.type.Markdown;
 import org.linuxforhealth.fhir.model.r5.type.Meta;
-import org.linuxforhealth.fhir.model.r5.type.Money;
+//import org.linuxforhealth.fhir.model.r5.type.Money;
 import org.linuxforhealth.fhir.model.r5.type.Oid;
-import org.linuxforhealth.fhir.model.r5.type.ParameterDefinition;
+//import org.linuxforhealth.fhir.model.r5.type.ParameterDefinition;
 import org.linuxforhealth.fhir.model.r5.type.Period;
 import org.linuxforhealth.fhir.model.r5.type.PositiveInt;
 import org.linuxforhealth.fhir.model.r5.type.Quantity;
-import org.linuxforhealth.fhir.model.r5.type.Range;
-import org.linuxforhealth.fhir.model.r5.type.Ratio;
-import org.linuxforhealth.fhir.model.r5.type.RatioRange;
+//import org.linuxforhealth.fhir.model.r5.type.Range;
+//import org.linuxforhealth.fhir.model.r5.type.Ratio;
+//import org.linuxforhealth.fhir.model.r5.type.RatioRange;
 import org.linuxforhealth.fhir.model.r5.type.Reference;
 import org.linuxforhealth.fhir.model.r5.type.RelatedArtifact;
-import org.linuxforhealth.fhir.model.r5.type.SampledData;
+//import org.linuxforhealth.fhir.model.r5.type.SampledData;
 import org.linuxforhealth.fhir.model.r5.type.Signature;
 import org.linuxforhealth.fhir.model.r5.type.String;
 import org.linuxforhealth.fhir.model.r5.type.Time;
-import org.linuxforhealth.fhir.model.r5.type.Timing;
-import org.linuxforhealth.fhir.model.r5.type.TriggerDefinition;
+//import org.linuxforhealth.fhir.model.r5.type.Timing;
+//import org.linuxforhealth.fhir.model.r5.type.TriggerDefinition;
 import org.linuxforhealth.fhir.model.r5.type.UnsignedInt;
 import org.linuxforhealth.fhir.model.r5.type.Uri;
 import org.linuxforhealth.fhir.model.r5.type.Url;
@@ -79,6 +79,32 @@ import org.linuxforhealth.fhir.model.r5.type.Uuid;
 import org.linuxforhealth.fhir.model.r5.type.code.StandardsStatus;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
+
+/*
+ * Changes:
+ * 
+ * - Disallowed certain datatypes as a Parameter value
+ *   + Address
+ *   + Age
+ *   + Annotation
+ *   + Availability
+ *   + Count
+ *   + DataRequirement
+ *   + Distance
+ *   + Dosage
+ *   + Duration
+ *   + Expression
+ *   + ExtendedContactDetail
+ *   + HumanName
+ *   + Money
+ *   + ParameterDefinition
+ *   + Range
+ *   + Ratio
+ *   + RatioRange
+ *   + SampledData
+ *   + Timing
+ *   + TriggerDefinition
+ */
 
 /**
  * This resource is used to pass information into and back from an operation (whether invoked directly from REST or 
@@ -325,7 +351,62 @@ public class Parameters extends Resource {
         @Required
         private final String name;
         @Summary
-        @Choice({ Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class })
+        @Choice({ 
+        	Base64Binary.class,
+        	Boolean.class, 
+        	Canonical.class, 
+        	Code.class, 
+        	Date.class, 
+        	DateTime.class, 
+        	Decimal.class, 
+        	Id.class, 
+        	Instant.class, 
+        	Integer.class, 
+        	Integer64.class, 
+        	Markdown.class, 
+        	Oid.class, 
+        	PositiveInt.class,
+			String.class,
+			Time.class,
+			UnsignedInt.class,
+			Uri.class,
+			Url.class,
+			Uuid.class,
+			// Address.class,
+			// Age.class,
+			// Annotation.class,
+			Attachment.class,
+			CodeableConcept.class,
+			CodeableReference.class,
+			Coding.class,
+			ContactPoint.class,
+			// Count.class,
+			// Distance.class,
+			// Duration.class,
+			// HumanName.class,
+			Identifier.class,
+			// Money.class,
+			Period.class,
+			Quantity.class,
+			// Range.class,
+			// Ratio.class,
+			// RatioRange.class,
+			Reference.class,
+			// SampledData.class,
+			Signature.class,
+			// Timing.class,
+			ContactDetail.class,
+			// DataRequirement.class,
+			// Expression.class,
+			// ParameterDefinition.class,
+			RelatedArtifact.class,
+			// TriggerDefinition.class,
+			UsageContext.class,
+			// Availability.class,
+			// ExtendedContactDetail.class,
+			// Dosage.class,
+			Meta.class 
+		})
         private final Element value;
         @Summary
         private final Resource resource;
@@ -866,7 +947,61 @@ Modifier extensions
             protected void validate(Parameter parameter) {
                 super.validate(parameter);
                 ValidationSupport.requireNonNull(parameter.name, "name");
-                ValidationSupport.choiceElement(parameter.value, "value", Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class);
+				ValidationSupport.choiceElement(parameter.value, "value", 
+					Base64Binary.class, 
+					Boolean.class,
+					Canonical.class, 
+					Code.class, 
+					Date.class, 
+					DateTime.class, 
+					Decimal.class, 
+					Id.class, 
+					Instant.class,
+					Integer.class, 
+					Integer64.class, 
+					Markdown.class, 
+					Oid.class, 
+					PositiveInt.class, 
+					String.class,
+					Time.class, 
+					UnsignedInt.class, 
+					Uri.class, 
+					Url.class, 
+					Uuid.class,
+					// Address.class, 
+					// Age.class, 
+					// Annotation.class, 
+					Attachment.class, 
+					CodeableConcept.class,
+					CodeableReference.class, 
+					Coding.class, 
+					ContactPoint.class, 
+					// Count.class, 
+					// Distance.class,
+					// Duration.class, 
+					// HumanName.class, 
+					Identifier.class, 
+					// Money.class, 
+					Period.class, 
+					Quantity.class,
+					// Range.class, 
+					// Ratio.class, 
+					// RatioRange.class, 
+					Reference.class, 
+					// SampledData.class, 
+					Signature.class,
+					// Timing.class, 
+					ContactDetail.class, 
+					// DataRequirement.class, 
+					// Expression.class,
+					// ParameterDefinition.class, 
+					RelatedArtifact.class, 
+					// TriggerDefinition.class, 
+					UsageContext.class,
+					// Availability.class,
+					// ExtendedContactDetail.class, 
+					// Dosage.class, 
+					Meta.class);
                 ValidationSupport.checkList(parameter.part, "part", Parameters.Parameter.class);
                 ValidationSupport.requireValueOrChildren(parameter);
             }

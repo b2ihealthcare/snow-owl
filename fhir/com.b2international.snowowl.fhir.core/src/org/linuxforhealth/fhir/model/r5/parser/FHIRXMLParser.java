@@ -269,142 +269,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         return null;
     }
 
-    private Address parseAddress(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Address.Builder builder = Address.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, lineElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "use":
-                    position = checkElementOrder("use", 1, position, false);
-                    builder.use((AddressUse) parseString(AddressUse.builder(), "use", reader, -1));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 2, position, false);
-                    builder.type((AddressType) parseString(AddressType.builder(), "type", reader, -1));
-                    break;
-                case "text":
-                    position = checkElementOrder("text", 3, position, false);
-                    builder.text(parseString("text", reader, -1));
-                    break;
-                case "line":
-                    position = checkElementOrder("line", 4, position, true);
-                    builder.line(parseString("line", reader, lineElementIndex++));
-                    break;
-                case "city":
-                    position = checkElementOrder("city", 5, position, false);
-                    builder.city(parseString("city", reader, -1));
-                    break;
-                case "district":
-                    position = checkElementOrder("district", 6, position, false);
-                    builder.district(parseString("district", reader, -1));
-                    break;
-                case "state":
-                    position = checkElementOrder("state", 7, position, false);
-                    builder.state(parseString("state", reader, -1));
-                    break;
-                case "postalCode":
-                    position = checkElementOrder("postalCode", 8, position, false);
-                    builder.postalCode(parseString("postalCode", reader, -1));
-                    break;
-                case "country":
-                    position = checkElementOrder("country", 9, position, false);
-                    builder.country(parseString("country", reader, -1));
-                    break;
-                case "period":
-                    position = checkElementOrder("period", 10, position, false);
-                    builder.period(parsePeriod("period", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private Annotation parseAnnotation(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Annotation.Builder builder = Annotation.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "authorReference":
-                    position = checkElementOrder("author[x]", 1, position, false);
-                    builder.author(parseReference("authorReference", reader, -1));
-                    break;
-                case "authorString":
-                    position = checkElementOrder("author[x]", 1, position, false);
-                    builder.author(parseString("authorString", reader, -1));
-                    break;
-                case "time":
-                    position = checkElementOrder("time", 2, position, false);
-                    builder.time(parseDateTime("time", reader, -1));
-                    break;
-                case "text":
-                    position = checkElementOrder("text", 3, position, false);
-                    builder.text((Markdown) parseString(Markdown.builder(), "text", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private Attachment parseAttachment(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Attachment.Builder builder = Attachment.builder();
@@ -497,55 +361,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private Availability parseAvailability(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Availability.Builder builder = Availability.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, availableTimeElementIndex = 0, notAvailableTimeElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "availableTime":
-                    position = checkElementOrder("availableTime", 1, position, true);
-                    builder.availableTime(parseElement("availableTime", reader, availableTimeElementIndex++));
-                    break;
-                case "notAvailableTime":
-                    position = checkElementOrder("notAvailableTime", 2, position, true);
-                    builder.notAvailableTime(parseElement("notAvailableTime", reader, notAvailableTimeElementIndex++));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-	private Base64Binary parseBase64Binary(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
+    private Base64Binary parseBase64Binary(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Base64Binary.Builder builder = Base64Binary.builder();
         builder.setValidating(validating);
@@ -3549,262 +3365,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private DataRequirement parseDataRequirement(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        DataRequirement.Builder builder = DataRequirement.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, profileElementIndex = 0, mustSupportElementIndex = 0, codeFilterElementIndex = 0, dateFilterElementIndex = 0, valueFilterElementIndex = 0, sortElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 1, position, false);
-                    builder.type((FHIRTypes) parseString(FHIRTypes.builder(), "type", reader, -1));
-                    break;
-                case "profile":
-                    position = checkElementOrder("profile", 2, position, true);
-                    builder.profile((Canonical) parseUri(Canonical.builder(), "profile", reader, profileElementIndex++));
-                    break;
-                case "subjectCodeableConcept":
-                    position = checkElementOrder("subject[x]", 3, position, false);
-                    builder.subject(parseCodeableConcept("subjectCodeableConcept", reader, -1));
-                    break;
-                case "subjectReference":
-                    position = checkElementOrder("subject[x]", 3, position, false);
-                    builder.subject(parseReference("subjectReference", reader, -1));
-                    break;
-                case "mustSupport":
-                    position = checkElementOrder("mustSupport", 4, position, true);
-                    builder.mustSupport(parseString("mustSupport", reader, mustSupportElementIndex++));
-                    break;
-                case "codeFilter":
-                    position = checkElementOrder("codeFilter", 5, position, true);
-                    builder.codeFilter(parseDataRequirementCodeFilter("codeFilter", reader, codeFilterElementIndex++));
-                    break;
-                case "dateFilter":
-                    position = checkElementOrder("dateFilter", 6, position, true);
-                    builder.dateFilter(parseDataRequirementDateFilter("dateFilter", reader, dateFilterElementIndex++));
-                    break;
-                case "valueFilter":
-                    position = checkElementOrder("valueFilter", 7, position, true);
-                    builder.valueFilter(parseElement("valueFilter", reader, valueFilterElementIndex++));
-                    break;
-                case "limit":
-                    position = checkElementOrder("limit", 8, position, false);
-                    builder.limit((PositiveInt) parseInteger(PositiveInt.builder(), "limit", reader, -1));
-                    break;
-                case "sort":
-                    position = checkElementOrder("sort", 9, position, true);
-                    builder.sort(parseDataRequirementSort("sort", reader, sortElementIndex++));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private DataRequirement.CodeFilter parseDataRequirementCodeFilter(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        DataRequirement.CodeFilter.Builder builder = DataRequirement.CodeFilter.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0, codeElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "path":
-                    position = checkElementOrder("path", 2, position, false);
-                    builder.path(parseString("path", reader, -1));
-                    break;
-                case "searchParam":
-                    position = checkElementOrder("searchParam", 3, position, false);
-                    builder.searchParam(parseString("searchParam", reader, -1));
-                    break;
-                case "valueSet":
-                    position = checkElementOrder("valueSet", 4, position, false);
-                    builder.valueSet((Canonical) parseUri(Canonical.builder(), "valueSet", reader, -1));
-                    break;
-                case "code":
-                    position = checkElementOrder("code", 5, position, true);
-                    builder.code(parseCoding("code", reader, codeElementIndex++));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private DataRequirement.DateFilter parseDataRequirementDateFilter(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        DataRequirement.DateFilter.Builder builder = DataRequirement.DateFilter.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "path":
-                    position = checkElementOrder("path", 2, position, false);
-                    builder.path(parseString("path", reader, -1));
-                    break;
-                case "searchParam":
-                    position = checkElementOrder("searchParam", 3, position, false);
-                    builder.searchParam(parseString("searchParam", reader, -1));
-                    break;
-                case "valueDateTime":
-                    position = checkElementOrder("value[x]", 4, position, false);
-                    builder.value(parseDateTime("valueDateTime", reader, -1));
-                    break;
-                case "valuePeriod":
-                    position = checkElementOrder("value[x]", 4, position, false);
-                    builder.value(parsePeriod("valuePeriod", reader, -1));
-                    break;
-                case "valueDuration":
-                    position = checkElementOrder("value[x]", 4, position, false);
-                    builder.value((Duration) parseQuantity(Duration.builder(), "valueDuration", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private DataRequirement.Sort parseDataRequirementSort(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        DataRequirement.Sort.Builder builder = DataRequirement.Sort.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "path":
-                    position = checkElementOrder("path", 2, position, false);
-                    builder.path(parseString("path", reader, -1));
-                    break;
-                case "direction":
-                    position = checkElementOrder("direction", 3, position, false);
-                    builder.direction((SortDirection) parseString(SortDirection.builder(), "direction", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private Date parseDate(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Date.Builder builder = Date.builder();
@@ -3937,174 +3497,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private Dosage parseDosage(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Dosage.Builder builder = Dosage.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0, additionalInstructionElementIndex = 0, asNeededForElementIndex = 0, doseAndRateElementIndex = 0, maxDosePerPeriodElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "sequence":
-                    position = checkElementOrder("sequence", 2, position, false);
-                    builder.sequence(parseInteger("sequence", reader, -1));
-                    break;
-                case "text":
-                    position = checkElementOrder("text", 3, position, false);
-                    builder.text(parseString("text", reader, -1));
-                    break;
-                case "additionalInstruction":
-                    position = checkElementOrder("additionalInstruction", 4, position, true);
-                    builder.additionalInstruction(parseCodeableConcept("additionalInstruction", reader, additionalInstructionElementIndex++));
-                    break;
-                case "patientInstruction":
-                    position = checkElementOrder("patientInstruction", 5, position, false);
-                    builder.patientInstruction(parseString("patientInstruction", reader, -1));
-                    break;
-                case "timing":
-                    position = checkElementOrder("timing", 6, position, false);
-                    builder.timing(parseTiming("timing", reader, -1));
-                    break;
-                case "asNeeded":
-                    position = checkElementOrder("asNeeded", 7, position, false);
-                    builder.asNeeded(parseBoolean("asNeeded", reader, -1));
-                    break;
-                case "asNeededFor":
-                    position = checkElementOrder("asNeededFor", 8, position, true);
-                    builder.asNeededFor(parseCodeableConcept("asNeededFor", reader, asNeededForElementIndex++));
-                    break;
-                case "site":
-                    position = checkElementOrder("site", 9, position, false);
-                    builder.site(parseCodeableConcept("site", reader, -1));
-                    break;
-                case "route":
-                    position = checkElementOrder("route", 10, position, false);
-                    builder.route(parseCodeableConcept("route", reader, -1));
-                    break;
-                case "method":
-                    position = checkElementOrder("method", 11, position, false);
-                    builder.method(parseCodeableConcept("method", reader, -1));
-                    break;
-                case "doseAndRate":
-                    position = checkElementOrder("doseAndRate", 12, position, true);
-                    builder.doseAndRate(parseDosageDoseAndRate("doseAndRate", reader, doseAndRateElementIndex++));
-                    break;
-                case "maxDosePerPeriod":
-                    position = checkElementOrder("maxDosePerPeriod", 13, position, true);
-                    builder.maxDosePerPeriod(parseRatio("maxDosePerPeriod", reader, maxDosePerPeriodElementIndex++));
-                    break;
-                case "maxDosePerAdministration":
-                    position = checkElementOrder("maxDosePerAdministration", 14, position, false);
-                    builder.maxDosePerAdministration((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "maxDosePerAdministration", reader, -1));
-                    break;
-                case "maxDosePerLifetime":
-                    position = checkElementOrder("maxDosePerLifetime", 15, position, false);
-                    builder.maxDosePerLifetime((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "maxDosePerLifetime", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private Dosage.DoseAndRate parseDosageDoseAndRate(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Dosage.DoseAndRate.Builder builder = Dosage.DoseAndRate.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 2, position, false);
-                    builder.type(parseCodeableConcept("type", reader, -1));
-                    break;
-                case "doseRange":
-                    position = checkElementOrder("dose[x]", 3, position, false);
-                    builder.dose(parseRange("doseRange", reader, -1));
-                    break;
-                case "doseQuantity":
-                    position = checkElementOrder("dose[x]", 3, position, false);
-                    builder.dose((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "doseQuantity", reader, -1));
-                    break;
-                case "rateRatio":
-                    position = checkElementOrder("rate[x]", 4, position, false);
-                    builder.rate(parseRatio("rateRatio", reader, -1));
-                    break;
-                case "rateRange":
-                    position = checkElementOrder("rate[x]", 4, position, false);
-                    builder.rate(parseRange("rateRange", reader, -1));
-                    break;
-                case "rateQuantity":
-                    position = checkElementOrder("rate[x]", 4, position, false);
-                    builder.rate((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "rateQuantity", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private ElementDefinition parseElementDefinition(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         ElementDefinition.Builder builder = ElementDefinition.builder();
@@ -4198,6 +3590,29 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("type", 18, position, true);
                     builder.type(parseElementDefinitionType("type", reader, typeElementIndex++));
                     break;
+                    
+                case "defaultValueAddress":
+                case "defaultValueAge":
+                case "defaultValueAnnotation":
+                case "defaultValueCount":
+                case "defaultValueDistance":
+                case "defaultValueDuration":
+                case "defaultValueHumanName":
+                case "defaultValueMoney":
+                case "defaultValueRange":
+                case "defaultValueRatio":
+                case "defaultValueRatioRange":
+                case "defaultValueTiming":
+                case "defaultValueDataRequirement":
+                case "defaultValueExpression":
+                case "defaultValueParameterDefinition":
+                case "defaultValueSampledData":                    
+                case "defaultValueTriggerDefinition":
+                case "defaultValueAvailability":
+                case "defaultValueExtendedContactDetail":
+                case "defaultValueDosage":
+                	return throwUnsupportedElement(localName);
+
                 case "defaultValueBase64Binary":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseBase64Binary("defaultValueBase64Binary", reader, -1));
@@ -4278,18 +3693,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue((Uuid) parseUri(Uuid.builder(), "defaultValueUuid", reader, -1));
                     break;
-                case "defaultValueAddress":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseAddress("defaultValueAddress", reader, -1));
-                    break;
-                case "defaultValueAge":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue((Age) parseQuantity(Age.builder(), "defaultValueAge", reader, -1));
-                    break;
-                case "defaultValueAnnotation":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseAnnotation("defaultValueAnnotation", reader, -1));
-                    break;
                 case "defaultValueAttachment":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseAttachment("defaultValueAttachment", reader, -1));
@@ -4310,29 +3713,9 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseContactPoint("defaultValueContactPoint", reader, -1));
                     break;
-                case "defaultValueCount":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue((Count) parseQuantity(Count.builder(), "defaultValueCount", reader, -1));
-                    break;
-                case "defaultValueDistance":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue((Distance) parseQuantity(Distance.builder(), "defaultValueDistance", reader, -1));
-                    break;
-                case "defaultValueDuration":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue((Duration) parseQuantity(Duration.builder(), "defaultValueDuration", reader, -1));
-                    break;
-                case "defaultValueHumanName":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseHumanName("defaultValueHumanName", reader, -1));
-                    break;
                 case "defaultValueIdentifier":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseIdentifier("defaultValueIdentifier", reader, -1));
-                    break;
-                case "defaultValueMoney":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseMoney("defaultValueMoney", reader, -1));
                     break;
                 case "defaultValuePeriod":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
@@ -4342,73 +3725,25 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseQuantity("defaultValueQuantity", reader, -1));
                     break;
-                case "defaultValueRange":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseRange("defaultValueRange", reader, -1));
-                    break;
-                case "defaultValueRatio":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseRatio("defaultValueRatio", reader, -1));
-                    break;
-                case "defaultValueRatioRange":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseRatioRange("defaultValueRatioRange", reader, -1));
-                    break;
                 case "defaultValueReference":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseReference("defaultValueReference", reader, -1));
-                    break;
-                case "defaultValueSampledData":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseSampledData("defaultValueSampledData", reader, -1));
                     break;
                 case "defaultValueSignature":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseSignature("defaultValueSignature", reader, -1));
                     break;
-                case "defaultValueTiming":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseTiming("defaultValueTiming", reader, -1));
-                    break;
                 case "defaultValueContactDetail":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseContactDetail("defaultValueContactDetail", reader, -1));
-                    break;
-                case "defaultValueDataRequirement":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseDataRequirement("defaultValueDataRequirement", reader, -1));
-                    break;
-                case "defaultValueExpression":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseExpression("defaultValueExpression", reader, -1));
-                    break;
-                case "defaultValueParameterDefinition":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseParameterDefinition("defaultValueParameterDefinition", reader, -1));
                     break;
                 case "defaultValueRelatedArtifact":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseRelatedArtifact("defaultValueRelatedArtifact", reader, -1));
                     break;
-                case "defaultValueTriggerDefinition":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseTriggerDefinition("defaultValueTriggerDefinition", reader, -1));
-                    break;
                 case "defaultValueUsageContext":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
                     builder.defaultValue(parseUsageContext("defaultValueUsageContext", reader, -1));
-                    break;
-                case "defaultValueAvailability":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseAvailability("defaultValueAvailability", reader, -1));
-                    break;
-                case "defaultValueExtendedContactDetail":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseExtendedContactDetail("defaultValueExtendedContactDetail", reader, -1));
-                    break;
-                case "defaultValueDosage":
-                    position = checkElementOrder("defaultValue[x]", 19, position, false);
-                    builder.defaultValue(parseDosage("defaultValueDosage", reader, -1));
                     break;
                 case "defaultValueMeta":
                     position = checkElementOrder("defaultValue[x]", 19, position, false);
@@ -4422,6 +3757,29 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("orderMeaning", 21, position, false);
                     builder.orderMeaning(parseString("orderMeaning", reader, -1));
                     break;
+                    
+                case "fixedAddress":
+                case "fixedAge":
+                case "fixedAnnotation":
+                case "fixedCount":
+                case "fixedDistance":
+                case "fixedDuration":
+                case "fixedHumanName":
+                case "fixedMoney":
+                case "fixedRange":
+                case "fixedRatio":
+                case "fixedRatioRange":
+                case "fixedSampledData":
+                case "fixedTiming":
+                case "fixedDataRequirement":
+                case "fixedExpression":
+                case "fixedParameterDefinition":
+                case "fixedTriggerDefinition":
+                case "fixedAvailability":
+                case "fixedExtendedContactDetail":
+                case "fixedDosage":
+                	return throwUnsupportedElement(localName);
+                	
                 case "fixedBase64Binary":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseBase64Binary("fixedBase64Binary", reader, -1));
@@ -4502,18 +3860,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed((Uuid) parseUri(Uuid.builder(), "fixedUuid", reader, -1));
                     break;
-                case "fixedAddress":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseAddress("fixedAddress", reader, -1));
-                    break;
-                case "fixedAge":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed((Age) parseQuantity(Age.builder(), "fixedAge", reader, -1));
-                    break;
-                case "fixedAnnotation":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseAnnotation("fixedAnnotation", reader, -1));
-                    break;
                 case "fixedAttachment":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseAttachment("fixedAttachment", reader, -1));
@@ -4534,29 +3880,9 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseContactPoint("fixedContactPoint", reader, -1));
                     break;
-                case "fixedCount":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed((Count) parseQuantity(Count.builder(), "fixedCount", reader, -1));
-                    break;
-                case "fixedDistance":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed((Distance) parseQuantity(Distance.builder(), "fixedDistance", reader, -1));
-                    break;
-                case "fixedDuration":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed((Duration) parseQuantity(Duration.builder(), "fixedDuration", reader, -1));
-                    break;
-                case "fixedHumanName":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseHumanName("fixedHumanName", reader, -1));
-                    break;
                 case "fixedIdentifier":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseIdentifier("fixedIdentifier", reader, -1));
-                    break;
-                case "fixedMoney":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseMoney("fixedMoney", reader, -1));
                     break;
                 case "fixedPeriod":
                     position = checkElementOrder("fixed[x]", 22, position, false);
@@ -4566,78 +3892,53 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseQuantity("fixedQuantity", reader, -1));
                     break;
-                case "fixedRange":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseRange("fixedRange", reader, -1));
-                    break;
-                case "fixedRatio":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseRatio("fixedRatio", reader, -1));
-                    break;
-                case "fixedRatioRange":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseRatioRange("fixedRatioRange", reader, -1));
-                    break;
                 case "fixedReference":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseReference("fixedReference", reader, -1));
-                    break;
-                case "fixedSampledData":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseSampledData("fixedSampledData", reader, -1));
                     break;
                 case "fixedSignature":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseSignature("fixedSignature", reader, -1));
                     break;
-                case "fixedTiming":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseTiming("fixedTiming", reader, -1));
-                    break;
                 case "fixedContactDetail":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseContactDetail("fixedContactDetail", reader, -1));
-                    break;
-                case "fixedDataRequirement":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseDataRequirement("fixedDataRequirement", reader, -1));
-                    break;
-                case "fixedExpression":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseExpression("fixedExpression", reader, -1));
-                    break;
-                case "fixedParameterDefinition":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseParameterDefinition("fixedParameterDefinition", reader, -1));
                     break;
                 case "fixedRelatedArtifact":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseRelatedArtifact("fixedRelatedArtifact", reader, -1));
                     break;
-                case "fixedTriggerDefinition":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseTriggerDefinition("fixedTriggerDefinition", reader, -1));
-                    break;
                 case "fixedUsageContext":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseUsageContext("fixedUsageContext", reader, -1));
-                    break;
-                case "fixedAvailability":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseAvailability("fixedAvailability", reader, -1));
-                    break;
-                case "fixedExtendedContactDetail":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseExtendedContactDetail("fixedExtendedContactDetail", reader, -1));
-                    break;
-                case "fixedDosage":
-                    position = checkElementOrder("fixed[x]", 22, position, false);
-                    builder.fixed(parseDosage("fixedDosage", reader, -1));
                     break;
                 case "fixedMeta":
                     position = checkElementOrder("fixed[x]", 22, position, false);
                     builder.fixed(parseMeta("fixedMeta", reader, -1));
                     break;
+
+                case "patternAddress":
+                case "patternAge":
+                case "patternAnnotation":
+                case "patternCount":
+                case "patternDistance":
+                case "patternDuration":
+                case "patternHumanName":
+                case "patternMoney":
+                case "patternRange":
+                case "patternRatio":
+                case "patternRatioRange":
+                case "patternSampledData":
+                case "patternTiming":
+                case "patternDataRequirement":
+                case "patternExpression":
+                case "patternParameterDefinition":
+                case "patternTriggerDefinition":
+                case "patternAvailability":
+                case "patternExtendedContactDetail":
+                case "patternDosage":
+                	return throwUnsupportedElement(localName);
+                    
                 case "patternBase64Binary":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseBase64Binary("patternBase64Binary", reader, -1));
@@ -4718,18 +4019,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern((Uuid) parseUri(Uuid.builder(), "patternUuid", reader, -1));
                     break;
-                case "patternAddress":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseAddress("patternAddress", reader, -1));
-                    break;
-                case "patternAge":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern((Age) parseQuantity(Age.builder(), "patternAge", reader, -1));
-                    break;
-                case "patternAnnotation":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseAnnotation("patternAnnotation", reader, -1));
-                    break;
                 case "patternAttachment":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseAttachment("patternAttachment", reader, -1));
@@ -4750,29 +4039,9 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseContactPoint("patternContactPoint", reader, -1));
                     break;
-                case "patternCount":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern((Count) parseQuantity(Count.builder(), "patternCount", reader, -1));
-                    break;
-                case "patternDistance":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern((Distance) parseQuantity(Distance.builder(), "patternDistance", reader, -1));
-                    break;
-                case "patternDuration":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern((Duration) parseQuantity(Duration.builder(), "patternDuration", reader, -1));
-                    break;
-                case "patternHumanName":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseHumanName("patternHumanName", reader, -1));
-                    break;
                 case "patternIdentifier":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseIdentifier("patternIdentifier", reader, -1));
-                    break;
-                case "patternMoney":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseMoney("patternMoney", reader, -1));
                     break;
                 case "patternPeriod":
                     position = checkElementOrder("pattern[x]", 23, position, false);
@@ -4782,73 +4051,25 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseQuantity("patternQuantity", reader, -1));
                     break;
-                case "patternRange":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseRange("patternRange", reader, -1));
-                    break;
-                case "patternRatio":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseRatio("patternRatio", reader, -1));
-                    break;
-                case "patternRatioRange":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseRatioRange("patternRatioRange", reader, -1));
-                    break;
                 case "patternReference":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseReference("patternReference", reader, -1));
-                    break;
-                case "patternSampledData":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseSampledData("patternSampledData", reader, -1));
                     break;
                 case "patternSignature":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseSignature("patternSignature", reader, -1));
                     break;
-                case "patternTiming":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseTiming("patternTiming", reader, -1));
-                    break;
                 case "patternContactDetail":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseContactDetail("patternContactDetail", reader, -1));
-                    break;
-                case "patternDataRequirement":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseDataRequirement("patternDataRequirement", reader, -1));
-                    break;
-                case "patternExpression":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseExpression("patternExpression", reader, -1));
-                    break;
-                case "patternParameterDefinition":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseParameterDefinition("patternParameterDefinition", reader, -1));
                     break;
                 case "patternRelatedArtifact":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseRelatedArtifact("patternRelatedArtifact", reader, -1));
                     break;
-                case "patternTriggerDefinition":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseTriggerDefinition("patternTriggerDefinition", reader, -1));
-                    break;
                 case "patternUsageContext":
                     position = checkElementOrder("pattern[x]", 23, position, false);
                     builder.pattern(parseUsageContext("patternUsageContext", reader, -1));
-                    break;
-                case "patternAvailability":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseAvailability("patternAvailability", reader, -1));
-                    break;
-                case "patternExtendedContactDetail":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseExtendedContactDetail("patternExtendedContactDetail", reader, -1));
-                    break;
-                case "patternDosage":
-                    position = checkElementOrder("pattern[x]", 23, position, false);
-                    builder.pattern(parseDosage("patternDosage", reader, -1));
                     break;
                 case "patternMeta":
                     position = checkElementOrder("pattern[x]", 23, position, false);
@@ -5206,6 +4427,29 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                 java.lang.String localName = reader.getLocalName();
                 requireNamespace(reader, FHIR_NS_URI);
                 switch (localName) {
+
+                case "valueAddress":
+                case "valueAge":
+                case "valueAnnotation":
+                case "valueCount":
+                case "valueDistance":
+                case "valueDuration":
+                case "valueHumanName":
+                case "valueMoney":
+                case "valueRange":
+                case "valueRatio":
+                case "valueRatioRange":
+                case "valueSampledData":
+                case "valueTiming":
+                case "valueDataRequirement":
+                case "valueExpression":
+                case "valueParameterDefinition":
+                case "valueTriggerDefinition":
+                case "valueAvailability":
+                case "valueExtendedContactDetail":
+                case "valueDosage":
+                	return throwUnsupportedElement(localName);
+                
                 case "extension":
                     position = checkElementOrder("extension", 0, position, true);
                     builder.extension(parseExtension("extension", reader, extensionElementIndex++));
@@ -5298,18 +4542,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value((Uuid) parseUri(Uuid.builder(), "valueUuid", reader, -1));
                     break;
-                case "valueAddress":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseAddress("valueAddress", reader, -1));
-                    break;
-                case "valueAge":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Age) parseQuantity(Age.builder(), "valueAge", reader, -1));
-                    break;
-                case "valueAnnotation":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseAnnotation("valueAnnotation", reader, -1));
-                    break;
                 case "valueAttachment":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseAttachment("valueAttachment", reader, -1));
@@ -5330,29 +4562,9 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseContactPoint("valueContactPoint", reader, -1));
                     break;
-                case "valueCount":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Count) parseQuantity(Count.builder(), "valueCount", reader, -1));
-                    break;
-                case "valueDistance":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Distance) parseQuantity(Distance.builder(), "valueDistance", reader, -1));
-                    break;
-                case "valueDuration":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Duration) parseQuantity(Duration.builder(), "valueDuration", reader, -1));
-                    break;
-                case "valueHumanName":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseHumanName("valueHumanName", reader, -1));
-                    break;
                 case "valueIdentifier":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseIdentifier("valueIdentifier", reader, -1));
-                    break;
-                case "valueMoney":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseMoney("valueMoney", reader, -1));
                     break;
                 case "valuePeriod":
                     position = checkElementOrder("value[x]", 3, position, false);
@@ -5362,73 +4574,25 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseQuantity("valueQuantity", reader, -1));
                     break;
-                case "valueRange":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseRange("valueRange", reader, -1));
-                    break;
-                case "valueRatio":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseRatio("valueRatio", reader, -1));
-                    break;
-                case "valueRatioRange":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseRatioRange("valueRatioRange", reader, -1));
-                    break;
                 case "valueReference":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseReference("valueReference", reader, -1));
-                    break;
-                case "valueSampledData":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseSampledData("valueSampledData", reader, -1));
                     break;
                 case "valueSignature":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseSignature("valueSignature", reader, -1));
                     break;
-                case "valueTiming":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseTiming("valueTiming", reader, -1));
-                    break;
                 case "valueContactDetail":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseContactDetail("valueContactDetail", reader, -1));
-                    break;
-                case "valueDataRequirement":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseDataRequirement("valueDataRequirement", reader, -1));
-                    break;
-                case "valueExpression":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseExpression("valueExpression", reader, -1));
-                    break;
-                case "valueParameterDefinition":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseParameterDefinition("valueParameterDefinition", reader, -1));
                     break;
                 case "valueRelatedArtifact":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseRelatedArtifact("valueRelatedArtifact", reader, -1));
                     break;
-                case "valueTriggerDefinition":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseTriggerDefinition("valueTriggerDefinition", reader, -1));
-                    break;
                 case "valueUsageContext":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseUsageContext("valueUsageContext", reader, -1));
-                    break;
-                case "valueAvailability":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseAvailability("valueAvailability", reader, -1));
-                    break;
-                case "valueExtendedContactDetail":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseExtendedContactDetail("valueExtendedContactDetail", reader, -1));
-                    break;
-                case "valueDosage":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseDosage("valueDosage", reader, -1));
                     break;
                 case "valueMeta":
                     position = checkElementOrder("value[x]", 3, position, false);
@@ -5689,130 +4853,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private Expression parseExpression(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Expression.Builder builder = Expression.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "description":
-                    position = checkElementOrder("description", 1, position, false);
-                    builder.description(parseString("description", reader, -1));
-                    break;
-                case "name":
-                    position = checkElementOrder("name", 2, position, false);
-                    builder.name((Code) parseString(Code.builder(), "name", reader, -1));
-                    break;
-                case "language":
-                    position = checkElementOrder("language", 3, position, false);
-                    builder.language((Code) parseString(Code.builder(), "language", reader, -1));
-                    break;
-                case "expression":
-                    position = checkElementOrder("expression", 4, position, false);
-                    builder.expression(parseString("expression", reader, -1));
-                    break;
-                case "reference":
-                    position = checkElementOrder("reference", 5, position, false);
-                    builder.reference(parseUri("reference", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private ExtendedContactDetail parseExtendedContactDetail(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        ExtendedContactDetail.Builder builder = ExtendedContactDetail.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, nameElementIndex = 0, telecomElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "purpose":
-                    position = checkElementOrder("purpose", 1, position, false);
-                    builder.purpose(parseCodeableConcept("purpose", reader, -1));
-                    break;
-                case "name":
-                    position = checkElementOrder("name", 2, position, true);
-                    builder.name(parseHumanName("name", reader, nameElementIndex++));
-                    break;
-                case "telecom":
-                    position = checkElementOrder("telecom", 3, position, true);
-                    builder.telecom(parseContactPoint("telecom", reader, telecomElementIndex++));
-                    break;
-                case "address":
-                    position = checkElementOrder("address", 4, position, false);
-                    builder.address(parseAddress("address", reader, -1));
-                    break;
-                case "organization":
-                    position = checkElementOrder("organization", 5, position, false);
-                    builder.organization(parseReference("organization", reader, -1));
-                    break;
-                case "period":
-                    position = checkElementOrder("period", 6, position, false);
-                    builder.period(parsePeriod("period", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private Extension parseExtension(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Extension.Builder builder = Extension.builder();
@@ -5834,6 +4874,29 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                 java.lang.String localName = reader.getLocalName();
                 requireNamespace(reader, FHIR_NS_URI);
                 switch (localName) {
+                
+                case "valueAddress":
+                case "valueAge":
+                case "valueAnnotation":
+                case "valueCount":
+                case "valueDistance":
+                case "valueDuration":
+                case "valueHumanName":
+                case "valueMoney":
+                case "valueRange":
+                case "valueRatio":
+                case "valueRatioRange":
+                case "valueSampledData":
+                case "valueTiming":
+                case "valueDataRequirement":
+                case "valueExpression":
+                case "valueParameterDefinition":
+                case "valueTriggerDefinition":
+                case "valueAvailability":
+                case "valueExtendedContactDetail":
+                case "valueDosage":
+                	return throwUnsupportedElement(localName);
+
                 case "extension":
                     position = checkElementOrder("extension", 0, position, true);
                     builder.extension(parseExtension("extension", reader, extensionElementIndex++));
@@ -5918,18 +4981,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value((Uuid) parseUri(Uuid.builder(), "valueUuid", reader, -1));
                     break;
-                case "valueAddress":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseAddress("valueAddress", reader, -1));
-                    break;
-                case "valueAge":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value((Age) parseQuantity(Age.builder(), "valueAge", reader, -1));
-                    break;
-                case "valueAnnotation":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseAnnotation("valueAnnotation", reader, -1));
-                    break;
                 case "valueAttachment":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseAttachment("valueAttachment", reader, -1));
@@ -5950,29 +5001,9 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseContactPoint("valueContactPoint", reader, -1));
                     break;
-                case "valueCount":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value((Count) parseQuantity(Count.builder(), "valueCount", reader, -1));
-                    break;
-                case "valueDistance":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value((Distance) parseQuantity(Distance.builder(), "valueDistance", reader, -1));
-                    break;
-                case "valueDuration":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value((Duration) parseQuantity(Duration.builder(), "valueDuration", reader, -1));
-                    break;
-                case "valueHumanName":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseHumanName("valueHumanName", reader, -1));
-                    break;
                 case "valueIdentifier":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseIdentifier("valueIdentifier", reader, -1));
-                    break;
-                case "valueMoney":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseMoney("valueMoney", reader, -1));
                     break;
                 case "valuePeriod":
                     position = checkElementOrder("value[x]", 1, position, false);
@@ -5982,145 +5013,29 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseQuantity("valueQuantity", reader, -1));
                     break;
-                case "valueRange":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseRange("valueRange", reader, -1));
-                    break;
-                case "valueRatio":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseRatio("valueRatio", reader, -1));
-                    break;
-                case "valueRatioRange":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseRatioRange("valueRatioRange", reader, -1));
-                    break;
                 case "valueReference":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseReference("valueReference", reader, -1));
-                    break;
-                case "valueSampledData":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseSampledData("valueSampledData", reader, -1));
                     break;
                 case "valueSignature":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseSignature("valueSignature", reader, -1));
                     break;
-                case "valueTiming":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseTiming("valueTiming", reader, -1));
-                    break;
                 case "valueContactDetail":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseContactDetail("valueContactDetail", reader, -1));
-                    break;
-                case "valueDataRequirement":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseDataRequirement("valueDataRequirement", reader, -1));
-                    break;
-                case "valueExpression":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseExpression("valueExpression", reader, -1));
-                    break;
-                case "valueParameterDefinition":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseParameterDefinition("valueParameterDefinition", reader, -1));
                     break;
                 case "valueRelatedArtifact":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseRelatedArtifact("valueRelatedArtifact", reader, -1));
                     break;
-                case "valueTriggerDefinition":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseTriggerDefinition("valueTriggerDefinition", reader, -1));
-                    break;
                 case "valueUsageContext":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseUsageContext("valueUsageContext", reader, -1));
                     break;
-                case "valueAvailability":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseAvailability("valueAvailability", reader, -1));
-                    break;
-                case "valueExtendedContactDetail":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseExtendedContactDetail("valueExtendedContactDetail", reader, -1));
-                    break;
-                case "valueDosage":
-                    position = checkElementOrder("value[x]", 1, position, false);
-                    builder.value(parseDosage("valueDosage", reader, -1));
-                    break;
                 case "valueMeta":
                     position = checkElementOrder("value[x]", 1, position, false);
                     builder.value(parseMeta("valueMeta", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private HumanName parseHumanName(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        HumanName.Builder builder = HumanName.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, givenElementIndex = 0, prefixElementIndex = 0, suffixElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "use":
-                    position = checkElementOrder("use", 1, position, false);
-                    builder.use((NameUse) parseString(NameUse.builder(), "use", reader, -1));
-                    break;
-                case "text":
-                    position = checkElementOrder("text", 2, position, false);
-                    builder.text(parseString("text", reader, -1));
-                    break;
-                case "family":
-                    position = checkElementOrder("family", 3, position, false);
-                    builder.family(parseString("family", reader, -1));
-                    break;
-                case "given":
-                    position = checkElementOrder("given", 4, position, true);
-                    builder.given(parseString("given", reader, givenElementIndex++));
-                    break;
-                case "prefix":
-                    position = checkElementOrder("prefix", 5, position, true);
-                    builder.prefix(parseString("prefix", reader, prefixElementIndex++));
-                    break;
-                case "suffix":
-                    position = checkElementOrder("suffix", 6, position, true);
-                    builder.suffix(parseString("suffix", reader, suffixElementIndex++));
-                    break;
-                case "period":
-                    position = checkElementOrder("period", 7, position, false);
-                    builder.period(parsePeriod("period", reader, -1));
                     break;
                 default:
                     if (!ignoringUnrecognizedElements) {
@@ -6384,54 +5299,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                 case "tag":
                     position = checkElementOrder("tag", 6, position, true);
                     builder.tag(parseCoding("tag", reader, tagElementIndex++));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private Money parseMoney(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Money.Builder builder = Money.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "value":
-                    position = checkElementOrder("value", 1, position, false);
-                    builder.value(parseDecimal("value", reader, -1));
-                    break;
-                case "currency":
-                    position = checkElementOrder("currency", 2, position, false);
-                    builder.currency((Code) parseString(Code.builder(), "currency", reader, -1));
                     break;
                 default:
                     if (!ignoringUnrecognizedElements) {
@@ -7080,74 +5947,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private ParameterDefinition parseParameterDefinition(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        ParameterDefinition.Builder builder = ParameterDefinition.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "name":
-                    position = checkElementOrder("name", 1, position, false);
-                    builder.name((Code) parseString(Code.builder(), "name", reader, -1));
-                    break;
-                case "use":
-                    position = checkElementOrder("use", 2, position, false);
-                    builder.use((ParameterUse) parseString(ParameterUse.builder(), "use", reader, -1));
-                    break;
-                case "min":
-                    position = checkElementOrder("min", 3, position, false);
-                    builder.min(parseInteger("min", reader, -1));
-                    break;
-                case "max":
-                    position = checkElementOrder("max", 4, position, false);
-                    builder.max(parseString("max", reader, -1));
-                    break;
-                case "documentation":
-                    position = checkElementOrder("documentation", 5, position, false);
-                    builder.documentation(parseString("documentation", reader, -1));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 6, position, false);
-                    builder.type((FHIRTypes) parseString(FHIRTypes.builder(), "type", reader, -1));
-                    break;
-                case "profile":
-                    position = checkElementOrder("profile", 7, position, false);
-                    builder.profile((Canonical) parseUri(Canonical.builder(), "profile", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private Parameters parseParameters(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Parameters.Builder builder = Parameters.builder();
@@ -7217,6 +6016,29 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                 java.lang.String localName = reader.getLocalName();
                 requireNamespace(reader, FHIR_NS_URI);
                 switch (localName) {
+                
+                case "valueAddress":
+                case "valueAge":
+                case "valueAnnotation":
+                case "valueCount":
+                case "valueDistance":
+                case "valueDuration":
+                case "valueHumanName":
+                case "valueMoney":
+                case "valueRange":
+                case "valueRatio":
+                case "valueRatioRange":
+                case "valueSampledData":
+                case "valueTiming":
+                case "valueDataRequirement":
+                case "valueExpression":
+                case "valueParameterDefinition":
+                case "valueTriggerDefinition":
+                case "valueAvailability":
+                case "valueExtendedContactDetail":
+                case "valueDosage":
+                	return throwUnsupportedElement(localName);
+                
                 case "extension":
                     position = checkElementOrder("extension", 0, position, true);
                     builder.extension(parseExtension("extension", reader, extensionElementIndex++));
@@ -7309,18 +6131,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value((Uuid) parseUri(Uuid.builder(), "valueUuid", reader, -1));
                     break;
-                case "valueAddress":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseAddress("valueAddress", reader, -1));
-                    break;
-                case "valueAge":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Age) parseQuantity(Age.builder(), "valueAge", reader, -1));
-                    break;
-                case "valueAnnotation":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseAnnotation("valueAnnotation", reader, -1));
-                    break;
                 case "valueAttachment":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseAttachment("valueAttachment", reader, -1));
@@ -7341,29 +6151,9 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseContactPoint("valueContactPoint", reader, -1));
                     break;
-                case "valueCount":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Count) parseQuantity(Count.builder(), "valueCount", reader, -1));
-                    break;
-                case "valueDistance":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Distance) parseQuantity(Distance.builder(), "valueDistance", reader, -1));
-                    break;
-                case "valueDuration":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value((Duration) parseQuantity(Duration.builder(), "valueDuration", reader, -1));
-                    break;
-                case "valueHumanName":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseHumanName("valueHumanName", reader, -1));
-                    break;
                 case "valueIdentifier":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseIdentifier("valueIdentifier", reader, -1));
-                    break;
-                case "valueMoney":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseMoney("valueMoney", reader, -1));
                     break;
                 case "valuePeriod":
                     position = checkElementOrder("value[x]", 3, position, false);
@@ -7373,73 +6163,25 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseQuantity("valueQuantity", reader, -1));
                     break;
-                case "valueRange":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseRange("valueRange", reader, -1));
-                    break;
-                case "valueRatio":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseRatio("valueRatio", reader, -1));
-                    break;
-                case "valueRatioRange":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseRatioRange("valueRatioRange", reader, -1));
-                    break;
                 case "valueReference":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseReference("valueReference", reader, -1));
-                    break;
-                case "valueSampledData":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseSampledData("valueSampledData", reader, -1));
                     break;
                 case "valueSignature":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseSignature("valueSignature", reader, -1));
                     break;
-                case "valueTiming":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseTiming("valueTiming", reader, -1));
-                    break;
                 case "valueContactDetail":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseContactDetail("valueContactDetail", reader, -1));
-                    break;
-                case "valueDataRequirement":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseDataRequirement("valueDataRequirement", reader, -1));
-                    break;
-                case "valueExpression":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseExpression("valueExpression", reader, -1));
-                    break;
-                case "valueParameterDefinition":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseParameterDefinition("valueParameterDefinition", reader, -1));
                     break;
                 case "valueRelatedArtifact":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseRelatedArtifact("valueRelatedArtifact", reader, -1));
                     break;
-                case "valueTriggerDefinition":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseTriggerDefinition("valueTriggerDefinition", reader, -1));
-                    break;
                 case "valueUsageContext":
                     position = checkElementOrder("value[x]", 3, position, false);
                     builder.value(parseUsageContext("valueUsageContext", reader, -1));
-                    break;
-                case "valueAvailability":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseAvailability("valueAvailability", reader, -1));
-                    break;
-                case "valueExtendedContactDetail":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseExtendedContactDetail("valueExtendedContactDetail", reader, -1));
-                    break;
-                case "valueDosage":
-                    position = checkElementOrder("value[x]", 3, position, false);
-                    builder.value(parseDosage("valueDosage", reader, -1));
                     break;
                 case "valueMeta":
                     position = checkElementOrder("value[x]", 3, position, false);
@@ -7583,154 +6325,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         return parseQuantity(Quantity.builder(), elementName, reader, elementIndex);
     }
 
-    private Range parseRange(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Range.Builder builder = Range.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "low":
-                    position = checkElementOrder("low", 1, position, false);
-                    builder.low((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "low", reader, -1));
-                    break;
-                case "high":
-                    position = checkElementOrder("high", 2, position, false);
-                    builder.high((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "high", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private Ratio parseRatio(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Ratio.Builder builder = Ratio.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "numerator":
-                    position = checkElementOrder("numerator", 1, position, false);
-                    builder.numerator(parseQuantity("numerator", reader, -1));
-                    break;
-                case "denominator":
-                    position = checkElementOrder("denominator", 2, position, false);
-                    builder.denominator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "denominator", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private RatioRange parseRatioRange(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        RatioRange.Builder builder = RatioRange.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "lowNumerator":
-                    position = checkElementOrder("lowNumerator", 1, position, false);
-                    builder.lowNumerator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "lowNumerator", reader, -1));
-                    break;
-                case "highNumerator":
-                    position = checkElementOrder("highNumerator", 2, position, false);
-                    builder.highNumerator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "highNumerator", reader, -1));
-                    break;
-                case "denominator":
-                    position = checkElementOrder("denominator", 3, position, false);
-                    builder.denominator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "denominator", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private Reference parseReference(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Reference.Builder builder = Reference.builder();
@@ -7867,87 +6461,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
 	    throw new XMLStreamException("Unexpected end of stream");
 	}
 
-	private SampledData parseSampledData(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        SampledData.Builder builder = SampledData.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "origin":
-                    position = checkElementOrder("origin", 1, position, false);
-                    builder.origin((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "origin", reader, -1));
-                    break;
-                case "interval":
-                    position = checkElementOrder("interval", 2, position, false);
-                    builder.interval(parseDecimal("interval", reader, -1));
-                    break;
-                case "intervalUnit":
-                    position = checkElementOrder("intervalUnit", 3, position, false);
-                    builder.intervalUnit((Code) parseString(Code.builder(), "intervalUnit", reader, -1));
-                    break;
-                case "factor":
-                    position = checkElementOrder("factor", 4, position, false);
-                    builder.factor(parseDecimal("factor", reader, -1));
-                    break;
-                case "lowerLimit":
-                    position = checkElementOrder("lowerLimit", 5, position, false);
-                    builder.lowerLimit(parseDecimal("lowerLimit", reader, -1));
-                    break;
-                case "upperLimit":
-                    position = checkElementOrder("upperLimit", 6, position, false);
-                    builder.upperLimit(parseDecimal("upperLimit", reader, -1));
-                    break;
-                case "dimensions":
-                    position = checkElementOrder("dimensions", 7, position, false);
-                    builder.dimensions((PositiveInt) parseInteger(PositiveInt.builder(), "dimensions", reader, -1));
-                    break;
-                case "codeMap":
-                    position = checkElementOrder("codeMap", 8, position, false);
-                    builder.codeMap((Canonical) parseUri(Canonical.builder(), "codeMap", reader, -1));
-                    break;
-                case "offsets":
-                    position = checkElementOrder("offsets", 9, position, false);
-                    builder.offsets(parseString("offsets", reader, -1));
-                    break;
-                case "data":
-                    position = checkElementOrder("data", 10, position, false);
-                    builder.data(parseString("data", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private Signature parseSignature(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
+	private Signature parseSignature(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         Signature.Builder builder = Signature.builder();
         builder.setValidating(validating);
@@ -9218,254 +7732,6 @@ public class FHIRXMLParser extends FHIRAbstractParser {
         throw new XMLStreamException("Unexpected end of stream");
     }
 
-    private Timing parseTiming(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Timing.Builder builder = Timing.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0, eventElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "event":
-                    position = checkElementOrder("event", 2, position, true);
-                    builder.event(parseDateTime("event", reader, eventElementIndex++));
-                    break;
-                case "repeat":
-                    position = checkElementOrder("repeat", 3, position, false);
-                    builder.repeat(parseTimingRepeat("repeat", reader, -1));
-                    break;
-                case "code":
-                    position = checkElementOrder("code", 4, position, false);
-                    builder.code(parseCodeableConcept("code", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private Timing.Repeat parseTimingRepeat(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        Timing.Repeat.Builder builder = Timing.Repeat.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, modifierExtensionElementIndex = 0, dayOfWeekElementIndex = 0, timeOfDayElementIndex = 0, whenElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "modifierExtension":
-                    position = checkElementOrder("modifierExtension", 1, position, true);
-                    builder.modifierExtension(parseExtension("modifierExtension", reader, modifierExtensionElementIndex++));
-                    break;
-                case "boundsDuration":
-                    position = checkElementOrder("bounds[x]", 2, position, false);
-                    builder.bounds((Duration) parseQuantity(Duration.builder(), "boundsDuration", reader, -1));
-                    break;
-                case "boundsRange":
-                    position = checkElementOrder("bounds[x]", 2, position, false);
-                    builder.bounds(parseRange("boundsRange", reader, -1));
-                    break;
-                case "boundsPeriod":
-                    position = checkElementOrder("bounds[x]", 2, position, false);
-                    builder.bounds(parsePeriod("boundsPeriod", reader, -1));
-                    break;
-                case "count":
-                    position = checkElementOrder("count", 3, position, false);
-                    builder.count((PositiveInt) parseInteger(PositiveInt.builder(), "count", reader, -1));
-                    break;
-                case "countMax":
-                    position = checkElementOrder("countMax", 4, position, false);
-                    builder.countMax((PositiveInt) parseInteger(PositiveInt.builder(), "countMax", reader, -1));
-                    break;
-                case "duration":
-                    position = checkElementOrder("duration", 5, position, false);
-                    builder.duration(parseDecimal("duration", reader, -1));
-                    break;
-                case "durationMax":
-                    position = checkElementOrder("durationMax", 6, position, false);
-                    builder.durationMax(parseDecimal("durationMax", reader, -1));
-                    break;
-                case "durationUnit":
-                    position = checkElementOrder("durationUnit", 7, position, false);
-                    builder.durationUnit((UnitsOfTime) parseString(UnitsOfTime.builder(), "durationUnit", reader, -1));
-                    break;
-                case "frequency":
-                    position = checkElementOrder("frequency", 8, position, false);
-                    builder.frequency((PositiveInt) parseInteger(PositiveInt.builder(), "frequency", reader, -1));
-                    break;
-                case "frequencyMax":
-                    position = checkElementOrder("frequencyMax", 9, position, false);
-                    builder.frequencyMax((PositiveInt) parseInteger(PositiveInt.builder(), "frequencyMax", reader, -1));
-                    break;
-                case "period":
-                    position = checkElementOrder("period", 10, position, false);
-                    builder.period(parseDecimal("period", reader, -1));
-                    break;
-                case "periodMax":
-                    position = checkElementOrder("periodMax", 11, position, false);
-                    builder.periodMax(parseDecimal("periodMax", reader, -1));
-                    break;
-                case "periodUnit":
-                    position = checkElementOrder("periodUnit", 12, position, false);
-                    builder.periodUnit((UnitsOfTime) parseString(UnitsOfTime.builder(), "periodUnit", reader, -1));
-                    break;
-                case "dayOfWeek":
-                    position = checkElementOrder("dayOfWeek", 13, position, true);
-                    builder.dayOfWeek((DayOfWeek) parseString(DayOfWeek.builder(), "dayOfWeek", reader, dayOfWeekElementIndex++));
-                    break;
-                case "timeOfDay":
-                    position = checkElementOrder("timeOfDay", 14, position, true);
-                    builder.timeOfDay(parseTime("timeOfDay", reader, timeOfDayElementIndex++));
-                    break;
-                case "when":
-                    position = checkElementOrder("when", 15, position, true);
-                    builder.when((EventTiming) parseString(EventTiming.builder(), "when", reader, whenElementIndex++));
-                    break;
-                case "offset":
-                    position = checkElementOrder("offset", 16, position, false);
-                    builder.offset((UnsignedInt) parseInteger(UnsignedInt.builder(), "offset", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
-    private TriggerDefinition parseTriggerDefinition(java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
-        stackPush(elementName, elementIndex);
-        TriggerDefinition.Builder builder = TriggerDefinition.builder();
-        builder.setValidating(validating);
-        java.lang.String id = reader.getAttributeValue(null, "id");
-        if (id != null) {
-            builder.id(id);
-        }
-        int position = -1;
-        int extensionElementIndex = 0, dataElementIndex = 0;
-        while (reader.hasNext()) {
-            int eventType = reader.next();
-            switch (eventType) {
-            case XMLStreamReader.START_ELEMENT:
-                java.lang.String localName = reader.getLocalName();
-                requireNamespace(reader, FHIR_NS_URI);
-                switch (localName) {
-                case "extension":
-                    position = checkElementOrder("extension", 0, position, true);
-                    builder.extension(parseExtension("extension", reader, extensionElementIndex++));
-                    break;
-                case "type":
-                    position = checkElementOrder("type", 1, position, false);
-                    builder.type((TriggerType) parseString(TriggerType.builder(), "type", reader, -1));
-                    break;
-                case "name":
-                    position = checkElementOrder("name", 2, position, false);
-                    builder.name(parseString("name", reader, -1));
-                    break;
-                case "code":
-                    position = checkElementOrder("code", 3, position, false);
-                    builder.code(parseCodeableConcept("code", reader, -1));
-                    break;
-                case "subscriptionTopic":
-                    position = checkElementOrder("subscriptionTopic", 4, position, false);
-                    builder.subscriptionTopic((Canonical) parseUri(Canonical.builder(), "subscriptionTopic", reader, -1));
-                    break;
-                case "timingTiming":
-                    position = checkElementOrder("timing[x]", 5, position, false);
-                    builder.timing(parseTiming("timingTiming", reader, -1));
-                    break;
-                case "timingReference":
-                    position = checkElementOrder("timing[x]", 5, position, false);
-                    builder.timing(parseReference("timingReference", reader, -1));
-                    break;
-                case "timingDate":
-                    position = checkElementOrder("timing[x]", 5, position, false);
-                    builder.timing(parseDate("timingDate", reader, -1));
-                    break;
-                case "timingDateTime":
-                    position = checkElementOrder("timing[x]", 5, position, false);
-                    builder.timing(parseDateTime("timingDateTime", reader, -1));
-                    break;
-                case "data":
-                    position = checkElementOrder("data", 6, position, true);
-                    builder.data(parseDataRequirement("data", reader, dataElementIndex++));
-                    break;
-                case "condition":
-                    position = checkElementOrder("condition", 7, position, false);
-                    builder.condition(parseExpression("condition", reader, -1));
-                    break;
-                default:
-                    if (!ignoringUnrecognizedElements) {
-                        throw new IllegalArgumentException("Unrecognized element: '" + localName + "'");
-                    }
-                    reader.nextTag();
-                    break;
-                }
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                if (reader.getLocalName().equals(elementName)) {
-                    stackPop();
-                    return builder.build();
-                }
-                break;
-            }
-        }
-        throw new XMLStreamException("Unexpected end of stream");
-    }
-
     private Uri parseUri(Uri.Builder builder, java.lang.String elementName, XMLStreamReader reader, int elementIndex) throws XMLStreamException {
         stackPush(elementName, elementIndex);
         builder.setValidating(validating);
@@ -9547,9 +7813,7 @@ public class FHIRXMLParser extends FHIRAbstractParser {
                     builder.value(parseQuantity("valueQuantity", reader, -1));
                     break;
                 case "valueRange":
-                    position = checkElementOrder("value[x]", 2, position, false);
-                    builder.value(parseRange("valueRange", reader, -1));
-                    break;
+                	return throwUnsupportedElement(localName);
                 case "valueReference":
                     position = checkElementOrder("value[x]", 2, position, false);
                     builder.value(parseReference("valueReference", reader, -1));

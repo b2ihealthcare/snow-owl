@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.node.*;
  * 
  * - Use Guava and Jackson for low-level JSON node manipulation
  * - Disable @NotThreadSafe annotation
- * - Remove support for resource types unrelated to terminology services
+ * - Remove support for resource types, datatypes and bound value sets unrelated to terminology services
  */
 
 //@NotThreadSafe
@@ -336,55 +336,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
             return parseValueSet(elementName, jsonNode, elementIndex);
         }
         return null;
-    }
-
-    private Address parseAddress(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Address.class, jsonNode);
-        }
-        Address.Builder builder = Address.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.use((AddressUse) parseString(AddressUse.builder(), "use", getJsonNode(jsonNode, "use", TextNode.class), jsonNode.get("_use"), -1));
-        builder.type((AddressType) parseString(AddressType.builder(), "type", getJsonNode(jsonNode, "type", TextNode.class), jsonNode.get("_type"), -1));
-        builder.text(parseString("text", getJsonNode(jsonNode, "text", TextNode.class), jsonNode.get("_text"), -1));
-        ArrayNode lineArray = getArrayNode(jsonNode, "line", true);
-        if (lineArray != null) {
-            ArrayNode _lineArray = getArrayNode(jsonNode, "_line");
-            for (int i = 0; i < lineArray.size(); i++) {
-                builder.line(parseString("line", lineArray.get(i), getJsonNode(_lineArray, i), i));
-            }
-        }
-        builder.city(parseString("city", getJsonNode(jsonNode, "city", TextNode.class), jsonNode.get("_city"), -1));
-        builder.district(parseString("district", getJsonNode(jsonNode, "district", TextNode.class), jsonNode.get("_district"), -1));
-        builder.state(parseString("state", getJsonNode(jsonNode, "state", TextNode.class), jsonNode.get("_state"), -1));
-        builder.postalCode(parseString("postalCode", getJsonNode(jsonNode, "postalCode", TextNode.class), jsonNode.get("_postalCode"), -1));
-        builder.country(parseString("country", getJsonNode(jsonNode, "country", TextNode.class), jsonNode.get("_country"), -1));
-        builder.period(parsePeriod("period", getJsonNode(jsonNode, "period", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private Annotation parseAnnotation(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Annotation.class, jsonNode);
-        }
-        Annotation.Builder builder = Annotation.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.author(parseChoiceElement("author", jsonNode, Reference.class, String.class));
-        builder.time(parseDateTime("time", getJsonNode(jsonNode, "time", TextNode.class), jsonNode.get("_time"), -1));
-        builder.text((Markdown) parseString(Markdown.builder(), "text", getJsonNode(jsonNode, "text", TextNode.class), jsonNode.get("_text"), -1));
-        stackPop();
-        return builder.build();
     }
 
     private Attachment parseAttachment(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
@@ -1879,162 +1830,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         return builder.build();
     }
 
-    private Contributor parseContributor(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Contributor.class, jsonNode);
-        }
-        Contributor.Builder builder = Contributor.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.type((ContributorType) parseString(ContributorType.builder(), "type", getJsonNode(jsonNode, "type", TextNode.class), jsonNode.get("_type"), -1));
-        builder.name(parseString("name", getJsonNode(jsonNode, "name", TextNode.class), jsonNode.get("_name"), -1));
-        ArrayNode contactArray = getArrayNode(jsonNode, "contact");
-        if (contactArray != null) {
-            for (int i = 0; i < contactArray.size(); i++) {
-                if (contactArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + contactArray.get(i).getNodeType() + " for element: contact");
-                }
-                builder.contact(parseContactDetail("contact", contactArray.get(i), i));
-            }
-        }
-        stackPop();
-        return builder.build();
-    }
-
-    private DataRequirement parseDataRequirement(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(DataRequirement.class, jsonNode);
-        }
-        DataRequirement.Builder builder = DataRequirement.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.type((FHIRTypes) parseString(FHIRTypes.builder(), "type", getJsonNode(jsonNode, "type", TextNode.class), jsonNode.get("_type"), -1));
-        ArrayNode profileArray = getArrayNode(jsonNode, "profile", true);
-        if (profileArray != null) {
-            ArrayNode _profileArray = getArrayNode(jsonNode, "_profile");
-            for (int i = 0; i < profileArray.size(); i++) {
-                builder.profile((Canonical) parseUri(Canonical.builder(), "profile", profileArray.get(i), getJsonNode(_profileArray, i), i));
-            }
-        }
-        builder.subject(parseChoiceElement("subject", jsonNode, CodeableConcept.class, Reference.class));
-        ArrayNode mustSupportArray = getArrayNode(jsonNode, "mustSupport", true);
-        if (mustSupportArray != null) {
-            ArrayNode _mustSupportArray = getArrayNode(jsonNode, "_mustSupport");
-            for (int i = 0; i < mustSupportArray.size(); i++) {
-                builder.mustSupport(parseString("mustSupport", mustSupportArray.get(i), getJsonNode(_mustSupportArray, i), i));
-            }
-        }
-        ArrayNode codeFilterArray = getArrayNode(jsonNode, "codeFilter");
-        if (codeFilterArray != null) {
-            for (int i = 0; i < codeFilterArray.size(); i++) {
-                if (codeFilterArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + codeFilterArray.get(i).getNodeType() + " for element: codeFilter");
-                }
-                builder.codeFilter(parseDataRequirementCodeFilter("codeFilter", codeFilterArray.get(i), i));
-            }
-        }
-        ArrayNode dateFilterArray = getArrayNode(jsonNode, "dateFilter");
-        if (dateFilterArray != null) {
-            for (int i = 0; i < dateFilterArray.size(); i++) {
-                if (dateFilterArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + dateFilterArray.get(i).getNodeType() + " for element: dateFilter");
-                }
-                builder.dateFilter(parseDataRequirementDateFilter("dateFilter", dateFilterArray.get(i), i));
-            }
-        }
-        ArrayNode valueFilterArray = getArrayNode(jsonNode, "valueFilter");
-        if (valueFilterArray != null) {
-            for (int i = 0; i < valueFilterArray.size(); i++) {
-                if (valueFilterArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + valueFilterArray.get(i).getNodeType() + " for element: valueFilter");
-                }
-                builder.valueFilter(parseElement("valueFilter", valueFilterArray.get(i), i));
-            }
-        }
-        builder.limit((PositiveInt) parseInteger(PositiveInt.builder(), "limit", getJsonNode(jsonNode, "limit", NumericNode.class), jsonNode.get("_limit"), -1));
-        ArrayNode sortArray = getArrayNode(jsonNode, "sort");
-        if (sortArray != null) {
-            for (int i = 0; i < sortArray.size(); i++) {
-                if (sortArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + sortArray.get(i).getNodeType() + " for element: sort");
-                }
-                builder.sort(parseDataRequirementSort("sort", sortArray.get(i), i));
-            }
-        }
-        stackPop();
-        return builder.build();
-    }
-
-    private DataRequirement.CodeFilter parseDataRequirementCodeFilter(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(DataRequirement.CodeFilter.class, jsonNode);
-        }
-        DataRequirement.CodeFilter.Builder builder = DataRequirement.CodeFilter.builder();
-        builder.setValidating(validating);
-        parseBackboneElement(builder, jsonNode);
-        builder.path(parseString("path", getJsonNode(jsonNode, "path", TextNode.class), jsonNode.get("_path"), -1));
-        builder.searchParam(parseString("searchParam", getJsonNode(jsonNode, "searchParam", TextNode.class), jsonNode.get("_searchParam"), -1));
-        builder.valueSet((Canonical) parseUri(Canonical.builder(), "valueSet", getJsonNode(jsonNode, "valueSet", TextNode.class), jsonNode.get("_valueSet"), -1));
-        ArrayNode codeArray = getArrayNode(jsonNode, "code");
-        if (codeArray != null) {
-            for (int i = 0; i < codeArray.size(); i++) {
-                if (codeArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + codeArray.get(i).getNodeType() + " for element: code");
-                }
-                builder.code(parseCoding("code", codeArray.get(i), i));
-            }
-        }
-        stackPop();
-        return builder.build();
-    }
-
-    private DataRequirement.DateFilter parseDataRequirementDateFilter(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(DataRequirement.DateFilter.class, jsonNode);
-        }
-        DataRequirement.DateFilter.Builder builder = DataRequirement.DateFilter.builder();
-        builder.setValidating(validating);
-        parseBackboneElement(builder, jsonNode);
-        builder.path(parseString("path", getJsonNode(jsonNode, "path", TextNode.class), jsonNode.get("_path"), -1));
-        builder.searchParam(parseString("searchParam", getJsonNode(jsonNode, "searchParam", TextNode.class), jsonNode.get("_searchParam"), -1));
-        builder.value(parseChoiceElement("value", jsonNode, DateTime.class, Period.class, Duration.class));
-        stackPop();
-        return builder.build();
-    }
-
-    private DataRequirement.Sort parseDataRequirementSort(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(DataRequirement.Sort.class, jsonNode);
-        }
-        DataRequirement.Sort.Builder builder = DataRequirement.Sort.builder();
-        builder.setValidating(validating);
-        parseBackboneElement(builder, jsonNode);
-        builder.path(parseString("path", getJsonNode(jsonNode, "path", TextNode.class), jsonNode.get("_path"), -1));
-        builder.direction((SortDirection) parseString(SortDirection.builder(), "direction", getJsonNode(jsonNode, "direction", TextNode.class), jsonNode.get("_direction"), -1));
-        stackPop();
-        return builder.build();
-    }
-
     private void parseDataType(DataType.Builder builder, JsonNode jsonNode) {
         builder.setValidating(validating);
         parseElement(builder, jsonNode);
@@ -2151,85 +1946,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         }
     }
 
-    private Dosage parseDosage(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Dosage.class, jsonNode);
-        }
-        Dosage.Builder builder = Dosage.builder();
-        builder.setValidating(validating);
-        parseBackboneType(builder, jsonNode);
-        builder.sequence(parseInteger("sequence", getJsonNode(jsonNode, "sequence", NumericNode.class), jsonNode.get("_sequence"), -1));
-        builder.text(parseString("text", getJsonNode(jsonNode, "text", TextNode.class), jsonNode.get("_text"), -1));
-        ArrayNode additionalInstructionArray = getArrayNode(jsonNode, "additionalInstruction");
-        if (additionalInstructionArray != null) {
-            for (int i = 0; i < additionalInstructionArray.size(); i++) {
-                if (additionalInstructionArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + additionalInstructionArray.get(i).getNodeType() + " for element: additionalInstruction");
-                }
-                builder.additionalInstruction(parseCodeableConcept("additionalInstruction", additionalInstructionArray.get(i), i));
-            }
-        }
-        builder.patientInstruction(parseString("patientInstruction", getJsonNode(jsonNode, "patientInstruction", TextNode.class), jsonNode.get("_patientInstruction"), -1));
-        builder.timing(parseTiming("timing", getJsonNode(jsonNode, "timing", JsonNode.class), -1));
-        builder.asNeeded(parseBoolean("asNeeded", getJsonNode(jsonNode, "asNeeded", JsonNode.class), jsonNode.get("_asNeeded"), -1));
-        ArrayNode asNeededForArray = getArrayNode(jsonNode, "asNeededFor");
-        if (asNeededForArray != null) {
-            for (int i = 0; i < asNeededForArray.size(); i++) {
-                if (asNeededForArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + asNeededForArray.get(i).getNodeType() + " for element: asNeededFor");
-                }
-                builder.asNeededFor(parseCodeableConcept("asNeededFor", asNeededForArray.get(i), i));
-            }
-        }
-        builder.site(parseCodeableConcept("site", getJsonNode(jsonNode, "site", JsonNode.class), -1));
-        builder.route(parseCodeableConcept("route", getJsonNode(jsonNode, "route", JsonNode.class), -1));
-        builder.method(parseCodeableConcept("method", getJsonNode(jsonNode, "method", JsonNode.class), -1));
-        ArrayNode doseAndRateArray = getArrayNode(jsonNode, "doseAndRate");
-        if (doseAndRateArray != null) {
-            for (int i = 0; i < doseAndRateArray.size(); i++) {
-                if (doseAndRateArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + doseAndRateArray.get(i).getNodeType() + " for element: doseAndRate");
-                }
-                builder.doseAndRate(parseDosageDoseAndRate("doseAndRate", doseAndRateArray.get(i), i));
-            }
-        }
-        ArrayNode maxDosePerPeriodArray = getArrayNode(jsonNode, "maxDosePerPeriod");
-        if (maxDosePerPeriodArray != null) {
-            for (int i = 0; i < maxDosePerPeriodArray.size(); i++) {
-                if (maxDosePerPeriodArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + maxDosePerPeriodArray.get(i).getNodeType() + " for element: maxDosePerPeriod");
-                }
-                builder.maxDosePerPeriod(parseRatio("maxDosePerPeriod", maxDosePerPeriodArray.get(i), i));
-            }
-        }
-        builder.maxDosePerAdministration((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "maxDosePerAdministration", getJsonNode(jsonNode, "maxDosePerAdministration", JsonNode.class), -1));
-        builder.maxDosePerLifetime((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "maxDosePerLifetime", getJsonNode(jsonNode, "maxDosePerLifetime", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private Dosage.DoseAndRate parseDosageDoseAndRate(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Dosage.DoseAndRate.class, jsonNode);
-        }
-        Dosage.DoseAndRate.Builder builder = Dosage.DoseAndRate.builder();
-        builder.setValidating(validating);
-        parseBackboneElement(builder, jsonNode);
-        builder.type(parseCodeableConcept("type", getJsonNode(jsonNode, "type", JsonNode.class), -1));
-        builder.dose(parseChoiceElement("dose", jsonNode, Range.class, SimpleQuantity.class));
-        builder.rate(parseChoiceElement("rate", jsonNode, Ratio.class, Range.class, SimpleQuantity.class));
-        stackPop();
-        return builder.build();
-    }
-
     private void parseElement(Element.Builder builder, JsonNode jsonNode) {
         builder.setValidating(validating);
         builder.id(parseJavaString("id", getJsonNode(jsonNode, "id", TextNode.class), -1));
@@ -2300,11 +2016,176 @@ public class FHIRJsonParser extends FHIRAbstractParser {
                 builder.type(parseElementDefinitionType("type", typeArray.get(i), i));
             }
         }
-        builder.defaultValue(parseChoiceElement("defaultValue", jsonNode, Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class));
+        builder.defaultValue(parseChoiceElement("defaultValue", jsonNode,
+			Base64Binary.class,
+			Boolean.class,
+			Canonical.class,
+			Code.class,
+			Date.class,
+			DateTime.class,
+			Decimal.class,
+			Id.class,
+			Instant.class,
+			Integer.class,
+			Integer64.class,
+			Markdown.class,
+			Oid.class,
+			PositiveInt.class,
+			String.class,
+			Time.class,
+			UnsignedInt.class,
+			Uri.class,
+			Url.class,
+			Uuid.class,
+			// Address.class,
+			// Age.class,
+			// Annotation.class,
+			Attachment.class,
+			CodeableConcept.class,
+			CodeableReference.class,
+			Coding.class,
+			ContactPoint.class,
+			// Count.class,
+			// Distance.class,
+			// Duration.class,
+			// HumanName.class,
+			Identifier.class,
+			// Money.class,
+			Period.class,
+			Quantity.class,
+			// Range.class,
+			// Ratio.class,
+			// RatioRange.class,
+			Reference.class,
+			// SampledData.class,
+			Signature.class,
+			// Timing.class,
+			ContactDetail.class,
+			// DataRequirement.class,
+			// Expression.class,
+			// ParameterDefinition.class,
+			RelatedArtifact.class,
+			// TriggerDefinition.class,
+			UsageContext.class,
+			// Availability.class,
+			// ExtendedContactDetail.class,
+			// Dosage.class,
+			Meta.class
+		));
         builder.meaningWhenMissing((Markdown) parseString(Markdown.builder(), "meaningWhenMissing", getJsonNode(jsonNode, "meaningWhenMissing", TextNode.class), jsonNode.get("_meaningWhenMissing"), -1));
         builder.orderMeaning(parseString("orderMeaning", getJsonNode(jsonNode, "orderMeaning", TextNode.class), jsonNode.get("_orderMeaning"), -1));
-        builder.fixed(parseChoiceElement("fixed", jsonNode, Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class));
-        builder.pattern(parseChoiceElement("pattern", jsonNode, Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class));
+        builder.fixed(parseChoiceElement("fixed", jsonNode,
+			Base64Binary.class,
+			Boolean.class,
+			Canonical.class,
+			Code.class,
+			Date.class,
+			DateTime.class,
+			Decimal.class,
+			Id.class,
+			Instant.class,
+			Integer.class,
+			Integer64.class,
+			Markdown.class,
+			Oid.class,
+			PositiveInt.class,
+			String.class,
+			Time.class,
+			UnsignedInt.class,
+			Uri.class,
+			Url.class,
+			Uuid.class,
+			// Address.class,
+			// Age.class,
+			// Annotation.class,
+			Attachment.class,
+			CodeableConcept.class,
+			CodeableReference.class,
+			Coding.class,
+			ContactPoint.class,
+			// Count.class,
+			// Distance.class,
+			// Duration.class,
+			// HumanName.class,
+			Identifier.class,
+			// Money.class,
+			Period.class,
+			Quantity.class,
+			// Range.class,
+			// Ratio.class,
+			// RatioRange.class,
+			Reference.class,
+			// SampledData.class,
+			Signature.class,
+			// Timing.class,
+			ContactDetail.class,
+			// DataRequirement.class,
+			// Expression.class,
+			// ParameterDefinition.class,
+			RelatedArtifact.class,
+			// TriggerDefinition.class,
+			UsageContext.class,
+			// Availability.class,
+			// ExtendedContactDetail.class,
+			// Dosage.class,
+			Meta.class));
+        builder.pattern(parseChoiceElement("pattern",
+			jsonNode,
+			Base64Binary.class,
+			Boolean.class,
+			Canonical.class,
+			Code.class,
+			Date.class,
+			DateTime.class,
+			Decimal.class,
+			Id.class,
+			Instant.class,
+			Integer.class,
+			Integer64.class,
+			Markdown.class,
+			Oid.class,
+			PositiveInt.class,
+			String.class,
+			Time.class,
+			UnsignedInt.class,
+			Uri.class,
+			Url.class,
+			Uuid.class,
+			// Address.class,
+			// Age.class,
+			// Annotation.class,
+			Attachment.class,
+			CodeableConcept.class,
+			CodeableReference.class,
+			Coding.class,
+			ContactPoint.class,
+			// Count.class,
+			// Distance.class,
+			// Duration.class,
+			// HumanName.class,
+			Identifier.class,
+			// Money.class,
+			Period.class,
+			Quantity.class,
+			// Range.class,
+			// Ratio.class,
+			// RatioRange.class,
+			Reference.class,
+			// SampledData.class,
+			Signature.class,
+			// Timing.class,
+			ContactDetail.class,
+			// DataRequirement.class,
+			// Expression.class,
+			// ParameterDefinition.class,
+			RelatedArtifact.class,
+			// TriggerDefinition.class,
+			UsageContext.class,
+			// Availability.class,
+			// ExtendedContactDetail.class,
+			// Dosage.class,
+			Meta.class
+		));
         ArrayNode exampleArray = getArrayNode(jsonNode, "example");
         if (exampleArray != null) {
             for (int i = 0; i < exampleArray.size(); i++) {
@@ -2438,7 +2319,61 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         builder.setValidating(validating);
         parseBackboneElement(builder, jsonNode);
         builder.label(parseString("label", getJsonNode(jsonNode, "label", TextNode.class), jsonNode.get("_label"), -1));
-        builder.value(parseChoiceElement("value", jsonNode, Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class));
+        builder.value(parseChoiceElement("value", jsonNode,
+			Base64Binary.class,
+			Boolean.class,
+			Canonical.class,
+			Code.class,
+			Date.class,
+			DateTime.class,
+			Decimal.class,
+			Id.class,
+			Instant.class,
+			Integer.class,
+			Integer64.class,
+			Markdown.class,
+			Oid.class,
+			PositiveInt.class,
+			String.class,
+			Time.class,
+			UnsignedInt.class,
+			Uri.class,
+			Url.class,
+			Uuid.class,
+			// Address.class,
+			// Age.class,
+			// Annotation.class,
+			Attachment.class,
+			CodeableConcept.class,
+			CodeableReference.class,
+			Coding.class,
+			ContactPoint.class,
+			// Count.class,
+			// Distance.class,
+			// Duration.class,
+			// HumanName.class,
+			Identifier.class,
+			// Money.class,
+			Period.class,
+			Quantity.class,
+			// Range.class,
+			// Ratio.class,
+			// RatioRange.class,
+			Reference.class,
+			// SampledData.class,
+			Signature.class,
+			// Timing.class,
+			ContactDetail.class,
+			// DataRequirement.class,
+			// Expression.class,
+			// ParameterDefinition.class,
+			RelatedArtifact.class,
+			// TriggerDefinition.class,
+			UsageContext.class,
+			// Availability.class,
+			// ExtendedContactDetail.class,
+			// Dosage.class,
+			Meta.class));
         stackPop();
         return builder.build();
     }
@@ -2544,26 +2479,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         return builder.build();
     }
 
-    private Expression parseExpression(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Expression.class, jsonNode);
-        }
-        Expression.Builder builder = Expression.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.description(parseString("description", getJsonNode(jsonNode, "description", TextNode.class), jsonNode.get("_description"), -1));
-        builder.name((Code) parseString(Code.builder(), "name", getJsonNode(jsonNode, "name", TextNode.class), jsonNode.get("_name"), -1));
-        builder.language((Code) parseString(Code.builder(), "language", getJsonNode(jsonNode, "language", TextNode.class), jsonNode.get("_language"), -1));
-        builder.expression(parseString("expression", getJsonNode(jsonNode, "expression", TextNode.class), jsonNode.get("_expression"), -1));
-        builder.reference(parseUri("reference", getJsonNode(jsonNode, "reference", TextNode.class), jsonNode.get("_reference"), -1));
-        stackPop();
-        return builder.build();
-    }
-
     private Extension parseExtension(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
         if (jsonNode == null) {
             return null;
@@ -2576,47 +2491,62 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         builder.setValidating(validating);
         parseDataType(builder, jsonNode);
         builder.url(parseJavaString("url", getJsonNode(jsonNode, "url", TextNode.class), -1));
-        builder.value(parseChoiceElement("value", jsonNode, Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class));
-        stackPop();
-        return builder.build();
-    }
-
-    private HumanName parseHumanName(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(HumanName.class, jsonNode);
-        }
-        HumanName.Builder builder = HumanName.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.use((NameUse) parseString(NameUse.builder(), "use", getJsonNode(jsonNode, "use", TextNode.class), jsonNode.get("_use"), -1));
-        builder.text(parseString("text", getJsonNode(jsonNode, "text", TextNode.class), jsonNode.get("_text"), -1));
-        builder.family(parseString("family", getJsonNode(jsonNode, "family", TextNode.class), jsonNode.get("_family"), -1));
-        ArrayNode givenArray = getArrayNode(jsonNode, "given", true);
-        if (givenArray != null) {
-            ArrayNode _givenArray = getArrayNode(jsonNode, "_given");
-            for (int i = 0; i < givenArray.size(); i++) {
-                builder.given(parseString("given", givenArray.get(i), getJsonNode(_givenArray, i), i));
-            }
-        }
-        ArrayNode prefixArray = getArrayNode(jsonNode, "prefix", true);
-        if (prefixArray != null) {
-            ArrayNode _prefixArray = getArrayNode(jsonNode, "_prefix");
-            for (int i = 0; i < prefixArray.size(); i++) {
-                builder.prefix(parseString("prefix", prefixArray.get(i), getJsonNode(_prefixArray, i), i));
-            }
-        }
-        ArrayNode suffixArray = getArrayNode(jsonNode, "suffix", true);
-        if (suffixArray != null) {
-            ArrayNode _suffixArray = getArrayNode(jsonNode, "_suffix");
-            for (int i = 0; i < suffixArray.size(); i++) {
-                builder.suffix(parseString("suffix", suffixArray.get(i), getJsonNode(_suffixArray, i), i));
-            }
-        }
-        builder.period(parsePeriod("period", getJsonNode(jsonNode, "period", JsonNode.class), -1));
+        builder.value(parseChoiceElement("value", jsonNode,
+			Base64Binary.class,
+			Boolean.class,
+			Canonical.class,
+			Code.class,
+			Date.class,
+			DateTime.class,
+			Decimal.class,
+			Id.class,
+			Instant.class,
+			Integer.class,
+			Integer64.class,
+			Markdown.class,
+			Oid.class,
+			PositiveInt.class,
+			String.class,
+			Time.class,
+			UnsignedInt.class,
+			Uri.class,
+			Url.class,
+			Uuid.class,
+			// Address.class,
+			// Age.class,
+			// Annotation.class,
+			Attachment.class,
+			CodeableConcept.class,
+			CodeableReference.class,
+			Coding.class,
+			ContactPoint.class,
+			// Count.class,
+			// Distance.class,
+			// Duration.class,
+			// HumanName.class,
+			Identifier.class,
+			// Money.class,
+			Period.class,
+			Quantity.class,
+			// Range.class,
+			// Ratio.class,
+			// RatioRange.class,
+			Reference.class,
+			// SampledData.class,
+			Signature.class,
+			// Timing.class,
+			ContactDetail.class,
+			// DataRequirement.class,
+			// Expression.class,
+			// ParameterDefinition.class,
+			RelatedArtifact.class,
+			// TriggerDefinition.class,
+			UsageContext.class,
+			// Availability.class,
+			// ExtendedContactDetail.class,
+			// Dosage.class,
+			Meta.class
+		));
         stackPop();
         return builder.build();
     }
@@ -2757,23 +2687,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
                 builder.tag(parseCoding("tag", tagArray.get(i), i));
             }
         }
-        stackPop();
-        return builder.build();
-    }
-
-    private Money parseMoney(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Money.class, jsonNode);
-        }
-        Money.Builder builder = Money.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.value(parseDecimal("value", getJsonNode(jsonNode, "value", NumericNode.class), jsonNode.get("_value"), -1));
-        builder.currency((Code) parseString(Code.builder(), "currency", getJsonNode(jsonNode, "currency", TextNode.class), jsonNode.get("_currency"), -1));
         stackPop();
         return builder.build();
     }
@@ -3070,28 +2983,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         return builder.build();
     }
 
-    private ParameterDefinition parseParameterDefinition(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(ParameterDefinition.class, jsonNode);
-        }
-        ParameterDefinition.Builder builder = ParameterDefinition.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.name((Code) parseString(Code.builder(), "name", getJsonNode(jsonNode, "name", TextNode.class), jsonNode.get("_name"), -1));
-        builder.use((ParameterUse) parseString(ParameterUse.builder(), "use", getJsonNode(jsonNode, "use", TextNode.class), jsonNode.get("_use"), -1));
-        builder.min(parseInteger("min", getJsonNode(jsonNode, "min", NumericNode.class), jsonNode.get("_min"), -1));
-        builder.max(parseString("max", getJsonNode(jsonNode, "max", TextNode.class), jsonNode.get("_max"), -1));
-        builder.documentation(parseString("documentation", getJsonNode(jsonNode, "documentation", TextNode.class), jsonNode.get("_documentation"), -1));
-        builder.type((FHIRTypes) parseString(FHIRTypes.builder(), "type", getJsonNode(jsonNode, "type", TextNode.class), jsonNode.get("_type"), -1));
-        builder.profile((Canonical) parseUri(Canonical.builder(), "profile", getJsonNode(jsonNode, "profile", TextNode.class), jsonNode.get("_profile"), -1));
-        stackPop();
-        return builder.build();
-    }
-
     private Parameters parseParameters(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
         if (jsonNode == null) {
             return null;
@@ -3128,7 +3019,62 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         builder.setValidating(validating);
         parseBackboneElement(builder, jsonNode);
         builder.name(parseString("name", getJsonNode(jsonNode, "name", TextNode.class), jsonNode.get("_name"), -1));
-        builder.value(parseChoiceElement("value", jsonNode, Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class));
+        builder.value(parseChoiceElement("value", jsonNode,
+			Base64Binary.class,
+			Boolean.class,
+			Canonical.class,
+			Code.class,
+			Date.class,
+			DateTime.class,
+			Decimal.class,
+			Id.class,
+			Instant.class,
+			Integer.class,
+			Integer64.class,
+			Markdown.class,
+			Oid.class,
+			PositiveInt.class,
+			String.class,
+			Time.class,
+			UnsignedInt.class,
+			Uri.class,
+			Url.class,
+			Uuid.class,
+//			Address.class,
+//			Age.class,
+//			Annotation.class,
+			Attachment.class,
+			CodeableConcept.class,
+			CodeableReference.class,
+			Coding.class,
+			ContactPoint.class,
+//			Count.class,
+//			Distance.class,
+//			Duration.class,
+//			HumanName.class,
+			Identifier.class,
+//			Money.class,
+			Period.class,
+			Quantity.class,
+//			Range.class,
+//			Ratio.class,
+//			RatioRange.class,
+			Reference.class,
+//			SampledData.class,
+			Signature.class,
+//			Timing.class,
+			ContactDetail.class,
+//			DataRequirement.class,
+//			Expression.class,
+//			ParameterDefinition.class,
+			RelatedArtifact.class,
+//			TriggerDefinition.class,
+			UsageContext.class,
+//			Availability.class,
+//			ExtendedContactDetail.class,
+//			Dosage.class,
+			Meta.class
+		));
         builder.resource(parseResource("resource", getJsonNode(jsonNode, "resource", JsonNode.class), -1));
         ArrayNode partArray = getArrayNode(jsonNode, "part");
         if (partArray != null) {
@@ -3181,58 +3127,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
 
     private Quantity parseQuantity(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
         return parseQuantity(Quantity.builder(), elementName, jsonNode, elementIndex);
-    }
-
-    private Range parseRange(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Range.class, jsonNode);
-        }
-        Range.Builder builder = Range.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.low((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "low", getJsonNode(jsonNode, "low", JsonNode.class), -1));
-        builder.high((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "high", getJsonNode(jsonNode, "high", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private Ratio parseRatio(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Ratio.class, jsonNode);
-        }
-        Ratio.Builder builder = Ratio.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.numerator(parseQuantity("numerator", getJsonNode(jsonNode, "numerator", JsonNode.class), -1));
-        builder.denominator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "denominator", getJsonNode(jsonNode, "denominator", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private RatioRange parseRatioRange(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(RatioRange.class, jsonNode);
-        }
-        RatioRange.Builder builder = RatioRange.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.lowNumerator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "lowNumerator", getJsonNode(jsonNode, "lowNumerator", JsonNode.class), -1));
-        builder.highNumerator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "highNumerator", getJsonNode(jsonNode, "highNumerator", JsonNode.class), -1));
-        builder.denominator((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "denominator", getJsonNode(jsonNode, "denominator", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
     }
 
     private Reference parseReference(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
@@ -3293,31 +3187,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         builder.meta(parseMeta("meta", getJsonNode(jsonNode, "meta", JsonNode.class), -1));
         builder.implicitRules(parseUri("implicitRules", getJsonNode(jsonNode, "implicitRules", TextNode.class), jsonNode.get("_implicitRules"), -1));
         builder.language((Code) parseString(Code.builder(), "language", getJsonNode(jsonNode, "language", TextNode.class), jsonNode.get("_language"), -1));
-    }
-
-    private SampledData parseSampledData(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(SampledData.class, jsonNode);
-        }
-        SampledData.Builder builder = SampledData.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.origin((SimpleQuantity) parseQuantity(SimpleQuantity.builder(), "origin", getJsonNode(jsonNode, "origin", JsonNode.class), -1));
-        builder.interval(parseDecimal("interval", getJsonNode(jsonNode, "interval", NumericNode.class), jsonNode.get("_interval"), -1));
-        builder.intervalUnit((Code) parseString(Code.builder(), "intervalUnit", getJsonNode(jsonNode, "intervalUnit", TextNode.class), jsonNode.get("_intervalUnit"), -1));
-        builder.factor(parseDecimal("factor", getJsonNode(jsonNode, "factor", NumericNode.class), jsonNode.get("_factor"), -1));
-        builder.lowerLimit(parseDecimal("lowerLimit", getJsonNode(jsonNode, "lowerLimit", NumericNode.class), jsonNode.get("_lowerLimit"), -1));
-        builder.upperLimit(parseDecimal("upperLimit", getJsonNode(jsonNode, "upperLimit", NumericNode.class), jsonNode.get("_upperLimit"), -1));
-        builder.dimensions((PositiveInt) parseInteger(PositiveInt.builder(), "dimensions", getJsonNode(jsonNode, "dimensions", NumericNode.class), jsonNode.get("_dimensions"), -1));
-        builder.codeMap((Canonical) parseUri(Canonical.builder(), "codeMap", getJsonNode(jsonNode, "codeMap", TextNode.class), jsonNode.get("_codeMap"), -1));
-        builder.offsets(parseString("offsets", getJsonNode(jsonNode, "offsets", TextNode.class), jsonNode.get("_offsets"), -1));
-        builder.data(parseString("data", getJsonNode(jsonNode, "data", TextNode.class), jsonNode.get("_data"), -1));
-        stackPop();
-        return builder.build();
     }
 
     private Signature parseSignature(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
@@ -3895,108 +3764,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         return builder.build();
     }
 
-    private Timing parseTiming(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Timing.class, jsonNode);
-        }
-        Timing.Builder builder = Timing.builder();
-        builder.setValidating(validating);
-        parseBackboneType(builder, jsonNode);
-        ArrayNode eventArray = getArrayNode(jsonNode, "event", true);
-        if (eventArray != null) {
-            ArrayNode _eventArray = getArrayNode(jsonNode, "_event");
-            for (int i = 0; i < eventArray.size(); i++) {
-                builder.event(parseDateTime("event", eventArray.get(i), getJsonNode(_eventArray, i), i));
-            }
-        }
-        builder.repeat(parseTimingRepeat("repeat", getJsonNode(jsonNode, "repeat", JsonNode.class), -1));
-        builder.code(parseCodeableConcept("code", getJsonNode(jsonNode, "code", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private Timing.Repeat parseTimingRepeat(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(Timing.Repeat.class, jsonNode);
-        }
-        Timing.Repeat.Builder builder = Timing.Repeat.builder();
-        builder.setValidating(validating);
-        parseBackboneElement(builder, jsonNode);
-        builder.bounds(parseChoiceElement("bounds", jsonNode, Duration.class, Range.class, Period.class));
-        builder.count((PositiveInt) parseInteger(PositiveInt.builder(), "count", getJsonNode(jsonNode, "count", NumericNode.class), jsonNode.get("_count"), -1));
-        builder.countMax((PositiveInt) parseInteger(PositiveInt.builder(), "countMax", getJsonNode(jsonNode, "countMax", NumericNode.class), jsonNode.get("_countMax"), -1));
-        builder.duration(parseDecimal("duration", getJsonNode(jsonNode, "duration", NumericNode.class), jsonNode.get("_duration"), -1));
-        builder.durationMax(parseDecimal("durationMax", getJsonNode(jsonNode, "durationMax", NumericNode.class), jsonNode.get("_durationMax"), -1));
-        builder.durationUnit((UnitsOfTime) parseString(UnitsOfTime.builder(), "durationUnit", getJsonNode(jsonNode, "durationUnit", TextNode.class), jsonNode.get("_durationUnit"), -1));
-        builder.frequency((PositiveInt) parseInteger(PositiveInt.builder(), "frequency", getJsonNode(jsonNode, "frequency", NumericNode.class), jsonNode.get("_frequency"), -1));
-        builder.frequencyMax((PositiveInt) parseInteger(PositiveInt.builder(), "frequencyMax", getJsonNode(jsonNode, "frequencyMax", NumericNode.class), jsonNode.get("_frequencyMax"), -1));
-        builder.period(parseDecimal("period", getJsonNode(jsonNode, "period", NumericNode.class), jsonNode.get("_period"), -1));
-        builder.periodMax(parseDecimal("periodMax", getJsonNode(jsonNode, "periodMax", NumericNode.class), jsonNode.get("_periodMax"), -1));
-        builder.periodUnit((UnitsOfTime) parseString(UnitsOfTime.builder(), "periodUnit", getJsonNode(jsonNode, "periodUnit", TextNode.class), jsonNode.get("_periodUnit"), -1));
-        ArrayNode dayOfWeekArray = getArrayNode(jsonNode, "dayOfWeek", true);
-        if (dayOfWeekArray != null) {
-            ArrayNode _dayOfWeekArray = getArrayNode(jsonNode, "_dayOfWeek");
-            for (int i = 0; i < dayOfWeekArray.size(); i++) {
-                builder.dayOfWeek((DayOfWeek) parseString(DayOfWeek.builder(), "dayOfWeek", dayOfWeekArray.get(i), getJsonNode(_dayOfWeekArray, i), i));
-            }
-        }
-        ArrayNode timeOfDayArray = getArrayNode(jsonNode, "timeOfDay", true);
-        if (timeOfDayArray != null) {
-            ArrayNode _timeOfDayArray = getArrayNode(jsonNode, "_timeOfDay");
-            for (int i = 0; i < timeOfDayArray.size(); i++) {
-                builder.timeOfDay(parseTime("timeOfDay", timeOfDayArray.get(i), getJsonNode(_timeOfDayArray, i), i));
-            }
-        }
-        ArrayNode whenArray = getArrayNode(jsonNode, "when", true);
-        if (whenArray != null) {
-            ArrayNode _whenArray = getArrayNode(jsonNode, "_when");
-            for (int i = 0; i < whenArray.size(); i++) {
-                builder.when((EventTiming) parseString(EventTiming.builder(), "when", whenArray.get(i), getJsonNode(_whenArray, i), i));
-            }
-        }
-        builder.offset((UnsignedInt) parseInteger(UnsignedInt.builder(), "offset", getJsonNode(jsonNode, "offset", NumericNode.class), jsonNode.get("_offset"), -1));
-        stackPop();
-        return builder.build();
-    }
-
-    private TriggerDefinition parseTriggerDefinition(java.lang.String elementName, JsonNode jsonNode, int elementIndex) {
-        if (jsonNode == null) {
-            return null;
-        }
-        stackPush(elementName, elementIndex);
-        if (!ignoringUnrecognizedElements) {
-            checkForUnrecognizedElements(TriggerDefinition.class, jsonNode);
-        }
-        TriggerDefinition.Builder builder = TriggerDefinition.builder();
-        builder.setValidating(validating);
-        parseDataType(builder, jsonNode);
-        builder.type((TriggerType) parseString(TriggerType.builder(), "type", getJsonNode(jsonNode, "type", TextNode.class), jsonNode.get("_type"), -1));
-        builder.name(parseString("name", getJsonNode(jsonNode, "name", TextNode.class), jsonNode.get("_name"), -1));
-        builder.code(parseCodeableConcept("code", getJsonNode(jsonNode, "code", JsonNode.class), -1));
-        builder.subscriptionTopic((Canonical) parseUri(Canonical.builder(), "subscriptionTopic", getJsonNode(jsonNode, "subscriptionTopic", TextNode.class), jsonNode.get("_subscriptionTopic"), -1));
-        builder.timing(parseChoiceElement("timing", jsonNode, Timing.class, Reference.class, Date.class, DateTime.class));
-        ArrayNode dataArray = getArrayNode(jsonNode, "data");
-        if (dataArray != null) {
-            for (int i = 0; i < dataArray.size(); i++) {
-                if (dataArray.get(i).getNodeType() != JsonNodeType.OBJECT) {
-                    throw new IllegalArgumentException("Expected: OBJECT but found: " + dataArray.get(i).getNodeType() + " for element: data");
-                }
-                builder.data(parseDataRequirement("data", dataArray.get(i), i));
-            }
-        }
-        builder.condition(parseExpression("condition", getJsonNode(jsonNode, "condition", JsonNode.class), -1));
-        stackPop();
-        return builder.build();
-    }
-
     private Uri parseUri(Uri.Builder builder, java.lang.String elementName, JsonNode jsonNode, JsonNode _jsonNode, int elementIndex) {
         if (jsonNode == null && _jsonNode == null) {
             return null;
@@ -4038,7 +3805,12 @@ public class FHIRJsonParser extends FHIRAbstractParser {
         builder.setValidating(validating);
         parseDataType(builder, jsonNode);
         builder.code(parseCoding("code", getJsonNode(jsonNode, "code", JsonNode.class), -1));
-        builder.value(parseChoiceElement("value", jsonNode, CodeableConcept.class, Quantity.class, Range.class, Reference.class));
+        builder.value(parseChoiceElement("value", jsonNode, 
+    		CodeableConcept.class, 
+    		Quantity.class, 
+    		// Range.class, 
+    		Reference.class
+		));
         stackPop();
         return builder.build();
     }
@@ -4605,6 +4377,28 @@ public class FHIRJsonParser extends FHIRAbstractParser {
 
         if (elementType != null) {
             switch (elementType.getSimpleName()) {
+            case "Address":
+            case "Age":
+            case "Annotation":
+            case "Count":
+            case "Distance":
+            case "Duration":
+            case "HumanName":
+            case "Money":
+            case "MoneyQuantity":
+            case "Range":
+            case "Ratio":
+            case "RatioRange":
+            case "SampledData":
+            case "Timing":
+            case "Contributor":
+            case "DataRequirement":
+            case "Expression":
+            case "ParameterDefinition":
+            case "TriggerDefinition":
+            case "Dosage":
+            	return throwUnsupportedElement(elementType.getSimpleName());
+            	
             case "Base64Binary":
                 return parseBase64Binary(elementName, nestedNode, _nestedNode, -1);
             case "Boolean":
@@ -4643,12 +4437,6 @@ public class FHIRJsonParser extends FHIRAbstractParser {
                 return parseUri(Url.builder(), elementName, nestedNode, _nestedNode, -1);
             case "Uuid":
                 return parseUri(Uuid.builder(), elementName, nestedNode, _nestedNode, -1);
-            case "Address":
-                return parseAddress(elementName, (JsonNode) nestedNode, -1);
-            case "Age":
-                return parseQuantity(Age.builder(), elementName, (JsonNode) nestedNode, -1);
-            case "Annotation":
-                return parseAnnotation(elementName, (JsonNode) nestedNode, -1);
             case "Attachment":
                 return parseAttachment(elementName, (JsonNode) nestedNode, -1);
             case "CodeableConcept":
@@ -4659,58 +4447,24 @@ public class FHIRJsonParser extends FHIRAbstractParser {
                 return parseCoding(elementName, (JsonNode) nestedNode, -1);
             case "ContactPoint":
                 return parseContactPoint(elementName, (JsonNode) nestedNode, -1);
-            case "Count":
-                return parseQuantity(Count.builder(), elementName, (JsonNode) nestedNode, -1);
-            case "Distance":
-                return parseQuantity(Distance.builder(), elementName, (JsonNode) nestedNode, -1);
-            case "Duration":
-                return parseQuantity(Duration.builder(), elementName, (JsonNode) nestedNode, -1);
-            case "HumanName":
-                return parseHumanName(elementName, (JsonNode) nestedNode, -1);
             case "Identifier":
                 return parseIdentifier(elementName, (JsonNode) nestedNode, -1);
-            case "Money":
-                return parseMoney(elementName, (JsonNode) nestedNode, -1);
-            case "MoneyQuantity":
-                return parseQuantity(MoneyQuantity.builder(), elementName, (JsonNode) nestedNode, -1);
             case "Period":
                 return parsePeriod(elementName, (JsonNode) nestedNode, -1);
             case "Quantity":
                 return parseQuantity(elementName, (JsonNode) nestedNode, -1);
-            case "Range":
-                return parseRange(elementName, (JsonNode) nestedNode, -1);
-            case "Ratio":
-                return parseRatio(elementName, (JsonNode) nestedNode, -1);
-            case "RatioRange":
-                return parseRatioRange(elementName, (JsonNode) nestedNode, -1);
             case "Reference":
                 return parseReference(elementName, (JsonNode) nestedNode, -1);
-            case "SampledData":
-                return parseSampledData(elementName, (JsonNode) nestedNode, -1);
             case "SimpleQuantity":
                 return parseQuantity(SimpleQuantity.builder(), elementName, (JsonNode) nestedNode, -1);
             case "Signature":
                 return parseSignature(elementName, (JsonNode) nestedNode, -1);
-            case "Timing":
-                return parseTiming(elementName, (JsonNode) nestedNode, -1);
             case "ContactDetail":
                 return parseContactDetail(elementName, (JsonNode) nestedNode, -1);
-            case "Contributor":
-                return parseContributor(elementName, (JsonNode) nestedNode, -1);
-            case "DataRequirement":
-                return parseDataRequirement(elementName, (JsonNode) nestedNode, -1);
-            case "Expression":
-                return parseExpression(elementName, (JsonNode) nestedNode, -1);
-            case "ParameterDefinition":
-                return parseParameterDefinition(elementName, (JsonNode) nestedNode, -1);
             case "RelatedArtifact":
                 return parseRelatedArtifact(elementName, (JsonNode) nestedNode, -1);
-            case "TriggerDefinition":
-                return parseTriggerDefinition(elementName, (JsonNode) nestedNode, -1);
             case "UsageContext":
                 return parseUsageContext(elementName, (JsonNode) nestedNode, -1);
-            case "Dosage":
-                return parseDosage(elementName, (JsonNode) nestedNode, -1);
             case "Meta":
                 return parseMeta(elementName, (JsonNode) nestedNode, -1);
             }

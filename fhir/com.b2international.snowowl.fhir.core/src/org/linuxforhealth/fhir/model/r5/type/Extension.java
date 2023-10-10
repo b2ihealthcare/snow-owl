@@ -17,6 +17,32 @@ import org.linuxforhealth.fhir.model.annotation.Required;
 import org.linuxforhealth.fhir.model.r5.util.ValidationSupport;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
 
+/*
+ * Changes:
+ * 
+ * - Disallowed certain datatypes appearing in an Extension
+ *   + Address
+ *   + Age
+ *   + Annotation
+ *   + Count
+ *   + Distance
+ *   + Duration
+ *   + HumanName
+ *   + Money
+ *   + Range
+ *   + Ratio
+ *   + RatioRange
+ *   + SampledData
+ *   + Timing
+ *   + DataRequirement
+ *   + Expression
+ *   + ParameterDefinition
+ *   + TriggerDefinition
+ *   + Availability
+ *   + Dosage
+ *   + ExtendedContactDetail
+ */
+
 /**
  * Optional Extension Element - found in all resources.
  */
@@ -32,7 +58,61 @@ import org.linuxforhealth.fhir.model.r5.visitor.Visitor;
 public class Extension extends DataType {
     @Required
     private final java.lang.String url;
-    @Choice({ Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class })
+    @Choice({ 
+    	Base64Binary.class,
+		Boolean.class,
+		Canonical.class,
+		Code.class,
+		Date.class,
+		DateTime.class,
+		Decimal.class,
+		Id.class,
+		Instant.class,
+		Integer.class,
+		Integer64.class,
+		Markdown.class,
+		Oid.class,
+		PositiveInt.class,
+		String.class,
+		Time.class,
+		UnsignedInt.class,
+		Uri.class,
+		Url.class,
+		Uuid.class,
+		// Address.class,
+		// Age.class,
+		// Annotation.class,
+		Attachment.class,
+		CodeableConcept.class,
+		CodeableReference.class,
+		Coding.class,
+		ContactPoint.class,
+		// Count.class,
+		// Distance.class,
+		// Duration.class,
+		// HumanName.class,
+		Identifier.class,
+		// Money.class,
+		Period.class,
+		Quantity.class,
+		// Range.class,
+		// Ratio.class,
+		// RatioRange.class,
+		Reference.class,
+		// SampledData.class,
+		Signature.class,
+		// Timing.class,
+		ContactDetail.class,
+		// DataRequirement.class,
+		// Expression.class,
+		// ParameterDefinition.class,
+		RelatedArtifact.class,
+		// TriggerDefinition.class,
+		UsageContext.class,
+		// Availability.class,
+		// ExtendedContactDetail.class,
+		// Dosage.class,
+		Meta.class })
     private final Element value;
 
     private Extension(Builder builder) {
@@ -410,7 +490,61 @@ public class Extension extends DataType {
         protected void validate(Extension extension) {
             super.validate(extension);
             ValidationSupport.requireNonNull(extension.url, "url");
-            ValidationSupport.choiceElement(extension.value, "value", Base64Binary.class, Boolean.class, Canonical.class, Code.class, Date.class, DateTime.class, Decimal.class, Id.class, Instant.class, Integer.class, Integer64.class, Markdown.class, Oid.class, PositiveInt.class, String.class, Time.class, UnsignedInt.class, Uri.class, Url.class, Uuid.class, Address.class, Age.class, Annotation.class, Attachment.class, CodeableConcept.class, CodeableReference.class, Coding.class, ContactPoint.class, Count.class, Distance.class, Duration.class, HumanName.class, Identifier.class, Money.class, Period.class, Quantity.class, Range.class, Ratio.class, RatioRange.class, Reference.class, SampledData.class, Signature.class, Timing.class, ContactDetail.class, DataRequirement.class, Expression.class, ParameterDefinition.class, RelatedArtifact.class, TriggerDefinition.class, UsageContext.class, Availability.class, ExtendedContactDetail.class, Dosage.class, Meta.class);
+            ValidationSupport.choiceElement(extension.value, "value",
+				Base64Binary.class,
+				Boolean.class,
+				Canonical.class,
+				Code.class,
+				Date.class,
+				DateTime.class,
+				Decimal.class,
+				Id.class,
+				Instant.class,
+				Integer.class,
+				Integer64.class,
+				Markdown.class,
+				Oid.class,
+				PositiveInt.class,
+				String.class,
+				Time.class,
+				UnsignedInt.class,
+				Uri.class,
+				Url.class,
+				Uuid.class,
+				// Address.class,
+				// Age.class,
+				// Annotation.class,
+				Attachment.class,
+				CodeableConcept.class,
+				CodeableReference.class,
+				Coding.class,
+				ContactPoint.class,
+				// Count.class,
+				// Distance.class,
+				// Duration.class,
+				// HumanName.class,
+				Identifier.class,
+				// Money.class,
+				Period.class,
+				Quantity.class,
+				// Range.class,
+				// Ratio.class,
+				// RatioRange.class,
+				Reference.class,
+				// SampledData.class,
+				Signature.class,
+				// Timing.class,
+				ContactDetail.class,
+				// DataRequirement.class,
+				// Expression.class,
+				// ParameterDefinition.class,
+				RelatedArtifact.class,
+				// TriggerDefinition.class,
+				UsageContext.class,
+				// Availability.class,
+				// ExtendedContactDetail.class,
+				// Dosage.class,
+				Meta.class);
             ValidationSupport.checkUri(extension.url);
             ValidationSupport.requireValueOrChildren(extension);
         }
