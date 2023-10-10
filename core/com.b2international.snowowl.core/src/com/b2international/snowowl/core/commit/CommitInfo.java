@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.commit;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.SortedSet;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranchPoint;
@@ -39,7 +40,7 @@ public final class CommitInfo implements Serializable {
 	}
 	
 	public static final class Fields {
-		public static final List<String> DEFAULT_FIELD_SELECTION = List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID);
+		public static final List<String> DEFAULT_FIELD_SELECTION = List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID, Commit.Fields.SUBJECTS);
 	}
 	
 	public static Builder builder() {
@@ -54,7 +55,8 @@ public final class CommitInfo implements Serializable {
 			.comment(doc.getComment())
 			.timestamp(doc.getTimestamp())
 			.groupId(doc.getGroupId())
-			.mergeSource(doc.getMergeSource());
+			.mergeSource(doc.getMergeSource())
+			.subjects(doc.getSubjects());
 	}
 	
 	public static Builder builder(final CommitInfo commitInfo) {
@@ -90,7 +92,7 @@ public final class CommitInfo implements Serializable {
 		private Long timestamp;
 		private String groupId;
 		private RevisionBranchPoint mergeSource;
-		private List<String> subjects;
+		private SortedSet<String> subjects;
 		private CommitInfoDetails details;
 		
 		public Builder id(final String id) {
@@ -128,7 +130,7 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
-		public Builder subjects(List<String> subjects) {
+		public Builder subjects(SortedSet<String> subjects) {
 			this.subjects = subjects;
 			return this;
 		}
@@ -155,7 +157,7 @@ public final class CommitInfo implements Serializable {
 	private final Long timestamp;
 	private final String groupId;
 	private final RevisionBranchPoint mergeSource;
-	private final List<String> subjects;
+	private final SortedSet<String> subjects;
 	private final CommitInfoDetails details;
 	
 	///////////////////////
@@ -172,7 +174,7 @@ public final class CommitInfo implements Serializable {
 			final Long timestamp, 
 			final String groupId,
 			final RevisionBranchPoint mergeSource,
-			final List<String> subjects,
+			final SortedSet<String> subjects,
 			final CommitInfoDetails details) {
 		this.id = id;
 		this.branch = branch;
@@ -217,7 +219,7 @@ public final class CommitInfo implements Serializable {
 		return mergeSource;
 	}
 	
-	public List<String> getSubjects() {
+	public SortedSet<String> getSubjects() {
 		return subjects;
 	}
 	
