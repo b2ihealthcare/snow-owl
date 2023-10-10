@@ -22,8 +22,6 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.elasticsearch.common.Strings;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.branch.Branch;
@@ -31,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  * @since 8.0
@@ -93,20 +92,20 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 			throw new BadRequestException("Malformed Resource URI value: '%s' must be in format '<resourceType>/<resourceId>/<path>'.", uri);
 		}
 		// ignore HEAD in path part by automatically removing it from the uri
-		this.uri = uri.replaceFirst("/HEAD", ""); 
+		this.uri = uri.replaceFirst("/HEAD", "").replaceFirst("~HEAD", ""); 
 		this.resourceType = matcher.group(1);
 		this.resourceId = matcher.group(2);
 		
 		
-		if (CompareUtils.isEmpty(matcher.group(3))) {
-			this.path = HEAD;			
-		} else {
-			// remove leading slash from match
-			this.path = matcher.group(3).substring(1);
-			if (hasSpecialResourceIdPart()) {
-				throw new BadRequestException("Resource URIs cannot use both the special tilde ('~') character and a branch path.")
+		if (hasSpecialResourceIdPart()) {
+			if (!CompareUtils.isEmpty(matcher.group(3))) {
+				throw new BadRequestException("Resource URIs cannot use both the special tilde ('~') character and a branch path. Got: %s", uri)
 					.withDeveloperMessage("For child paths use either the '~' or the '/path' alternatives. For nested deeper branch paths always use the forward slash separator.");
 			}
+			this.path = null; // when using special ID part paths cannot get any value
+		} else {
+			// remove leading slash from match
+			this.path = CompareUtils.isEmpty(matcher.group(3)) ? HEAD : matcher.group(3).substring(1);
 		}
 		
 		
@@ -146,15 +145,15 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	}
 	
 	public boolean isLatest() {
-		return hasPath(LATEST);
+		return hasPath(LATEST) || LATEST.equals(getSpecialIdPart());
 	}
 	
 	public boolean isHead() {
-		return hasPath(HEAD);
+		return hasPath(HEAD) || HEAD.equals(getSpecialIdPart());
 	}
 	
 	public boolean isNext() {
-		return hasPath(NEXT);
+		return hasPath(NEXT) || NEXT.equals(getSpecialIdPart());
 	}
 	
 	public boolean hasPath(String path) {
@@ -166,7 +165,11 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		if (Objects.equals(getPath(), path)) {
 			return this;
 		}
-		return Strings.isNullOrEmpty(path) ? ResourceURI.of(resourceType, resourceId) : ResourceURI.branch(resourceType, resourceId, path);
+		if (Strings.isNullOrEmpty(path)) {
+			return ResourceURI.of(resourceType, resourceId.concat(Strings.nullToEmpty(getTimestampPart())));
+		} else {
+			return ResourceURI.branch(resourceType, resourceId, path.concat(Strings.nullToEmpty(getTimestampPart())));
+		}
 	}
 
 	@JsonIgnore
@@ -174,25 +177,34 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		if (Objects.equals(getTimestampPart(), timestampPart)) {
 			return this;
 		}
-		return withPath(getPath() + timestampPart);
+		// depending on whether we have a path segment or not append the new timestamp part
+		if (path == null) {
+			return ResourceURI.of(resourceType, resourceId.concat(timestampPart));
+		} else {
+			return ResourceURI.branch(resourceType, resourceId, Strings.nullToEmpty(path).concat(timestampPart));
+		}
 	}
 	
 	@JsonIgnore
 	public ResourceURIWithQuery withQueryPart(String query) {
-		return ResourceURIWithQuery.of(resourceType, String.join(Branch.SEPARATOR, resourceId, path), query);
+		return ResourceURIWithQuery.of(resourceType, Branch.BRANCH_PATH_JOINER.join(resourceId, path), query);
 	}
 
 	@JsonIgnore
 	public ResourceURI withoutPath() {
-		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
+		return new ResourceURI(Branch.BRANCH_PATH_JOINER.join(resourceType, resourceId));
 	}
 	
 	@JsonIgnore
 	public String withoutResourceType() {
-		return isHead() ? resourceId : String.join(Branch.SEPARATOR, resourceId, path);
+		return isHead() ? resourceId : Branch.BRANCH_PATH_JOINER.join(resourceId, path);
 	}
 	
 	// SPECIAL TILDE ID handling
+	
+	public String getSpecialIdPart() {
+		return hasSpecialResourceIdPart() ? extractSpecialResourceIdPart(resourceId) : null;
+	}
 	
 	@JsonIgnore
 	public boolean hasSpecialResourceIdPart() {
@@ -205,14 +217,23 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		final int separatorIdx = resourceId.lastIndexOf(TILDE);
 		
 		if (separatorIdx > 0) {
-			return ResourceURI.of(getResourceType(), resourceId.substring(0, separatorIdx));
+			return ResourceURI.of(getResourceType(), resourceId.substring(0, separatorIdx).concat(Strings.nullToEmpty(getTimestampPart())));
 		} else {
 			return this;
 		}
 	}
 	
 	public ResourceURI withSpecialResourceIdPart(String specialResourceIdPart) {
-		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, String.join(TILDE, withoutSpecialResourceIdPart(this.resourceId), specialResourceIdPart)));
+		return specialResourceIdPart == null ? this : new ResourceURI(String.join(Branch.SEPARATOR, resourceType, String.join(TILDE, withoutSpecialResourceIdPart(this.resourceId), specialResourceIdPart)));
+	}
+	
+	@JsonIgnore
+	public ResourceURI toRegularURI() {
+		if (hasSpecialResourceIdPart()) {
+			return withoutSpecialResourceIdPart().withPath(getSpecialIdPart());
+		} else {
+			return this;
+		}
 	}
 
 	@JsonIgnore
@@ -252,23 +273,23 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 
 	public static ResourceURI branch(String resourceType, String resourceId, String path) {
 		Preconditions.checkArgument(!resourceId.contains(Branch.SEPARATOR), "Resource ID should not be an URI already. Got: %s", resourceId);
-		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId, path));
+		return new ResourceURI(Branch.BRANCH_PATH_JOINER.join(resourceType, resourceId, path));
 	}
 
 	public static ResourceURI latest(String resourceType, String resourceId) {
 		Preconditions.checkArgument(!resourceId.contains(Branch.SEPARATOR), "Resource ID should not be an URI already. Got: %s", resourceId);
-		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId, LATEST));
+		return new ResourceURI(Branch.BRANCH_PATH_JOINER.join(resourceType, resourceId, LATEST));
 	}
 	
 	public static ResourceURI next(String resourceType, String resourceId) {
 		Preconditions.checkArgument(!resourceId.contains(Branch.SEPARATOR), "Resource ID should not be an URI already. Got: %s", resourceId);
-		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId, NEXT));
+		return new ResourceURI(Branch.BRANCH_PATH_JOINER.join(resourceType, resourceId, NEXT));
 	}
 
 	public static ResourceURI of(String resourceType, String resourceId) {
 		checkNotNull(resourceType, "'resourceType' must be specified");
 		checkNotNull(resourceId, "'resourceId' must be specified");
-		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
+		return new ResourceURI(Branch.BRANCH_PATH_JOINER.join(resourceType, resourceId));
 	}
 
 	public ResourceURIWithQuery withQuery(String query) {
