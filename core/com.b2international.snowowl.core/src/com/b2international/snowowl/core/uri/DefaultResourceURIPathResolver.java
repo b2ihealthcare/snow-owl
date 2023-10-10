@@ -71,12 +71,15 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 	}
 
 	@Override
-	public PathWithVersion resolveWithVersion(ServiceProvider context, ResourceURI uriToResolve, Resource resource) {
+	public PathWithVersion resolveWithVersion(ServiceProvider context, ResourceURI uri, Resource resource) {
 		if (resource instanceof TerminologyResource) {
 			TerminologyResource terminologyResource = (TerminologyResource) resource;
 			
+			// convert special URIs to regular ones if the terminology resource ID does not equal with the current URI's resource ID
+			final ResourceURI uriToResolve = !terminologyResource.getId().equals(uri.getResourceId()) ? uri.toRegularURI() : uri;
+			
 			// use code system working branch directly when HEAD is specified
-			if (uriToResolve.isHead()) {
+			if (uriToResolve.isHead() || uriToResolve.getPath() == null) {
 				return getResourceHeadBranch(uriToResolve, terminologyResource);
 			}
 			

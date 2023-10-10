@@ -15,11 +15,16 @@
  */
 package com.b2international.snowowl.core.request.resource;
 
+import java.util.Optional;
+
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.*;
+import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequestTimestampProvider;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 import com.b2international.snowowl.core.version.Version;
@@ -46,6 +51,7 @@ public abstract class BaseGetResourceRequest<SB extends BaseResourceSearchReques
 	private final ResourceURI resourceUri;
 	
 	private boolean allowHiddenResources;
+	private boolean fetchAlternative = true;
 	
 	public BaseGetResourceRequest(ResourceURI resourceUri) {
 		super(resourceUri.getResourceId());
@@ -56,8 +62,27 @@ public abstract class BaseGetResourceRequest<SB extends BaseResourceSearchReques
 		this.allowHiddenResources = allowHiddenResources;
 	}
 	
+	protected final void setFetchAlternative(boolean fetchAlternative) {
+		this.fetchAlternative = fetchAlternative;
+	}
+	
 	protected final SB configureHiddenFilter(SB searchRequestBuilder) {
 		return searchRequestBuilder.filterByHidden(allowHiddenResources ? ResourceHiddenFilter.ALL : ResourceHiddenFilter.VISIBLE_ONLY);
+	}
+	
+	@Override
+	protected RepositoryContext alterContextBeforeFetch(RepositoryContext context) {
+		// make sure we attach the currently accessed ResourceURI to get the right state
+		return context.inject().bind(ResourceURI.class, resourceUri).build();
+	}
+	
+	@Override
+	protected final Optional<R> fetchAlternative(RepositoryContext context) {
+		if (fetchAlternative && ResourceURI.isSpecialResourceId(id())) {
+			return extractFirst(fetch(context, ResourceURI.withoutSpecialResourceIdPart(id())));
+		} else {
+			return super.fetchAlternative(context);
+		}
 	}
 	
 	@Override
@@ -67,14 +92,20 @@ public abstract class BaseGetResourceRequest<SB extends BaseResourceSearchReques
 		} else if (!resourceUri.isHead() && !resourceUri.isNext()) {
 			VersionSearchRequestBuilder versionSearch = ResourceRequests.prepareSearchVersion()
 				.one()
-				.filterByResource(resourceUri.withoutPath().withoutResourceType());
+				.filterByResource(resourceUri.withoutPath().withoutSpecialResourceIdPart().withoutResourceType())
+				.setFields(VersionDocument.Fields.ID, VersionDocument.Fields.CREATED_AT);
 			
 			if (resourceUri.isLatest()) {
 				// fetch the latest resource version if LATEST is specified in the URI
 				versionSearch.sortBy(SearchResourceRequest.Sort.fieldDesc(VersionDocument.Fields.EFFECTIVE_TIME));
 			} else {
-				// try to fetch the path as exact version if not the special LATEST is specified in the URI
-				versionSearch.filterByVersionId(resourceUri.getPath());
+				if (resourceUri.hasSpecialResourceIdPart()) {
+					// try to fetch the special ID part as a version
+					versionSearch.filterByVersionId(resourceUri.getSpecialIdPart());
+				} else {
+					// try to fetch the path as exact version if not the special LATEST 
+					versionSearch.filterByVersionId(resourceUri.getPath());
+				}
 			}
 			
 			// determine the final branch path, if based on the version search we find a version, then use that, otherwise use the defined path as relative branch of the code system working branch
@@ -88,5 +119,5 @@ public abstract class BaseGetResourceRequest<SB extends BaseResourceSearchReques
 		}
 		return null;
 	}
-
+	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,10 @@ public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder
 		this.id = id;
 	}
 	
+	protected final String id() {
+		return id;
+	}
+	
 	/**
 	 * Creates a new {@link SearchResourceRequestBuilder} to search for the resource by its identifier.
 	 * @return
@@ -60,24 +64,59 @@ public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder
 	
 	@Override
 	public R execute(final C context) {
-		SR items = createSearchRequestBuilder()
+		C alteredContext = alterContextBeforeFetch(context);
+		SR items = fetch(alteredContext, this.id);
+		return extractFirst(items)
+				.or(() -> fetchAlternative(alteredContext))
+				.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(getReturnType().getSimpleName()), id));
+	}
+
+	/**
+	 * Subclasses may optionally alter the context and attach values to it so that certain services can rely on those attached values later.
+	 * 
+	 * @param context
+	 * @return
+	 */
+	protected C alterContextBeforeFetch(C context) {
+		return context;
+	}
+
+	/**
+	 * For reusability subclasses may perform the same search with a different ID if they wish to perform additional fetches when the primary resource couldn't be found.
+	 * 
+	 * @param context
+	 * @param identifier
+	 * @return
+	 */
+	protected final SR fetch(final C context, final String identifier) {
+		return createSearchRequestBuilder()
 			.setLimit(2)
 			.setFields(fields())
 			.setLocales(locales())
 			.setExpand(expand())
-			.filterById(id)
+			.filterById(identifier)
 			.build()
 			.execute(context);
-		return extractFirst(items) 
-			.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(getReturnType().getSimpleName()), id));
 	}
 
 	/**
-	 * Extract the first item from the search results and returns it.
+	 * Subclasses may opt-in for an additional fall back logic when the original request couldn't find any actual documents in the store. Usually
+	 * plug-ins that require alternate identifiers or special ID parts to be handled along with the original identifiers can leverage this method.
 	 * 
+	 * @param context
+	 * @return
+	 */
+	protected Optional<R> fetchAlternative(C context) {
+		return Optional.empty();
+	}
+
+	/**
+	 * Extracts the first item from the search results and returns it. 
+	 * 
+	 * @param context
 	 * @param items
 	 * @return an {@link Optional} representing the first item of the search results or absent {@link Optional} value if no matches can be found.
-	 * @throws IllegalStateException - if more than 
+	 * @throws IllegalStateException - if more than one document is found by the system, which should never happen and should be immediately reported as critical error
 	 */
 	protected Optional<R> extractFirst(SR items) {
 		if (items instanceof Iterable<?>) {
