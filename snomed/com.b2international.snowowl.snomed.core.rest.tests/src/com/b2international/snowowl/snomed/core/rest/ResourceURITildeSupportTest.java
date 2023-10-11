@@ -78,7 +78,7 @@ public class ResourceURITildeSupportTest extends AbstractSnomedApiTest {
 		// fetch the most recent commit
 		CommitInfos commits = RepositoryRequests.commitInfos().prepareSearchCommitInfo()
 			.one()
-			.filterBySubject(target.withoutResourceType().toString())
+			.filterBySubject(target.toString())
 			.sortBy("timestamp:desc") 
 			.build(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.execute(getBus())
@@ -87,7 +87,7 @@ public class ResourceURITildeSupportTest extends AbstractSnomedApiTest {
 		assertThat(commits)
 			.hasSize(1)
 			.flatExtracting(CommitInfo::getSubjects)
-			.contains(target.withoutResourceType().toString());
+			.contains(target.toString());
 			
 	}
 	
