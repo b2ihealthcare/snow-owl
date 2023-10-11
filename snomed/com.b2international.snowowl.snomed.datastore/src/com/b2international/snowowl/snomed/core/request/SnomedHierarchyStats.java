@@ -168,7 +168,7 @@ public record SnomedHierarchyStats(
 		conceptsAndAncestors.forEach(graph::addNode);
 
 		edgeSearchBySourceId.findEdgesBySourceId(context, conceptsAndAncestors, pageSize)
-			.forEachOrdered(r -> graph.addEdge(r.getSourceId(), r.getDestinationId()));
+			.forEachOrdered(r -> graph.addEdge(r.getId(), r.getSourceId(), r.getDestinationId()));
 
 		graph.build();
 
