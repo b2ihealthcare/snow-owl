@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.branch;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,11 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 		 * Filter branches by numeric identifier
 		 */
 		BRANCH_ID,
+		
+		/**
+		 * Filter branches by their stored metadata
+		 */
+		METADATA,
 	}
 	
 	BranchSearchRequest() {}
@@ -83,6 +89,11 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 		
 		if (containsKey(OptionKey.BRANCH_ID)) {
 			queryBuilder.filter(Expressions.matchAnyLong(RevisionBranch.Fields.ID, getCollection(OptionKey.BRANCH_ID, Long.class)));
+		}
+		
+		if (containsKey(OptionKey.METADATA)) {
+			final Collection<String> properties = getCollection(OptionKey.METADATA, String.class);
+			queryBuilder.filter(Expressions.matchDynamic(RevisionBranch.Fields.METADATA, properties));
 		}
 		
 		return queryBuilder.build();
