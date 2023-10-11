@@ -16,14 +16,12 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.internal.DependencyDocument;
+import com.b2international.snowowl.core.internal.DependencyEntry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @since 8.12.0
  */
 @JsonPropertyOrder({ "uri", "scope", "resource", "upgrades" })
-public final class Dependency implements Serializable {
+public final class Dependency implements Serializable, DependencyEntry {
 
 	private static final long serialVersionUID = 1L;
 
@@ -55,6 +53,7 @@ public final class Dependency implements Serializable {
 	/**
 	 * @return the {@link ResourceURIWithQuery} this dependency points to, never <code>null</code>
 	 */
+	@Override
 	public ResourceURIWithQuery getUri() {
 		return uri;
 	}
@@ -62,6 +61,7 @@ public final class Dependency implements Serializable {
 	/**
 	 * @return the scope of the dependency, usually a resource type specific value, may not be <code>null</code>
 	 */
+	@Override
 	public String getScope() {
 		return scope;
 	}
@@ -198,31 +198,6 @@ public final class Dependency implements Serializable {
 	}
 
 	/**
-	 * Helper method to detect changes between a dependency list and the dependencies registered in resource settings.
-	 * 
-	 * @param dependencies
-	 * @param dependenciesFromSettings
-	 * @return <code>true</code> if the two are equal, <code>false</code> if they are not.
-	 */
-	public static boolean isEqual(List<Dependency> dependencies, Map<String, ResourceURIWithQuery> dependenciesFromSettings) {
-		if (CompareUtils.isEmpty(dependencies) && CompareUtils.isEmpty(dependenciesFromSettings)) {
-			return true;
-		} else if ((!CompareUtils.isEmpty(dependencies) && CompareUtils.isEmpty(dependenciesFromSettings))
-				|| (CompareUtils.isEmpty(dependencies) && !CompareUtils.isEmpty(dependenciesFromSettings))) {
-			return false;
-		} else {
-			// for all dependencies, there must be the same entry in the settings map, otherwise the two are not equal
-			for (Dependency dependency : dependencies) {
-				ResourceURIWithQuery settingsDependency = dependenciesFromSettings.get(dependency.getScope());
-				if (!Objects.equals(dependency.getUri(), settingsDependency)) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-
-	/**
 	 * Searches the given dependency array for the first dependency that has the matching scope.
 	 * 
 	 * @param scope - the scope to look for
@@ -233,6 +208,47 @@ public final class Dependency implements Serializable {
 				.stream()
 				.filter(dep -> Objects.equals(scope, dep.getScope()))
 				.findFirst();
+	}
+	
+	public static Optional<Dependency> find(List<Dependency> dependencies, Dependency query) {
+		return Collections3.toImmutableList(dependencies)
+				.stream()
+				.filter(dep -> dep.dependOnSameResource(query))
+				.findFirst();
+	}
+
+	/**
+	 * Overrides dependencies in the first dependency list with any matching (scope + resourceId) dependency found in the override list. Appends any
+	 * leftover override as additional dependency.
+	 * 
+	 * @param dependencies
+	 * @param overrides
+	 * @return
+	 */
+	public static List<Dependency> mergeDependencies(List<Dependency> dependencies, List<Dependency> overrides) {
+		if (CompareUtils.isEmpty(overrides)) {
+			return dependencies;
+		}
+		final List<Dependency> merged = new ArrayList<>(dependencies.size() + overrides.size());
+		final List<Dependency> mutableOverrides = new ArrayList<>(overrides);
+		for (Dependency dependency : dependencies) {
+			// try to find the dependency in the override list
+			Optional<Dependency> override = find(mutableOverrides, dependency);
+			if (override.isPresent()) {
+				// override dependency if scope and uri main part matches
+				merged.add(override.get());
+				// remove from the override list
+				mutableOverrides.remove(override.get());
+			} else {
+				// use original if not found
+				merged.add(dependency);
+			}
+		}
+		// add any leftover dependencies from overrides to the new merge list
+		merged.addAll(mutableOverrides);
+		// sort the dependency list
+		Collections.sort(merged, DependencyEntry.COMPARATOR);
+		return merged;
 	}
 
 }
