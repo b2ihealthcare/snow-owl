@@ -42,21 +42,21 @@ public class SimpleTaxonomyGraphTest {
 		assertTrue("Graph should be built.", graph.isBuilt());
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void getDescendantIdsWithoutBuild() {
-		graph.getDescendantIds("A");
+		assertThrows(IllegalStateException.class, () -> graph.getDescendantIds("A"));
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void getParentIdsWithoutBuild() {
-		graph.getParentIds("A");
+		assertThrows(IllegalStateException.class, () -> graph.getParentIds("A"));
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void getIndirectAncestorIdsWithoutBuild() {
-		graph.getIndirectAncestorIds("A");
+		assertThrows(IllegalStateException.class, () -> graph.getIndirectAncestorIds("A"));
 	}
-
+	
 	@Test
 	public void updateEdge() {
 		graph.addNode("A");
@@ -73,38 +73,38 @@ public class SimpleTaxonomyGraphTest {
 		
 		assertThat(graph.getParentIds("A")).containsOnly("C");
 	}
-
-	@Test(expected = NullPointerException.class)
+	
+	@Test
 	public void getDescendantIdsNull() {
-		graph.getDescendantIds(null);
+		assertThrows(NullPointerException.class, () -> graph.getDescendantIds(null));
 	}
 	
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void getParentIdsNull() {
-		graph.getParentIds(null);
+		assertThrows(NullPointerException.class, () -> graph.getParentIds(null));
 	}
 	
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void getIndirectAncestorIdsNull() {
-		graph.getIndirectAncestorIds(null);
+		assertThrows(NullPointerException.class, () -> graph.getIndirectAncestorIds(null));
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void getDescendantIdsUnknownId() {
 		assertFalse("Graph build should report no errors.", graph.build());
-		graph.getDescendantIds("A");
+		assertThrows(NotFoundException.class, () -> graph.getDescendantIds("A"));
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void getParentIdsUnknownId() {
 		assertFalse("Graph build should report no errors.", graph.build());
-		graph.getParentIds("A");
+		assertThrows(NotFoundException.class, () -> graph.getParentIds("A"));
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void getIndirectAncestorIdsUnknownId() {
 		assertFalse("Graph build should report no errors.", graph.build());
-		graph.getIndirectAncestorIds("A");
+		assertThrows(NotFoundException.class, () -> graph.getIndirectAncestorIds("A"));
 	}
 	
 	@Test
