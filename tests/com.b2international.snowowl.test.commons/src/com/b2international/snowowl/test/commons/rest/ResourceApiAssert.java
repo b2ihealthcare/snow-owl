@@ -19,6 +19,7 @@ import static com.b2international.snowowl.test.commons.ApiTestConstants.RESOURCE
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import io.restassured.response.ValidatableResponse;
@@ -34,20 +35,21 @@ public class ResourceApiAssert {
 	
 	public static ValidatableResponse assertResourceSearch(final Map<String, Object> filters) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-			.queryParams(filters)
-			.get()
-			.then();
+				.queryParams(filters)
+				.get()
+				.then();
 	}
 	
-	public static ValidatableResponse assertResourceGet(final String resourceId) {
+	public static ValidatableResponse assertResourceGet(final String resourceId, final String...expand) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-			.get("/{id}", resourceId)
-			.then();
+				.queryParam("expand", expand == null ? null : List.of(expand))
+				.get("/{id}", resourceId)
+				.then();
 	}
 	
 	public static ValidatableResponse assertResourceGet(final String resourceId, final long timestamp) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-			.get("/{id}@{timestamp}", resourceId, timestamp)
-			.then();
+				.get("/{id}@{timestamp}", resourceId, timestamp)
+				.then();
 	}
 }
