@@ -869,10 +869,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 
 		// Favor << over < if the same concept ID is mentioned
-		for (int i = 0; i < expressions.size() - 1; i++) {
+		for (int i = 0; i < expressions.size(); i++) {
 			if (removeIdx.contains(i)) { continue; }
 
-			for (int j = 0; j < expressions.size() - 1; j++) {
+			for (int j = 0; j < expressions.size(); j++) {
 				if (i == j) { continue; }
 				if (removeIdx.contains(j)) { continue; }
 
@@ -897,10 +897,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 
 		// Favor (< X or << X) over (< Y or << Y) if X is an ancestor of Y
-		for (int i = 0; i < expressions.size() - 1; i++) {
+		for (int i = 0; i < expressions.size(); i++) {
 			if (removeIdx.contains(i)) { continue; }
 
-			for (int j = 0; j < expressions.size() - 1; j++) {
+			for (int j = 0; j < expressions.size(); j++) {
 				if (i == j) { continue; }
 				if (removeIdx.contains(j)) { continue; }
 
