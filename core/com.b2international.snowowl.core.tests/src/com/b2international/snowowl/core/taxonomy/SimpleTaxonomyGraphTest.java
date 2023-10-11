@@ -56,7 +56,24 @@ public class SimpleTaxonomyGraphTest {
 	public void getIndirectAncestorIdsWithoutBuild() {
 		graph.getIndirectAncestorIds("A");
 	}
-	
+
+	@Test
+	public void updateEdge() {
+		graph.addNode("A");
+		graph.addNode("B");
+		graph.addNode("C");
+		
+		/*
+		 * addEdge(String, String) uses the source ID for identifying the edge, so calling
+		 * it twice in succession will overwrite the first information given.
+		 */
+		graph.addEdge("A", "B");
+		graph.addEdge("A", "C");
+		assertFalse("Graph build should report no errors.", graph.build());
+		
+		assertThat(graph.getParentIds("A")).containsOnly("C");
+	}
+
 	@Test(expected = NullPointerException.class)
 	public void getDescendantIdsNull() {
 		graph.getDescendantIds(null);
@@ -292,8 +309,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("A", "B");
 		graph.addEdge("B", "C");
 		graph.addEdge("C", "D");
-		graph.addEdge("D", "E");
-		graph.addEdge("D", "B");
+		graph.addEdge("D", Set.of("E", "B"));
 		assertTrue("Graph build should report an error.", graph.build());
 	}
 	
