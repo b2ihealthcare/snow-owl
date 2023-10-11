@@ -38,10 +38,9 @@ import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultimap;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.*;
 
 /**
  * @since 8.12
@@ -69,6 +68,36 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		return (R) converters.toResource(doc);
 	}
 	
+	@Override
+	protected void alterResults(List<R> results) {
+		alterDependenciesBasedOnBranchMetadata(results);
+	}
+	
+	private void alterDependenciesBasedOnBranchMetadata(List<R> results) {
+		if (results.size() == 1) {
+			R resource = Iterables.getOnlyElement(results);
+			if (resource instanceof TerminologyResource tres) {
+				// can alter the dependencies array only during get when the currently fetched ResourceURI is accessed, not the same as the fetched resourceId
+				ResourceURI resourceUri = context().optionalService(ResourceURI.class).orElse(null);
+				if (resourceUri != null && resourceUri.hasSpecialResourceIdPart() && !resource.getId().equals(resourceUri.getResourceId())) {
+					final String branchPathName = resourceUri.hasSpecialResourceIdPart() ? resourceUri.getSpecialIdPart() : resourceUri.getPath();
+					Branch branchToOverrideResourceMetadataWith = RepositoryRequests.branching().prepareSearch()
+							.one()
+							.filterById(Branch.get(tres.getBranchPath(), branchPathName))
+							.build(tres.getToolingId())
+							.execute(context())
+							.first()
+							.orElse(null);
+					if (branchToOverrideResourceMetadataWith != null && branchToOverrideResourceMetadataWith.metadata() != null) {
+						List<Map<String, Object>> branchScopedDependenciesJson = (List<Map<String, Object>>) branchToOverrideResourceMetadataWith.metadata().get(ResourceDocument.BranchMetadata.DEPENDENCIES);
+						List<Dependency> branchScopedDependencies = context().service(ObjectMapper.class).convertValue(branchScopedDependenciesJson, new TypeReference<List<Dependency>>() {});
+						tres.setDependencies(Dependency.mergeDependencies(tres.getDependencies(), branchScopedDependencies));
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void expand(List<R> results) {
