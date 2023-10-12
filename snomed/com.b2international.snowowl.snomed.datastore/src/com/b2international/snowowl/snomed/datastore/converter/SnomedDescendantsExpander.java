@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongSortedSet;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -160,8 +162,8 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 		
 		}
 		
-		// The Multiset keeps track of the number of descendants seen so far (by parent/ancestor concept ID) 
-		Multiset<String> descendantCounts = null;
+		// The Multiset keeps track of the number of descendants seen so far (by parent/ancestor concept ID)
+		LongKeyIntMap descendantCounts = PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(conceptIds.size());
 		
 		final Stream<Hits<SnomedConceptDocument>> stream = searcher.stream(query);
 		final Iterator<Hits<SnomedConceptDocument>> itr = stream.iterator();
@@ -179,19 +181,15 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 				return;
 			}
 
-			if (descendantCounts == null) {
-				descendantCounts = HashMultiset.create(conceptIds.size());
-			}
-			
 			for (final SnomedConceptDocument descendant : batch) {
 				// Add +1 to the descendant counters for all parent/ancestors that we have seen in this batch
-				registerRelevantAncestors(descendantCounts, descendant, conceptIds, direct);
+				registerRelevantAncestors(descendantCounts, descendant, direct);
 			}
 		}
 		
 		// Populate total descendant counts based on the information collected
 		for (final SnomedConcept ancestor : results) {
-			final int total = descendantCounts.count(ancestor.getId());
+			final int total = descendantCounts.get(Long.parseLong(ancestor.getId()));
 			final SnomedConcepts descendants = new SnomedConcepts(0, total);
 			setDescendants(ancestor, descendants);
 		}
@@ -222,16 +220,15 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 	}
 
 	private void registerRelevantAncestors(
-		final Multiset<String> descendantCounts, 
+		final LongKeyIntMap descendantCounts, 
 		final SnomedConceptDocument descendant, 
-		final Set<String> conceptIds, 
 		final boolean direct
 	) {
 		// Always collect direct parent IDs
 		if (stated) {
-			registerRelevantAncestors(descendantCounts, descendant.getStatedParents(), conceptIds);
+			registerRelevantAncestors(descendantCounts, descendant.getStatedParents());
 		} else {
-			registerRelevantAncestors(descendantCounts, descendant.getParents(), conceptIds);
+			registerRelevantAncestors(descendantCounts, descendant.getParents());
 		}
 	
 		if (direct) {
@@ -240,22 +237,19 @@ public final class SnomedDescendantsExpander extends DescendantsExpander<SnomedC
 		
 		// Collect indirect ancestor IDs as well if not in direct mode
 		if (stated) {
-			registerRelevantAncestors(descendantCounts, descendant.getStatedAncestors(), conceptIds);
+			registerRelevantAncestors(descendantCounts, descendant.getStatedAncestors());
 		} else {
-			registerRelevantAncestors(descendantCounts, descendant.getAncestors(), conceptIds);
+			registerRelevantAncestors(descendantCounts, descendant.getAncestors());
 		}
 	}
 
 	private void registerRelevantAncestors(
-		final Multiset<String> descendantCounts, 
-		final LongSortedSet ancestorIdsOfDescendant,
-		final Set<String> conceptIds
+		final LongKeyIntMap descendantCounts, 
+		final LongSortedSet ancestorIdsOfDescendant
 	) {
 		for (var itr = ancestorIdsOfDescendant.iterator(); itr.hasNext(); /* empty */) {
-			final String id = Long.toString(itr.next());
-			if (conceptIds.contains(id)) {
-				descendantCounts.add(id);
-			}
+			final long id = itr.next();
+			descendantCounts.put(id, descendantCounts.get(id) + 1);
 		}
 	}
 
