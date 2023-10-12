@@ -959,7 +959,8 @@ public final class StagingArea {
 					Revision addedOnTargetObject = addedRevisionsOnTarget.get(revisionId);
 					
 					RevisionDiff diff = new RevisionDiff(addedOnTargetObject, addedOnSourceObject);
-					if (diff.hasChanges()) {
+					// check the tracked field diff, not the raw diff
+					if (diff.diff().hasChanges()) {
 						conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(type, revisionId)));
 					} else {
 						// ensure we revise the one coming from source (or target?)
