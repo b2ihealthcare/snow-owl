@@ -91,7 +91,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 					if (branchToOverrideResourceMetadataWith != null && branchToOverrideResourceMetadataWith.metadata() != null) {
 						List<Map<String, Object>> branchScopedDependenciesJson = (List<Map<String, Object>>) branchToOverrideResourceMetadataWith.metadata().get(ResourceDocument.BranchMetadata.DEPENDENCIES);
 						List<Dependency> branchScopedDependencies = context().service(ObjectMapper.class).convertValue(branchScopedDependenciesJson, new TypeReference<List<Dependency>>() {});
-						tres.setDependencies(Dependency.mergeDependencies(tres.getDependencies(), branchScopedDependencies));
+						tres.setDependencies(Dependency.override(tres.getDependencies(), branchScopedDependencies));
 					}
 				}
 			}

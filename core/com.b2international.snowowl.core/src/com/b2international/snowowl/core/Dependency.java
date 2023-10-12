@@ -146,7 +146,7 @@ public final class Dependency implements Serializable, DependencyEntry {
 	 */
 	public boolean dependOnSameResource(Dependency other) {
 		if (other == null) return false;
-		return getUri().getResourceUri().withoutPath().equals(other.getUri().getResourceUri().withoutPath()) 
+		return getUri().getResourceUri().withoutPath().withoutSpecialResourceIdPart().equals(other.getUri().getResourceUri().withoutSpecialResourceIdPart().withoutPath()) 
 				&& Objects.equals(getScope(), other.getScope());
 	}
 
@@ -225,7 +225,7 @@ public final class Dependency implements Serializable, DependencyEntry {
 	 * @param overrides
 	 * @return
 	 */
-	public static List<Dependency> mergeDependencies(List<Dependency> dependencies, List<Dependency> overrides) {
+	public static List<Dependency> override(List<Dependency> dependencies, List<Dependency> overrides) {
 		if (CompareUtils.isEmpty(overrides)) {
 			return dependencies;
 		}
