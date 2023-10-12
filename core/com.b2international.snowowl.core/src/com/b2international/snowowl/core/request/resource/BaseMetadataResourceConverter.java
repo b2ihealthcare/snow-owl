@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -141,6 +142,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		
 		// fetch all referenced resources by their ID for now
 		ResourceRequests.prepareSearch()
+			.filterByHidden(ResourceHiddenFilter.ALL)
 			.filterByIds(dependenciesToExpand.keySet())
 			.setLimit(dependenciesToExpand.keySet().size())
 			.setExpand(expandOptions.getOptions("expand"))
