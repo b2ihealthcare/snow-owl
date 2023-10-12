@@ -29,7 +29,10 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Table;
 
 /**
@@ -37,7 +40,8 @@ import com.google.common.collect.Table;
  */
 public record SnomedRelationshipStats(
 	Table<String, String, Integer> positiveSources, 
-	Table<String, String, Integer> totalSources
+	Table<String, String, Integer> totalSources,
+	RelationshipSearchByTypeAndDestination searchByTypeAndDestination
 ) {
 
 	/**
@@ -48,7 +52,8 @@ public record SnomedRelationshipStats(
 
 		RelationshipSearchBySource DEFAULT = (context, sourceIds, pageSize) -> SnomedRequests.prepareSearchRelationship()
 			.filterByActive(true)
-			.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
+			// XXX: ECL evaluation also checks additional relationships, so we will include them here
+			.filterByCharacteristicTypes(List.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
 			.filterBySources(sourceIds)
 			.setLimit(pageSize)
 			.setFields(
@@ -73,12 +78,14 @@ public record SnomedRelationshipStats(
 
 		RelationshipSearchByTypeAndDestination DEFAULT = (context, typeIds, destinationIds, pageSize) -> SnomedRequests.prepareSearchRelationship()
 			.filterByActive(true)
-			.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
+			// XXX: ECL evaluation also checks additional relationships, so we will include them here
+			.filterByCharacteristicTypes(List.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
 			.filterByTypes(typeIds)
 			.filterByDestinations(destinationIds)
 			.setLimit(pageSize)
 			.setFields(
 				SnomedRelationshipIndexEntry.Fields.ID, 
+				SnomedRelationshipIndexEntry.Fields.SOURCE_ID, 
 				SnomedRelationshipIndexEntry.Fields.TYPE_ID, 
 				SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 			.stream(context)
@@ -101,7 +108,7 @@ public record SnomedRelationshipStats(
 		
 		if (conceptIds.isEmpty()) {
 			// No input concepts
-			return new SnomedRelationshipStats(positiveSources, totalSources);	
+			return new SnomedRelationshipStats(positiveSources, totalSources, searchByTypeAndDestination);	
 		}
 
 		searchBySource.findRelationshipsBySource(context, conceptIds, pageSize)
@@ -111,7 +118,7 @@ public record SnomedRelationshipStats(
 
 		if (positiveSources.isEmpty()) {
 			// No relevant relationships collected
-			return new SnomedRelationshipStats(positiveSources, totalSources);
+			return new SnomedRelationshipStats(positiveSources, totalSources, searchByTypeAndDestination);
 		}
 		
 		final Set<String> typeIds = positiveSources.rowKeySet();
@@ -122,7 +129,7 @@ public record SnomedRelationshipStats(
 			.filter(r -> positiveSources.contains(r.getTypeId(), r.getDestinationId()))
 			.forEachOrdered(r -> incrementTableCount(totalSources, r));
 
-		return new SnomedRelationshipStats(positiveSources, totalSources);
+		return new SnomedRelationshipStats(positiveSources, totalSources, searchByTypeAndDestination);
 	}
 
 	private static void incrementTableCount(final Table<String, String, Integer> countByTypeAndDestination, final SnomedRelationship relationship) {
@@ -193,7 +200,34 @@ public record SnomedRelationshipStats(
 
 		return positiveSources.cellSet()
 			.stream()
-			.map(cell -> new QueryExpression(IDs.base62UUID(), String.format("* : %s = %s", cell.getRowKey(), cell.getColumnKey()), false))
+			.map(cell -> new QueryExpression(IDs.base62UUID(), toQuery(cell.getRowKey(), cell.getColumnKey()), false))
 			.collect(Collectors.toList());
+	}
+	
+	public Function<QueryExpression, Set<String>> getQueryEvaluator(
+		final BranchContext branchContext, 
+		final int pageSize
+	) {
+		// Search for all relationship refinement expression results in a single run
+		final SetMultimap<String, String> sourcesByQuery = searchByTypeAndDestination.findRelationshipsByTypeAndDestination(
+			branchContext, 
+			positiveSources.rowKeySet(), 
+			positiveSources.columnKeySet(), 
+			pageSize
+		)
+		.filter(r -> positiveSources.contains(
+			r.getTypeId(), 
+			r.getDestinationId())
+		)
+		.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+			r -> toQuery(r.getTypeId(), r.getDestinationId()),
+			r -> r.getSourceId())
+		);
+		
+		return expression -> sourcesByQuery.get(expression.getQuery());
+	}
+	
+	private static String toQuery(final String typeId, final String destinationId) {
+		return String.format("* : %s = %s", typeId, destinationId);
 	}
 }
