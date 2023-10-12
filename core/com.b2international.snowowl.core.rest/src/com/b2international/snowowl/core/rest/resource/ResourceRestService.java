@@ -119,7 +119,6 @@ public class ResourceRestService extends AbstractRestService {
 			.prepareGet(resourceId)
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
-			.setAllowHiddenResources(false)
 			.buildAsync()
 			.execute(getBus());
 	}
