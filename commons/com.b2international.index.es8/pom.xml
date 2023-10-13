@@ -11,7 +11,7 @@
 	</parent>
 	
 	<properties>
-		<elasticsearch8.version>8.9.1</elasticsearch8.version>
+		<elasticsearch8.version>8.10.3</elasticsearch8.version>
 	</properties>
 	
 	<dependencies>
@@ -49,7 +49,9 @@
 								elasticsearch-rest-client,
 								jakarta.json-api,
 								jsr305,
-								parsson
+								parsson,
+								opentelemetry-context,
+								opentelemetry-api
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
