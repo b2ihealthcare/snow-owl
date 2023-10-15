@@ -29,8 +29,8 @@ import com.b2international.commons.collections.Collections3;
  */
 public final class RevisionCompare {
 
-	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
-		return new Builder(base, compare, limit, excludeComponentChanges);
+	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, RevisionCompareOptions options) {
+		return new Builder(base, compare, options);
 	}
 	
 	static class Builder {
@@ -38,16 +38,13 @@ public final class RevisionCompare {
 		private final RevisionBranchRef base;
 		private final RevisionBranchRef compare;
 		
-		private final int limit;
-		private boolean excludeComponentChanges;
-	
 		private final TreeMap<String, RevisionCompareDetail> detailsByComponent = new TreeMap<>();
+		private final RevisionCompareOptions options;
 		
-		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
+		Builder(RevisionBranchRef base, RevisionBranchRef compare, RevisionCompareOptions options) {
 			this.base = base;
 			this.compare = compare;
-			this.limit = limit;
-			this.excludeComponentChanges = excludeComponentChanges;
+			this.options = options;
 		}
 		
 		public Builder apply(Commit commit) {
@@ -58,8 +55,14 @@ public final class RevisionCompare {
 					String object = objects.get(i);
 					final ObjectId objectId = ObjectId.of(detail.getObjectType(), object);
 					
+					// if the main object is not selected then skip
+					if (options.getTypes() != null && !options.getTypes().contains(objectId.type())) {
+						continue;
+					}
+					
 					final List<RevisionCompareDetail> details;
 					if (detail.isPropertyChange()) {
+						
 						// ignore property change if an existing ADD detail has been added for the component
 						RevisionCompareDetail existingObjectDetail = detailsByComponent.get(objectId.toString());
 						if (existingObjectDetail != null && existingObjectDetail.isAdd()) {
@@ -72,7 +75,7 @@ public final class RevisionCompare {
 											detail.getProp(), 
 											detail.getFrom(), detail.getTo()));
 						}
-					} else if (!excludeComponentChanges || !detail.isChange()) {
+					} else if (options.isIncludeComponentChanges() || !detail.isChange()) {
 						details = detail.getComponents()
 								.get(i)
 								.stream()
@@ -125,7 +128,7 @@ public final class RevisionCompare {
 				}
 			}
 			
-			final List<RevisionCompareDetail> details = detailsByComponent.values().stream().limit(limit).collect(Collectors.toUnmodifiableList());
+			final List<RevisionCompareDetail> details = detailsByComponent.values().stream().limit(options.getLimit()).collect(Collectors.toUnmodifiableList());
 			
 			return new RevisionCompare(
 				base, 

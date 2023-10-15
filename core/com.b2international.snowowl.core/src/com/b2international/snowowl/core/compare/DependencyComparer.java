@@ -69,7 +69,6 @@ public interface DependencyComparer {
 				.prepareCompare()
 				.setBase(baseBranch)
 				.setCompare(compareBranch)
-				.setExcludeComponentChanges(true)
 				.build()
 				.execute(context);
 

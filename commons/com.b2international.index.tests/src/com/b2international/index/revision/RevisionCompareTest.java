@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 import java.util.List;
 
+import org.elasticsearch.core.Set;
 import org.junit.Test;
 
 import com.b2international.index.mapping.DocumentMapping;
@@ -102,7 +103,6 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
 		assertThat(compare.getDetails()).containsOnly(
-			RevisionCompareDetail.componentChange(Operation.CHANGE, rev2.getContainerId(), rev2.getObjectId()),
 			RevisionCompareDetail.propertyChange(Operation.CHANGE, rev2.getObjectId(), "field1", "field1", "field1Changed")
 		);
 	}
@@ -118,7 +118,6 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		final RevisionCompare compare = index().compare(MAIN, branch);
 		
 		assertThat(compare.getDetails()).containsOnly(
-			RevisionCompareDetail.componentChange(Operation.CHANGE, rev2.getContainerId(), rev2.getObjectId()),
 			RevisionCompareDetail.propertyChange(Operation.CHANGE, rev2.getObjectId(), "field1", "field1", "field1Changed")
 		);
 	}
@@ -187,9 +186,8 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
 
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertThat(compare.getDetails()).containsOnly(
-			RevisionCompareDetail.componentChange(Operation.CHANGE, rev1.getContainerId(), rev1.getObjectId())
-		);
+		// compare should be empty, since the change was reverted
+		assertThat(compare.getDetails()).isEmpty();
 	}
 	
 	@Test
@@ -221,6 +219,41 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void compareBranchWithStringArrayPropertyChange() throws Exception {
+		RevisionData data = new RevisionData(STORAGE_KEY1, null, null, List.of(), null);
+		indexRevision(MAIN, data);
+		
+		String branch = createBranch(MAIN, "a");
+		
+		RevisionData updatedData = new RevisionData(STORAGE_KEY1, null, null, List.of("1", "2"), null);
+		indexChange(branch, data, updatedData);
+		
+		RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, data.getObjectId(), "terms", "[]", "[\"1\",\"2\"]")
+		);
+	}
+	
+	@Test
+	public void compareBranchWithObjectArrayPropertyChange() throws Exception {
+		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of());
+		indexRevision(MAIN, data);
+		
+		String branch = createBranch(MAIN, "a");
+		
+		ObjectListPropertyData updatedData = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field3", "field4")
+		));
+		indexChange(branch, data, updatedData);
+		
+		RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, data.getObjectId(), "items", "[]", "[{\"field1\":\"field1\",\"field2\":\"field2\"},{\"field1\":\"field3\",\"field2\":\"field4\"}]")
+		);
+	}
+	
+	@Test
 	public void compareBranchWithChangedRootAndChildThenDeletedRootObject() throws Exception {
 		final ContainerRevisionData container = new ContainerRevisionData(STORAGE_KEY1);
 		final ComponentRevisionData component = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "value");
@@ -241,39 +274,64 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void compareBranchWithStringArrayPropertyChange() throws Exception {
-		RevisionData data = new RevisionData(STORAGE_KEY1, null, null, List.of(), null);
-		indexRevision(MAIN, data);
+	public void compareBranchWithAddedChildComponent() throws Exception {
+		final ContainerRevisionData container = new ContainerRevisionData(STORAGE_KEY1);
+		indexRevision(MAIN, container);
 		
-		String branch = createBranch(MAIN, "a");
+		final String branch = createBranch(MAIN, "a");
 		
-		RevisionData updatedData = new RevisionData(STORAGE_KEY1, null, null, List.of("1", "2"), null);
-		indexChange(branch, data, updatedData);
+		final ComponentRevisionData component = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "value");
+		indexRevision(branch, component);
 		
-		RevisionCompare compare = index().compare(MAIN, branch);
+		final RevisionCompare compare = index().compare(MAIN, branch);
 		assertThat(compare.getDetails()).containsOnly(
-			RevisionCompareDetail.componentChange(Operation.CHANGE, data.getContainerId(), data.getObjectId()),
-			RevisionCompareDetail.propertyChange(Operation.CHANGE, data.getObjectId(), "terms", "[]", "[\"1\",\"2\"]")
+			RevisionCompareDetail.componentChange(Operation.ADD, container.getObjectId(), component.getObjectId())
 		);
 	}
 	
 	@Test
-	public void compareBranchWithObjectArrayPropertyChange() throws Exception {
-		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of());
-		indexRevision(MAIN, data);
+	public void compareBranchWithChangedChildComponent() throws Exception {
+		final ContainerRevisionData container = new ContainerRevisionData(STORAGE_KEY1);
+		final ComponentRevisionData component = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "value");
+		indexRevision(MAIN, container, component);
 		
-		String branch = createBranch(MAIN, "a");
+		final String branch = createBranch(MAIN, "a");
+		final ComponentRevisionData update = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "valueUpdated");
+		index().prepareCommit(branch)
+			.stageChange(component, update)
+			.commit(currentTime(), USER_ID, "Commit");
 		
-		ObjectListPropertyData updatedData = new ObjectListPropertyData(STORAGE_KEY1, List.of(
-			new RevisionFixtures.ObjectItem("field1", "field2"),
-			new RevisionFixtures.ObjectItem("field3", "field4")
-		));
-		indexChange(branch, data, updatedData);
-		
-		RevisionCompare compare = index().compare(MAIN, branch);
+		final RevisionCompare compare = index().compare(MAIN, branch);
 		assertThat(compare.getDetails()).containsOnly(
-			RevisionCompareDetail.componentChange(Operation.CHANGE, data.getContainerId(), data.getObjectId()),
-			RevisionCompareDetail.propertyChange(Operation.CHANGE, data.getObjectId(), "items", "[]", "[{\"field1\":\"field1\",\"field2\":\"field2\"},{\"field1\":\"field3\",\"field2\":\"field4\"}]")
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, component.getObjectId(), "property", "value", "valueUpdated")
+		);
+		
+		// with component changes
+		final RevisionCompare compareWithComponentChanges = index().compare(MAIN, branch, RevisionCompareOptions.builder().includeComponentChanges(true).build());
+		assertThat(compareWithComponentChanges.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, container.getObjectId(), component.getObjectId()),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, component.getObjectId(), "property", "value", "valueUpdated")
+		);
+		
+		// full compare with type filter
+		final RevisionCompare filteredFullCompare = index().compare(MAIN, branch, RevisionCompareOptions.builder().includeComponentChanges(true).types(Set.of(container.getObjectId().type())).build());
+		assertThat(filteredFullCompare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, container.getObjectId(), component.getObjectId())
+		);
+	}
+	
+	@Test
+	public void compareBranchWithDeletedChildComponent() throws Exception {
+		final ContainerRevisionData container = new ContainerRevisionData(STORAGE_KEY1);
+		final ComponentRevisionData component = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "value");
+		indexRevision(MAIN, container, component);
+		
+		final String branch = createBranch(MAIN, "a");
+		deleteRevision(branch, ComponentRevisionData.class, STORAGE_KEY2);
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.REMOVE, container.getObjectId(), component.getObjectId())
 		);
 	}
 	

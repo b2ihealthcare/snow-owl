@@ -369,7 +369,7 @@ public class RevisionFixtures {
 		
 	}
 	
-	@Doc
+	@Doc(revisionHash = {"property"})
 	public static final class ComponentRevisionData extends Revision {
 
 		private final String container;

@@ -63,7 +63,6 @@ public abstract class RepositoryBranchCompareRestService extends AbstractRestSer
 		return RepositoryRequests.branching().prepareCompare()
 			.setBase(request.getBaseBranch())
 			.setCompare(request.getCompareBranch())
-			.setExcludeComponentChanges(true)
 			.setLimit(request.getLimit())
 			.build(repositoryId)
 			.execute(getBus());

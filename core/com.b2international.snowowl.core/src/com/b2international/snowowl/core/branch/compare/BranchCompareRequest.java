@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,7 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.revision.ObjectId;
-import com.b2international.index.revision.RevisionCompare;
-import com.b2international.index.revision.RevisionCompareDetail;
-import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -54,7 +51,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 	private int limit;
 	
 	@JsonProperty
-	private boolean excludeComponentChanges;
+	private boolean includeComponentChanges;
 	
 	BranchCompareRequest() {
 	}
@@ -71,8 +68,8 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		this.limit = limit;
 	}
 	
-	void setExcludeComponentChanges(boolean excludeComponentChanges) {
-		this.excludeComponentChanges = excludeComponentChanges;
+	void setIncludeComponentChanges(boolean includeComponentChanges) {
+		this.includeComponentChanges = includeComponentChanges;
 	}
 	
 	@Override
@@ -81,24 +78,29 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		final Branch branchToCompare = RepositoryRequests.branching().prepareGet(compare).build().execute(context);
 		final long compareHeadTimestamp = branchToCompare.headTimestamp();
 		
+		RevisionCompareOptions options = RevisionCompareOptions.builder()
+			.limit(limit)
+			.includeComponentChanges(includeComponentChanges)
+			.build();
+		
 		final RevisionCompare compareResult;
 		final String baseBranchPath;
 		if (base != null) {
-			compareResult = index.compare(base, compare, limit, excludeComponentChanges);
+			compareResult = index.compare(base, compare, options);
 			baseBranchPath = base;
 		} else {
-			compareResult = index.compare(compare, limit, excludeComponentChanges);
+			compareResult = index.compare(compare, options);
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
 		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
 		
-		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet(); 
+		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet();
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
 				affectedId = detail.getComponent();
-				if (!detail.getObject().isRoot() && !excludeComponentChanges) {
+				if (!detail.getObject().isRoot() && includeComponentChanges) {
 					changedContainers.add(ComponentIdentifier.of(detail.getObject().type(), detail.getObject().id()));
 				}
 			} else {

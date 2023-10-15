@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,6 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		
 		RevisionCompare compare = index().compare(MAIN, a);
 		assertThat(compare.getDetails()).containsOnly(
-			RevisionCompareDetail.componentChange(Operation.CHANGE, updatedDoc.getContainerId(), updatedDoc.getObjectId()),
 			RevisionCompareDetail.propertyChange(Operation.CHANGE, updatedDoc.getObjectId(), "data/field1", "field1_1", "field1_2"),
 			RevisionCompareDetail.propertyChange(Operation.CHANGE, updatedDoc.getObjectId(), "data/field2", "field2_1", "field2_2")
 		);

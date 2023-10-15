@@ -68,7 +68,6 @@ public class SnomedDependencyComparer implements DependencyComparer {
 		final BranchCompareResult compareResult = RepositoryRequests.branching().prepareCompare()
 			.setBase(baseBranch)
 			.setCompare(compareBranch)
-			.setExcludeComponentChanges(true)
 			.build()
 			.execute(context);
 
