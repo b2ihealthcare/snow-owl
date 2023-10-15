@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.branch.compare;
 
+import java.util.Set;
+
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -28,8 +31,13 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 
 	private String base;
 	private String compare;
+	
+	// options
+	private Set<String> types;
+	private Set<String> ids;
 	private int limit = Integer.MAX_VALUE;
 	private boolean includeComponentChanges = false;
+	private boolean includeDerivedComponentChanges = false;
 	
 	public BranchCompareRequestBuilder setBase(String baseBranch) {
 		this.base = baseBranch;
@@ -41,8 +49,31 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 		return getSelf();
 	}
 	
+	public BranchCompareRequestBuilder filterByType(String type) {
+		return filterByTypes(type == null ? null : Set.of(type));
+	}
+	
+	public BranchCompareRequestBuilder filterByTypes(Iterable<String> types) {
+		this.types = types == null ? null : Collections3.toImmutableSet(types);
+		return getSelf();
+	}
+	
+	public BranchCompareRequestBuilder filterById(String id) {
+		return filterByIds(id == null ? null : Set.of(id));
+	}
+	
+	public BranchCompareRequestBuilder filterByIds(Iterable<String> ids) {
+		this.ids = ids == null ? null : Collections3.toImmutableSet(ids);
+		return getSelf();
+	}
+	
 	public BranchCompareRequestBuilder setIncludeComponentChanges(boolean includeComponentChanges) {
 		this.includeComponentChanges = includeComponentChanges;
+		return getSelf();
+	}
+	
+	public BranchCompareRequestBuilder setIncludeDerivedComponentChanges(boolean includeDerivedComponentChanges) {
+		this.includeDerivedComponentChanges = includeDerivedComponentChanges;
 		return getSelf();
 	}
 	
@@ -56,8 +87,11 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 		final BranchCompareRequest req = new BranchCompareRequest();
 		req.setBaseBranch(base);
 		req.setCompareBranch(compare);
-		req.setIncludeComponentChanges(includeComponentChanges);
 		req.setLimit(limit);
+		req.setIncludeComponentChanges(includeComponentChanges);
+		req.setIncludeDerivedComponentChanges(includeDerivedComponentChanges);
+		req.setTypes(types);
+		req.setIds(ids);
 		return req;
 	}
 }

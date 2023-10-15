@@ -847,7 +847,11 @@ public final class StagingArea {
 				.collect(Collectors.toCollection(TreeSet::new));
 		this.squashMerge = squash;
 		
-		RevisionCompareOptions options = RevisionCompareOptions.builder().limit(Integer.MAX_VALUE).includeComponentChanges(true).build();
+		// when merging we need all compare data in memory
+		RevisionCompareOptions options = RevisionCompareOptions.builder().limit(Integer.MAX_VALUE)
+				.includeComponentChanges(true)
+				.includeDerivedComponentChanges(true)
+				.build();
 		
 		List<RevisionCompareDetail> fromChangeDetails = index.compare(toRef, fromRef, options).getDetails();
 		

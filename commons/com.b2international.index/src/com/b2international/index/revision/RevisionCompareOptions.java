@@ -34,6 +34,8 @@ public final class RevisionCompareOptions {
 		
 		private int limit = COMPARE_DEFAULT_LIMIT;
 		private boolean includeComponentChanges = false;
+		private boolean includeDerivedComponentChanges = false;
+		private Set<String> ids;
 		private Set<String> types;
 		
 		public Builder limit(int limit) {
@@ -46,28 +48,44 @@ public final class RevisionCompareOptions {
 			return this;
 		}
 		
+		public Builder includeDerivedComponentChanges(boolean includeDerivedComponentChanges) {
+			this.includeDerivedComponentChanges = includeDerivedComponentChanges;
+			return this;
+		}
+		
 		public Builder types(Iterable<String> types) {
 			this.types = types == null ? null : Collections3.toImmutableSet(types);
 			return this;
 		}
 		
+		public Builder ids(Iterable<String> ids) {
+			this.ids = ids == null ? null : Collections3.toImmutableSet(ids);
+			return this;
+		}
+		
 		public RevisionCompareOptions build() {
-			return new RevisionCompareOptions(limit, includeComponentChanges, types);
+			return new RevisionCompareOptions(limit, includeComponentChanges, includeDerivedComponentChanges, types, ids);
 		}
  		
 	} 
 	
 	private final int limit;
 	private final boolean includeComponentChanges;
+	private boolean includeDerivedComponentChanges;
 	private final Set<String> types;
+	private final Set<String> ids;
 	
 	private RevisionCompareOptions(
 			final int limit,
 			final boolean includeComponentChanges,
-			final Set<String> types) {
+			final boolean includeDerivedComponentChanges,
+			final Set<String> types,
+			final Set<String> ids) {
 		this.limit = limit;
 		this.includeComponentChanges = includeComponentChanges;
+		this.includeDerivedComponentChanges = includeDerivedComponentChanges;
 		this.types = types;
+		this.ids = ids;
 	}
 	
 	public int getLimit() {
@@ -78,8 +96,16 @@ public final class RevisionCompareOptions {
 		return includeComponentChanges;
 	}
 	
+	public boolean isIncludeDerivedComponentChanges() {
+		return includeDerivedComponentChanges;
+	}
+	
 	public Set<String> getTypes() {
 		return types;
+	}
+	
+	public Set<String> getIds() {
+		return ids;
 	}
 	
 	public static Builder builder() {

@@ -53,6 +53,15 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 	@JsonProperty
 	private boolean includeComponentChanges;
 	
+	@JsonProperty
+	private boolean includeDerivedComponentChanges;
+	
+	@JsonProperty
+	private Set<String> types;
+	
+	@JsonProperty
+	private Set<String> ids;
+	
 	BranchCompareRequest() {
 	}
 	
@@ -72,6 +81,18 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		this.includeComponentChanges = includeComponentChanges;
 	}
 	
+	void setIncludeDerivedComponentChanges(boolean includeDerivedComponentChanges) {
+		this.includeDerivedComponentChanges = includeDerivedComponentChanges;
+	}
+	
+	void setTypes(Set<String> types) {
+		this.types = types;
+	}
+	
+	void setIds(Set<String> ids) {
+		this.ids = ids;
+	}
+	
 	@Override
 	public BranchCompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
@@ -81,6 +102,9 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		RevisionCompareOptions options = RevisionCompareOptions.builder()
 			.limit(limit)
 			.includeComponentChanges(includeComponentChanges)
+			.includeDerivedComponentChanges(includeDerivedComponentChanges)
+			.types(types)
+			.ids(ids)
 			.build();
 		
 		final RevisionCompare compareResult;
@@ -106,6 +130,12 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			} else {
 				affectedId = detail.getObject();
 			}
+			
+			// component should not be registered if not requested via type filter
+			if (types != null && !types.contains(affectedId.type())) {
+				continue;
+			}
+			
 			final ComponentIdentifier identifier = ComponentIdentifier.of(affectedId.type(), affectedId.id());
 			
 			switch (detail.getOp()) {
@@ -132,5 +162,5 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 	public String getOperation() {
 		return Permission.OPERATION_BROWSE;
 	}
-	
+
 }

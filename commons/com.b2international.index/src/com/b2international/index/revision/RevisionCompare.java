@@ -51,12 +51,18 @@ public final class RevisionCompare {
 			for (CommitDetail detail : commit.getDetails()) {
 								
 				List<String> objects = detail.getObjects();
+				// XXX index order is required to collect corresponding component array from details
 				for (int i = 0; i < objects.size(); i++) {
 					String object = objects.get(i);
 					final ObjectId objectId = ObjectId.of(detail.getObjectType(), object);
 					
-					// if the main object is not selected then skip
+					// if the main object is not selected via type filters then skip
 					if (options.getTypes() != null && !options.getTypes().contains(objectId.type())) {
+						continue;
+					}
+					
+					// if main object is not the root object and it is not selected via id filter then skip
+					if (!objectId.isRoot() && options.getIds() != null && !options.getIds().contains(objectId.id())) {
 						continue;
 					}
 					
@@ -75,10 +81,18 @@ public final class RevisionCompare {
 											detail.getProp(), 
 											detail.getFrom(), detail.getTo()));
 						}
-					} else if (options.isIncludeComponentChanges() || !detail.isChange()) {
+					} else if (
+						// include component change list if, it is either an ADD or REMOVE list
+						!detail.isChange()
+						// or include if it is a component change list for a non-root component and it was requested explicitly
+						|| (!objectId.isRoot() && options.isIncludeComponentChanges())
+						// or include if it is a component change list for a root component (usually derived data change markers)
+						|| (objectId.isRoot() && options.isIncludeDerivedComponentChanges())
+					) {
 						details = detail.getComponents()
 								.get(i)
 								.stream()
+								.filter(component -> !objectId.isRoot() || options.getIds() == null || options.getIds().contains(component))
 								.map(component -> RevisionCompareDetail.componentChange(detail.getOp(), objectId, ObjectId.of(detail.getComponentType(), component)))
 								.collect(Collectors.toList());
 					} else {
