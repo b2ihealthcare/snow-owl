@@ -101,7 +101,8 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 			// then fall back to version search
 			VersionSearchRequestBuilder versionSearch = ResourceRequests.prepareSearchVersion()
 				.one()
-				.filterByResource(terminologyResource.getResourceURI());
+				.filterByResource(terminologyResource.getResourceURI())
+				.setFields(VersionDocument.Fields.ID, VersionDocument.Fields.BRANCH_PATH, VersionDocument.Fields.RESOURCE, VersionDocument.Fields.VERSION);
 			
 			if (uriToResolve.isLatest()) {
 				// fetch the latest resource version if LATEST is specified in the URI
