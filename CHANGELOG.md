@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.12.1
+
+### Bugs/Improvements
+- [ecl] disable synonym token filter when performing lexical matches during ECL evaluation (#1207)
+- [ecl] wild lexical matching is now case insensitive (#1208)
+- [package] fix missing JRE from Windows package (#1204)
+
 ## 8.12.0
 
 ### Core
