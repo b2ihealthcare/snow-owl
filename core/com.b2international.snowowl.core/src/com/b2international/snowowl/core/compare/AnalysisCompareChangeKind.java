@@ -32,6 +32,9 @@ public enum AnalysisCompareChangeKind {
 	/** A component has been completely deleted */
 	DELETED,
 	
+	/** A component has been added */
+	ADDED,
+	
 	// The order of ordinals represent a priority list, top-bottom high-low
 	/** Status of the component has changed to inactive */
 	INACTIVATION,
@@ -45,14 +48,12 @@ public enum AnalysisCompareChangeKind {
 	/** A change that can not be categorized into the cases above */
 	COMPONENT_CHANGE,
 	
-	/** A component has been added */
-	ADDED,
 	
 	/** The component has not changed when compared to the reference */
 	UNCHANGED; 
 
 	private static final Set<AnalysisCompareChangeKind> CHANGED_VALUES = immutableEnumSet(
-		DEFINITION_CHANGE, DESCRIPTION_CHANGE, INACTIVATION, COMPONENT_CHANGE
+		INACTIVATION, DEFINITION_CHANGE, DESCRIPTION_CHANGE, COMPONENT_CHANGE
 	);
 	
 	/**
@@ -65,5 +66,17 @@ public enum AnalysisCompareChangeKind {
 
 	public boolean isChanged() {
 		return CHANGED_VALUES.contains(this);
+	}
+
+	public boolean isNew() {
+		return ADDED == this;
+	}
+	
+	public boolean isDeleted() {
+		return DELETED == this;
+	}
+	
+	public boolean isUnchanged() {
+		return UNCHANGED == this;
 	}
 }

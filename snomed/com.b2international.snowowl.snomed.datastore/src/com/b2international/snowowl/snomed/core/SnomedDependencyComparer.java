@@ -75,6 +75,9 @@ public class SnomedDependencyComparer implements DependencyComparer {
 
 		final Map<String, AnalysisCompareChangeKind> changeDetails = new HashMap<>();
 		
+		// add added and deleted stuff to changeDetails
+		compareResult.getNewComponents().forEach(ci -> changeDetails.put(ci.getComponentId(), AnalysisCompareChangeKind.ADDED));
+		compareResult.getDeletedComponents().forEach(ci -> changeDetails.put(ci.getComponentId(), AnalysisCompareChangeKind.DELETED));
 		
 		// Register all changed concepts using a prioritized change kind
 		for (BranchCompareChangeStatistic stats : compareResult.getStats()) {
