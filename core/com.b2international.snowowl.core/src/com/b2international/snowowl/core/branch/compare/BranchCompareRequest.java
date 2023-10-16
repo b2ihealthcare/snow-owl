@@ -170,9 +170,11 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				break;
 			}
 		}
-		
-		for (String property : statsFor) {
-			result.addStats(new BranchCompareChangeStatistic(property, changesByProperty.get(property).stream().map(ComponentIdentifier::of).collect(Collectors.toSet())));
+
+		if (statsFor != null) {
+			for (String property : statsFor) {
+				result.addStats(new BranchCompareChangeStatistic(property, changesByProperty.get(property).stream().map(ComponentIdentifier::of).collect(Collectors.toSet())));
+			}
 		}
 		
 		return result
