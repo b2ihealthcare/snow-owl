@@ -123,6 +123,10 @@ public class SnomedDependencyComparer implements DependencyComparer {
 		result.setDeletedComponents(compareResult.getTotalDeleted());
 		
 		for (String counterName : counters.keySet()) {
+			// prevent registering added and deleted counter keys twice
+			if (AnalysisCompareChangeKind.ADDED.name().toLowerCase().equals(counterName) || AnalysisCompareChangeKind.DELETED.name().toLowerCase().equals(counterName)) {
+				continue;
+			}
 			result.setCounterValue(counterName, counters.get(counterName));
 		}
 		
