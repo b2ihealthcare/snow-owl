@@ -29,29 +29,30 @@ import com.b2international.commons.StringUtils;
  */
 public enum AnalysisCompareChangeKind {
 
-	/** A component has been added */
-	ADDED,
-
-	/** An intrinsic property of the component itself changed (eg. status or definition status) */
+	/** A component has been completely deleted */
+	DELETED,
+	
+	// The order of ordinals represent a priority list, top-bottom high-low
+	/** Status of the component has changed to inactive */
+	INACTIVATION,
+	
+	/** A relationship or value representing the meaning of the component changed */
 	DEFINITION_CHANGE,
 
-	/** A relationship or value representing the meaning of the component changed */
-	PROPERTY_CHANGE,
-
 	/** A term used to described the component has changed */
-	TERM_CHANGE,
-
+	DESCRIPTION_CHANGE,
+	
 	/** A change that can not be categorized into the cases above */
 	COMPONENT_CHANGE,
 	
-	/** A component has been deleted or was made otherwise inaccessible (eg. removed from evaluated set or deactivated) */
-	DELETED,
+	/** A component has been added */
+	ADDED,
 	
 	/** The component has not changed when compared to the reference */
-	UNCHANGED;
+	UNCHANGED; 
 
 	private static final Set<AnalysisCompareChangeKind> CHANGED_VALUES = immutableEnumSet(
-		DEFINITION_CHANGE, PROPERTY_CHANGE, TERM_CHANGE, COMPONENT_CHANGE
+		DEFINITION_CHANGE, DESCRIPTION_CHANGE, INACTIVATION, COMPONENT_CHANGE
 	);
 	
 	/**
