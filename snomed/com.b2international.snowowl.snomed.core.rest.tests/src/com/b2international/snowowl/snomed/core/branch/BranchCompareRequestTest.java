@@ -227,6 +227,7 @@ public class BranchCompareRequestTest {
 		return RepositoryRequests.branching().prepareCompare()
 				.setBase(base)
 				.setCompare(compare)
+				.setIncludeComponentChanges(true)
 				.build(REPOSITORY_ID);
 	}
 	
