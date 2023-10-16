@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -42,6 +43,10 @@ public final class ComponentIdentifier implements Serializable {
 		final String[] parts = componentIdentifier.split("/");
 		checkArgument(parts.length == 2, "ComponentIdentifier should consist of two parts, a short type id and String component id (was: %s)", componentIdentifier);
 		return of(parts[0], parts[1]);
+	}
+	
+	public static ComponentIdentifier of(ObjectId objectId) {
+		return new ComponentIdentifier(objectId.type(), objectId.id());
 	}
 	
 	public static ComponentIdentifier of(String componentType, String componentId) {

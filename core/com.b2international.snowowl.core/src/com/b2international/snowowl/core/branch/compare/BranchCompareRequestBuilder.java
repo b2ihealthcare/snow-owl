@@ -38,6 +38,7 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 	private int limit = Integer.MAX_VALUE;
 	private boolean includeComponentChanges = false;
 	private boolean includeDerivedComponentChanges = false;
+	private Set<String> statsFor;
 	
 	public BranchCompareRequestBuilder setBase(String baseBranch) {
 		this.base = baseBranch;
@@ -82,6 +83,15 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 		return getSelf();
 	}
 	
+	public BranchCompareRequestBuilder withChangeStatsFor(String...properties) {
+		return withChangeStatsFor(properties == null ? null : Set.of(properties));
+	}
+	
+	public BranchCompareRequestBuilder withChangeStatsFor(Iterable<String> properties) {
+		this.statsFor = properties == null ? null : Collections3.toImmutableSet(properties);
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<RepositoryContext, BranchCompareResult> doBuild() {
 		final BranchCompareRequest req = new BranchCompareRequest();
@@ -92,6 +102,8 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 		req.setIncludeDerivedComponentChanges(includeDerivedComponentChanges);
 		req.setTypes(types);
 		req.setIds(ids);
+		req.setStatsFor(statsFor);
 		return req;
 	}
+
 }

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.branch.compare;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
 
@@ -30,6 +31,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -61,6 +65,9 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 	
 	@JsonProperty
 	private Set<String> ids;
+
+	@JsonProperty
+	private Set<String> statsFor;
 	
 	BranchCompareRequest() {
 	}
@@ -93,6 +100,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		this.ids = ids;
 	}
 	
+	void setStatsFor(Set<String> statsFor) {
+		this.statsFor = statsFor;
+	}
+	
 	@Override
 	public BranchCompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
@@ -119,6 +130,8 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		
 		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
 		
+		Multimap<String, ObjectId> changesByProperty = HashMultimap.create();
+		
 		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet();
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
@@ -126,9 +139,17 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				affectedId = detail.getComponent();
 				if (!detail.getObject().isRoot() && includeComponentChanges) {
 					changedContainers.add(ComponentIdentifier.of(detail.getObject().type(), detail.getObject().id()));
+					
+					if (statsFor != null && statsFor.contains(detail.getComponent().type())) {
+						changesByProperty.put(detail.getComponent().type(), detail.getObject());
+					}
 				}
 			} else {
 				affectedId = detail.getObject();
+				
+				if (statsFor != null && statsFor.contains(detail.getProperty())) {
+					changesByProperty.put(detail.getProperty(), detail.getObject());
+				}
 			}
 			
 			// component should not be registered if not requested via type filter
@@ -151,10 +172,11 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			}
 		}
 		
+		for (String property : ImmutableSortedSet.copyOf(changesByProperty.keySet())) {
+			result.addStats(new BranchCompareChangeStatistic(property, changesByProperty.get(property).stream().map(ComponentIdentifier::of).collect(Collectors.toSet())));
+		}
+		
 		return result
-				.totalNew(compareResult.getTotalAdded())
-				.totalChanged(compareResult.getTotalChanged())
-				.totalDeleted(compareResult.getTotalRemoved())
 				.build(changedContainers);
 	}
 	
