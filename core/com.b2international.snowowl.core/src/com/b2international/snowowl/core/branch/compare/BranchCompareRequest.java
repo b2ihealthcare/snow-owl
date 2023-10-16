@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
@@ -172,7 +171,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			}
 		}
 		
-		for (String property : ImmutableSortedSet.copyOf(changesByProperty.keySet())) {
+		for (String property : statsFor) {
 			result.addStats(new BranchCompareChangeStatistic(property, changesByProperty.get(property).stream().map(ComponentIdentifier::of).collect(Collectors.toSet())));
 		}
 		
