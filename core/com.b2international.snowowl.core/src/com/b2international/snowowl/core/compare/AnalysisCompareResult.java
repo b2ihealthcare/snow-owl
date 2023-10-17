@@ -24,6 +24,9 @@ import java.util.Optional;
 
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.domain.ListCollectionResource;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.MoreObjects;
 
 /**
@@ -62,7 +65,11 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 	 * @param fromUri - the resource URI representing the comparison baseline
 	 * @param toUri - the resource URI representing the comparison target
 	 */
-	public AnalysisCompareResult(final List<AnalysisCompareResultItem> items, final ResourceURIWithQuery fromUri, final ResourceURIWithQuery toUri) {
+	@JsonCreator
+	public AnalysisCompareResult(
+			@JsonProperty("items") final List<AnalysisCompareResultItem> items, 
+			@JsonProperty("fromUri") final ResourceURIWithQuery fromUri, 
+			@JsonProperty("toUri") final ResourceURIWithQuery toUri) {
 		super(items);
 		this.fromUri = checkNotNull(fromUri, "Resource URI 'fromUri' may not be null.");
 		this.toUri = checkNotNull(toUri, "Resource URI 'toUri' may not be null.");
@@ -84,6 +91,11 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 
 	public List<NamedCount> getCounters() {
 		return counters;
+	}
+	
+	@JsonSetter
+	void setCounters(List<NamedCount> counters) {
+		this.counters = counters;
 	}
 	
 	public Integer getTotalChanges() {
