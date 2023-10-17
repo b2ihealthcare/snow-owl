@@ -18,8 +18,10 @@ package com.b2international.snowowl.core.events;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.jobs.JobRequests;
@@ -145,17 +147,26 @@ public final class AsyncRequest<R> {
 	}
 
 	/**
+	 * Helper to run a fully prepared async request inside a job and store its result.
+	 *  
+	 * @return a {@link ScheduleJobRequestBuilder} with only the request part configured to this {@link AsyncRequest}
+	 */
+	public ScheduleJobRequestBuilder runAsJob() {
+		return JobRequests.prepareSchedule()
+				.setRequest(this);
+	}
+	
+	/**
 	 * Wraps the this {@link AsyncRequest}'s {@link #getRequest()} into a {@link ScheduleJobRequestBuilder} and prepares for execution.
 	 *  
 	 * @param description - the description to use for the job
 	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
 	 */
 	public AsyncRequest<String> runAsJob(String description) {
-		return JobRequests.prepareSchedule()
+		return runAsJob()
 				.setDescription(description)
-				.setRequest(this)
 				.buildAsync();
-	}	
+	}
 	
 	/**
 	 * Wraps the this {@link AsyncRequest}'s {@link #getRequest()} into a {@link ScheduleJobRequestBuilder} and prepares for execution.
@@ -165,10 +176,9 @@ public final class AsyncRequest<R> {
 	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
 	 */
 	public AsyncRequest<String> runAsJob(String jobKey, String description) {
-		return JobRequests.prepareSchedule()
+		return runAsJob()
 				.setKey(jobKey)
 				.setDescription(description)
-				.setRequest(this)
 				.buildAsync();
 	}
 	
@@ -181,12 +191,34 @@ public final class AsyncRequest<R> {
 	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
 	 */
 	public AsyncRequest<String> runAsJobWithRestart(String jobKey, String description) {
-		return JobRequests.prepareSchedule()
+		return runAsJob()
 				.setKey(jobKey)
 				.setDescription(description)
-				.setRequest(this)
 				.setRestart(true)
 				.buildAsync();
 	}
 
+	/**
+	 * A simple poller implementation that reuses this prepared {@link AsyncRequest} until a certain condition is met in the response object.
+	 * 
+	 * @param bus - the bus to use for request execution
+	 * @param pollIntervalMillis - the polling interval between retries 
+	 * @param canFinish
+	 * @return
+	 */
+	public Promise<R> retryUntil(IEventBus bus, long pollIntervalMillis, Predicate<R> canFinish) {
+		return execute(bus).thenWith(result -> {
+			if (canFinish.test(result)) {
+				return Promise.immediate(result);
+			} else {
+				try {
+					Thread.sleep(pollIntervalMillis);
+				} catch (InterruptedException e) {
+					throw new SnowowlRuntimeException(e);
+				}
+				return retryUntil(bus, pollIntervalMillis, canFinish);
+			}
+		});
+	}
+	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * A request builder that wraps existing {@link Request} instances to run them as jobs.
@@ -128,6 +130,20 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
 		return new ScheduleJobRequest(key, user, description, request, schedulingRule, autoClean, restart);
+	}
+	
+	/**
+	 * Schedules the job described by this builder and then polls using the given interval of milliseconds until it is not complete.
+	 * 
+	 * @param context
+	 * @param pollIntervalMillis
+	 * @return
+	 */
+	public Promise<RemoteJobEntry> waitFor(ServiceProvider context, long pollIntervalMillis) {
+		return buildAsync()
+				.executeWithContext(context)
+				.then(jobId -> JobRequests.prepareGet(jobId).buildAsync())
+				.thenWith(req -> req.retryUntil(context.service(IEventBus.class), pollIntervalMillis, RemoteJobEntry::isDone));
 	}
 	
 }
