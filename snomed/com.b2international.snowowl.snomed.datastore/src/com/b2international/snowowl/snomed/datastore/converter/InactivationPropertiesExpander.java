@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -144,11 +143,8 @@ public final class InactivationPropertiesExpander {
 
 	private Map<String, SnomedConcept> expandConceptByIdMap(final Options expand, final Set<String> componentsToExpand, final BranchContext context) {
 		final Map<String, SnomedConcept> conceptsById = Maps.newHashMap();
-		final int partitionSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getTermPartitionSize();
 		
-		Iterables.partition(componentsToExpand, partitionSize).forEach(idsFilter -> {
+		Iterables.partition(componentsToExpand, context.getTermPartitionSize()).forEach(idsFilter -> {
 			SnomedRequests.prepareSearchConcept()
 			.setLimit(idsFilter.size())
 			.filterByIds(idsFilter)

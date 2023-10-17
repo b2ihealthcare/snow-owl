@@ -33,7 +33,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.util.DecimalUtils;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
@@ -124,11 +123,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		if (!issueIdsByConceptIds.isEmpty()) {
 			final Set<String> sctIds = issueIdsByConceptIds.keySet();
-			final int partitionSize = context.service(RepositoryConfiguration.class)
-				.getIndexConfiguration()
-				.getTermPartitionSize();
-
-			Iterables.partition(sctIds, partitionSize).forEach(ids -> {
+			Iterables.partition(sctIds, context.getTermPartitionSize()).forEach(ids -> {
 				Query.select(String[].class)
 					.from(SnomedConceptDocument.class)
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.ACTIVE)
