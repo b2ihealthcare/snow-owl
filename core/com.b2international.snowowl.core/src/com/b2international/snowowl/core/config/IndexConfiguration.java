@@ -24,6 +24,7 @@ import javax.validation.constraints.Min;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.index.IndexClientFactory;
+import com.b2international.snowowl.core.domain.PagingSettingsProvider;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,7 +36,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 5.0
  */
-public class IndexConfiguration {
+public class IndexConfiguration implements PagingSettingsProvider {
 
 	public static final int DEFAULT_CLUSTER_HEALTH_TIMEOUT = 300_000; // Snow Owl defaults to 5m cluster health timeout
 	public static final int DEFAULT_RESULT_WINDOW = 100_099; // Snow Owl defaults to slightly more than 100k max result window
@@ -294,16 +295,19 @@ public class IndexConfiguration {
 	}
 	
 	@JsonIgnore
+	@Override
 	public int getPageSize() {
 		return Math.min(IndexClientFactory.MAX_PAGE_SIZE, getResultWindow());
 	}
 	
 	@JsonIgnore
+	@Override
 	public int getTermPartitionSize() {
 		return Math.min(getMaxTermsCount(), getResultWindow());
 	}
 
 	@JsonIgnore
+	@Override
 	public int getCommitLimit() {
 		return Math.min(getCommitWatermarkLow(), getResultWindow());
 	}

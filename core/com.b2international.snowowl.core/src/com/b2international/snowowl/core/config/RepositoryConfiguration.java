@@ -22,6 +22,8 @@ import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.domain.PagingSettingsProvider;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.HostAndPort;
 
@@ -31,7 +33,7 @@ import com.google.common.net.HostAndPort;
  * 
  * @since 3.4
  */
-public class RepositoryConfiguration {
+public class RepositoryConfiguration implements PagingSettingsProvider {
 	
 	@NotEmpty
 	private String host = "0.0.0.0";
@@ -169,5 +171,23 @@ public class RepositoryConfiguration {
 	@JsonProperty
 	public void setDeploymentId(String deploymentId) {
 		this.deploymentId = deploymentId;
+	}
+
+	@JsonIgnore
+	@Override
+	public int getPageSize() {
+		return indexConfiguration.getPageSize();
+	}
+
+	@JsonIgnore
+	@Override
+	public int getTermPartitionSize() {
+		return indexConfiguration.getTermPartitionSize();
+	}
+
+	@JsonIgnore
+	@Override
+	public int getCommitLimit() {
+		return indexConfiguration.getCommitLimit();
 	}
 }
