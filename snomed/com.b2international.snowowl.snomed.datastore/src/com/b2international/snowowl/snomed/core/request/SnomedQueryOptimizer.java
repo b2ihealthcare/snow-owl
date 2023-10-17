@@ -45,14 +45,13 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptDescendantCountById;
-import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptSearchById;
-import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.EdgeSearchBySourceId;
+import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.*;
 import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.RelationshipSearchBySource;
 import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.RelationshipSearchByTypeAndDestination;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Floats;
@@ -284,6 +283,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	private ConceptSearchById conceptSearchById = ConceptSearchById.DEFAULT;
 	private ConceptDescendantCountById conceptDescendantCountById = ConceptDescendantCountById.DEFAULT;
 	private EdgeSearchBySourceId edgeSearchBySourceId = EdgeSearchBySourceId.DEFAULT;
+	private ConceptDescendantsById conceptDescendantsById = ConceptDescendantsById.DEFAULT;
 	
 	// Optimizer parameters (some of these are adjusted dynamically)
 	private final int minimumClusterSize       = 2;
@@ -356,6 +356,11 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	@VisibleForTesting
 	void setEdgeSearchBySourceId(final EdgeSearchBySourceId edgeSearchBySourceId) {
 		this.edgeSearchBySourceId = edgeSearchBySourceId;
+	}
+	
+	@VisibleForTesting
+	void setConceptDescendantsById(final ConceptDescendantsById conceptDescendantsById) {
+		this.conceptDescendantsById = conceptDescendantsById;
 	}
 	
 	@VisibleForTesting
@@ -458,7 +463,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			conceptSet,
 			conceptSearchById,
 			edgeSearchBySourceId,
-			conceptDescendantCountById);
+			conceptDescendantCountById,
+			conceptDescendantsById);
 
 		// Save collected ancestors for comparing with exclusion ancestors later
 		final Set<String> inclusionAncestors =  inclusionHierarchyStats.conceptsAndAncestors();
@@ -471,7 +477,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			optimizerStrategy.getFalsePositiveThreshold(falsePositiveThreshold));
 		
 		log.trace("Found {} inclusion(s) with a '<</<' expression that evaluate to existing members only", noFalsePositiveInclusions.size());
-		applyInclusions(context, noFalsePositiveInclusions, false);
+		applyInclusions(context, noFalsePositiveInclusions, inclusionHierarchyStats.getQueryEvaluator(context, pageSize));
 
 		/*
 		 * TODO: In lossy optimization mode pinned exclusions should be removed when a
@@ -515,7 +521,9 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		filterRefinementsForInclusion(inclusionRelationshipStats);
 		final List<QueryExpression> refinementInclusions = inclusionRelationshipStats.optimizeRefinements();
 		log.trace("Found {} inclusion(s) using a refinement expression", refinementInclusions.size());
-		applyInclusions(context, refinementInclusions);
+		
+		final Function<QueryExpression, Set<String>> inclusionEvaluator = inclusionRelationshipStats.getQueryEvaluator(context, pageSize);
+		applyInclusions(context, refinementInclusions, inclusionEvaluator);
 	}
 
 	private void optimizeExclusions(final BranchContext context, final Collection<QueryExpression> exclusions, final Set<String> inclusionAncestors) {
@@ -533,7 +541,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			conceptsToExclude,
 			conceptSearchById,
 			edgeSearchBySourceId,
-			conceptDescendantCountById);
+			conceptDescendantCountById,
+			conceptDescendantsById);
 		
 		// Save the set of leaf concepts before elements are removed
 		final Set<String> leafExclusions = conceptsToExclude.stream()
@@ -545,7 +554,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		// For exclusions, only ancestors without any false positives can be accepted
 		final List<QueryExpression> noFalsePositiveExclusions = exclusionHierarchyStats.optimizeNoFalsePositives(conceptsToExclude);
 		log.trace("Found {} exclusion(s) with a '<</<' expression that evaluate to concepts selected for exclusion only", noFalsePositiveExclusions.size());
-		applyExclusions(context, noFalsePositiveExclusions);
+		applyExclusions(context, noFalsePositiveExclusions, exclusionHierarchyStats.getQueryEvaluator(context, pageSize));
 
 		// Remaining concepts in "conceptsToExclude" are added as '=' exclusions, or '<<' if the concept is a leaf (for future-proofing)
 		if (!conceptsToExclude.isEmpty()) {
@@ -581,7 +590,9 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		filterRefinementsForExclusion(exclusionRelationshipStats);
 		final List<QueryExpression> refinementExclusions = exclusionRelationshipStats.optimizeRefinements();
 		log.trace("Found {} exclusion(s) using a refinement expression", refinementExclusions.size());
-		applyExclusions(context, refinementExclusions);
+		
+		final Function<QueryExpression, Set<String>> exclusionEvaluator = exclusionRelationshipStats.getQueryEvaluator(context, pageSize);
+		applyExclusions(context, refinementExclusions, exclusionEvaluator);
 	}
 
 	private Set<String> evaluateConceptSet(
@@ -622,18 +633,21 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	}
 
 	private void applyInclusions(final BranchContext context, final List<QueryExpression> newInclusions) {
-		applyInclusions(context, newInclusions, true);
+		applyInclusions(context, newInclusions, clause -> evaluateEclToSet(context, clause.getQuery()));
 	}
 
-	private void applyInclusions(final BranchContext context, final List<QueryExpression> newInclusions, final boolean processExclusions) {
-
+	private void applyInclusions(
+		final BranchContext context, 
+		final List<QueryExpression> newInclusions, 
+		final Function<QueryExpression, Set<String>> queryEvaluator
+	) {
 		if (newInclusions.isEmpty()) {
 			return;
 		}
 
 		// Evaluate queries; remove concepts that are members of the original set from "conceptsToInclude"; track extras in "conceptsToExclude"
 		newInclusions.stream()
-			.map(clause -> Pair.of(clause, evaluateEclToSet(context, clause.getQuery())))
+			.map(clause -> Pair.of(clause, queryEvaluator.apply(clause)))
 			.forEachOrdered(pair -> {
 				final QueryExpression clause = pair.getA();
 				final Set<String> includedIds = pair.getB();
@@ -643,11 +657,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				if (modified) {
 					// Only add the clause to the inclusions list if it had actually removed members from coneptsToInclude  
 					optimizedInclusions.add(clause);
-					
-					if (processExclusions) {
-						final Set<String> unexpected = Sets.difference(includedIds, conceptSet);
-						conceptsToExclude.addAll(unexpected);
-					}
+
+					// This becomes a no-op if the inclusion had 100% coverage
+					final Set<String> unexpected = Sets.difference(includedIds, conceptSet);
+					conceptsToExclude.addAll(unexpected);
 				}
 			});
 
@@ -709,6 +722,8 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 			return;
 		}
 		
+		final Function<QueryExpression, Set<String>> queryEvaluator = inclusionHierarchyStats.getQueryEvaluator(context, pageSize);
+		
 		final Instant startTime = Instant.now(clock);
 		final Instant endTime = startTime.plus(maxRuntime);
 
@@ -731,7 +746,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final QueryExpression bestFitInclusion = new QueryExpression(IDs.base62UUID(), String.format("%s %s", operator, bestFitAncestor), false);
 
 				// "applyInclusions" is effectively inlined here because we need access to the number of concepts included
-				final Set<String> includedIds = evaluateEclToSet(context, bestFitInclusion.getQuery());
+				final Set<String> includedIds = queryEvaluator.apply(bestFitInclusion);
 				final Set<String> expected = Sets.intersection(includedIds, conceptSet);
 				final boolean modified = conceptsToInclude.removeAll(expected);
 
@@ -869,10 +884,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 
 		// Favor << over < if the same concept ID is mentioned
-		for (int i = 0; i < expressions.size() - 1; i++) {
+		for (int i = 0; i < expressions.size(); i++) {
 			if (removeIdx.contains(i)) { continue; }
 
-			for (int j = 0; j < expressions.size() - 1; j++) {
+			for (int j = 0; j < expressions.size(); j++) {
 				if (i == j) { continue; }
 				if (removeIdx.contains(j)) { continue; }
 
@@ -897,10 +912,10 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		}
 
 		// Favor (< X or << X) over (< Y or << Y) if X is an ancestor of Y
-		for (int i = 0; i < expressions.size() - 1; i++) {
+		for (int i = 0; i < expressions.size(); i++) {
 			if (removeIdx.contains(i)) { continue; }
 
-			for (int j = 0; j < expressions.size() - 1; j++) {
+			for (int j = 0; j < expressions.size(); j++) {
 				if (i == j) { continue; }
 				if (removeIdx.contains(j)) { continue; }
 
@@ -973,14 +988,21 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 	}
 
 	private void applyExclusions(final BranchContext context, final List<QueryExpression> newExclusions) {
-
+		applyExclusions(context, newExclusions, clause -> evaluateEclToSet(context, clause.getQuery()));
+	}
+	
+	private void applyExclusions(
+		final BranchContext context, 
+		final List<QueryExpression> newExclusions, 
+		final Function<QueryExpression, Set<String>> queryEvaluator
+	) {
 		if (newExclusions.isEmpty()) {
 			return;
 		}
 
 		// Evaluate queries; remove concepts from "conceptsToExclude"
 		newExclusions.stream()
-			.map(clause -> Pair.of(clause, evaluateEclToSet(context, clause.getQuery())))
+			.map(clause -> Pair.of(clause, queryEvaluator.apply(clause)))
 			.forEachOrdered(pair -> {
 				final QueryExpression clause = pair.getA();
 				final Set<String> excludedIds = pair.getB();

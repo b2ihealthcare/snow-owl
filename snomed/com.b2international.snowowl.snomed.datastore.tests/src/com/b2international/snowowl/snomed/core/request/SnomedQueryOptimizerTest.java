@@ -64,9 +64,7 @@ import com.b2international.snowowl.core.request.ecl.EclRewriter;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptDescendantCountById;
-import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.ConceptSearchById;
-import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.EdgeSearchBySourceId;
+import com.b2international.snowowl.snomed.core.request.SnomedHierarchyStats.*;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer.ConceptSetEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer.EclEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedRelationshipStats.RelationshipSearchBySource;
@@ -111,6 +109,20 @@ public class SnomedQueryOptimizerTest {
 		}
 	}
 	
+	private static class EclConceptDescendantsById implements ConceptDescendantsById {
+		
+		private final EclEvaluator evaluator;
+		
+		private EclConceptDescendantsById(final EclEvaluator evaluator) {
+			this.evaluator = evaluator;
+		}
+		
+		@Override
+		public Set<String> findConceptDescendantsById(BranchContext context, String ancestorId, int pageSize) {
+			return evaluator.evaluateEcl(context, "< " + ancestorId, pageSize).collect(Collectors.toSet());
+		}
+	}
+	
 	@Rule
 	public TestWatcher watcher = new TestWatcher() {
 		@Override
@@ -145,6 +157,7 @@ public class SnomedQueryOptimizerTest {
 	private void setEclAndConceptSetEvaluator(final EclEvaluator evaluator) {
 		optimizer.setEvaluator(evaluator);
 		optimizer.setConceptSetEvaluator(new EclConceptSetEvaluator(evaluator));
+		optimizer.setConceptDescendantsById(new EclConceptDescendantsById(evaluator));
 	}
 
 	@Before
@@ -288,6 +301,7 @@ public class SnomedQueryOptimizerTest {
 			});
 
 		final RelationshipSearchByTypeAndDestination relationshipSearchByTypeAndDestination = mock(RelationshipSearchByTypeAndDestination.class, i -> Stream.of());
+		
 		final Set<String> typeIds = Set.of("116676008", "246112005", "363698007");
 		final Set<String> destinationIds = Set.of("56381008", "24484000", "123037004");
 		when(relationshipSearchByTypeAndDestination.findRelationshipsByTypeAndDestination(any(), eq(typeIds), eq(destinationIds), anyInt()))
@@ -345,6 +359,25 @@ public class SnomedQueryOptimizerTest {
 	
 				return relationships.stream();
 			});
+		
+		final Set<String> positiveTypeIds = Set.of("116676008");
+		final Set<String> positiveDestinationIds = Set.of("56381008");
+		when(relationshipSearchByTypeAndDestination.findRelationshipsByTypeAndDestination(any(), eq(positiveTypeIds), eq(positiveDestinationIds), anyInt()))
+		.thenAnswer(i -> {
+			final List<SnomedRelationship> relationships = newArrayList();
+			
+			for (final String id : members) {
+				// Achieve 100% precision on this type-destination pair by using all calculus finding concepts
+				final SnomedRelationship r1 = new SnomedRelationship();
+				r1.setSourceId(id);
+				r1.setTypeId("116676008"); // Associated morphology
+				r1.setDestinationId("56381008"); // Calculus
+				r1.setRelationshipGroup(0);
+				relationships.add(r1);
+			}
+			
+			return relationships.stream();
+		});
 
 		setEclAndConceptSetEvaluator(evaluator);
 		optimizer.setRelationshipSearchBySource(relationshipSearchBySource);
@@ -381,6 +414,7 @@ public class SnomedQueryOptimizerTest {
 	public void testOptimizeToDescendantOrSelf() throws Exception {
 
 		final EclEvaluator evaluator = mock(EclEvaluator.class, i -> Stream.empty());
+		when(evaluator.evaluateEcl(any(), eq("< 80631005"), anyInt())).thenAnswer(i -> Stream.of("13104003", "60333009", "50283003", "2640006"));
 		when(evaluator.evaluateEcl(any(), eq("<< 80631005"), anyInt())).thenAnswer(i -> Stream.of("80631005", "13104003", "60333009", "50283003", "2640006"));
 		when(evaluator.evaluateEcl(any(), eq("80631005 OR 13104003 OR 60333009 OR 50283003 OR 2640006"), anyInt())).thenAnswer(i -> Stream.of("80631005", "13104003", "60333009", "50283003", "2640006"));
 		setEclAndConceptSetEvaluator(evaluator);
