@@ -28,7 +28,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.version.VersioningConfiguration;
@@ -83,25 +82,25 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		final Stream<Hits<? extends SnomedDocument>> documentsToVersion = Streams.concat(
 			Query.select(SnomedConceptDocument.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(getCommitLimit(context))
+				.limit(context.getCommitLimit())
 				.build()
 				.stream(searcher),
 			
 			Query.select(SnomedDescriptionIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(getCommitLimit(context))
+				.limit(context.getCommitLimit())
 				.build()
 				.stream(searcher),
 		
 			Query.select(SnomedRelationshipIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(getCommitLimit(context))
+				.limit(context.getCommitLimit())
 				.build()
 				.stream(searcher),
 				
 			Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(getCommitLimit(context))
+				.limit(context.getCommitLimit())
 				.build()
 				.stream(searcher));
 		

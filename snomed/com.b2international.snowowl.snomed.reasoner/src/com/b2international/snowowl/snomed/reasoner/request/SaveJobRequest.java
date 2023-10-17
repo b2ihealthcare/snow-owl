@@ -40,7 +40,6 @@ import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -200,7 +199,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		applyChanges(subMonitor, context, bulkRequestBuilder);
 	
 		long resultTimeStamp = Commit.NO_COMMIT_TIMESTAMP;
-		for (List<Request<TransactionContext, ?>> partition : Iterables.partition(bulkRequestBuilder.build().getRequests(), getCommitLimit(context))) {
+		for (List<Request<TransactionContext, ?>> partition : Iterables.partition(bulkRequestBuilder.build().getRequests(), context.getCommitLimit())) {
 			final BulkRequestBuilder<TransactionContext> batchRequest = BulkRequest.create();
 			partition.forEach(request -> batchRequest.add(request));
 			
@@ -224,10 +223,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		}		
 	}
 	
-	private final int getCommitLimit(BranchContext context) {
-		return context.service(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
-	}
-
 	private void applyChanges(final SubMonitor subMonitor, 
 			final BranchContext context,
 			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
