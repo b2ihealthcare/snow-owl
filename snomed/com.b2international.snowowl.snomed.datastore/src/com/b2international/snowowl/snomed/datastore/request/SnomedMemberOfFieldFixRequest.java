@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -56,12 +55,9 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 	@Override
 	@SuppressWarnings("deprecation")
 	public Set<String> execute(TransactionContext context) {
-		Logger log = LoggerFactory.getLogger("dataset-fix-SO-5690");
-
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-
+		final Logger log = LoggerFactory.getLogger("dataset-fix-SO-5690");
+		final int pageSize = context.getPageSize();
+		
 		Set<String> referenceSetIds = SnomedRequests.prepareSearchRefSet()
 			.all()
 			.setFields(SnomedComponentDocument.Fields.ID)

@@ -21,7 +21,6 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.CappedTransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -54,7 +53,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		log.info("Versioning components of '{}' resource...", config.getResource());
 		try {
 			// capped context to commit versioned components in the configured low watermark bulks
-			try (CappedTransactionContext versioningContext = CappedTransactionContext.create(context, getCommitLimit(context)).onCommit(this::onCommit)) {
+			try (CappedTransactionContext versioningContext = CappedTransactionContext.create(context, context.getCommitLimit()).onCommit(this::onCommit)) {
 				doVersionComponents(versioningContext);
 			}
 		} catch (Exception e) {
@@ -66,12 +65,6 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		return Boolean.TRUE;
 	}
 
-	protected final int getCommitLimit(TransactionContext context) {
-		return context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getCommitLimit();
-	}
-	
 	/**
 	 * Subclasses may override this method to update versioning properties on terminology components before creating the version. 
 	 * @param context

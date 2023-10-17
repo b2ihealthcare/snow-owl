@@ -36,8 +36,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
-import com.b2international.snowowl.core.config.IndexConfiguration;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
@@ -87,10 +85,8 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	@Override
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
-		final RepositoryConfiguration repositoryConfiguration = context.service(RepositoryConfiguration.class);
-		final IndexConfiguration indexConfiguration = repositoryConfiguration.getIndexConfiguration();
-		final int partitionSize = indexConfiguration.getTermPartitionSize();
-		final int pageSize = indexConfiguration.getPageSize();
+		final int partitionSize = context.getTermPartitionSize();
+		final int pageSize = context.getPageSize();
 		
 		// initialize OWL Expression converter on the current branch
 		final SnomedOWLExpressionConverter expressionConverter = new BranchSnapshotContentRequest<>(staging.getBranchPath(), branchContext -> {

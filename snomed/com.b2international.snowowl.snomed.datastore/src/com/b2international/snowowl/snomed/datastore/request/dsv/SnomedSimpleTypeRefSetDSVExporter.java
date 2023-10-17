@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -132,15 +131,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * Fetches members of the specified reference set
 	 */
 	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-		
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
 			.setLocales(locales)
 			.setExpand(expand)
 			.sortBy(Sort.fieldAsc(SnomedConceptDocument.Fields.ID))
-			.setLimit(pageSize);
+			.setLimit(context.getPageSize());
 		
 		if (includeInactiveMembers) {
 			builder.isMemberOf(refSetId);
