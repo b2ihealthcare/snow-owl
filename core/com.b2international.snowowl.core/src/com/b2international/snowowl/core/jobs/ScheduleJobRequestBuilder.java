@@ -39,6 +39,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	private SerializableSchedulingRule schedulingRule;
 	private boolean autoClean = false;
 	private boolean restart = false;
+	private boolean cached = false;
 	
 	ScheduleJobRequestBuilder() {
 	}
@@ -118,6 +119,17 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	}
 	
 	/**
+	 * Reuses existing job results if present, otherwise schedules and run the request as usual.
+	 * 
+	 * @param cached
+	 * @return
+	 */
+	public ScheduleJobRequestBuilder setCached(boolean cached) {
+		this.cached = cached;
+		return getSelf();
+	}
+	
+	/**
 	 * Sets the scheduling rule for the remote job, controlling which instances can be executed side-by-side.
 	 * @param schedulingRule - the scheduling rule to apply for this job
 	 * @return this builder
@@ -129,7 +141,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
-		return new ScheduleJobRequest(key, user, description, request, schedulingRule, autoClean, restart);
+		return new ScheduleJobRequest(key, user, description, request, schedulingRule, autoClean, restart, cached);
 	}
 	
 	/**

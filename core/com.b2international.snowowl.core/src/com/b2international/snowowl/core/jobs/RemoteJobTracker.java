@@ -30,7 +30,10 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.*;
+import com.b2international.index.BulkUpdate;
+import com.b2international.index.Hits;
+import com.b2international.index.Index;
+import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Expression;
@@ -112,6 +115,30 @@ public final class RemoteJobTracker implements IDisposableService {
 		});
 	}
 	
+	public String schedule(RemoteJob job) {
+		// first schedule the job in the job infrastructure
+		job.schedule();
+		
+		// then register doc
+		final String jobId = job.getId();
+		LOG.trace("Scheduled job {}", jobId);
+		// try to convert the request to a param object
+		String parameters;
+		try {
+			parameters = mapper.writeValueAsString(job.getParameters(mapper));
+		} catch (Throwable e) {
+			parameters = "";
+		}
+		put(RemoteJobEntry.builder()
+				.id(jobId)
+				.key(job.getKey())
+				.description(job.getDescription())
+				.user(job.getUser())
+				.parameters(parameters)
+				.scheduleDate(new Date())
+				.build());
+		return jobId;
+	}
 	
 	public void requestCancel(String jobId) {
 		final RemoteJobEntry job = get(jobId);
@@ -297,27 +324,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		
 		@Override
 		public void scheduled(IJobChangeEvent event) {
-			if (event.getJob() instanceof RemoteJob) {
-				final RemoteJob job = (RemoteJob) event.getJob();
-				final String jobId = job.getId();
-				LOG.trace("Scheduled job {}", jobId);
-				// try to convert the request to a param object
-				String parameters;
-				try {
-					parameters = mapper.writeValueAsString(job.getParameters(mapper));
-				} catch (Throwable e) {
-					parameters = "";
-				}
-				put(RemoteJobEntry.builder()
-						.id(jobId)
-						.key(job.getKey())
-						.description(job.getDescription())
-						.user(job.getUser())
-						.parameters(parameters)
-						.scheduleDate(new Date())
-						.build());
-				
-			}
+			// handled by the ScheduleJobRequest.execute(...) logic which calls the scheduled(RemoteJob) method on this tracker
 		}
 		
 		@Override
