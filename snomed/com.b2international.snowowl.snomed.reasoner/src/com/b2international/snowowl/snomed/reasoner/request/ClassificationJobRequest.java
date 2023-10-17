@@ -40,7 +40,6 @@ import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -134,13 +133,9 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
 
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-
 		final ReasonerTaxonomy taxonomy;
 		try (Locks<BranchContext> locks = Locks.forContext(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext).lock(context)) {
-			taxonomy = buildTaxonomy(revisionSearcher, reasonerExcludedModuleIds, concreteDomainSupported, pageSize);
+			taxonomy = buildTaxonomy(revisionSearcher, reasonerExcludedModuleIds, concreteDomainSupported, context.getPageSize());
 		} catch (final LockedException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		}

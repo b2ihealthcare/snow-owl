@@ -32,7 +32,6 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -94,15 +93,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		// TODO check if the expression contains only the ID list, then skip scrolling and just report them
 		List issues[] = { null }; 
 		
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-		
 		Query.select(String.class)
 			.from(validationQuery.getDocType())
 			.fields(SnomedDocument.Fields.ID)
 			.where(where)
-			.limit(pageSize)
+			.limit(context.getPageSize())
 			.withScores(false)
 			.build()
 			.stream(context.service(RevisionSearcher.class))

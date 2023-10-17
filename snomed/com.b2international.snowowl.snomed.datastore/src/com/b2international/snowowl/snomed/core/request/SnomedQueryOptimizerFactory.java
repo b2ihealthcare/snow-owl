@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.request;
 
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
@@ -28,11 +27,7 @@ public final class SnomedQueryOptimizerFactory implements QueryOptimizer {
 
 	@Override
 	public QueryExpressionDiffs optimize(final BranchContext context, final Options params) {
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-
-		final SnomedQueryOptimizer delegate = new SnomedQueryOptimizer(pageSize);
+		final SnomedQueryOptimizer delegate = new SnomedQueryOptimizer(context.getPageSize());
 		return delegate.optimize(context, params);
 	}
 }

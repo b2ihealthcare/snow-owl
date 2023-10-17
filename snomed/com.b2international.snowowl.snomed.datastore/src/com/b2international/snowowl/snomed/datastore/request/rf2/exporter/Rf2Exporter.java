@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -116,10 +115,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 
 		LOG.info("Exporting {} branch to '{}'", branch, getFileName());
 
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-		
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());
 		Files.createDirectories(exportFileDirectory);
@@ -152,7 +147,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 						createSearchRequestBuilder()
 							.filterByModules(modules) // null value will be ignored
 							.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
-							.setLimit(pageSize)
+							.setLimit(context.getPageSize())
 							.setFields(Arrays.asList(getHeader()))
 							.stream(inner)
 							.flatMap(hits -> getMappedStream(hits, context, branch))

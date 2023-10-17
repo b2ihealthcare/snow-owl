@@ -27,7 +27,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.compare.*;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -79,16 +78,12 @@ final class ConceptMapCompareRequest extends ResourceRequest<RepositoryContext, 
 	}
 
 	private List<ConceptMapMapping> fetchConceptMapMappings(ServiceProvider context, ResourceURI conceptMapUri) {
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-
 		return ConceptMapRequests.prepareSearchConceptMapMappings()
 			.filterByActive(true)
 			.filterByConceptMap(conceptMapUri.toString())
 			.setLocales(locales())
 			.setPreferredDisplay(preferredDisplay)
-			.setLimit(pageSize)
+			.setLimit(context.getPageSize())
 			.streamAsync(context.service(IEventBus.class), req -> req.buildAsync())
 			.flatMap(ConceptMapMappings::stream)
 			.collect(Collectors.toList());

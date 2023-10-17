@@ -112,9 +112,6 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		log.info("Collecting module dependencies of changed components...");
 		final Multimap<String, String> moduleDependencies = HashMultimap.create();
 		final Map<String, Long> moduleToLatestEffectiveTime = newHashMap();
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
 		
 		for (String module : ImmutableSet.copyOf(componentIdsByReferringModule.keySet())) {
 			final Collection<String> dependencies = componentIdsByReferringModule.removeAll(module);
@@ -123,7 +120,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 					.from(type)
 					.fields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.EFFECTIVE_TIME)
 					.where(SnomedComponentDocument.Expressions.ids(dependencies))
-					.limit(pageSize)
+					.limit(context.getPageSize())
 					.build()
 					.stream(searcher)
 					.flatMap(Hits::stream)

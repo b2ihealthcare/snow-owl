@@ -105,8 +105,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 	
 	private boolean handleConcreteDomains;
 
-	private int pageSize;
-	
 	SaveJobRequest() {}
 	
 	void setClassificationId(final String classificationId) {
@@ -150,10 +148,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
-		
-		pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
 		
 		try (Locks<BranchContext> locks = Locks.forContext(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext)
 				.by(user)
@@ -257,7 +251,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final Set<String> conceptIdsToSkip) {
 
 		ClassificationRequests.prepareSearchRelationshipChange()
-				.setLimit(pageSize)
+				.setLimit(context.getPageSize())
 				.setExpand("relationship(inferredOnly:true)")
 				.filterByClassificationId(classificationId)
 				.stream(context)
@@ -339,7 +333,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final Set<String> conceptIdsToSkip) {
 
 		ClassificationRequests.prepareSearchConcreteDomainChange()
-				.setLimit(pageSize)
+				.setLimit(context.getPageSize())
 				.setExpand("concreteDomainMember(inferredOnly:true)")
 				.filterByClassificationId(classificationId)
 				.stream(context)
@@ -433,7 +427,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
 		
 		ClassificationRequests.prepareSearchEquivalentConceptSet()
-				.setLimit(pageSize)
+				.setLimit(context.getPageSize())
 				.setExpand(expand)
 				.filterByClassificationId(classificationId)
 				.stream(context)

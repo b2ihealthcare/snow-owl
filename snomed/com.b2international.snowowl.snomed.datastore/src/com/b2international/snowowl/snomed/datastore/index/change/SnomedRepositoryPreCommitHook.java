@@ -90,7 +90,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final RepositoryConfiguration repositoryConfiguration = context.service(RepositoryConfiguration.class);
 		final IndexConfiguration indexConfiguration = repositoryConfiguration.getIndexConfiguration();
 		final int partitionSize = indexConfiguration.getTermPartitionSize();
-		final int pageSize = indexConfiguration.getPageSize();
+		final int pageSize = context.getPageSize();
 		
 		// initialize OWL Expression converter on the current branch
 		final SnomedOWLExpressionConverter expressionConverter = new BranchSnapshotContentRequest<>(staging.getBranchPath(), branchContext -> {

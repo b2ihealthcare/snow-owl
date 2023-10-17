@@ -59,12 +59,8 @@ public final class InactivationPropertiesExpander {
 		
 		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = ArrayListMultimap.create();
 
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-
 		SnomedRequests.prepareSearchMember()
-			.setLimit(pageSize)
+			.setLimit(context.getPageSize())
 			.filterByActive(true)
 			// all association type refsets and the indicator
 			.filterByRefSet(String.format("<%s OR %s", Concepts.REFSET_ASSOCIATION_TYPE, inactivationIndicatorRefSetId))

@@ -68,14 +68,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 	}
 
-	private int pageSize;
-	
 	@Override
 	public void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
-		pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-		
 		extendIssueDetails(context, issues); // XXX adds labels for description issues
 		extendConceptIssueLabels(context, issues, ruleParameters);
 		extendRelationshipIssueLabels(context, issues, ruleParameters);
@@ -95,7 +89,10 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final Multimap<String, String> issueIdsByConceptIds = HashMultimap.create();
 		final Set<String> alreadyFetchedConceptIds  = Sets.newHashSet();
 		for (ComponentCategory category : issueComponentIdsByComponentCategory.keySet()) {
-			final Query<String[]> query = buildQuery(category, issueComponentIdsByComponentCategory.get(category));
+			final Query<String[]> query = buildQuery(
+				category, 
+				issueComponentIdsByComponentCategory.get(category), 
+				context.getPageSize());
 			
 			query.stream(searcher).forEachOrdered(hits -> {
 				for (String[] hit : hits) {
@@ -177,7 +174,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.ids(memberIssues.keySet()))
 					.build())
-				.limit(pageSize)
+				.limit(context.getPageSize())
 				.build())
 				.forEach(hits -> {
 					for (String[] hit : hits) {
@@ -224,7 +221,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		final Map<String, String> affectedComponentLabelsByConcept = new HashMap<>();
 		
-		for (List<String> partition : Iterables.partition(conceptIds, pageSize)) {
+		for (List<String> partition : Iterables.partition(conceptIds, context.getTermPartitionSize())) {
 			
 			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 				.all()
@@ -269,7 +266,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE,
 					SnomedRelationshipIndexEntry.Fields.STRING_VALUE)
 			.where(SnomedRelationshipIndexEntry.Expressions.ids(issuesByRelationshipId.keySet()))
-			.limit(pageSize)
+			.limit(context.getPageSize())
 			.build())
 			.forEach(hits -> {
 				for (String[] hit : hits) {
@@ -319,7 +316,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		}
 	}
 	
-	private Query<String[]> buildQuery(ComponentCategory category, Collection<String> issueIds) {
+	private Query<String[]> buildQuery(ComponentCategory category, Collection<String> issueIds, int pageSize) {
 		final QueryBuilder<String[]> queryBuilder = Query.select(String[].class);
 		switch (category) {
 		case CONCEPT:

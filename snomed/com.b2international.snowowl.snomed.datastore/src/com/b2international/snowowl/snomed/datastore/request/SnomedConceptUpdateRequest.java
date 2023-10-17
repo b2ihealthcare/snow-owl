@@ -28,7 +28,6 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -109,10 +108,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
-		
+		final int pageSize = context.getPageSize();
 		final SnomedConceptDocument concept = context.lookup(componentId(), SnomedConceptDocument.class);
 		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);
 
