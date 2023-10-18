@@ -25,6 +25,7 @@ import java.util.Optional;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.domain.ListCollectionResource;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.MoreObjects;
@@ -98,6 +99,7 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 		this.counters = counters;
 	}
 	
+	@JsonIgnore
 	public Integer getTotalChanges() {
 		return getCounterValue(COUNTER_TOTAL);
 	}
@@ -105,10 +107,12 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 	/**
 	 * @return the number of added primary components between the two points of reference
 	 */
+	@JsonIgnore
 	public Integer getNewComponents() {
 		return getCounterValue(COUNTER_NEW_COMPONENTS);
 	}
 
+	@JsonIgnore
 	public void setNewComponents(final Integer newComponents) {
 		setCounterValue(COUNTER_NEW_COMPONENTS, newComponents);
 		setCounterValue(COUNTER_TOTAL, Optional.ofNullable(getCounterValue(COUNTER_TOTAL)).orElse(0) + newComponents);
@@ -117,10 +121,12 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 	/**
 	 * @return the number of changed primary components between the two points of reference
 	 */
+	@JsonIgnore
 	public Integer getChangedComponents() {
 		return getCounterValue(COUNTER_CHANGED_COMPONENTS);
 	}
 
+	@JsonIgnore
 	public void setChangedComponents(final Integer changedComponents) {
 		setCounterValue(COUNTER_CHANGED_COMPONENTS, changedComponents);
 		setCounterValue(COUNTER_TOTAL, Optional.ofNullable(getCounterValue(COUNTER_TOTAL)).orElse(0) + changedComponents);
@@ -129,10 +135,12 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 	/**
 	 * @return the number of removed primary components between the two points of reference
 	 */
+	@JsonIgnore
 	public Integer getDeletedComponents() {
 		return getCounterValue(COUNTER_DELETED_COMPONENTS);
 	}
 
+	@JsonIgnore
 	public void setDeletedComponents(final Integer deletedComponents) {
 		setCounterValue(COUNTER_DELETED_COMPONENTS, deletedComponents);
 		setCounterValue(COUNTER_TOTAL, Optional.ofNullable(getCounterValue(COUNTER_TOTAL)).orElse(0) + deletedComponents);
