@@ -75,11 +75,12 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 					user = User.SYSTEM;
 				} else {
 					// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
+					Request<?, ?> request = Iterables.getFirst(requests, null);
 					if (PlatformUtil.isDevVersion()) {
-						Request<?, ?> request = Iterables.getFirst(requests, null);
 						System.err.println(request);
 					}
-					throw new UnauthorizedException("Missing authorization token");
+					throw new UnauthorizedException("Missing authorization token")
+							.withDeveloperMessage("Unable to execute request '%s' without a proper authorization token. Supply one either as a standard HTTP Authorization header or via the token query parameter.", request.getType());
 				}
 			} else {
 				// verify authorization header value
