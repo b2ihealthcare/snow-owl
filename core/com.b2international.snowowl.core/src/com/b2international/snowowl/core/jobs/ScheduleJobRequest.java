@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
@@ -77,6 +78,10 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	
 	@Override
 	public String execute(ServiceProvider context) {
+		
+		if (cached && autoClean) {
+			throw new BadRequestException("Automatically cleaned jobs cannot be cached.");
+		}
 		
 		final String id = IDs.sha1(key);
 		
