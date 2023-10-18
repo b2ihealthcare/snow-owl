@@ -116,8 +116,6 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public String schedule(RemoteJob job) {
-		// first schedule the job in the job infrastructure
-		job.schedule();
 		
 		// then register doc
 		final String jobId = job.getId();
@@ -137,6 +135,11 @@ public final class RemoteJobTracker implements IDisposableService {
 				.parameters(parameters)
 				.scheduleDate(new Date())
 				.build());
+		
+		// schedule the job after we successfully wrote the job doc into the index
+		// previously this was done through a listener which was executed synchronously before the job actually stated, see IJobChangeListener.scheduled(...)
+		job.schedule();
+		
 		return jobId;
 	}
 	
