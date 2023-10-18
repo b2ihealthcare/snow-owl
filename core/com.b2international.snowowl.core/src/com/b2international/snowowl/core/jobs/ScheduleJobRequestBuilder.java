@@ -154,7 +154,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	public Promise<RemoteJobEntry> waitFor(ServiceProvider context, long pollIntervalMillis) {
 		return buildAsync()
 				.executeWithContext(context)
-				.then(jobId -> JobRequests.prepareGet(jobId).buildAsync())
+				.then(jobId -> JobRequests.prepareGet(jobId).buildAsync().withContext(context))
 				.thenWith(req -> req.retryUntil(context.service(IEventBus.class), pollIntervalMillis, RemoteJobEntry::isDone));
 	}
 	
