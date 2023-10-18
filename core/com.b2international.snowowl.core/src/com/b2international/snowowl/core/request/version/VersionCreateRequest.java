@@ -169,7 +169,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							).execute(lockContext);
 							
 							// tag the repository
-							RepositoryRequests
+							String versionBranch = RepositoryRequests
 								.branching()
 								.prepareCreate()
 								.setParent(resourceToVersion.getBranchPath())
@@ -192,7 +192,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 									.description(description)
 									.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
 									.resource(resourceToVersion.getResourceURI())
-									.branchPath(resourceToVersion.getRelativeBranchPath(version))
+									.branchPath(versionBranch)
 									.author(author)
 									.createdAt(Instant.now().toEpochMilli())
 									.updatedAt(Instant.now().toEpochMilli())
