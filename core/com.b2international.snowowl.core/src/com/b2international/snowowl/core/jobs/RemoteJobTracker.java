@@ -117,9 +117,10 @@ public final class RemoteJobTracker implements IDisposableService {
 	
 	public String schedule(RemoteJob job) {
 		
-		// then register doc
+		// first register doc
 		final String jobId = job.getId();
 		LOG.trace("Scheduled job {}", jobId);
+		
 		// try to convert the request to a param object
 		String parameters;
 		try {
