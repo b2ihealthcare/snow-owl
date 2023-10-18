@@ -24,7 +24,6 @@ import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Doc;
-import com.b2international.index.mapping.Field;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -171,10 +170,10 @@ public final class CommitDetail {
 	private final Operation op;
 	private final String prop;
 	
-	@Field(index = false)
+	//@Field(index = false)
 	private final String from;
 	
-	@Field(index = false)
+	//@Field(index = false)
 	private final String to;
 	
 	private final String objectType;
