@@ -25,7 +25,7 @@ import com.b2international.commons.StringUtils;
 /**
  * Enumerates possible ways a primary component can be changed. 
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 public enum AnalysisCompareChangeKind {
 

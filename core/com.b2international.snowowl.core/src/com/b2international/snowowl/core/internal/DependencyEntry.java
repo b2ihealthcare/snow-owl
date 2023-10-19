@@ -20,7 +20,7 @@ import java.util.Comparator;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public interface DependencyEntry {
 

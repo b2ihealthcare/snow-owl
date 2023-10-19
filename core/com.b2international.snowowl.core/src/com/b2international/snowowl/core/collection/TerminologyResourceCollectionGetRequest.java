@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.request.resource.BaseGetResourceRequest;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class TerminologyResourceCollectionGetRequest extends BaseGetResourceRequest<TerminologyResourceCollectionSearchRequestBuilder, TerminologyResourceCollections, TerminologyResourceCollection> {
 

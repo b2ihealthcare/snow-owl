@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.collection.TerminologyResourceCollection
 import com.b2international.snowowl.core.rest.BaseTerminologyResourceRestCreate;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class TerminologyResourceCollectionRestCreate extends BaseTerminologyResourceRestCreate {
 	

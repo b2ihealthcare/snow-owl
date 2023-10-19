@@ -21,7 +21,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class LoggingTestWatcher extends TestWatcher {
 

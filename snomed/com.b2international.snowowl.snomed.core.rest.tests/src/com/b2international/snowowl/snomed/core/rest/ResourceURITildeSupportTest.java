@@ -34,7 +34,7 @@ import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.BranchBase;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 @BranchBase(isolateTests = false)
 public class ResourceURITildeSupportTest extends AbstractSnomedApiTest {

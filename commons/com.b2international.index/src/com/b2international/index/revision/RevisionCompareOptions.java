@@ -20,7 +20,7 @@ import java.util.Set;
 import com.b2international.commons.collections.Collections3;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public final class RevisionCompareOptions {
 
@@ -28,7 +28,7 @@ public final class RevisionCompareOptions {
 	public static final RevisionCompareOptions DEFAULT = builder().build();
 
 	/**
-	 * @since 9.0
+	 * @since 9.0.0
 	 */
 	public static final class Builder {
 		

@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceCreateRequest;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class TerminologyResourceCollectionCreateRequest extends BaseTerminologyResourceCreateRequest {
 

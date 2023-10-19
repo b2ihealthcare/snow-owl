@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.domain;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public interface PagingSettingsProvider {
 

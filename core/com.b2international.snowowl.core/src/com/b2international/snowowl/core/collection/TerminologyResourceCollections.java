@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public final class TerminologyResourceCollections extends PageableCollectionResource<TerminologyResourceCollection> {
 

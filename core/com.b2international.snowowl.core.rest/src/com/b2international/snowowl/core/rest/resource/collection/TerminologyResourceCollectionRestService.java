@@ -50,7 +50,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 @Tag(description = "Collections", name = "collections")
 @RestController

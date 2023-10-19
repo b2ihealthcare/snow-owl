@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.expand.BaseResourceExpander;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 @Component
 public final class TerminologyResourceCollectionResourceTypeConverter implements ResourceTypeConverter {

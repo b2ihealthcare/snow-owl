@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.collection;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceUpdateRequestBuilder;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public final class TerminologyResourceCollectionUpdateRequestBuilder
 		extends BaseTerminologyResourceUpdateRequestBuilder<TerminologyResourceCollectionUpdateRequestBuilder, TerminologyResourceCollectionUpdateRequest> {

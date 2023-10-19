@@ -28,7 +28,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class TerminologyResourceCollectionRestRequests {
 

@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public final class DependencyCompareRequestBuilder 
 	extends BaseRequestBuilder<DependencyCompareRequestBuilder, RepositoryContext, AnalysisCompareResult> 

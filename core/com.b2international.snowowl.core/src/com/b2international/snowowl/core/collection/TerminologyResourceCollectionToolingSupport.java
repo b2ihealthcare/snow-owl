@@ -30,12 +30,12 @@ import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public interface TerminologyResourceCollectionToolingSupport {
 
 	/**
-	 * @since 9.0
+	 * @since 9.0.0
 	 */
 	public static final class Registry {
 

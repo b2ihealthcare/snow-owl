@@ -33,7 +33,7 @@ import com.google.common.base.MoreObjects;
 /**
  * Represents a summary of component changes between two versions of a terminology resource.
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 public final class AnalysisCompareResult extends ListCollectionResource<AnalysisCompareResultItem> implements Serializable {
 

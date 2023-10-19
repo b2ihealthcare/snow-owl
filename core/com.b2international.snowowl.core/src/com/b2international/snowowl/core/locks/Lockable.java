@@ -21,7 +21,7 @@ import java.util.Objects;
 import com.google.common.base.Strings;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public record Lockable(String repositoryId, String branchPath) implements Serializable {
 

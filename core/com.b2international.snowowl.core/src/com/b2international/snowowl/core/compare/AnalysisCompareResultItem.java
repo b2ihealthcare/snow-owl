@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.compare;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public record AnalysisCompareResultItem(String id, String label, String iconId, AnalysisCompareChangeKind changeKind) {
 

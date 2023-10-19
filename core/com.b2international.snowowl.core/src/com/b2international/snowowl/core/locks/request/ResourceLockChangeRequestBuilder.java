@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class ResourceLockChangeRequestBuilder 
 	extends BaseRequestBuilder<ResourceLockChangeRequestBuilder, BranchContext, Boolean> 

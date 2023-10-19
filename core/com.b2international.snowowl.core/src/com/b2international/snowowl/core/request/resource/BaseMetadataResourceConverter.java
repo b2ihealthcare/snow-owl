@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.*;
 
 /**
- * @since 8.12
+ * @since 9.0.0
  */
 public abstract class BaseMetadataResourceConverter<R extends Resource, CR extends PageableCollectionResource<R>> extends BaseResourceConverter<ResourceDocument, R, CR> {
 

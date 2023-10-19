@@ -23,7 +23,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ComponentIdentifier;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public final class BranchCompareChangeStatistic implements Serializable {
 

@@ -26,7 +26,7 @@ import org.junit.Test;
 import com.b2international.index.Doc;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class RevisionCommitSubjectTest extends BaseRevisionIndexTest {
 

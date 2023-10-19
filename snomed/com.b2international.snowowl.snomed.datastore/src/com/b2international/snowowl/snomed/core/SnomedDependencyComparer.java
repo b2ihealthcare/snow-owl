@@ -38,7 +38,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.google.common.collect.ImmutableList;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class SnomedDependencyComparer implements DependencyComparer {
 

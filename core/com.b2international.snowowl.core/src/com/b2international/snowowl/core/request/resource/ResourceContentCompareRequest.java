@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class ResourceContentCompareRequest extends ResourceRequest<RepositoryContext, AnalysisCompareResult> {
 

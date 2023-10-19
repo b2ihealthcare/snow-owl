@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
  * Implementations of this interface can be used to generate
  * {@link AnalysisCompareResult} instances.
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 @FunctionalInterface
 public interface DependencyComparer {
