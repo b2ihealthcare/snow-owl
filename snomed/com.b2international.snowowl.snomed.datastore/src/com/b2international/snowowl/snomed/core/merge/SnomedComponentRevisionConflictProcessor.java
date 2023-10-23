@@ -24,6 +24,8 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.*;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.index.util.JsonDiff;
+import com.b2international.index.util.JsonDiff.JsonChange;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -47,11 +49,26 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 	private static final String[] DESCRIPTION_FIELDS_TO_LOAD = {SnomedDocument.Fields.ID, SnomedDocument.Fields.MODULE_ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID};
 	private static final String[] RELATIONSHIP_FIELDS_TO_LOAD = {SnomedDocument.Fields.ID, SnomedDocument.Fields.MODULE_ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID};
 	private static final String[] MEMBER_FIELDS_TO_LOAD = {SnomedDocument.Fields.ID, SnomedDocument.Fields.MODULE_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID};
+	private static final Set<String> IGNORED_ADDED_PROPERTIES = Set.of(SnomedDocument.Fields.EFFECTIVE_TIME, SnomedRefSetMemberIndexEntry.Fields.SOURCE_EFFECTIVE_TIME, SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME);
 
 	public SnomedComponentRevisionConflictProcessor() {
 		super(ImmutableList.<IMergeConflictRule>builder()
 				.add(new SnomedComponentReferencingDetachedConceptRule())
 				.build());
+	}
+	
+	@Override
+	public Conflict handleAddedInSourceAndTarget(ObjectId objectId, JsonDiff diff, Revision sourceRevision, Revision targetRevision) {
+		if (diff.hasChanges()) {
+			Set<String> differentProperties = diff.getChanges().stream()
+					.map(JsonChange::getFieldPath)
+					.filter(property -> !IGNORED_ADDED_PROPERTIES.contains(property)) 
+					.collect(Collectors.toSet());
+			if (!differentProperties.isEmpty()) {
+				return new AddedInSourceAndTargetConflict(objectId, differentProperties);
+			}
+		}
+		return null;
 	}
 	
 	@Override
