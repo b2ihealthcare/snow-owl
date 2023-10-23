@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,30 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.SortedSet;
+
+import com.google.common.collect.ImmutableSortedSet;
+
 /**
  * @since 7.0
  */
 public final class AddedInSourceAndTargetConflict extends Conflict {
 
+	private final SortedSet<String> differentProperties;
+
 	public AddedInSourceAndTargetConflict(ObjectId objectId) {
+		this(objectId, Collections.emptySet());
+	}
+	
+	public AddedInSourceAndTargetConflict(ObjectId objectId, final Set<String> differentProperties) {
 		super(objectId, String.format("'%s' has been added on both source and target", objectId));
+		this.differentProperties = ImmutableSortedSet.copyOf(differentProperties);
+	}
+	
+	public SortedSet<String> getDifferentProperties() {
+		return differentProperties;
 	}
 
 }
