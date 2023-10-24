@@ -111,6 +111,10 @@ public final class VersionDocument implements CommitSubject, Serializable {
 			return matchAny(Fields.RESOURCE_TYPE, resourceTypes);
 		}
 		
+		public static Expression toolingIds(Iterable<String> toolingIds) {
+			return matchAny(Fields.TOOLING_ID, toolingIds);
+		}
+		
 		public static Expression resourceIds(Iterable<String> resourceIds) {
 			return matchAny(Fields.RESOURCE_ID, resourceIds);
 		}

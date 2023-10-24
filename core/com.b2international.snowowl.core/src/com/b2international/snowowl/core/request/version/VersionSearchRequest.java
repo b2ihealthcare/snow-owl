@@ -71,14 +71,21 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 		 * Filter by the author's username who have created the version.
 		 */
 		AUTHOR,
+		
 		/**
 		 * "Greater than equal to filter
 		 */
 		CREATED_AT_FROM,
+		
 		/**
 		 * "Less than equal to filter
 		 */
 		CREATED_AT_TO,
+		
+		/**
+		 * The tooling identifier of the associated resource.
+		 */
+		TOOLING_ID,
 	}
 
 	VersionSearchRequest() {}
@@ -109,6 +116,8 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
 			query.filter(VersionDocument.Expressions.effectiveTime(from, to));
 		}
+		
+		addFilter(query, OptionKey.TOOLING_ID, String.class, VersionDocument.Expressions::toolingIds);
 
 		return query.build();
 	}
