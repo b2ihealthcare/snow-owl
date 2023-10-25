@@ -220,7 +220,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 	// TODO check if modules are coming from the correct module set defined on CodeSystem, or that is unnecessary?
 	private boolean isDonatedComponent(String[] donatedComponent, String[] extensionComponent) {
 		// differing modules => donated component
-		if (!Objects.equals(donatedComponent[1], extensionComponent[1])) {
+		if (true || !Objects.equals(donatedComponent[1], extensionComponent[1])) {
 			return donatedComponent.length == 2 // concept check requires only module diff 
 					|| Objects.equals(donatedComponent[2], extensionComponent[2]); // sub-components require the container component to be the same, otherwise this is not a correctly donated content and requires manual adjustments
 		}
