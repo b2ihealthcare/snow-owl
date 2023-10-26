@@ -43,6 +43,7 @@ final class TerminologyResourceCollectionConverter extends BaseMetadataResourceC
 		super.expand(results);
 		expandRefsets(null);
 	}
+	
 	private void expandRefsets(final List<TerminologyResourceCollection> results) {
 		if (!expand().containsKey(TerminologyResourceCollection.Expand.REFSETS)) {
 			return;
