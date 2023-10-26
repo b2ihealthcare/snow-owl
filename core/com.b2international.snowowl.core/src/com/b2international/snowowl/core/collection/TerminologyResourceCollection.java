@@ -34,6 +34,10 @@ public final class TerminologyResourceCollection extends TerminologyResource {
 		return RESOURCE_TYPE;
 	}
 	
+	public static final class Expand {
+		public static final String REFSETS = "refsets";
+	}
+	
 	public static ResourceURI uri(String collectionId) {
 		return ResourceURI.of(RESOURCE_TYPE, collectionId);
 	}

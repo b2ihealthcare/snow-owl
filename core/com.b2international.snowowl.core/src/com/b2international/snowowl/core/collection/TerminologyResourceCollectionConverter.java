@@ -19,13 +19,20 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.resource.BaseMetadataResourceConverter;
 
 /**
  * @since 9.0.0
  */
 final class TerminologyResourceCollectionConverter extends BaseMetadataResourceConverter<TerminologyResourceCollection, TerminologyResourceCollections> {
+
+	public static final class Expand {
+		public static final String RESOURCES = "resources";
+	}
 
 	public TerminologyResourceCollectionConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -35,5 +42,23 @@ final class TerminologyResourceCollectionConverter extends BaseMetadataResourceC
 	protected TerminologyResourceCollections createCollectionResource(List<TerminologyResourceCollection> results, String searchAfter, int limit, int total) {
 		return new TerminologyResourceCollections(results, searchAfter, limit, total);
 	}
+	
+	private void expandContents(final List<Bundle> results) {
+		if (!expand().containsKey(TerminologyResourceCollection.Expand.REFSETS)) {
+			return;
+		}
+		
+		results.forEach(result -> {
+			final Resources resources = ResourceRequests.prepareSearch()
+				.setLimit(getLimit(expand().getOptions(TerminologyResourceCollection.Expand.REFSETS)))
+				.filterByBundleId(result.getId())
+				.buildAsync()
+				.getRequest()
+				.execute(context());
+			
+			result.setResources(resources);
+		});
+	}
+
 
 }
