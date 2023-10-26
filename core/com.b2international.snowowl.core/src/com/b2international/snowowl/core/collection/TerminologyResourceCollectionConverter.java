@@ -41,7 +41,7 @@ final class TerminologyResourceCollectionConverter extends BaseMetadataResourceC
 	@Override
 	public void expand(List<TerminologyResourceCollection> results) {
 		super.expand(results);
-		expandRefsets(null);
+		expandRefsets(results);
 	}
 	
 	private void expandRefsets(final List<TerminologyResourceCollection> results) {
