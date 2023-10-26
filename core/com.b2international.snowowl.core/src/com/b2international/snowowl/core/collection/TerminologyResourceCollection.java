@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.collection;
 
 import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 
@@ -36,6 +37,16 @@ public final class TerminologyResourceCollection extends TerminologyResource {
 	
 	public static final class Expand {
 		public static final String REFSETS = "refsets";
+	}
+	
+	private Resources refsets;
+	
+	public Resources getRefsets() {
+		return refsets;
+	}
+	
+	public void setRefsets(Resources refsets) {
+		this.refsets = refsets;
 	}
 	
 	public static ResourceURI uri(String collectionId) {

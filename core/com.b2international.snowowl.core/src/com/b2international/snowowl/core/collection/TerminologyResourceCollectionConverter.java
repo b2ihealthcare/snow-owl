@@ -20,7 +20,6 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.resource.BaseMetadataResourceConverter;
@@ -29,10 +28,6 @@ import com.b2international.snowowl.core.request.resource.BaseMetadataResourceCon
  * @since 9.0.0
  */
 final class TerminologyResourceCollectionConverter extends BaseMetadataResourceConverter<TerminologyResourceCollection, TerminologyResourceCollections> {
-
-	public static final class Expand {
-		public static final String RESOURCES = "resources";
-	}
 
 	public TerminologyResourceCollectionConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -43,7 +38,12 @@ final class TerminologyResourceCollectionConverter extends BaseMetadataResourceC
 		return new TerminologyResourceCollections(results, searchAfter, limit, total);
 	}
 	
-	private void expandContents(final List<Bundle> results) {
+	@Override
+	public void expand(List<TerminologyResourceCollection> results) {
+		super.expand(results);
+		expandRefsets(null);
+	}
+	private void expandRefsets(final List<TerminologyResourceCollection> results) {
 		if (!expand().containsKey(TerminologyResourceCollection.Expand.REFSETS)) {
 			return;
 		}
@@ -56,9 +56,8 @@ final class TerminologyResourceCollectionConverter extends BaseMetadataResourceC
 				.getRequest()
 				.execute(context());
 			
-			result.setResources(resources);
+			result.setRefsets(resources);
 		});
 	}
-
 
 }
