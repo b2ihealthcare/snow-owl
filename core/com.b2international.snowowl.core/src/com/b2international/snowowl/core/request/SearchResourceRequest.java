@@ -17,11 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 
 import javax.validation.constraints.Min;
@@ -156,8 +152,16 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			return new SortScript(script, arguments, ascending);
 		}
 		
+		public static SortScript ascending(String script) {
+			return ascending(script, Collections.emptyMap());
+		}
+		
 		public static SortScript ascending(String script, final Map<String, Object> arguments) {
 			return of(script, arguments, true);
+		}
+		
+		public static SortScript descending(String script) {
+			return descending(script, Collections.emptyMap());
 		}
 		
 		public static SortScript descending(String script, final Map<String, Object> arguments) {
