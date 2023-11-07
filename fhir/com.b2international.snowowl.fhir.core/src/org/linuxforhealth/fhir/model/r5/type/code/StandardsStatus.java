@@ -12,9 +12,9 @@ import java.util.Objects;
 import javax.annotation.Generated;
 
 import org.linuxforhealth.fhir.model.annotation.System;
-import org.linuxforhealth.fhir.model.r4b.type.Code;
-import org.linuxforhealth.fhir.model.r4b.type.Extension;
-import org.linuxforhealth.fhir.model.r4b.type.String;
+import org.linuxforhealth.fhir.model.r5.type.Code;
+import org.linuxforhealth.fhir.model.r5.type.Extension;
+import org.linuxforhealth.fhir.model.r5.type.String;
 
 /*
  * XXX: Using converted codes from R4B, with the new "withdrawn" code added manually; value set conversion failed for some reason
