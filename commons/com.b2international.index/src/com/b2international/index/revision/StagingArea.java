@@ -847,7 +847,13 @@ public final class StagingArea {
 				.collect(Collectors.toCollection(TreeSet::new));
 		this.squashMerge = squash;
 		
-		List<RevisionCompareDetail> fromChangeDetails = index.compare(toRef, fromRef, Integer.MAX_VALUE, false).getDetails();
+		// when merging we need all compare data in memory
+		RevisionCompareOptions options = RevisionCompareOptions.builder().limit(Integer.MAX_VALUE)
+				.includeComponentChanges(true)
+				.includeDerivedComponentChanges(true)
+				.build();
+		
+		List<RevisionCompareDetail> fromChangeDetails = index.compare(toRef, fromRef, options).getDetails();
 		
 		if (!CompareUtils.isEmpty(exclusions)) {
 			// Exclude items from change details of the "from" branch, so they do not participate in conflict processing
@@ -864,7 +870,7 @@ public final class StagingArea {
 			return;
 		}
 		
-		List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE, false).getDetails();
+		List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, options).getDetails();
 		
 		// in case of fast-forward merge only check conflicts when there are changes on the to branch
 		if (toChangeDetails.isEmpty() && !squash) {
@@ -959,8 +965,10 @@ public final class StagingArea {
 					Revision addedOnTargetObject = addedRevisionsOnTarget.get(revisionId);
 					
 					RevisionDiff diff = new RevisionDiff(addedOnTargetObject, addedOnSourceObject);
-					if (diff.hasChanges()) {
-						conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(type, revisionId)));
+					// XXX check the tracked field diff, not the raw diff via diff.diff()
+					Conflict conflict = conflictProcessor.handleAddedInSourceAndTarget(ObjectId.of(type, revisionId), diff.diff(), addedOnSourceObject, addedOnTargetObject);
+					if (conflict != null) {
+						conflicts.add(conflict);
 					} else {
 						// ensure we revise the one coming from source (or target?)
 						revisionsToReviseOnMergeSource.put(type, revisionId);

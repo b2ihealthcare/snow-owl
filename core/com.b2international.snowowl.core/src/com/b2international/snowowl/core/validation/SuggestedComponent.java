@@ -21,7 +21,7 @@ import com.google.common.base.MoreObjects;
 /**
  * Represents a component that supplements the suggested action for a validation issue.
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 public final class SuggestedComponent {
 

@@ -27,14 +27,9 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 
 /**
  * Processes deleted container components and makes sure that components contained by the container will be deleted/inactivated etc. as well. 
@@ -66,9 +61,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 			return;
 		}
 		
-		final int pageSize = ((ServiceProvider) staging.getContext()).service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
+		final int pageSize = ((ServiceProvider) staging.getContext()).getPageSize();
 		
 		// deleting concepts should delete all of its descriptions, relationships, and inbound relationships
 		Query.select(SnomedDescriptionIndexEntry.class)

@@ -28,15 +28,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.converter.ValueSetConverter_50;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +48,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -57,7 +60,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class FhirValueSetExpandOperationController extends AbstractFhirController {
 
 	/**
-	 * <code><b>GET /ValueSet/$epxand</b></code>
+	 * <code><b>GET /ValueSet/$expand</b></code>
 	 * 
 	 * @param url
 	 * @param filter
@@ -77,11 +80,11 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 	@ApiResponse(responseCode = "404", description = "Value set not found")
 	@GetMapping(value = "/$expand", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 	public Promise<ResponseEntity<byte[]>> expandType(
-			
+
 		@Parameter(description = "Canonical URL of the value set") 
 		@RequestParam(value = "url", required = true) 
 		final String url,
-
+		
 		@Parameter(description = "Textual filter value to use") 
 		@RequestParam(value = "filter", required = false)
 		final String filter,
@@ -112,20 +115,27 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		
 	) {
 		
-		ExpandValueSetRequest.Builder builder = ExpandValueSetRequest.builder()
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expand", 
+			url, 
+			filter, 
+			activeOnly, 
+			displayLanguage, 
+			includeDesignations, 
+			withHistorySupplements, 
+			count, 
+			after);
+		
+		final ExpandValueSetRequest expandRequest = ExpandValueSetRequest.builder()
 			.url(url)
 			.filter(filter)
 			.after(after)
 			.activeOnly(activeOnly)
 			.count(count)
-			.includeDesignations(includeDesignations)
-			.withHistorySupplements(withHistorySupplements);
+			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
+			.withHistorySupplements(withHistorySupplements)
+			.build();
 		
-		if (!StringUtils.isEmpty(displayLanguage)) {
-			builder.displayLanguage(new Code(displayLanguage));
-		}
-			
-		return expand(builder.build());
+		return expand(expandRequest, uriComponentsBuilder);
 	}
 	
 	/**
@@ -138,11 +148,9 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		summary="Expand a value set",
 		description="Expand a value set specified by a request body."
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "404", description = "Value set not found")
-	})
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "400", description = "Bad request")
+	@ApiResponse(responseCode = "404", description = "Value set not found")
 	@PostMapping(
 		value="/$expand", 
 		consumes = { AbstractFhirController.APPLICATION_FHIR_JSON },
@@ -191,8 +199,19 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			
 			throw new BadRequestException("URL and ValueSet.URL parameters are different.", "ExpandValueSetRequest");
 		}
+		
+		// The "next" parameter will re-use request parameters in query parameter form
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandByURL", 
+			request.getUrl().getUriValue(), 
+			request.getFilter(), 
+			request.getActiveOnly(), 
+			request.getDisplayLanguage().getCodeValue(), 
+			request.getIncludeDesignations(), 
+			request.getWithHistorySupplements(), 
+			request.getCount(), 
+			request.getAfter());
 
-		return expand(request);
+		return expand(request, uriComponentsBuilder);
 	}
 
 	/**
@@ -263,13 +282,24 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			after);
 	}
 
-	private Promise<ResponseEntity<byte[]>> expand(ExpandValueSetRequest expandRequest) {
+	private Promise<ResponseEntity<byte[]>> expand(ExpandValueSetRequest expandRequest, final UriComponentsBuilder uriComponentsBuilder) {
 		return FhirRequests.valueSets().prepareExpand()
 			.setRequest(expandRequest)
 			.buildAsync()
 			.execute(getBus())
-			.then(soExpandedValueSet -> {
-				var fhirExpandedValueSet = ValueSetConverter_50.INSTANCE.fromInternal(soExpandedValueSet);
+			.then(soValueSet -> {
+				
+				final Expansion soExpansion = soValueSet.getExpansion();
+				final Expansion soExpansionWithNext = soExpansion.withNext(searchAfter -> {
+					final String next = uriComponentsBuilder.replaceQueryParam("after", searchAfter)
+						.build()
+						.toString();
+					
+					return new Uri(next);
+				});
+				
+				final ValueSet soValueSetWithNext = soValueSet.withExpansion(soExpansionWithNext);
+				var fhirValueSet = ValueSetConverter_50.INSTANCE.fromInternal(soValueSetWithNext);
 					
 				final Format format = Format.JSON;
 				final boolean prettyPrinting = true;
@@ -281,7 +311,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				
 				try {
-					generator.generate(fhirExpandedValueSet, baos);
+					generator.generate(fhirValueSet, baos);
 				} catch (FHIRGeneratorException e) {
 					throw new BadRequestException("Failed to convert response body to a Parameters resource.");
 				}

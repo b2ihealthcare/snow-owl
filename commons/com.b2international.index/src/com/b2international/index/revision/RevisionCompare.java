@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import com.b2international.commons.collections.Collections3;
  */
 public final class RevisionCompare {
 
-	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
-		return new Builder(base, compare, limit, excludeComponentChanges);
+	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, RevisionCompareOptions options) {
+		return new Builder(base, compare, options);
 	}
 	
 	static class Builder {
@@ -38,28 +38,37 @@ public final class RevisionCompare {
 		private final RevisionBranchRef base;
 		private final RevisionBranchRef compare;
 		
-		private final int limit;
-		private boolean excludeComponentChanges;
-	
 		private final TreeMap<String, RevisionCompareDetail> detailsByComponent = new TreeMap<>();
+		private final RevisionCompareOptions options;
 		
-		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
+		Builder(RevisionBranchRef base, RevisionBranchRef compare, RevisionCompareOptions options) {
 			this.base = base;
 			this.compare = compare;
-			this.limit = limit;
-			this.excludeComponentChanges = excludeComponentChanges;
+			this.options = options;
 		}
 		
 		public Builder apply(Commit commit) {
 			for (CommitDetail detail : commit.getDetails()) {
 								
 				List<String> objects = detail.getObjects();
+				// XXX index order is required to collect corresponding component array from details
 				for (int i = 0; i < objects.size(); i++) {
 					String object = objects.get(i);
 					final ObjectId objectId = ObjectId.of(detail.getObjectType(), object);
 					
+					// if the main object is not selected via type filters then skip
+					if (options.getTypes() != null && !options.getTypes().contains(objectId.type())) {
+						continue;
+					}
+					
+					// if main object is not the root object and it is not selected via id filter then skip
+					if (!objectId.isRoot() && options.getIds() != null && !options.getIds().contains(objectId.id())) {
+						continue;
+					}
+					
 					final List<RevisionCompareDetail> details;
 					if (detail.isPropertyChange()) {
+						
 						// ignore property change if an existing ADD detail has been added for the component
 						RevisionCompareDetail existingObjectDetail = detailsByComponent.get(objectId.toString());
 						if (existingObjectDetail != null && existingObjectDetail.isAdd()) {
@@ -72,10 +81,18 @@ public final class RevisionCompare {
 											detail.getProp(), 
 											detail.getFrom(), detail.getTo()));
 						}
-					} else if (!excludeComponentChanges || !detail.isChange()) {
+					} else if (
+						// include component change list if, it is either an ADD or REMOVE list
+						!detail.isChange()
+						// or include if it is a component change list for a non-root component and it was requested explicitly
+						|| (!objectId.isRoot() && options.isIncludeComponentChanges())
+						// or include if it is a component change list for a root component (usually derived data change markers)
+						|| (objectId.isRoot() && options.isIncludeDerivedComponentChanges())
+					) {
 						details = detail.getComponents()
 								.get(i)
 								.stream()
+								.filter(component -> !objectId.isRoot() || options.getIds() == null || options.getIds().contains(component))
 								.map(component -> RevisionCompareDetail.componentChange(detail.getOp(), objectId, ObjectId.of(detail.getComponentType(), component)))
 								.collect(Collectors.toList());
 					} else {
@@ -125,7 +142,7 @@ public final class RevisionCompare {
 				}
 			}
 			
-			final List<RevisionCompareDetail> details = detailsByComponent.values().stream().limit(limit).collect(Collectors.toUnmodifiableList());
+			final List<RevisionCompareDetail> details = detailsByComponent.values().stream().limit(options.getLimit()).collect(Collectors.toUnmodifiableList());
 			
 			return new RevisionCompare(
 				base, 

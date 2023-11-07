@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.collection;
+package com.b2international.snowowl.core.internal;
 
-import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceUpdateRequestBuilder;
+import java.util.Comparator;
+
+import com.b2international.snowowl.core.ResourceURIWithQuery;
 
 /**
  * @since 9.0.0
  */
-public final class TerminologyResourceCollectionUpdateRequestBuilder
-		extends BaseTerminologyResourceUpdateRequestBuilder<TerminologyResourceCollectionUpdateRequestBuilder, TerminologyResourceCollectionUpdateRequest> {
+public interface DependencyEntry {
 
-	public TerminologyResourceCollectionUpdateRequestBuilder(String collectionId) {
-		super(collectionId);
-	}
+	Comparator<DependencyEntry> COMPARATOR = Comparator
+			.comparing(DependencyEntry::getUri)
+			.thenComparing(Comparator.comparing(DependencyEntry::getScope, Comparator.nullsLast(Comparator.naturalOrder())));
+	
+	ResourceURIWithQuery getUri();
 
-	@Override
-	public TerminologyResourceCollectionUpdateRequest createResourceRequest() {
-		return new TerminologyResourceCollectionUpdateRequest(getResourceId());
-	}
+	String getScope();
 
 }

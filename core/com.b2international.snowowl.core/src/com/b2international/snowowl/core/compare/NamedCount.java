@@ -13,28 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.test.commons;
+package com.b2international.snowowl.core.compare;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.Map;
 
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * @since 9.0.0
+ * A name an associated counter value.
+ * 
+ * <p>
+ * The actual meaning of the numeric value is dependent on the context.
+ * 
+ * @since 9.0
  */
-public class LoggingTestWatcher extends TestWatcher {
+public record NamedCount(String name, int count) {
 
-	@Override
-	@OverridingMethodsMustInvokeSuper
-	protected void starting(Description description) {
-		System.out.println("===== Start of " + description + " =====");
+	public Map<String, Object> asMap() {
+		return ImmutableMap.of("name", name, "count", count);
 	}
 	
 	@Override
-	@OverridingMethodsMustInvokeSuper
-	protected void finished(Description description) {
-		System.out.println("===== End of " + description + " =====");
+	public String toString() {
+		return String.join("=", name, String.valueOf(count));
 	}
 	
 }

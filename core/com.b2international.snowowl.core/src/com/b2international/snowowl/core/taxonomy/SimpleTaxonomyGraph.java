@@ -78,7 +78,7 @@ public final class SimpleTaxonomyGraph {
 	}
 
 	public void addEdge(final String sourceId, final String destinationId) {
-		// XXX: Uses "<source ID>" to identify edge pointing to multiple destinations
+		// XXX: Uses "<source ID>" to identify edge pointing to the single destination
 		addEdge(sourceId, sourceId, destinationId);
 	}
 	

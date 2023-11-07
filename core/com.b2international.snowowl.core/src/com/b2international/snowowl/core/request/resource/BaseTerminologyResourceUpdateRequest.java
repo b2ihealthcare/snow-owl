@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceUpdateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 8.12.0
@@ -43,9 +44,13 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 	private static final long serialVersionUID = 2L;
 	
 	// generic terminology resource update properties
+	@JsonProperty
 	private String oid;
+	
+	@JsonProperty
 	private String branchPath;
 	
+	@JsonProperty
 	private List<Dependency> dependencies;
 	
 //	private String iconPath; // TODO should we support custom icons for resources?? branding??

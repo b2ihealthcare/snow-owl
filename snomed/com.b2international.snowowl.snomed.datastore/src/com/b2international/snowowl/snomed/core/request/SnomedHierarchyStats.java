@@ -38,6 +38,7 @@ import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer.Opti
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
@@ -50,7 +51,8 @@ public record SnomedHierarchyStats(
 	Multiset<String> positiveDescendantsAndSelf,
 	Multiset<String> positiveChildren,
 	Multiset<String> totalDescendantsAndSelf,
-	Multiset<String> totalChildren
+	Multiset<String> totalChildren,
+	ConceptDescendantsById conceptDescendantsById
 ) { 
 
 	private static final String CLINICAL_FINDING = "404684003";
@@ -114,14 +116,34 @@ public record SnomedHierarchyStats(
 
 		Stream<SnomedRelationship> findEdgesBySourceId(BranchContext context, Set<String> sourceIds, int pageSize);
 	}
+	
+	/**
+	 * @since 9.0
+	 */
+	@FunctionalInterface
+	public interface ConceptDescendantsById {
 
+		ConceptDescendantsById DEFAULT = (context, ancestorId, pageSize) -> SnomedRequests.prepareSearchConcept()
+			.filterByActive(true)
+			.filterByAncestor(ancestorId)
+			.setLimit(pageSize)
+			.setFields(SnomedConceptDocument.Fields.ID)
+			.stream(context)
+			.flatMap(SnomedConcepts::stream)
+			.map(SnomedConcept::getId)
+			.collect(Collectors.toSet()); 
+
+		Set<String> findConceptDescendantsById(BranchContext context, String ancestorId, int pageSize);
+	}	
+	
 	public static SnomedHierarchyStats create(
 		final BranchContext context, 
 		final int pageSize,
 		final Set<String> conceptIds,
 		final ConceptSearchById conceptSearchById,
 		final EdgeSearchBySourceId edgeSearchBySourceId,
-		final ConceptDescendantCountById conceptDescendantCountById
+		final ConceptDescendantCountById conceptDescendantCountById,
+		final ConceptDescendantsById conceptDescendantsById
 	) {
 		// How many member concepts do we find if we use this ancestor in a descendant-of or descendant-or-self-of expression?
 		final Multiset<String> positiveDescendantsAndSelf = HashMultiset.create();
@@ -142,7 +164,8 @@ public record SnomedHierarchyStats(
 				positiveDescendantsAndSelf, 
 				positiveChildren, 
 				totalDescendantsAndSelf, 
-				totalChildren);	
+				totalChildren,
+				conceptDescendantsById);	
 		}
 
 		conceptSearchById.findConceptsById(context, conceptIds, pageSize)
@@ -168,7 +191,7 @@ public record SnomedHierarchyStats(
 		conceptsAndAncestors.forEach(graph::addNode);
 
 		edgeSearchBySourceId.findEdgesBySourceId(context, conceptsAndAncestors, pageSize)
-			.forEachOrdered(r -> graph.addEdge(r.getSourceId(), r.getDestinationId()));
+			.forEachOrdered(r -> graph.addEdge(r.getId(), r.getSourceId(), r.getDestinationId()));
 
 		graph.build();
 
@@ -196,7 +219,8 @@ public record SnomedHierarchyStats(
 			positiveDescendantsAndSelf, 
 			positiveChildren, 
 			totalDescendantsAndSelf, 
-			totalChildren);
+			totalChildren,
+			conceptDescendantsById);
 	}
 
 	/**
@@ -483,5 +507,38 @@ public record SnomedHierarchyStats(
 	 */
 	public boolean subsumes(final String conceptA, final String conceptB) {
 		return graph.subsumes(conceptA, conceptB);
+	}
+	
+	public Function<QueryExpression, Set<String>> getQueryEvaluator(
+		final BranchContext branchContext, 
+		final int pageSize
+	) {
+		return expression -> {
+			final String conceptId;
+			final boolean includeSelf;
+			
+			final String query = expression.getQuery();
+			if (query.startsWith("<< ")) {
+				conceptId = query.substring(3);
+				includeSelf = true;
+			} else if (query.startsWith("< ")) {
+				conceptId = query.substring(2);
+				includeSelf = false;
+			} else {
+				throw new IllegalArgumentException("Unsupported query '" + query + "'.");
+			}
+			
+			final Set<String> descendantIds = conceptDescendantsById.findConceptDescendantsById(
+				branchContext, 
+				conceptId, 
+				pageSize
+			);
+			
+			if (includeSelf) {
+				descendantIds.add(conceptId);
+			}
+			
+			return descendantIds;
+		};
 	}
 }

@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.locks.Lockable;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class ResourceLockChangeRequest implements Request<BranchContext, Boolean> {
 

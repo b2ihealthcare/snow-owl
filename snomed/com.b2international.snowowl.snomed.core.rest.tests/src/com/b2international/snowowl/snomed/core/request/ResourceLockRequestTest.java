@@ -32,7 +32,7 @@ import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class ResourceLockRequestTest {
 

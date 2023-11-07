@@ -150,6 +150,10 @@ public final class Commit implements WithScore {
 			return matchAny(Fields.BRANCH, branchPaths);
 		}
 		
+		public static Expression subjects(final Iterable<String> subjects) {
+			return matchAny(Fields.SUBJECTS, subjects);
+		}
+		
 		public static Expression author(final String author) {
 			return exactMatch(Fields.AUTHOR, author);
 		}

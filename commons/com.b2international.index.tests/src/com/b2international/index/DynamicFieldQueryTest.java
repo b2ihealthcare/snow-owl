@@ -30,7 +30,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class DynamicFieldQueryTest extends BaseIndexTest {
 

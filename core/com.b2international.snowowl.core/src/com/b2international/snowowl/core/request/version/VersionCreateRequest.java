@@ -99,7 +99,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			author = submitter;			
 		}
 		
-		if (!resource.isHead()) {
+		if (resource.getPath() != null && !resource.isHead()) {
 			throw new BadRequestException("Version '%s' cannot be created on unassigned branch '%s'", version, resource)
 				.withDeveloperMessage("Did you mean to version '%s'?", resource.withoutPath());
 		}
@@ -169,7 +169,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							).execute(lockContext);
 							
 							// tag the repository
-							RepositoryRequests
+							String versionBranch = RepositoryRequests
 								.branching()
 								.prepareCreate()
 								.setParent(resourceToVersion.getBranchPath())
@@ -192,7 +192,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 									.description(description)
 									.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
 									.resource(resourceToVersion.getResourceURI())
-									.branchPath(resourceToVersion.getRelativeBranchPath(version))
+									.branchPath(versionBranch)
 									.author(author)
 									.createdAt(Instant.now().toEpochMilli())
 									.updatedAt(Instant.now().toEpochMilli())

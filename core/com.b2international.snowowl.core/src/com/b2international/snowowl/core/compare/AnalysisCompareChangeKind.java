@@ -25,33 +25,35 @@ import com.b2international.commons.StringUtils;
 /**
  * Enumerates possible ways a primary component can be changed. 
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 public enum AnalysisCompareChangeKind {
 
+	/** A component has been completely deleted */
+	DELETED,
+	
 	/** A component has been added */
 	ADDED,
-
-	/** An intrinsic property of the component itself changed (eg. status or definition status) */
+	
+	// The order of ordinals represent a priority list, top-bottom high-low
+	/** Status of the component has changed to inactive */
+	INACTIVATION,
+	
+	/** A relationship or value representing the meaning of the component changed */
 	DEFINITION_CHANGE,
 
-	/** A relationship or value representing the meaning of the component changed */
-	PROPERTY_CHANGE,
-
 	/** A term used to described the component has changed */
-	TERM_CHANGE,
-
+	DESCRIPTION_CHANGE,
+	
 	/** A change that can not be categorized into the cases above */
 	COMPONENT_CHANGE,
 	
-	/** A component has been deleted or was made otherwise inaccessible (eg. removed from evaluated set or deactivated) */
-	DELETED,
 	
 	/** The component has not changed when compared to the reference */
-	UNCHANGED;
+	UNCHANGED; 
 
 	private static final Set<AnalysisCompareChangeKind> CHANGED_VALUES = immutableEnumSet(
-		DEFINITION_CHANGE, PROPERTY_CHANGE, TERM_CHANGE, COMPONENT_CHANGE
+		INACTIVATION, DEFINITION_CHANGE, DESCRIPTION_CHANGE, COMPONENT_CHANGE
 	);
 	
 	/**
@@ -64,5 +66,17 @@ public enum AnalysisCompareChangeKind {
 
 	public boolean isChanged() {
 		return CHANGED_VALUES.contains(this);
+	}
+
+	public boolean isNew() {
+		return ADDED == this;
+	}
+	
+	public boolean isDeleted() {
+		return DELETED == this;
+	}
+	
+	public boolean isUnchanged() {
+		return UNCHANGED == this;
 	}
 }

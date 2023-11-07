@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ public abstract class RepositoryBranchCompareRestService extends AbstractRestSer
 		return RepositoryRequests.branching().prepareCompare()
 			.setBase(request.getBaseBranch())
 			.setCompare(request.getCompareBranch())
-			.setExcludeComponentChanges(true)
 			.setLimit(request.getLimit())
 			.build(repositoryId)
 			.execute(getBus());

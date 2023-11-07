@@ -28,20 +28,24 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class DependencyCompareRequest implements Request<RepositoryContext, AnalysisCompareResult> {
 
 	private static final long serialVersionUID = 1L;
 
+	@JsonProperty
 	@NotNull
 	private final ResourceURIWithQuery fromUri;
 	
+	@JsonProperty
 	@NotNull
 	private final ResourceURIWithQuery toUri;
 	
+	@JsonProperty
 	private final boolean includeChanges;
 
 	public DependencyCompareRequest(

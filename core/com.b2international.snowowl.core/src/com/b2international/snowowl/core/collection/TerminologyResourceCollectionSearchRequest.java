@@ -22,14 +22,14 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceSearchRequest;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class TerminologyResourceCollectionSearchRequest extends BaseTerminologyResourceSearchRequest<TerminologyResourceCollections> {
 
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @since 9.0
+	 * @since 9.0.0
 	 */
 	public enum OptionKey {
 		

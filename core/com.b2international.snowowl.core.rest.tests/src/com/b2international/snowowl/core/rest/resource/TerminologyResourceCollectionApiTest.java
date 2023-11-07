@@ -48,7 +48,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class TerminologyResourceCollectionApiTest {
 

@@ -59,7 +59,6 @@ public final class VersionSearchRequestBuilder
 				.addOption(OptionKey.CREATED_AT_TO, createdAt);
 	}
 	
-	
 	/**
 	 * Filter versions that were createdAt in an interval.
 	 * @param createdAtFrom - the start of the createdAt interval (inclusive).
@@ -70,6 +69,7 @@ public final class VersionSearchRequestBuilder
 		return addOption(OptionKey.CREATED_AT_FROM, createdAtFrom)
 				.addOption(OptionKey.CREATED_AT_TO, createdAtTo);
 	}
+	
 	/**
 	 * Filter versions by their version tag.
 	 * 
@@ -129,10 +129,13 @@ public final class VersionSearchRequestBuilder
 	public VersionSearchRequestBuilder filterByResourceTypes(Iterable<String> resourceTypes) {
 		return addOption(OptionKey.RESOURCE_TYPE, resourceTypes);
 	}
-	
+
+	public VersionSearchRequestBuilder filterByToolingId(String toolingId) {
+		return addOption(OptionKey.TOOLING_ID, toolingId);
+	}
+
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Versions> createSearch() {
 		return new VersionSearchRequest();
 	}
-
 }

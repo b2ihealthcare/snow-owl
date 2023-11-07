@@ -32,13 +32,11 @@ import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class ResourceContentCompareRequest extends ResourceRequest<RepositoryContext, AnalysisCompareResult> {
 
 	private static final long serialVersionUID = 1L;
-
-	private static final String SPECIAL_ID_SEPARATOR = "~";
 
 	@NotNull
 	private final ResourceURIWithQuery fromUri;
@@ -66,8 +64,8 @@ final class ResourceContentCompareRequest extends ResourceRequest<RepositoryCont
 	@Override
 	public AnalysisCompareResult execute(final RepositoryContext resourceContext) {
 
-		final ResourceURI fromWithoutPath = removeSpecialIdSuffix(fromUri.getResourceUri().withoutPath());
-		final ResourceURI toWithoutPath = removeSpecialIdSuffix(toUri.getResourceUri().withoutPath());
+		final ResourceURI fromWithoutPath = fromUri.getResourceUri().withoutPath().withoutSpecialResourceIdPart();
+		final ResourceURI toWithoutPath = toUri.getResourceUri().withoutPath().withoutSpecialResourceIdPart();
 
 		if (!fromWithoutPath.equals(toWithoutPath)) {
 			throw new BadRequestException("Resource URIs should have a common root, got '%s' and '%s'", fromWithoutPath, toWithoutPath);
@@ -91,14 +89,4 @@ final class ResourceContentCompareRequest extends ResourceRequest<RepositoryCont
 		return contentRequest.execute(resourceContext);
 	}
 
-	private static ResourceURI removeSpecialIdSuffix(final ResourceURI resourceUri) {
-		final String resourceId = resourceUri.getResourceId();
-		final int separatorIdx = resourceId.lastIndexOf(SPECIAL_ID_SEPARATOR);
-		
-		if (separatorIdx > 0) {
-			return ResourceURI.of(resourceUri.getResourceType(), resourceId.substring(0, separatorIdx));
-		} else {
-			return resourceUri;
-		}
-	}
 }

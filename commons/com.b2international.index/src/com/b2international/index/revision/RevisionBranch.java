@@ -101,6 +101,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		public static final String NAME = "name";
 		public static final String NAME_ALIASES = "nameAliases";
 		public static final String PARENT_PATH = "parentPath";
+		public static final String METADATA = "metadata";
 		
 		// derived fields
 		public static final String PATH = "path";

@@ -52,6 +52,7 @@ public final class Version implements Serializable {
 	private CommitInfo updatedAtCommit;
 	private String author;
 	private String url;
+	private String toolingId;
 	
 	/**
 	 * @return the globally unique identifier of this version, resource + version.
@@ -108,6 +109,10 @@ public final class Version implements Serializable {
 		return url;
 	}
 	
+	public String getToolingId() {
+		return toolingId;
+	}
+	
 	// hidden setter to allow deserialization of Version JSON strings without errors
 	@JsonSetter
 	void setResourceBranchPath(String resourceBranchPath) {}
@@ -156,6 +161,10 @@ public final class Version implements Serializable {
 		this.url = url;
 	}
 	
+	public void setToolingId(String toolingId) {
+		this.toolingId = toolingId;
+	}
+	
 	// additional helper methods
 	
 	@JsonIgnore
@@ -163,9 +172,13 @@ public final class Version implements Serializable {
 		return getResource().getResourceId();
 	}
 	
-	@JsonIgnore
 	public ResourceURI getVersionResourceURI() {
 		return getResource().withPath(version);
+	}
+	
+	@JsonSetter
+	void setVersionResourceURI(ResourceURI versionResourceURI) {
+		// ignore
 	}
 
 }

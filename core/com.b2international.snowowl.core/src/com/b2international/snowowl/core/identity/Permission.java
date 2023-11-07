@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,9 +131,13 @@ public interface Permission extends Serializable {
 		final String operation = parts[0];
 		final String resourceReference = parts[1];
 		if (RequireAnyPermission.isRequireAnyResource(resourceReference)) {
-			return requireAny(operation, List.of(resourceReference));
+			String[] resourceIds = resourceReference.substring("anyOf(".length(), resourceReference.length() - 1).split(",");
+			return requireAny(operation, resourceIds);
+		} else if (RequireAllPermission.isRequireAllResource(resourceReference)) {
+			String[] resourceIds = resourceReference.substring("allOf(".length(), resourceReference.length() - 1).split(",");
+			return requireAll(operation, resourceIds);
 		} else {
-			return requireAll(operation, List.of(resourceReference));
+			return requireAll(operation, resourceReference);
 		}
 	}
 

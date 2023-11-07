@@ -35,8 +35,6 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.config.IndexConfiguration;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -113,9 +111,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 
 	private ValidationResult doValidate(final BranchContext context, final Writer index) throws IOException {
-		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
-		final int pageSize = indexConfiguration.getPageSize();
-
 		final String branchPath = context.path();
 		final TerminologyResource resource = context.service(TerminologyResource.class);
 		final ResourceURI resourceURI = resource.getResourceURI(branchPath);
@@ -123,7 +118,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final ValidationRuleSearchRequestBuilder req = ValidationRequests.rules()
 			.prepareSearch()
 			.filterByTooling(resource.getToolingId())
-			.setLimit(pageSize);
+			.setLimit(context.getPageSize());
 		
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);
@@ -198,7 +193,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						final String ruleId = newIssues.ruleId;
 						final List<ValidationIssue> existingIssues = ValidationRequests.issues()
 							.prepareSearch()
-							.setLimit(pageSize)
+							.setLimit(context.getPageSize())
 							.filterByResultId(resultId)
 							.filterByResourceUri(resourceURI)
 							.filterByRule(ruleId)
@@ -290,13 +285,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 
 	private Multimap<String, ComponentIdentifier> fetchWhiteListEntries(final BranchContext context, final Set<String> ruleIds) {
-		final IndexConfiguration indexConfiguration = context.service(RepositoryConfiguration.class).getIndexConfiguration();
-		final int pageSize = indexConfiguration.getPageSize();
-		
 		// Fetch all whitelist entries to determine whether an issue is whitelisted already or not
 		final ValidationWhiteListSearchRequestBuilder whiteListReq = ValidationRequests.whiteList()
 			.prepareSearch()
-			.setLimit(pageSize);
+			.setLimit(context.getPageSize());
 
 		// Fetch whitelist entries associated with the defined rules
 		if (!CompareUtils.isEmpty(ruleIds)) {

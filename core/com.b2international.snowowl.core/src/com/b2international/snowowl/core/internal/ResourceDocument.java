@@ -72,6 +72,19 @@ public final class ResourceDocument extends RevisionDocument implements CommitSu
 	public static final String TYPE = "resource";
 	
 	/**
+	 * Type that collects all branch metadata related keys stored on content branches that alter the resource definitions in any way 
+	 * 
+	 * @since 9.0
+	 */
+	public static final class BranchMetadata {
+		
+		/**
+		 * Can be added to any branch to alter the dependency array of a resource when accessed from that branch's perspective.
+		 */
+		public static final String DEPENDENCIES = Fields.DEPENDENCIES;
+	}
+	
+	/**
 	 * @since 8.0
 	 */
 	public static final class Fields extends RevisionDocument.Fields {

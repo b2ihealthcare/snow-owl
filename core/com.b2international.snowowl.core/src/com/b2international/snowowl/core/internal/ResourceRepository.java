@@ -23,7 +23,6 @@ import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.VersionDocument;
@@ -83,8 +82,8 @@ public final class ResourceRepository implements RevisionIndex {
 	}
 
 	@Override
-	public RevisionCompare compare(String branch, int limit, boolean excludeComponentChanges) {
-		return index.compare(branch, limit, excludeComponentChanges);
+	public RevisionCompare compare(String branch, RevisionCompareOptions options) {
+		return index.compare(branch, options);
 	}
 
 	@Override
@@ -93,8 +92,8 @@ public final class ResourceRepository implements RevisionIndex {
 	}
 
 	@Override
-	public RevisionCompare compare(String baseBranch, String compareBranch, int limit, boolean excludeComponentChanges) {
-		return index.compare(baseBranch, compareBranch, limit, excludeComponentChanges);
+	public RevisionCompare compare(String baseBranch, String compareBranch, RevisionCompareOptions options) {
+		return index.compare(baseBranch, compareBranch, options);
 	}
 
 	@Override
@@ -131,10 +130,6 @@ public final class ResourceRepository implements RevisionIndex {
 		public void run(StagingArea staging) {
 			RepositoryContext context = (RepositoryContext) staging.getContext();
 
-			final int pageSize = context.service(RepositoryConfiguration.class)
-				.getIndexConfiguration()
-				.getPageSize();
-			
 			// stage deletion of all version documents as well when deleting a resource
 			final Multimap<String, ResourceDocument> resourceUrisByTooling = HashMultimap.create();
 			staging.getRemovedObjects(ResourceDocument.class).forEach(deletedResource -> {
@@ -150,7 +145,7 @@ public final class ResourceRepository implements RevisionIndex {
 				final Set<String> resources = resourceUrisByTooling.get(toolingId).stream().map(ResourceDocument::getResourceURI).map(ResourceURI::toString).collect(Collectors.toSet());
 				
 				ResourceRequests.prepareSearchVersion()
-					.setLimit(pageSize)
+					.setLimit(context.getPageSize())
 					.filterByResources(resources)
 					.stream(context)
 					.flatMap(Versions::stream)

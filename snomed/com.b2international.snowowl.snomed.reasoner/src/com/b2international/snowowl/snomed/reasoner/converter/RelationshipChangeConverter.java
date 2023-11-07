@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -308,11 +307,7 @@ public final class RelationshipChangeConverter
 
 		final Map<String, String> branchesByClassificationIdMap = newHashMap();
 
-		final int partitionSize = context().service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getTermPartitionSize();
-		
-		Iterables.partition(classificationTaskIds, partitionSize).forEach(ids -> {
+		Iterables.partition(classificationTaskIds, context().getTermPartitionSize()).forEach(ids -> {
 			ClassificationRequests.prepareSearchClassification()
 				.filterByIds(ids)
 				.setLimit(ids.size())

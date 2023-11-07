@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -24,6 +29,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.version.Version;
 import com.google.common.primitives.Ints;
 
 /**
@@ -52,7 +58,7 @@ public interface PathTerminologyResourceResolver {
 		
 		@Override
 		public <T extends TerminologyResource> T resolve(ServiceProvider context, String toolingId, String referenceBranch) {
-			Long timestamp = null;
+			final Long timestamp;
 			
 			final String branchWithoutSuffix;
 			if (referenceBranch.contains(RevisionIndex.AT_CHAR)) {
@@ -61,10 +67,16 @@ public interface PathTerminologyResourceResolver {
 				timestamp = Long.valueOf(parts[1]);
 			} else {
 				branchWithoutSuffix = referenceBranch;
+				timestamp = null;
 			}
 			
 			final List<String> ancestorsAndSelf = BranchPathUtils.getAllPaths(branchWithoutSuffix);
-			return ResourceRequests.prepareSearch()
+
+			/*
+			 * Look for potential resource working paths. Note that if a resource was already upgraded to a newer base version,
+			 * it might not appear in this result set.
+			 */
+			final Map<String, T> resourcesById = ResourceRequests.prepareSearch()
 				.all()
 				.filterByToolingId(toolingId)
 				.filterByBranches(ancestorsAndSelf)
@@ -73,12 +85,53 @@ public interface PathTerminologyResourceResolver {
 				.execute(context)
 				.stream()
 				.filter(TerminologyResource.class::isInstance)
-				.map(t -> (T) t)
+				.collect(Collectors.toMap(t -> t.getId(), t -> (T) t));
+
+			/*
+			 * To get a more complete picture, also retrieve the last time any of the paths given above were set as 
+			 * a code system working branch, based on version information.
+			 */
+			final Stream<Version> latestVersionsById = ResourceRequests.prepareSearchVersion()
+				.all()
+				.filterByToolingId(toolingId)
+				.filterByResourceBranchPaths(ancestorsAndSelf)
+				.buildAsync(timestamp)
+				.getRequest()
+				.execute(context)
+				.stream()
+				// Retain the version with the most recent "created at" timestamp for each encountered resource ID
+				.collect(Collectors.groupingBy(
+					v -> v.getResourceId(), 
+					Collectors.maxBy(Comparator.comparing(v -> v.getCreatedAt()))))
+				.values()
+				.stream()
+				.map(Optional::get);
+			
+			latestVersionsById.forEachOrdered(v -> {
+				final String resourceId = v.getResourceId();
+				
+				// Ignore if this resource is already known
+				if (resourcesById.containsKey(resourceId)) {
+					return;
+				}
+				
+				// We need to load this resource using the timestamp retrieved from the version document
+				final Long resourceTimestamp = v.getCreatedAt();
+				
+				final T resourceAtTimestamp = (T) ResourceRequests.prepareGet(resourceId)
+					.buildAsync(resourceTimestamp)
+					.getRequest()
+					.execute(context);
+					
+				resourcesById.put(resourceId, resourceAtTimestamp);
+			});
+			
+			// Return the resource whose working branch is the closest (prefix) match to the path given
+			return resourcesById.values()
+				.stream()
 				.sorted((t1, t2) -> Ints.compare(ancestorsAndSelf.indexOf(t1.getBranchPath()), ancestorsAndSelf.indexOf(t2.getBranchPath())))
 				.findFirst()
 				.orElseThrow(() -> new NotFoundException("Terminology Resource", referenceBranch));
 		}
-		
 	}
-	
 }

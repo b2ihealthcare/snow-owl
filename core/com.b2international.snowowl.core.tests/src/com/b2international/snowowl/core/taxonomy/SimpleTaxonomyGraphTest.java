@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,52 +42,69 @@ public class SimpleTaxonomyGraphTest {
 		assertTrue("Graph should be built.", graph.isBuilt());
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void getDescendantIdsWithoutBuild() {
-		graph.getDescendantIds("A");
+		assertThrows(IllegalStateException.class, () -> graph.getDescendantIds("A"));
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void getParentIdsWithoutBuild() {
-		graph.getParentIds("A");
+		assertThrows(IllegalStateException.class, () -> graph.getParentIds("A"));
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void getIndirectAncestorIdsWithoutBuild() {
-		graph.getIndirectAncestorIds("A");
+		assertThrows(IllegalStateException.class, () -> graph.getIndirectAncestorIds("A"));
 	}
 	
-	@Test(expected = NullPointerException.class)
+	@Test
+	public void updateEdge() {
+		graph.addNode("A");
+		graph.addNode("B");
+		graph.addNode("C");
+		
+		/*
+		 * addEdge(String, String) uses the source ID for identifying the edge, so calling
+		 * it twice in succession will overwrite the first information given.
+		 */
+		graph.addEdge("A", "B");
+		graph.addEdge("A", "C");
+		assertFalse("Graph build should report no errors.", graph.build());
+		
+		assertThat(graph.getParentIds("A")).containsOnly("C");
+	}
+	
+	@Test
 	public void getDescendantIdsNull() {
-		graph.getDescendantIds(null);
+		assertThrows(NullPointerException.class, () -> graph.getDescendantIds(null));
 	}
 	
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void getParentIdsNull() {
-		graph.getParentIds(null);
+		assertThrows(NullPointerException.class, () -> graph.getParentIds(null));
 	}
 	
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void getIndirectAncestorIdsNull() {
-		graph.getIndirectAncestorIds(null);
+		assertThrows(NullPointerException.class, () -> graph.getIndirectAncestorIds(null));
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void getDescendantIdsUnknownId() {
 		assertFalse("Graph build should report no errors.", graph.build());
-		graph.getDescendantIds("A");
+		assertThrows(NotFoundException.class, () -> graph.getDescendantIds("A"));
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void getParentIdsUnknownId() {
 		assertFalse("Graph build should report no errors.", graph.build());
-		graph.getParentIds("A");
+		assertThrows(NotFoundException.class, () -> graph.getParentIds("A"));
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void getIndirectAncestorIdsUnknownId() {
 		assertFalse("Graph build should report no errors.", graph.build());
-		graph.getIndirectAncestorIds("A");
+		assertThrows(NotFoundException.class, () -> graph.getIndirectAncestorIds("A"));
 	}
 	
 	@Test
@@ -292,8 +309,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("A", "B");
 		graph.addEdge("B", "C");
 		graph.addEdge("C", "D");
-		graph.addEdge("D", "E");
-		graph.addEdge("D", "B");
+		graph.addEdge("D", Set.of("E", "B"));
 		assertTrue("Graph build should report an error.", graph.build());
 	}
 	

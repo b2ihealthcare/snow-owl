@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 package com.b2international.snowowl.core.branch.compare;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -40,9 +42,8 @@ public final class BranchCompareResult implements Serializable {
 		private final ImmutableSet.Builder<ComponentIdentifier> newComponents = ImmutableSet.builder();
 		private final ImmutableSet.Builder<ComponentIdentifier> changedComponents = ImmutableSet.builder();
 		private final ImmutableSet.Builder<ComponentIdentifier> deletedComponents = ImmutableSet.builder();
-		private int totalNew;
-		private int totalChanged;
-		private int totalDeleted;
+		
+		private List<BranchCompareChangeStatistic> stats;
 		
 		private Builder(String baseBranch, String compareBranch, long compareHeadTimestamp) {
 			this.baseBranch = baseBranch;
@@ -65,21 +66,14 @@ public final class BranchCompareResult implements Serializable {
 			return this;
 		}
 		
-		public Builder totalNew(int totalNew) {
-			this.totalNew = totalNew;
+		public Builder addStats(BranchCompareChangeStatistic stats) {
+			if (this.stats == null) {
+				this.stats = new ArrayList<>();
+			}
+			this.stats.add(stats);
 			return this;
 		}
 		
-		public Builder totalChanged(int totalChanged) {
-			this.totalChanged = totalChanged;
-			return this;
-		}
-		
-		public Builder totalDeleted(int totalDeleted) {
-			this.totalDeleted = totalDeleted;
-			return this;
-		}
-			
 		public BranchCompareResult build() {
 			return build(Set.of());
 		}
@@ -97,9 +91,10 @@ public final class BranchCompareResult implements Serializable {
 					newComponents, 
 					changedComponents, 
 					deletedComponents,
-					totalNew,
-					totalChanged,
-					totalDeleted);
+					stats,
+					newComponents.size(),
+					changedComponents.size(),
+					deletedComponents.size());
 		}
 
 	}
@@ -110,6 +105,9 @@ public final class BranchCompareResult implements Serializable {
 	private final Collection<ComponentIdentifier> newComponents;
 	private final Collection<ComponentIdentifier> changedComponents;
 	private final Collection<ComponentIdentifier> deletedComponents;
+	
+	private final List<BranchCompareChangeStatistic> stats;
+	
 	private final int totalNew;
 	private final int totalChanged;
 	private final int totalDeleted;
@@ -122,6 +120,7 @@ public final class BranchCompareResult implements Serializable {
 			@JsonProperty("newComponents") Collection<ComponentIdentifier> newComponents,
 			@JsonProperty("changedComponents") Collection<ComponentIdentifier> changedComponents,
 			@JsonProperty("deletedComponents") Collection<ComponentIdentifier> deletedComponents, 
+			@JsonProperty("stats") List<BranchCompareChangeStatistic> stats,
 			@JsonProperty("totalNew") int totalNew, 
 			@JsonProperty("totalChanged") int totalChanged, 
 			@JsonProperty("totalDeleted") int totalDeleted) {
@@ -131,6 +130,7 @@ public final class BranchCompareResult implements Serializable {
 		this.newComponents = newComponents;
 		this.changedComponents = changedComponents;
 		this.deletedComponents = deletedComponents;
+		this.stats = stats;
 		this.totalNew = totalNew;
 		this.totalChanged = totalChanged;
 		this.totalDeleted = totalDeleted;
@@ -158,6 +158,10 @@ public final class BranchCompareResult implements Serializable {
 	
 	public Collection<ComponentIdentifier> getDeletedComponents() {
 		return deletedComponents;
+	}
+	
+	public List<BranchCompareChangeStatistic> getStats() {
+		return stats;
 	}
 	
 	public int getTotalNew() {

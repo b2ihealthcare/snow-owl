@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package com.b2international.snowowl.core.branch;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.branch.BranchSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -33,27 +33,35 @@ public final class BranchSearchRequestBuilder extends SearchPageableCollectionRe
 	}
 	
 	public BranchSearchRequestBuilder filterByParent(String parentPath) {
-		return filterByParent(ImmutableSet.of(parentPath));
+		return addOption(OptionKey.PARENT, parentPath);
 	}
 	
 	public BranchSearchRequestBuilder filterByParent(Collection<String> parentPaths) {
-		return addOption(BranchSearchRequest.OptionKey.PARENT, parentPaths);
+		return addOption(OptionKey.PARENT, parentPaths);
 	}
 	
 	public BranchSearchRequestBuilder filterByName(String name) {
-		return filterByName(ImmutableSet.of(name));
+		return addOption(OptionKey.NAME, name);
 	}
 	
 	public BranchSearchRequestBuilder filterByName(Collection<String> names) {
-		return addOption(BranchSearchRequest.OptionKey.NAME, names);
+		return addOption(OptionKey.NAME, names);
 	}
 	
-	public BranchSearchRequestBuilder filterByBranchId(long branchId) {
-		return filterByBranchId(ImmutableSet.of(branchId));
+	public BranchSearchRequestBuilder filterByBranchId(Long branchId) {
+		return addOption(OptionKey.BRANCH_ID, branchId);
 	}
 	
 	public BranchSearchRequestBuilder filterByBranchId(Collection<Long> branchIds) {
-		return addOption(BranchSearchRequest.OptionKey.BRANCH_ID, branchIds);
+		return addOption(OptionKey.BRANCH_ID, branchIds);
+	}
+	
+	public BranchSearchRequestBuilder filterByMetadata(Iterable<String> metadataFilters) {
+		return addOption(OptionKey.METADATA, metadataFilters);
+	}
+	
+	public BranchSearchRequestBuilder filterByMetadata(String metadataFilter) {
+		return addOption(OptionKey.METADATA, metadataFilter);
 	}
 
 	@Override

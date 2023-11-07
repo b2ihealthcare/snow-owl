@@ -30,7 +30,7 @@ import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class RevisionBranchPathAliasTest extends BaseRevisionIndexTest {
 

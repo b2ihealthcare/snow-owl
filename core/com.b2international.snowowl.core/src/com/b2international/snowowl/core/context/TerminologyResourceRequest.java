@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
@@ -48,7 +47,6 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 
 	private transient ResourceURI resourceUri;
 	private transient TerminologyResource resource;
-	private transient String branchPath;
 	
 	public TerminologyResourceRequest(final String toolingId, final String resourcePath, final Request<TerminologyResourceContext, R> next) {
 		super(next);
@@ -80,24 +78,13 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 		return resource;
 	}
 
-	public String getBranchPath(ServiceProvider context) {
-		if (branchPath == null) {
-			initialize(context);
-		}
-		return branchPath;
-	}
-	
 	private void initialize(ServiceProvider context) {
 		if (resourcePath.startsWith(Branch.MAIN_PATH)) {
 			context.log().warn("Reflective access of terminology resources ('{}/{}') is not the recommended way of accessing resources. Consider using Resource IDs and relative branch path expressions.", toolingId, resourcePath);
 			this.resource = context.service(PathTerminologyResourceResolver.class).resolve(context, toolingId, resourcePath);
 			this.resourceUri = resource.getResourceURI(resourcePath);
-			this.branchPath = resourcePath;
 		} else {
-			// resourcePaths are just ID/PATH style expressions to reference content in a terminology repository
-			
-			
-			
+			// if a path does not start with MAIN then treat it as a true ResourceURI of any type and fetch the corresponding resource
 			final ResourceURI referenceResourceUri = ResourceURI.of("any", resourcePath);
 			// XXX intentionally not fetching using the full resourceUri here, this might change in the future
 			Resource resource = ResourceRequests.prepareGet(referenceResourceUri).buildAsync().getRequest().execute(context);
@@ -106,10 +93,9 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 			}
 			this.resource = (TerminologyResource) resource;
 			this.resourceUri = this.resource.getResourceURI()
-				.withPath(referenceResourceUri.getPath())
-				.withTimestampPart(referenceResourceUri.getTimestampPart());
-			this.branchPath = context.service(ResourceURIPathResolver.class)
-				.resolve(context, referenceResourceUri, resource);
+					.withSpecialResourceIdPart(referenceResourceUri.getSpecialIdPart())
+					.withPath(referenceResourceUri.getPath())
+					.withTimestampPart(referenceResourceUri.getTimestampPart());
 		}
 	}
 

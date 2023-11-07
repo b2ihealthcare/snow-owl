@@ -41,8 +41,6 @@ import com.google.common.base.Stopwatch;
  */
 public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks {
 
-	private static final int COMPARE_DEFAULT_LIMIT = 100_000;
-	
 	private final Index index;
 	private final BaseRevisionBranching branching;
 	private final RevisionIndexAdmin admin;
@@ -129,32 +127,32 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	
 	@Override
 	public RevisionCompare compare(final String branch) {
-		return compare(branch, COMPARE_DEFAULT_LIMIT, false);
+		return compare(branch, RevisionCompareOptions.DEFAULT);
 	}
 	
 	@Override
-	public RevisionCompare compare(final String branch, final int limit, boolean excludeComponentChanges) {
-		return compare(getBaseRef(branch), getBranchRef(branch), limit, excludeComponentChanges);
+	public RevisionCompare compare(final String branch, RevisionCompareOptions options) {
+		return compare(getBaseRef(branch), getBranchRef(branch), options);
 	}
 	
 	@Override
 	public RevisionCompare compare(final String baseBranch, final String compareBranch) {
-		return compare(baseBranch, compareBranch, COMPARE_DEFAULT_LIMIT, false);
+		return compare(baseBranch, compareBranch, RevisionCompareOptions.DEFAULT);
 	}
 	
 	@Override
-	public RevisionCompare compare(final String baseBranch, final String compareBranch, final int limit, boolean excludeComponentChanges) {
-		return compare(getBranchRef(baseBranch), getBranchRef(compareBranch), limit, excludeComponentChanges);
+	public RevisionCompare compare(final String baseBranch, final String compareBranch, RevisionCompareOptions options) {
+		return compare(getBranchRef(baseBranch), getBranchRef(compareBranch), options);
 	}
 	
 	@Override
-	public RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit, boolean excludeComponentChanges) {
+	public RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, RevisionCompareOptions options) {
 		return index.read(searcher -> {
 			
 			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);
 			final RevisionBranchRef compareRef = compare.difference(base);
 
-			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef, limit, excludeComponentChanges);
+			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef, options);
 			
 			if (base.branchId() != compare.branchId()) {
 				Stopwatch w = Stopwatch.createStarted();

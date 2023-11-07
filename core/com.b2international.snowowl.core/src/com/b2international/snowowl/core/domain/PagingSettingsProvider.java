@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.test.commons;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+package com.b2international.snowowl.core.domain;
 
 /**
  * @since 9.0.0
  */
-public class LoggingTestWatcher extends TestWatcher {
+public interface PagingSettingsProvider {
 
-	@Override
-	@OverridingMethodsMustInvokeSuper
-	protected void starting(Description description) {
-		System.out.println("===== Start of " + description + " =====");
-	}
+	/**
+	 * @return the recommended page/batch size for streaming queries
+	 */
+	public int getPageSize();
 	
-	@Override
-	@OverridingMethodsMustInvokeSuper
-	protected void finished(Description description) {
-		System.out.println("===== End of " + description + " =====");
-	}
-	
+	/**
+	 * @return the recommended (maximum) number of terms that should appear in a single "terms" query
+	 */
+	public int getTermPartitionSize();
+
+	/**
+	 * @return the recommended number of changes in a single commit (soft limit)
+	 */
+	public int getCommitLimit();
 }

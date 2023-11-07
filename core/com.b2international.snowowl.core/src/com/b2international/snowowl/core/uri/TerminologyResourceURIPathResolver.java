@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVers
 /**
  * Special URI resolver interface that can resolve single path segment special URI values to actual branch paths.
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 public interface TerminologyResourceURIPathResolver {
 

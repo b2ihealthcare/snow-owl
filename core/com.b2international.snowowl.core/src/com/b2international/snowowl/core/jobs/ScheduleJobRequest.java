@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
@@ -59,10 +60,12 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	private final boolean autoClean;
 	
 	private final boolean restart;
+	
+	private final boolean cached;
 
 	private final SerializableSchedulingRule schedulingRule;
 
-	ScheduleJobRequest(String key, String user, String description, Request<ServiceProvider, ?> request, SerializableSchedulingRule schedulingRule, boolean autoClean, boolean restart) {
+	ScheduleJobRequest(String key, String user, String description, Request<ServiceProvider, ?> request, SerializableSchedulingRule schedulingRule, boolean autoClean, boolean restart, boolean cached) {
 		this.key = key;
 		this.user = user;
 		this.request = request;
@@ -70,10 +73,15 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 		this.schedulingRule = schedulingRule;
 		this.autoClean = autoClean;
 		this.restart = restart;
+		this.cached = cached;
 	}
 	
 	@Override
 	public String execute(ServiceProvider context) {
+		
+		if (cached && autoClean) {
+			throw new BadRequestException("Automatically cleaned jobs cannot be cached.");
+		}
 		
 		final String id = IDs.sha1(key);
 		
@@ -89,15 +97,23 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			
 			if (existingJob.isPresent()) {
 				RemoteJobEntry job = existingJob.get();
-				
-				// if running, fail
-				if (!job.isDone()) {
-					throw new AlreadyExistsException(String.format("Job[%s]", request.getType()), key);
-				}
-				
-				// if restart not requested, fail
-				if (!restart) {
-					throw new ConflictException("An existing job is present with the same '%s' key. Request 'restart' if the previous job can be safely overriden.", key);
+
+				// if cached reuse
+				if (cached) {
+					// use an existing running job entry until it is not done or when restart not requested, which kinda forms an asynchronous cache for any request 
+					if (!job.isDeleted() && (!job.isDone() || !restart)) {
+						return id;
+					}
+				} else {
+					// if running, fail
+					if (!job.isDone()) {
+						throw new AlreadyExistsException(String.format("Job[%s]", request.getType()), key);
+					}
+					
+					// if restart not requested, fail
+					if (!restart) {
+						throw new ConflictException("An existing job is present with the same '%s' key. Request 'restart' if the previous job can be safely overriden.", key);
+					}
 				}
 				
 				// otherwise delete the existing job and create a new one using the same key
@@ -113,8 +129,7 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			if (schedulingRule != null) {
 				job.setRule(schedulingRule);
 			}
-			job.schedule();
-			return id;
+			return context.service(RemoteJobTracker.class).schedule(job);
 		} finally {
 			SCHEDULE_LOCK.release();
 		}

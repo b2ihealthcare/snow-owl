@@ -28,7 +28,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.authorization.AccessControl;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -90,9 +89,7 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 
 		final Set<String> expectedConcepts = newHashSet();
 		final Options expandOptions = expand().getOptions("referencedComponent");
-		final int pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
+		final int pageSize = context.getPageSize();
 		
 		// Evaluate the query expression to find out which concepts should be in the simple type reference set
 		final Stream<MemberChange> expectedConceptChanges = SnomedRequests.prepareSearchConcept()

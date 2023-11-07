@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.core.domain.PagingSettingsProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJob;
@@ -37,7 +39,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.5
  */
-public interface ServiceProvider {
+public interface ServiceProvider extends PagingSettingsProvider {
 
 	/**
 	 * @return the application-level configuration object.
@@ -139,7 +141,26 @@ public interface ServiceProvider {
 				.filter(parametersPredicate)
 				.isPresent();
 	}
+	
+	private PagingSettingsProvider pagingSettings() {
+		return service(RepositoryConfiguration.class);
+	}
 
+	@Override
+	default int getPageSize() {
+		return pagingSettings().getPageSize();
+	}
+
+	@Override
+	default int getTermPartitionSize() {
+		return pagingSettings().getTermPartitionSize();
+	}
+	
+	@Override
+	default int getCommitLimit() {
+		return pagingSettings().getCommitLimit();
+	}
+	
 	/**
 	 * Empty {@link ServiceProvider} implementation that throws {@link UnsupportedOperationException}s when trying to provide services. Useful when
 	 * testing {@link Request} implementations.
@@ -157,5 +178,4 @@ public interface ServiceProvider {
 			throw new UnsupportedOperationException("Empty service provider can't provide services. Requested: " + type);
 		}
 	};
-
 }

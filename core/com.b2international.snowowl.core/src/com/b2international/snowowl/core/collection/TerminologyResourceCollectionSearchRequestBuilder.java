@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.resource.BaseTerminologyResourceSearchRequestBuilder;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public final class TerminologyResourceCollectionSearchRequestBuilder
 		extends BaseTerminologyResourceSearchRequestBuilder<TerminologyResourceCollectionSearchRequestBuilder, TerminologyResourceCollections> {

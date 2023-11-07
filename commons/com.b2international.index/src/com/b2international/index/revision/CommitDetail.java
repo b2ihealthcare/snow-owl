@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Doc;
+import com.b2international.index.mapping.Field;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -169,8 +170,13 @@ public final class CommitDetail {
 	
 	private final Operation op;
 	private final String prop;
+	
+	@Field(index = false)
 	private final String from;
+	
+	@Field(index = false)
 	private final String to;
+	
 	private final String objectType;
 	private final List<String> objects;
 	private final String componentType;

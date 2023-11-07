@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * A request builder that wraps existing {@link Request} instances to run them as jobs.
@@ -37,6 +39,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	private SerializableSchedulingRule schedulingRule;
 	private boolean autoClean = false;
 	private boolean restart = false;
+	private boolean cached = false;
 	
 	ScheduleJobRequestBuilder() {
 	}
@@ -116,6 +119,17 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	}
 	
 	/**
+	 * Reuses existing job results if present, otherwise schedules and run the request as usual.
+	 * 
+	 * @param cached
+	 * @return
+	 */
+	public ScheduleJobRequestBuilder setCached(boolean cached) {
+		this.cached = cached;
+		return getSelf();
+	}
+	
+	/**
 	 * Sets the scheduling rule for the remote job, controlling which instances can be executed side-by-side.
 	 * @param schedulingRule - the scheduling rule to apply for this job
 	 * @return this builder
@@ -127,7 +141,21 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
-		return new ScheduleJobRequest(key, user, description, request, schedulingRule, autoClean, restart);
+		return new ScheduleJobRequest(key, user, description, request, schedulingRule, autoClean, restart, cached);
+	}
+	
+	/**
+	 * Schedules the job described by this builder and then polls using the given interval of milliseconds until it is not complete.
+	 * 
+	 * @param context
+	 * @param pollIntervalMillis
+	 * @return
+	 */
+	public Promise<RemoteJobEntry> waitFor(ServiceProvider context, long pollIntervalMillis) {
+		return buildAsync()
+				.executeWithContext(context)
+				.then(jobId -> JobRequests.prepareGet(jobId).buildAsync().withContext(context))
+				.thenWith(req -> req.retryUntil(context.service(IEventBus.class), pollIntervalMillis, RemoteJobEntry::isDone));
 	}
 	
 }

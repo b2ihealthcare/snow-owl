@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.core;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeSet;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
@@ -31,6 +32,8 @@ import com.b2international.snowowl.core.version.Versions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 8.0
@@ -68,6 +71,7 @@ public abstract class TerminologyResource extends Resource {
 		// Expand parameters for expand option "commits" (both inclusive) 
 		public static final String TIMESTAMP_FROM_OPTION_KEY = "timestampFrom";
 		public static final String TIMESTAMP_TO_OPTION_KEY = "timestampTo";
+		public static final String RELATIVE_BRANCH_OPTION_KEY = "relativeBranch";
 
 		/**
 		 * Expand option to expand dependencies of a resource.
@@ -165,6 +169,45 @@ public abstract class TerminologyResource extends Resource {
 
 	public void setDependencies(List<Dependency> dependencies) {
 		this.dependencies = dependencies;
+	}
+	
+	/**
+	 * Overrides the dependency list of this resource based on the given query parameter values, where the key is the scope of the dependency to replace, while the value is the replacement.
+	 * 
+	 * @param params
+	 */
+	public void overrideDependenciesViaQueryParameters(final Multimap<String, String> params) {
+		final List<Dependency> originalDependencies = Collections3.toImmutableList(getDependencies());
+		final List<Dependency> replacementDependencies = newArrayList();
+		final Multimap<String, String> unusedParams = HashMultimap.create(params);
+		
+		for (final Dependency dependency : originalDependencies) {
+			final String scope = dependency.getScope();
+			final ResourceURIWithQuery dependencyUri = dependency.getUri();
+			final ResourceURI dependencyUriWithoutQuery = dependencyUri.getResourceUri();
+			final Collection<String> replacementCandidates = params.get(scope);
+
+			for (final String candidate : replacementCandidates) {
+				final ResourceURIWithQuery candidateUri = new ResourceURIWithQuery(candidate);
+				final ResourceURI candidateUriWithoutQuery = candidateUri.getResourceUri();
+				if (candidateUriWithoutQuery.getResourceId().equals(dependencyUriWithoutQuery.getResourceId())) {
+					// Replace the dependency's URI-with-query for the duration of this request
+					replacementDependencies.add(Dependency.of(candidateUri, scope));
+					unusedParams.remove(scope, candidate);
+					break;
+				}
+			}
+
+			// Use the original instead
+			replacementDependencies.add(dependency);
+		}
+		
+		// Append additional dependencies that were not used as replacements
+		for (final Map.Entry<String, String> unusedEntry : unusedParams.entries()) {
+			replacementDependencies.add(Dependency.of(new ResourceURIWithQuery(unusedEntry.getValue()), unusedEntry.getKey()));
+		}
+		
+		setDependencies(replacementDependencies);
 	}
 
 	public Versions getVersions() {

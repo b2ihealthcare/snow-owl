@@ -59,6 +59,7 @@ public class VersionConverter extends BaseResourceConverter<VersionDocument, Ver
 		version.setCreatedAt(doc.getCreatedAt());
 		version.setAuthor(doc.getAuthor());
 		version.setUrl(doc.getUrl());
+		version.setToolingId(doc.getToolingId());
 		return version;
 	}
 

@@ -36,12 +36,15 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.request.resource.BaseResourceSearchRequest.ResourceHiddenFilter;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.*;
 
 /**
- * @since 8.12
+ * @since 9.0.0
  */
 public abstract class BaseMetadataResourceConverter<R extends Resource, CR extends PageableCollectionResource<R>> extends BaseResourceConverter<ResourceDocument, R, CR> {
 
@@ -66,6 +69,36 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		return (R) converters.toResource(doc);
 	}
 	
+	@Override
+	protected void alterResults(List<R> results) {
+		alterDependenciesBasedOnBranchMetadata(results);
+	}
+	
+	private void alterDependenciesBasedOnBranchMetadata(List<R> results) {
+		if (results.size() == 1) {
+			R resource = Iterables.getOnlyElement(results);
+			if (resource instanceof TerminologyResource tres) {
+				// can alter the dependencies array only during get when the currently fetched ResourceURI is accessed, not the same as the fetched resourceId
+				ResourceURI resourceUri = context().optionalService(ResourceURI.class).orElse(null);
+				if (resourceUri != null && resourceUri.hasSpecialResourceIdPart() && !resource.getId().equals(resourceUri.getResourceId())) {
+					final String branchPathName = resourceUri.hasSpecialResourceIdPart() ? resourceUri.getSpecialIdPart() : resourceUri.getPath();
+					Branch branchToOverrideResourceMetadataWith = RepositoryRequests.branching().prepareSearch()
+							.one()
+							.filterById(Branch.get(tres.getBranchPath(), branchPathName))
+							.build(tres.getToolingId())
+							.execute(context())
+							.first()
+							.orElse(null);
+					if (branchToOverrideResourceMetadataWith != null && branchToOverrideResourceMetadataWith.metadata() != null) {
+						List<Map<String, Object>> branchScopedDependenciesJson = (List<Map<String, Object>>) branchToOverrideResourceMetadataWith.metadata().get(ResourceDocument.BranchMetadata.DEPENDENCIES);
+						List<Dependency> branchScopedDependencies = context().service(ObjectMapper.class).convertValue(branchScopedDependenciesJson, new TypeReference<List<Dependency>>() {});
+						tres.setDependencies(Dependency.override(tres.getDependencies(), branchScopedDependencies));
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void expand(List<R> results) {
@@ -109,6 +142,7 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 		
 		// fetch all referenced resources by their ID for now
 		ResourceRequests.prepareSearch()
+			.filterByHidden(ResourceHiddenFilter.ALL)
 			.filterByIds(dependenciesToExpand.keySet())
 			.setLimit(dependenciesToExpand.keySet().size())
 			.setExpand(expandOptions.getOptions("expand"))
@@ -215,8 +249,11 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 				.filter(TerminologyResource.class::isInstance)
 				.map(TerminologyResource.class::cast)
 				.map(res -> {
+					final String branchFilter = expandOptions.containsKey(TerminologyResource.Expand.RELATIVE_BRANCH_OPTION_KEY)
+								? res.getRelativeBranchPath(expandOptions.getString(TerminologyResource.Expand.RELATIVE_BRANCH_OPTION_KEY))
+								: res.getBranchPath();
 					return RepositoryRequests.commitInfos().prepareSearchCommitInfo()
-						.filterByBranch(res.getBranchPath())
+						.filterByBranch(branchFilter)
 						.filterByTimestamp(
 							expandOptions.get(TerminologyResource.Expand.TIMESTAMP_FROM_OPTION_KEY, Long.class), 
 							expandOptions.get(TerminologyResource.Expand.TIMESTAMP_TO_OPTION_KEY, Long.class))
@@ -225,7 +262,8 @@ public abstract class BaseMetadataResourceConverter<R extends Resource, CR exten
 						.sortBy(expandOptions.containsKey(SORT_OPTION_KEY) ? expandOptions.getString(SORT_OPTION_KEY) : null)
 						.setLocales(locales())
 						.build(res.getToolingId())
-						.executeWithContext(context())
+						// we have already verified access here for the given resource, ensure we are skipping any security checks and performing only the commit info search
+						.executeAsAdmin(context())
 						.then(commits -> {
 							res.setCommits(commits);
 							return commits;

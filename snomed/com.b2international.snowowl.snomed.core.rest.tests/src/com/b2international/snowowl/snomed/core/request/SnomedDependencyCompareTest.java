@@ -52,7 +52,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class SnomedDependencyCompareTest {
 

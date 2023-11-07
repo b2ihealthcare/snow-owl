@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.resource.BaseMetadataResourceConverter;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 final class TerminologyResourceCollectionConverter extends BaseMetadataResourceConverter<TerminologyResourceCollection, TerminologyResourceCollections> {
 

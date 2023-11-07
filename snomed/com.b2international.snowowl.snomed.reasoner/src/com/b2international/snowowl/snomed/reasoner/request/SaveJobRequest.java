@@ -40,7 +40,6 @@ import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -105,8 +104,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 	
 	private boolean handleConcreteDomains;
 
-	private int pageSize;
-	
 	SaveJobRequest() {}
 	
 	void setClassificationId(final String classificationId) {
@@ -150,10 +147,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUserId();
-		
-		pageSize = context.service(RepositoryConfiguration.class)
-			.getIndexConfiguration()
-			.getPageSize();
 		
 		try (Locks<BranchContext> locks = Locks.forContext(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext)
 				.by(user)
@@ -206,7 +199,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		applyChanges(subMonitor, context, bulkRequestBuilder);
 	
 		long resultTimeStamp = Commit.NO_COMMIT_TIMESTAMP;
-		for (List<Request<TransactionContext, ?>> partition : Iterables.partition(bulkRequestBuilder.build().getRequests(), getCommitLimit(context))) {
+		for (List<Request<TransactionContext, ?>> partition : Iterables.partition(bulkRequestBuilder.build().getRequests(), context.getCommitLimit())) {
 			final BulkRequestBuilder<TransactionContext> batchRequest = BulkRequest.create();
 			partition.forEach(request -> batchRequest.add(request));
 			
@@ -230,10 +223,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		}		
 	}
 	
-	private final int getCommitLimit(BranchContext context) {
-		return context.service(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
-	}
-
 	private void applyChanges(final SubMonitor subMonitor, 
 			final BranchContext context,
 			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
@@ -257,7 +246,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final Set<String> conceptIdsToSkip) {
 
 		ClassificationRequests.prepareSearchRelationshipChange()
-				.setLimit(pageSize)
+				.setLimit(context.getPageSize())
 				.setExpand("relationship(inferredOnly:true)")
 				.filterByClassificationId(classificationId)
 				.stream(context)
@@ -339,7 +328,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			final Set<String> conceptIdsToSkip) {
 
 		ClassificationRequests.prepareSearchConcreteDomainChange()
-				.setLimit(pageSize)
+				.setLimit(context.getPageSize())
 				.setExpand("concreteDomainMember(inferredOnly:true)")
 				.filterByClassificationId(classificationId)
 				.stream(context)
@@ -433,7 +422,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
 		
 		ClassificationRequests.prepareSearchEquivalentConceptSet()
-				.setLimit(pageSize)
+				.setLimit(context.getPageSize())
 				.setExpand(expand)
 				.filterByClassificationId(classificationId)
 				.stream(context)
