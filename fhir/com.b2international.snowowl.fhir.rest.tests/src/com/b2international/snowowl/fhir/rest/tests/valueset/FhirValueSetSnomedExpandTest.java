@@ -16,8 +16,11 @@
 package com.b2international.snowowl.fhir.rest.tests.valueset;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasSize;
 
 import org.junit.Test;
 
@@ -117,5 +120,28 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("expansion.total", equalTo(0))
 			.body("expansion.contains.code", nullValue());
 	}
-	
+
+	@Test
+	public void expandSnomedCodeSystemURL_AfterAndNext() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008?fhir_vs=ecl/<!138875005")
+			.queryParam("count", 5)
+			.when().get("/ValueSet/$expand")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("ValueSet"))
+			.body("id", notNullValue())
+			.body("expansion.total", equalTo(16))
+			.body("expansion.contains", hasSize(5))
+			.body("expansion.contains[0].code", equalTo("105590001"))
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
+			.body("expansion.contains[0].display", equalTo("Substance (substance)"))
+			.body("expansion.after", equalTo("AoIpMjU0MjkxMDAwKTI1NDI5MTAwMA=="))
+			.body("expansion.next", endsWith(FHIR_ROOT_CONTEXT 
+				+ "/ValueSet/$expand"
+				+ "?url=http://snomed.info/sct/900000000000207008?fhir_vs=ecl/<!138875005"
+				+ "&displayLanguage=en-US;q=0.8,en-GB;q=0.6,en;q=0.4"
+				+ "&count=5"
+				+ "&after=AoIpMjU0MjkxMDAwKTI1NDI5MTAwMA=="));
+	}
 }

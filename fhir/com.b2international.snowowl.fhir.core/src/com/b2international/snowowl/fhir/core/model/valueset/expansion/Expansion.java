@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**
@@ -71,7 +73,19 @@ public class Expansion {
 	@JsonProperty
 	private final String after;
 	
-	Expansion(Uri identifier, Date timestamp, Integer total, Integer offset, List<Parameter> parameters, List<Contains> contains, String after) {
+	@JsonProperty
+	private final Uri next;
+	
+	Expansion(
+		Uri identifier, 
+		Date timestamp, 
+		Integer total, 
+		Integer offset, 
+		List<Parameter> parameters, 
+		List<Contains> contains, 
+		String after,
+		Uri next
+	) {
 		this.identifier = identifier;
 		this.timestamp = timestamp;
 		this.total = total;
@@ -79,6 +93,7 @@ public class Expansion {
 		this.parameters = parameters;
 		this.contains = contains;
 		this.after = after;
+		this.next = next;
 	}
 	
 	public Uri getIdentifier() {
@@ -109,6 +124,22 @@ public class Expansion {
 		return after;
 	}
 	
+	public Expansion withNext(final Function<String, Uri> afterToNextFn) {
+		if (StringUtils.isEmpty(after)) {
+			return this;
+		}
+		
+		return new Expansion(
+			identifier, 
+			timestamp, 
+			total, 
+			offset, 
+			parameters, 
+			contains, 
+			after, 
+			afterToNextFn.apply(after));
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -123,6 +154,7 @@ public class Expansion {
 		private List<Parameter> parameters;
 		private List<Contains> contains;
 		private String after;
+		private Uri next;
 		
 		public Builder identifier(final String identifier) {
 			this.identifier = new Uri(identifier);
@@ -184,9 +216,14 @@ public class Expansion {
 			return this;
 		}
 		
+		public Builder next(Uri next) {
+			this.next = next;
+			return this;
+		}
+		
 		@Override
 		protected Expansion doBuild() {
-			return new Expansion(identifier, timestamp, total, offset, parameters, contains, after);
+			return new Expansion(identifier, timestamp, total, offset, parameters, contains, after, next);
 		}
 	}
 

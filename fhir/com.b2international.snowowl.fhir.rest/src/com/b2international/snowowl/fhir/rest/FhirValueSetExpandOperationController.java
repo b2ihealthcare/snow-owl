@@ -16,6 +16,8 @@
 package com.b2international.snowowl.fhir.rest;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -23,8 +25,10 @@ import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,51 +57,69 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 	})
 	@GetMapping(value="/{id:**}/$expand")
 	public Promise<ValueSet> expand(
-			@Parameter(description = "The logical id of the value set to expand") 
-			@PathVariable(value = "id", required = true) 
-			final String id,
 			
-			@Parameter(description = "Textual filter value to use") 
-			@RequestParam(value = "filter", required = false)
-			final String filter,
-			
-			@Parameter(description = "Return only active codes or not (default: return both)") 
-			@RequestParam(value = "activeOnly", required = false)
-			final Boolean activeOnly,
-			
-			@Parameter(description = "Specify the display language for the returned codes") 
-			@RequestParam(value = "displayLanguage", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false)
-			final String displayLanguage,
-			
-			@Parameter(description = "Controls whether concept designations are to be included or excluded in value set expansions") 
-			@RequestParam(value = "includeDesignations", required = false)
-			final Boolean includeDesignations,
-			
-			@Parameter(description = "Include historical association components when generating the Value Set expansion response") 
-			@RequestParam(value = "withHistorySupplements", required = false)
-			final Boolean withHistorySupplements,
-			
-			@Parameter(description = "The number of codes to return in a page") 
-			@RequestParam(value = "count", required = false, defaultValue = "10")
-			final Integer count,
-			
-			@Parameter(description = "Specify the search after value to return the next page") 
-			@RequestParam(value = "after", required = false)
-			final String after) {
-		return FhirRequests.valueSets().prepareExpand()
-				.setRequest(ExpandValueSetRequest.builder()
-						.url(id)
-						.filter(filter)
-						.after(after)
-						.activeOnly(activeOnly)
-						.count(count)
-						.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
-						.withHistorySupplements(withHistorySupplements)
-						.build())
-				.buildAsync()
-				.execute(getBus());
+		@Parameter(description = "The logical id of the value set to expand") 
+		@PathVariable(value = "id", required = true) 
+		final String id,
+		
+		@Parameter(description = "Textual filter value to use") 
+		@RequestParam(value = "filter", required = false)
+		final String filter,
+		
+		@Parameter(description = "Return only active codes or not (default: return both)") 
+		@RequestParam(value = "activeOnly", required = false)
+		final Boolean activeOnly,
+		
+		@Parameter(description = "Specify the display language for the returned codes") 
+		@RequestParam(value = "displayLanguage", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false)
+		final String displayLanguage,
+		
+		@Parameter(description = "Controls whether concept designations are to be included or excluded in value set expansions") 
+		@RequestParam(value = "includeDesignations", required = false)
+		final Boolean includeDesignations,
+		
+		@Parameter(description = "Include historical association components when generating the Value Set expansion response") 
+		@RequestParam(value = "withHistorySupplements", required = false)
+		final Boolean withHistorySupplements,
+		
+		@Parameter(description = "The number of codes to return in a page") 
+		@RequestParam(value = "count", required = false, defaultValue = "10")
+		final Integer count,
+		
+		@Parameter(description = "Specify the search after value to return the next page") 
+		@RequestParam(value = "after", required = false)
+		final String after
+		
+	) {
+		
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expand", 
+			id, 
+			filter, 
+			activeOnly, 
+			displayLanguage, 
+			includeDesignations, 
+			withHistorySupplements, 
+			count, 
+			after);
+		
+		final ExpandValueSetRequest expandRequest = ExpandValueSetRequest.builder()
+			.url(id)
+			.filter(filter)
+			.after(after)
+			.activeOnly(activeOnly)
+			.count(count)
+			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
+			.withHistorySupplements(withHistorySupplements)
+			.build();
+		
+		return FhirRequests.valueSets()
+			.prepareExpand()
+			.setRequest(expandRequest)
+			.buildAsync()
+			.execute(getBus())
+			.then(vs -> convertAfterToNext(uriComponentsBuilder, vs));
 	}
-	
+
 	@Operation(
 		summary="Expand a value set",
 		description="Expand a value set specified by its url."
@@ -109,50 +131,67 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 	})
 	@GetMapping(value="/$expand")
 	public Promise<ValueSet> expandByURL(
-			@Parameter(description = "Canonical URL of the value set") 
-			@RequestParam(value = "url", required = true) 
-			final String url,
+			
+		@Parameter(description = "Canonical URL of the value set") 
+		@RequestParam(value = "url", required = true) 
+		final String url,
 
-			@Parameter(description = "Textual filter value to use") 
-			@RequestParam(value = "filter", required = false)
-			final String filter,
-			
-			@Parameter(description = "Return only active codes or not (default: return both)") 
-			@RequestParam(value = "activeOnly", required = false)
-			final Boolean activeOnly,
-			
-			@Parameter(description = "Specify the display language for the returned codes") 
-			@RequestParam(value = "displayLanguage", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false)
-			final String displayLanguage,
-			
-			@Parameter(description = "Controls whether concept designations are to be included or excluded in value set expansions") 
-			@RequestParam(value = "includeDesignations", required = false)
-			final Boolean includeDesignations,
-			
-			@Parameter(description = "Include historical association components when generating the Value Set expansion response") 
-			@RequestParam(value = "withHistorySupplements", required = false)
-			final Boolean withHistorySupplements,
-			
-			@Parameter(description = "The number of codes to return in a page") 
-			@RequestParam(value = "count", required = false, defaultValue = "10")
-			final Integer count,
-			
-			@Parameter(description = "Specify the search after value to return the next page") 
-			@RequestParam(value = "after", required = false)
-			final String after) {
+		@Parameter(description = "Textual filter value to use") 
+		@RequestParam(value = "filter", required = false)
+		final String filter,
+		
+		@Parameter(description = "Return only active codes or not (default: return both)") 
+		@RequestParam(value = "activeOnly", required = false)
+		final Boolean activeOnly,
+		
+		@Parameter(description = "Specify the display language for the returned codes") 
+		@RequestParam(value = "displayLanguage", defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false)
+		final String displayLanguage,
+		
+		@Parameter(description = "Controls whether concept designations are to be included or excluded in value set expansions") 
+		@RequestParam(value = "includeDesignations", required = false)
+		final Boolean includeDesignations,
+		
+		@Parameter(description = "Include historical association components when generating the Value Set expansion response") 
+		@RequestParam(value = "withHistorySupplements", required = false)
+		final Boolean withHistorySupplements,
+		
+		@Parameter(description = "The number of codes to return in a page") 
+		@RequestParam(value = "count", required = false, defaultValue = "10")
+		final Integer count,
+		
+		@Parameter(description = "Specify the search after value to return the next page") 
+		@RequestParam(value = "after", required = false)
+		final String after
+		
+	) {
+		
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandByURL", 
+			url, 
+			filter, 
+			activeOnly, 
+			displayLanguage, 
+			includeDesignations, 
+			withHistorySupplements, 
+			count, 
+			after);
+
+		final ExpandValueSetRequest expandRequest = ExpandValueSetRequest.builder()
+			.url(url)
+			.filter(filter)
+			.after(after)
+			.activeOnly(activeOnly)
+			.count(count)
+			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
+			.includeDesignations(includeDesignations)
+			.withHistorySupplements(withHistorySupplements)
+			.build();
+		
 		return FhirRequests.valueSets().prepareExpand()
-				.setRequest(ExpandValueSetRequest.builder()
-						.url(url)
-						.filter(filter)
-						.after(after)
-						.activeOnly(activeOnly)
-						.count(count)
-						.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
-						.includeDesignations(includeDesignations)
-						.withHistorySupplements(withHistorySupplements)
-						.build())
-				.buildAsync()
-				.execute(getBus());
+			.setRequest(expandRequest)
+			.buildAsync()
+			.execute(getBus())
+			.then(vs -> convertAfterToNext(uriComponentsBuilder, vs));
 	}
 	
 	@Operation(
@@ -166,9 +205,12 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 	})
 	@PostMapping(value="/$expand", consumes = AbstractFhirController.APPLICATION_FHIR_JSON)
 	public Promise<ValueSet> expandByPost(
-			@Parameter(description = "The expansion request parameters")
-			@RequestBody 
-			Parameters.Fhir body) {
+			
+		@Parameter(description = "The expansion request parameters")
+		@RequestBody 
+		Parameters.Fhir body
+		
+	) {
 		
 		final ExpandValueSetRequest request = toRequest(body, ExpandValueSetRequest.class);
 		
@@ -181,17 +223,43 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		}
 		
 		if (request.getUrl() != null && 
-				request.getValueSet() != null && 
-				request.getUrl().getUriValue() != null &&
-				request.getValueSet().getUrl().getUriValue() != null &&
-				!request.getUrl().getUriValue().equals(request.getValueSet().getUrl().getUriValue())) {
+			request.getValueSet() != null && 
+			request.getUrl().getUriValue() != null &&
+			request.getValueSet().getUrl().getUriValue() != null &&
+			!request.getUrl().getUriValue().equals(request.getValueSet().getUrl().getUriValue())) {
+			
 			throw new BadRequestException("URL and ValueSet.URL parameters are different.", "ExpandValueSetRequest");
 		}
+		
+		// The "next" parameter will re-use request parameters in query parameter form
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandByURL", 
+			request.getUrl().getUriValue(), 
+			request.getFilter(), 
+			request.getActiveOnly(), 
+			request.getDisplayLanguage().getCodeValue(), 
+			request.getIncludeDesignations(), 
+			request.getWithHistorySupplements(), 
+			request.getCount(), 
+			request.getAfter());
 
 		return FhirRequests.valueSets().prepareExpand()
-				.setRequest(request)
-				.buildAsync()
-				.execute(getBus());
+			.setRequest(request)
+			.buildAsync()
+			.execute(getBus())
+			.then(vs -> convertAfterToNext(uriComponentsBuilder, vs));
+	}
+
+	private ValueSet convertAfterToNext(final UriComponentsBuilder uriComponentsBuilder, ValueSet vs) {
+		final Expansion expansion = vs.getExpansion();
+		final Expansion updatedExpansion = expansion.withNext(searchAfter -> {
+			final String next = uriComponentsBuilder.replaceQueryParam("after", searchAfter)
+				.build()
+				.toString();
+			
+			return new Uri(next);
+		});
+		
+		return vs.withExpansion(updatedExpansion);
 	}
 	
 }
