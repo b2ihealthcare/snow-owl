@@ -224,11 +224,11 @@ public class ValueSetConverter_50 extends AbstractConverter_50 implements ValueS
 		builder.identifier(fromInternal(expansion.getIdentifier()));
 		
 		/*
-		 * XXX: "after" is copied to "next" as a URI; only the REST controller layer is
-		 * able to add the full URL (including host, port and base path) and use the
-		 * value as a query parameter instead. (new in R5)
+		 * XXX: only the REST controller layer is able to add the full URL (including
+		 * host, port and base path) and use the value as a query parameter instead.
+		 * (new in R5)
 		 */
-		builder.next(fromInternalToUri(expansion.getAfter()));
+		builder.next(fromInternal(expansion.getNext()));
 		
 		builder.timestamp(fromInternal(expansion.getTimestamp()));
 		builder.total(expansion.getTotal());
