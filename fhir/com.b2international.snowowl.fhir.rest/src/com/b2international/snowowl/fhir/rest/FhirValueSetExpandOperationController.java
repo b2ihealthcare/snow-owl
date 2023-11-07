@@ -115,7 +115,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		
 	) {
 		
-		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expand", 
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandType", 
 			url, 
 			filter, 
 			activeOnly, 
@@ -201,7 +201,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		}
 		
 		// The "next" parameter will re-use request parameters in query parameter form
-		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandByURL", 
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandType", 
 			request.getUrl().getUriValue(), 
 			request.getFilter(), 
 			request.getActiveOnly(), 
@@ -270,8 +270,8 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		final String after
 		
 	) {
-		return expandType(
-			// XXX: We use the resource IDs as the URL here 
+		
+		final UriComponentsBuilder uriComponentsBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandInstance", 
 			id, 
 			filter, 
 			activeOnly, 
@@ -280,6 +280,19 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			withHistorySupplements, 
 			count, 
 			after);
+		
+		final ExpandValueSetRequest expandRequest = ExpandValueSetRequest.builder()
+			// XXX: We use the resource IDs as the URL here 
+			.url(id)
+			.filter(filter)
+			.after(after)
+			.activeOnly(activeOnly)
+			.count(count)
+			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
+			.withHistorySupplements(withHistorySupplements)
+			.build();
+		
+		return expand(expandRequest, uriComponentsBuilder);
 	}
 
 	private Promise<ResponseEntity<byte[]>> expand(ExpandValueSetRequest expandRequest, final UriComponentsBuilder uriComponentsBuilder) {
