@@ -28,7 +28,6 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.linuxforhealth.fhir.model.config.FHIRModelConfig;
-import org.linuxforhealth.fhir.model.lang.util.LanguageRegistryUtil;
 import org.linuxforhealth.fhir.model.r5.type.Code;
 import org.linuxforhealth.fhir.model.r5.type.CodeableConcept;
 import org.linuxforhealth.fhir.model.r5.type.Coding;
@@ -43,6 +42,7 @@ import org.linuxforhealth.fhir.model.ucum.util.UCUMUtil;
  * Modifications:
  * 
  * - Changed "checkId" to allow forward slash characters and underscores
+ * - Removed reference to LanguageRegistryUtil to allow all language tags
  */
 
 /**
@@ -610,10 +610,12 @@ public final class ValidationSupport {
             if (ALL_LANG_VALUE_SET_URL.contentEquals(valueSet)) {
                 if (system != null && !BCP_47_URN.equals(system)) {
                     throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid system for value set '%s'", elementName, system, valueSet));
-                } else if (!LanguageRegistryUtil.isValidLanguageTag(code)) {
-                	// XXX: Allow non-conformant language tags
-                    // throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid code for value set '%s'", elementName, code, valueSet));
                 }
+                
+                // XXX: Allow non-conformant language tags
+                // if (!LanguageRegistryUtil.isValidLanguageTag(code)) {
+                //     throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid code for value set '%s'", elementName, code, valueSet));
+                // }
             } else if (UCUM_UNITS_VALUE_SET_URL.equals(valueSet)) {
                 if (system != null && !UCUM_CODE_SYSTEM_URL.equals(system)) {
                     throw new IllegalStateException(String.format("Element '%s': '%s' is not a valid system for value set '%s'", elementName, system, valueSet));
