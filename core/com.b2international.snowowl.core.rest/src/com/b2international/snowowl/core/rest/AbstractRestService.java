@@ -19,7 +19,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,15 +26,10 @@ import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.Collections3;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.domain.SortSupport;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.inject.Provider;
 
 /**
@@ -52,7 +46,7 @@ public abstract class AbstractRestService {
 	 * The media type produced and accepted by Snow Owl's RESTful API for JSON content.
 	 */
 	public static final String JSON_MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
-	
+
 	/**
 	 * The media type produced and accepted by Snow Owl's RESTful API for text content.
 	 */
@@ -72,79 +66,65 @@ public abstract class AbstractRestService {
 	 * The media type produced and accepted by Snow Owl's RESTful API for multipart form data (file uploads).
 	 */
 	public static final String MULTIPART_MEDIA_TYPE = MediaType.MULTIPART_FORM_DATA_VALUE;
-	
+
 	/**
 	 * The media type produced and accepted by Snow Owl's syndication feeds
 	 */
 	public static final String XML_MEDIA_TYPE = MediaType.APPLICATION_XML_VALUE + ";charset=UTF-8";
-	
+
 	/**
 	 * The media type produced and accepted by Snow Owl's syndication feeds
 	 */
 	public static final String ATOM_MEDIA_TYPE = MediaType.APPLICATION_ATOM_XML_VALUE + ";charset=UTF-8";
-	
+
 	/**
-	 * Header to use when impersonating a commit request. 
+	 * Header to use when impersonating a commit request.
 	 */
 	public static final String X_AUTHOR = "X-Author";
-	
+
 	@Autowired
 	private Provider<IEventBus> bus;
 
 	private final Pattern sortKeyPattern;
-	
+
 	public AbstractRestService() {
 		this(Collections.emptySet());
 	}
-	
+
 	public AbstractRestService(Set<String> sortFields) {
-		final Set<String> allowedSortFields = ImmutableSet.<String>builder()
-			.addAll(Collections3.toImmutableSet(sortFields))
-			.add(SearchIndexResourceRequest.SCORE.getField())
-			.build();
-		this.sortKeyPattern = Pattern.compile("^(" + String.join("|", allowedSortFields) + ")(?:[:](asc|desc))?$");
+		this.sortKeyPattern = SortSupport.createSortKeyPattern(sortFields);
 	}
-	
-	protected final IEventBus getBus() {
-		return bus.get();
-	}
-	
+
 	/**
 	 * Extract {@link SearchResourceRequest.Sort}s from the given list of sortKeys. The returned list maintains the same order as the input sortKey
 	 * list.
 	 * 
 	 * @param sortKeys
 	 * @return
-	 */ 
+	 * @see SortSupport#extractSortFields(List, Pattern)
+	 */
 	protected final List<Sort> extractSortFields(List<String> sortKeys) {
-		if (CompareUtils.isEmpty(sortKeys)) {
-			return Collections.emptyList();
-		}
-		final List<Sort> result = Lists.newArrayList();
-		for (String sortKey : sortKeys) {
-			Matcher matcher = sortKeyPattern.matcher(sortKey);
-			if (matcher.matches()) {
-				String field = matcher.group(1);
-				String order = matcher.group(2);
-				result.add(SearchResourceRequest.SortField.of(field, !"desc".equals(order)));
-			} else {
-				throw new BadRequestException("Sort key '%s' is not supported, or incorrect sort field pattern.", sortKey);				
-			}
-		}
-		return result;
+		return SortSupport.extractSortFields(sortKeys, this.sortKeyPattern);
+	}
+
+	protected final IEventBus getBus() {
+		return bus.get();
 	}
 
 	/**
 	 * Creates a Location header URI builder from this controller class.
+	 * 
 	 * @return an {@link UriComponentsBuilder} instance using this class as base
 	 */
 	protected final UriComponentsBuilder createURIBuilder() {
 		return MvcUriComponentsBuilder.fromController(getClass());
 	}
-	
+
 	/**
 	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
-	 * @param resourceId - the identifier of the resource
+	 * 
+	 * @param resourceId
+	 *            - the identifier of the resource
 	 * @return a URI to be added as Location header value
 	 */
 	protected final URI getResourceLocationURI(String resourceId) {
@@ -153,20 +133,25 @@ public abstract class AbstractRestService {
 
 	/**
 	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
-	 * @param branch - the branch where the resource has been created
-	 * @param resourceId - the identifier of the resource
+	 * 
+	 * @param branch
+	 *            - the branch where the resource has been created
+	 * @param resourceId
+	 *            - the identifier of the resource
 	 * @return a URI to be added as Location header value
 	 */
 	protected final URI getResourceLocationURI(String branch, String resourceId) {
 		return createURIBuilder().pathSegment(resourceId).build(branch);
 	}
-	
+
 	/**
 	 * Converts the given array to a {@link List} so it can be passed to methods that require {@link Iterable} instances.
 	 * 
 	 * @param <T>
-	 * @param array - the array to convert
-	 * @return a {@link List} representing the same elements as the input array, or <code>null</code> if the input array argument was <code>null</code>.
+	 * @param array
+	 *            - the array to convert
+	 * @return a {@link List} representing the same elements as the input array, or <code>null</code> if the input array argument was
+	 *         <code>null</code>.
 	 */
 	protected <T> List<T> asList(T[] array) {
 		return array == null ? null : List.of(array);
