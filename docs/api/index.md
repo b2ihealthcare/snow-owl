@@ -8,11 +8,11 @@ Custom media types are used in the API to let consumers choose the format of the
 
 The most basic media types the API supports are:
 
-1.  application/json;charset=UTF-8 (default)
-2.  text/plain;charset=UTF-8
-3.  text/csv;charset=UTF-8
-4.  application/octet-stream (for file downloads)
-5.  multipart/form-data (for file uploads)
+1.  application/json (default)
+3.  text/plain;charset=UTF-8
+4.  text/csv;charset=UTF-8
+5.  application/octet-stream (for file downloads)
+6.  multipart/form-data (for file uploads)
 
 The generic JSON media type (application/json) is available as well, but we encourage you to explicitly set the accepted content type before sending your request.
 
