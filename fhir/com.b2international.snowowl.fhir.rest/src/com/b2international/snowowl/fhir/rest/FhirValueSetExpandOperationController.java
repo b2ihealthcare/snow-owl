@@ -133,7 +133,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		final String _format,
 		
 		@Parameter(description = "Controls pretty-printing of response")
-		@RequestParam(value = "_pretty", defaultValue = "false")
+		@RequestParam(value = "_pretty", required = false)
 		final Boolean _pretty
 		
 	) {
@@ -228,7 +228,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		final String _format,
 		
 		@Parameter(description = "Controls pretty-printing of response")
-		@RequestParam(value = "_pretty", defaultValue = "false")
+		@RequestParam(value = "_pretty", required = false)
 		final Boolean _pretty
 			
 	) {
@@ -351,7 +351,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		final String _format,
 		
 		@Parameter(description = "Controls pretty-printing of response")
-		@RequestParam(value = "_pretty", defaultValue = "false")
+		@RequestParam(value = "_pretty", required = false)
 		final Boolean _pretty
 		
 	) {

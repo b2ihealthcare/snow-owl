@@ -246,7 +246,8 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		final String _format,
 		final Boolean _pretty
 	) {
-		final FHIRGenerator fhirGenerator = FHIRGenerator.generator(getFormat(accept, _format), _pretty);
+		final boolean prettyPrinting = (_pretty != null) && _pretty; 
+		final FHIRGenerator fhirGenerator = FHIRGenerator.generator(getFormat(accept, _format), prettyPrinting);
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
 		try {

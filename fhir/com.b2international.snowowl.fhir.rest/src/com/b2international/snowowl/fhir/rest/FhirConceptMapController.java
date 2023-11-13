@@ -372,7 +372,7 @@ public class FhirConceptMapController extends AbstractFhirController {
 		final String _format,
 		
 		@Parameter(description = "Controls pretty-printing of response")
-		@RequestParam(value = "_pretty", defaultValue = "false")
+		@RequestParam(value = "_pretty", required = false)
 		final Boolean _pretty,
 
 		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
@@ -470,7 +470,7 @@ public class FhirConceptMapController extends AbstractFhirController {
 		final String _format,
 		
 		@Parameter(description = "Controls pretty-printing of response")
-		@RequestParam(value = "_pretty", defaultValue = "false")
+		@RequestParam(value = "_pretty", required = false)
 		final Boolean _pretty,
 		
 		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
