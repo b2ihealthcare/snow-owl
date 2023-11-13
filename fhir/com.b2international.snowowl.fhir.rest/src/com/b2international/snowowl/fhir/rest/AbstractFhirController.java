@@ -106,6 +106,24 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	protected static final String X_OWNER_PROFILE_NAME = "X-Owner-Profile-Name";
 	protected static final String X_BUNDLE_ID = "X-Bundle-Id";
 	
+	private static List<MediaType> getMediaTypeCandidates(final String accept) {
+		final List<MediaType> mediaTypeCandidates = MediaType.parseMediaTypes(accept);
+		
+		if (!mediaTypeCandidates.isEmpty()) {
+			MediaType.sortBySpecificityAndQuality(mediaTypeCandidates);
+			
+			// Remove quality values and other (eg. charset) parameters once the list is sorted
+			for (int i = 0; i < mediaTypeCandidates.size(); i++) {
+				MediaType oldType = mediaTypeCandidates.get(i);
+				mediaTypeCandidates.set(i, new MediaType(oldType, (Map<String, String>) null));
+			}
+			
+			mediaTypeCandidates.retainAll(SUPPORTED_MEDIA_TYPES);
+		}
+		
+		return mediaTypeCandidates;
+	}
+
 	protected static Format getFormat(final String accept, final String _format) {
 		/*
 		 * The _format query parameter allows overriding whatever comes in as the "accept"
@@ -114,12 +132,18 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		if (!StringUtils.isEmpty(_format)) {
 			return getFormat(_format);
 		} else if (!StringUtils.isEmpty(accept)) {
-			return getFormat(accept);
+			List<MediaType> mediaTypeCandidates = getMediaTypeCandidates(accept);
+			
+			if (!mediaTypeCandidates.isEmpty()) {
+				return getFormat(mediaTypeCandidates.get(0).toString());
+			} else {
+				return getFormat(accept);
+			}
 		} else {
 			return Format.JSON;
 		}
 	}
-	
+
 	private static Format getFormat(final String mediaType) {
 		switch (mediaType) {
 		
@@ -144,7 +168,14 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		if (!StringUtils.isEmpty(_format)) {
 			return getResponseType(_format);
 		} else if (!StringUtils.isEmpty(accept)) {
-			return getResponseType(accept);
+			List<MediaType> mediaTypeCandidates = getMediaTypeCandidates(accept);
+			
+			if (!mediaTypeCandidates.isEmpty()) {
+				return getResponseType(mediaTypeCandidates.get(0).toString());
+			} else {
+				return getResponseType(accept);
+			}
+
 		} else {
 			return APPLICATION_FHIR_JSON;
 		}
