@@ -425,7 +425,9 @@ public class FhirMetadataController extends AbstractFhirController {
 		// Only interested in 'query' type parameters
 		getOperation.getParameters()
 			.stream()
-			.filter(p -> p.getIn().equals("query"))
+			.filter(p -> p.getIn().equals("query") 
+				&& !p.getName().equals("_format")
+				&& !p.getName().equals("_pretty"))
 			.forEach(p -> {
 				final io.swagger.v3.oas.models.media.Schema<?> schema = p.getSchema();
 				final OperationDefinition.Parameter.Builder parameterBuilder = OperationDefinition.Parameter.builder()
