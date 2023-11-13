@@ -426,11 +426,15 @@ public class FHIRJsonGenerator extends FHIRAbstractGenerator {
 
     private JsonGenerator getGeneratorFactory(OutputStream out) throws IOException {
         final JsonGenerator generator = JSON_OBJECT_MAPPER.createGenerator(out);
-		return prettyPrinting ? generator.useDefaultPrettyPrinter() : generator;
+		return prettyPrinting 
+			? generator.useDefaultPrettyPrinter() 
+			: generator.setPrettyPrinter(null);
     }
     
     private JsonGenerator getGeneratorFactory(Writer writer) throws IOException {
     	final JsonGenerator generator = JSON_OBJECT_MAPPER.createGenerator(writer);
-    	return prettyPrinting ? generator.useDefaultPrettyPrinter() : generator;
+    	return prettyPrinting 
+			? generator.useDefaultPrettyPrinter() 
+			: generator.setPrettyPrinter(null);
     }
 }
