@@ -152,9 +152,14 @@ public class FhirMetadataController extends AbstractFhirController {
 		final Boolean _pretty		
 			
 	) {
-		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "metadata", "{mode}", accept, _format, _pretty)
-			.buildAndExpand(Map.of("mode", Strings.nullToEmpty(mode)))
-			.toUriString();
+		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "metadata", 
+			StringUtils.isEmpty(mode) ? null : "{mode}", 
+			accept, 
+			_format, 
+			_pretty
+		)
+		.buildAndExpand(Map.of("mode", Strings.nullToEmpty(mode)))
+		.toUriString();
 		
 		final String baseUrl = MvcUriComponentsBuilder.fromController(FhirMetadataController.class)
 			.toUriString();
