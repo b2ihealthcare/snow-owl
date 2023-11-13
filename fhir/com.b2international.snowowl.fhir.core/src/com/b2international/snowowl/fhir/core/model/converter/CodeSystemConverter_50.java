@@ -157,7 +157,7 @@ public class CodeSystemConverter_50 extends AbstractConverter_50 implements Code
 		
 		builder.code(fromInternal(property.getCode()));
 		builder.uri(fromInternal(property.getUri()));
-		builder.description(property.getDescription());
+		builder.description(fromInternal(property.getDescription()));
 		
 		Code type = fromInternal(property.getType());
 		if (type != null) {
