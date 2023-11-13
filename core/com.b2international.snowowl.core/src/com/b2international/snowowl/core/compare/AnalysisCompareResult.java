@@ -41,6 +41,8 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 	private static final String COUNTER_NEW_COMPONENTS = "newComponents";
 	private static final String COUNTER_CHANGED_COMPONENTS = "changedComponents";
 	private static final String COUNTER_DELETED_COMPONENTS = "deletedComponents";
+	
+	private static final String COUNTER_CHANGED_COMPONENTS_AUXILIARY = "changedComponentsAuxiliary";
 
 	private static final long serialVersionUID = 1L;
 
@@ -131,7 +133,17 @@ public final class AnalysisCompareResult extends ListCollectionResource<Analysis
 		setCounterValue(COUNTER_CHANGED_COMPONENTS, changedComponents);
 		setCounterValue(COUNTER_TOTAL, Optional.ofNullable(getCounterValue(COUNTER_TOTAL)).orElse(0) + changedComponents);
 	}
-
+	
+	@JsonIgnore
+	public Integer getChangedComponentsAuxiliary() {
+		return getCounterValue(COUNTER_CHANGED_COMPONENTS_AUXILIARY);
+	}
+	
+	@JsonIgnore
+	public void setChangedComponentsAuxiliary(final Integer changedAuxiliaryComponents) {
+		setCounterValue(COUNTER_CHANGED_COMPONENTS_AUXILIARY, changedAuxiliaryComponents);
+	}
+	
 	/**
 	 * @return the number of removed primary components between the two points of reference
 	 */
