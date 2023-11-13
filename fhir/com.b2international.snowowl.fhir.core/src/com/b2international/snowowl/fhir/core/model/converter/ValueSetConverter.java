@@ -28,16 +28,16 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 public interface ValueSetConverter<T, P> {
 
 	/**
-	 * @param codeSystem
+	 * @param valueSet
 	 * @return
 	 */
-	T fromInternal(ValueSet codeSystem);
+	T fromInternal(ValueSet valueSet);
 
 	/**
-	 * @param codeSystem
+	 * @param valueSet
 	 * @return
 	 */
-	ValueSet toInternal(T codeSystem);
+	ValueSet toInternal(T valueSet);
 	
 	// $validate-code operation
 	

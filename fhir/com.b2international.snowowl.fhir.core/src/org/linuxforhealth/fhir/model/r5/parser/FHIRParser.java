@@ -129,13 +129,13 @@ public interface FHIRParser {
      */
     static FHIRParser parser(Format format) {
         switch (format) {
-        case JSON:
-            return new FHIRJsonParser();
-        case XML:
-            return new FHIRXMLParser();
-        case RDF:
-        default:
-            throw new IllegalArgumentException("Unsupported format: " + format);
+	        case JSON:
+	            return new FHIRJsonParser();
+	        case XML:
+	            return new FHIRXMLParser();
+	        case RDF: //$FALL-THROUGH$
+	        default:
+	            throw new IllegalArgumentException("Unsupported format: " + format);
         }
     }
 }

@@ -15,17 +15,9 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import org.linuxforhealth.fhir.model.format.Format;
-import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
-import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +32,7 @@ import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,6 +53,9 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	 * @param codeB
 	 * @param system
 	 * @param version
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
 	 * @return
 	 */
 	@Operation(
@@ -69,7 +65,14 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "CodeSystem not found")
-	@GetMapping(value = "/$subsumes", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/$subsumes", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public Promise<ResponseEntity<byte[]>> subsumes(
 			
 		@Parameter(description = "The \"A\" code that is to be tested") 
@@ -86,7 +89,26 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		
 		@Parameter(description = "The code system version") 
 		@RequestParam(value="version", required = false) 
-		final String version
+		final String version,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
 		
 	) {
 		
@@ -99,7 +121,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 			.version(version)
 			.build();
 
-		return subsumes(subsumptionRequest);
+		return subsumes(subsumptionRequest, accept, _format, _pretty);
 	}
 
 	/**
@@ -108,6 +130,9 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	 * @param codeSystemId
 	 * @param codeA
 	 * @param codeB
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
 	 * @return
 	 */
 	@Operation(
@@ -117,7 +142,14 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Code system not found")
-	@GetMapping(value = "/{codeSystemId:**}/$subsumes", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/{codeSystemId:**}/$subsumes", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public Promise<ResponseEntity<byte[]>> subsumes(
 			
 		@Parameter(description = "The id of the code system to invoke the operation on")
@@ -130,7 +162,26 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		
 		@Parameter(description = "The \"B\" code that is to be tested") 
 		@RequestParam(value = "codeB") 
-		final String codeB	
+		final String codeB,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
 		
 	) {
 		
@@ -143,13 +194,18 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 			.system(codeSystemId) 
 			.build();
 		
-		return subsumes(subsumptionRequest);		
+		return subsumes(subsumptionRequest, accept, _format, _pretty);		
 	}
 	
 	/**
 	 * <code><b>POST /CodeSystem/$subsumes</b></code>
 	 * 
 	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
+	 * @param contentType
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
 		summary = "Subsumption testing", 
@@ -160,46 +216,75 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
 		value = "/$subsumes", 
-		consumes = { AbstractFhirController.APPLICATION_FHIR_JSON },
-		produces = { AbstractFhirController.APPLICATION_FHIR_JSON }
+		consumes = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		},
+		produces = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		}
 	)
 	public Promise<ResponseEntity<byte[]>> subsumes(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
-		final InputStream requestBody
+		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty		
 				
 	) {
 		
-		final SubsumptionRequest request;
-		
-		try {
-			
-			final var parameters = FHIRParser.parser(Format.JSON).parse(requestBody);
-		
-			if (!parameters.is(org.linuxforhealth.fhir.model.r5.resource.Parameters.class)) {
-				throw new BadRequestException("Expected a complete Parameters resource as the request body, got '" 
-					+ parameters.getClass().getSimpleName() + "'.");
-			}
-			
-			final var fhirParameters = parameters.as(org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
-			request = CodeSystemConverter_50.INSTANCE.toSubsumptionRequest(fhirParameters);
-			
-		} catch (FHIRParserException e) {
-			throw new BadRequestException("Failed to parse request body as a complete Parameters resource.");
-		}
+		final var fhirParameters = toFhirParameters(requestBody, contentType);
+		final SubsumptionRequest request = CodeSystemConverter_50.INSTANCE.toSubsumptionRequest(fhirParameters);
 		
 		validateSubsumptionRequest(request);
-		return subsumes(request);
+		
+		return subsumes(request, accept, _format, _pretty);
 	}
 	
 	/**
-	 * <code><b>POST /CodeSystem/$subsumes</b></code>
+	 * <code><b>POST /CodeSystem/{id}/$subsumes</b></code>
 	 * 
+	 * @param codeSystemId
 	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
+	 * @param contentType
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
-
 	@Operation(
 		summary = "Subsumption testing", 
 		description = "Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
@@ -209,8 +294,22 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
 		value = "/{codeSystemId:**}/$subsumes", 
-		consumes = { AbstractFhirController.APPLICATION_FHIR_JSON },
-		produces = { AbstractFhirController.APPLICATION_FHIR_JSON }
+		consumes = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		},
+		produces = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		}
 	)
 	public Promise<ResponseEntity<byte[]>> subsumes(
 
@@ -219,29 +318,38 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		String codeSystemId,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
-		final InputStream requestBody
+		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty		
 		
 	) {
 		
-		final SubsumptionRequest request;
-		
-		try {
-			
-			final var parameters = FHIRParser.parser(Format.JSON).parse(requestBody);
-		
-			if (!parameters.is(org.linuxforhealth.fhir.model.r5.resource.Parameters.class)) {
-				throw new BadRequestException("Expected a complete Parameters resource as the request body, got '" 
-					+ parameters.getClass().getSimpleName() + "'.");
-			}
-			
-			final var fhirParameters = parameters.as(org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
-			request = CodeSystemConverter_50.INSTANCE.toSubsumptionRequest(fhirParameters);
-			
-		} catch (FHIRParserException e) {
-			throw new BadRequestException("Failed to parse request body as a complete Parameters resource.");
-		}		
+		final var fhirParameters = toFhirParameters(requestBody, contentType);
+		final SubsumptionRequest request = CodeSystemConverter_50.INSTANCE.toSubsumptionRequest(fhirParameters);
 		
 		validateSubsumptionRequest(codeSystemId, request);
 		
@@ -252,33 +360,22 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		 * instance-level operation works with the CodeSystem instance mentioned in the
 		 * identifier.
 		 */
-		return subsumes(request);
+		return subsumes(request, accept, _format, _pretty);
 	}
 	
-	private Promise<ResponseEntity<byte[]>> subsumes(SubsumptionRequest req) {
+	private Promise<ResponseEntity<byte[]>> subsumes(
+		SubsumptionRequest req, 
+		String accept, 
+		String _format, 
+		Boolean _pretty
+	) {
 		return FhirRequests.codeSystems().prepareSubsumes()
 			.setRequest(req)
 			.buildAsync()
 			.execute(getBus())
 			.then(soSubsumptionResult -> {
 				var fhirSubsumptionResult = CodeSystemConverter_50.INSTANCE.fromSubsumptionResult(soSubsumptionResult);
-				
-				final Format format = Format.JSON;
-				final boolean prettyPrinting = true;
-				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
-
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON);
-
-				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-				try {
-					generator.generate(fhirSubsumptionResult, baos);
-				} catch (FHIRGeneratorException e) {
-					throw new BadRequestException("Failed to convert response body to a Parameters resource.");
-				}
-
-				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+				return toResponseEntity(fhirSubsumptionResult, accept, _format, _pretty);
 			});
 	}
 

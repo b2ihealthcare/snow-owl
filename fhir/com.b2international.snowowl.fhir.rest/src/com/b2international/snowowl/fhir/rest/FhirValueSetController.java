@@ -17,26 +17,15 @@ package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
-import org.linuxforhealth.fhir.model.format.Format;
-import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
-import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
-import org.linuxforhealth.fhir.model.r5.resource.Bundle;
-import org.linuxforhealth.fhir.model.r5.type.Uri;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
@@ -48,9 +37,8 @@ import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
-import com.b2international.snowowl.fhir.core.model.converter.BundleConverter_50;
 import com.b2international.snowowl.fhir.core.model.converter.ValueSetConverter_50;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
@@ -58,6 +46,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -80,23 +69,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value = "/ValueSet")
 public class FhirValueSetController extends AbstractFhirController {
 	
-	private static ValueSet fromRequestBody(final InputStream requestBody) {
-		try {
-			final var fhirResource = FHIRParser.parser(Format.JSON).parse(requestBody);
-		
-			if (!fhirResource.is(org.linuxforhealth.fhir.model.r5.resource.ValueSet.class)) {
-				throw new BadRequestException("Expected a complete ValueSet resource as the request body, got '" 
-					+ fhirResource.getClass().getSimpleName() + "'.");
-			}
-			
-			final var fhirValueSet = fhirResource.as(org.linuxforhealth.fhir.model.r5.resource.ValueSet.class);
-			return ValueSetConverter_50.INSTANCE.toInternal(fhirValueSet);
-		} catch (FHIRParserException e) {
-			throw (BadRequestException) new BadRequestException("Failed to parse request body as a complete ValueSet resource.")
-				.initCause(e);
-		}
-	}
-
 	/**
 	 * <code><b>POST /ValueSet</b></code>
 	 * <p>
@@ -104,6 +76,13 @@ public class FhirValueSetController extends AbstractFhirController {
 	 * present in the input resource.
 	 * 
 	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to a FHIR value set resource
+	 * @param contentType
+	 * @param defaultEffectiveDate
+	 * @param author
+	 * @param owner
+	 * @param ownerProfileName
+	 * @param bundleId
+	 * @return
 	 */
 	@Operation(
 		summary = "Create new value set", 
@@ -117,13 +96,25 @@ public class FhirValueSetController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "Resource updated")
 	@ApiResponse(responseCode = "201", description = "Resource created")
 	@ApiResponse(responseCode = "400", description = "Bad Request")
-	@PostMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@PostMapping(consumes =	{
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public ResponseEntity<Void> create(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The value set resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
 		
 		@Parameter(description = """
 			The effective date to use if a version identifier is present in the resource without 
@@ -155,7 +146,8 @@ public class FhirValueSetController extends AbstractFhirController {
 		
 	) {
 		
-		final ValueSet soValueSet = fromRequestBody(requestBody);
+		final var fhirValueSet = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.ValueSet.class);
+		final ValueSet soValueSet = ValueSetConverter_50.INSTANCE.toInternal(fhirValueSet);
 
 		// Ignore the input identifier on purpose and assign one locally
 		final String generatedId = IDs.base62UUID();
@@ -199,6 +191,13 @@ public class FhirValueSetController extends AbstractFhirController {
 	 * 
 	 * @param id - the value set identifier
 	 * @param requestBody - the new or updated value set (resource ID must match the path parameter)
+	 * @param contentType
+	 * @param defaultEffectiveDate
+	 * @param author
+	 * @param owner
+	 * @param ownerProfileName
+	 * @param bundleId
+	 * @return
 	 */
 	@Operation(
 		summary = "Create a new or update an existing value set with identifier", 
@@ -212,7 +211,14 @@ public class FhirValueSetController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "Resource updated")
 	@ApiResponse(responseCode = "201", description = "Resource created")
 	@ApiResponse(responseCode = "400", description = "Bad Request")
-	@PutMapping(value = "/{id:**}", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@PutMapping(value = "/{id:**}", consumes = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public ResponseEntity<Void> update(
 			
 		@Parameter(description = """
@@ -221,9 +227,14 @@ public class FhirValueSetController extends AbstractFhirController {
 		final String id,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The value set resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
+
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
 
 		@Parameter(description = """
 			The effective date to use if a version identifier is present in the resource without 
@@ -255,7 +266,9 @@ public class FhirValueSetController extends AbstractFhirController {
 		
 	) {
 		
-		final ValueSet soValueSet = fromRequestBody(requestBody);
+		final var fhirValueSet = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.ValueSet.class);
+		final ValueSet soValueSet = ValueSetConverter_50.INSTANCE.toInternal(fhirValueSet);
+
 		return createOrUpdate(id, soValueSet, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
 	}
 	
@@ -311,6 +324,11 @@ public class FhirValueSetController extends AbstractFhirController {
 	 * Returns a bundle containing all value sets that match the specified search criteria.
 	 * 
 	 * @param params - request parameters
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @param acceptLanguage
+	 * 
 	 * @return bundle of value sets
 	 */
 	@Operation(
@@ -324,18 +342,51 @@ public class FhirValueSetController extends AbstractFhirController {
 	)
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad Request")
-	@GetMapping(produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public Promise<ResponseEntity<byte[]>> getValueSets(
 			
 		@ParameterObject 
 		FhirValueSetSearchParameters params,
+
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty,
 
 		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
 		@RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
 		final String acceptLanguage
 	) {
 			
-		final UriComponentsBuilder uriBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetController.class, "getValueSet", "{id}", params, acceptLanguage);
+		// XXX: We are using "{id}" as the placeholder for the "id" path parameter and expand it later
+		final UriComponentsBuilder fullUrlBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetController.class, "getValueSet", 
+			"{id}", 
+			(FhirResourceSelectors) params, 
+			accept,
+			_format,
+			_pretty,
+			acceptLanguage);
 		
 		return FhirRequests.valueSets()
 			.prepareSearch()
@@ -356,48 +407,7 @@ public class FhirValueSetController extends AbstractFhirController {
 			.setLocales(acceptLanguage)
 			.buildAsync()
 			.execute(getBus())
-			.then(soBundle -> {
-				var fhirBundle = BundleConverter_50.INSTANCE.fromInternal(soBundle);
-				
-				// FIXME: Temporary measure to add "fullUrl" to returned bundle entries
-				var entries = fhirBundle.getEntry();
-				if (!entries.isEmpty()) {
-					Bundle.Builder builder = fhirBundle.toBuilder();
-					builder.entry(List.of());
-					
-					for (var entry : entries) {
-						if (entry.getResource() != null) {
-							final String resourceId = entry.getResource().getId();
-							final String fullUrl = uriBuilder.buildAndExpand(Map.of("id", resourceId)).toString();
-							
-							var entryWithUrl = entry.toBuilder()
-								.fullUrl(Uri.of(fullUrl))
-								.build();
-							
-							builder.entry(entryWithUrl);
-						}
-					}
-					
-					fhirBundle = builder.build();
-				}
-				
-				final Format format = Format.JSON;
-				final boolean prettyPrinting = true;
-				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
-
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON);
-
-				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-				try {
-					generator.generate(fhirBundle, baos);
-				} catch (FHIRGeneratorException e) {
-					e.printStackTrace();
-				}
-
-				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
-			});
+			.then(soBundle -> toResponseEntity(soBundle, fullUrlBuilder, accept, _format, _pretty));
 	}
 	
 	/**
@@ -407,6 +417,10 @@ public class FhirValueSetController extends AbstractFhirController {
 	 * 
 	 * @param id
 	 * @param selectors
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @param acceptLanguage
 	 * @return
 	 */
 	@Operation(
@@ -421,7 +435,14 @@ public class FhirValueSetController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Value set not found")
-	@GetMapping(value = "/{id:**}", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/{id:**}", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public Promise<ResponseEntity<byte[]>> getValueSet(
 			
 		@Parameter(description = """
@@ -432,6 +453,25 @@ public class FhirValueSetController extends AbstractFhirController {
 		@ParameterObject
 		final FhirResourceSelectors selectors,
 			
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty,
+		
 		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
 		@RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
 		final String acceptLanguage
@@ -447,23 +487,7 @@ public class FhirValueSetController extends AbstractFhirController {
 			.execute(getBus())
 			.then(soValueSet -> {
 				var fhirValueSet = ValueSetConverter_50.INSTANCE.fromInternal(soValueSet);
-				
-				final Format format = Format.JSON;
-				final boolean prettyPrinting = true;
-				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
-
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON);
-
-				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-				try {
-					generator.generate(fhirValueSet, baos);
-				} catch (FHIRGeneratorException e) {
-					e.printStackTrace();
-				}
-
-				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+				return toResponseEntity(fhirValueSet, accept, _format, _pretty);
 			});
 	}
 	

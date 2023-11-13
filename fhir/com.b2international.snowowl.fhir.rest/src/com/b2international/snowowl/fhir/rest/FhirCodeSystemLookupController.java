@@ -15,33 +15,25 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Optional;
 import java.util.Set;
 
-import org.linuxforhealth.fhir.model.format.Format;
-import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
-import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -69,6 +61,10 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	 * @param date
 	 * @param displayLanguage
 	 * @param properties
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 * 
 	 * @throws ParseException
 	 */
@@ -79,7 +75,14 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Code system not found")
-	@GetMapping(value = "/$lookup", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/$lookup", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public Promise<ResponseEntity<byte[]>> lookup(
 		
 		@Parameter(description = "The code to look up") 
@@ -104,8 +107,27 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 		
 		@Parameter(description = "Properties to return in the output") 
 		@RequestParam(value = "property", required = false) 
-		final Set<String> properties
+		final Set<String> properties,
 		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
+
 	) {
 		
 		LookupRequest.Builder builder = LookupRequest.builder()
@@ -128,7 +150,7 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 			builder.properties(properties);
 		}
 		
-		return lookup(builder.build());
+		return lookup(builder.build(), accept, _format, _pretty);
 	}
 	
 	/**
@@ -140,6 +162,11 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	 * structured terminology.
 	 * 
 	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
+	 * @param contentType
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
 		summary = "Concept lookup and decomposition", 
@@ -150,62 +177,75 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
 		value = "/$lookup", 
-		consumes = { AbstractFhirController.APPLICATION_FHIR_JSON },
-		produces = { AbstractFhirController.APPLICATION_FHIR_JSON }
+		consumes = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		},
+		produces = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		}
 	)
 	public Promise<ResponseEntity<byte[]>> lookup(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
-		final InputStream requestBody
+		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
 
 	) {
-		final LookupRequest request;
 		
-		try {
-			
-			final var parameters = FHIRParser.parser(Format.JSON).parse(requestBody);
+		final var fhirParameters = toFhirParameters(requestBody, contentType);
+		final LookupRequest request = CodeSystemConverter_50.INSTANCE.toLookupRequest(fhirParameters);
 		
-			if (!parameters.is(org.linuxforhealth.fhir.model.r5.resource.Parameters.class)) {
-				throw new BadRequestException("Expected a complete Parameters resource as the request body, got '" 
-					+ parameters.getClass().getSimpleName() + "'.");
-			}
-			
-			final var fhirParameters = parameters.as(org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
-			request = CodeSystemConverter_50.INSTANCE.toLookupRequest(fhirParameters);
-			
-		} catch (FHIRParserException e) {
-			throw new BadRequestException("Failed to parse request body as a complete Parameters resource.");
-		}
-		
-		return lookup(request);
+		return lookup(request, accept, _format, _pretty);
 	}
-	
-	private Promise<ResponseEntity<byte[]>> lookup(LookupRequest lookupRequest) {
+
+	private Promise<ResponseEntity<byte[]>> lookup(
+		final LookupRequest lookupRequest, 
+		final String accept, 
+		final String _format, 
+		final Boolean _pretty
+	) {
 		return FhirRequests.codeSystems().prepareLookup()
 			.setRequest(lookupRequest)
 			.buildAsync()
 			.execute(getBus())
 			.then(soLookupResult -> {
 				var fhirLookupResult = CodeSystemConverter_50.INSTANCE.fromLookupResult(soLookupResult);
-				
-				final Format format = Format.JSON;
-				final boolean prettyPrinting = true;
-				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
-
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON);
-
-				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-				try {
-					generator.generate(fhirLookupResult, baos);
-				} catch (FHIRGeneratorException e) {
-					throw new BadRequestException("Failed to convert response body to a Parameters resource.");
-				}
-
-				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+				return toResponseEntity(fhirLookupResult, accept, _format, _pretty);
 			});
 	}
 }

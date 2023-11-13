@@ -22,7 +22,7 @@ import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAP
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.ByteArrayOutputStream;
+import java.lang.Boolean;
 import java.lang.String;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -35,9 +35,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
-import org.linuxforhealth.fhir.model.format.Format;
-import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
 import org.linuxforhealth.fhir.model.r5.resource.CapabilityStatement;
 import org.linuxforhealth.fhir.model.r5.resource.OperationDefinition;
 import org.linuxforhealth.fhir.model.r5.resource.Resource;
@@ -48,13 +45,8 @@ import org.osgi.framework.Version;
 import org.springdoc.webmvc.api.OpenApiWebMvcResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -65,21 +57,21 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.core.rest.SnowOwlOpenApiWebMvcResource;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Schema;
 
 /**
  * REST end-point for serving content describing the server's capabilities.
@@ -110,6 +102,13 @@ public class FhirMetadataController extends AbstractFhirController {
 	
 	private final Supplier<Metadata> metadataSupplier = Suppliers.memoize(this::initMetadata);
 
+	/**
+	 * @param mode
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
+	 */
 	@Operation(
 		summary="Retrieve the capability statement", 
 		description="Retrieves this server's capability statement.",
@@ -120,14 +119,40 @@ public class FhirMetadataController extends AbstractFhirController {
 		}
 	)
 	@ApiResponse(responseCode = "200", description = "OK")
-	@GetMapping(value = "/metadata", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/metadata", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public ResponseEntity<byte[]> metadata(
 	
 		@RequestParam(value = "mode", required = false)
-		final String mode 
+		final String mode,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty		
 			
 	) {
-		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "metadata", "{mode}")
+		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "metadata", "{mode}", accept, _format, _pretty)
 			.buildAndExpand(Map.of("mode", Strings.nullToEmpty(mode)))
 			.toUriString();
 		
@@ -150,28 +175,16 @@ public class FhirMetadataController extends AbstractFhirController {
 				.build();
 		}
 		
-		final Format format = Format.JSON;
-		final boolean prettyPrinting = true;
-		final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		try {
-			generator.generate(resourceToReturn, baos);
-		} catch (FHIRGeneratorException e) {
-			throw new BadRequestException("Failed to convert response body to a capability resource.");
-		}
-
-		return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+		return toResponseEntity(resourceToReturn, accept, _format, _pretty);
 	}
 	
 	/**
 	 * Returns the {@link OperationDefinition} for a given operation.
 	 * 
 	 * @param operation
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
 	 * @return
 	 */
 	@Operation(
@@ -180,36 +193,47 @@ public class FhirMetadataController extends AbstractFhirController {
 	)
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "404", description = "Operation definition not found")
-	@GetMapping(value = "/OperationDefinition/{operation}", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/OperationDefinition/{operation}", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public ResponseEntity<byte[]> operationDefinition(
 			
 		@PathVariable(value = "operation") 
-		final String operation
+		final String operation,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty		
 		
 	) {
 		
 		final Map<String, OperationDefinition> operationMap = metadataSupplier.get().operationMap();
-		final OperationDefinition operationDefinition = operationMap.get(operation);
-		if (operationDefinition == null) {
+		final var fhirOperationDefinition = operationMap.get(operation);
+		if (fhirOperationDefinition == null) {
 			throw new NotFoundException("OperationDefinition", operation);
 		}
 		
-		final Format format = Format.JSON;
-		final boolean prettyPrinting = true;
-		final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		try {
-			generator.generate(operationDefinition, baos);
-		} catch (FHIRGeneratorException e) {
-			throw new BadRequestException("Failed to convert response body to a capability resource.");
-		}
-
-		return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+		return toResponseEntity(fhirOperationDefinition, accept, _format, _pretty);
 	}
 	
 	private Metadata initMetadata() {
@@ -341,7 +365,15 @@ public class FhirMetadataController extends AbstractFhirController {
 				.url(Url.of("https://b2ihealthcare.com"))
 				.description(Markdown.of(description))
 				.build())
-			.format(Code.of("json"), Code.of(AbstractFhirController.APPLICATION_FHIR_JSON))
+			.format(
+				Code.of(FORMAT_JSON), 
+				Code.of(TEXT_JSON_VALUE),
+				Code.of(APPLICATION_JSON_VALUE),
+				Code.of(APPLICATION_FHIR_JSON_VALUE),
+				Code.of(FORMAT_XML),
+				Code.of(TEXT_XML_VALUE),
+				Code.of(APPLICATION_XML_VALUE),
+				Code.of(APPLICATION_FHIR_XML_VALUE))
 			.rest(restBuilder.build())
 			.build();
 	}
@@ -395,14 +427,14 @@ public class FhirMetadataController extends AbstractFhirController {
 			.stream()
 			.filter(p -> p.getIn().equals("query"))
 			.forEach(p -> {
-				final Schema<?> schema = p.getSchema();
+				final io.swagger.v3.oas.models.media.Schema<?> schema = p.getSchema();
 				final OperationDefinition.Parameter.Builder parameterBuilder = OperationDefinition.Parameter.builder()
 					.name(Code.of(p.getName()))
 					.use(OperationParameterUse.IN)
 					.documentation(Markdown.of(p.getDescription()));
 				
 				if ("array".equals(schema.getType())) {
-					parameterBuilder.type(FHIRAllTypes.of(((ArraySchema) schema).getItems().getType()));
+					parameterBuilder.type(FHIRAllTypes.of(((io.swagger.v3.oas.models.media.ArraySchema) schema).getItems().getType()));
 					
 					if (schema.getMinProperties() == null) {
 						parameterBuilder.min(0);

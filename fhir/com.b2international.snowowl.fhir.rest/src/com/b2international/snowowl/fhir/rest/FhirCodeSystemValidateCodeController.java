@@ -15,18 +15,10 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Optional;
 
-import org.linuxforhealth.fhir.model.format.Format;
-import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
-import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +32,7 @@ import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -65,14 +58,19 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	 * (code+system, coding, or codeableConcept). Other parameters (including
 	 * version and display) are optional.
 	 * 
-	 * @param url        the code system to validate against
-	 * @param code       to code to validate
-	 * @param version    the version of the code system to validate against
-	 * @param date       the date for which the validation should be checked
-	 * @param isAbstract If this parameter has a value of true, the client is
-	 *                   stating that the validation is being performed in a context
-	 *                   where a concept designated as 'abstract' is
-	 *                   appropriate/allowed.
+	 * @param url           the code system to validate against
+	 * @param code          to code to validate
+	 * @param version       the version of the code system to validate against
+	 * @param display       the display string of the code
+	 * @param date          the date for which the validation should be checked
+	 * @param isAbstract    If this parameter has a value of true, the client is
+	 *                      stating that the validation is being performed in a context
+	 *                      where a concept designated as 'abstract' is
+	 *                      appropriate/allowed.
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
 		summary = "Validate a code in a code system",
@@ -81,12 +79,19 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Code system not found")
-	@GetMapping(value = "/$validate-code", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/$validate-code", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public Promise<ResponseEntity<byte[]>> validateCodeType(
 			
 		@Parameter(description = "The uri of the code system to validate against") 
 		@RequestParam(value = "url") 
-		String url,
+		final String url,
 		
 		@Parameter(description = "The code to be validated") 
 		@RequestParam(value = "code") 
@@ -106,7 +111,26 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		
 		@Parameter(description = "The abstract status of the code") 
 		@RequestParam(value = "abstract") 
-		final Optional<Boolean> isAbstract
+		final Optional<Boolean> isAbstract,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
 		
 	) {
 		
@@ -121,13 +145,18 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 			builder.date(date.get());
 		}
 				
-		return validateCode(builder.build());
+		return validateCode(builder.build(), accept, _format, _pretty);
 	}
 	
 	/**
 	 * <code><b>POST /CodeSystem/$validate-code</b></code>
 	 * 
 	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
+	 * @param contentType
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
 		summary = "Validate a code in a code system", 
@@ -138,37 +167,58 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
 		value = "/$validate-code", 
-		consumes = { AbstractFhirController.APPLICATION_FHIR_JSON },
-		produces = { AbstractFhirController.APPLICATION_FHIR_JSON }
+		consumes = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		},
+		produces = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		}
 	)
 	public Promise<ResponseEntity<byte[]>> validateCode(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
-		final InputStream requestBody
+		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
 			
 	) {
-		
-		final ValidateCodeRequest request;
-		
-		try {
-			
-			final var parameters = FHIRParser.parser(Format.JSON).parse(requestBody);
-		
-			if (!parameters.is(org.linuxforhealth.fhir.model.r5.resource.Parameters.class)) {
-				throw new BadRequestException("Expected a complete Parameters resource as the request body, got '" 
-					+ parameters.getClass().getSimpleName() + "'.");
-			}
-			
-			final var fhirParameters = parameters.as(org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
-			request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
-			
-		} catch (FHIRParserException e) {
-			throw new BadRequestException("Failed to parse request body as a complete Parameters resource.");
-		}
-		
-		return validateCode(request);
+		final var fhirParameters = toFhirParameters(requestBody, contentType);
+		final ValidateCodeRequest request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		return validateCode(request, accept, _format, _pretty);
 	}
 
 	
@@ -187,11 +237,16 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	 * @param codeSystemId the code system to validate against
 	 * @param code         to code to validate
 	 * @param version      the version of the code system to validate against
+	 * @param display      the display string of the code
 	 * @param date         the date for which the validation should be checked
 	 * @param isAbstract   If this parameter has a value of true, the client is
 	 *                     stating that the validation is being performed in a
 	 *                     context where a concept designated as 'abstract' is
 	 *                     appropriate/allowed.
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
 		summary = "Validate a code in a code system",
@@ -202,7 +257,14 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
-	@GetMapping(value = "/{codeSystemId:**}/$validate-code", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+	@GetMapping(value = "/{codeSystemId:**}/$validate-code", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
 	public Promise<ResponseEntity<byte[]>> validateCodeInstance(
 			
 		@Parameter(description = "The id of the code system to validate against") 
@@ -227,7 +289,26 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		
 		@Parameter(description = "The abstract status of the code") 
 		@RequestParam(value = "abstract") 
-		final Optional<Boolean> isAbstract
+		final Optional<Boolean> isAbstract,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
 	
 	) {
 		
@@ -243,15 +324,21 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 			builder.date(date.get());
 		}
 		
-		return validateCode(builder.build());
+		return validateCode(builder.build(), accept, _format, _pretty);
 	}
 	
 	/**
-	 * <code><b>GET /CodeSystem/{id}/$validate-code</b></code>
+	 * <code><b>POST /CodeSystem/{id}/$validate-code</b></code>
 	 * <p>
 	 * All parameters are in the request body, except the codeSystemId.
 	 * 
+	 * @param codeSystemId
 	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
+	 * @param contentType
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
 		summary = "Validate a code in a code system", 
@@ -262,8 +349,22 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
 		value = "/{codeSystemId:**}/$validate-code", 
-		consumes = { AbstractFhirController.APPLICATION_FHIR_JSON},
-		produces = { AbstractFhirController.APPLICATION_FHIR_JSON}
+		consumes = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		},
+		produces = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		}
 	)
 	public Promise<ResponseEntity<byte[]>> validateCode(
 
@@ -272,29 +373,38 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		String codeSystemId, 
 
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON, schema = @Schema(type = "object"))
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
-		final InputStream requestBody
+		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", defaultValue = "false")
+		final Boolean _pretty
 		
 	) {
 		
-		final ValidateCodeRequest request;
-		
-		try {
-			
-			final var parameters = FHIRParser.parser(Format.JSON).parse(requestBody);
-		
-			if (!parameters.is(org.linuxforhealth.fhir.model.r5.resource.Parameters.class)) {
-				throw new BadRequestException("Expected a complete Parameters resource as the request body, got '" 
-					+ parameters.getClass().getSimpleName() + "'.");
-			}
-			
-			final var fhirParameters = parameters.as(org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
-			request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
-			
-		} catch (FHIRParserException e) {
-			throw new BadRequestException("Failed to parse request body as a complete Parameters resource.");
-		}
+		final var fhirParameters = toFhirParameters(requestBody, contentType);
+		final ValidateCodeRequest request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
 		
 		// Validate parameters that are not allowed on the instance level
 		if (request.getUrl() != null) {
@@ -315,33 +425,23 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		
 		// Before execution set the URI to match the path variable
 		request.setUrl(new Uri(codeSystemId));
-		return validateCode(request);
+		
+		return validateCode(request, accept, _format, _pretty);
 	}
 
-	private Promise<ResponseEntity<byte[]>> validateCode(ValidateCodeRequest validateCodeRequest) {
+	private Promise<ResponseEntity<byte[]>> validateCode(
+		final ValidateCodeRequest validateCodeRequest, 
+		final String accept, 
+		final String _format, 
+		final Boolean _pretty
+	) {
 		return FhirRequests.codeSystems().prepareValidateCode()
 			.setRequest(validateCodeRequest)
 			.buildAsync()
 			.execute(getBus())
 			.then(soValidateCodeResult -> {
 				var fhirValidateCodeResult = CodeSystemConverter_50.INSTANCE.fromValidateCodeResult(soValidateCodeResult);
-				
-				final Format format = Format.JSON;
-				final boolean prettyPrinting = true;
-				final FHIRGenerator generator = FHIRGenerator.generator(format, prettyPrinting);
-
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON);
-
-				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-				try {
-					generator.generate(fhirValidateCodeResult, baos);
-				} catch (FHIRGeneratorException e) {
-					throw new BadRequestException("Failed to convert response body to a Parameters resource.");
-				}
-
-				return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+				return toResponseEntity(fhirValidateCodeResult, accept, _format, _pretty);
 			});
 	}
 }

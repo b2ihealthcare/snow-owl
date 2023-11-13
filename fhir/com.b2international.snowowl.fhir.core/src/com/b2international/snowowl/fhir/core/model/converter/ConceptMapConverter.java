@@ -27,16 +27,16 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 public interface ConceptMapConverter<T, P> {
 
 	/**
-	 * @param codeSystem
+	 * @param conceptMap
 	 * @return
 	 */
-	T fromInternal(ConceptMap codeSystem);
+	T fromInternal(ConceptMap conceptMap);
 
 	/**
-	 * @param codeSystem
+	 * @param conceptMap
 	 * @return
 	 */
-	ConceptMap toInternal(T codeSystem);
+	ConceptMap toInternal(T conceptMap);
 	
 	// $translate operation
 	
