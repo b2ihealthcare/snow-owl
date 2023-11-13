@@ -44,8 +44,7 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	@Override
 	public void run(StagingArea staging) {
 		boolean needsDocumentUpdate;
-		if (staging.getContext() instanceof RepositoryTransactionContext) {
-			RepositoryTransactionContext transactionContext = (RepositoryTransactionContext) staging.getContext();
+		if (staging.getContext() instanceof RepositoryTransactionContext transactionContext) {
 			needsDocumentUpdate = !DatastoreLockContextDescriptions.CREATE_VERSION.equals(transactionContext.parentLock());
 		} else {
 			needsDocumentUpdate = true;
