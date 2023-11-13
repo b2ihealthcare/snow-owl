@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
-import com.b2international.index.SearchAfterIterator;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionSearcher;
@@ -84,24 +83,24 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		
 		RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
-		new SearchAfterIterator<>(searcher, Query.select(SnomedConceptDocument.class)
+		searcher.scrollLive(Query.select(SnomedConceptDocument.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
 				.build()).forEachRemaining(componentsToVersion -> 
 					versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
-		new SearchAfterIterator<>(searcher, Query.select(SnomedDescriptionIndexEntry.class)
+		searcher.scrollLive(Query.select(SnomedDescriptionIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
 				.build()).forEachRemaining(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
-		new SearchAfterIterator<>(searcher, Query.select(SnomedRelationshipIndexEntry.class)
+		searcher.scrollLive(Query.select(SnomedRelationshipIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
 				.build())
 				.forEachRemaining(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
-		new SearchAfterIterator<>(searcher, Query.select(SnomedRefSetMemberIndexEntry.class)
+		searcher.scrollLive(Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
 				.build())
