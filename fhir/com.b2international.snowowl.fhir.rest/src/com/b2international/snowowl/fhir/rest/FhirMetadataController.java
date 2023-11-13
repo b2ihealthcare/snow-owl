@@ -392,7 +392,7 @@ public class FhirMetadataController extends AbstractFhirController {
 
 	private Canonical buildOperationUrl(final Code code, final OperationDefinition operationDefinition) {
 		
-		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "operationDefinition", "{operation}")
+		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "operationDefinition", "{operation}", null, null, null)
 			.buildAndExpand(Map.of("operation", code.getValue() + operationDefinition.getName().getValue()))
 			.toUriString();
 
