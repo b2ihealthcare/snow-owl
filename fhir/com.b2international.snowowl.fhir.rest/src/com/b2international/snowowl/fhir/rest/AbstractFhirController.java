@@ -88,13 +88,17 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	private static final MediaType APPLICATION_FHIR_XML = MediaType.parseMediaType(APPLICATION_FHIR_XML_VALUE);
 	private static final MediaType TEXT_JSON = MediaType.parseMediaType(TEXT_JSON_VALUE);
 
+	// Last ditch effort: return JSON when "*/*" media type is accepted by the client
+	private static final String ALL_VALUE = MediaType.ALL_VALUE;
+	
 	private static final List<MediaType> SUPPORTED_MEDIA_TYPES = ImmutableList.of(
 		APPLICATION_FHIR_JSON,
 		APPLICATION_FHIR_XML,
 		TEXT_JSON,
 		MediaType.TEXT_XML,
 		MediaType.APPLICATION_JSON,
-		MediaType.APPLICATION_XML
+		MediaType.APPLICATION_XML,
+		MediaType.ALL
 	);
 	
 	private static final String GENERIC_USER_MESSAGE = "Something went wrong during the processing of your request.";
@@ -150,6 +154,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			case FORMAT_JSON: //$FALL-THROUGH$
 			case TEXT_JSON_VALUE: //$FALL-THROUGH$
 			case APPLICATION_JSON_VALUE: //$FALL-THROUGH$
+			case ALL_VALUE: //$FALL-THROUGH$
 			case APPLICATION_FHIR_JSON_VALUE:
 				return Format.JSON;
 				
@@ -190,6 +195,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 				return MediaType.APPLICATION_JSON;
 				
 			case FORMAT_JSON: //$FALL-THROUGH$
+			case ALL_VALUE: //$FALL-THROUGH$
 			case APPLICATION_FHIR_JSON_VALUE:
 				return APPLICATION_FHIR_JSON;
 				
