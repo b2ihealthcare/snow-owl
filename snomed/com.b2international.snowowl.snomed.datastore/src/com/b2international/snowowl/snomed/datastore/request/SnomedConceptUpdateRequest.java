@@ -167,9 +167,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	@Override
 	protected <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void postInactivateComponent(TransactionContext context, T component, B updatedComponent) {
-		// automatically set concept to primitive when inactivating it, unless the user decided to use a different definition status ID 
+		// automatically set concept to primitive when inactivating it 
 		// https://confluence.ihtsdotools.org/display/DOCEXTPG/5.4.2.3+Inactivate+Concept+in+an+Extension
-		((SnomedConceptDocument.Builder) updatedComponent).primitive(definitionStatusId == null ? true : Concepts.PRIMITIVE.equals(definitionStatusId));
+		((SnomedConceptDocument.Builder) updatedComponent).primitive(true);
 	}
 	
 	@Override
