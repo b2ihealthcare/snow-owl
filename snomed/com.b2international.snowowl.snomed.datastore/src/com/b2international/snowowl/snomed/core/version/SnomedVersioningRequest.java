@@ -82,30 +82,29 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
 		
 		RevisionSearcher searcher = context.service(RevisionSearcher.class);
-			
-		searcher.scroll(Query.select(SnomedConceptDocument.class)
-				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(getCommitLimit(context))
-				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
-		searcher.scroll(Query.select(SnomedDescriptionIndexEntry.class)
+		searcher.scrollLive(Query.select(SnomedConceptDocument.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
-				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+				.build()).forEachRemaining(componentsToVersion -> 
+					versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
-		searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
+		searcher.scrollLive(Query.select(SnomedDescriptionIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
-				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+				.build()).forEachRemaining(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
-		searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
+		searcher.scrollLive(Query.select(SnomedRelationshipIndexEntry.class)
 				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.limit(getCommitLimit(context))
 				.build())
-				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+				.forEachRemaining(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+		
+		searcher.scrollLive(Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.limit(getCommitLimit(context))
+				.build())
+				.forEachRemaining(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
 		// iterate over each module and get modules of all components registered to componentsByReferringModule
 		log.info("Collecting module dependencies of changed components...");

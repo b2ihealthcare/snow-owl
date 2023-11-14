@@ -102,4 +102,8 @@ public interface Searcher {
 		};
 	}
 	
+	default <T> SearchAfterIterator<T> scrollLive(Query<T> query) {
+		return new SearchAfterIterator<T>(this, query);
+	}
+	
 }
