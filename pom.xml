@@ -23,8 +23,8 @@
 		<slf4j.version>1.7.32</slf4j.version>
 		
 		<!-- Build tool/compiler versions -->
-		<tycho.version>2.6.0</tycho.version>
-		<tycho-extras.version>2.6.0</tycho-extras.version>
+		<tycho.version>4.0.4</tycho.version>
+		<tycho-extras.version>4.0.4</tycho-extras.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		
 		<!-- Versioning -->
@@ -88,7 +88,6 @@
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho.version}</version>
 				<configuration>
-					<resolver>p2</resolver>
 					<executionEnvironment>org.eclipse.justj.openjdk.hotspot.jre.full-17</executionEnvironment>
 					<target>
 						<artifact>
@@ -257,9 +256,6 @@
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-p2-publisher-plugin</artifactId>
 					<version>${tycho.version}</version>
-					<configuration>
-						<publishArtifacts>true</publishArtifacts>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
@@ -305,9 +301,9 @@
 					<version>${tycho.version}</version>
 					<dependencies>
 						<dependency>
-							<groupId>org.eclipse.tycho.extras</groupId>
+							<groupId>org.eclipse.tycho</groupId>
 							<artifactId>tycho-buildtimestamp-jgit</artifactId>
-							<version>${tycho-extras.version}</version>
+							<version>${tycho.version}</version>
 						</dependency>
 					</dependencies>
 					<configuration>
