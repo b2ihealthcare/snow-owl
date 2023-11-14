@@ -76,13 +76,13 @@ Once you have downloaded the appropriate package:
 
 Snow Owl uses Maven for its build system. In order to create a distribution, simply run the following command in the cloned directory. 
 
-    mvn clean package
+    ./mvnw clean package
 
 The distribution packages can be found in the `releng/com.b2international.snowowl.server.update/target` folder, when the build is complete.
 
 To run the test cases, use the following command:
 
-    mvn clean verify
+    ./mvnw clean verify
 
 # Development
 
@@ -91,21 +91,19 @@ These instructions will get Snow Owl up and running on your local machine for de
 ## Prerequisites
 
 Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
-* Download Eclipse IDE for Eclipse Committers 2021-12 package from here: https://www.eclipse.org/downloads/packages/release/2021-12/r/eclipse-ide-eclipse-committers
+* Download Eclipse IDE for Eclipse Committers 2023-09 package from here: https://www.eclipse.org/downloads/packages/release/2023-09/r/eclipse-ide-eclipse-committers
 
 Required Eclipse plug-ins in order (install the listed features via `Help` &rarr; `Install New Software...`):
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
+* Groovy Development Tools (https://groovy.jfrog.io/artifactory/plugins-release/e4.29)
+  * Eclipse Groovy Development Tools - 5.1.0 (in category "Main Package")
+* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.12.1/)
+  * MWE SDK 1.6.1 (MWE)
 * Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.25.0/)
   * Xtend IDE 2.25.0 (Xtext)
   * Xtext Complete SDK 2.25.0 (Xtext)
-* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.12.1/)
-  * MWE SDK 1.6.1 (MWE)
-* Groovy Development Tools (https://groovy.jfrog.io/artifactory/plugins-release/e4.22)
-  * Eclipse Groovy Development Tools - 4.4.0 (in category "Main Package")
-  * Groovy-Eclipse M2E integration - 4.4.0 (in category "Maven Support")
-  * Groovy Compiler 3.0 - 4.4.0 (in category "More Compilers")
  
 ### Eclipse Preferences
 
