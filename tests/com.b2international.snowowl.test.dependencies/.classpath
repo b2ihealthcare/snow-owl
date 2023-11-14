@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
-			<attribute name="module" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="src/"/>
+	<classpathentry kind="src" output="target/classes" path="src">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/annotations-17.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.21.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/contiperf-2.3.2.jar"/>
@@ -18,5 +23,10 @@
 	<classpathentry exported="true" kind="lib" path="lib/jna-5.8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/system-rules-1.18.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/testcontainers-1.17.3.jar"/>
-	<classpathentry kind="output" path="target/classes/"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
