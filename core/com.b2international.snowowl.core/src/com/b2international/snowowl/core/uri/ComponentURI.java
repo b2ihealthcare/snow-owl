@@ -113,7 +113,7 @@ public final class ComponentURI implements Serializable {
 		if (componentType.contains(".")) {
 			throw new BadRequestException("Component Type should be a single word. Got: '%s'.", componentType);
 		}
-		if (!CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri) && Strings.isNullOrEmpty(identifier)) {
+		if (!TerminologyRegistry.UNSPECIFIED.equals(resourceUri.getResourceId()) && Strings.isNullOrEmpty(identifier)) {
 			throw new BadRequestException("Identifier should not be null or empty.");
 		}
 		this.resourceUri = resourceUri;
