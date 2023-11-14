@@ -96,7 +96,7 @@ public final class ComponentURI implements Serializable {
 
 	@JsonIgnore
 	public final boolean isUnspecified() {
-		return CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri());
+		return TerminologyRegistry.UNSPECIFIED.equals(resourceUri().getResourceId());
 	}
 	
 	public final ComponentIdentifier toComponentIdentifier() {
