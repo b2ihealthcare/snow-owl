@@ -236,7 +236,7 @@ public final class TransportClient implements IDisposableService {
 			// if successfully logged in replace the event bus with an authorized one
 			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", user.getAccessToken().getToken())));
 			
-			return IdentityProvider.authJWT(user.getAccessToken().getToken());
+			return user;
 		} catch (UnauthorizedException e) {
 			throw new SnowowlServiceException(e.getMessage());
 		} catch (final Throwable t) {
