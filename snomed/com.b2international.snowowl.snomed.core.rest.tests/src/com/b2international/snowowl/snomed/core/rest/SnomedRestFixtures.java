@@ -22,7 +22,9 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.waitForMergeJob;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -424,15 +426,16 @@ public abstract class SnomedRestFixtures {
 	}
 	
 	public static void inactivateMember(IBranchPath memberPath, String memberId) {
-		updateComponent(
-				memberPath, 
-				SnomedComponentType.MEMBER, 
-				memberId,
-				Json.object(
-						"active", false,
-						"commitComment", "Inactivated member"
-						)
-				).statusCode(204);
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.contentType(JSON_UTF8)
+			.body(Json.object(
+				"active", false,
+				"commitComment", "Inactivated member"
+			))
+			// updateComponent uses POST with a different request path format
+			.put("/{memberPath}/members/{memberId}", memberPath.getPath(), memberId)
+			.then()
+			.statusCode(204);
 	}
 
 	public static void inactivateRelationship(IBranchPath relationshipPath, String relationshipId) {
@@ -467,6 +470,19 @@ public abstract class SnomedRestFixtures {
 		});
 
 		updateComponent(branch, SnomedComponentType.CONCEPT, conceptId, reactivationRequest).statusCode(204);
+	}
+	
+	public static void reactivateMember(IBranchPath memberPath, String memberId) {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.contentType(JSON_UTF8)
+			.body(Json.object(
+				"active", true,
+				"commitComment", "Reactivated member"
+			))
+			// updateComponent uses POST with a different request path format
+			.put("/{memberPath}/members/{memberId}", memberPath.getPath(), memberId)
+			.then()
+			.statusCode(204);
 	}
 	
 	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId) {

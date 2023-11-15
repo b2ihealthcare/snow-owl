@@ -401,17 +401,17 @@ public final class StagingArea {
 				if (object instanceof Revision) {
 					RevisionDiff revisionDiff = value.getDiff();
 					final Revision rev = revisionDiff.newRevision;
-					
-					if (!revisionDiff.hasChanges()) {
-						return;
-					}
-					
+
 					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
 					}
 					
 					writer.put(key.id(), rev);
-					
+
+					if (!revisionDiff.hasChanges()) {
+						return;
+					}
+
 					// register component as changed in commit doc
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
