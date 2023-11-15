@@ -34,10 +34,16 @@ public final class User implements Serializable {
 	
 	private final String username;
 	private final List<Role> roles;
+	private final Token accessToken;
 
 	public User(String username, List<Role> roles) {
+		this(username, roles, null);
+	}
+	
+	public User(String username, List<Role> roles, Token accessToken) {
 		this.username = username;
 		this.roles = roles;
+		this.accessToken = accessToken;
 	}
 	
 	public String getUsername() {
@@ -51,6 +57,14 @@ public final class User implements Serializable {
 	@JsonIgnore
 	public List<Permission> getPermissions() {
 		return getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
+	}
+	
+	public Token getAccessToken() {
+		return accessToken;
+	}
+	
+	public User withAccessToken(Token accessToken) {
+		return new User(username, roles, accessToken);
 	}
 	
 	@Override

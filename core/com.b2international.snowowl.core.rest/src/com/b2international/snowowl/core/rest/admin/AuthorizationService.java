@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
@@ -46,7 +47,8 @@ public class AuthorizationService extends AbstractRestService {
 				.setUsername(credentials.getUsername())
 				.setPassword(credentials.getPassword())
 				.buildAsync()
-				.execute(getBus());
+				.execute(getBus())
+				.then(User::getAccessToken);
 	}
 	
 }

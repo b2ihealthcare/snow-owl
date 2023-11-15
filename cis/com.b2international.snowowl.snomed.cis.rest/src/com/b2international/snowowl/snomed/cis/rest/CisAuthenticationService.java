@@ -29,6 +29,7 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -67,6 +68,7 @@ public class CisAuthenticationService extends AbstractRestService {
 				.setPassword(credentials.getPassword())
 				.buildAsync()
 				.execute(getBus())
+				.then(User::getAccessToken)
 				.getSync();
 	}
 	

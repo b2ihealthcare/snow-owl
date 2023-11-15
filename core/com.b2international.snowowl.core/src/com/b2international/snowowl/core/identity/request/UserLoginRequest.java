@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 7.2
  */
 @Unprotected
-public final class UserLoginRequest implements Request<ServiceProvider, Token> {
+public final class UserLoginRequest implements Request<ServiceProvider, User> {
 
 	@NotEmpty
 	@JsonProperty
@@ -46,12 +46,12 @@ public final class UserLoginRequest implements Request<ServiceProvider, Token> {
 	}
 	
 	@Override
-	public Token execute(ServiceProvider context) {
+	public User execute(ServiceProvider context) {
 		final User user = context.service(IdentityProvider.class).auth(username, password);
 		if (user == null) {
 			throw new UnauthorizedException("Incorrect username or password.");
 		}
-		return new Token(context.service(JWTGenerator.class).generate(user));
+		return user.withAccessToken(new Token(context.service(JWTGenerator.class).generate(user)));
 	}
 	
 }
