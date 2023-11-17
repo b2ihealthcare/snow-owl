@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.HISTORICAL_ASSOCIATION_REFSETS;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MOVED_FROM_ASSOCIATION;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -215,7 +216,8 @@ public class Rf2GlobalValidator {
 				final String referenceSet = member[5];
 				final String type = member[0];
 				
-				boolean invalidHistoricalAssociationMember = HISTORICAL_ASSOCIATION_REFSETS.contains(referenceSet) && !Rf2AssociationRefSetContentType.TYPE.equals(type);
+				boolean invalidHistoricalAssociationMember = (HISTORICAL_ASSOCIATION_REFSETS.contains(referenceSet) || REFSET_MOVED_FROM_ASSOCIATION.equals(referenceSet)) 
+						&& !Rf2AssociationRefSetContentType.TYPE.equals(type);
 				boolean invalidAttributeTypeMember = (REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(referenceSet) || REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(referenceSet))
 						&& !Rf2AttributeValueRefSetContentType.TYPE.equals(type);
 				
