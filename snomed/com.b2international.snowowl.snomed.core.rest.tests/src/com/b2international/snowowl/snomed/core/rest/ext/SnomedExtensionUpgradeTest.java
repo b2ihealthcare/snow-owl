@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.rest.ext;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.INT_CODESYSTEM;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.waitForMergeJob;
@@ -23,6 +24,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getLatestVersionId;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -61,13 +63,14 @@ import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
 import com.google.common.collect.Iterables;
@@ -1372,7 +1375,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		String firstExtensionVersion = getNextAvailableEffectiveDateAsString(extension.getShortName());
 		createVersion(extension.getShortName(), firstExtensionVersion, firstExtensionVersion).statusCode(201);
 		
-		// start upgrade to the newer SI version
+		// Start upgrade to the newer SI version
 		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, latestSIVersion);
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
@@ -1389,6 +1392,128 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				.execute(getBus())
 				.getSync(100, TimeUnit.MINUTES);
 		assertTrue(result);
+	}
+	
+	@Test
+	public void upgrade29AcceptableSynonymChangeVSRevertedInferredOnlyAncestorChange() throws Exception {
+		// prepare extension on the second latest int version
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+
+		// alphaproteobacteria
+		String intConceptId = "413858005";
+		String inferredExtensionRelationship = createRelationship(extension.getCodeSystemURI(), createRelationshipRequestBody(intConceptId, Concepts.IS_A, Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE, Concepts.INFERRED_RELATIONSHIP));
+
+		// then immediately delete it on the extension
+		SnomedComponentRestRequests.deleteComponent(
+			extension.getBranchPath(), 
+			SnomedComponentType.RELATIONSHIP, 
+			inferredExtensionRelationship,
+			false
+		).assertThat().statusCode(204);
+
+		// create an acceptable synonym on the international edition and version it
+		String acceptableSynonymId = createDescription(new CodeSystemURI(SNOMEDCT), createDescriptionRequestBody(intConceptId));
+
+		// version INT
+		String newSIVersion = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, newSIVersion, newSIVersion).statusCode(201);
+
+		// create upgrade to the latest SI version
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, newSIVersion)); 
+
+		// on the upgrade branch, the INT concept should be visible
+		SnomedConcept conceptOnUpgradeBranch = getConcept(upgradeCodeSystem.getCodeSystemURI(), intConceptId, "descriptions()");
+		assertThat(conceptOnUpgradeBranch.getParentIdsAsString())
+			.doesNotContain(Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+		assertThat(conceptOnUpgradeBranch.getDescriptions())
+			.extracting(SnomedDescription::getId)
+			.contains(acceptableSynonymId);
+	}
+	
+	@Test
+	public void upgrade30DuplicateDescription() {
+		CodeSystemVersions allVersions = CodeSystemVersionRestRequests.getVersions(SNOMEDCT);
+		String secondLatestSIVersion = allVersions.getItems().get(allVersions.getItems().size() - 2).getVersion();
+		String latestSIVersion = Iterables.getLast(allVersions).getVersion();
+
+		// Create extension with one before latest SI version
+		CodeSystem extensionCodeSystem = createExtension(CodeSystemURI.branch(SNOMEDCT, secondLatestSIVersion), branchPath.lastSegment());
+		IBranchPath extensionPath = BranchPathUtils.createPath(extensionCodeSystem.getBranchPath());
+		String moduleId = createModule(extensionCodeSystem);
+		
+		// Create simple type reference set
+		String parentConceptId = SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE);
+		Map<?, ?> refSetRequestBody = Json.assign(
+			createConceptRequestBody(parentConceptId, moduleId),
+			Json.object(
+				"namespaceId", Concepts.B2I_NAMESPACE,
+				"type", SnomedRefSetType.SIMPLE,
+				"referencedComponentType", SnomedTerminologyComponentConstants.DESCRIPTION,
+				"commitComment", "Created new reference set"
+			)
+		);
+
+		String refSetId = assertCreated(createComponent(extensionPath, SnomedComponentType.REFSET, refSetRequestBody));
+
+		// Add a member to an existing INT description
+		String descriptionId = "517382016"; // FSN of "SNOMED CT Concept"
+		Map<?, ?> memberRequestBody = Json.assign(createRefSetMemberRequestBody(refSetId, descriptionId, moduleId, true))
+			.with("commitComment", "Created new reference set member");
+
+		String memberId = assertCreated(createComponent(extensionPath, SnomedComponentType.MEMBER, memberRequestBody));
+		
+		// Version extension
+		String firstExtensionVersion = getNextAvailableEffectiveDateAsString(extensionCodeSystem.getShortName());
+		createVersion(extensionCodeSystem.getShortName(), firstExtensionVersion, firstExtensionVersion).statusCode(201);
+
+		// Inactivate member on the extension branch after versioning
+		inactivateMember(extensionPath, memberId);
+
+		// Start upgrade of extension version to the newer SI version -- the inactivation should not be part of this
+		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, latestSIVersion);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(CodeSystemURI.branch(extensionCodeSystem.getShortName(), firstExtensionVersion), upgradeVersion);
+		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
+		
+		// Check that at this point we only see a single revision of the description
+		SnomedDescriptions descriptions = SnomedComponentRestRequests.searchComponent(
+			upgradeCodeSystem.getBranchPath(), 
+			SnomedComponentType.DESCRIPTION, 
+			Json.object(
+				"id", descriptionId, 
+				"limit", 2
+			)
+		).assertThat()
+		.statusCode(200)
+		.extract()
+		.as(SnomedDescriptions.class);
+		
+		assertThat(descriptions.getTotal()).isEqualTo(1);
+		
+		// Reactivate member on the extension branch
+		reactivateMember(extensionPath, memberId);
+		
+		// Sync unversioned content
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extensionCodeSystem.getCodeSystemURI())
+			.build(upgradeCodeSystem.getRepositoryId())
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES);
+
+		assertTrue(result);
+		
+		// Check description count again
+		descriptions = SnomedComponentRestRequests.searchComponent(
+			upgradeCodeSystem.getBranchPath(), 
+			SnomedComponentType.DESCRIPTION, 
+			Json.object(
+				"id", descriptionId, 
+				"limit", 2
+			)
+		).assertThat()
+		.statusCode(200)
+		.extract()
+		.as(SnomedDescriptions.class);
+			
+		assertThat(descriptions.getTotal()).isEqualTo(1);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
