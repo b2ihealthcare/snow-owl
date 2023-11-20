@@ -56,7 +56,7 @@ public class Rf2GlobalValidator {
 	private static final int RAW_QUERY_PAGE_SIZE = 500_000;
 	private final Logger log;
 	
-	public static final Set<String> HISTORICAL_ASSOCIATION_REFSETS = ImmutableSet.of(
+	private static final Set<String> HISTORICAL_ASSOCIATION_REFSETS_TO_VALIDATE = ImmutableSet.of(
 			REFSET_HISTORICAL_ASSOCIATION, 
 			REFSET_ALTERNATIVE_ASSOCIATION,
 			REFSET_MOVED_TO_ASSOCIATION,
@@ -226,7 +226,7 @@ public class Rf2GlobalValidator {
 				final String referenceSet = member[5];
 				final String type = member[0];
 				
-				boolean invalidHistoricalAssociationMember = HISTORICAL_ASSOCIATION_REFSETS.contains(referenceSet) && !Rf2AssociationRefSetContentType.TYPE.equals(type);
+				boolean invalidHistoricalAssociationMember = HISTORICAL_ASSOCIATION_REFSETS_TO_VALIDATE.contains(referenceSet) && !Rf2AssociationRefSetContentType.TYPE.equals(type);
 				boolean invalidAttributeTypeMember = (REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(referenceSet) || REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(referenceSet))
 						&& !Rf2AttributeValueRefSetContentType.TYPE.equals(type);
 				
