@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
 
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.HISTORICAL_ASSOCIATION_REFSETS;
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR;
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR;
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MOVED_FROM_ASSOCIATION;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.*;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -44,6 +41,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2AssociationRefSetContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2AttributeValueRefSetContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -57,6 +55,18 @@ public class Rf2GlobalValidator {
 
 	private static final int RAW_QUERY_PAGE_SIZE = 500_000;
 	private final Logger log;
+	
+	public static final Set<String> HISTORICAL_ASSOCIATION_REFSETS = ImmutableSet.of(
+			REFSET_HISTORICAL_ASSOCIATION, 
+			REFSET_ALTERNATIVE_ASSOCIATION,
+			REFSET_MOVED_TO_ASSOCIATION,
+			REFSET_MOVED_FROM_ASSOCIATION,
+			REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION,
+			REFSET_REFERS_TO_ASSOCIATION,
+			REFSET_REPLACED_BY_ASSOCIATION,
+			REFSET_SAME_AS_ASSOCIATION,
+			REFSET_SIMILAR_TO_ASSOCIATION,
+			REFSET_WAS_A_ASSOCIATION);
 		
 	private Map<String, String> dependenciesByEffectiveTime;
 	private Map<String, String> skippableMemberDependenciesByEffectiveTime;
@@ -216,8 +226,7 @@ public class Rf2GlobalValidator {
 				final String referenceSet = member[5];
 				final String type = member[0];
 				
-				boolean invalidHistoricalAssociationMember = (HISTORICAL_ASSOCIATION_REFSETS.contains(referenceSet) || REFSET_MOVED_FROM_ASSOCIATION.equals(referenceSet)) 
-						&& !Rf2AssociationRefSetContentType.TYPE.equals(type);
+				boolean invalidHistoricalAssociationMember = HISTORICAL_ASSOCIATION_REFSETS.contains(referenceSet) && !Rf2AssociationRefSetContentType.TYPE.equals(type);
 				boolean invalidAttributeTypeMember = (REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(referenceSet) || REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(referenceSet))
 						&& !Rf2AttributeValueRefSetContentType.TYPE.equals(type);
 				
