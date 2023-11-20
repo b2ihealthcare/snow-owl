@@ -210,13 +210,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<!-->This is required to bypass an issue with the maven-deploy-plugin that causes build failure in the very last plugin of a multi-module build, see https://issues.apache.org/jira/browse/MINSTALL-151 <-->
-					<allowIncompleteProjects>true</allowIncompleteProjects>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
