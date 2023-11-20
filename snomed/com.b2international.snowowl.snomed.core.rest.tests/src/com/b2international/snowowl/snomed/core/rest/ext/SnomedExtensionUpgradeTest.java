@@ -73,6 +73,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -1401,7 +1402,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
 		// alphaproteobacteria
 		String intConceptId = "413858005";
-		String inferredExtensionRelationship = createRelationship(extension.getCodeSystemURI(), createRelationshipRequestBody(intConceptId, Concepts.IS_A, Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE, Concepts.INFERRED_RELATIONSHIP));
+		// using an existing ancestors as direct parent
+		String inferredExtensionRelationship = createRelationship(extension.getCodeSystemURI(), createRelationshipRequestBody(intConceptId, Concepts.IS_A, "410607006", Concepts.INFERRED_RELATIONSHIP));
 
 		// then immediately delete it on the extension
 		SnomedComponentRestRequests.deleteComponent(
@@ -1410,9 +1412,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			inferredExtensionRelationship,
 			false
 		).assertThat().statusCode(204);
+		
+		// verify that inferred relationship does not exist anymore on the extension branch
+		getComponent(extension.getBranchPath(), SnomedComponentType.RELATIONSHIP, inferredExtensionRelationship).statusCode(404);
 
 		// create an acceptable synonym on the international edition and version it
-		String acceptableSynonymId = createDescription(new CodeSystemURI(SNOMEDCT), createDescriptionRequestBody(intConceptId));
+		String acceptableSynonymId = createDescription(new CodeSystemURI(SNOMEDCT), createDescriptionRequestBody(intConceptId, Concepts.SYNONYM, Concepts.MODULE_SCT_CORE, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)));
 
 		// version INT
 		String newSIVersion = getNextAvailableEffectiveDateAsString(SNOMEDCT);
