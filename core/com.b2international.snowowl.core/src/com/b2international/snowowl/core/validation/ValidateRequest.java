@@ -139,6 +139,9 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final Promise<List<Object>> promise = Promise.all(validationPromises);
 		
 		while (!promise.isDone() || !issuesToPersistQueue.isEmpty()) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			if (!issuesToPersistQueue.isEmpty()) {
 				final Collection<IssuesToPersist> issuesToPersist = newArrayList(); 
 				issuesToPersistQueue.drainTo(issuesToPersist);
