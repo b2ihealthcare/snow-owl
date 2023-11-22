@@ -107,7 +107,9 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
 		// evaluate selected rules
 		for (ValidationRule rule : rules) {
-			RemoteJob remoteJob = context.service(RemoteJob.class);
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 			if (evaluator != null) {
@@ -116,7 +118,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 					
 					try {
 						if (monitor.isCanceled()) {
-							throw new OperationCanceledException(remoteJob.getName() + " has been canceled");
+							throw new OperationCanceledException();
 						}
 						LOG.info("Executing rule '{}'...", rule.getId());
 						final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
