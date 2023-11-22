@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -74,8 +77,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 	
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
+		
 		final String branchPath = context.path();
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
+		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		
 		CodeSystem codeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
 		CodeSystemURI codeSystemURI = codeSystem.getCodeSystemURI(branchPath);
@@ -102,6 +107,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
 		// evaluate selected rules
 		for (ValidationRule rule : rules) {
+			RemoteJob remoteJob = context.service(RemoteJob.class);
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 			if (evaluator != null) {
@@ -109,6 +115,9 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 					Stopwatch w = Stopwatch.createStarted();
 					
 					try {
+						if (monitor.isCanceled()) {
+							throw new OperationCanceledException(remoteJob.getName() + " has been canceled");
+						}
 						LOG.info("Executing rule '{}'...", rule.getId());
 						final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), evaluationResponse));
