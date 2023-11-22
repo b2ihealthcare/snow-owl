@@ -16,7 +16,6 @@
 package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_INTERACTION_READ;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_PROFILE;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_INTERACTION;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
@@ -63,12 +62,9 @@ import com.google.common.collect.Iterables;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.extensions.Extension;
-import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
@@ -78,11 +74,6 @@ import io.swagger.v3.oas.models.Paths;
  * 
  * @since 8.0.0
  */
-@Tag(description="CapabilityStatement", name = FhirApiConfig.CAPABILITY_STATEMENT, extensions = { 
-	@Extension(name = B2I_OPENAPI_X_NAME, properties = { 
-		@ExtensionProperty(name = B2I_OPENAPI_PROFILE, value = "http://hl7.org/fhir/StructureDefinition/CapabilityStatement")
-	})
-})
 @RestController
 public class FhirMetadataController extends AbstractFhirController {
 	
@@ -109,15 +100,6 @@ public class FhirMetadataController extends AbstractFhirController {
 	 * @param _pretty
 	 * @return
 	 */
-	@Operation(
-		summary="Retrieve the capability statement", 
-		description="Retrieves this server's capability statement.",
-		extensions = {
-			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
-				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_READ, value = "Read the capability statement"),
-			}),
-		}
-	)
 	@ApiResponse(responseCode = "200", description = "OK")
 	@GetMapping(value = "/metadata", produces = {
 		APPLICATION_FHIR_JSON_VALUE,
