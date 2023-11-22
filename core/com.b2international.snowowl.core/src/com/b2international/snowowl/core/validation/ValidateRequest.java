@@ -115,11 +115,11 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 			if (evaluator != null) {
 				validationPromises.add(pool.submit(rule.getCheckType(), () -> {
 					Stopwatch w = Stopwatch.createStarted();
+					if (monitor.isCanceled()) {
+						throw new OperationCanceledException();
+					}
 					
 					try {
-						if (monitor.isCanceled()) {
-							throw new OperationCanceledException();
-						}
 						LOG.info("Executing rule '{}'...", rule.getId());
 						final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), evaluationResponse));
