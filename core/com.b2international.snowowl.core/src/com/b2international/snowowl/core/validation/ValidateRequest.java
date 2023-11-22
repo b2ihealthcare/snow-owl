@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -74,8 +77,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 	
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
+		
 		final String branchPath = context.path();
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
+		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		
 		CodeSystem codeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
 		CodeSystemURI codeSystemURI = codeSystem.getCodeSystemURI(branchPath);
@@ -102,11 +107,17 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
 		// evaluate selected rules
 		for (ValidationRule rule : rules) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 			if (evaluator != null) {
 				validationPromises.add(pool.submit(rule.getCheckType(), () -> {
 					Stopwatch w = Stopwatch.createStarted();
+					if (monitor.isCanceled()) {
+						throw new OperationCanceledException();
+					}
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
@@ -128,6 +139,9 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final Promise<List<Object>> promise = Promise.all(validationPromises);
 		
 		while (!promise.isDone() || !issuesToPersistQueue.isEmpty()) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			if (!issuesToPersistQueue.isEmpty()) {
 				final Collection<IssuesToPersist> issuesToPersist = newArrayList(); 
 				issuesToPersistQueue.drainTo(issuesToPersist);

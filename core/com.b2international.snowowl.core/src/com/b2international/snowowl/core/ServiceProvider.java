@@ -22,6 +22,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.jobs.JobRequests;
@@ -114,6 +117,13 @@ public interface ServiceProvider {
 				.filter(parametersPredicate)
 				.isPresent();
 	}
+	
+	/**
+	  * @return the current monitor from the context or a {@link NullProgressMonitor} if none present
+	  */
+	default IProgressMonitor monitor() {
+	  return optionalService(IProgressMonitor.class).orElseGet(NullProgressMonitor::new);
+	}
 
 	/**
 	 * Empty {@link ServiceProvider} implementation that throws {@link UnsupportedOperationException}s when trying to provide services. Useful when
@@ -132,5 +142,7 @@ public interface ServiceProvider {
 			throw new UnsupportedOperationException("Empty service provider can't provide services. Requested: " + type);
 		}
 	};
+	
+	
 
 }
