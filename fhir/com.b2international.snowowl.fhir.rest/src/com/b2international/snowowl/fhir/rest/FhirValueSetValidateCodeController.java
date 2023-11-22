@@ -15,109 +15,442 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import java.io.InputStream;
+import java.util.Optional;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.converter.ValueSetConverter_50;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * @see <a href="https://www.hl7.org/fhir/valueset-operations.html">FHIR:ValueSet:Operations</a>
+ * @see <a href="https://www.hl7.org/fhir/valueset-operation-validate-code.html">4.9.18.2 Operation $validate-code on ValueSet</a>
  * @since 8.0
  */
 @Tag(description = "ValueSet", name = FhirApiConfig.VALUESET)
 @RestController
-@RequestMapping(value="/ValueSet", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value = "/ValueSet")
 public class FhirValueSetValidateCodeController extends AbstractFhirController {
+
+	/**
+	 * <code><b>GET /ValueSet/$validate-code</b></code>
+	 * <p>
+	 * The value set is identified by its Value Set ID within the path. If the
+	 * operation is not called at the instance level, one of the parameters "url" or
+	 * "valueSet" must be provided. The operation returns a result (true / false),
+	 * an error message, and the recommended display for the code. When invoking
+	 * this operation, a client SHALL provide one (and only one) of the parameters
+	 * (code+system, coding, or codeableConcept). Other parameters (including
+	 * version and display) are optional.
+	 * 
+	 * @param url             the value set to validate against
+	 * @param valueSetVersion the version of the value set to validate against
+	 * @param code            to code to validate
+	 * @param system
+	 * @param systemVersion
+	 * @param display
+	 * @param date            the date for which the validation should be checked
+	 * @param isAbstract      If this parameter has a value of true, the client is
+	 *                        stating that the validation is being performed in a
+	 *                        context where a concept designated as 'abstract' is
+	 *                        appropriate/allowed.
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
+	 */
+	@Operation(
+		summary = "Validate a code in a value set",
+		description = "Validate that a coded value is in a value set."
+	)
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "400", description = "Bad request")
+	@ApiResponse(responseCode = "404", description = "Value set not found")
+	@GetMapping(value = "/$validate-code", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
+	public Promise<ResponseEntity<byte[]>> validateCodeType(
+			
+		@Parameter(description = "The uri of the value set to validate against") 
+		@RequestParam(value = "url") 
+		String url,
+		
+		@Parameter(description = "The version of the value set") 
+		@RequestParam(value = "valueSetVersion") 
+		final Optional<String> valueSetVersion,
+
+		@Parameter(description = "The code to be validated") 
+		@RequestParam(value = "code") 
+		final String code,
+
+		@Parameter(description = "The system uri of the code to be validated") 
+		@RequestParam(value="system") 
+		final Optional<String> system,
+		
+		@Parameter(description = "The code system version of the code to be validated") 
+		@RequestParam(value = "systemVersion") 
+		final Optional<String> systemVersion,
+
+		@Parameter(description = "The display string of the code") 
+		@RequestParam(value = "display") 
+		final Optional<String> display,
+		
+		@Parameter(description = "The date stamp of the value set to validate against") 
+		@RequestParam(value = "date") 
+		final Optional<String> date,
+		
+		@Parameter(description = "The abstract status of the code") 
+		@RequestParam(value = "abstract") 
+		final Optional<Boolean> isAbstract,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", required = false)
+		final Boolean _pretty
+		
+	) {
+		
+		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
+			.url(url)
+			.code(code)
+			.valueSetVersion(valueSetVersion.orElse(null))
+			.system(system.orElse(null))
+			.systemVersion(systemVersion.orElse(null))
+			.display(display.orElse(null))
+			.isAbstract(isAbstract.orElse(null));
+		
+		if (date.isPresent()) {
+			builder.date(date.get());
+		}
+				
+		return validateCode(builder.build(), accept, _format, _pretty);
+	}
+	
+	/**
+	 * <code><b>POST /ValueSet/$validate-code</b></code>
+	 * 
+	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
+	 * @param contentType
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
+	 */
+	@Operation(
+		summary = "Validate a code in a value set", 
+		description = "Validate that a coded value is in a value set."
+	)
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@ApiResponse(responseCode = "400", description = "Bad request")
+	@PostMapping(
+		value = "/$validate-code", 
+		consumes = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		},
+		produces = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		}
+	)
+	public Promise<ResponseEntity<byte[]>> validateCode(
+			
+		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+		})
+		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", required = false)
+		final Boolean _pretty		
+			
+	) {
+		
+		final var fhirParameters = toFhirParameters(requestBody, contentType);
+		final ValidateCodeRequest request = ValueSetConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		
+		return validateCode(request, accept, _format, _pretty);
+	}
 
 	
 	/**
-	 * HTTP Get request to validate that a coded value is in the set of codes allowed by a value set.
-	 * The value set is identified by its Value Set ID
-	 * @param id the logical ID of the valueSet
-	 * @param code code to validate
-	 * @param system the code system of the code to validate
-	 * @param systemVersion the optional version of the code to validate
-	 *
-	 * @return validation results as {@link OperationOutcome}
+	 * <code><b>GET /ValueSet/{id}/$validate-code</b></code>
+	 * <p>
+	 * The value set is identified by its Value Set ID within the path - 'instance'
+	 * level call. If the operation is not called at the instance level, one of the
+	 * parameters "url" or "valueSet" must be provided. The operation returns a
+	 * result (true / false), an error message, and the recommended display for the
+	 * code. When invoking this operation, a client SHALL provide one (and only one)
+	 * of the parameters (code+system, coding, or codeableConcept). Other parameters
+	 * (including version and display) are optional.
+	 * 
+	 * @param valueSetId      the value set to validate against
+	 * @param valueSetVersion the version of the value set to validate against
+	 * @param code            to code to validate
+	 * @param system
+	 * @param systemVersion
+	 * @param display
+	 * @param date            the date for which the validation should be checked
+	 * @param isAbstract      If this parameter has a value of true, the client is
+	 *                        stating that the validation is being performed in a
+	 *                        context where a concept designated as 'abstract' is
+	 *                        appropriate/allowed.
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
-		summary="Validate a code in a value set",
-		description="Validate that a coded value is in the set of codes allowed by a value set."
+		summary = "Validate a code in a value set",
+		description = "Validate that a coded value is in a value set."
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
-	@GetMapping(value="/{id:**}/$validate-code")
-	public Promise<Parameters.Fhir> validateCode(
-			@Parameter(description = "The id of the value set to validate against") @PathVariable("id") String id, 
-			@Parameter(description = "The code to to be validated") @RequestParam(value="code") final String code,
-			@Parameter(description = "The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="systemVersion", required=false) final String systemVersion) {
+	@GetMapping(value = "/{valueSetId:**}/$validate-code", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
+	})
+	public Promise<ResponseEntity<byte[]>> validateCodeInstance(
+			
+		@Parameter(description = "The id of the value set to validate against") 
+		@PathVariable(value = "valueSetId") 
+		String valueSetId, 
 		
-		ValidateCodeRequest request = ValidateCodeRequest.builder()
-				.url(id)
-				.code(code)
-				.system(system)
-				.systemVersion(systemVersion)
-				.build();
+		@Parameter(description = "The version of the value set") 
+		@RequestParam(value = "valueSetVersion") 
+		final Optional<String> valueSetVersion,
 		
-		return FhirRequests.valueSets().prepareValidateCode()
-			.setRequest(request)
-			.buildAsync()
-			.execute(getBus())
-			.then(this::toResponse);
+		@Parameter(description = "The code to be validated") 
+		@RequestParam(value = "code") 
+		final String code,
+
+		@Parameter(description = "The system uri of the code to be validated") 
+		@RequestParam(value="system") 
+		final Optional<String> system,
+		
+		@Parameter(description = "The code system version of the code to be validated") 
+		@RequestParam(value = "systemVersion") 
+		final Optional<String> systemVersion,
+
+		@Parameter(description = "The display string of the code") 
+		@RequestParam(value = "display") 
+		final Optional<String> display,
+		
+		@Parameter(description = "The date stamp of the value set to validate against") 
+		@RequestParam(value = "date") 
+		final Optional<String> date,
+		
+		@Parameter(description = "The abstract status of the code") 
+		@RequestParam(value = "abstract") 
+		final Optional<Boolean> isAbstract,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", required = false)
+		final Boolean _pretty		
+	
+	) {
+		
+		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
+			// XXX: Inject value set ID as a URI into the request
+			.url(valueSetId)
+			.code(code)
+			.code(code)
+			.valueSetVersion(valueSetVersion.orElse(null))
+			.system(system.orElse(null))
+			.systemVersion(systemVersion.orElse(null))
+			.display(display.orElse(null))
+			.isAbstract(isAbstract.orElse(null));
+		
+		if (date.isPresent()) {
+			builder.date(date.get());
+		}
+		
+		return validateCode(builder.build(), accept, _format, _pretty);
 	}
 	
 	/**
-	 * HTTP Get request to validate that a coded value is in the set of codes allowed by a value set.
-	 * The value set is identified by its canonical URL (SNOMED CT for example)
-	 
-	 * @param url the canonical URL of the value set to validate the code against
-	 * @param code code to validate
-	 * @param system the code system of the code to validate
-	 * @param systemVersion the optional version of the code to validate
-	 * @return validation results as {@link OperationOutcome}
+	 * <code><b>POST /ValueSet/{id}/$validate-code</b></code>
+	 * <p>
+	 * All parameters are in the request body, except the valueSetId.
+	 * 
+	 * @param valueSetId
+	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
+	 * @param contentType
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @return
 	 */
 	@Operation(
-		summary="Validate a code in a value set defined by its URL",
-		description="Validate that a coded value is in the set of codes allowed by a value set."
+		summary = "Validate a code in a value set", 
+		description = "Validate that a coded value is in a value set."
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "404", description = "Value set not found")
-	})
-	@RequestMapping(value="/$validate-code", method=RequestMethod.GET)
-	public Promise<Parameters.Fhir> validateCodeByURL(
-			@Parameter(description = "Canonical URL of the value set") @RequestParam(value="url") final String url,
-			@Parameter(description = "The code to to be validated") @RequestParam(value="code") final String code,
-			@Parameter(description = "The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@Parameter(description = "The code system version of the code to be validated") @RequestParam(value="systemVersion", required=false) final String systemVersion) {
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@ApiResponse(responseCode = "400", description = "Bad request")
+	@PostMapping(
+		value = "/{valueSetId:**}/$validate-code", 
+		consumes = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		},
+		produces = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		}
+	)
+	public Promise<ResponseEntity<byte[]>> validateCode(
+
+		@Parameter(description = "The id of the value set to validate against") 
+		@PathVariable(value = "valueSetId") 
+		String valueSetId, 
+
+		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+		})
+		final InputStream requestBody,
 		
-		ValidateCodeRequest request = ValidateCodeRequest.builder()
-			.url(url)
-			.code(code)
-			.system(system)
-			.systemVersion(systemVersion)
-			.build();
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
 		
-		return FhirRequests.valueSets().prepareValidateCode()
-				.setRequest(request)
-				.buildAsync()
-				.execute(getBus())
-				.then(this::toResponse);
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", required = false)
+		final Boolean _pretty		
+		
+	) {
+		
+		final var fhirParameters = toFhirParameters(requestBody, contentType);
+		final ValidateCodeRequest request = ValueSetConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		
+		// Before execution set the URI to match the path variable
+		request.setUrl(new Uri(valueSetId));
+		
+		return validateCode(request, accept, _format, _pretty);
 	}
-	
+
+	private Promise<ResponseEntity<byte[]>> validateCode(
+		final ValidateCodeRequest validateCodeRequest,
+		final String accept,
+		final String _format,
+		final Boolean _pretty
+	) {
+		return FhirRequests.valueSets().prepareValidateCode()
+			.setRequest(validateCodeRequest)
+			.buildAsync()
+			.execute(getBus())
+			.then(soValidateCodeResult -> {
+				var fhirValidateCodeResult = ValueSetConverter_50.INSTANCE.fromValidateCodeResult(soValidateCodeResult);
+				return toResponseEntity(fhirValidateCodeResult, accept, _format, _pretty);
+			});
+	}
 }

@@ -34,6 +34,7 @@ public class OpenAPIExtensions {
 	 * Method-level OpenAPI extension to describe an operation (FHIR interaction)
 	 */
 	public static final String B2I_OPENAPI_X_INTERACTION = "x-interaction";
+	
 	public static final String B2I_OPENAPI_INTERACTION_READ = "read";
 	public static final String B2I_OPENAPI_INTERACTION_VREAD = "vread";
 	public static final String B2I_OPENAPI_INTERACTION_CREATE = "create";

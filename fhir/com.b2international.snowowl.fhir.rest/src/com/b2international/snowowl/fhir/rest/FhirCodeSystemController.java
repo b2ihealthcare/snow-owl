@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
 
@@ -28,16 +29,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
-import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
@@ -45,8 +46,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -63,7 +66,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 	)}
 )})
 @RestController
-@RequestMapping(value = "/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value = "/CodeSystem")
 public class FhirCodeSystemController extends AbstractFhirController {
 	
 	/**
@@ -72,7 +75,14 @@ public class FhirCodeSystemController extends AbstractFhirController {
 	 * Creates the initial revision of the specified code system. The identifier is randomly assigned and ignored if
 	 * present in the input resource.
 	 * 
-	 * @param codeSystem - the code system to create
+	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to a FHIR code system resource
+	 * @param contentType
+	 * @param defaultEffectiveDate
+	 * @param author
+	 * @param owner
+	 * @param ownerProfileName
+	 * @param bundleId
+	 * @return
 	 */
 	@Operation(
 		summary = "Create new code system", 
@@ -83,85 +93,104 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			}),
 		}
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Resource updated"),
-		@ApiResponse(responseCode = "201", description = "Resource created"),
-		@ApiResponse(responseCode = "400", description = "Bad Request"),
+	@ApiResponse(responseCode = "200", description = "Resource updated")
+	@ApiResponse(responseCode = "201", description = "Resource created")
+	@ApiResponse(responseCode = "400", description = "Bad Request")
+	@PostMapping(consumes =	{
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
 	})
-	@PostMapping(consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
 	public ResponseEntity<Void> create(
-		@Parameter(description = "The code system resource, with optional commit comment")
-		@RequestBody 
-		final ResourceRequest<CodeSystem> codeSystem,
 			
-		@Parameter(description = "The effective date to use if a version identifier is present in the resource "
-				+ "without a corresponding effective date value")
+		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The code system resource", content = { 
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+		})
+		final InputStream requestBody,
+		
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+		
+		@Parameter(description = """
+			The effective date to use if a version identifier is present in the resource without 
+			a corresponding effective date value""")
 		@RequestHeader(value = X_EFFECTIVE_DATE, required = false)
 		@DateTimeFormat(iso = ISO.DATE)
 		final LocalDate defaultEffectiveDate,
 		
-		@Parameter(description = "The user identifier used for committing the change")
+		@Parameter(description = """
+			The user identifier used for committing the change""")
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author,
 		
-		@Parameter(description = "The resource owner (if not set it will fall back to the X-Author header then to the current authenticated user id)")
+		@Parameter(description = """
+			The resource owner (if not set it will fall back to the X-Author header then to the 
+			current authenticated user id)""")
 		@RequestHeader(value = X_OWNER, required = false)
 		final String owner,
 		
-		@Parameter(description = "The user profile name to add to resource settings for client purposes")
+		@Parameter(description = """
+			The user profile name to add to resource settings for client purposes""")
 		@RequestHeader(value = X_OWNER_PROFILE_NAME, required = false)
 		final String ownerProfileName,
 		
-		@Parameter(description = "The parent bundle's identifier (defaults to root if not present)")
+		@Parameter(description = """
+			The parent bundle's identifier (defaults to root if not present)""")
 		@RequestHeader(value = X_BUNDLE_ID, required = false)
-		final String bundleId) {
+		final String bundleId
 		
+	) {
+		
+		final var fhirCodeSystem = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.CodeSystem.class);
+		final CodeSystem soCodeSystem = CodeSystemConverter_50.INSTANCE.toInternal(fhirCodeSystem);
+
 		// Ignore the input identifier on purpose and assign one locally
 		final String generatedId = IDs.base62UUID();
-		
-		final CodeSystem fhirCodeSystem = codeSystem.getChange();
-		final CodeSystem fhirCodeSystemWithId = CodeSystem.builder(generatedId)
-			.caseSensitive(fhirCodeSystem.getCaseSensitive())
-			.compositional(fhirCodeSystem.getCompositional())
-			.concepts(fhirCodeSystem.getConcepts())
-			.contacts(fhirCodeSystem.getContacts())
-			.content(fhirCodeSystem.getContent())
-			.copyright(fhirCodeSystem.getCopyright())
-			.count(fhirCodeSystem.getCount())
-			.date(fhirCodeSystem.getDate())
-			.description(fhirCodeSystem.getDescription())
-			.experimental(fhirCodeSystem.getExperimental())
-			.extensions(fhirCodeSystem.getExtensions())
-			.filters(fhirCodeSystem.getFilters())
-			.hierarchyMeaning(fhirCodeSystem.getHierarchyMeaning())
-			.identifiers(fhirCodeSystem.getIdentifiers())
-			.implicitRules(fhirCodeSystem.getImplicitRules())
-			.jurisdictions(fhirCodeSystem.getJurisdictions())
-			.language(fhirCodeSystem.getLanguage())
-			.meta(fhirCodeSystem.getMeta())
-			.name(fhirCodeSystem.getName())
+		final CodeSystem soCodeSystemWithId = CodeSystem.builder(generatedId)
+			.caseSensitive(soCodeSystem.getCaseSensitive())
+			.compositional(soCodeSystem.getCompositional())
+			.concepts(soCodeSystem.getConcepts())
+			.contacts(soCodeSystem.getContacts())
+			.content(soCodeSystem.getContent())
+			.copyright(soCodeSystem.getCopyright())
+			.count(soCodeSystem.getCount())
+			.date(soCodeSystem.getDate())
+			.description(soCodeSystem.getDescription())
+			.experimental(soCodeSystem.getExperimental())
+			.extensions(soCodeSystem.getExtensions())
+			.filters(soCodeSystem.getFilters())
+			.hierarchyMeaning(soCodeSystem.getHierarchyMeaning())
+			.identifiers(soCodeSystem.getIdentifiers())
+			.implicitRules(soCodeSystem.getImplicitRules())
+			.jurisdictions(soCodeSystem.getJurisdictions())
+			.language(soCodeSystem.getLanguage())
+			.meta(soCodeSystem.getMeta())
+			.name(soCodeSystem.getName())
 			// .narrative(...) is a special version of .text(...)
-			.properties(fhirCodeSystem.getProperties())
-			.publisher(fhirCodeSystem.getPublisher())
-			.purpose(fhirCodeSystem.getPurpose())
-			.resourceType(fhirCodeSystem.getResourceType())
-			.status(fhirCodeSystem.getStatus())
-			.supplements(fhirCodeSystem.getSupplements())
-			.text(fhirCodeSystem.getText())
-			.title(fhirCodeSystem.getTitle())
+			.properties(soCodeSystem.getProperties())
+			.publisher(soCodeSystem.getPublisher())
+			.purpose(soCodeSystem.getPurpose())
+			.resourceType(soCodeSystem.getResourceType())
+			.status(soCodeSystem.getStatus())
+			.supplements(soCodeSystem.getSupplements())
+			.text(soCodeSystem.getText())
+			.title(soCodeSystem.getTitle())
 			// .toolingId(...) is ignored, we will not see it on the input side
-			.url(fhirCodeSystem.getUrl())
-			.usageContexts(fhirCodeSystem.getUsageContexts())
-			.valueSet(fhirCodeSystem.getValueSet())
-			.version(fhirCodeSystem.getVersion())
-			.versionNeeded(fhirCodeSystem.getVersionNeeded())
+			.url(soCodeSystem.getUrl())
+			.usageContexts(soCodeSystem.getUsageContexts())
+			.valueSet(soCodeSystem.getValueSet())
+			.version(soCodeSystem.getVersion())
+			.versionNeeded(soCodeSystem.getVersionNeeded())
 			.build();
 		
-		codeSystem.setChange(fhirCodeSystemWithId);
-		return update(generatedId, codeSystem, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
-		
+		return createOrUpdate(generatedId, soCodeSystemWithId, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
 	}
-	
+
 	/**
 	 * <code><b>PUT /CodeSystem/{id}</b></code>
 	 * <p>
@@ -169,69 +198,110 @@ public class FhirCodeSystemController extends AbstractFhirController {
 	 * revision if it did not already exist.
 	 * 
 	 * @param id - the code system identifier
-	 * @param codeSystem - the new or updated code system (identifier must match the
-	 * path parameter)
+	 * @param requestBody - the new or updated code system (resource ID must match the path parameter)
+	 * @param contentType
+	 * @param defaultEffectiveDate
+	 * @param author
+	 * @param owner
+	 * @param ownerProfileName
+	 * @param bundleId
+	 * @return
 	 */
 	@Operation(
-		summary = "Create/update a code system with identifier", 
+		summary = "Create a new or update an existing code system with identifier", 
 		description = "Create a new or update an existing FHIR code system.", 
 		extensions = {
 			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
-				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_UPDATE, value = "Create/update a code system"),
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_UPDATE, value = "Create new or update existing code system"),
 			}),
 		}
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Resource updated"),
-		@ApiResponse(responseCode = "201", description = "Resource created"),
-		@ApiResponse(responseCode = "400", description = "Bad Request"),
+	@ApiResponse(responseCode = "200", description = "Resource updated")
+	@ApiResponse(responseCode = "201", description = "Resource created")
+	@ApiResponse(responseCode = "400", description = "Bad Request")
+	@PutMapping(value = "/{id:**}", consumes = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
 	})
-	@PutMapping(value = "/{id:**}", consumes = { AbstractFhirController.APPLICATION_FHIR_JSON })
 	public ResponseEntity<Void> update(
-		@Parameter(description = "The identifier of the code system")
+			
+		@Parameter(description = """
+			The identifier of the code system""")
 		@PathVariable(value = "id") 
 		final String id,
 		
-		@Parameter(description = "The code system resource, with optional commit comment")
-		@RequestBody 
-		final ResourceRequest<CodeSystem> codeSystem,
+		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The code system resource", content = { 
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+		})
+		final InputStream requestBody,
 		
-		@Parameter(description = "The effective date to use if a version identifier is present in the resource "
-			+ "without a corresponding effective date value")
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.CONTENT_TYPE)
+		final String contentType,
+
+		@Parameter(description = """
+			The effective date to use if a version identifier is present in the resource without 
+			a corresponding effective date value""")
 		@RequestHeader(value = X_EFFECTIVE_DATE, required = false)
 		@DateTimeFormat(iso = ISO.DATE)
 		final LocalDate defaultEffectiveDate,
 		
-		@Parameter(description = "The user identifier used for committing the change")
+		@Parameter(description = """
+			The user identifier used for committing the change""")
 		@RequestHeader(value = X_AUTHOR, required = false)
 		final String author,
 		
-		@Parameter(description = "The resource owner (if not set it will fall back to the X-Author header then to the current authenticated user id)")
+		@Parameter(description = """
+			The resource owner (if not set it will fall back to the X-Author header then to the 
+			current authenticated user id)""")
 		@RequestHeader(value = X_OWNER, required = false)
 		final String owner,
 		
-		@Parameter(description = "The user profile name to add to resource settings for client purposes")
+		@Parameter(description = """
+			The user profile name to add to resource settings for client purposes""")
 		@RequestHeader(value = X_OWNER_PROFILE_NAME, required = false)
 		final String ownerProfileName,
 		
-		@Parameter(description = "The parent bundle's identifier (defaults to root if not present)")
+		@Parameter(description = """
+			The parent bundle's identifier (defaults to root if not present)""")
 		@RequestHeader(value = X_BUNDLE_ID, required = false)
-		final String bundleId) {
-
-		final CodeSystem fhirCodeSystem = codeSystem.getChange();
+		final String bundleId
 		
-		if (fhirCodeSystem.getId() == null) {
+	) {
+		
+		final var fhirCodeSystem = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.CodeSystem.class);
+		final CodeSystem soCodeSystem = CodeSystemConverter_50.INSTANCE.toInternal(fhirCodeSystem);
+		
+		return createOrUpdate(id, soCodeSystem, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
+	}
+	
+	private ResponseEntity<Void> createOrUpdate(
+		String id, 
+		CodeSystem soCodeSystem, 
+		LocalDate defaultEffectiveDate, 
+		String author, 
+		String owner, 
+		String ownerProfileName, 
+		String bundleId
+	) {
+		
+		if (soCodeSystem.getId() == null) {
 			throw new BadRequestException("Code system resource did not contain an id element.");
 		}
 		
-		final String idInResource = fhirCodeSystem.getId().getIdValue();
+		final String idInResource = soCodeSystem.getId().getIdValue();
 		if (!id.equals(idInResource)) {
 			throw new BadRequestException("Code system resource ID '" + idInResource + "' disagrees with '" + id + "' provided in the request URL.");
 		}
 		
 		final FhirResourceUpdateResult updateResult = FhirRequests.codeSystems()
 			.prepareUpdate()
-			.setFhirCodeSystem(fhirCodeSystem)
+			.setFhirCodeSystem(soCodeSystem)
 			.setAuthor(author)
 			.setOwner(owner)
 			.setOwnerProfileName(ownerProfileName)
@@ -249,141 +319,240 @@ public class FhirCodeSystemController extends AbstractFhirController {
 					.toUri();
 				
 				return ResponseEntity.created(locationUri).build();
+				
 			default:
 				return ResponseEntity.ok().build();
 		}
 	}
 	
 	/**
-	 * HTTP GET /CodeSystem
+	 * <code><b>GET /CodeSystem</b></code>
+	 * <p>
+	 * Returns a bundle containing all code systems that match the specified search criteria.
+	 * 
 	 * @param params - request parameters
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @param acceptLanguage
 	 * @return bundle of code systems
 	 */
 	@Operation(
 		summary="Retrieve all code systems",
 		description="Returns a collection of the supported code systems.", 
-	
 		extensions = {
-				@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
-					@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_READ, value = "Read code systems"),
-				}),
-			}
+			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_SEARCH_TYPE, value = "Search code systems based on some filter criteria"),
+			}),
+		}
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "400", description = "Bad Request"),
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "400", description = "Bad Request")
+	@GetMapping(produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
 	})
-	@GetMapping
-	public Promise<Bundle> getCodeSystems(
-			@ParameterObject 
-			FhirCodeSystemSearchParameters params,
-
-			@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
-			final String acceptLanguage) {
+	public Promise<ResponseEntity<byte[]>> getCodeSystems(
 			
-		//TODO: replace this with something more general as described in
-		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
-//		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
+		@ParameterObject 
+		FhirCodeSystemSearchParameters params,
 		
-		return FhirRequests.codeSystems().prepareSearch()
-				.filterByIds(asList(params.get_id()))
-				.filterByNames(asList(params.getName()))
-				.filterByTitle(params.getTitle())
-//				.filterByContent(params.get_content())
-				.filterByLastUpdated(params.get_lastUpdated())
-				.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
-				.filterByVersions(params.getVersion())
-				.filterByStatus(params.getStatus())
-				.setSearchAfter(params.get_after())
-				.setCount(params.get_count())
-				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
-				.setSummary(params.get_summary())
-				.setElements(params.get_elements())
-				.sortByFields(params.get_sort())
-				.setLocales(acceptLanguage)
-				.buildAsync()
-				.execute(getBus());
-		// TODO convert returned Bundle entries to have a fullUrl, either here or supply current url to request via header param
-//				String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
-//				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
+		
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", required = false)
+		final Boolean _pretty,
+		
+		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+		@RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
+		final String acceptLanguage
+	) {
+			
+		// XXX: We are using "{id}" as the placeholder for the "id" path parameter and expand it later
+		final UriComponentsBuilder fullUrlBuilder = MvcUriComponentsBuilder.fromMethodName(FhirCodeSystemController.class, "getCodeSystem", 
+			"{id}", 
+			(FhirResourceSelectors) params,
+			accept,
+			_format, 
+			_pretty, 
+			acceptLanguage);
+		
+		return FhirRequests.codeSystems()
+			.prepareSearch()
+			.filterByIds(asList(params.get_id()))
+			.filterByNames(asList(params.getName()))
+			.filterByTitle(params.getTitle())
+//			.filterByContent(params.get_content())
+			.filterByLastUpdated(params.get_lastUpdated())
+			.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
+			.filterByVersions(params.getVersion())
+			.filterByStatus(params.getStatus())
+			.setSearchAfter(params.get_after())
+			.setCount(params.get_count())
+			// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
+			.setSummary(params.get_summary())
+			.setElements(params.get_elements())
+			.sortByFields(params.get_sort())
+			.setLocales(acceptLanguage)
+			.buildAsync()
+			.execute(getBus())
+			.then(soBundle -> toResponseEntity(soBundle, fullUrlBuilder, accept, _format, _pretty));
 	}
 	
 	/**
-	 * HTTP GET for retrieving a code system by its logical identifier
+	 * <code><b>GET /CodeSystem/{id}</b></code>
+	 * <p>
+	 * Retrieves a single code system by its logical identifier or URL.
+	 * 
 	 * @param id
 	 * @param selectors
+	 * @param accept
+	 * @param _format
+	 * @param _pretty
+	 * @param acceptLanguage
 	 * @return
 	 */
 	@Operation(
 		summary = "Retrieve the code system by id",
-		description = "Retrieves the code system specified by its logical id."
+		description = "Retrieves the code system specified by its logical id.",
+		extensions = {
+			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_READ, value = "Read the current state of code systems"),
+			}),
+		}
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "OK"),
-		@ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "404", description = "Code system not found")
+	@ApiResponse(responseCode = "200", description = "OK")
+	@ApiResponse(responseCode = "400", description = "Bad request")
+	@ApiResponse(responseCode = "404", description = "Code system not found")
+	@GetMapping(value = "/{id:**}", produces = {
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		TEXT_JSON_VALUE,
+		TEXT_XML_VALUE,
+		APPLICATION_JSON_VALUE,
+		APPLICATION_XML_VALUE
 	})
-	@GetMapping(value="/{id:**}")
-	public Promise<CodeSystem> getCodeSystem(
-			@Parameter(description = "The identifier of the Code System resource")
-			@PathVariable(value = "id") 
-			final String id,
+	public Promise<ResponseEntity<byte[]>> getCodeSystem(
 			
-			@ParameterObject
-			final FhirResourceSelectors selectors,
+		@Parameter(description = """
+			The identifier of the Code System resource""")
+		@PathVariable(value = "id") 
+		final String id,
 			
-			@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required=false) 
-			final String acceptLanguage) {
+		@ParameterObject
+		final FhirResourceSelectors selectors,
+			
+		@Parameter(hidden = true)
+		@RequestHeader(value = HttpHeaders.ACCEPT)
+		final String accept,
+
+		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			TEXT_JSON_VALUE,
+			TEXT_XML_VALUE,
+			APPLICATION_JSON_VALUE,
+			APPLICATION_XML_VALUE
+		})))
+		@RequestParam(value = "_format", required = false)
+		final String _format,
 		
-		return FhirRequests.codeSystems().prepareGet(id)
-				.setSummary(selectors.get_summary())
-				.setElements(selectors.get_elements())
-				.setLocales(acceptLanguage)
-				.buildAsync()
-				.execute(getBus());
+		@Parameter(description = "Controls pretty-printing of response")
+		@RequestParam(value = "_pretty", required = false)
+		final Boolean _pretty,
+		
+		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
+		@RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
+		final String acceptLanguage
+		
+	) {
+
+		return FhirRequests.codeSystems()
+			.prepareGet(id)
+			.setSummary(selectors.get_summary())
+			.setElements(selectors.get_elements())
+			.setLocales(acceptLanguage)
+			.buildAsync()
+			.execute(getBus())
+			.then(soCodeSystem -> {
+				var fhirCodeSystem = CodeSystemConverter_50.INSTANCE.fromInternal(soCodeSystem);
+				return toResponseEntity(fhirCodeSystem, accept, _format, _pretty);
+			});
 	}
 	
 	/**
-	 * HTTP DELETE for deleting a code system by its logical identifier
+	 * <code><b>DELETE /CodeSystem/{id}</b></code>
+	 * <p>
+	 * Deletes a single code system using the specified identifier.
+	 * 
 	 * @param id
+	 * @param force
+	 * @param author
 	 * @return
 	 */
 	@Operation(
 		summary = "Delete the code system specified by the id",
-		description = "Delete the code system specified by its logical id."
+		description = "Delete the code system specified by its logical id.",
+		extensions = {
+			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_DELETE, value = "Delete a code system"),
+			}),
+		}
 	)
-	@ApiResponses({
-		@ApiResponse(responseCode = "204", description = "Deletion successful"),
-		@ApiResponse(responseCode = "404", description = "Not found"),
-		@ApiResponse(responseCode = "409", description = "Code system cannot be deleted")
-	})
-	@DeleteMapping(value="/{id:**}")
+	@ApiResponse(responseCode = "204", description = "Deletion successful")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@ApiResponse(responseCode = "409", description = "Code system cannot be deleted")
+	@DeleteMapping(value = "/{id:**}")
 	public ResponseEntity<Void> deleteCodeSystem(
-			@Parameter(description = "The identifier of the Code System resource")
-			@PathVariable(value = "id") 
-			final String id,
 			
-			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
-			final Boolean force,
+		@Parameter(description = """
+			The identifier of the Code System resource""")
+		@PathVariable(value = "id") 
+		final String id,
+			
+		@Parameter(description = """
+			Force deletion flag""")
+		@RequestParam(defaultValue="false", required=false)
+		final Boolean force,
 
-			@RequestHeader(value = X_AUTHOR, required = true)
-			final String author) {
+		@Parameter(description = """
+			The user identifier used for committing the change""")
+		@RequestHeader(value = X_AUTHOR, required = true)
+		final String author
+		
+	) {
+		
 		try {
-			FhirRequests.codeSystems().prepareDelete(id)
+			
+			FhirRequests.codeSystems()
+				.prepareDelete(id)
 				.force(force)
 				.build(author, String.format("Deleting code system %s", id))
 				.execute(getBus())
 				.getSync();
+			
 			return ResponseEntity.noContent().build();
 		} catch (NotFoundException e) {
 			return ResponseEntity.notFound().build();
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-			
 		}
 	}
-	
 }

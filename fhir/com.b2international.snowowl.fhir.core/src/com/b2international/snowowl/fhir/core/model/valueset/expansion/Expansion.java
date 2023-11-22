@@ -140,6 +140,10 @@ public class Expansion {
 			afterToNextFn.apply(after));
 	}
 	
+	public Uri getNext() {
+		return next;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

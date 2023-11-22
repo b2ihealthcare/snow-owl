@@ -49,7 +49,7 @@ public class CapabilityStatementRestTest extends FhirRestTest {
 			.body("date", notNullValue())
 			.body("description", notNullValue())
 			.body("kind", equalTo(CapabilityStatementKind.INSTANCE.getCodeValue()))
-			.body("fhirVersion", equalTo("4.0.1"))
+			.body("fhirVersion", equalTo("5.0.0"))
 			.body("rest[0]", notNullValue())
 			.body("rest[0].resource[0]", notNullValue());
 			
