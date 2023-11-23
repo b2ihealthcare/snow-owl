@@ -65,6 +65,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
@@ -74,6 +75,7 @@ import io.swagger.v3.oas.models.Paths;
  * 
  * @since 8.0.0
  */
+@Tag(description="CapabilityStatement", name = FhirApiConfig.CAPABILITY_STATEMENT)
 @RestController
 public class FhirMetadataController extends AbstractFhirController {
 	
