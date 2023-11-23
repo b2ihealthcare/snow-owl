@@ -116,7 +116,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final String branchPath = context.path();
 		final TerminologyResource resource = context.service(TerminologyResource.class);
 		final ResourceURI resourceURI = resource.getResourceURI(branchPath);
-		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
+		final IProgressMonitor monitor = context.monitor();
 		
 		final ValidationRuleSearchRequestBuilder req = ValidationRequests.rules()
 			.prepareSearch()
