@@ -80,7 +80,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		
 		final String branchPath = context.path();
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
-		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
+		final IProgressMonitor monitor = context.monitor();
 		
 		CodeSystem codeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
 		CodeSystemURI codeSystemURI = codeSystem.getCodeSystemURI(branchPath);
@@ -107,14 +107,17 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
 		// evaluate selected rules
 		for (ValidationRule rule : rules) {
+			
 			if (monitor.isCanceled()) {
 				throw new OperationCanceledException();
 			}
+			
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 			if (evaluator != null) {
 				validationPromises.add(pool.submit(rule.getCheckType(), () -> {
 					Stopwatch w = Stopwatch.createStarted();
+					
 					if (monitor.isCanceled()) {
 						throw new OperationCanceledException();
 					}
