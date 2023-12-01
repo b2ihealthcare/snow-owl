@@ -26,6 +26,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.authorization.AuthorizationService;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.version.VersionDocument;
@@ -135,7 +136,7 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 					.map(resource -> resource.contains("/") ? new ResourceURI(resource).getResourceId() : resource)
 					.toList();
 			
-			if (user.isAdministrator()) {
+			if (user.hasPermission(Permission.valueOf("browse:*")) || user.isAdministrator()) {
 				queryBuilder.filter(VersionDocument.Expressions.resourceIds(resourceIds));
 			} else {
 				final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
