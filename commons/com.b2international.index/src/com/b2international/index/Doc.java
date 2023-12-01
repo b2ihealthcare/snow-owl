@@ -20,6 +20,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.b2international.index.migrate.Migrator;
+
 /**
  * @since 4.7
  */
@@ -44,5 +46,14 @@ public @interface Doc {
 	 *         not have property level change history
 	 */
 	String[] revisionHash() default {};
-
+	
+	/**
+	 * Schema change migrators that require to be run when a model change is detected between the current mapping `_meta` value and the last {@link Migrator#version()} added to this list.
+	 * 
+	 * NOTE: only index level types can be migrated to a newer version via this API
+	 * 
+	 * @return an array of schema migrators assigned to this type or an empty array if no migration is required.
+	 */
+	Migrator[] migrators() default {};
+	
 }
