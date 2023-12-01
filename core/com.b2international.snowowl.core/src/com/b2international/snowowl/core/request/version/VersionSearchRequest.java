@@ -25,6 +25,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.authorization.AuthorizationService;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
@@ -133,7 +134,7 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 		if (containsKey(OptionKey.RESOURCE)) {
 			Collection<String> resources = getCollection(OptionKey.RESOURCE, String.class);
 			Collection<String> resourceIds = resources.stream()
-					.map(resource -> resource.contains("/") ? new ResourceURI(resource).getResourceId() : resource)
+					.map(resource -> resource.contains(Branch.SEPARATOR) ? new ResourceURI(resource).getResourceId() : resource)
 					.toList();
 			
 			if (user.hasPermission(Permission.valueOf("browse:*")) || user.isAdministrator()) {
