@@ -62,6 +62,7 @@ import com.b2international.commons.json.Json;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.es.EsDocumentSearcher;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.es.reindex.ReindexResult;
@@ -69,8 +70,10 @@ import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.migrate.Migrator;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.util.JsonDiff;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -188,6 +191,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
 			Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
+					.put(DocumentMapping._META, mapping.getMeta())
 					.put("date_detection", false)
 					.put("numeric_detection", false)
 					.put("dynamic_templates", List.of(stringsAsKeywords()))
@@ -217,77 +221,121 @@ public final class EsIndexAdmin implements IndexAdmin {
 					throw new IndexException(String.format("Failed to get mapping of '%s' for type '%s'", name, mapping.typeAsString()), e);
 				}
 				
-				try {
-					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping);
-					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.getSourceAsMap());
-					SortedSet<String> compatibleChanges = Sets.newTreeSet();
-					SortedSet<String> incompatibleChanges = Sets.newTreeSet();
-					final JsonDiff schemaChanges = JsonDiff.diff(currentTypeMapping, newTypeMapping);
-					schemaChanges.forEach(change -> {
+				final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping);
+				final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.getSourceAsMap());
+				
+				// first check the _meta.version field value
+				final long oldVersion = currentTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue();
+				final long newVersion = newTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue();
+				checkState(oldVersion <= newVersion, "Current model version should never be greater than the new model version. In case of '%s' got old '%s' vs new '%s'.", mapping.type().getSimpleName(), oldVersion, newVersion);
+				
+				// always perform a schema diff just in case to detech compatible and incompatible changes and report them when needed
+				SortedSet<String> compatibleChanges = Sets.newTreeSet();
+				SortedSet<String> incompatibleChanges = Sets.newTreeSet();
+				final JsonDiff schemaChanges = JsonDiff.diff(currentTypeMapping, newTypeMapping);
+				schemaChanges.forEach(change -> {
+					
+					if (change.isAdd()) {
 						
-						if (change.isAdd()) {
-							
-							// XXX object type is the default type, so if the current mapping does not contain this node, we shouldn't trigger an update
-							if (change.getFieldPath().endsWith("/type") && "object".equals(change.serializeValue())) {
-								return;
-							}
-							
-							compatibleChanges.add(change.getFieldPath());
-							
-						} else if (change.isMove() || change.isReplace()) {
-							incompatibleChanges.add(change.getFieldPath());
-						} else if (change.isRemove()) {
-							
-							// XXX while remove is bad it is hard to detect true incompatibility where we try to support dynamic fields (like Maps)
-							// raise the incompatibility warning only when the root field is being reported, not a nested property under the root property
-							if (change.getFieldPath().contains("/properties")) {
-								return;
-							}
-							
-							incompatibleChanges.add(change.getFieldPath());
-							
+						// XXX object type is the default type, so if the current mapping does not contain this node, we shouldn't trigger an update
+						if (change.getFieldPath().endsWith("/type") && "object".equals(change.serializeValue())) {
+							return;
 						}
 						
-					});
-					if (!incompatibleChanges.isEmpty()) {
-						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, incompatibleChanges);
-					} else if (!compatibleChanges.isEmpty()) {
-						log.info("Applying mapping changes {} in index {}", compatibleChanges, index);
-						PutMappingRequest putMappingRequest = new PutMappingRequest(index).source(typeMapping);
-						AcknowledgedResponse response = client.indices().updateMapping(putMappingRequest);
-						checkState(response.isAcknowledged(), "Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString());
-						// if there are field alias changes, then run update_by_query on all documents to simply reindex them
-						// new fields do not require reindex, they will be added to new documents, existing documents don't have any data that needs reindex 
-						if (hasFieldAliasChange(compatibleChanges)) {
-							if (bulkIndexByScroll(client, mapping, Expressions.matchAll(), "update", null /*no script, in place update of docs to pick up mapping changes*/, "mapping migration")) {
-								mappingsToRefresh.add(mapping);
+						compatibleChanges.add(change.getFieldPath());
+						
+					} else if (change.isMove() || change.isReplace()) {
+						incompatibleChanges.add(change.getFieldPath());
+					} else if (change.isRemove()) {
+						
+						// XXX while remove is bad it is hard to detect true incompatibility where we try to support dynamic fields (like Maps)
+						// throw the incompatibility error only when a root field is being reported, not a nested property under the root property
+						if (change.getFieldPath().contains("/properties")) {
+							return;
+						}
+						
+						incompatibleChanges.add(change.getFieldPath());
+						
+					}
+					
+				});
+				
+				if (oldVersion < newVersion) {
+
+					List<Migrator> migratorsToExecute = mapping.getMigratorsFrom(oldVersion); 
+					// perform migration to the new schema using the migrators starting from oldVersion up until the current latest version
+					log.info("Migrating index mapping '{}' from version {} to {}.", index, oldVersion, newVersion);
+					
+					// determine strategy
+					// if at least one migrator requires a new index to be present then create a new index and start the migration by running a reindex command
+					var isNewIndexRequired = migratorsToExecute.stream().anyMatch(migrator -> migrator.strategy().isNewIndexRequired());
+					
+					if (isNewIndexRequired) {
+						// wait until yellow health is reached for this specific index
+						waitForYellowHealth(index);
+						
+						// create a new temporary index to transform documents into the new schema
+						final String temporaryIndex = String.join("---", index, Long.toString(newVersion));
+						doCreateIndex(temporaryIndex, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
+						
+						// create a new searcher with the new desired version number index mapping
+						// TODO make mappings configurable in EsDocumentSearchers
+						EsDocumentSearcher searcher = new EsDocumentSearcher(this, mapper);
+						
+						Query.select(mapping.type())
+							.where(Expressions.matchAll())
+							.limit(getBatchSize())
+							.build()
+							.stream(searcher)
+							.forEach(hits -> {
+								// TODO bulk write into the new index after transforming using the chained migrator functions
+								
+							});
+						
+						// complete migration
+						doDeleteIndexes(index);
+						
+						// recreate original index
+						doCreateIndex(index, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
+						
+						// copy content back
+						Query.select(mapping.type())
+							.where(Expressions.matchAll())
+							.limit(getBatchSize())
+							.build()
+							.stream(searcher)
+							.forEach(hits -> {
+								// TODO bulk write into the recreated original index
+								
+							});
+						
+					} else {
+						// simply update the mapping and run in place update by query if needed, run a bulk update by query on all documents to trigger an in place reindex without any transformation
+						try {
+							PutMappingRequest putMappingRequest = new PutMappingRequest(index).source(typeMapping);
+							AcknowledgedResponse response = client.indices().updateMapping(putMappingRequest);
+							checkState(response.isAcknowledged(), "Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString());
+							// if there are field alias changes, then run update_by_query on all documents to simply reindex them
+							// new fields do not require reindex to temporary index and back, they will be added to new documents, existing documents don't have any data that needs reindex
+							if (hasFieldAliasChange(compatibleChanges)) {
+								if (bulkIndexByScroll(client, mapping, Expressions.matchAll(), "update", null /*no script, in place update of docs to pick up mapping changes*/, "mapping migration")) {
+									mappingsToRefresh.add(mapping);
+								}
+								log.info("Migrated documents to new mapping in index '{}'", index);
 							}
-							log.info("Migrated documents to new mapping in index '{}'", index);
+						} catch (IOException e) {
+							throw new IndexException(String.format("Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString()), e);
 						}
 					}
-				} catch (IOException e) {
-					throw new IndexException(String.format("Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString()), e);
+
+				} else {
+					// same schema version, 
+					if (!incompatibleChanges.isEmpty()) {
+						throw new IndexException(String.format("Index migration is required '{}' to new mapping without a index migrator. '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, incompatibleChanges));
+					}
 				}
 			} else {
-				// create index
-				final Map<String, Object> indexSettings;
-				try {
-					indexSettings = createIndexSettings(additionalTypeIndexConfiguration);
-					log.info("Configuring '{}' index with settings: {}", index, indexSettings);
-				} catch (IOException e) {
-					throw new IndexException("Couldn't prepare settings for index " + index, e);
-				}
-				
-				final CreateIndexRequest createIndexRequest = new CreateIndexRequest(index)
-					.mapping(typeMapping)
-					.settings(indexSettings);
-				
-				try {
-					final CreateIndexResponse response = client.indices().create(createIndexRequest);
-					checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
-				} catch (Exception e) {
-					throw new IndexException(String.format("Failed to create index '%s' for type '%s'", name, mapping.typeAsString()), e);
-				}
+				doCreateIndex(index, mapping, typeMapping, additionalTypeIndexConfiguration);
 			}
 		}
 		// wait until the cluster processes each index create request
@@ -296,6 +344,40 @@ public final class EsIndexAdmin implements IndexAdmin {
 			refresh(mappingsToRefresh);
 		}
 		log.info("'{}' indexes are ready.", name);
+	}
+
+	private void doCreateIndex(String index, DocumentMapping mapping, Map<String, Object> typeMapping, Map<String, Object> additionalTypeIndexConfiguration) {
+		// create index
+		final Map<String, Object> indexSettings;
+		try {
+			indexSettings = createIndexSettings(additionalTypeIndexConfiguration);
+			log.info("Configuring '{}' index with settings: {}", index, indexSettings);
+		} catch (IOException e) {
+			throw new IndexException("Couldn't prepare settings for index " + index, e);
+		}
+		
+		final CreateIndexRequest createIndexRequest = new CreateIndexRequest(index)
+			.mapping(typeMapping)
+			.settings(indexSettings);
+		
+		try {
+			final CreateIndexResponse response = client.indices().create(createIndexRequest);
+			checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
+		} catch (Exception e) {
+			throw new IndexException(String.format("Failed to create index '%s' for type '%s'", name, mapping.typeAsString()), e);
+		}		
+	}
+	
+	private void doDeleteIndexes(final String...indexesToDelete) {
+		final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest().indices(indexesToDelete);
+		try {
+			final AcknowledgedResponse deleteIndexResponse = client()
+					.indices()
+					.delete(deleteIndexRequest);
+			checkState(deleteIndexResponse.isAcknowledged(), "Failed to delete all ES indices for '%s'.", name);
+		} catch (Exception e) {
+			throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", name), e);
+		}
 	}
 
 	private boolean hasFieldAliasChange(SortedSet<String> compatibleChanges) {
@@ -532,15 +614,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	public void delete() {
 		if (exists()) {
 			final String[] indexesToDelete = mappings().getMappings().stream().map(this::getTypeIndex).toArray(i -> new String[i]);
-			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest().indices(indexesToDelete);
-			try {
-				final AcknowledgedResponse deleteIndexResponse = client()
-						.indices()
-						.delete(deleteIndexRequest);
-				checkState(deleteIndexResponse.isAcknowledged(), "Failed to delete all ES indices for '%s'.", name);
-			} catch (Exception e) {
-				throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", name), e);
-			}
+			doDeleteIndexes(indexesToDelete);
 		}
 	}
 
@@ -567,6 +641,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public Map<String, Object> settings() {
 		return settings;
+	}
+	
+	private int getBatchSize() {
+		return Integer.parseInt((String) settings.get(IndexClientFactory.RESULT_WINDOW_KEY));
 	}
 	
 	@Override
@@ -890,7 +968,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			try {
 				
 				final BulkByScrollResponse response;
-				final int batchSize = Integer.parseInt((String) settings.get(IndexClientFactory.RESULT_WINDOW_KEY));
+				final int batchSize = getBatchSize();
 				if ("update".equals(command)) {
 					response = client.updateByQuery(getTypeIndex(mapping), batchSize, script, query);
 				} else if ("delete".equals(command)) {
