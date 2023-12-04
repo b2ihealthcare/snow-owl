@@ -17,7 +17,6 @@ package com.b2international.index.admin;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
@@ -26,10 +25,10 @@ import org.elasticsearch.index.reindex.RemoteInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.es.admin.IndexMapping;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 
 /**
@@ -84,11 +83,6 @@ public interface IndexAdmin {
 	void updateSettings(Map<String, Object> newSettings);
 
 	/**
-	 * @return all the mappings available for the underlying indices to work with.
-	 */
-	Mappings mappings();
-	
-	/**
 	 * Updates the mappings available for the underlying indices to work with.
 	 * 
 	 * NOTE: keep in mind that these won't affect existing indices and operations on this class might not run on all previously created indices. 
@@ -103,20 +97,9 @@ public interface IndexAdmin {
 	String name();
 	
 	/**
-	 * Returns the actual index name for the given {@link DocumentMapping}.
-	 * 
-	 * @param mapping
-	 * @return
+	 * @return the {@link IndexMapping} instance that contains information about created and managed Elasticsearch indices.
 	 */
-	String getTypeIndex(DocumentMapping mapping);
-	
-	/**
-	 * Returns the actual index name for the given List of {@link DocumentMapping mappings}.
-	 * 
-	 * @param mappings
-	 * @return
-	 */
-	List<String> getTypeIndexes(List<DocumentMapping> mappings);
+	IndexMapping getIndexMapping();
 
 	/**
 	 * Optimizes the underlying index until it has less than or equal segments than the supplied maxSegments number.
@@ -162,11 +145,7 @@ public interface IndexAdmin {
 	 * @return the indices maintained by this {@link IndexAdmin}
 	 */
 	default String[] indices() {
-		return mappings().getMappings()
-				.stream()
-				.map(this::getTypeIndex)
-				.distinct()
-				.toArray(String[]::new);
+		return getIndexMapping().indices();
 	}
 	
 	static Logger createIndexLogger(String name) {

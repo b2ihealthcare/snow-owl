@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ public class BoolQueryTest extends BaseIndexTest {
 			.build();
 		
 		IndexAdmin indexAdmin = index().admin();
-		DocumentMapping mapping = indexAdmin.mappings().getMapping(Data.class);
+		DocumentMapping mapping = indexAdmin.getIndexMapping().getMapping(Data.class);
 		Map<String, Object> settings = indexAdmin.settings();
 		
 		// Single filter matching "id1" should be preserved
@@ -123,7 +123,7 @@ public class BoolQueryTest extends BaseIndexTest {
 			.build();
 		
 		IndexAdmin indexAdmin = index().admin();
-		DocumentMapping mapping = indexAdmin.mappings().getMapping(Data.class);
+		DocumentMapping mapping = indexAdmin.getIndexMapping().getMapping(Data.class);
 		Map<String, Object> settings = indexAdmin.settings();
 		
 		QueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, settings, LOG).build(actual);
@@ -150,7 +150,7 @@ public class BoolQueryTest extends BaseIndexTest {
 			.build();
 
 		IndexAdmin indexAdmin = index().admin();
-		DocumentMapping mapping = indexAdmin.mappings().getMapping(Data.class);
+		DocumentMapping mapping = indexAdmin.getIndexMapping().getMapping(Data.class);
 		Map<String, Object> settings = indexAdmin.settings();
 		
 		QueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, settings, LOG).build(actual);

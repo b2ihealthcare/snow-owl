@@ -17,7 +17,6 @@ package com.b2international.index.revision;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
@@ -25,10 +24,10 @@ import org.elasticsearch.index.reindex.RemoteInfo;
 import org.slf4j.Logger;
 
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.es.admin.IndexMapping;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 
 /**
@@ -66,8 +65,8 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void create() {
-		this.index.admin().mappings().putMapping(RevisionBranch.class);
-		this.index.admin().mappings().putMapping(Commit.class);
+		this.index.admin().getIndexMapping().getMappings().putMapping(RevisionBranch.class);
+		this.index.admin().getIndexMapping().getMappings().putMapping(Commit.class);
 		rawIndexAdmin.create();
 		index.branching().init();
 	}
@@ -93,8 +92,8 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	}
 
 	@Override
-	public Mappings mappings() {
-		return rawIndexAdmin.mappings();
+	public IndexMapping getIndexMapping() {
+		return rawIndexAdmin.getIndexMapping();
 	}
 	
 	@Override
@@ -108,16 +107,6 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	@Override
 	public String name() {
 		return rawIndexAdmin.name();
-	}
-
-	@Override
-	public String getTypeIndex(DocumentMapping mapping) {
-		return rawIndexAdmin.getTypeIndex(mapping);
-	}
-	
-	@Override
-	public List<String> getTypeIndexes(List<DocumentMapping> mappings) {
-		return rawIndexAdmin.getTypeIndexes(mappings);
 	}
 
 	@Override
