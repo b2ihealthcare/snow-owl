@@ -21,23 +21,18 @@ package com.b2international.index.migrate;
 public enum DocumentMappingMigrationStrategy {
 
 	/**
+	 * No migration is required, all changes are backward compatible and can be picked up automatically via mapping update. Usually new fields without the need to backport values to existing documents.
+	 */
+	NO_REINDEX,
+	
+	/**
 	 * Strategy where reindexing can be performed using the same index. Usually minor changes, new field aliases, etc.
 	 */
-	REINDEX_INPLACE(false),
+	REINDEX_INPLACE,
 
 	/**
 	 * Strategy where a new index will be created in order to perform a reindex from the old one using a dedicated Java transformation function.
 	 */
-	REINDEX_SCRIPT(true);
+	REINDEX_SCRIPT;
 
-	private final boolean newIndexRequired;
-	
-	private DocumentMappingMigrationStrategy(boolean newIndexRequired) {
-		this.newIndexRequired = newIndexRequired;
-	}
-	
-	public boolean isNewIndexRequired() {
-		return newIndexRequired;
-	}
-	
 }

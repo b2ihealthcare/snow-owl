@@ -35,7 +35,7 @@ import com.b2international.collections.PrimitiveCollection;
 import com.b2international.collections.PrimitiveSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.*;
-import com.b2international.index.migrate.Migrator;
+import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
@@ -94,7 +94,7 @@ public final class DocumentMapping {
 	private final String defaultSortField;
 	private final SortedSet<String> selectableFields;
 
-	private SortedMap<Long, Migrator> migratorsByVersion;
+	private SortedMap<Long, SchemaRevision> schemaRevisionsByVersion;
 
 	public DocumentMapping(Class<?> type) {
 		this(type, false);
@@ -411,27 +411,27 @@ public final class DocumentMapping {
 	}
 	
 	/**
-	 * @return a {@link List} of {@link Migrator}s registered on the Java type via {@link Doc#migrators()}.
+	 * @return a {@link List} of {@link SchemaRevision}s registered on the Java type via {@link Doc#revisions()}.
 	 */
-	public List<Migrator> getMigrators() {
-		return List.copyOf(getMigratorsByVersion().values());
+	public List<SchemaRevision> getSchemaRevisions() {
+		return List.copyOf(getSchemaRevisionsByVersion().values());
 	}
 	
 	/**
-	 * Returns {@link Migrator} instances that needs to be run to migrate schema to the latest available version from the given version.
+	 * Returns {@link SchemaRevision} instances that needs to be run to migrate schema to the latest available version from the given version.
 	 * 
 	 * @param versionFrom
 	 * @return
 	 */
-	public List<Migrator> getMigratorsFrom(long versionFrom) {
-		return List.copyOf(getMigratorsByVersion().tailMap(versionFrom + 1).values());
+	public List<SchemaRevision> getSchemaRevisionsFrom(long versionFrom) {
+		return List.copyOf(getSchemaRevisionsByVersion().tailMap(versionFrom + 1).values());
 	}
 	
-	private SortedMap<Long, Migrator> getMigratorsByVersion() {
-		if (this.migratorsByVersion == null) {
-			this.migratorsByVersion = Stream.of(getDocAnnotation(type).migrators()).collect(ImmutableSortedMap.toImmutableSortedMap(Long::compare, Migrator::version, m -> m));
+	private SortedMap<Long, SchemaRevision> getSchemaRevisionsByVersion() {
+		if (this.schemaRevisionsByVersion == null) {
+			this.schemaRevisionsByVersion = Stream.of(getDocAnnotation(type).revisions()).collect(ImmutableSortedMap.toImmutableSortedMap(Long::compare, SchemaRevision::version, m -> m));
 		}
-		return this.migratorsByVersion;
+		return this.schemaRevisionsByVersion;
 	}
 	
 	/**
@@ -440,8 +440,8 @@ public final class DocumentMapping {
 	 * @return a {@link Map} containing mapping metadata related information about the type, eg. version
 	 */
 	public Map<String, Object> getMeta() {
-		// select the current max version from the migrator list or fall back to version 1
-		final long currentVersion = getMigratorsByVersion().isEmpty() ? 1L : getMigratorsByVersion().lastKey();
+		// select the current max version from the schema revision list or fall back to the default version 1
+		final long currentVersion = getSchemaRevisionsByVersion().isEmpty() ? 1L : getSchemaRevisionsByVersion().lastKey();
 		return Map.of(
 			Meta.VERSION, currentVersion
 		);
