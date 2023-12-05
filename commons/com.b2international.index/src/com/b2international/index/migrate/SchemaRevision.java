@@ -50,6 +50,6 @@ public @interface SchemaRevision {
 	/**
 	 * @return a transformation script that will be executed when migrating from an older version to this schema revision.
 	 */
-	Class<? extends DocumentMappingMigrator<?>> migrator() default DocumentMappingMigrator.ReindexAsIs.class;
-
+	Class<? extends DocumentMappingMigrator> migrator() default DocumentMappingMigrator.ReindexAsIs.class;
+	
 }

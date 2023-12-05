@@ -16,29 +16,44 @@
 package com.b2international.index.migrate;
 
 import com.b2international.index.Searcher;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @since 9.0
  */
-public interface DocumentMappingMigrator<T> {
+public interface DocumentMappingMigrator {
 
 	/**
-	 * Migrate the document to a newer schema by transforming it using the old document instance and a {@link Searcher} if additional information is required from the index.
+	 * Init this migrator with a searcher opened on the current index.
 	 * 
-	 * @param oldDocument
 	 * @param searcher
-	 * @return the new document
 	 */
-	T migrate(T oldDocument, Searcher searcher);
+	void init(Searcher searcher);
 	
 	/**
-	 * Simple no transformation migrator function that can be used to trigger reindex on a schema change that does not require any actual transformation just the reindex of its values.
+	 * Migrate the document to a newer schema by transforming it using the old document source and a {@link Searcher} opened on the current index content if additional information would be required.
+	 * 
+	 * @param source
+	 * 
+	 * @return the new, migrated document
+	 */
+	ObjectNode migrate(ObjectNode source);
+	
+	/**
+	 * Simple no transformation migrator function that can be used to trigger reindex on a schema change that does not require any actual transformation just the reindex of its values into a new index
 	 * 
 	 * @since 9.0
+	 * @see DocumentMappingMigrationStrategy#REINDEX_SCRIPT
+	 * @see DocumentMappingMigrationStrategy#REINDEX_INPLACE
 	 */
-	class ReindexAsIs implements DocumentMappingMigrator<Object> {
+	class ReindexAsIs implements DocumentMappingMigrator {
+		
 		@Override
-		public Object migrate(Object oldDocument, Searcher searcher) {
+		public void init(Searcher searcher) {
+		}
+		
+		@Override
+		public ObjectNode migrate(ObjectNode oldDocument) {
 			return oldDocument;
 		}
 	}; 
