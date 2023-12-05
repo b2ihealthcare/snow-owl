@@ -127,7 +127,7 @@ public interface IndexAdmin {
 	 * @return {@link RefreshResponse}
 	 * @param indices
 	 */
-	RefreshResponse refresh(String...indices) throws IOException;
+	RefreshResponse refresh(String...indices);
 
 	/**
 	 * Issue a remote reindex of sourceIndex to destinationIndex using the parameters specified in remoteInfo. A selective

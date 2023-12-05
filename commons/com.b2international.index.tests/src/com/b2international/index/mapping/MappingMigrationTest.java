@@ -30,11 +30,13 @@ import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.migrate.DocumentMappingMigrationStrategy;
+import com.b2international.index.migrate.DocumentMappingMigrator;
 import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @since 7.16.1
@@ -206,6 +208,49 @@ public class MappingMigrationTest extends BaseIndexTest {
 		}
 		
 	}
+	
+	@Doc(
+		type = "schema",
+		revisions = {
+			@SchemaRevision(version = 2, migrator = SchemaDocRenamedField.DocumentMigratorVersion1_2.class, strategy = DocumentMappingMigrationStrategy.REINDEX_SCRIPT)
+		}
+	) 
+	static class SchemaDocRenamedField {
+		
+		public static final class DocumentMigratorVersion1_2 implements DocumentMappingMigrator {
+
+			@Override
+			public void init(Searcher searcher) {
+			}
+
+			@Override
+			public ObjectNode migrate(ObjectNode oldDocument) {
+				// simply convert the existing field fieldValue to field2 fieldValue
+				oldDocument.set("field2", oldDocument.remove("field"));
+				return oldDocument;
+			}
+			
+		}
+		
+		@ID
+		private String id;
+		private String field2;
+		
+		@JsonCreator
+		public SchemaDocRenamedField(@JsonProperty("id") String id, @JsonProperty("field2") String field2) {
+			this.id = id;
+			this.field2 = field2;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getField2() {
+			return field2;
+		}
+		
+	}
 
 	private SchemaDoc existingDoc1;
 	private SchemaDoc existingDoc2;
@@ -304,6 +349,17 @@ public class MappingMigrationTest extends BaseIndexTest {
 				.where(Expressions.exactMatch("field.exact", "existing field one"))
 				.build())
 		).hasSize(1);
+	}
+	
+	@Test
+	public void migrate06_RenameFieldWithMigratorScript() throws Exception {
+		// update Mapping to perform the migration using script and reindex
+		admin().updateMappings(new Mappings(SchemaDocRenamedField.class));
+		admin().create();
+
+		// confirm that the two documents still exists and they have their values set correctly in the new field
+		assertDocEquals(new SchemaDocRenamedField(existingDoc1.getId(), existingDoc1.getField()), getDocument(SchemaDocRenamedField.class, KEY1));
+		assertDocEquals(new SchemaDocRenamedField(existingDoc2.getId(), existingDoc2.getField()), getDocument(SchemaDocRenamedField.class, KEY2));
 	}
 	
 	@After

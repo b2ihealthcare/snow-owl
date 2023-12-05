@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.ElasticsearchStatusException;
@@ -61,6 +60,8 @@ import com.b2international.commons.json.Json;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.es.EsDocumentSearcher;
+import com.b2international.index.es.EsDocumentWriter;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.es.reindex.ReindexResult;
@@ -68,12 +69,15 @@ import com.b2international.index.es8.Es8Client;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.migrate.DocumentMappingMigrator;
 import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.util.JsonDiff;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -297,55 +301,66 @@ public final class EsIndexAdmin implements IndexAdmin {
 							}
 							break;
 						case REINDEX_SCRIPT:
-							// TODO implement
-//							// wait until yellow health is reached for this specific index
-//							waitForYellowHealth(index);
-//							
-//							// create a new temporary index to transform documents into the new schema
-//							final String temporaryIndex = String.join("---", index, Long.toString(newVersion));
-//							doCreateIndex(temporaryIndex, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
-//							waitForYellowHealth(temporaryIndex);
-//							
-//							// register temporary index as known index for this mapping
-//							indexMapping.register(mapping, temporaryIndex);
-//							
-//							// create a new searcher with the new desired version number index mapping
-//							// TODO make mappings configurable in EsDocumentSearchers
-//							EsDocumentSearcher searcher = new EsDocumentSearcher(this, getIndexMapping(), mapper);
-//							
-//							Query.select(mapping.type())
-//								.where(Expressions.matchAll())
-//								.limit(getBatchSize())
-//								.build()
-//								.stream(searcher)
-//								.forEach(hits -> {
-//									// TODO bulk write into the new index after transforming using the chained migrator functions
-//									
-//								});
-//							
-//							// complete migration
-//							doDeleteIndexes(index);
-//							
-//							// recreate original index
-//							doCreateIndex(index, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
-//							waitForYellowHealth(index);
-//							
-//							// copy content back
-//							Query.select(mapping.type())
-//								.where(Expressions.matchAll())
-//								.limit(getBatchSize())
-//								.build()
-//								.stream(searcher)
-//								.forEach(hits -> {
-//									// TODO bulk write into the recreated original index
-//									
-//								});
-//							
-//							// delete temporary index
-//							doDeleteIndexes(temporaryIndex);
-//							
-//							// XXX for loop last statement will register the original index, we only have to unregister the temporary index just in case
-//							this.indexMapping.unregister(mapping);
+							// wait until yellow health is reached for this specific index
+							waitForYellowHealth(index);
+
+							// create an index mapping configuration for the previous index
+							IndexMapping previousIndexMapping = new IndexMapping(getIndexMapping().getMappings());
+							previousIndexMapping.register(mapping, index);
+							
+							// create a searcher on the old index mapping to access previous data
+							EsDocumentSearcher previousIndexSearcher = new EsDocumentSearcher(this, previousIndexMapping, mapper);
+							
+							// create a new temporary index to transform documents into the new schema
+							final String temporaryIndex = String.join("---", index, Long.toString(newVersion));
+							doCreateIndex(temporaryIndex, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
+							waitForYellowHealth(temporaryIndex);
+							
+							// create a temporary index mapping where the temporary index replaces the current index
+							IndexMapping temporaryIndexMapping = new IndexMapping(getIndexMapping().getMappings());
+							temporaryIndexMapping.register(mapping, temporaryIndex);
+							
+							// init searchers and writers
+							EsDocumentSearcher temporaryIndexSearcher = new EsDocumentSearcher(this, temporaryIndexMapping, mapper);
+							EsDocumentWriter temporaryIndexWriter = new EsDocumentWriter(this, temporaryIndexMapping, temporaryIndexSearcher, mapper);
+							
+							final DocumentMappingMigrator migrator;
+							try {
+								migrator = schema.migrator().getDeclaredConstructor().newInstance();
+							} catch (Exception e) {
+								throw new IndexException(String.format("Couldn't instantiate schema migrator '%s'", schema.migrator().getName()), e);
+							}
+							
+							migrator.init(previousIndexSearcher);
+							for (Hits<JsonNode> hits : readAllRaw(previousIndexSearcher, mapping, getBatchSize())) {
+								hits.forEach(hit -> {
+									temporaryIndexWriter.put(mapping, Objects.requireNonNull(migrator.migrate((ObjectNode) hit), "Migrator should never return null as migrated JSON object"));
+								});
+								try {
+									temporaryIndexWriter.commit();
+								} catch (IOException e) {
+									throw new IndexException(String.format("Failed to migrate batch of index '%s' to mapping schema version '%s'.", index, schema.version()), e);
+								}
+							}
+							
+							// complete migration
+							doDeleteIndexes(index);
+							
+							// recreate original index
+							doCreateIndex(index, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
+							waitForYellowHealth(index);
+							
+							// copy content back by running a reindex operation from tmp index to the newly recreated original
+							try {
+								reindex(temporaryIndex, index, null, true);
+							} catch (IOException e) {
+								throw new IndexException(String.format("Failed to copy back contents from '%s' to original index '%s' via reindex operation", temporaryIndex, index), e);
+							}
+							
+							// delete temporary index
+							doDeleteIndexes(temporaryIndex);
+							
+							break;
 						default:
 							throw new UnsupportedOperationException("Unknown schema migration strategy " + schema.strategy());
 						}
@@ -372,10 +387,20 @@ public final class EsIndexAdmin implements IndexAdmin {
 		// wait until the cluster processes each index create request
 		waitForYellowHealth(getIndexMapping().indices());
 		if (!mappingsToRefresh.isEmpty()) {
-			refresh(mappingsToRefresh);
+			refresh(mappingsToRefresh, getIndexMapping());
 		}
 		
 		log.info("'{}' indexes are ready.", name);
+	}
+
+	private static Iterable<Hits<JsonNode>> readAllRaw(EsDocumentSearcher previousIndexSearcher, DocumentMapping mapping, int batchSize) {
+		return Query.select(JsonNode.class)
+				.from(mapping.type())
+				.where(Expressions.matchAll())
+				.limit(batchSize)
+				.build()
+				.stream(previousIndexSearcher)
+				::iterator;
 	}
 
 	private void putIndexMapping(final String index, Map<String, Object> typeMapping) {
@@ -422,12 +447,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 
-	private boolean hasFieldAliasChange(SortedSet<String> compatibleChanges) {
-		return compatibleChanges.stream()
-				.map(FIELD_ALIAS_CHANGE_PROPERTY_PATTERN::matcher)
-				.anyMatch(Matcher::matches);
-	}
-	
 	private Map<String, Object> stringsAsKeywords() {
 		return Map.of(
 			"strings_as_keywords", Map.of(
@@ -677,7 +696,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		}
 		
-		refresh(typesToRefresh);
+		refresh(typesToRefresh, getIndexMapping());
 	}
 
 	@Override
@@ -790,12 +809,27 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 	
 	@Override
-	public RefreshResponse refresh(String...indices) throws IOException {
-		return client().indices().refresh(new RefreshRequest(indices));
+	public RefreshResponse refresh(String...indices) {
+		if (log.isTraceEnabled()) {
+			log.trace("Refreshing indexes '{}'", Arrays.toString(indices));
+		}
+		
+		try {
+		
+			final RefreshResponse refreshResponse = client().indices().refresh(new RefreshRequest(indices));
+			if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
+				log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indices), refreshResponse.getStatus());
+			}
+			return refreshResponse;
+		} catch (Exception e) {
+			throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(indices)), e);
+		}
 	}
 	
 	@Override
 	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+		
+		String remoteAddress = getRemoteAddress(remoteInfo);
 		
 		AtomicInteger retries = new AtomicInteger(1);
 		
@@ -811,10 +845,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (response.isTimedOut()) {
 			throw new IndexException(
 					String.format(
-						"Reindex operation of source index: '%s' and destination index '%s' timed out at remote host: '%s'",
+						"Reindex operation of source index: '%s' and destination index '%s' timed out at host: '%s'",
 						sourceIndex,
 						destinationIndex,
-						remoteInfo.getHost()
+						remoteAddress
 					), null);
 		}
 		
@@ -859,11 +893,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 			.totalDocuments(response.getTotal())
 			.sourceIndex(sourceIndex)
 			.destinationIndex(destinationIndex)
-			.remoteAddress(String.format("%s://%s:%s", remoteInfo.getScheme(), remoteInfo.getHost(), remoteInfo.getPort()))
+			.remoteAddress(remoteAddress)
 			.refresh(refresh)
 			.retries(retries.get() > 1 ? Long.valueOf(retries.get()) : null) // do not track successful first attempts
 			.build();
 		
+	}
+
+	private String getRemoteAddress(RemoteInfo remoteInfo) {
+		return Optional.ofNullable(remoteInfo).map(info -> String.format("%s://%s:%s", info.getScheme(), info.getHost(), info.getPort())).orElse(null);
 	}
 
 	private BulkByScrollResponse executeReindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize, AtomicInteger retries) throws IOException {
@@ -890,20 +928,20 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 			} else {
 				throw new IndexException(
-						String.format("Reindex operation of source index: '%s' and destination index '%s' failed at remote host: '%s'",
+						String.format("Reindex operation of source index: '%s' and destination index '%s' failed at host: '%s'",
 							sourceIndex,
 							destinationIndex,
-							remoteInfo.getHost()
+							getRemoteAddress(remoteInfo)
 						), e);
 			}
 			
 		} catch (Exception e) {
 			
 			throw new IndexException(
-				String.format("Reindex operation of source index: '%s' and destination index '%s' failed at remote host: '%s'",
+				String.format("Reindex operation of source index: '%s' and destination index '%s' failed at host: '%s'",
 					sourceIndex,
 					destinationIndex,
-					remoteInfo.getHost()
+					getRemoteAddress(remoteInfo)
 				), e);
 			
 		}
@@ -912,28 +950,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 	}
 	
-	public void refresh(Set<DocumentMapping> typesToRefresh) {
+	public void refresh(Set<DocumentMapping> typesToRefresh, IndexMapping indexMapping) {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
-			refreshInternal(typesToRefresh.stream().map(getIndexMapping()::getTypeIndex).toArray(String[]::new));
-		}
-	}
-	
-	public void refreshInternal(String...indicesToRefresh) {
-		if (!CompareUtils.isEmpty(indicesToRefresh)) {
-			if (log.isTraceEnabled()) {
-				log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
-			}
-			
-			try {
-			
-				final RefreshResponse refreshResponse = refresh(indicesToRefresh);
-				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
-					log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indicesToRefresh), refreshResponse.getStatus());
-				}
-				
-			} catch (Exception e) {
-				throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(indicesToRefresh)), e);
-			}
+			refresh(typesToRefresh.stream().map(indexMapping::getTypeIndex).toArray(String[]::new));
 		}
 	}
 	
@@ -1064,7 +1083,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 					--attempts;
 					try {
 						Thread.sleep(100 + random.nextInt(900));
-						refresh(Collections.singleton(mapping));
+						refresh(index);
 					} catch (InterruptedException e) {
 						throw new IndexException("Interrupted", e);
 					}

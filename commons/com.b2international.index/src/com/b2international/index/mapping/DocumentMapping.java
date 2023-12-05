@@ -40,6 +40,7 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
@@ -407,7 +408,11 @@ public final class DocumentMapping {
 	
 	
 	public String getIdFieldValue(Object object) {
-		return (String) Reflections.getValue(object, getField(getIdField()));
+		if (object instanceof JsonNode) {
+			return ((JsonNode) object).get(getIdField()).asText();
+		} else {
+			return (String) Reflections.getValue(object, getField(getIdField()));
+		}
 	}
 	
 	/**
