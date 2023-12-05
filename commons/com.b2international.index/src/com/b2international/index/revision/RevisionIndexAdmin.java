@@ -115,7 +115,7 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	}
 	
 	@Override
-	public RefreshResponse refresh(String... indices) throws IOException {
+	public RefreshResponse refresh(String... indices) {
 		return rawIndexAdmin.refresh(indices);
 	}
 	
