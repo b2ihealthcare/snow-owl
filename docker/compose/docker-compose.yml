@@ -1,6 +1,6 @@
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.12
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
     container_name: elasticsearch
     environment:
       - "ES_JAVA_OPTS=-Xms6g -Xmx6g"
@@ -12,7 +12,7 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - ./data:/usr/share/elasticsearch/data
+      - es-data:/usr/share/elasticsearch/data
       - ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./config/elasticsearch/synonym.txt:/usr/share/elasticsearch/config/analysis/synonym.txt
     healthcheck:
@@ -21,8 +21,7 @@ services:
       timeout: 1s
       retries: 60
     ports:
-     - "127.0.0.1:9200:9200"
-    command: "bash -c 'chmod g+rwx /usr/share/elasticsearch/data && chgrp 0 /usr/share/elasticsearch/data && /usr/local/bin/docker-entrypoint.sh eswrapper'"
+      - "127.0.0.1:9200:9200"
     restart: unless-stopped
   snowowl:
     image: b2ihealthcare/snow-owl-oss:latest
@@ -36,7 +35,11 @@ services:
     volumes:
       - ./config/snowowl/snowowl.yml:/etc/snowowl/snowowl.yml
       - ./config/snowowl/users:/etc/snowowl/users # default username and password: test - test
-      - ./data:/var/lib/snowowl/resources/indexes
+      - es-data:/var/lib/snowowl/resources/indexes
     ports:
       - "8080:8080"
     restart: unless-stopped
+
+volumes:
+  es-data:
+    driver: local
