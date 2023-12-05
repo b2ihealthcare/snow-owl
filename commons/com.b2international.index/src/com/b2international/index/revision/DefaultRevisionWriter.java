@@ -26,8 +26,10 @@ import com.b2international.index.BulkUpdate;
 import com.b2international.index.Update;
 import com.b2international.index.Writer;
 import com.b2international.index.es.EsDocumentSearcher;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -81,6 +83,11 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		}
 		// register object for commit
 		index.put(object);
+	}
+	
+	@Override
+	public void put(DocumentMapping mapping, JsonNode source) {
+		throw new UnsupportedOperationException("This type of document write method is supported only in non-revision writers");
 	}
 
 	@Override
