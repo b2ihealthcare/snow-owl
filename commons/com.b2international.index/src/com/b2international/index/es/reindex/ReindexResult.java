@@ -39,7 +39,7 @@ public class ReindexResult implements Serializable {
 	private final Long noops;
 	private final Long versionConflicts;
 
-	// use primitve long to always show total number of affected documents
+	// use primitive long to always show total number of affected documents
 	private final long totalDocuments;
 
 	private final String sourceIndex;

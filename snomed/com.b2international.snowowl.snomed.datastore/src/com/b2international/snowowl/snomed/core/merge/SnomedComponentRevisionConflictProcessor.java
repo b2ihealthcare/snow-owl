@@ -170,13 +170,13 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 			ObjectId objectId = conflict.getObjectId();
 			// - components that have been added on both paths are potential donation candidates (due to centralized ID management (CIS), ID collision should not happen under normal circumstances, so this is certainly a donated content)
 			if (conflict instanceof AddedInSourceAndTargetConflict) {
-				donatedComponentsByType.put(staging.mappings().getClass(objectId.type()), objectId.id());
+				donatedComponentsByType.put(staging.getIndexMapping().getMappings().getClass(objectId.type()), objectId.id());
 			} else if (conflict instanceof ChangedInSourceAndTargetConflict) {
 				// always ignore effective time and module differences
 				ChangedInSourceAndTargetConflict changedInSourceAndTarget = (ChangedInSourceAndTargetConflict) conflict;
 				if (SnomedRf2Headers.FIELD_EFFECTIVE_TIME.equals(changedInSourceAndTarget.getSourceChange().getProperty()) 
 						|| SnomedRf2Headers.FIELD_MODULE_ID.equals(changedInSourceAndTarget.getSourceChange().getProperty())) {
-					donatedComponentsByType.put(staging.mappings().getClass(objectId.type()), objectId.id());
+					donatedComponentsByType.put(staging.getIndexMapping().getMappings().getClass(objectId.type()), objectId.id());
 				}
 			}
 		}
@@ -195,7 +195,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 					if (donatedComponentIds.contains(objectId.id())) {
 						// filter out all conflicts reported around donated content
 						// revise all donated content on merge source, so new parent revision will take place instead
-						staging.reviseOnMergeSource(staging.mappings().getClass(objectId.type()), objectId.id());
+						staging.reviseOnMergeSource(staging.getIndexMapping().getMappings().getClass(objectId.type()), objectId.id());
 						return false;
 					} else {
 						return true;

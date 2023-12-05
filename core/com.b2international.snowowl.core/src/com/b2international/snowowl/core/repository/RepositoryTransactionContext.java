@@ -342,7 +342,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		final Index index = service(Index.class);
 		final RevisionSearcher revisionSearcher = service(RevisionSearcher.class);
 		final IndexAdmin indexAdmin = index.admin();
-		final Mappings mappings = indexAdmin.mappings();
+		final Mappings mappings = indexAdmin.getIndexMapping().getMappings();
 		
 		final Stream<Class<?>> revisionTypes = mappings.getTypes()
 			.stream()

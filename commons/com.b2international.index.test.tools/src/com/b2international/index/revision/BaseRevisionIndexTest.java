@@ -182,7 +182,7 @@ public abstract class BaseRevisionIndexTest {
 	
 	protected void assertDocEquals(Object expected, Object actual) {
 		assertNotNull("Actual document is missing from index", actual);
-		for (Field f : index.getIndex().admin().mappings().getMapping(expected.getClass()).getFields()) {
+		for (Field f : index.getIndex().admin().getIndexMapping().getMapping(expected.getClass()).getFields()) {
 			if (Revision.Fields.CREATED.equals(f.getName()) 
 					|| Revision.Fields.REVISED.equals(f.getName())
 					|| WithScore.SCORE.equals(f.getName())

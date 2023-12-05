@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class LockIndexTests {
 	
 	private void assertDocEquals(DatastoreLockIndexEntry expected, DatastoreLockIndexEntry actual) {
 		assertNotNull("Actual document is missing from index", actual);
-		for (Field f : index.admin().mappings().getMapping(expected.getClass()).getFields()) {
+		for (Field f : index.admin().getIndexMapping().getMapping(expected.getClass()).getFields()) {
 			if (Revision.Fields.CREATED.equals(f.getName()) 
 					|| Revision.Fields.REVISED.equals(f.getName())
 					|| WithScore.SCORE.equals(f.getName())

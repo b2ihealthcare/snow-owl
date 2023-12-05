@@ -29,10 +29,14 @@ import org.junit.runners.MethodSorters;
 import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
+import com.b2international.index.migrate.DocumentMappingMigrationStrategy;
+import com.b2international.index.migrate.DocumentMappingMigrator;
+import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @since 7.16.1
@@ -41,14 +45,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class MappingMigrationTest extends BaseIndexTest {
 
 	@Doc(type = "schema") // this will ensure the same index name will be used for all subclasses and versions
-	static class Schema {
+	static class SchemaDoc {
 		
 		@ID
 		private String id;
 		private String field;
 		
 		@JsonCreator
-		public Schema(@JsonProperty("id") String id, @JsonProperty("field") String field) {
+		public SchemaDoc(@JsonProperty("id") String id, @JsonProperty("field") String field) {
 			this.id = id;
 			this.field = field;
 		}
@@ -64,7 +68,29 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Doc(type = "schema")
-	static class SchemaWithNewField extends Schema {
+	static class SchemaWithoutSchemaRevision extends SchemaDoc {
+
+		private String newField;
+		
+		@JsonCreator
+		public SchemaWithoutSchemaRevision(@JsonProperty("id") String id, @JsonProperty("field") String field, @JsonProperty("newField") String newField) {
+			super(id, field);
+			this.newField = newField;
+		}
+		
+		public String getNewField() {
+			return newField;
+		}
+		
+	}
+	
+	@Doc(
+		type = "schema",
+		revisions = {
+			@SchemaRevision(version = 2, description = "add newField field", strategy = DocumentMappingMigrationStrategy.NO_REINDEX)
+		}
+	)
+	static class SchemaWithNewField extends SchemaDoc {
 
 		private String newField;
 		
@@ -80,7 +106,12 @@ public class MappingMigrationTest extends BaseIndexTest {
 		
 	}
 	
-	@Doc(type = "schema")
+	@Doc(
+		type = "schema",
+		revisions = {
+			@SchemaRevision(version = 2, description = "add new field alias `field.text`", strategy = DocumentMappingMigrationStrategy.REINDEX_INPLACE)
+		}
+	)
 	static class SchemaWithNewTextField {
 
 		@ID
@@ -109,7 +140,12 @@ public class MappingMigrationTest extends BaseIndexTest {
 		
 	}
 	
-	@Doc(type = "schema")
+	@Doc(
+		type = "schema",
+		revisions = {
+			@SchemaRevision(version = 2, description = "add new field alias `field.exact`", strategy = DocumentMappingMigrationStrategy.REINDEX_INPLACE)
+		}
+	)
 	static class SchemaWithNewKeywordField {
 
 		@ID
@@ -138,7 +174,12 @@ public class MappingMigrationTest extends BaseIndexTest {
 		
 	}
 	
-	@Doc(type = "schema")
+	@Doc(
+		type = "schema",
+		revisions = {
+			@SchemaRevision(version = 3, description = "add new field aliases `field.exact` and `field.text`", strategy = DocumentMappingMigrationStrategy.REINDEX_INPLACE)
+		}
+	)
 	static class SchemaWithTextFieldAndNewKeywordField {
 
 		@ID
@@ -167,9 +208,52 @@ public class MappingMigrationTest extends BaseIndexTest {
 		}
 		
 	}
+	
+	@Doc(
+		type = "schema",
+		revisions = {
+			@SchemaRevision(version = 2, migrator = SchemaDocRenamedField.DocumentMigratorVersion1_2.class, strategy = DocumentMappingMigrationStrategy.REINDEX_SCRIPT)
+		}
+	) 
+	static class SchemaDocRenamedField {
+		
+		public static final class DocumentMigratorVersion1_2 implements DocumentMappingMigrator {
 
-	private Schema existingDoc1;
-	private Schema existingDoc2;
+			@Override
+			public void init(Searcher searcher) {
+			}
+
+			@Override
+			public ObjectNode migrate(ObjectNode oldDocument) {
+				// simply convert the existing field fieldValue to field2 fieldValue
+				oldDocument.set("field2", oldDocument.remove("field"));
+				return oldDocument;
+			}
+			
+		}
+		
+		@ID
+		private String id;
+		private String field2;
+		
+		@JsonCreator
+		public SchemaDocRenamedField(@JsonProperty("id") String id, @JsonProperty("field2") String field2) {
+			this.id = id;
+			this.field2 = field2;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getField2() {
+			return field2;
+		}
+		
+	}
+
+	private SchemaDoc existingDoc1;
+	private SchemaDoc existingDoc2;
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -178,20 +262,28 @@ public class MappingMigrationTest extends BaseIndexTest {
 	
 	@Before
 	public void setup() {
-		Mappings mappings = new Mappings(Schema.class);
+		Mappings mappings = new Mappings(SchemaDoc.class);
 		// enable class overrides for test(s) in this class
 		mappings.enableRuntimeMappingOverrides = true;
 		// make sure we always start with the basic Schema
 		admin().updateMappings(mappings);
 		admin().create();
 		// index two documents with the existing schema
-		existingDoc1 = new Schema(KEY1, "Existing Field One");
-		existingDoc2 = new Schema(KEY2, "Existing Field Two");
+		existingDoc1 = new SchemaDoc(KEY1, "Existing Field One");
+		existingDoc2 = new SchemaDoc(KEY2, "Existing Field Two");
 		indexDocuments(existingDoc1, existingDoc2);
 	}
 
+	@Test(expected = IndexException.class)
+	public void migrate01_NoSchemaRevisionRegistered() throws Exception {
+		// update Mappings to new schema
+		admin().updateMappings(new Mappings(SchemaWithoutSchemaRevision.class));
+		// then recreate indices using the new mappings (and to perform potential migration as well)
+		admin().create();
+	}
+	
 	@Test
-	public void migrate01_NewField() throws Exception {
+	public void migrate02_NewField() throws Exception {
 		// update Mappings to new schema
 		admin().updateMappings(new Mappings(SchemaWithNewField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
@@ -202,7 +294,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void migrate02_NewTextField() throws Exception {
+	public void migrate03_NewTextField() throws Exception {
 		// update Mappings to new schema
 		admin().updateMappings(new Mappings(SchemaWithNewTextField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
@@ -218,7 +310,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void migrate03_NewKeywordField() throws Exception {
+	public void migrate04_NewKeywordField() throws Exception {
 		// update Mappings to new schema
 		admin().updateMappings(new Mappings(SchemaWithNewKeywordField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
@@ -234,7 +326,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void migrate04_NewKeywordFieldOnExistingKeywordAndTextField() throws Exception {
+	public void migrate05_NewKeywordFieldOnExistingKeywordAndTextField() throws Exception {
 		// update Mapping to perform the first migration
 		admin().updateMappings(new Mappings(SchemaWithNewTextField.class));
 		admin().create();
@@ -257,6 +349,17 @@ public class MappingMigrationTest extends BaseIndexTest {
 				.where(Expressions.exactMatch("field.exact", "existing field one"))
 				.build())
 		).hasSize(1);
+	}
+	
+	@Test
+	public void migrate06_RenameFieldWithMigratorScript() throws Exception {
+		// update Mapping to perform the migration using script and reindex
+		admin().updateMappings(new Mappings(SchemaDocRenamedField.class));
+		admin().create();
+
+		// confirm that the two documents still exists and they have their values set correctly in the new field
+		assertDocEquals(new SchemaDocRenamedField(existingDoc1.getId(), existingDoc1.getField()), getDocument(SchemaDocRenamedField.class, KEY1));
+		assertDocEquals(new SchemaDocRenamedField(existingDoc2.getId(), existingDoc2.getField()), getDocument(SchemaDocRenamedField.class, KEY2));
 	}
 	
 	@After

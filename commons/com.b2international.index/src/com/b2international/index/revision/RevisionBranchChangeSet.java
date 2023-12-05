@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public final class RevisionBranchChangeSet {
 	RevisionBranchChangeSet(DefaultRevisionIndex index, RevisionBranchRef ref, List<RevisionCompareDetail> compareDetails) {
 		this.index = index;
 		this.ref = ref;
-		this.mappings = this.index.admin().mappings();
+		this.mappings = this.index.admin().getIndexMapping().getMappings();
 		compareDetails.forEach(detail -> {
 			// add all objects to the tx
 			if (detail.isAdd()) {

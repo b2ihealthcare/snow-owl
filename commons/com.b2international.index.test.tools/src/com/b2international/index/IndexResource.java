@@ -120,7 +120,7 @@ public final class IndexResource extends ExternalResource {
 		// then mapping changes
 		revisionIndex.admin().updateMappings(new Mappings(types));
 		
-		// then settings changes
+		// then update settings changes for existing indices (TODO move this into create? or updateMappings?)
 		revisionIndex.admin().updateSettings(indexSettings.get());
 		
 		// then make sure we have all indexes ready for tests
