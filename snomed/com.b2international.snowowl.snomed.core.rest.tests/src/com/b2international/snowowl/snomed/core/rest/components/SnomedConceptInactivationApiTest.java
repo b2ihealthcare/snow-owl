@@ -338,4 +338,26 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 			.body("descriptions.items.inactivationProperties.inactivationIndicator[1].id", nullValue());
 	}
 	
+	@Test
+	public void inactivateConceptDefinitionStatusRemainsPrimitive() {
+		String conceptId = createNewConcept(branchPath);
+		
+		updateComponent(
+				branchPath, 
+				SnomedComponentType.CONCEPT, 
+				conceptId, 
+				Json.object(
+					"active", false,
+					"definitionStatusId", Concepts.FULLY_DEFINED,
+					"commitComment", "Inactivated concept"
+				)
+			).statusCode(204);
+		
+		SnomedConcept concept = assertGetConcept(conceptId)
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+			assertTrue(!concept.isActive());
+			assertTrue(concept.isPrimitive());
+	}
+	
 }
