@@ -143,6 +143,9 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 				Set<String> accessibleResources = authz.getAccessibleResources(context, context.service(User.class));
 				
 				resourceIds.removeIf(resourceId -> !accessibleResources.contains(resourceId));
+				if (resourceIds.isEmpty()) {
+					throw new NoResultException();
+				}
 				queryBuilder.filter(VersionDocument.Expressions.resourceIds(resourceIds));
 			}
 			
@@ -152,6 +155,10 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 		if (!user.canBrowseAll()) {
 			final AuthorizationService authz = context.optionalService(AuthorizationService.class).orElse(AuthorizationService.DEFAULT);
 			Set<String> accessibleResources = authz.getAccessibleResources(context, context.service(User.class));
+			
+			if (accessibleResources.isEmpty()) {
+				throw new NoResultException();
+			}
 			
 			queryBuilder.filter(VersionDocument.Expressions.resourceIds(accessibleResources));
 		}		
