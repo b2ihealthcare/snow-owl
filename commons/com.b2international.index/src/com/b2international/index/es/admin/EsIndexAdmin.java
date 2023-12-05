@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
@@ -197,7 +198,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		Set<DocumentMapping> mappingsToRefresh = Sets.newHashSet();
 		
 		// create number of indexes based on number of types
-		for (DocumentMapping mapping : this.indexMapping.getMappings().getMappings()) {
+		for (DocumentMapping mapping : this.indexMapping.getMappings().getDocumentMappings()) {
 			// generate index name using configured names and prefixes
 			final String index = generateTypeIndexName(mapping);
 			
@@ -263,7 +264,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						compatibleChanges.add(change.getFieldPath());
 						
 					} else if (change.isMove() || change.isReplace()) {
-						compatibleChanges.add(change.getFieldPath());
+						incompatibleChanges.add(change.getFieldPath());
 					} else if (change.isRemove()) {
 						
 						// XXX while remove is bad it is hard to detect true incompatibility where we try to support dynamic fields (like Maps)
@@ -272,7 +273,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							return;
 						}
 						
-						compatibleChanges.add(change.getFieldPath());
+						incompatibleChanges.add(change.getFieldPath());
 					}
 					
 				});
@@ -295,7 +296,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						case REINDEX_INPLACE:
 							// apply the schema changes first, there should be only compatible changes here
 							putIndexMapping(index, typeMapping);
-							// then reindex all documents in place to pick up mapping changes, mostly for 
+							// then reindex all documents in place to pick up mapping changes automatically
 							if (bulkIndexByScroll(client, mapping, index, Expressions.matchAll(), "update", null /*no script, in place update of docs to pick up mapping changes*/, migrationTaskDescription)) {
 								mappingsToRefresh.add(mapping);
 							}
@@ -332,7 +333,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							}
 							
 							migrator.init(previousIndexSearcher);
-							for (Hits<JsonNode> hits : readAllRaw(previousIndexSearcher, mapping, getBatchSize())) {
+							readAllRaw(previousIndexSearcher, mapping, getBatchSize()).forEachOrdered(hits -> {
 								hits.forEach(hit -> {
 									temporaryIndexWriter.put(mapping, Objects.requireNonNull(migrator.migrate((ObjectNode) hit), "Migrator should never return null as migrated JSON object"));
 								});
@@ -341,7 +342,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 								} catch (IOException e) {
 									throw new IndexException(String.format("Failed to migrate batch of index '%s' to mapping schema version '%s'.", index, schema.version()), e);
 								}
-							}
+							});
 							
 							// complete migration
 							doDeleteIndexes(index);
@@ -393,14 +394,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 		log.info("'{}' indexes are ready.", name);
 	}
 
-	private static Iterable<Hits<JsonNode>> readAllRaw(EsDocumentSearcher previousIndexSearcher, DocumentMapping mapping, int batchSize) {
+	private static Stream<Hits<JsonNode>> readAllRaw(EsDocumentSearcher previousIndexSearcher, DocumentMapping mapping, int batchSize) {
 		return Query.select(JsonNode.class)
 				.from(mapping.type())
 				.where(Expressions.matchAll())
 				.limit(batchSize)
 				.build()
-				.stream(previousIndexSearcher)
-				::iterator;
+				.stream(previousIndexSearcher);
 	}
 
 	private void putIndexMapping(final String index, Map<String, Object> typeMapping) {
@@ -901,7 +901,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	private String getRemoteAddress(RemoteInfo remoteInfo) {
-		return Optional.ofNullable(remoteInfo).map(info -> String.format("%s://%s:%s", info.getScheme(), info.getHost(), info.getPort())).orElse(null);
+		return Optional.ofNullable(remoteInfo).map(info -> String.format("%s://%s:%s", info.getScheme(), info.getHost(), info.getPort())).orElse("(localhost)");
 	}
 
 	private BulkByScrollResponse executeReindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize, AtomicInteger retries) throws IOException {

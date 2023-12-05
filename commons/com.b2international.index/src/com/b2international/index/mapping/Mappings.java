@@ -65,7 +65,7 @@ public final class Mappings {
 		return mapping;
 	}
 
-	public Collection<DocumentMapping> getMappings() {
+	public Collection<DocumentMapping> getDocumentMappings() {
 		return ImmutableList.copyOf(mappingsByType.values());
 	}
 	

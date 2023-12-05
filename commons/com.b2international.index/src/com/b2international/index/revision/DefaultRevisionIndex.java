@@ -315,7 +315,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	
 	private Set<Class<? extends Revision>> getRevisionTypes() {
 		final Set<Class<? extends Revision>> revisionTypes = newHashSet();
-		for (DocumentMapping mapping : admin().getIndexMapping().getMappings().getMappings()) {
+		for (DocumentMapping mapping : admin().getIndexMapping().getMappings().getDocumentMappings()) {
 			if (Revision.class.isAssignableFrom(mapping.type())) {
 				revisionTypes.add((Class<? extends Revision>) mapping.type());
 			}

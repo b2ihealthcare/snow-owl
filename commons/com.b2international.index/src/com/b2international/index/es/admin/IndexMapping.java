@@ -98,7 +98,7 @@ public final class IndexMapping {
 		// remove all unknown index registrations and return them for deletion
 		final Set<String> removedIndexes = new HashSet<>();
 		for (final DocumentMapping previousMapping : Set.copyOf(this.mappingByIndex.inverse().keySet())) {
-			if (!this.mappings.getMappings().contains(previousMapping)) {
+			if (!this.mappings.getDocumentMappings().contains(previousMapping)) {
 				removedIndexes.add(this.mappingByIndex.inverse().remove(previousMapping));
 			}
 		}

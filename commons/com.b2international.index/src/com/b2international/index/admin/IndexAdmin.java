@@ -51,7 +51,7 @@ public interface IndexAdmin {
 	boolean exists();
 
 	/**
-	 * Creates the index if and only if does not exist yet, otherwise this method is no-op. Configure the defined {@link #mappings()} as well.
+	 * Creates the index if and only if does not exist yet, otherwise this method is no-op. Configure the defined {@link #documentMappings()} as well.
 	 */
 	void create();
 

@@ -289,15 +289,15 @@ public class EsDocumentWriter implements Writer {
 		}
 		System.err.println("Deleted documents: ");
 		for (Class<?> type : deleteOperations.keySet()) {
-			System.err.format("\t%s -> %s\n", admin.getIndexMapping().getMapping(type).typeAsString(), deleteOperations.get(type));
+			System.err.format("\t%s -> %s\n", indexMapping.getMapping(type).typeAsString(), deleteOperations.get(type));
 		}
 		System.err.println("Bulk updates: ");
 		for (BulkUpdate<?> update : bulkUpdateOperations) {
-			System.err.format("\t%s -> %s, %s, %s\n", admin.getIndexMapping().getMapping(update.getType()).typeAsString(), update.getFilter(), update.getScript(), update.getParams());
+			System.err.format("\t%s -> %s, %s, %s\n", indexMapping.getMapping(update.getType()).typeAsString(), update.getFilter(), update.getScript(), update.getParams());
 		}
 		System.err.println("Bulk deletes: ");
 		for (BulkDelete<?> delete : bulkDeleteOperations) {
-			System.err.format("\t%s -> %s\n", admin.getIndexMapping().getMapping(delete.getType()).typeAsString(), delete.getFilter());
+			System.err.format("\t%s -> %s\n", indexMapping.getMapping(delete.getType()).typeAsString(), delete.getFilter());
 		}
 	}
 
