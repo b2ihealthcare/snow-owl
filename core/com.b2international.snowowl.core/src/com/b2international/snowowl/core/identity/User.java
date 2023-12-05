@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.identity;
 
+import static com.b2international.snowowl.core.identity.Permission.ALL;
+import static com.b2international.snowowl.core.identity.Permission.OPERATION_BROWSE;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
@@ -111,6 +113,17 @@ public final class User implements Serializable {
 				.isPresent();
 	}
 	
+	/**
+	 * @return <code>true</code> if this user has a permission to browse all resources, <code>false</code> otherwise.
+	 */
+	@JsonIgnore
+	public boolean canBrowseAll() {
+		return isAdministrator() || getPermissions().stream()
+				.filter(p -> OPERATION_BROWSE.equals(p.getOperation()) && ALL.equals(p.getResource()))
+				.findFirst()
+				.isPresent();
+	}
+
 	/**
 	 * Returns <code>true</code> if the user has the necessary permission to allow performing an operation on the given resource.
 	 *  
