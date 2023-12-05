@@ -172,7 +172,6 @@ public final class Version implements Serializable {
 		return getResource().getResourceId();
 	}
 	
-	@JsonIgnore
 	public ResourceURI getVersionResourceURI() {
 		return getResource().withPath(version);
 	}
