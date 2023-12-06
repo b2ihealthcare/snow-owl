@@ -70,7 +70,6 @@ public class ValidationCleanupService {
 		JobRequests.prepareSchedule()
 			.setRequest(request)
 			.setDescription(description)
-			.setUser(context.service(User.class).getUserId())
 			.setAutoClean(true)
 			.setSchedulingRule(VALIDATION_ISSUE_CLEANUP_RULE)
 			.build()
