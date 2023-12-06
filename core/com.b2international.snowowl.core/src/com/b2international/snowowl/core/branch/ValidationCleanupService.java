@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.identity.User;
@@ -48,13 +49,13 @@ public class ValidationCleanupService {
 	public void removeStaleIssues(ServiceProvider context, List<String> resourceURIs, List<String> resultIds) {
 		AsyncRequest<Boolean> request;
 		
-		if (!resultIds.isEmpty()) {
+		if (!CompareUtils.isEmpty(resultIds)) {
 			request = ValidationRequests.issues()
 					.prepareDelete()
 					.setResultIds(resultIds)
 					.buildAsync();
 		} else {
-			if (resourceURIs.isEmpty()) {
+			if (CompareUtils.isEmpty(resourceURIs)) {
 				return;
 			}
 			
