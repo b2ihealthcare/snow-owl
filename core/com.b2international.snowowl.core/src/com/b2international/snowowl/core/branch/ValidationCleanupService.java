@@ -65,7 +65,7 @@ public class ValidationCleanupService {
 				.buildAsync();
 		}
 		
-		final String description = String.format("Remove validation issues on stale/removed branch(es) %s", Joiner.on(", ").join(resourceURIs));
+		final String description = String.format("Remove validation issues on stale/removed branch(es) of %s", Joiner.on(", ").join(resourceURIs));
 		
 		JobRequests.prepareSchedule()
 			.setRequest(request)
