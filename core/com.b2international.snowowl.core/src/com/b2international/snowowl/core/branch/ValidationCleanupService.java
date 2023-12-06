@@ -41,8 +41,8 @@ public class ValidationCleanupService {
 		removeStaleIssues(context, resourceURIs, Collections.emptyList());
 	}
 	
-	public void removeStaleIssues(ServiceProvider context, String resourceURI, List<String> previousAnalysisRunIds) {
-		removeStaleIssues(context, List.of(resourceURI), previousAnalysisRunIds);
+	public void removeStaleIssues(ServiceProvider context, String resourceURI, List<String> resultIds) {
+		removeStaleIssues(context, List.of(resourceURI), resultIds);
 	}
 	
 	public void removeStaleIssues(ServiceProvider context, List<String> resourceURIs, List<String> resultIds) {
