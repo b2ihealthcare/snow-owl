@@ -45,13 +45,13 @@ public class ValidationCleanupService {
 		removeStaleIssues(context, List.of(resourceURI), previousAnalysisRunIds);
 	}
 	
-	public void removeStaleIssues(ServiceProvider context, List<String> resourceURIs, List<String> previousAnalysisRunIds) {
+	public void removeStaleIssues(ServiceProvider context, List<String> resourceURIs, List<String> resultIds) {
 		AsyncRequest<Boolean> request;
 		
-		if (!previousAnalysisRunIds.isEmpty()) {
+		if (!resultIds.isEmpty()) {
 			request = ValidationRequests.issues()
 					.prepareDelete()
-					.setResultIds(previousAnalysisRunIds)
+					.setResultIds(resultIds)
 					.buildAsync();
 		} else {
 			request = ValidationRequests.issues()
