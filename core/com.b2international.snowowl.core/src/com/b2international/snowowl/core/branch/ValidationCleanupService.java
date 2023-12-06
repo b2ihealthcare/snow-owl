@@ -54,6 +54,10 @@ public class ValidationCleanupService {
 					.setResultIds(resultIds)
 					.buildAsync();
 		} else {
+			if (resourceURIs.isEmpty()) {
+				return;
+			}
+			
 			request = ValidationRequests.issues()
 				.prepareDelete()
 				.setCodeSystemURIs(resourceURIs)
