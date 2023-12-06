@@ -34,19 +34,19 @@ public class ValidationCleanupService {
 	public ValidationCleanupService() {
 	}
 	
-	public void removeStaleIssues(ServiceProvider context, String resourceURI) {
-		removeStaleIssues(context, List.of(resourceURI), Collections.emptyList());
+	public void scheduleStaleIssueRemoval(ServiceProvider context, String resourceURI) {
+		scheduleStaleIssueRemoval(context, List.of(resourceURI), Collections.emptyList());
 	}
 	
-	public void removeStaleIssues(ServiceProvider context, List<String> resourceURIs) {
-		removeStaleIssues(context, resourceURIs, Collections.emptyList());
+	public void scheduleStaleIssueRemoval(ServiceProvider context, List<String> resourceURIs) {
+		scheduleStaleIssueRemoval(context, resourceURIs, Collections.emptyList());
 	}
 	
-	public void removeStaleIssues(ServiceProvider context, String resourceURI, List<String> resultIds) {
-		removeStaleIssues(context, List.of(resourceURI), resultIds);
+	public void scheduleStaleIssueRemoval(ServiceProvider context, String resourceURI, List<String> resultIds) {
+		scheduleStaleIssueRemoval(context, List.of(resourceURI), resultIds);
 	}
 	
-	public void removeStaleIssues(ServiceProvider context, List<String> resourceURIs, List<String> resultIds) {
+	public void scheduleStaleIssueRemoval(ServiceProvider context, List<String> resourceURIs, List<String> resultIds) {
 		AsyncRequest<Boolean> request;
 		
 		if (!CompareUtils.isEmpty(resultIds)) {

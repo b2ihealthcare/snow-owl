@@ -48,7 +48,7 @@ public final class BranchDeleteRequest extends BranchBaseRequest<Boolean> implem
 				//Schedule a job to remove issues corresponding to this branch
 				TerminologyResource resource = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), getBranchPath());
 				String resourceURI = resource.getResourceURI(getBranchPath()).toString();
-				context.service(ValidationCleanupService.class).removeStaleIssues(context, resourceURI);				
+				context.service(ValidationCleanupService.class).scheduleStaleIssueRemoval(context, resourceURI);				
 			} catch (Exception e) {
 				LOGGER.trace(String.format("Failed to remove validation issues associated with deleted branch %s", getBranchPath()), e);
 			}
