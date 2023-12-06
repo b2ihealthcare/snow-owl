@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request.version;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -102,10 +103,7 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 
 		addIdFilter(query, VersionDocument.Expressions::ids);
 		addFilter(query, OptionKey.RESOURCE_TYPE, String.class, VersionDocument.Expressions::resourceTypes);
-		addFilter(query, OptionKey.RESOURCE, String.class, resources -> Expressions.bool()
-				.should(VersionDocument.Expressions.resources(resources))
-				.should(VersionDocument.Expressions.resourceIds(resources))
-				.build());
+		addResourcesFilter(query, context);
 		addFilter(query, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		addFilter(query, OptionKey.RESOURCE_BRANCHPATH, String.class, VersionDocument.Expressions::resourceBranchPaths);
 		addFilter(query, OptionKey.AUTHOR, String.class, VersionDocument.Expressions::authors);
@@ -132,9 +130,10 @@ public final class VersionSearchRequest extends SearchIndexResourceRequest<Repos
 		
 		if (containsKey(OptionKey.RESOURCE)) {
 			Collection<String> resources = getCollection(OptionKey.RESOURCE, String.class);
-			Collection<String> resourceIds = resources.stream()
-					.map(resource -> resource.contains(Branch.SEPARATOR) ? new ResourceURI(resource).getResourceId() : resource)
-					.toList();
+			Collection<String> resourceIds = new ArrayList<>();
+			resources.stream()
+				.map(resource -> resource.contains(Branch.SEPARATOR) ? new ResourceURI(resource).getResourceId() : resource)
+				.forEach(id -> resourceIds.add(id));
 			
 			if (user.canBrowseAll()) {
 				queryBuilder.filter(VersionDocument.Expressions.resourceIds(resourceIds));
