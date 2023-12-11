@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.google.common.collect.Lists;
@@ -58,6 +59,8 @@ public class CodeSystemResource {
 		cs.setId(SnomedContentRule.SNOMEDCT_ID);
 		cs.setSettings(Map.of(SnomedTerminologyComponentConstants.CODESYSTEM_LANGUAGE_CONFIG_KEY, languageMap));
 
-		context.with(TerminologyResource.class, cs);
+		context
+			.with(TerminologyResource.class, cs)
+			.with(ResourceURI.class, SnomedContentRule.SNOMEDCT);
 	}
 }
