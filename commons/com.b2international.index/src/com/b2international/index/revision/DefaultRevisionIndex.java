@@ -182,7 +182,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		// apply commits happened on the compareRef segments in chronological order
 		AfterWhereBuilder<Commit> query = Query.select(Commit.class)
 			.where(compareCommitsQuery.build())
-			.limit(20) // load only 20 commits for each batch (import commits tend to be large, so if we load 20 of them we should not use that much memory)
+			 // load only 20 commits for each batch (import commits tend to be large, so if we load 20 of them we should not use that much memory)
+			.limit(IndexClientFactory.COMMIT_BATCH_SIZE)
 			.sortBy(SortBy.field(Commit.Fields.TIMESTAMP, Order.ASC));
 		
 		int processedCommits = 0;
