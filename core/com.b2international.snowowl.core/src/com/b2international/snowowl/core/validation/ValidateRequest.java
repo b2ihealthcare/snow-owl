@@ -113,9 +113,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 
 	private ValidationResult doValidate(final BranchContext context, final Writer index) throws IOException {
-		final String branchPath = context.path();
 		final TerminologyResource resource = context.service(TerminologyResource.class);
-		final ResourceURI resourceURI = resource.getResourceURI(branchPath);
+		final ResourceURI resourceURI = context.service(ResourceURI.class);
 		final IProgressMonitor monitor = context.monitor();
 		
 		final ValidationRuleSearchRequestBuilder req = ValidationRequests.rules()
