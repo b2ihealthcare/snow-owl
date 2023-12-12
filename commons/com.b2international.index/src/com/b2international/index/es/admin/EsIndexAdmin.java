@@ -358,7 +358,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							
 							// init searchers and writers
 							EsDocumentSearcher temporaryIndexSearcher = new EsDocumentSearcher(this, temporaryIndexMapping, mapper);
-							EsDocumentWriter temporaryIndexWriter = new EsDocumentWriter(this, temporaryIndexMapping, temporaryIndexSearcher, mapper);
+							EsDocumentWriter temporaryIndexWriter = new EsDocumentWriter(this, temporaryIndexMapping, temporaryIndexSearcher, mapper, false);
 							
 							final DocumentMappingMigrator migrator;
 							try {
