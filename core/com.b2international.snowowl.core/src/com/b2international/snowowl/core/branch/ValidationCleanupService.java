@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.SerializableSchedulingRule;
 import com.b2international.snowowl.core.validation.ValidationRequests;
