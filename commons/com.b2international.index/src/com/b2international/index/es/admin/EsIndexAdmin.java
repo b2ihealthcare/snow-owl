@@ -201,6 +201,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public void create() {
 		
+		indent = 0;
+		
 		log().info("Preparing '{}' indexes...", name);
 		
 		// register any type that requires a refresh at the end of the index create/open
