@@ -26,6 +26,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -99,6 +100,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 		
 		context
 			.with(TerminologyResource.class, cs)
+			.with(ResourceURI.class, CodeSystem.uri(CODESYSTEM))
 			.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
 			.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)))
 			.with(EclRewriter.class, new EclRewriter());
