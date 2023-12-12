@@ -16,7 +16,6 @@
 
 package com.b2international.snowowl.core.branch;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -53,36 +52,44 @@ public class ValidationCleanupService {
 	}
 	
 	public void scheduleStaleIssueRemoval(ServiceProvider context, String resourceURI) {
-		scheduleStaleIssueRemoval(context, List.of(resourceURI), Collections.emptyList());
+		scheduleStaleIssueRemoval(context, List.of(resourceURI));
 	}
 	
 	public void scheduleStaleIssueRemoval(ServiceProvider context, List<String> resourceURIs) {
-		scheduleStaleIssueRemoval(context, resourceURIs, Collections.emptyList());
+		deleteRequestByResourceURIs(context, resourceURIs);
 	}
 	
 	public void scheduleStaleIssueRemoval(ServiceProvider context, String resourceURI, List<String> resultIds) {
-		scheduleStaleIssueRemoval(context, List.of(resourceURI), resultIds);
+		deleteRequestByResultIds(context, List.of(resourceURI), resultIds);
 	}
 	
-	public void scheduleStaleIssueRemoval(ServiceProvider context, List<String> resourceURIs, List<String> resultIds) {
-		AsyncRequest<Boolean> request;
+	private void deleteRequestByResultIds(ServiceProvider context, List<String> resourceURIs,  List<String> resultIds) {
+		if (CompareUtils.isEmpty(resultIds)) {
+			return;
+		}
 		
-		if (!CompareUtils.isEmpty(resultIds)) {
-			request = ValidationRequests.issues()
-					.prepareDelete()
-					.setResultIds(resultIds)
-					.buildAsync();
-		} else {
-			if (CompareUtils.isEmpty(resourceURIs)) {
-				return;
-			}
-			
-			request = ValidationRequests.issues()
+		AsyncRequest<Boolean> request = ValidationRequests.issues()
+				.prepareDelete()
+				.setResultIds(resultIds)
+				.buildAsync();
+		
+		scheduleDeleteRequest(context, resourceURIs, request);
+	}
+		
+	private void deleteRequestByResourceURIs(ServiceProvider context, List<String> resourceURIs) {
+		if (CompareUtils.isEmpty(resourceURIs)) {
+			return;
+		}
+		
+		AsyncRequest<Boolean> request = ValidationRequests.issues()
 				.prepareDelete()
 				.setCodeSystemURIs(resourceURIs)
 				.buildAsync();
-		}
 		
+		scheduleDeleteRequest(context, resourceURIs, request);
+	}
+	
+	private void scheduleDeleteRequest(ServiceProvider context, List<String> resourceURIs, AsyncRequest<Boolean> request) {
 		final String description = String.format("Remove validation issues on stale/removed branch(es) of %s", Joiner.on(", ").join(resourceURIs));
 		
 		JobRequests.prepareSchedule()
