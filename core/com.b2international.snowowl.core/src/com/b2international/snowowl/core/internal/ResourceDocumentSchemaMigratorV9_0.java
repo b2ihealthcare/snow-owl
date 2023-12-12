@@ -80,7 +80,7 @@ public class ResourceDocumentSchemaMigratorV9_0 implements DocumentMappingMigrat
 
 		}
 
-		if (!dependencies.isEmpty() && !oldDocument.has("dependencies")) {
+		if (!dependencies.isEmpty() && !oldDocument.hasNonNull("dependencies")) {
 			oldDocument.set("dependencies", mapper.valueToTree(dependencies));
 		}
 
