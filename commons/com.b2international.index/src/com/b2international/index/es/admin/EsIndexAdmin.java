@@ -248,7 +248,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.getSourceAsMap());
 				
 				// first check the _meta.version field value
-				final long oldVersion = currentTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue();
+				final long oldVersion = currentTypeMapping.has(DocumentMapping._META)
+						? currentTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue()
+						: 1L /* skip 0 -> 1 migration, because these are considered to be "equal" */;
 				final long newVersion = newTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue();
 				checkState(oldVersion <= newVersion, "Current model version should never be greater than the new model version. In case of '%s' got old '%s' vs new '%s'.", mapping.type().getSimpleName(), oldVersion, newVersion);
 				
@@ -345,7 +347,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							EsDocumentSearcher previousIndexSearcher = new EsDocumentSearcher(this, previousIndexMapping, mapper);
 							
 							// create a new temporary index to transform documents into the new schema
-							final String temporaryIndex = String.format(TEMP_REINDEX_NAME_PATTERN, index, Long.toString(newVersion));
+							final String temporaryIndex = String.format(TEMP_REINDEX_NAME_PATTERN, index, Long.toString(schema.version()));
 							doCreateIndex(temporaryIndex, mapping, typeMapping, additionalTypeIndexConfiguration);
 							waitForYellowHealth(temporaryIndex);
 							
@@ -374,7 +376,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							readAllRaw(previousIndexSearcher, mapping, batchSize).forEachOrdered(hits -> {
 								
 								hits.forEach(hit -> {
-									temporaryIndexWriter.put(mapping, Objects.requireNonNull(migrator.migrate((ObjectNode) hit), "Migrator should never return null as migrated JSON object"));
+									temporaryIndexWriter.put(mapping, Objects.requireNonNull(migrator.migrate((ObjectNode) hit, mapper), "Migrator should never return null as migrated JSON object"));
 								});
 								
 								try {
@@ -419,7 +421,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 					
 				} else if (!compatibleChanges.isEmpty() || !incompatibleChanges.isEmpty()) {
 					// same schema version, but there are field changes, report as error, as any schema change requires an explicit schema version to be registered in order to update the mapping and the content
-					throw new IndexException(String.format("New schema version is required when changing the mapping of an existing index to another. '%s' has the following field changes '%s'. ", index, ImmutableSortedSet.<String>naturalOrder().addAll(compatibleChanges).addAll(incompatibleChanges).build()));
+					throw new IndexException(String.format("New schema version is required when modifying the mapping of an existing index. '%s' has the following field changes '%s'. ", index, ImmutableSortedSet.<String>naturalOrder().addAll(compatibleChanges).addAll(incompatibleChanges).build()));
 				} else {
 					// no schema version changes, and no actual schema changes, good to go
 				}
