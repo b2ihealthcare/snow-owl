@@ -253,7 +253,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					.filter(TerminologyResource.class::isInstance)
 					.map(TerminologyResource.class::cast)
 					.forEach(resource -> {
-						resourcesToVersion.put(resource.getResourceURI(), resource);
+						// skip child resources that are in deprecated state and should not be versioned anymore
+						if (!TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resource.getStatus())) {
+							resourcesToVersion.put(resource.getResourceURI(), resource);
+						}
 					});
 			}
 

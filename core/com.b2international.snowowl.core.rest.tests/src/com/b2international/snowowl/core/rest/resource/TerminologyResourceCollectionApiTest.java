@@ -38,6 +38,7 @@ import org.elasticsearch.core.Map;
 import org.junit.After;
 import org.junit.Test;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.collection.TerminologyResourceCollection;
@@ -45,6 +46,7 @@ import com.b2international.snowowl.core.collection.TerminologyResourceCollection
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.test.commons.rest.CodeSystemApiAssert;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
@@ -225,6 +227,29 @@ public class TerminologyResourceCollectionApiTest {
 		// collection versioning should generate versions for each child resource as well
 		assertGetVersion(codeSystemId1, "v1").statusCode(200);
 		assertGetVersion(codeSystemId2, "v1").statusCode(200);
+	}
+	
+	@Test
+	public void versionCollectionResourceWithRetiredChild() throws Exception {
+		registerSnomedCodeSystemChildSupport();
+		
+		var collectionId = createTerminologyResourceCollection(prepareTerminologyResourceCollectionCreateBody(IDs.base62UUID()).with("settings", Map.of("customSetting", "customSettingValue")));
+		
+		var codeSystemId1 = createCodeSystem(IDs.base62UUID(), collectionId);
+		var codeSystemId2 = createCodeSystem(IDs.base62UUID(), collectionId);
+		
+		// deprecate codeSystem2
+		CodeSystemApiAssert.assertCodeSystemUpdated(codeSystemId2, Json.object(
+			"status", "retired",
+			"commitComment", "Retire " + codeSystemId2
+		));
+		
+		createVersion(TerminologyResourceCollection.uri(collectionId), "v1", LocalDate.now(), false)
+			.statusCode(201);
+	
+		// collection versioning should generate versions for each active child resource
+		assertGetVersion(codeSystemId1, "v1").statusCode(200);
+		assertGetVersion(codeSystemId2, "v1").statusCode(404);
 	}
 	
 }
