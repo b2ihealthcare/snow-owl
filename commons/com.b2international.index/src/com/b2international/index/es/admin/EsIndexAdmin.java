@@ -53,6 +53,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.RemoteInfo;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.xcontent.XContentType;
 import org.slf4j.Logger;
 
@@ -64,6 +65,7 @@ import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.EsDocumentSearcher;
 import com.b2international.index.es.EsDocumentWriter;
+import com.b2international.index.es.HitConverter.SourceAsJsonNodeHitConverter;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.es.reindex.ReindexResult;
@@ -80,7 +82,6 @@ import com.b2international.index.revision.Commit;
 import com.b2international.index.util.JsonDiff;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -373,10 +374,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 							
 							AtomicInteger docCounter = new AtomicInteger(0);
 							
+							SourceAsJsonNodeHitConverter<ObjectNode> hitConverter = new SourceAsJsonNodeHitConverter<>(mapper, ObjectNode.class);
 							readAllRaw(previousIndexSearcher, mapping, batchSize).forEachOrdered(hits -> {
 								
 								hits.forEach(hit -> {
-									temporaryIndexWriter.put(mapping, Objects.requireNonNull(migrator.migrate((ObjectNode) hit, mapper), "Migrator should never return null as migrated JSON object"));
+									String docId = hit.getId();
+									ObjectNode source;
+									try {
+										source = hitConverter.convert(hit);
+									} catch (IOException e) {
+										throw new IndexException("Couldn't convert document source to JSON object.", e);
+									}
+									temporaryIndexWriter.put(mapping, docId, Objects.requireNonNull(migrator.migrate(source, mapper), "Migrator should never return null as migrated JSON object"));
 								});
 								
 								try {
@@ -447,8 +456,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 	}
 
-	private static Stream<Hits<JsonNode>> readAllRaw(EsDocumentSearcher previousIndexSearcher, DocumentMapping mapping, int batchSize) {
-		return Query.select(JsonNode.class)
+	private static Stream<Hits<SearchHit>> readAllRaw(EsDocumentSearcher previousIndexSearcher, DocumentMapping mapping, int batchSize) {
+		return Query.select(SearchHit.class)
 				.from(mapping.type())
 				.where(Expressions.matchAll())
 				.limit(batchSize)

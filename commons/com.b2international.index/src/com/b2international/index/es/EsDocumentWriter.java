@@ -42,8 +42,8 @@ import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.admin.IndexMapping;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -80,8 +80,8 @@ public class EsDocumentWriter implements Writer {
 	}
 	
 	@Override
-	public void put(DocumentMapping mapping, JsonNode source) {
-		indexOperations.put(mapping.type(), mapping.getIdFieldValue(source), source);
+	public void put(DocumentMapping mapping, String docId, ObjectNode source) {
+		indexOperations.put(mapping.type(), docId, source);
 	}
 
 	@Override
