@@ -26,7 +26,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -85,6 +87,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
@@ -203,11 +206,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 		// register any type that requires a refresh at the end of the index create/open
 		Set<DocumentMapping> mappingsToRefresh = Sets.newHashSet();
 		
+		SortedMap<String, DocumentMapping> indexToMapping = this.indexMapping.getMappings().getDocumentMappings().stream()
+				.collect(ImmutableSortedMap.toImmutableSortedMap(String::compareTo, this::generateTypeIndexName, Function.identity()));
+		
 		// create number of indexes based on number of types
-		for (DocumentMapping mapping : this.indexMapping.getMappings().getDocumentMappings()) {
+		for (Entry<String, DocumentMapping> entry : indexToMapping.entrySet()) {
 			
-			// generate index name using configured names and prefixes
-			final String index = generateTypeIndexName(mapping);
+			final String index = entry.getKey();
+			final DocumentMapping mapping = entry.getValue();
 			
 			log().info(">>> '{}'", index);
 			
@@ -343,6 +349,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 							// create an index mapping configuration for the previous index
 							IndexMapping previousIndexMapping = new IndexMapping(getIndexMapping().getMappings());
 							previousIndexMapping.register(mapping, index);
+							
+							// register already processed mappings and indexes
+							this.indexMapping.getMappingByIndex().forEach( (i, m) -> {
+								previousIndexMapping.register(m, i);
+							});
 							
 							// create a searcher on the old index mapping to access previous data
 							EsDocumentSearcher previousIndexSearcher = new EsDocumentSearcher(this, previousIndexMapping, mapper);
