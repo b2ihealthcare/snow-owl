@@ -55,7 +55,7 @@ public final class IndexMapping {
 		Objects.requireNonNull(indexName, "indexName may not be null");
 		
 		Preconditions.checkState(mappings.getMapping(mapping.type()) != null, "Mapping configuration is missing for type '%s' in this index mapping.", mapping.type());
-		Preconditions.checkState(mappings.getMapping(mapping.type()) == mapping, "Type '%s' incorrectly has two mapping configurations", mapping.type());
+		Preconditions.checkState(mappings.getMapping(mapping.type()).equals(mapping), "Type '%s' incorrectly has two mapping configurations", mapping.type());
 		
 		this.mappingByIndex.put(indexName, mapping);
 	}

@@ -356,7 +356,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							previousIndexMapping.register(mapping, index);
 							
 							// register already processed mappings and indexes
-							this.indexMapping.getMappingByIndex().forEach( (i, m) -> {
+							this.indexMapping.getMappingByIndex().forEach((i, m) -> {
 								previousIndexMapping.register(m, i);
 							});
 							
