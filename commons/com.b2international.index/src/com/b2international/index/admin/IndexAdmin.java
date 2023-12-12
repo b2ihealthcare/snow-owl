@@ -130,9 +130,12 @@ public interface IndexAdmin {
 	RefreshResponse refresh(String...indices);
 
 	/**
-	 * Issue a remote reindex of sourceIndex to destinationIndex using the parameters specified in remoteInfo. A selective
-	 * query can be passed inside the RemoteInfo object in a serialized form.
+	 * Issue a reindex operation of sourceIndex to destinationIndex.
 	 * 
+	 * An optional remoteInfo object can be used to:
+	 * 	- add a selective document query in a serialized form
+	 *  - specify a remote Elasticsearch instance to move the contents of sourceIndex to the remote destinationIndex 
+	 *
 	 * @return {@link BulkByScrollResponse}
 	 * @param sourceIndex - the source index
 	 * @param destinationIndex - the destination index

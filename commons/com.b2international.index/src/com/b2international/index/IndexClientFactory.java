@@ -259,6 +259,11 @@ public interface IndexClientFactory {
 	int MAX_PAGE_SIZE = 10_000;
 
 	/**
+	 * Batch size to use for loading commit documents in a safe manner
+	 */
+	int COMMIT_BATCH_SIZE = 20;
+	
+	/**
 	 * Create a new {@link IndexClient} with the given name.
 	 * 
 	 * @param name

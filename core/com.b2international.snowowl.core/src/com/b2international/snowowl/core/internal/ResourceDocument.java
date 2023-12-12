@@ -29,6 +29,8 @@ import com.b2international.index.Script;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
+import com.b2international.index.migrate.DocumentMappingMigrationStrategy;
+import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.CommitSubject;
 import com.b2international.index.revision.RevisionBranchPoint;
@@ -58,6 +60,14 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 		ResourceDocument.Fields.CONTACT,
 		ResourceDocument.Fields.USAGE,
 		ResourceDocument.Fields.PURPOSE
+	},
+	revisions = {
+		@SchemaRevision(
+			version = 2,
+			description = "add dependencies / hidden, remove settings.domain / settings.sourceDomain / settings.targetDomain",
+			strategy = DocumentMappingMigrationStrategy.REINDEX_SCRIPT,
+			migrator = ResourceDocumentSchemaMigratorV9_0.class
+		)
 	}
 )
 @JsonDeserialize(builder = ResourceDocument.Builder.class)

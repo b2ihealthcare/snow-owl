@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.index.mapping.DocumentMapping;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @since 4.7
@@ -30,7 +30,7 @@ public interface Writer {
 
 	void put(Object object);
 	
-	void put(DocumentMapping mapping, JsonNode source);
+	void put(DocumentMapping mapping, String docId, ObjectNode source);
 	
 	<T> void putAll(Collection<T> objects);
 

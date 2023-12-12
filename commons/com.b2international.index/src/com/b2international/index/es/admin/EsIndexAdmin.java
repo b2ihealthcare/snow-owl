@@ -26,8 +26,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.elasticsearch.ElasticsearchStatusException;
@@ -47,11 +48,13 @@ import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.RemoteInfo;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.xcontent.XContentType;
 import org.slf4j.Logger;
 
@@ -63,6 +66,7 @@ import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.EsDocumentSearcher;
 import com.b2international.index.es.EsDocumentWriter;
+import com.b2international.index.es.HitConverter.SourceAsJsonNodeHitConverter;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.es.reindex.ReindexResult;
@@ -75,13 +79,14 @@ import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.util.JsonDiff;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
@@ -91,8 +96,6 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
-	private static final Pattern FIELD_ALIAS_CHANGE_PROPERTY_PATTERN = Pattern.compile("properties(/[a-zA-Z0-9_]+)+/fields(/[a-zA-Z0-9_]+)?");
-	
 	/**
 	 * List of Elasticsearch supported dynamic settings.
 	 */
@@ -111,6 +114,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 		IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY
 	);
 	
+	private static final String TEMP_REINDEX_NAME_PATTERN = "%s-migrate-to-v%s";
+	
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
 	
 	private final Random random = new Random();
@@ -128,6 +133,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	// optionally available Elasticsearch 8 client API
 	private Es8Client es8Client;
+	
+	private int indent = 0;
 
 	public EsIndexAdmin(EsClient client, ObjectMapper mapper, String name, Mappings mappings, Map<String, Object> settings) {
 		this.client = client;
@@ -193,14 +200,27 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void create() {
-		log.info("Preparing '{}' indexes...", name);
+		
+		indent = 0;
+		
+		log().info("Preparing '{}' indexes...", name);
+		
 		// register any type that requires a refresh at the end of the index create/open
 		Set<DocumentMapping> mappingsToRefresh = Sets.newHashSet();
 		
+		// sort indexes by name
+		SortedMap<String, DocumentMapping> indexToMapping = this.indexMapping.getMappings().getDocumentMappings().stream()
+				.collect(ImmutableSortedMap.toImmutableSortedMap(String::compareTo, this::generateTypeIndexName, Function.identity()));
+		
+		indent++;
+		
 		// create number of indexes based on number of types
-		for (DocumentMapping mapping : this.indexMapping.getMappings().getDocumentMappings()) {
-			// generate index name using configured names and prefixes
-			final String index = generateTypeIndexName(mapping);
+		for (Entry<String, DocumentMapping> entry : indexToMapping.entrySet()) {
+			
+			final String index = entry.getKey();
+			final DocumentMapping mapping = entry.getValue();
+			
+			log().info("{}Verifying index '{}'", getLogIndent(), index);
 			
 			// generate mapping based on Java type
 			Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
@@ -240,15 +260,20 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.getSourceAsMap());
 				
 				// first check the _meta.version field value
-				final long oldVersion = currentTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue();
+				final long oldVersion = currentTypeMapping.has(DocumentMapping._META)
+						? currentTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue()
+						: 1L /* skip 0 -> 1 migration, because these are considered to be "equal" */;
+				
 				final long newVersion = newTypeMapping.path(DocumentMapping._META).path(DocumentMapping.Meta.VERSION).longValue();
 				checkState(oldVersion <= newVersion, "Current model version should never be greater than the new model version. In case of '%s' got old '%s' vs new '%s'.", mapping.type().getSimpleName(), oldVersion, newVersion);
 				
-				// always perform a schema diff just in case to detect compatible and incompatible changes and report them when needed
+				// always perform a schema diff to detect compatible and incompatible changes and report them when needed
 				SortedSet<String> compatibleChanges = Sets.newTreeSet();
 				SortedSet<String> incompatibleChanges = Sets.newTreeSet();
 				final JsonDiff schemaChanges = JsonDiff.diff(currentTypeMapping, newTypeMapping);
+				
 				schemaChanges.forEach(change -> {
+					
 					// ignore _meta changes
 					if (change.getFieldPath().startsWith(DocumentMapping._META)) {
 						return;
@@ -279,29 +304,52 @@ public final class EsIndexAdmin implements IndexAdmin {
 				});
 				
 				if (oldVersion < newVersion) {
+					
+					indent++; // separate migration messages visually from the rest
 
+					log().info("{}Detected schema version difference in '{}': {} vs {}", getLogIndent(), index, oldVersion, newVersion);
+					
 					long currentVersion = oldVersion;
 					
 					// perform migration to the new schema using the migrators starting from oldVersion up until the current latest version
 					// run one migrator at a time (TODO optimize later for schema versions that can be executed together)
 					for (SchemaRevision schema : mapping.getSchemaRevisionsFrom(oldVersion)) {
-						String migrationTaskDescription = String.format("Migrating index '%s' from schema version %s to %s. Changes: '%s'", index, currentVersion, schema.version(), schema.description());
-						log.info(migrationTaskDescription);
+						
+						log().info("{}Migrating index schema of '{}' from version {} to {}. Changes: {}", getLogIndent(), index, currentVersion, schema.version(), schema.description());
 						
 						switch (schema.strategy()) {
 						case NO_REINDEX:
+							
 							// just apply the schema changes by modifying the mapping and we are good to go
+							log().info("{}Applying mapping changes to '{}'", getLogIndent(), index);
 							putIndexMapping(index, typeMapping);
 							break;
+							
 						case REINDEX_INPLACE:
+							
 							// apply the schema changes first, there should be only compatible changes here
+							log().info("{}Applying mapping changes to '{}'", getLogIndent(), index);
 							putIndexMapping(index, typeMapping);
-							// then reindex all documents in place to pick up mapping changes automatically
-							if (bulkIndexByScroll(client, mapping, index, Expressions.matchAll(), "update", null /*no script, in place update of docs to pick up mapping changes*/, migrationTaskDescription)) {
+							
+							// then update all documents in place to pick up mapping changes automatically
+							log().info("{}Bulk update documents due to mapping changes in '{}'", getLogIndent(), index);
+							if (bulkIndexByScroll(
+									client,
+									mapping,
+									index,
+									Expressions.matchAll(),
+									"update",
+									null /* no script, in place update of docs to pick up mapping changes */,
+									String.format("Update documents due to index mapping changes in '%s', schema version '%s'", index, schema.version())
+								)) {
 								mappingsToRefresh.add(mapping);
 							}
 							break;
+							
 						case REINDEX_SCRIPT:
+							
+							log().info("{}Reindexing documents of '{}' using a migration script", getLogIndent(), index);
+							
 							// wait until yellow health is reached for this specific index
 							waitForYellowHealth(index);
 
@@ -309,12 +357,17 @@ public final class EsIndexAdmin implements IndexAdmin {
 							IndexMapping previousIndexMapping = new IndexMapping(getIndexMapping().getMappings());
 							previousIndexMapping.register(mapping, index);
 							
+							// register already processed mappings and indexes
+							this.indexMapping.getMappingByIndex().forEach((i, m) -> {
+								previousIndexMapping.register(m, i);
+							});
+							
 							// create a searcher on the old index mapping to access previous data
 							EsDocumentSearcher previousIndexSearcher = new EsDocumentSearcher(this, previousIndexMapping, mapper);
 							
 							// create a new temporary index to transform documents into the new schema
-							final String temporaryIndex = String.join("---", index, Long.toString(newVersion));
-							doCreateIndex(temporaryIndex, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
+							final String temporaryIndex = String.format(TEMP_REINDEX_NAME_PATTERN, index, Long.toString(schema.version()));
+							doCreateIndex(temporaryIndex, mapping, typeMapping, additionalTypeIndexConfiguration);
 							waitForYellowHealth(temporaryIndex);
 							
 							// create a temporary index mapping where the temporary index replaces the current index
@@ -323,9 +376,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 							
 							// init searchers and writers
 							EsDocumentSearcher temporaryIndexSearcher = new EsDocumentSearcher(this, temporaryIndexMapping, mapper);
-							EsDocumentWriter temporaryIndexWriter = new EsDocumentWriter(this, temporaryIndexMapping, temporaryIndexSearcher, mapper);
+							EsDocumentWriter temporaryIndexWriter = new EsDocumentWriter(this, temporaryIndexMapping, temporaryIndexSearcher, mapper, false);
 							
 							final DocumentMappingMigrator migrator;
+							
 							try {
 								migrator = schema.migrator().getDeclaredConstructor().newInstance();
 							} catch (Exception e) {
@@ -333,29 +387,51 @@ public final class EsIndexAdmin implements IndexAdmin {
 							}
 							
 							migrator.init(previousIndexSearcher);
-							readAllRaw(previousIndexSearcher, mapping, getBatchSize()).forEachOrdered(hits -> {
+							
+							// make sure to use a small batch size for commit documents
+							int batchSize = Commit.class.equals(mapping.type()) ? IndexClientFactory.COMMIT_BATCH_SIZE : getBatchSize();
+							
+							AtomicInteger docCounter = new AtomicInteger(0);
+							
+							SourceAsJsonNodeHitConverter<ObjectNode> hitConverter = new SourceAsJsonNodeHitConverter<>(mapper, ObjectNode.class);
+							
+							readAllRaw(previousIndexSearcher, mapping, batchSize).forEachOrdered(hits -> {
+								
 								hits.forEach(hit -> {
-									temporaryIndexWriter.put(mapping, Objects.requireNonNull(migrator.migrate((ObjectNode) hit), "Migrator should never return null as migrated JSON object"));
+									String docId = hit.getId();
+									ObjectNode source;
+									try {
+										source = hitConverter.convert(hit);
+									} catch (IOException e) {
+										throw new IndexException("Couldn't convert document source to JSON object.", e);
+									}
+									temporaryIndexWriter.put(mapping, docId, Objects.requireNonNull(migrator.migrate(source, mapper), "Migrator should never return null as migrated JSON object"));
 								});
+								
 								try {
 									temporaryIndexWriter.commit();
 								} catch (IOException e) {
 									throw new IndexException(String.format("Failed to migrate batch of index '%s' to mapping schema version '%s'.", index, schema.version()), e);
 								}
+								
+								log().info("{}Migrated {} / {} documents to temporary index '{}'", getLogIndent(), docCounter.addAndGet(hits.getHits().size()), hits.getTotal(), temporaryIndex);
+								
 							});
 							
 							// complete migration
 							doDeleteIndexes(index);
 							
 							// recreate original index
-							doCreateIndex(index, mapping, typeMappingOverrides, additionalTypeIndexConfiguration);
+							doCreateIndex(index, mapping, typeMapping, additionalTypeIndexConfiguration);
 							waitForYellowHealth(index);
 							
 							// copy content back by running a reindex operation from tmp index to the newly recreated original
 							try {
-								reindex(temporaryIndex, index, null, true);
+								log().info("{}Reindex contents of '{}' to '{}'", getLogIndent(), temporaryIndex, index);
+								ReindexResult reindexResult = reindex(temporaryIndex, index, null, true);
+								log().info("{}Reindex operation successfully finished with result: '{}'", getLogIndent(), reindexResult);
 							} catch (IOException e) {
-								throw new IndexException(String.format("Failed to copy back contents from '%s' to original index '%s' via reindex operation", temporaryIndex, index), e);
+								throw new IndexException(String.format("Failed to reindex contents of '%s' to original index '%s'", temporaryIndex, index), e);
 							}
 							
 							// delete temporary index
@@ -367,15 +443,20 @@ public final class EsIndexAdmin implements IndexAdmin {
 						}
 						
 						currentVersion = schema.version();
-						log.info(migrationTaskDescription.replace("Migrating", "Migrated"));	
+						
+						log().info("{}Migrated schema of '{}' to version {}", getLogIndent(), index, schema.version());
+						
 					}
+					
+					indent--;
 					
 				} else if (!compatibleChanges.isEmpty() || !incompatibleChanges.isEmpty()) {
 					// same schema version, but there are field changes, report as error, as any schema change requires an explicit schema version to be registered in order to update the mapping and the content
-					throw new IndexException(String.format("New schema version is required when changing the mapping of an existing index to another. '%s' has the following field changes '%s'. ", index, ImmutableSortedSet.<String>naturalOrder().addAll(compatibleChanges).addAll(incompatibleChanges).build()));
+					throw new IndexException(String.format("New schema version is required when modifying the mapping of an existing index. '%s' has the following field changes '%s'. ", index, ImmutableSortedSet.<String>naturalOrder().addAll(compatibleChanges).addAll(incompatibleChanges).build()));
 				} else {
 					// no schema version changes, and no actual schema changes, good to go
 				}
+				
 			} else {
 				// does not exist, create it
 				doCreateIndex(index, mapping, typeMapping, additionalTypeIndexConfiguration);
@@ -383,19 +464,24 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 			// as last step, register the index in the mapping registry so that it can be used by downstream modules
 			this.indexMapping.register(mapping, index);
+			
 		}
+		
+		indent--;
 		
 		// wait until the cluster processes each index create request
 		waitForYellowHealth(getIndexMapping().indices());
+		
 		if (!mappingsToRefresh.isEmpty()) {
 			refresh(mappingsToRefresh, getIndexMapping());
 		}
 		
-		log.info("'{}' indexes are ready.", name);
+		log().info("'{}' indexes are ready.", name);
+		
 	}
 
-	private static Stream<Hits<JsonNode>> readAllRaw(EsDocumentSearcher previousIndexSearcher, DocumentMapping mapping, int batchSize) {
-		return Query.select(JsonNode.class)
+	private static Stream<Hits<SearchHit>> readAllRaw(EsDocumentSearcher previousIndexSearcher, DocumentMapping mapping, int batchSize) {
+		return Query.select(SearchHit.class)
 				.from(mapping.type())
 				.where(Expressions.matchAll())
 				.limit(batchSize)
@@ -404,21 +490,30 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	private void putIndexMapping(final String index, Map<String, Object> typeMapping) {
+		
 		try {
+			
 			PutMappingRequest putMappingRequest = new PutMappingRequest(index).source(typeMapping);
 			AcknowledgedResponse response = client.indices().updateMapping(putMappingRequest);
-			checkState(response.isAcknowledged(), "Failed to update mapping of index '%s'", index);
-		} catch (IOException e) {
+			
+			if (response.isAcknowledged()) {
+				log().info("{}Updated mapping of index '{}' to '{}'", getLogIndent(), index, mapper.writeValueAsString(typeMapping));
+			} else {
+				throw new IndexException(String.format("Index mapping update request got rejected for '%s'", index));
+			}
+			
+		} catch (Exception e) {
 			throw new IndexException(String.format("Failed to update mapping '%s'", index), e);
 		}
+		
 	}
 
 	private void doCreateIndex(String index, DocumentMapping mapping, Map<String, Object> typeMapping, Map<String, Object> additionalTypeIndexConfiguration) {
-		// create index
+		
 		final Map<String, Object> indexSettings;
+		
 		try {
 			indexSettings = createIndexSettings(additionalTypeIndexConfiguration);
-			log.info("Configuring '{}' index with settings: {}", index, indexSettings);
 		} catch (IOException e) {
 			throw new IndexException("Couldn't prepare settings for index " + index, e);
 		}
@@ -428,23 +523,43 @@ public final class EsIndexAdmin implements IndexAdmin {
 			.settings(indexSettings);
 		
 		try {
+			
 			final CreateIndexResponse response = client.indices().create(createIndexRequest);
-			checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
+			
+			if (response.isAcknowledged()) {
+				log().info("{}Created index '{}' with settings: '{}'", getLogIndent(), index, indexSettings);
+			} else {
+				throw new IndexException(String.format("Index create request got rejected for '%s'", index));
+			}
+			
 		} catch (Exception e) {
 			throw new IndexException(String.format("Failed to create index '%s' for type '%s'", name, mapping.typeAsString()), e);
 		}		
+		
 	}
 	
 	private void doDeleteIndexes(final String...indexesToDelete) {
+		
 		final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest().indices(indexesToDelete);
+		
 		try {
-			final AcknowledgedResponse deleteIndexResponse = client()
+			
+			final AcknowledgedResponse response = client()
 					.indices()
 					.delete(deleteIndexRequest);
-			checkState(deleteIndexResponse.isAcknowledged(), "Failed to delete all ES indices for '%s'.", name);
+			
+			String indexes = String.join(", ", indexesToDelete);
+			
+			if (response.isAcknowledged()) {
+				log().info("{}Deleted index{} '{}'", getLogIndent(), indexesToDelete.length > 1 ? "es" : "", indexes);
+			} else {
+				throw new IndexException(String.format("Index delete request got rejected for '%s'", indexes));
+			}
+			
 		} catch (Exception e) {
 			throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", name), e);
 		}
+		
 	}
 
 	private Map<String, Object> stringsAsKeywords() {
@@ -534,7 +649,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 			if (response == null || response.isTimedOut()) {
 				throw new IndexException(String.format("Cluster health did not reach yellow status for '%s' indexes after %s ms.", name, currentTime - startTime), null);
 			} else {
-				log.info("Cluster health for '{}' indexes reported as '{}' after {} ms.", name, response.getStatus(), currentTime - startTime);
+				log().info(
+					"{}Cluster health for '{}' index{} reported as '{}' after {} ms.",
+						getLogIndent(),
+						indices.length > 1 ? name : indices[0],
+						indices.length > 1 ? "es" : "",
+						response.getStatus(),
+						currentTime - startTime
+				);
 			}
 		}
 	}
@@ -757,7 +879,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 					Map<String, Object> typeIndexSettings = new HashMap<>(esSettings);
 					
 					try {
-						log.info("Applying settings '{}' changes in index {}...", esSettings, index);
+						log().info("{}Applying settings '{}' changes in index {}...", getLogIndent(), esSettings, index);
 						AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(typeIndexSettings));
 						checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
 					} catch (IOException e) {
@@ -810,15 +932,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	@Override
 	public RefreshResponse refresh(String...indices) {
-		if (log.isTraceEnabled()) {
-			log.trace("Refreshing indexes '{}'", Arrays.toString(indices));
+		if (log().isTraceEnabled()) {
+			log().trace("Refreshing indexes '{}'", Arrays.toString(indices));
 		}
 		
 		try {
 		
 			final RefreshResponse refreshResponse = client().indices().refresh(new RefreshRequest(indices));
-			if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
-				log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indices), refreshResponse.getStatus());
+			if (RestStatus.OK != refreshResponse.getStatus() && log().isErrorEnabled()) {
+				log().error("Index refresh request of '{}' returned with status {}", Arrays.toString(indices), refreshResponse.getStatus());
 			}
 			return refreshResponse;
 		} catch (Exception e) {
@@ -856,7 +978,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			response.getSearchFailures().forEach(failure -> {
 				log().error(
-					"There were search failures during reindex operation. Index: '{}', Status: '{}', Cause: {}",
+					"{}There were search failures during reindex operation. Index: '{}', Status: '{}', Cause: {}",
+					getLogIndent(),
 					failure.getIndex(),
 					failure.getStatus().getStatus(),
 					failure.getReason()
@@ -871,7 +994,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			response.getBulkFailures().forEach(failure -> {
 				log().error(
-					"There were bulk failures during reindex operation. Index: '{}', Message: '{}', Status: '{}', Cause: {}",
+					"{}There were bulk failures during reindex operation. Index: '{}', Message: '{}', Status: '{}', Cause: {}",
+					getLogIndent(),
 					failure.getIndex(),
 					failure.getMessage(),
 					failure.getStatus(),
@@ -912,30 +1036,29 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			response = client().reindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize);
 			
-		} catch (IllegalArgumentException /* thrown by the transport client */ | ElasticsearchStatusException /* thrown by the http client */ e) {
+		} catch (Exception e) {
 			
-			if (!Strings.isNullOrEmpty(e.getMessage()) && e.getMessage().contains("Remote responded with a chunk that was too large. Use a smaller batch size.")) {
+			// if the request gets rejected because of a too large batch size, retry the operation with half the batch size until we reach 1
+			if (
+				// thrown when the remote instance rejects the reindex request due to a too large batch size
+				(!Strings.isNullOrEmpty(e.getMessage()) && e.getMessage().contains("Remote responded with a chunk that was too large. Use a smaller batch size.")) ||
+				// thrown when the local instance rejects the reindex request due to a too large batch size
+				(e instanceof ElasticsearchStatusException ess && RestStatus.TOO_MANY_REQUESTS == ess.status()) ||
+				// thrown when the local instance rejects the reindex request due to a too large batch size via the transport client
+				e instanceof EsRejectedExecutionException
+			) {
 				
 				if (batchSize == 1) {
 					throw new IndexException(e.getMessage(), e); // cannot minimize batch size any further
 				}
 				
-				log.info("Retrying reindex request of '{}' with smaller batch size '{}'", sourceIndex, batchSize / 2);
+				log().info("{}Retrying reindex request of '{}' with smaller batch size '{}'", getLogIndent(), sourceIndex, batchSize / 2);
 
 				retries.incrementAndGet();
 				
 				return executeReindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize / 2, retries);
 				
-			} else {
-				throw new IndexException(
-						String.format("Reindex operation of source index: '%s' and destination index '%s' failed at host: '%s'",
-							sourceIndex,
-							destinationIndex,
-							getRemoteAddress(remoteInfo)
-						), e);
 			}
-			
-		} catch (Exception e) {
 			
 			throw new IndexException(
 				String.format("Reindex operation of source index: '%s' and destination index '%s' failed at host: '%s'",
@@ -1038,18 +1161,19 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 				boolean updated = updateCount > 0;
 				if (updated) {
-					log().info("Updated {} {} documents with bulk {}", updateCount, mapping.typeAsString(), operationDescription);
+					log().info("{}Updated {} {} documents with bulk {}", getLogIndent(), updateCount, mapping.typeAsString(), operationDescription);
 					needsRefresh = true;
 				}
 				
 				boolean deleted = deleteCount > 0;
 				if (deleted) {
-					log().info("Deleted {} {} documents with bulk {}", deleteCount, mapping.typeAsString(), operationDescription);
+					log().info("{}Deleted {} {} documents with bulk {}", getLogIndent(), deleteCount, mapping.typeAsString(), operationDescription);
 					needsRefresh = true;
 				}
 				
 				if (!updated && !deleted) {
-					log().warn("Bulk {} could not be applied to {} documents, no-ops ({}), conflicts ({})",
+					log().warn("{}Bulk {} could not be applied to {} documents, no-ops ({}), conflicts ({})",
+							getLogIndent(),
 							operationDescription,
 							mapping.typeAsString(), 
 							noops, 
@@ -1064,9 +1188,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 						
 						if (failureStatus != RestStatus.CONFLICT.getStatus()) {
 							versionConflictsOnly = false;
-							log().error("Index failure during bulk update: {}", failureMessage);
+							log().error("{}Index failure during bulk update: {}", getLogIndent(), failureMessage);
 						} else {
-							log().warn("Version conflict reason: {}", failureMessage);
+							log().warn("{}Version conflict reason: {}", getLogIndent(), failureMessage);
 						}
 					}
 
@@ -1094,6 +1218,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 		} while (versionConflicts > 0);
 		
 		return needsRefresh;
+	}
+	
+	private String getLogIndent() {
+		return String.format("%s%s", String.join("", Collections.nCopies(indent, ">>")), indent > 0  ? " " : "");
 	}
 
 }

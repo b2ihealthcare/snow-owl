@@ -36,6 +36,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -224,7 +225,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 			}
 
 			@Override
-			public ObjectNode migrate(ObjectNode oldDocument) {
+			public ObjectNode migrate(ObjectNode oldDocument, ObjectMapper mapper) {
 				// simply convert the existing field fieldValue to field2 fieldValue
 				oldDocument.set("field2", oldDocument.remove("field"));
 				return oldDocument;

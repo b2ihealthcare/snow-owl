@@ -29,6 +29,9 @@ import com.b2international.index.WithScore;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
+import com.b2international.index.migrate.DocumentMappingMigrationStrategy;
+import com.b2international.index.migrate.DocumentMappingMigrator;
+import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -40,7 +43,16 @@ import com.google.common.collect.Multimap;
 /**
  * @since 7.0
  */
-@Doc
+@Doc(
+	revisions = {
+		@SchemaRevision(
+			version = 2,
+			description = "do not index from/to details, add subjects",
+			strategy = DocumentMappingMigrationStrategy.REINDEX_SCRIPT,
+			migrator = DocumentMappingMigrator.ReindexAsIs.class
+		)
+	}
+)
 @JsonDeserialize(builder = Commit.Builder.class)
 public final class Commit implements WithScore {
 

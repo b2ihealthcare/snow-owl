@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -205,8 +205,19 @@ public interface HitConverter<T> {
 		
 	}
 	
+	HitConverter<SearchHit> SEARCHHIT_ASIS_CONVERTER = new HitConverter<SearchHit>() {
+		
+		@Override
+		public SearchHit convert(SearchHit hit) throws IOException {
+			return hit;
+		}
+		
+	};
+	
 	static <T> HitConverter<T> getConverter(ObjectMapper mapper, Class<T> select, List<Class<?>> froms, boolean fetchSource, List<String> fields) {
-		if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
+		if (SearchHit.class.isAssignableFrom(select)) {
+			return (HitConverter<T>) SEARCHHIT_ASIS_CONVERTER;
+		} else if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
 			checkState(!fetchSource, "Single field fetching is not supported when it requires to load the source of the document.");
 			return new FieldValueHitConverter<>(select);
 		} else if (Map.class.isAssignableFrom(select)) {

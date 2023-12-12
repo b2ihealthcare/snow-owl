@@ -15,10 +15,7 @@
  */
 package com.b2international.index.es.admin;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.index.mapping.DocumentMapping;
@@ -58,7 +55,7 @@ public final class IndexMapping {
 		Objects.requireNonNull(indexName, "indexName may not be null");
 		
 		Preconditions.checkState(mappings.getMapping(mapping.type()) != null, "Mapping configuration is missing for type '%s' in this index mapping.", mapping.type());
-		Preconditions.checkState(mappings.getMapping(mapping.type()) == mapping, "Type '%s' incorrectly has two mapping configurations", mapping.type());
+		Preconditions.checkState(mappings.getMapping(mapping.type()).equals(mapping), "Type '%s' incorrectly has two mapping configurations", mapping.type());
 		
 		this.mappingByIndex.put(indexName, mapping);
 	}
@@ -139,6 +136,10 @@ public final class IndexMapping {
 	 */
 	public List<String> getTypeIndexes(List<DocumentMapping> mappings) {
 		return mappings.stream().map(this::getTypeIndex).collect(Collectors.toList());
+	}
+	
+	public Map<String, DocumentMapping> getMappingByIndex() {
+		return Map.copyOf(mappingByIndex);
 	}
 
 }

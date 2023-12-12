@@ -16,6 +16,7 @@
 package com.b2international.index.migrate;
 
 import com.b2international.index.Searcher;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -37,7 +38,7 @@ public interface DocumentMappingMigrator {
 	 * 
 	 * @return the new, migrated document
 	 */
-	ObjectNode migrate(ObjectNode source);
+	ObjectNode migrate(ObjectNode source, ObjectMapper mapper);
 	
 	/**
 	 * Simple no transformation migrator function that can be used to trigger reindex on a schema change that does not require any actual transformation just the reindex of its values into a new index
@@ -53,7 +54,7 @@ public interface DocumentMappingMigrator {
 		}
 		
 		@Override
-		public ObjectNode migrate(ObjectNode oldDocument) {
+		public ObjectNode migrate(ObjectNode oldDocument, ObjectMapper mapper) {
 			return oldDocument;
 		}
 	}; 

@@ -31,6 +31,8 @@ import com.b2international.commons.options.MetadataHolderImpl;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
 import com.b2international.index.Script;
+import com.b2international.index.migrate.DocumentMappingMigrationStrategy;
+import com.b2international.index.migrate.SchemaRevision;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -41,7 +43,16 @@ import com.google.common.primitives.Longs;
 /**
  * @since 6.0
  */
-@Doc(type="branch")
+@Doc(
+	type="branch",
+	revisions = {
+		@SchemaRevision(
+			version = 2,
+			description = "add nameAliases / pathAliases",
+			strategy = DocumentMappingMigrationStrategy.NO_REINDEX
+		)
+	}
+)
 @JsonDeserialize(builder=RevisionBranch.Builder.class)
 @Script(name=RevisionBranch.Scripts.COMMIT, script=""
 		+ "if (params.mergeSources != null) {"
