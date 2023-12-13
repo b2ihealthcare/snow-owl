@@ -26,7 +26,7 @@
             "telecom": [
                 {
                     "system": "email",
-                    "value": "infos@b2i.sg"
+                    "value": "info@b2ihealthcare.com"
                 },
                 {
                     "system": "url",
@@ -104,7 +104,7 @@
                 }
             ]
         },
-		{
+        {
             "code": "Code2",
             "display": "Code 2 term",
             "definition": "This is code 2 definition",
@@ -123,6 +123,5 @@
                 }
             ]
         }
-        
     ]
 }

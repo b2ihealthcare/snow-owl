@@ -1139,7 +1139,7 @@ Scroll API in Elasticsearch has been marked as deprecated until complete removal
 - Restore effectiveTime during RF2 Delta imports [`#532`](https://github.com/b2ihealthcare/snow-owl/pull/532)
 
 ### Docs
-- Initial version of SNOMED CT Extension Guide, see [docs](https://docs.b2i.sg/snow-owl)
+- Initial version of SNOMED CT Extension Guide, see [docs](https://docs.b2ihealthcare.com/snow-owl)
 
 ### Bugs/Improvements
 - [api] path expressions not working [`#534`](https://github.com/b2ihealthcare/snow-owl/pull/534)
@@ -1391,7 +1391,7 @@ Important configuration changes that require attention when migrating to Snow Ow
 
 ### FHIR
 - Supported FHIR API version has been upgraded to [FHIR 4.0.0](https://www.hl7.org/fhir/history.html)
- * See additional documentation at the [FHIR API docs](http://docs.b2i.sg/snow-owl/api/fhir)
+ * See additional documentation at the [FHIR API docs](https://docs.b2ihealthcare.com/snow-owl/rest-apis/fhir)
 
 ### Debian
 - Snow Owl 7.1.0 adds support for Debian systems with a dedicated `.deb` package.
@@ -1418,7 +1418,7 @@ MySQL RDBMS software requirement has been removed and Snow Owl no longer require
 Instead, Snow Owl requires only a single Elasticsearch cluster to operate on.
 
 #### Documentation
-The new improved and shiny Snow Owl 7.x documentation is available at `https://docs.b2i.sg/snow-owl/`
+The new improved and shiny Snow Owl 7.x documentation is available at `https://docs.b2ihealthcare.com/snow-owl/`
 
 ### Added
 - FHIR v3.0.1 API support (https://www.hl7.org/fhir/http.html)
@@ -1854,7 +1854,7 @@ This section discusses the changes that you need to be aware of when migrating y
 
 #### Concrete Domain Reference Set Member changes (#288)
 
-Property groups now can contain concrete domain properties as well, not just relationships (new column `relationshipGroup`). Also, the `attributeName` property has been renamed to `typeId` and all concrete domain labels (attribute names) must be converted to valid, existing SNOMED CT Concepts in order to support new concrete domain schema. In case you did not had any concrete domain members and you are not planning to use this feature, you can safely use your existing dataset without issues. In other cases, feel free to contact [B2i](mailto:support@b2i.sg) to support your migration to Snow Owl 6.11.0.
+Property groups now can contain concrete domain properties as well, not just relationships (new column `relationshipGroup`). Also, the `attributeName` property has been renamed to `typeId` and all concrete domain labels (attribute names) must be converted to valid, existing SNOMED CT Concepts in order to support new concrete domain schema. In case you did not had any concrete domain members and you are not planning to use this feature, you can safely use your existing dataset without issues. In other cases, feel free to contact [B2i](mailto:info@b2ihealthcare.com) to support your migration to Snow Owl 6.11.0.
 
 ### Added
 - Add `repository.index.clusterName` configuration key to customize the clusterName of the embedded ES instance (#281)

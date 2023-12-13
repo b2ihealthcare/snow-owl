@@ -1,4 +1,4 @@
-# <a href='https://docs.b2i.sg/snow-owl/'><img src='logo/logo-title.png' height='80' alt='Snow Owl Logo' /></a>
+# <a href='https://docs.b2ihealthcare.com/snow-owl/'><img src='logo/logo-title.png' height='80' alt='Snow Owl Logo' /></a>
 
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 If you’d like to see Snow Owl in action, the [Snowray Terminology Service™](https://snowray.app) provides a managed terminology server and high-quality terminology content management from your web browser.
@@ -44,7 +44,7 @@ Features include:
 * [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-deb.deb.sha1)
 
 {% hint style="info" %}
-This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
+This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2ihealthcare.com).
 {% endhint %}
 
 View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v8.12.1).
@@ -61,7 +61,7 @@ Once you have downloaded the appropriate package:
 * Run `curl http://localhost:8080/snowowl/info` to access server health status information
 * Run `curl http://localhost:8080/snowowl/fhir/metadata` to access FHIR terminology capabilities
 * Navigate to `http://localhost:8080/snowowl` to access the REST API documentation page
-* See more documentation at [SNOMED CT API docs](https://docs.b2i.sg/snow-owl/api/snomed) and at [FHIR API docs](https://docs.b2i.sg/snow-owl/api/fhir)
+* See more documentation at [Native API docs](https://docs.b2ihealthcare.com/snow-owl/rest-apis/native) and at [FHIR API docs](https://docs.b2ihealthcare.com/snow-owl/rest-apis/fhir)
 
 # Learn Snow Owl
 

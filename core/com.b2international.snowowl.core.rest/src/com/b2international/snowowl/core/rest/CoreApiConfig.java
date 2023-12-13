@@ -49,10 +49,10 @@ public class CoreApiConfig extends BaseApiConfig {
 			"2.0",
 			"Core API",
 			B2I_SITE,
-			"support@b2i.sg",
+			"info@b2ihealthcare.com",
 			"API License",
 			B2I_SITE,
-			"This describes the resources that make up the official Snow Owl® Core API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/core).",
+			"This describes the resources that make up the official Snow Owl® Core API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2ihealthcare.com/snow-owl).",
 			List.of(API_KEY, RESOURCES, CODESYSTEMS, CONCEPTS, BUNDLES, ADMINISTRATION, MISC)
 		);
 	}

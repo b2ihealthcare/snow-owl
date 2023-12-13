@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class LockIndexTests {
 
-	private static final String USER = "test@b2i.sg";
+	private static final String USER = "test@b2ihealthcare.com";
 	private Index index;
 	private ObjectMapper mapper;
 
