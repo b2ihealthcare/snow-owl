@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public interface SortSupport {
 

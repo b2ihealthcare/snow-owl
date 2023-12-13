@@ -16,7 +16,7 @@
 package com.b2international.index.migrate;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public enum DocumentMappingMigrationStrategy {
 

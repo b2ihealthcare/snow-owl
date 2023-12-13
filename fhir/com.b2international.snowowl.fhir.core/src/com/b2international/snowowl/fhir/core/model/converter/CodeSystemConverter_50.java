@@ -33,7 +33,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.property.*;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class CodeSystemConverter_50 extends AbstractConverter_50 implements CodeSystemConverter<CodeSystem, Parameters> {
 

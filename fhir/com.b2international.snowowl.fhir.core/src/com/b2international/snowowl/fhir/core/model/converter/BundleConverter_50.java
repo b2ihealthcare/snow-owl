@@ -28,7 +28,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class BundleConverter_50 extends AbstractConverter_50 implements BundleConverter<Bundle> {
 

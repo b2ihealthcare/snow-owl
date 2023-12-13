@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public interface DocumentMappingMigrator {
 
@@ -43,7 +43,7 @@ public interface DocumentMappingMigrator {
 	/**
 	 * Simple no transformation migrator function that can be used to trigger reindex on a schema change that does not require any actual transformation just the reindex of its values into a new index
 	 * 
-	 * @since 9.0
+	 * @since 9.0.0
 	 * @see DocumentMappingMigrationStrategy#REINDEX_SCRIPT
 	 * @see DocumentMappingMigrationStrategy#REINDEX_INPLACE
 	 */

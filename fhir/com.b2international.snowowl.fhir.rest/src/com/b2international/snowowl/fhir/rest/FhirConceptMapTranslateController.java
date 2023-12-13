@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @see <a href="https://hl7.org/fhir/conceptmap-operation-translate.html">4.10.16.1 Operation $translate on ConceptMap</a>
- * @since 8.0
+ * @since 9.0.0
  */
 @Tag(description = "ConceptMap", name = FhirApiConfig.CONCEPTMAP)
 @RestController

@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 /**
  * Represents a schema revision, a mapping change compared to the previous document mapping.  
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

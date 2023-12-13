@@ -34,7 +34,7 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.*;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public class ValueSetConverter_50 extends AbstractConverter_50 implements ValueSetConverter<ValueSet, Parameters> {
 

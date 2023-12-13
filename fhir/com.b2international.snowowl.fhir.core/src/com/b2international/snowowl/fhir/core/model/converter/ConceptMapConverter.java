@@ -22,7 +22,7 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 /**
  * @param <T> the FHIR representation of a value set
  * @param <P> the FHIR representation of a parameter list
- * @since 9.0
+ * @since 9.0.0
  */
 public interface ConceptMapConverter<T, P> {
 

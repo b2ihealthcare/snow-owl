@@ -21,7 +21,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.*;
 /**
  * @param <T> the FHIR representation of a code system
  * @param <P> the FHIR representation of a parameter list
- * @since 9.0
+ * @since 9.0.0
  */
 public interface CodeSystemConverter<T, P> {
 

@@ -32,7 +32,7 @@ import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 
 /**
- * @since 9.0
+ * @since 9.0.0
  */
 public abstract class AbstractConverter_50 {
 

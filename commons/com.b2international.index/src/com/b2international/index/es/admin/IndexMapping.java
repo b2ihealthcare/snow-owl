@@ -29,7 +29,7 @@ import com.google.common.collect.Iterables;
 /**
  * Contains information about the actual indices present in the Elasticsearch and their current {@link DocumentMapping}.
  * 
- * @since 9.0
+ * @since 9.0.0
  */
 public final class IndexMapping {
 
