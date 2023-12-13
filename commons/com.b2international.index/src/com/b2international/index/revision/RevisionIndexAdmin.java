@@ -120,8 +120,8 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	}
 	
 	@Override
-	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
-		return rawIndexAdmin.reindex(sourceIndex, destinationIndex, remoteInfo, refresh);
+	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize) throws IOException {
+		return rawIndexAdmin.reindex(sourceIndex, destinationIndex, remoteInfo, refresh, batchSize);
 	}
 	
 }

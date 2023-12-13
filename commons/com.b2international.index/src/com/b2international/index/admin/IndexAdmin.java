@@ -25,6 +25,7 @@ import org.elasticsearch.index.reindex.RemoteInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.es.admin.IndexMapping;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.reindex.ReindexResult;
@@ -141,8 +142,9 @@ public interface IndexAdmin {
 	 * @param destinationIndex - the destination index
 	 * @param remoteInfo - configuration for the remote Elasticsearch instance (scheme, host, port, credentials and query)
 	 * @param refresh - whether to refresh the destination index at the end of the process or not
+	 * @param batchSize - default batch size is {@link IndexClientFactory#DEFAULT_REINDEX_BATCH_SIZE}
 	 */
-	ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException;
+	ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize) throws IOException;
 	
 	/**
 	 * @return the indices maintained by this {@link IndexAdmin}
