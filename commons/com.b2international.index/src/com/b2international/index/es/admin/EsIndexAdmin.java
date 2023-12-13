@@ -428,7 +428,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 							// copy content back by running a reindex operation from tmp index to the newly recreated original
 							try {
 								log().info("{}Reindex contents of '{}' to '{}'", getLogIndent(), temporaryIndex, index);
-								ReindexResult reindexResult = reindex(temporaryIndex, index, null, true);
+								int reindexBatchSize = Commit.class.equals(mapping.type()) ? IndexClientFactory.COMMIT_BATCH_SIZE : IndexClientFactory.DEFAULT_REINDEX_BATCH_SIZE;
+								ReindexResult reindexResult = reindex(temporaryIndex, index, null, true, reindexBatchSize);
 								log().info("{}Reindex operation successfully finished with result: '{}'", getLogIndent(), reindexResult);
 							} catch (IOException e) {
 								throw new IndexException(String.format("Failed to reindex contents of '%s' to original index '%s'", temporaryIndex, index), e);
@@ -949,7 +950,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 	
 	@Override
-	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException {
+	public ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize) throws IOException {
 		
 		String remoteAddress = getRemoteAddress(remoteInfo);
 		
@@ -960,7 +961,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			destinationIndex,
 			remoteInfo,
 			refresh,
-			org.elasticsearch.index.reindex.AbstractBulkByScrollRequest.DEFAULT_SCROLL_SIZE,
+			batchSize,
 			retries
 		);
 		
@@ -1029,6 +1030,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	private BulkByScrollResponse executeReindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize, AtomicInteger retries) throws IOException {
+		
+		checkState(batchSize > 0, "Reindex batch size must be greater than 0.");
 		
 		BulkByScrollResponse response = null;
 		

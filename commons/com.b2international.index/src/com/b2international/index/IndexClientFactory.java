@@ -264,6 +264,11 @@ public interface IndexClientFactory {
 	int COMMIT_BATCH_SIZE = 20;
 	
 	/**
+	 * Default batch size for reindex requests
+	 */
+	int DEFAULT_REINDEX_BATCH_SIZE = org.elasticsearch.index.reindex.AbstractBulkByScrollRequest.DEFAULT_SCROLL_SIZE;
+	
+	/**
 	 * Create a new {@link IndexClient} with the given name.
 	 * 
 	 * @param name
