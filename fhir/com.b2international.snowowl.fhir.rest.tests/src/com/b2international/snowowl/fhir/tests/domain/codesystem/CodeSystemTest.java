@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2022 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class CodeSystemTest extends FhirTest {
 			.publisher("B2i")
 			.status(PublicationStatus.ACTIVE)
 			.content(CodeSystemContentMode.COMPLETE)
-			.supplements(new Uri("http://b2i.sg/supplement"))
+			.supplements(new Uri("https://b2ihealthcare.com/supplement"))
 			.url(new Uri("code system uri"))
 			.version("2018.01.01")
 			.addConcept(Concept.builder()
@@ -160,7 +160,7 @@ public class CodeSystemTest extends FhirTest {
 					.languageCode("uk_en")
 					.use(Coding.builder()
 						.code("internal")
-						.system("http://b2i.sg/test")
+						.system("https://b2ihealthcare.com/test")
 						.build()
 						)
 					.value("conceptLabel_uk")
@@ -195,7 +195,7 @@ public class CodeSystemTest extends FhirTest {
 		assertThat(jsonPath.getString("description"), equalTo("Code system description"));
 		assertThat(jsonPath.getString("hierarchyMeaning"), equalTo("is-a"));
 		assertThat(jsonPath.getString("content"), equalTo("complete"));
-		assertThat(jsonPath.getString("supplements"), equalTo("http://b2i.sg/supplement"));
+		assertThat(jsonPath.getString("supplements"), equalTo("https://b2ihealthcare.com/supplement"));
 		
 		assertThat(jsonPath.getString("property[0].code"), equalTo("child"));
 		assertThat(jsonPath.getString("property[0].uri"), equalTo("http://hl7.org/fhir/concept-properties/child"));
@@ -209,7 +209,7 @@ public class CodeSystemTest extends FhirTest {
 		assertThat(jsonPath.getString("definition"), equalTo("This is a code definition"));
 		assertThat(jsonPath.getString("designation[0].language"), equalTo("uk_en"));
 		assertThat(jsonPath.getString("designation[0].use.code"), equalTo("internal"));
-		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("http://b2i.sg/test"));
+		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("https://b2ihealthcare.com/test"));
 		assertThat(jsonPath.getString("designation[0].value"), equalTo("conceptLabel_uk"));
 
 		assertThat(jsonPath.getString("property[0].code"), equalTo("childConcept"));

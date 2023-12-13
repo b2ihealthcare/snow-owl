@@ -5,13 +5,13 @@
       version="9.0.0.qualifier"
       provider-name="B2i Healthcare">
 
-   <description url="http://b2i.sg">
+   <description url="https://b2ihealthcare.com">
       Snow Owl Terminology Server test feature.
-Visit us at http://b2i.sg
+Visit us at https://b2ihealthcare.com
    </description>
 
    <copyright>
-      Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+      Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
    </copyright>
 
    <plugin

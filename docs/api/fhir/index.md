@@ -61,7 +61,7 @@ For ICD-10, Snow Owl's FHIR implementation follows the [HL7 FHIR Specification](
 
 ### Local Code System
 
-Snow Owl's Local Code Systems (LCS) identified by the URI that is based on the _Organization Link_ property stored within Snow Owl's Terminology Registry and the _Short Name_ of the LCS e.g.: https://b2i.sg/MyLocalCodeSystem. 
+Snow Owl's Local Code Systems (LCS) identified by the URI that is based on the _Organization Link_ property stored within Snow Owl's Terminology Registry and the _Short Name_ of the LCS e.g.: https://b2ihealthcare.com/MyLocalCodeSystem. 
 
 
 ## IDs

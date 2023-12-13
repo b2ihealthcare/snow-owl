@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class IncludeTest extends FhirTest {
 								.value("designationValue")
 								.use(Coding.builder()
 										.code("internal")
-										.system("http://b2i.sg/test")
+										.system("https://b2ihealthcare.com/test")
 										.build())
 								.build())
 						.build())
@@ -105,7 +105,7 @@ public class IncludeTest extends FhirTest {
 		assertThat(jsonPath.getString("concept[0].display"), equalTo("display"));
 		assertThat(jsonPath.getString("concept[0].designation[0].language"), equalTo("gb_en"));
 		assertThat(jsonPath.getString("concept[0].designation[0].use.code"), equalTo("internal"));
-		assertThat(jsonPath.getString("concept[0].designation[0].use.system"), equalTo("http://b2i.sg/test"));
+		assertThat(jsonPath.getString("concept[0].designation[0].use.system"), equalTo("https://b2ihealthcare.com/test"));
 		assertThat(jsonPath.getString("concept[0].designation[0].value"), equalTo("designationValue"));
 		assertThat(jsonPath.getString("filter[0].property"), equalTo("filterProperty"));
 		assertThat(jsonPath.getString("filter[0].value"), equalTo("1234567"));

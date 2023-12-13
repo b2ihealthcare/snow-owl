@@ -6,11 +6,11 @@
         "lastUpdated": "2021-05-06T18:42:29.389+00:00"
     },
     "language": "en-GB",
-    "url": "https://b2i.sg/code_system/example_codesystem",
+    "url": "https://b2ihealthcare.com/code_system/example_codesystem",
     "identifier": [
         {
-            "system": "https://b2i.sg",
-            "value": "https://b2i.sg/code_system/example_codesystem.html"
+            "system": "https://b2ihealthcare.com",
+            "value": "https://b2ihealthcare.com/code_system/example_codesystem.html"
         }
     ],
     "version": "1.0.0",
@@ -30,7 +30,7 @@
                 },
                 {
                     "system": "url",
-                    "value": "https://b2i.sg/"
+                    "value": "https://b2ihealthcare.com/"
                 }
             ]
         }
