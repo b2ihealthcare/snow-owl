@@ -66,7 +66,7 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
 				.setTitle(codeSystemId)
-				.build("info@b2international.com", "Created new code system " + codeSystemId)
+				.build("info@b2ihealthcare.com", "Created new code system " + codeSystemId)
 				.execute(getBus())
 				.getSync(1L, TimeUnit.MINUTES);
 		}

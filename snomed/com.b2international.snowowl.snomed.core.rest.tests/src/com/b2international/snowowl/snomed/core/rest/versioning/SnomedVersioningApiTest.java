@@ -88,8 +88,8 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createRegularVersionWithAuthor() {
-		String author = "info@b2international.com";
-		Map<String, String> headers = Map.of(AbstractRestService.X_AUTHOR, "info@b2international.com");
+		String author = "info@b2ihealthcare.com";
+		Map<String, String> headers = Map.of(AbstractRestService.X_AUTHOR, "info@b2ihealthcare.com");
 		createVersion(INT_CODESYSTEM, "version-with-author", getNextAvailableEffectiveDate(INT_CODESYSTEM), headers).statusCode(201);
 		assertGetVersion(INT_CODESYSTEM, "version-with-author").statusCode(200);
 		String commitComment = "Version 'codesystems/SNOMEDCT' as of 'version-with-author'";

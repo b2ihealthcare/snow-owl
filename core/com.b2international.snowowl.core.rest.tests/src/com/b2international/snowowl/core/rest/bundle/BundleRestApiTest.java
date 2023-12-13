@@ -281,7 +281,7 @@ public class BundleRestApiTest {
 	public void updateBundleContact() {
 		final String id = "b11";
 		createBundle(prepareBundleCreateRequestBody(id));
-		assertUpdateBundleField(id, "contact", "info@b2international.com");
+		assertUpdateBundleField(id, "contact", "info@b2ihealthcare.com");
 	}
 	
 	@Test
