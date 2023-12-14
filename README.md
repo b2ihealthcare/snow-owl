@@ -3,12 +3,12 @@
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 If you’d like to see Snow Owl in action, the [Snowray Terminology Service™](https://snowray.app) provides a managed terminology server and high-quality terminology content management from your web browser.
 
-[![build status](https://img.shields.io/github/actions/workflow/status/b2ihealthcare/snow-owl/maven.yml?branch=8.x&style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v8.12.1)
+[![build status](https://img.shields.io/github/actions/workflow/status/b2ihealthcare/snow-owl/maven.yml?branch=9.x&style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.0.0)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
-[![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/8.x/LICENSE)
-[![codecov](https://codecov.io/gh/b2ihealthcare/snow-owl/branch/8.x/graph/badge.svg?style=flat-square)](https://codecov.io/gh/b2ihealthcare/snow-owl)
+[![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/9.x/LICENSE)
+[![codecov](https://codecov.io/gh/b2ihealthcare/snow-owl/branch/9.x/graph/badge.svg?style=flat-square)](https://codecov.io/gh/b2ihealthcare/snow-owl)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fb2ihealthcare%2Fsnow-owl.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fb2ihealthcare%2Fsnow-owl?ref=badge_shield)
 
 # Introduction
@@ -19,7 +19,7 @@ Features include:
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
     * SNOMED CT terminology support
-        * RF2 Release File Specification as of 2023-09-01
+        * RF2 Release File Specification as of 2023-12-01
         * Support for Relationships with concrete values
         * Official and Custom Reference Sets
         * Expression Constraint Language v2.1.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.1-en-US_INT_20220824.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
@@ -28,32 +28,32 @@ Features include:
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
     * SNOMED CT API (RESTful and native Java API)
-    * FHIR API R4 v4.0.1 [spec](https://www.hl7.org/fhir/history.html#v4.0.1)
+    * FHIR API R5 [spec](https://hl7.org/fhir/R5/index.html) (R4B and R4 are also support for certain resource types)
     * CIS API 1.0 [see reference implementation](https://github.com/IHTSDO/component-identifier-service)
 * Highly extensible and configurable
     * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
-* Built on top of [Elasticsearch](https://www.elastic.co/products/elasticsearch) (highly scalable, distributed, open source search engine)
+* Built on top of [Elasticsearch](https://www.elastic.co/elasticsearch) (highly scalable, distributed, open source search engine)
     * Connect to your existing cluster or use the embedded instance (supports up to Elasticsearch 8.x)
     * All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more)
 
 # Download
 
-* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-oss.zip.sha1)
-* [LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-oss.tar.gz.sha1) 
-* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-rpm.rpm.sha1)
-* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/8.12.1/com.b2international.snowowl.server.update-8.12.1-deb.deb.sha1)
+* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.zip.sha1)
+* [LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.tar.gz.sha1) 
+* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-rpm.rpm.sha1)
+* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-deb.deb.sha1)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2ihealthcare.com).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v8.12.1).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.0.0).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
 ### Install and Run
 
-NOTE: You need to have version 17 of the JDK installed for local builds and running the development environment. Official releases include the runtime.
+NOTE: You need to have at least version 17 of the JDK installed for local builds and running the development environment. Official releases include the runtime.
 
 Once you have downloaded the appropriate package:
 
@@ -61,16 +61,7 @@ Once you have downloaded the appropriate package:
 * Run `curl http://localhost:8080/snowowl/info` to access server health status information
 * Run `curl http://localhost:8080/snowowl/fhir/metadata` to access FHIR terminology capabilities
 * Navigate to `http://localhost:8080/snowowl` to access the REST API documentation page
-* See more documentation at [Native API docs](https://docs.b2ihealthcare.com/snow-owl/rest-apis/native) and at [FHIR API docs](https://docs.b2ihealthcare.com/snow-owl/rest-apis/fhir)
-
-# Learn Snow Owl
-
-* [Getting Started](docs/getting_started/index.md)
-* [Set up Snow Owl](docs/setup/index.md)
-* [Configuring Snow Owl](docs/setup/configure/index.md)
-* [FHIR API](docs/api/fhir/index.md)
-* [SNOMED CT API](docs/api/snomed/index.md)
-* [Admin API](docs/api/admin/index.md)
+* Find more information about Snow Owl here in the [official docs](https://docs.b2ihealthcare.com/snow-owl)
 
 # Building from source
 
