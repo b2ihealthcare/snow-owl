@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.test.feature"
       label="Snow Owl Tests Feature"
-      version="9.0.0.qualifier"
+      version="9.0.0"
       provider-name="B2i Healthcare">
 
    <description url="https://b2ihealthcare.com">
