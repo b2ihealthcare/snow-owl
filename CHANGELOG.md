@@ -1,6 +1,66 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.0.0
+
+### Breaking changes
+
+#### Supported Elasticsearch versions
+- Starting from Snow Owl version 9, Elasticsearch 7.x series support has been marked as deprecated. Maintenance and security fixes will continue to be added to the system, but support will be dropped in the next major release.
+
+#### API changes
+- Removed deprecated `POST /login` endpoint in favor of `POST /token` endpoint (6693bf6)
+- Removed deprecated `timestamp` query parameter from Bundle, CodeSystem, ValueSet, ConceptMap get by id endpoints (336eba6)
+- Removed deprecated Suggest API parameters (d1f0e33)
+- Removed deprecated `codeSystemUri` property from generic concept representations (27d45a5)
+- Removed `charset=UTF-8` part from JSON and XML media types (#1238)
+- FHIR ConceptMap R4 and R4B representations are currently not supported. It is recommended to migrate the resource to R5 locally and then send it to Snow Owl. (see #1227)
+
+### Core
+- New, overhauled Terminology Upgrade and Analysis API (available in paid tiers) (#1193, #1197, #1211, #1237)
+  * Replaces the now deprecated and removed CodeSystem Upgrade API
+  * Supports upgrade of any kind of terminology resource type to a newer version dependency via content specific analysis, reporting and isolated branch management
+- Terminology Resource Collections (#1196)
+  * New resource type and infrastructure that allows bundling and managing multiple resources together
+  * The first supported Terminology Resource Collection instance type is SNOMED CT Reference Set Collections (available in paid tiers)
+- Add support for special resource ID suffixes and the tilde (`~`) path expression (#1228)
+  * `~` character is an URL safe character that from now on can be used to denote direct subpaths of a resource (eg. version) or can be used by third party libraries to denote an altered/derived version of a resource that is stored and managed by another index
+- New, index schema migration infrastructure has been added to automatically migrate existing datasets when a mapping change occurs in the system (#1249, #1250, #1251)
+
+### FHIR
+- Support [FHIR R5](https://hl7.org/fhir/R5/index.html) specification (#1227)
+- Add missing properties to CapabilityStatement (#1219, #1247)
+- Add `status` filter support to FHIR resource search (#1217)
+- Add `after` and `next` properties to ValueSet expansions (#1216)
+
+### Bugs/Improvements
+- [index] support dynamic field expressions (e91acb4)
+- [index] support branch name and path aliases (#1209)
+- [index] revise merged revisions to avoid content duplication and/or disappearance (#1170)
+- [core] support ResourceURI values when locking content branches (#1198)
+- [core] improved lock context propagation (#1212)
+- [core] move `draft` resources to `active` status after successful versioning (7857d9f)
+- [core] fluent job wait-retry API to simplify client usage (#1233)
+- [core] prevent unnecessary post-processing after versioning a resource (#1225)
+- [core] make validation jobs cancellable (#1246)
+- [api] support `timestamp` filtering when expanding `commits()` on resource responses (#1201)
+- [api] support nested expansion of transitive resource `dependencies` (1560ced, 2f84339)
+- [api] support expanding `resources` for `commit` objects (e74a176, 0920bec)
+- [api] support `relativeBranch` parameter for resource content `commits` expansion (37239d9)
+- [api] add `versionResourceURI` property to Version representation (ace55e5)
+- [api] fix a potential NPE when trying to partially load a `version` object (5d27504)
+- [api] support branch `metadata` filtering using dynamic filters (0263b1f)
+- [snomed] keep pre-configured SNOMED CT code system `locales` after a successful RF2 import (#1215)
+- [snomed] minor functional and performance improvements to ECL query optimizations (#1229)
+- [snomed] report added vs. added conflicts only if there are changes in non-`effectiveTime` RF2 fields (6141e3e)
+- [snomed] improve performance of SNOMED CT descendant expansion (#1186)
+- [snomed] make sure concept inactivation always sets the definition status to primitive regardless of input parameters (#1241)
+- [snomed] phase out MOVED_FROM association reference set support (#1243)
+- [packaging] properly distinguish update sites and packages (#1245)
+
+### Dependencies
+- Bump supported Elasticsearch libraries to (7.17.16 #1252, 8.10.3 #1230)
+
 ## 8.12.1
 
 ### Bugs/Improvements
