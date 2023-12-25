@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.request;
 
+import static com.b2international.index.query.Expressions.bool;
+import static com.b2international.index.query.Expressions.exists;
+import static com.b2international.index.query.Expressions.match;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -60,7 +64,12 @@ public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resou
 		/**
 		 * Filter matches by their dependency array (supports partial and exact matches as well via special syntax).
 		 */
-		DEPENDENCY,
+		DEPENDENCY, 
+		
+		/**
+		 * Filters terminology resources by whether they have an upgrade in-progress.
+		 */
+		IN_UPGRADE,
 
 	}
 
@@ -71,6 +80,7 @@ public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resou
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
 		addDependencyFilter(context, queryBuilder);
+		addInUpgradeFilter(context, queryBuilder);
 	}
 
 	private void addDependencyFilter(RepositoryContext context, ExpressionBuilder queryBuilder) {
@@ -79,7 +89,23 @@ public final class ResourceSearchRequest extends BaseResourceSearchRequest<Resou
 			queryBuilder.filter(ResourceDocument.Expressions.dependency(queryString));
 		}
 	}
-
+	
+	private void addInUpgradeFilter(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.IN_UPGRADE)) {
+			final String fieldName = "settings.inUpgrade";
+			boolean inUpgrade = getBoolean(OptionKey.IN_UPGRADE);
+			if (inUpgrade) {
+				queryBuilder.filter(com.b2international.index.query.Expressions.match(fieldName, inUpgrade));				
+			} else {
+				queryBuilder.filter(bool()
+					.should(match(fieldName, inUpgrade))
+					.should(bool().mustNot(exists(fieldName)).build())
+					.build()
+				);
+			}
+		}
+	}
+	
 	@Override
 	protected Resources toCollectionResource(RepositoryContext context, Hits<ResourceDocument> hits) {
 		return new ResourceConverter(context, expand(), locales()).convert(hits);
