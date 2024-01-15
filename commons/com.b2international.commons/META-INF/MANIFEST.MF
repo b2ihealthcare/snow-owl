@@ -87,7 +87,6 @@ Export-Package: com.b2international.commons,
  picocli,
  picocli.groovy
 Require-Bundle: com.google.inject;bundle-version="3.0.0";visibility:=reexport,
- javax.inject;bundle-version="1.0.0";visibility:=reexport,
  com.fasterxml.jackson.core.jackson-core;bundle-version="[2.10.5,3.0.0)";visibility:=reexport,
  com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.10.5,3.0.0)";visibility:=reexport,
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.10.5,3.0.0)";visibility:=reexport,
@@ -99,11 +98,11 @@ Require-Bundle: com.google.inject;bundle-version="3.0.0";visibility:=reexport,
  net.jodah.typetools;bundle-version="0.6.3";visibility:=reexport,
  org.hdrhistogram.HdrHistogram;bundle-version="2.1.10",
  com.fasterxml.classmate;bundle-version="1.3.4",
- javax.el;bundle-version="2.2.0",
- com.sun.el;bundle-version="2.2.0",
+ jakarta.inject.jakarta.inject-api;bundle-version="2.0.1",
+ com.sun.el.javax.el;bundle-version="3.0.4",
  jaxb-api;bundle-version="2.3.0",
- ch.qos.logback.classic;bundle-version="[1.2.3,2.0.0)",
- ch.qos.logback.core;bundle-version="[1.2.3,2.0.0)"
+ ch.qos.logback.classic;bundle-version="[1.2.10,2.0.0)",
+ ch.qos.logback.core;bundle-version="[1.2.10,2.0.0)"
 Import-Package: org.slf4j;version="1.7.25"
 Bundle-ClassPath: .,
  lib/LatencyUtils-2.0.3.jar,
