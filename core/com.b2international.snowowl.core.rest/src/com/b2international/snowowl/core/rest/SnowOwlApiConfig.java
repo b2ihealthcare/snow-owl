@@ -24,13 +24,19 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springdoc.core.*;
-import org.springdoc.core.customizers.OpenApiCustomiser;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.providers.ActuatorProvider;
+import org.springdoc.core.providers.RepositoryRestResourceProvider;
+import org.springdoc.core.providers.RouterFunctionProvider;
+import org.springdoc.core.providers.SecurityOAuth2Provider;
+import org.springdoc.core.service.AbstractRequestService;
+import org.springdoc.core.service.GenericResponseService;
+import org.springdoc.core.service.OpenAPIService;
+import org.springdoc.core.service.OperationService;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springdoc.webmvc.api.OpenApiWebMvcResource;
-import org.springdoc.webmvc.core.RouterFunctionProvider;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -51,7 +57,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -95,6 +100,7 @@ import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The Spring configuration class for Snow Owl's internal REST services module.
@@ -134,35 +140,35 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		return new OpenAPI();
 	}
 	
-	@Bean
-	public OpenApiWebMvcResource openApiWebMvcResource(
-			@Autowired ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, 
-			@Autowired AbstractRequestService requestBuilder, 
-			@Autowired GenericResponseService responseBuilder, 
-			@Autowired OperationService operationParser, 
-			@Autowired RequestMappingInfoHandlerMapping requestMappingHandlerMapping, 
-			@Autowired Optional<ActuatorProvider> actuatorProvider, 
-			@Autowired Optional<List<OperationCustomizer>> operationCustomizers, 
-			@Autowired Optional<List<OpenApiCustomiser>> openApiCustomisers, 
-			@Autowired SpringDocConfigProperties springDocConfigProperties, 
-			@Autowired Optional<SecurityOAuth2Provider> springSecurityOAuth2Provider, 
-			@Autowired Optional<RouterFunctionProvider> routerFunctionProvider, 
-			@Autowired Optional<RepositoryRestResourceProvider> repositoryRestResourceProvider) {
-		
-		return new SnowOwlOpenApiWebMvcResource(
-			openAPIBuilderObjectFactory, 
-			requestBuilder, 
-			responseBuilder, 
-			operationParser, 
-			requestMappingHandlerMapping, 
-			actuatorProvider, 
-			operationCustomizers, 
-			openApiCustomisers, 
-			springDocConfigProperties, 
-			springSecurityOAuth2Provider, 
-			routerFunctionProvider, 
-			repositoryRestResourceProvider);
-	}
+//	@Bean
+//	public OpenApiWebMvcResource openApiWebMvcResource(
+//			@Autowired ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, 
+//			@Autowired AbstractRequestService requestBuilder, 
+//			@Autowired GenericResponseService responseBuilder, 
+//			@Autowired OperationService operationParser, 
+//			@Autowired RequestMappingInfoHandlerMapping requestMappingHandlerMapping, 
+//			@Autowired Optional<ActuatorProvider> actuatorProvider, 
+//			@Autowired Optional<List<OperationCustomizer>> operationCustomizers, 
+//			@Autowired Optional<List<OpenApiCustomizer>> openApiCustomisers, 
+//			@Autowired SpringDocConfigProperties springDocConfigProperties, 
+//			@Autowired Optional<SecurityOAuth2Provider> springSecurityOAuth2Provider, 
+//			@Autowired Optional<RouterFunctionProvider> routerFunctionProvider, 
+//			@Autowired Optional<RepositoryRestResourceProvider> repositoryRestResourceProvider) {
+//		
+//		return new SnowOwlOpenApiWebMvcResource(
+//			openAPIBuilderObjectFactory, 
+//			requestBuilder, 
+//			responseBuilder, 
+//			operationParser, 
+//			requestMappingHandlerMapping, 
+//			actuatorProvider, 
+//			operationCustomizers, 
+//			openApiCustomisers, 
+//			springDocConfigProperties, 
+//			springSecurityOAuth2Provider, 
+//			routerFunctionProvider, 
+//			repositoryRestResourceProvider);
+//	}
 	
 	@Bean
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -215,15 +221,15 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		return new MethodValidationPostProcessor();
 	}
 	
-	@Bean
-	public MultipartResolver multipartResolver() {
-		final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
-	    final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-	    multipartResolver.setMaxUploadSizePerFile(httpConfig.getMaxFileSizeBytes());
-	    multipartResolver.setMaxUploadSize(httpConfig.getMaxRequestSizeBytes());
-	    multipartResolver.setMaxInMemorySize(httpConfig.getMaxInMemorySizeBytes());
-	    return multipartResolver;
-	}
+//	@Bean
+//	public MultipartResolver multipartResolver() {
+//		final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
+//	    final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+//	    multipartResolver.setMaxUploadSizePerFile(httpConfig.getMaxFileSizeBytes());
+//	    multipartResolver.setMaxUploadSize(httpConfig.getMaxRequestSizeBytes());
+//	    multipartResolver.setMaxInMemorySize(httpConfig.getMaxInMemorySizeBytes());
+//	    return multipartResolver;
+//	}
 	
 	@Bean
 	public IdentityProvider identityProvider() {

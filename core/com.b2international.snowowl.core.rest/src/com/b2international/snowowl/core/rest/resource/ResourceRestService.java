@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2024 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.rest.resource;
 import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.common.Strings;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 

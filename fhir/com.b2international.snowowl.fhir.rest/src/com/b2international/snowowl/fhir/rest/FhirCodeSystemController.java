@@ -20,7 +20,7 @@ import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 import java.net.URI;
 import java.time.LocalDate;
 
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,8 @@ public class AllSnowOwlApiTests {
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnowOwlApiTests.class))
-			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
+			.around(new BundleStartRule("org.eclipse.jetty.osgi"))
+			.around(new BundleStartRule("org.eclipse.jetty.ee10.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 
 }

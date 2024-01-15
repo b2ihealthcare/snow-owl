@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2024 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.hamcrest.CoreMatchers;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -178,7 +178,7 @@ public class RestExtensions {
 	}
 
 	public static String render(String it, Map<String, Object> fieldValueMap) {
-		return new StrSubstitutor(fieldValueMap).replace(it);
+		return new StringSubstitutor(fieldValueMap).replace(it);
 	}
 
 	/**
