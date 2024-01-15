@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Version;
-import org.springdoc.webmvc.api.OpenApiWebMvcResource;
+import org.springdoc.core.service.OpenAPIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +43,6 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
-import com.b2international.snowowl.core.rest.SnowOwlOpenApiWebMvcResource;
 import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind;
 import com.b2international.snowowl.fhir.core.codesystems.OperationKind;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
@@ -81,7 +80,7 @@ import io.swagger.v3.oas.models.media.Schema;
 public class FhirMetadataController extends AbstractFhirController {
 	
 	@Autowired
-	private OpenApiWebMvcResource openApiWebMvcResource;
+	private OpenAPIService openApiService;
 	
 	@Autowired
 	private FhirApiConfig config; 
@@ -141,8 +140,8 @@ public class FhirMetadataController extends AbstractFhirController {
 	}
 	
 	private StatementAndOperations initCache() {
-		// XXX: we know that the subclass is instantiated (in SnowOwlApiConfig)
-		final OpenAPI openAPI = ((SnowOwlOpenApiWebMvcResource) openApiWebMvcResource).getOpenApi();
+		// build the ENGLISH version of the OpenAPI and use it to populate the FHIR metadata
+		final OpenAPI openAPI = openApiService.build(Locale.ENGLISH);
 		final Collection<Resource> resources = collectResources(openAPI);
 		final Collection<OperationDefinition> operationDefinitions = collectOperationDefinitions(openAPI);
 		
