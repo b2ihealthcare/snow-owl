@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2024 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package com.b2international.snowowl.core.rest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -34,25 +33,28 @@ import com.b2international.snowowl.core.util.PlatformUtil;
  * @since 7.0
  */
 @Configuration
-@EnableWebSecurity
-public class SnowOwlSecurityConfig extends WebSecurityConfigurerAdapter {
+public class SnowOwlSecurityConfig {
 
 	@Bean
 	public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
-	    StrictHttpFirewall firewall = new StrictHttpFirewall();
-	    firewall.setAllowUrlEncodedSlash(true);
-	    return firewall;
+		StrictHttpFirewall firewall = new StrictHttpFirewall();
+		firewall.setAllowUrlEncodedSlash(true);
+		return firewall;
 	}
-	
-	@SuppressWarnings({"lgtm[java/spring-disabled-csrf-protection]"})
-	@Override
-	protected void configure(final HttpSecurity http) throws Exception {
-		http
-			.sessionManagement()
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-			.and()
-			.csrf().disable();
+
+	@SuppressWarnings({ "lgtm[java/spring-disabled-csrf-protection]" })
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		// configure stateless session policy
+		http.sessionManagement(session -> {
+			session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		});
 		
+		// disable CSRF
+		http.csrf(csrf -> {
+			csrf.disable();
+		});
+
 		// handle X-Forwarded headers
 		http.addFilterBefore(new ForwardedHeaderFilter(), BasicAuthenticationFilter.class);
 		
@@ -62,14 +64,13 @@ public class SnowOwlSecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 		
 		// authentication is handled internally in AuthorizedRequest
-		http.authorizeRequests()
-			.antMatchers("/**")
-			.permitAll();
+		http.authorizeHttpRequests((authz) -> authz.requestMatchers("/**").permitAll());
+		return http.build();
 	}
 	
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
-	}
-	
+	@Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
+    }
+
 }
