@@ -33,7 +33,7 @@
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog -console"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.b2international.snowowl.core.rest.tests"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms1g -Xmx1g -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.ee10.osgi.boot -Djetty.http.port=8080 --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED -XX:+AlwaysPreTouch"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms1g -Xmx1g -Dosgi.classloader.type=nonparallel -Djetty.http.port=8080 --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED -XX:+AlwaysPreTouch"/>
     <stringAttribute key="pde.version" value="3.3"/>
     <stringAttribute key="product" value="org.eclipse.platform.ide"/>
     <booleanAttribute key="run_in_ui_thread" value="false"/>
@@ -42,8 +42,6 @@
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
         <setEntry value="com.b2international.snomed.ecl@default:default"/>
-        <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
-        <setEntry value="com.diffplug.osgi.extension.sun.reflect@default:false"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-annotations@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-core@default:default"/>
@@ -53,6 +51,7 @@
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-smile@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-xml@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml@default:default"/>
+        <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-guava@default:default"/>
         <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-jsr310@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-afterburner@default:default"/>
         <setEntry value="com.fasterxml.woodstox.woodstox-core@default:default"/>
@@ -85,13 +84,13 @@
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
         <setEntry value="jakarta.annotation-api*2.1.1@default:default"/>
         <setEntry value="jakarta.inject.jakarta.inject-api@default:default"/>
-        <setEntry value="jakarta.interceptor-api@default:default"/>
         <setEntry value="jakarta.servlet-api@default:default"/>
         <setEntry value="jakarta.websocket-api@default:default"/>
         <setEntry value="jakarta.websocket-client-api@default:default"/>
         <setEntry value="javax.activation-api@default:default"/>
         <setEntry value="jaxb-api@default:default"/>
         <setEntry value="jcl.over.slf4j@default:default"/>
+        <setEntry value="jul.to.slf4j@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy-agent@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy@default:default"/>
@@ -241,7 +240,6 @@
         <setEntry value="com.b2international.collections.api@default:default"/>
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
-        <setEntry value="com.b2international.commons.test@default:false"/>
         <setEntry value="com.b2international.commons@default:default"/>
         <setEntry value="com.b2international.groovy@default:default"/>
         <setEntry value="com.b2international.index.es8@default:default"/>
@@ -250,7 +248,6 @@
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest.tests@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
-        <setEntry value="com.b2international.snowowl.core.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
         <setEntry value="com.b2international.snowowl.identity.ldap@default:false"/>

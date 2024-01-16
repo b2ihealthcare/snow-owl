@@ -66,5 +66,5 @@ Export-Package: com.b2international.snowowl.core.rest,
  org.springframework.util,
  org.springframework.web.client,
  org.springframework.web.util
-Jetty-Environment: ee9
+Jetty-Environment: ee10
 Web-ContextPath: /snowowl
