@@ -83,8 +83,12 @@
         <setEntry value="io.swagger.core.v3.swagger-models@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
         <setEntry value="jakarta.annotation-api*2.1.1@default:default"/>
+        <setEntry value="jakarta.el-api@default:default"/>
+        <setEntry value="jakarta.enterprise.cdi-api@default:default"/>
         <setEntry value="jakarta.inject.jakarta.inject-api@default:default"/>
+        <setEntry value="jakarta.interceptor-api@default:default"/>
         <setEntry value="jakarta.servlet-api@default:default"/>
+        <setEntry value="jakarta.transaction-api@default:default"/>
         <setEntry value="jakarta.websocket-api@default:default"/>
         <setEntry value="jakarta.websocket-client-api@default:default"/>
         <setEntry value="javax.activation-api@default:default"/>
@@ -113,7 +117,6 @@
         <setEntry value="org.apache.httpcomponents.httpclient@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore@default:default"/>
         <setEntry value="org.apache.log4j*1.2.25@default:default"/>
-        <setEntry value="org.apache.lucene.core@default:default"/>
         <setEntry value="org.ccil.cowan.tagsoup@default:default"/>
         <setEntry value="org.eclipse.ant.core@default:default"/>
         <setEntry value="org.eclipse.compare.core@default:default"/>
@@ -127,8 +130,6 @@
         <setEntry value="org.eclipse.core.filesystem.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.core.filesystem@default:default"/>
         <setEntry value="org.eclipse.core.jobs@default:default"/>
-        <setEntry value="org.eclipse.core.net.win32.x86_64@default:false"/>
-        <setEntry value="org.eclipse.core.net@default:default"/>
         <setEntry value="org.eclipse.core.resources.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.core.resources@default:default"/>
         <setEntry value="org.eclipse.core.runtime@default:true"/>
