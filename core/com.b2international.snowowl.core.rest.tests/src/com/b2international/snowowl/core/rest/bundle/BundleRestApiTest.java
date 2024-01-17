@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -281,7 +281,7 @@ public class BundleRestApiTest {
 	public void updateBundleContact() {
 		final String id = "b11";
 		createBundle(prepareBundleCreateRequestBody(id));
-		assertUpdateBundleField(id, "contact", "info@b2international.com");
+		assertUpdateBundleField(id, "contact", "info@b2ihealthcare.com");
 	}
 	
 	@Test

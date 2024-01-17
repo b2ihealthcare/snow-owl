@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>9.0.0-SNAPSHOT</version>
+	<version>9.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -326,14 +326,14 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-install-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.1.1</version>
 					<configuration>
 						<installAtEnd>true</installAtEnd>
 					</configuration>
 				</plugin>
 				<plugin>
 					<artifactId>maven-deploy-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.1.1</version>
 					<configuration>
 						<deployAtEnd>true</deployAtEnd>
 					</configuration>

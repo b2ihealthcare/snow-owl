@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.b2international.index.migrate.SchemaRevision;
 
 /**
  * @since 4.7
@@ -44,5 +46,15 @@ public @interface Doc {
 	 *         not have property level change history
 	 */
 	String[] revisionHash() default {};
-
+	
+	/**
+	 * Schema revisions associated with this document type. The current schema revision version (default is 1) is stored in the current mapping
+	 * `_meta.version` value. Every change to the schema must be recorded as a {@link SchemaRevision} annotation in the corresponding type's
+	 * {@link Doc} annotation, otherwise the system will report an error and won't be able to start even if the change is compatible with the current
+	 * schema.
+	 * 
+	 * @return an array of schema revisions assigned to this document type or an empty array if no revisions have been registered yet.
+	 */
+	SchemaRevision[] revisions() default {};
+	
 }

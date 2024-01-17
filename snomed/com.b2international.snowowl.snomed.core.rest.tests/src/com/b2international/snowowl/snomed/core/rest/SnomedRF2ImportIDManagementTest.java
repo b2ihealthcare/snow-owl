@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class SnomedRF2ImportIDManagementTest extends AbstractSnomedApiTest {
 				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
 				.setTitle(codeSystemId)
-				.build("info@b2international.com", "Created new code system " + codeSystemId)
+				.build("info@b2ihealthcare.com", "Created new code system " + codeSystemId)
 				.execute(getBus())
 				.getSync(1L, TimeUnit.MINUTES);
 		}

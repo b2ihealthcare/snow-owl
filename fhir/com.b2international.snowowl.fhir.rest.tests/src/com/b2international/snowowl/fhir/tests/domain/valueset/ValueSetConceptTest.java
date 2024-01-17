@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2022 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class ValueSetConceptTest extends FhirTest {
 						.value("designationValue")
 						.use(Coding.builder()
 								.code("internal")
-								.system("http://b2i.sg/test")
+								.system("https://b2ihealthcare.com/test")
 								.build())
 						.build())
 				.build();
@@ -69,7 +69,7 @@ public class ValueSetConceptTest extends FhirTest {
 		assertEquals("gb_en", designation.getLanguage());
 		assertEquals("designationValue", designation.getValue());
 		assertEquals(new Code("internal"), designation.getUse().getCode());
-		assertEquals(new Uri("http://b2i.sg/test"), designation.getUse().getSystem());
+		assertEquals(new Uri("https://b2ihealthcare.com/test"), designation.getUse().getSystem());
 		
 	}
 
@@ -81,7 +81,7 @@ public class ValueSetConceptTest extends FhirTest {
 		assertThat(jsonPath.getString("display"), equalTo("display"));
 		assertThat(jsonPath.getString("designation[0].language"), equalTo("gb_en"));
 		assertThat(jsonPath.getString("designation[0].use.code"), equalTo("internal"));
-		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("http://b2i.sg/test"));
+		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("https://b2ihealthcare.com/test"));
 		assertThat(jsonPath.getString("designation[0].value"), equalTo("designationValue"));
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -336,6 +336,28 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 			.body("descriptions.items.active", everyItem(equalTo(true)))
 			.body("descriptions.items.inactivationProperties.inactivationIndicator[0].id", nullValue())
 			.body("descriptions.items.inactivationProperties.inactivationIndicator[1].id", nullValue());
+	}
+	
+	@Test
+	public void inactivateConceptDefinitionStatusRemainsPrimitive() {
+		String conceptId = createNewConcept(branchPath);
+		
+		updateComponent(
+				branchPath, 
+				SnomedComponentType.CONCEPT, 
+				conceptId, 
+				Json.object(
+					"active", false,
+					"definitionStatusId", Concepts.FULLY_DEFINED,
+					"commitComment", "Inactivated concept"
+				)
+			).statusCode(204);
+		
+		SnomedConcept concept = assertGetConcept(conceptId)
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+			assertTrue(!concept.isActive());
+			assertTrue(concept.isPrimitive());
 	}
 	
 }

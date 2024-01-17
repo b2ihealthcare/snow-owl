@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,7 +182,7 @@ public abstract class BaseRevisionIndexTest {
 	
 	protected void assertDocEquals(Object expected, Object actual) {
 		assertNotNull("Actual document is missing from index", actual);
-		for (Field f : index.getIndex().admin().mappings().getMapping(expected.getClass()).getFields()) {
+		for (Field f : index.getIndex().admin().getIndexMapping().getMapping(expected.getClass()).getFields()) {
 			if (Revision.Fields.CREATED.equals(f.getName()) 
 					|| Revision.Fields.REVISED.equals(f.getName())
 					|| WithScore.SCORE.equals(f.getName())

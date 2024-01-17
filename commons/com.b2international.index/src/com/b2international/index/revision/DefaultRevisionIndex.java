@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,7 +182,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		// apply commits happened on the compareRef segments in chronological order
 		AfterWhereBuilder<Commit> query = Query.select(Commit.class)
 			.where(compareCommitsQuery.build())
-			.limit(20) // load only 20 commits for each batch (import commits tend to be large, so if we load 20 of them we should not use that much memory)
+			 // load only 20 commits for each batch (import commits tend to be large, so if we load 20 of them we should not use that much memory)
+			.limit(IndexClientFactory.COMMIT_BATCH_SIZE)
 			.sortBy(SortBy.field(Commit.Fields.TIMESTAMP, Order.ASC));
 		
 		int processedCommits = 0;
@@ -247,7 +248,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 				.build());
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
-			final String type = admin.mappings().getType(revisionType);
+			final String type = admin.getIndexMapping().getMappings().getType(revisionType);
 			admin().log().info("Purging '{}' revisions...", type);
 			writer.bulkDelete(new BulkDelete<>(revisionType, purgeQuery.build()));
 			writer.commit();
@@ -315,7 +316,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	
 	private Set<Class<? extends Revision>> getRevisionTypes() {
 		final Set<Class<? extends Revision>> revisionTypes = newHashSet();
-		for (DocumentMapping mapping : admin().mappings().getMappings()) {
+		for (DocumentMapping mapping : admin().getIndexMapping().getMappings().getDocumentMappings()) {
 			if (Revision.class.isAssignableFrom(mapping.type())) {
 				revisionTypes.add((Class<? extends Revision>) mapping.type());
 			}

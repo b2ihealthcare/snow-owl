@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public final class ComponentURI implements Serializable {
 
 	@JsonIgnore
 	public final boolean isUnspecified() {
-		return CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri());
+		return TerminologyRegistry.UNSPECIFIED.equals(resourceUri().getResourceId());
 	}
 	
 	public final ComponentIdentifier toComponentIdentifier() {
@@ -113,7 +113,7 @@ public final class ComponentURI implements Serializable {
 		if (componentType.contains(".")) {
 			throw new BadRequestException("Component Type should be a single word. Got: '%s'.", componentType);
 		}
-		if (!CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri) && Strings.isNullOrEmpty(identifier)) {
+		if (!TerminologyRegistry.UNSPECIFIED.equals(resourceUri.getResourceId()) && Strings.isNullOrEmpty(identifier)) {
 			throw new BadRequestException("Identifier should not be null or empty.");
 		}
 		this.resourceUri = resourceUri;

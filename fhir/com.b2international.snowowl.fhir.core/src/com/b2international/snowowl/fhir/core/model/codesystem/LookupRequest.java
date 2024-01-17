@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,6 @@ public class LookupRequest {
 	 * designation, parent and child, and for designations, lang.X where X is a designation language code. Some of the properties are returned
 	 * explicit in named parameters (when the names match), and the rest (except for lang.X) in the property parameter group
 	 */
-	@FhirType(FhirDataType.PART)
 	private final Collection<Code> property;
 
 	LookupRequest(Code code, Uri system, String version, Coding coding, Date date, Code displayLanguage, Collection<Code> properties) {

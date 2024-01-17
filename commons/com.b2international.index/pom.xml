@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>9.0.0-SNAPSHOT</version>
+		<version>9.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.index</artifactId>
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.17.12</elasticsearch.version>
+		<elasticsearch.version>7.17.16</elasticsearch.version>
 		<log4j2.version>2.17.1</log4j2.version>
     </properties>
     
@@ -176,6 +176,7 @@
 									<action>
 										<execute>
 											<runOnIncremental>false</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
 										</execute>
 									</action>
 								</pluginExecution>

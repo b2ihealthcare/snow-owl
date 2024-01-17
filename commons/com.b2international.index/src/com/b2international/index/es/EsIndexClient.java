@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ public final class EsIndexClient implements IndexClient {
 
 	@Override
 	public Searcher searcher() {
-		return new EsDocumentSearcher(admin, mapper);
+		return new EsDocumentSearcher(admin, admin.getIndexMapping(), mapper);
 	}
 
 	@Override
 	public Writer writer() {
-		return new EsDocumentWriter(admin, searcher(), mapper);
+		return new EsDocumentWriter(admin, admin.getIndexMapping(), searcher(), mapper);
 	}
 
 }

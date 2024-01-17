@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,30 @@ import com.b2international.index.Script;
 import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
+import com.b2international.index.migrate.DocumentMappingMigrationStrategy;
+import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 /**
  * @since 6.0
  */
-@Doc
+@Doc(
+	revisions = {
+		@SchemaRevision(
+			version = 2,
+			description = "add resultId",
+			strategy = DocumentMappingMigrationStrategy.NO_REINDEX
+		)
+	}
+)
 @Script(name = ValidationIssue.Scripts.WHITELIST, script="ctx._source.whitelisted = params.whitelisted")
 public final class ValidationIssue implements Serializable {
 

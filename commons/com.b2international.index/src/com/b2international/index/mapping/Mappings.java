@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.b2international.index.query.Query;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.*;
 import com.google.common.collect.Multiset.Entry;
@@ -68,7 +65,7 @@ public final class Mappings {
 		return mapping;
 	}
 
-	public Collection<DocumentMapping> getMappings() {
+	public Collection<DocumentMapping> getDocumentMappings() {
 		return ImmutableList.copyOf(mappingsByType.values());
 	}
 	
@@ -85,14 +82,6 @@ public final class Mappings {
 			}
 		}
 		return Iterables.getOnlyElement(mappings);
-	}
-	
-	public List<DocumentMapping> getDocumentMapping(Query<?> query) {
-		if (query.getSelection().getParentScope() != null) {
-			return List.of(getMapping(query.getSelection().getParentScope()).getNestedMapping(Iterables.getOnlyElement(query.getSelection().getFrom())));
-		} else {
-			return query.getSelection().getFrom().stream().map(this::getMapping).collect(Collectors.toList());
-		}
 	}
 	
 	/**
@@ -125,6 +114,10 @@ public final class Mappings {
 
 	public Set<String> getTypeIndexNames() {
 		return Set.copyOf(docTypeCache.values());
+	}
+
+	public int size() {
+		return mappingsByType.size();
 	}
 	
 }

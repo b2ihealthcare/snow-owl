@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
 import com.b2international.index.mapping.Field;
+import com.b2international.index.migrate.DocumentMappingMigrationStrategy;
+import com.b2international.index.migrate.SchemaRevision;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.CommitSubject;
 import com.b2international.index.revision.RevisionBranch;
@@ -48,7 +50,17 @@ import com.google.common.base.MoreObjects;
 /**
  * @since 5.0
  */
-@Doc(type = VersionDocument.TYPE)
+@Doc(
+	type = VersionDocument.TYPE,
+	revisions = {
+		@SchemaRevision(
+			version = 2,
+			description = "add dependencies",
+			strategy = DocumentMappingMigrationStrategy.REINDEX_SCRIPT,
+			migrator = VersionDocumentSchemaMigratorV9_0.class
+		)
+	}
+)
 @JsonDeserialize(builder = VersionDocument.Builder.class)
 public final class VersionDocument implements CommitSubject, Serializable {
 

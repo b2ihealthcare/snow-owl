@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.aggregations.Bucket;
 import com.b2international.index.es.admin.EsIndexAdmin;
+import com.b2international.index.es.admin.IndexMapping;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.Es8QueryBuilder;
 import com.b2international.index.es.query.EsQueryBuilder;
@@ -93,14 +94,16 @@ public class EsDocumentSearcher implements Searcher {
 	private static final List<String> STORED_FIELDS_NONE = List.of("_none_");
 
 	private final EsIndexAdmin admin;
+	private final IndexMapping indexMapping;
 	private final ObjectMapper mapper;
 	private final int resultWindow;
 	private final int maxTermsCount;
 
 	private Metrics metrics = Metrics.NOOP;
 
-	public EsDocumentSearcher(EsIndexAdmin admin, ObjectMapper mapper) {
+	public EsDocumentSearcher(EsIndexAdmin admin, IndexMapping indexMapping, ObjectMapper mapper) {
 		this.admin = admin;
+		this.indexMapping = indexMapping;
 		this.mapper = mapper;
 		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
 		this.maxTermsCount = Integer.parseInt((String) admin.settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
@@ -114,8 +117,8 @@ public class EsDocumentSearcher implements Searcher {
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
 		checkArgument(!Strings.isNullOrEmpty(key), "Key cannot be empty");
-		final DocumentMapping mapping = admin.mappings().getMapping(type);
-		final GetRequest req = new GetRequest(admin.getTypeIndex(mapping), key)
+		final String index = indexMapping.getTypeIndex(type);
+		final GetRequest req = new GetRequest(index, key)
 				.fetchSourceContext(FetchSourceContext.FETCH_SOURCE);
 		final GetResponse res = admin.client().get(req);
 		
@@ -129,7 +132,7 @@ public class EsDocumentSearcher implements Searcher {
 	
 	@Override
 	public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
-		final DocumentMapping mapping = admin.mappings().getMapping(type);
+		final DocumentMapping mapping = indexMapping.getMapping(type);
 		List<String> allKeys = ImmutableList.copyOf(keys);
 		if (allKeys.size() > maxTermsCount) {
 			List<T> results = Lists.newArrayListWithExpectedSize(allKeys.size());
@@ -148,7 +151,7 @@ public class EsDocumentSearcher implements Searcher {
 		admin.log().trace("Executing query '{}'", query);
 		
 		final EsClient client = admin.client();
-		final List<DocumentMapping> mappings = admin.mappings().getDocumentMapping(query);
+		final List<DocumentMapping> mappings = this.indexMapping.getDocumentMapping(query);
 		final DocumentMapping primaryMapping = Iterables.getFirst(mappings, null);
 		
 		// Restrict variables to the theoretical maximum
@@ -159,7 +162,7 @@ public class EsDocumentSearcher implements Searcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(primaryMapping, admin.settings(), admin.log());
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
-		final String[] indicesToQuery = admin.getTypeIndexes(mappings).toArray(length -> new String[length]);
+		final String[] indicesToQuery = this.indexMapping.getTypeIndexes(mappings).toArray(String[]::new);
 		final SearchRequest req = new SearchRequest(indicesToQuery);
 		
 		// configure caching
@@ -443,12 +446,12 @@ public class EsDocumentSearcher implements Searcher {
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
 		final String aggregationName = aggregation.getName();
 		final EsClient client = admin.client();
-		final DocumentMapping mapping = admin.mappings().getMapping(aggregation.getFrom());
+		final DocumentMapping mapping = this.indexMapping.getMapping(aggregation.getFrom());
 		
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings(), admin.log());
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
-		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
+		final SearchRequest req = new SearchRequest(this.indexMapping.getTypeIndex(mapping));
 		
 		final SearchSourceBuilder reqSource = req.source()
 			.query(esQuery)
@@ -578,7 +581,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 		
 		final ElasticsearchClient client = admin.es8Client().client();
-		final DocumentMapping mapping = admin.mappings().getMapping(knn.getFrom());
+		final DocumentMapping mapping = this.indexMapping.getMapping(knn.getFrom());
 		
 		Es8QueryBuilder q = new Es8QueryBuilder(mapping, admin.settings(), admin.log());
 		co.elastic.clients.elasticsearch._types.query_dsl.Query esQuery = q.build(knn.getFilter());
@@ -597,7 +600,7 @@ public class EsDocumentSearcher implements Searcher {
 					.numCandidates(knn.getNumCandidates())
 					.queryVector(queryVector)
 				))
-				.index(admin.getTypeIndex(mapping))
+				.index(this.indexMapping.getTypeIndex(mapping))
 				.filter(esQuery)
 		), knn.getFrom());
 		

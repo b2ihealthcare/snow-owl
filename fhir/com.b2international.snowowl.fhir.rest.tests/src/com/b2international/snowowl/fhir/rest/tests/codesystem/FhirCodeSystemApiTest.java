@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -224,7 +224,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
-			.body("entry", equalTo(List.of()));
+			.body("entry", equalTo(null));
 	}
 	
 	@Test
@@ -435,7 +435,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
 			.body("entry[0].resource.url", equalTo(SNOMEDCT_URL + "/version/20020131"))
 			.body("entry[0].resource.version", equalTo("2002-01-31"))
-			.body("entry[0].resource.date", equalTo("2002-01-31T00:00:00.000+00:00"));
+			.body("entry[0].resource.date", equalTo("2002-01-31T00:00:00Z"));
 	}
 	
 	@Test
@@ -452,11 +452,11 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
 			.body("entry[0].resource.url", equalTo(SNOMEDCT_URL + "/version/20020131"))
 			.body("entry[0].resource.version", equalTo("2002-01-31"))
-			.body("entry[0].resource.date", equalTo("2002-01-31T00:00:00.000+00:00"))
+			.body("entry[0].resource.date", equalTo("2002-01-31T00:00:00Z"))
 			.body("entry[1].resource.id", equalTo("SNOMEDCT/2020-01-31"))
 			.body("entry[1].resource.url", equalTo(SNOMEDCT_URL + "/version/20200131"))
 			.body("entry[1].resource.version", equalTo("2020-01-31"))
-			.body("entry[1].resource.date", equalTo("2020-01-31T00:00:00.000+00:00"));
+			.body("entry[1].resource.date", equalTo("2020-01-31T00:00:00Z"));
 	}
 	
 	@Test

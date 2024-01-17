@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,17 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.index.mapping.DocumentMapping;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 /**
  * @since 4.7
  */
 public interface Writer {
 
 	void put(Object object);
+	
+	void put(DocumentMapping mapping, String docId, ObjectNode source);
 	
 	<T> void putAll(Collection<T> objects);
 

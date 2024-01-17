@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import org.elasticsearch.core.List;
+import java.util.List;
+
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -60,11 +61,11 @@ public class SnomedApiConfig extends BaseApiConfig {
 			"3.0",
 			"SNOMED CT API",
 			B2I_SITE,
-			"support@b2i.sg",
+			"info@b2ihealthcare.com",
 			"API License",
 			B2I_SITE,
 			"This describes the resources that make up the official Snow Owl® SNOMED CT Terminology API.\n" + 
-			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/snomed).",
+			"Detailed documentation is available at the [official documentation site](https://docs.b2ihealthcare.com/snow-owl).",
 			List.of(CONCEPTS, DESCRIPTIONS, RELATIONSHIPS, REFSETS, MEMBERS, IMPORT, EXPORT, CoreApiConfig.VALIDATIONS)
 		);
 	}

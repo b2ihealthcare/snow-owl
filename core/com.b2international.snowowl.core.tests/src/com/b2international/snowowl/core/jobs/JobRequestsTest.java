@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class JobRequestsTest {
 	private static final int DEFAULT_STALE_JOB_AGE = 200;
 	private static final int DEFAULT_PURGE_THRESHOLD = 2;
 	
-	private static final String USER = "test@b2i.sg";
+	private static final String USER = "test@b2ihealthcare.com";
 	private static final String RESULT = "result";
 	private ServiceProvider context;
 	private RemoteJobTracker tracker;

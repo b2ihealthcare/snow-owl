@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.rest.resource.collection;
 
 import java.util.concurrent.TimeUnit;
 
-import org.elasticsearch.common.Strings;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +32,7 @@ import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.core.rest.resource.ResourceUpdateRestInput;
 import com.b2international.snowowl.core.rest.resource.TerminologyResourceRestSearch;
+import com.google.common.base.Strings;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

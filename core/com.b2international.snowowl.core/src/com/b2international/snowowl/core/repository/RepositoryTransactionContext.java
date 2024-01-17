@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -342,7 +342,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		final Index index = service(Index.class);
 		final RevisionSearcher revisionSearcher = service(RevisionSearcher.class);
 		final IndexAdmin indexAdmin = index.admin();
-		final Mappings mappings = indexAdmin.mappings();
+		final Mappings mappings = indexAdmin.getIndexMapping().getMappings();
 		
 		final Stream<Class<?>> revisionTypes = mappings.getTypes()
 			.stream()

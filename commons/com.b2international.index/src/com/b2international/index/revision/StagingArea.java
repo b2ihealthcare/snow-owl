@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
+import com.b2international.index.es.admin.IndexMapping;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Hooks.Hook;
@@ -63,7 +63,7 @@ import com.google.common.collect.*;
 public final class StagingArea {
 
 	private final DefaultRevisionIndex index;
-	private final Mappings mappings;
+	private final IndexMapping indexMapping;
 	private final String branchPath;
 	private final ObjectMapper mapper;
 	private final int maxTermsCount;
@@ -81,7 +81,7 @@ public final class StagingArea {
 	
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
-		this.mappings = index.admin().mappings();
+		this.indexMapping = index.admin().getIndexMapping();
 		this.branchPath = branchPath;
 		this.mapper = mapper;
 		this.maxTermsCount = Integer.parseInt((String) index.admin().settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
@@ -97,8 +97,11 @@ public final class StagingArea {
 		return index;
 	}
 	
-	public Mappings mappings() {
-		return mappings;
+	/**
+	 * @return the current index mapping associated with the underlying indexes
+	 */
+	public IndexMapping getIndexMapping() {
+		return indexMapping;
 	}
 	
 	/**
@@ -425,11 +428,7 @@ public final class StagingArea {
 				if (object instanceof Revision) {
 					RevisionDiff revisionDiff = value.getDiff();
 					final Revision rev = revisionDiff.newRevision;
-					
-					if (!revisionDiff.hasChanges()) {
-						return;
-					}
-					
+
 					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
 					}
@@ -439,7 +438,11 @@ public final class StagingArea {
 					}
 					
 					writer.put(rev);
-					
+
+					if (!revisionDiff.hasChanges()) {
+						return;
+					}
+
 					// register component as changed in commit doc
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
@@ -998,7 +1001,7 @@ public final class StagingArea {
 		Set<String> changedRevisionIdsToCheck = newHashSet(toChangeSet.getChangedIds());
 		Set<String> removedRevisionIdsToCheck = newHashSet(toChangeSet.getRemovedIds());
 		for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
-			final DocumentMapping mapping = index.admin().mappings().getMapping(type);
+			final DocumentMapping mapping = index.admin().getIndexMapping().getMapping(type);
 			final String docType = mapping.typeAsString();
 			Set<String> changedRevisionIdsToMerge = newHashSet(fromChangeSet.getChangedIds(type));
 			// first handle changed vs. removed
@@ -1177,7 +1180,7 @@ public final class StagingArea {
 		}
 		
 		public DocumentMapping getMapping() {
-			return index.admin().mappings().getMapping(newRevision.getClass());
+			return index.admin().getIndexMapping().getMapping(newRevision.getClass());
 		}
 
 		private JsonDiff rawDiff() {

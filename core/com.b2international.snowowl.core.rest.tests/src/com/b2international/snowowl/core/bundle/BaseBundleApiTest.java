@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ abstract class BaseBundleApiTest {
 	static final String STATUS = "draft";
 	static final String COPYRIGHT = "copyright";
 	static final String OWNER = "b2i";
-	static final String CONTACT = "info@b2international.com";
+	static final String CONTACT = "info@b2ihealthcare.com";
 	static final String USAGE = "Bundle testing sources";
 	static final String PURPOSE = "Testing purpose";
 	static final Map<String, Object> SETTINGS = Map.of("ownerProfileName", "owner");

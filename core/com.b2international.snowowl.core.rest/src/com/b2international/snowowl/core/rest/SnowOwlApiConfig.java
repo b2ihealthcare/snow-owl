@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import java.io.InputStream;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.BitSet;
@@ -119,7 +120,9 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	private static final int PRETTY_IDX = 1;
 
 	static {
-		SpringDocUtils.getConfig().addResponseWrapperToIgnore(Promise.class);
+		SpringDocUtils.getConfig()
+			.removeRequestWrapperToIgnore(InputStream.class)
+			.addResponseWrapperToIgnore(Promise.class);
 	}
 	
 	@Autowired

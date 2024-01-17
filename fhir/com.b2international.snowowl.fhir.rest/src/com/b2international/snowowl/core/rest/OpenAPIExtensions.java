@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public class OpenAPIExtensions {
 	 * Method-level OpenAPI extension to describe an operation (FHIR interaction)
 	 */
 	public static final String B2I_OPENAPI_X_INTERACTION = "x-interaction";
+	
 	public static final String B2I_OPENAPI_INTERACTION_READ = "read";
 	public static final String B2I_OPENAPI_INTERACTION_VREAD = "vread";
 	public static final String B2I_OPENAPI_INTERACTION_CREATE = "create";

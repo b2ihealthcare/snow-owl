@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import com.b2international.index.BulkUpdate;
 import com.b2international.index.Update;
 import com.b2international.index.Writer;
 import com.b2international.index.es.EsDocumentSearcher;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -81,6 +83,11 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		}
 		// register object for commit
 		index.put(object);
+	}
+	
+	@Override
+	public void put(DocumentMapping mapping, String docId, ObjectNode source) {
+		index.put(mapping, docId, source);
 	}
 
 	@Override

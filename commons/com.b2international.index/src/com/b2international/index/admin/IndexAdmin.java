@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.index.admin;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
@@ -26,10 +25,11 @@ import org.elasticsearch.index.reindex.RemoteInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.es.admin.IndexMapping;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.reindex.ReindexResult;
 import com.b2international.index.es8.Es8Client;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 
 /**
@@ -52,7 +52,7 @@ public interface IndexAdmin {
 	boolean exists();
 
 	/**
-	 * Creates the index if and only if does not exist yet, otherwise this method is no-op. Configure the defined {@link #mappings()} as well.
+	 * Creates the index if and only if does not exist yet, otherwise this method is no-op. Configure the defined {@link #documentMappings()} as well.
 	 */
 	void create();
 
@@ -84,11 +84,6 @@ public interface IndexAdmin {
 	void updateSettings(Map<String, Object> newSettings);
 
 	/**
-	 * @return all the mappings available for the underlying indices to work with.
-	 */
-	Mappings mappings();
-	
-	/**
 	 * Updates the mappings available for the underlying indices to work with.
 	 * 
 	 * NOTE: keep in mind that these won't affect existing indices and operations on this class might not run on all previously created indices. 
@@ -103,20 +98,9 @@ public interface IndexAdmin {
 	String name();
 	
 	/**
-	 * Returns the actual index name for the given {@link DocumentMapping}.
-	 * 
-	 * @param mapping
-	 * @return
+	 * @return the {@link IndexMapping} instance that contains information about created and managed Elasticsearch indices.
 	 */
-	String getTypeIndex(DocumentMapping mapping);
-	
-	/**
-	 * Returns the actual index name for the given List of {@link DocumentMapping mappings}.
-	 * 
-	 * @param mappings
-	 * @return
-	 */
-	List<String> getTypeIndexes(List<DocumentMapping> mappings);
+	IndexMapping getIndexMapping();
 
 	/**
 	 * Optimizes the underlying index until it has less than or equal segments than the supplied maxSegments number.
@@ -144,29 +128,29 @@ public interface IndexAdmin {
 	 * @return {@link RefreshResponse}
 	 * @param indices
 	 */
-	RefreshResponse refresh(String...indices) throws IOException;
+	RefreshResponse refresh(String...indices);
 
 	/**
-	 * Issue a remote reindex of sourceIndex to destinationIndex using the parameters specified in remoteInfo. A selective
-	 * query can be passed inside the RemoteInfo object in a serialized form.
+	 * Issue a reindex operation of sourceIndex to destinationIndex.
 	 * 
+	 * An optional remoteInfo object can be used to:
+	 * 	- add a selective document query in a serialized form
+	 *  - specify a remote Elasticsearch instance to move the contents of sourceIndex to the remote destinationIndex 
+	 *
 	 * @return {@link BulkByScrollResponse}
 	 * @param sourceIndex - the source index
 	 * @param destinationIndex - the destination index
 	 * @param remoteInfo - configuration for the remote Elasticsearch instance (scheme, host, port, credentials and query)
 	 * @param refresh - whether to refresh the destination index at the end of the process or not
+	 * @param batchSize - default batch size is {@link IndexClientFactory#DEFAULT_REINDEX_BATCH_SIZE}
 	 */
-	ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh) throws IOException;
+	ReindexResult reindex(String sourceIndex, String destinationIndex, RemoteInfo remoteInfo, boolean refresh, int batchSize) throws IOException;
 	
 	/**
 	 * @return the indices maintained by this {@link IndexAdmin}
 	 */
 	default String[] indices() {
-		return mappings().getMappings()
-				.stream()
-				.map(this::getTypeIndex)
-				.distinct()
-				.toArray(String[]::new);
+		return getIndexMapping().indices();
 	}
 	
 	static Logger createIndexLogger(String name) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,6 +142,13 @@ public interface ServiceProvider extends PagingSettingsProvider {
 				.map(j -> j.getParameters(service(ObjectMapper.class)))
 				.filter(parametersPredicate)
 				.isPresent();
+	}
+	
+	/**
+	  * @return the current monitor from the context or a {@link NullProgressMonitor} if none present
+	  */
+	default IProgressMonitor monitor() {
+	  return optionalService(IProgressMonitor.class).orElseGet(NullProgressMonitor::new);
 	}
 	
 	private PagingSettingsProvider pagingSettings() {

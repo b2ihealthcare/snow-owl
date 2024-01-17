@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,8 +88,8 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createRegularVersionWithAuthor() {
-		String author = "info@b2international.com";
-		Map<String, String> headers = Map.of(AbstractRestService.X_AUTHOR, "info@b2international.com");
+		String author = "info@b2ihealthcare.com";
+		Map<String, String> headers = Map.of(AbstractRestService.X_AUTHOR, "info@b2ihealthcare.com");
 		createVersion(INT_CODESYSTEM, "version-with-author", getNextAvailableEffectiveDate(INT_CODESYSTEM), headers).statusCode(201);
 		assertGetVersion(INT_CODESYSTEM, "version-with-author").statusCode(200);
 		String commitComment = "Version 'codesystems/SNOMEDCT' as of 'version-with-author'";

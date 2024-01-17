@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public abstract class AbstractRestService {
 	/**
 	 * The media type produced and accepted by Snow Owl's RESTful API for JSON content.
 	 */
-	public static final String JSON_MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
+	public static final String JSON_MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE;
 
 	/**
 	 * The media type produced and accepted by Snow Owl's RESTful API for text content.
@@ -68,14 +68,14 @@ public abstract class AbstractRestService {
 	public static final String MULTIPART_MEDIA_TYPE = MediaType.MULTIPART_FORM_DATA_VALUE;
 
 	/**
-	 * The media type produced and accepted by Snow Owl's syndication feeds
+	 * The media type produced and accepted by Snow Owl's RESTful API for XML content.
 	 */
-	public static final String XML_MEDIA_TYPE = MediaType.APPLICATION_XML_VALUE + ";charset=UTF-8";
+	public static final String XML_MEDIA_TYPE = MediaType.APPLICATION_XML_VALUE;
 
 	/**
-	 * The media type produced and accepted by Snow Owl's syndication feeds
+	 * The media type produced and accepted by Snow Owl's syndication feeds.
 	 */
-	public static final String ATOM_MEDIA_TYPE = MediaType.APPLICATION_ATOM_XML_VALUE + ";charset=UTF-8";
+	public static final String ATOM_MEDIA_TYPE = MediaType.APPLICATION_ATOM_XML_VALUE;
 
 	/**
 	 * Header to use when impersonating a commit request.

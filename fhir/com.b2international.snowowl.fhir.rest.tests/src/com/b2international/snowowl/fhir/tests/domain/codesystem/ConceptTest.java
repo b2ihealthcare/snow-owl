@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ConceptTest extends FhirTest {
 				.languageCode("uk_en")
 				.use(Coding.builder()
 					.code("internal")
-					.system("http://b2i.sg/test")
+					.system("https://b2ihealthcare.com/test")
 					.build()
 					)
 				.value("conceptLabel_uk")

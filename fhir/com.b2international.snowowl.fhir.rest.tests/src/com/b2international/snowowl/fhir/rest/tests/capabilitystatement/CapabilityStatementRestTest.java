@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class CapabilityStatementRestTest extends FhirRestTest {
 			.body("date", notNullValue())
 			.body("description", notNullValue())
 			.body("kind", equalTo(CapabilityStatementKind.INSTANCE.getCodeValue()))
-			.body("fhirVersion", equalTo("4.0.1"))
+			.body("fhirVersion", equalTo("5.0.0"))
 			.body("rest[0]", notNullValue())
 			.body("rest[0].resource[0]", notNullValue());
 			

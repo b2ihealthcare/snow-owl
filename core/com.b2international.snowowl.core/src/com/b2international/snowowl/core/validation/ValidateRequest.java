@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,9 +113,9 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 
 	private ValidationResult doValidate(final BranchContext context, final Writer index) throws IOException {
-		final String branchPath = context.path();
 		final TerminologyResource resource = context.service(TerminologyResource.class);
-		final ResourceURI resourceURI = resource.getResourceURI(branchPath);
+		final ResourceURI resourceURI = context.service(ResourceURI.class);
+		final IProgressMonitor monitor = context.monitor();
 		
 		final ValidationRuleSearchRequestBuilder req = ValidationRequests.rules()
 			.prepareSearch()
@@ -148,6 +150,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		
 		// Evaluate selected rules
 		for (final ValidationRule rule : rules) {
+			checkMonitor(monitor);
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
@@ -157,8 +160,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 			}
 			
 			validationPromises.add(pool.submit(rule.getCheckType(), () -> {
+				checkMonitor(monitor);
 				final Stopwatch w = Stopwatch.createStarted();
-
 				try {
 					LOG.info("Executing rule '{}'...", rule.getId());
 					final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
@@ -174,6 +177,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final Promise<List<Object>> promise = Promise.all(validationPromises);
 
 		while (!promise.isDone() || !issuesToPersistQueue.isEmpty()) {
+			checkMonitor(monitor);
 			if (!issuesToPersistQueue.isEmpty()) {
 				final Collection<IssuesToPersist> issuesToPersist = newArrayList(); 
 				issuesToPersistQueue.drainTo(issuesToPersist);
@@ -282,6 +286,12 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 
 		// TODO return ValidationResult object with status and new issue IDs as set
 		return new ValidationResult(context.info().id(), context.path());
+	}
+	
+	private void checkMonitor(IProgressMonitor monitor) {
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 	}
 
 	private Multimap<String, ComponentIdentifier> fetchWhiteListEntries(final BranchContext context, final Set<String> ruleIds) {

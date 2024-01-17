@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -253,7 +253,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					.filter(TerminologyResource.class::isInstance)
 					.map(TerminologyResource.class::cast)
 					.forEach(resource -> {
-						resourcesToVersion.put(resource.getResourceURI(), resource);
+						// skip child resources that are in deprecated state and should not be versioned anymore
+						if (!TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resource.getStatus())) {
+							resourcesToVersion.put(resource.getResourceURI(), resource);
+						}
 					});
 			}
 

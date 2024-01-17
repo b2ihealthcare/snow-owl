@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ public abstract class BaseIndexTest {
 	
 	protected void assertDocEquals(Object expected, Object actual) {
 		assertNotNull("Actual document is missing from index", actual);
-		for (Field actualField : index.getIndex().admin().mappings().getMapping(actual.getClass()).getFields()) {
+		for (Field actualField : index.getIndex().admin().getIndexMapping().getMapping(actual.getClass()).getFields()) {
 			Field existingField = null;
 			try {
 				existingField = Reflections.getField(expected.getClass(), actualField.getName());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,6 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("expansion.contains[0].code", equalTo("105590001"))
 			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
 			.body("expansion.contains[0].display", equalTo("Substance (substance)"))
-			.body("expansion.after", equalTo("AoIpMjU0MjkxMDAwKTI1NDI5MTAwMA=="))
 			.body("expansion.next", endsWith(FHIR_ROOT_CONTEXT 
 				+ "/ValueSet/$expand"
 				+ "?url=http://snomed.info/sct/900000000000207008?fhir_vs=ecl/<!138875005"

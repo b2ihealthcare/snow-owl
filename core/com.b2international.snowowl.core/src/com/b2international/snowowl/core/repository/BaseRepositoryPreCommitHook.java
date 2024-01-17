@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 
 /**
  * Base {@link Repository} pre-commit hook. It allows terminology plugin developers to attach custom precommit hooks to the underlying
@@ -42,8 +43,17 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	
 	@Override
 	public void run(StagingArea staging) {
+		boolean needsDocumentUpdate;
+		if (staging.getContext() instanceof RepositoryTransactionContext transactionContext) {
+			needsDocumentUpdate = !DatastoreLockContextDescriptions.CREATE_VERSION.equals(transactionContext.parentLock());
+		} else {
+			needsDocumentUpdate = true;
+		}
+		
 		staging.read(index -> {
-			updateDocuments(staging, index);
+			if (needsDocumentUpdate) {
+				updateDocuments(staging, index);				
+			}
 			return null;
 		});
 	}

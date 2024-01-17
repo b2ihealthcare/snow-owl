@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class ReindexResult implements Serializable {
 	private final Long noops;
 	private final Long versionConflicts;
 
-	// use primitve long to always show total number of affected documents
+	// use primitive long to always show total number of affected documents
 	private final long totalDocuments;
 
 	private final String sourceIndex;

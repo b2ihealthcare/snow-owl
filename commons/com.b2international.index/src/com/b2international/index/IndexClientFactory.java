@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -258,6 +258,16 @@ public interface IndexClientFactory {
 	 */
 	int MAX_PAGE_SIZE = 10_000;
 
+	/**
+	 * Batch size to use for loading commit documents in a safe manner
+	 */
+	int COMMIT_BATCH_SIZE = 20;
+	
+	/**
+	 * Default batch size for reindex requests
+	 */
+	int DEFAULT_REINDEX_BATCH_SIZE = org.elasticsearch.index.reindex.AbstractBulkByScrollRequest.DEFAULT_SCROLL_SIZE;
+	
 	/**
 	 * Create a new {@link IndexClient} with the given name.
 	 * 

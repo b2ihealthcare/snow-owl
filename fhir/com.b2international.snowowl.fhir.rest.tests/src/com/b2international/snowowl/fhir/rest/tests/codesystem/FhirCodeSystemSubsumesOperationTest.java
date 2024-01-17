@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("parameter[0].name", equalTo("outcome"))
-			.body("parameter[0].valueCode", equalTo(SubsumptionType.SUBSUMES.name()));
+			.body("parameter[0].valueCode", equalTo("subsumes"));
 	}
 	
 	@Test
@@ -59,7 +59,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("parameter[0].name", equalTo("outcome"))
-			.body("parameter[0].valueCode", equalTo(SubsumptionType.SUBSUMED_BY.name()));
+			.body("parameter[0].valueCode", equalTo("subsumed-by"));
 	}
 	
 	@Test
@@ -72,7 +72,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("parameter[0].name", equalTo("outcome"))
-			.body("parameter[0].valueCode", equalTo(SubsumptionType.NOT_SUBSUMED.name()));
+			.body("parameter[0].valueCode", equalTo("not-subsumed"));
 	}
 	
 	@Test
@@ -85,7 +85,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("parameter[0].name", equalTo("outcome"))
-			.body("parameter[0].valueCode", equalTo(SubsumptionType.EQUIVALENT.name()));
+			.body("parameter[0].valueCode", equalTo("equivalent"));
 	}
 	
 	@Test
@@ -99,7 +99,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("parameter[0].name", equalTo("outcome"))
-			.body("parameter[0].valueCode", equalTo(SubsumptionType.SUBSUMED_BY.name()));
+			.body("parameter[0].valueCode", equalTo("subsumed-by"));
 	}
 	
 	@Test

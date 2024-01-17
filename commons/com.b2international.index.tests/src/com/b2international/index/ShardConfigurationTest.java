@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ShardConfigurationTest extends BaseIndexTest {
 	
 	@Test
 	public void shardReplicaConfigTest() throws Exception {
-		String typeIndex = index().admin().getTypeIndex(index().admin().mappings().getMapping(ShardConfig.class));
+		String typeIndex = index().admin().getIndexMapping().getTypeIndex(ShardConfig.class);
 		Settings settings = index().admin().client().indices().settings(new GetSettingsRequest().indices(typeIndex)).getIndexToSettings().get(typeIndex).getAsSettings("index");
 		assertThat(settings.get(IndexClientFactory.NUMBER_OF_SHARDS)).isEqualTo("2");
 	}

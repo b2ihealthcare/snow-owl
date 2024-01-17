@@ -1,5 +1,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import java.util.Locale;
+
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
 
 /**
@@ -28,7 +30,9 @@ public enum ConceptMapGroupUnmappedMode implements FhirCodeSystem {
 
 	@Override
 	public String getCodeValue() {
-		return name().toLowerCase().replaceAll("_", "-");
+		return name()
+			.toLowerCase(Locale.ENGLISH)
+			.replace('_', '-');
 	}
 
 	@Override
@@ -36,4 +40,13 @@ public enum ConceptMapGroupUnmappedMode implements FhirCodeSystem {
 		return displayName;
 	}
 
+	public static ConceptMapGroupUnmappedMode forValue(String value) {
+		if (value == null) {
+			return null;
+		}
+		
+		return ConceptMapGroupUnmappedMode.valueOf(value
+			.toUpperCase(Locale.ENGLISH)
+			.replace('-', '_'));
+    }
 }
