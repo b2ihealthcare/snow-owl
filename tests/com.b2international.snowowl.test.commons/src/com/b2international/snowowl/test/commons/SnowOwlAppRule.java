@@ -15,15 +15,14 @@
  */
 package com.b2international.snowowl.test.commons;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import org.junit.rules.ExternalResource;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.MountableFile;
 
-import com.b2international.commons.FileUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.io.PathUtils;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexResource;
 import com.b2international.index.es.EsIndexClientFactory;
@@ -137,14 +136,15 @@ public class SnowOwlAppRule extends ExternalResource {
 		this.plugins = plugins;
 		return this;
 	}
+	
 
 	@Override
 	protected void before() throws Throwable {
 		super.before();
 		snowowl = SnowOwl.create(this.plugins);
 		if (clearResources) {
-			final File resourceDirectory = snowowl.getEnviroment().getDataPath().toFile();
-			FileUtils.cleanDirectory(resourceDirectory);
+			final Path resourceDirectory = snowowl.getEnviroment().getDataPath();
+			PathUtils.cleanDirectory(resourceDirectory);
 		}
 		
 		// modify the Snow Owl configuration values if useDocker is defined as JVM argument
