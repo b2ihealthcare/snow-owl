@@ -24,7 +24,6 @@
 		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>4.0.4</tycho.version>
-		<tycho-extras.version>4.0.4</tycho-extras.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		
 		<!-- Versioning -->
