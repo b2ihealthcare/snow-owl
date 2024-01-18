@@ -107,7 +107,6 @@
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.commons-io@default:default"/>
         <setEntry value="org.apache.commons.lang3@default:default"/>
-        <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.commons.text@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
         <setEntry value="org.apache.felix.gogo.runtime@default:default"/>
@@ -184,7 +183,7 @@
         <setEntry value="org.eclipse.xtext@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
-        <setEntry value="org.junit*4.13.2.v20230809-1000@default:default"/>
+        <setEntry value="org.junit@default:default"/>
         <setEntry value="org.mapstruct@default:default"/>
         <setEntry value="org.mockito.mockito-core@default:default"/>
         <setEntry value="org.objectweb.asm.commons@default:default"/>

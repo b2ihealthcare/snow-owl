@@ -109,24 +109,20 @@
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
+								commons-logging,
 								spring-aop,
 								spring-beans,
 								spring-context,
 								spring-core,
-								spring-expression,
-								spring-plugin-core,
-								spring-plugin-metadata,
+								spring-jcl,
 								spring-security-config,
 								spring-security-core,
 								spring-security-web,
 								spring-security-crypto,
 								spring-web,
 								spring-webmvc,
-								commons-logging,
-								commons-fileupload,
 								springdoc-openapi-starter-common,
 								springdoc-openapi-starter-webmvc-api,
-								swagger-core,
 								spring-boot,
 								spring-boot-autoconfigure
 							</includeArtifactIds>
