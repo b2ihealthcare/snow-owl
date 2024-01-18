@@ -223,6 +223,7 @@
 									<action>
 										<execute>
 											<runOnIncremental>false</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
 										</execute>
 									</action>
 								</pluginExecution>
@@ -243,7 +244,7 @@
 									<pluginExecutionFilter>
 										<groupId>com.github.eirslett</groupId>
         								<artifactId>frontend-maven-plugin</artifactId>
-        								<versionRange>[1.8.0,)</versionRange>
+        								<versionRange>[1.15.0,)</versionRange>
         								<goals>
 											<goal>install-node-and-npm</goal>
 											<goal>npm</goal>
@@ -252,6 +253,7 @@
 									<action>
 										<execute>
 											<runOnIncremental>false</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
 										</execute>
 									</action>
 								</pluginExecution>
@@ -267,6 +269,7 @@
 									<action>
 										<execute>
 											<runOnIncremental>false</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
 										</execute>
 									</action>
 								</pluginExecution>
