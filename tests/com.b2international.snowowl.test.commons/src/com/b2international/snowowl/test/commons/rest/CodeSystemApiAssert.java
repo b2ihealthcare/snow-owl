@@ -62,6 +62,13 @@ public abstract class CodeSystemApiAssert {
 			.then();
 	}
 	
+	public static ValidatableResponse assertCodeSystemVersionedGet(final String codeSystemId, final String version, final String...expand) {
+		return givenAuthenticatedRequest(CODESYSTEMS_API)
+			.queryParam("expand", expand == null ? null : String.join(",", expand))
+			.get("/{id}/{version}", codeSystemId, version)
+			.then();
+	}
+	
 	public static ValidatableResponse assertCodeSystemGet(final String codeSystemId, final long timestamp) {
 		return givenAuthenticatedRequest(CODESYSTEMS_API)
 			.get("/{id}", codeSystemId + "@" + timestamp)

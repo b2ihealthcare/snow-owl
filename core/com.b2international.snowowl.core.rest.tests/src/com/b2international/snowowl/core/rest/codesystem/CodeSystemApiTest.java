@@ -472,7 +472,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemUpdated(codeSystemId, Json.object("copyright", "Updated copyright after versioning"));
 
 		// get the versioned state
-		final CodeSystem v1CodeSystemState = assertCodeSystemGet(codeSystemId + "/v1")
+		final CodeSystem v1CodeSystemState = assertCodeSystemVersionedGet(codeSystemId, "v1")
 				.statusCode(200)
 				.extract()
 				.as(CodeSystem.class);
