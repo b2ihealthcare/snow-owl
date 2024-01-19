@@ -112,9 +112,6 @@ public class TerminologyResourceCollectionRestService extends AbstractRestServic
 		@PathVariable(value = "collectionId") 
 		final String collectionId,
 		
-		@Parameter(description = "The timestamp to use for historical ('as of') queries")
-		final Long timestamp,
-		
 		@ParameterObject
 		final ResourceSelectors selectors) {
 		
@@ -122,7 +119,7 @@ public class TerminologyResourceCollectionRestService extends AbstractRestServic
 			.prepareGet(collectionId)
 			.setExpand(selectors.getExpand())
 			.setFields(selectors.getField())
-			.buildAsync(timestamp)
+			.buildAsync()
 			.execute(getBus());
 	}
 	
