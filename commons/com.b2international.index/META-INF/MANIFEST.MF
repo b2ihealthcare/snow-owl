@@ -60,9 +60,9 @@ Export-Package: com.b2international.index,
 Import-Package: javax.management,
  org.apache.commons.logging;version="1.2.0",
  org.osgi.framework;version="1.6.0",
- org.slf4j;version="1.7.2",
- org.slf4j.helpers;version="1.7.2",
- org.slf4j.spi;version="1.7.2"
+ org.slf4j;version="2.0.0",
+ org.slf4j.helpers;version="2.0.0",
+ org.slf4j.spi;version="2.0.0"
 Bundle-ClassPath: .,
  lib/aggs-matrix-stats-client-7.17.16.jar,
  lib/analysis-common-7.17.16.jar,
