@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -10,29 +10,39 @@
 
 	<artifactId>com.b2international.snowowl.core.rest</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	
+
 	<properties>
 		<spring.version>6.1.3</spring.version>
 		<spring.security.version>6.2.1</spring.security.version>
 		<springdoc.version>2.3.0</springdoc.version>
+		<!-- Make sure this version matches the one present in the target-platform for swagger-annotations and models -->
+		<swagger.core.version>2.2.20</swagger.core.version>
 		<!-- Node.js version to use for building the API docs site -->
 		<node.version>v20.11.0</node.version>
 		<npm.version>10.3.0</npm.version>
 	</properties>
 
-	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
-	<dependencies>	
+	<!-- NOTE: in case of dependency changes, please update the
+	includeArtifactIds section in the maven-dependency-plugin configuration as
+	well, listing all (exact and transitive) dependency artifactIds -->
+	<dependencies>
 		<dependency>
-	      	<groupId>org.springdoc</groupId>
-	      	<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-	      	<version>${springdoc.version}</version>
-	      	<scope>provided</scope>
-	   	</dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+			<version>${springdoc.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-webmvc</artifactId>
-		    <version>${spring.version}</version>
-		    <scope>provided</scope>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-core-jakarta</artifactId>
+			<version>2.2.20</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
@@ -47,19 +57,19 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.springframework.boot</groupId>
-    		<artifactId>spring-boot</artifactId>
-    		<version>3.2.1</version>
-    		<scope>provided</scope>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+			<version>3.2.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.springframework.boot</groupId>
-    		<artifactId>spring-boot-autoconfigure</artifactId>
-    		<version>3.2.1</version>
-    		<scope>provided</scope>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+			<version>3.2.1</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -68,13 +78,13 @@
 				<version>3.1.0</version>
 				<executions>
 					<execution>
-            			<id>clean-folders</id>
-            			<phase>generate-sources</phase>
-            			<goals>
-              				<goal>clean</goal>
-            			</goals>
-            			<configuration>
-            				<filesets>
+						<id>clean-folders</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+						<configuration>
+							<filesets>
 								<fileset>
 									<directory>WEB-INF/lib</directory>
 									<excludes>
@@ -91,8 +101,8 @@
 									<directory>snow-owl-api-docs/build</directory>
 								</fileset>
 							</filesets>
-            			</configuration>
-          			</execution>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -107,7 +117,8 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
+							<!-- Copying only the necessary JARs from the
+							dependencies and their transitive stuff -->
 							<includeArtifactIds>
 								commons-logging,
 								spring-aop,
@@ -124,7 +135,8 @@
 								springdoc-openapi-starter-common,
 								springdoc-openapi-starter-webmvc-api,
 								spring-boot,
-								spring-boot-autoconfigure
+								spring-boot-autoconfigure,
+								swagger-core-jakarta,
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>
@@ -132,71 +144,72 @@
 				</executions>
 			</plugin>
 			<plugin>
-        		<groupId>com.github.eirslett</groupId>
-        		<artifactId>frontend-maven-plugin</artifactId>
-        		<version>1.15.0</version>
-        		<executions>
-        			<execution>
-	            		<id>install node and npm</id>
-	            		<goals>
-	                		<goal>install-node-and-npm</goal>
-	            		</goals>
-	            		<phase>generate-resources</phase>
-        			</execution>
-        			<execution>
-    					<id>npm install</id>
-    					<goals>
-        					<goal>npm</goal>
-    					</goals>
-    					<phase>generate-resources</phase>
-    					<configuration>
-        					<arguments>install</arguments>
-    					</configuration>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.15.0</version>
+				<executions>
+					<execution>
+						<id>install node and npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
 					</execution>
 					<execution>
-    					<id>npm build</id>
-    					<goals>
-        					<goal>npm</goal>
-    					</goals>
-    					<phase>generate-resources</phase>
-    					<configuration>
-    						<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
-        					<arguments>run build</arguments>
-    					</configuration>
+						<id>npm install</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
 					</execution>
-    			</executions>
-    			<configuration>
-    				<installDirectory>${project.build.directory}/node</installDirectory>
-    				<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
-        			<nodeVersion>${node.version}</nodeVersion>
-        			<npmVersion>${npm.version}</npmVersion>
-    			</configuration>
-		    </plugin>
+					<execution>
+						<id>npm build</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
+							<arguments>run build</arguments>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<installDirectory>${project.build.directory}/node</installDirectory>
+					<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
+					<nodeVersion>${node.version}</nodeVersion>
+					<npmVersion>${npm.version}</npmVersion>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.1.0</version>
 				<executions>
 					<execution>
-            			<id>copy-static-resources</id>
-            			<phase>generate-resources</phase>
-            			<goals>
-              				<goal>copy-resources</goal>
-            			</goals>
-            			<configuration>
-            				<outputDirectory>${basedir}/site</outputDirectory>
-            				<overwrite>true</overwrite>
-            				<resources>
-            					<resource>
-            						<directory>${basedir}/snow-owl-api-docs/build</directory>
-            					</resource>
-            				</resources>
-            			</configuration>
-          			</execution>
+						<id>copy-static-resources</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/site</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>
+										${basedir}/snow-owl-api-docs/build</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
-		
+
 		<pluginManagement>
 			<plugins>
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
@@ -239,9 +252,9 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>com.github.eirslett</groupId>
-        								<artifactId>frontend-maven-plugin</artifactId>
-        								<versionRange>[1.15.0,)</versionRange>
-        								<goals>
+										<artifactId>frontend-maven-plugin</artifactId>
+										<versionRange>[1.15.0,)</versionRange>
+										<goals>
 											<goal>install-node-and-npm</goal>
 											<goal>npm</goal>
 										</goals>
@@ -276,21 +289,21 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<profiles>
 		<profile>
-      		<id>skipFrontend</id>
-      		<activation>
-      			<property>
-      				<name>env.LGTM_SRC</name>
-      			</property>
-      		</activation>
-      		<properties>
-      			<skip.installnodenpm>true</skip.installnodenpm>
-      			<skip.grunt>true</skip.grunt>
-      			<skip.npm>true</skip.npm>
-      		</properties>
-    	</profile>
+			<id>skipFrontend</id>
+			<activation>
+				<property>
+					<name>env.LGTM_SRC</name>
+				</property>
+			</activation>
+			<properties>
+				<skip.installnodenpm>true</skip.installnodenpm>
+				<skip.grunt>true</skip.grunt>
+				<skip.npm>true</skip.npm>
+			</properties>
+		</profile>
 	</profiles>
-	
+
 </project>
