@@ -3,7 +3,7 @@
    xmlns="https://jakarta.ee/xml/ns/jakartaee"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-   metadata-complete="false"
+   metadata-complete="true"
    version="6.0">
 
 	<display-name>com.b2international.snowowl.core.rest</display-name>
@@ -73,5 +73,7 @@
 	<session-config>
 		<session-timeout>5</session-timeout>
 	</session-config>
+	
+	<absolute-ordering />
 
 </web-app>
