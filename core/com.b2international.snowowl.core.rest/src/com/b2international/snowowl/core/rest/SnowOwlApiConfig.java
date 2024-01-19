@@ -58,6 +58,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -65,7 +66,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.condition.RequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConfiguration;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -143,36 +143,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		return new OpenAPI();
 	}
 	
-//	@Bean
-//	public OpenApiWebMvcResource openApiWebMvcResource(
-//			@Autowired ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, 
-//			@Autowired AbstractRequestService requestBuilder, 
-//			@Autowired GenericResponseService responseBuilder, 
-//			@Autowired OperationService operationParser, 
-//			@Autowired RequestMappingInfoHandlerMapping requestMappingHandlerMapping, 
-//			@Autowired Optional<ActuatorProvider> actuatorProvider, 
-//			@Autowired Optional<List<OperationCustomizer>> operationCustomizers, 
-//			@Autowired Optional<List<OpenApiCustomizer>> openApiCustomisers, 
-//			@Autowired SpringDocConfigProperties springDocConfigProperties, 
-//			@Autowired Optional<SecurityOAuth2Provider> springSecurityOAuth2Provider, 
-//			@Autowired Optional<RouterFunctionProvider> routerFunctionProvider, 
-//			@Autowired Optional<RepositoryRestResourceProvider> repositoryRestResourceProvider) {
-//		
-//		return new SnowOwlOpenApiWebMvcResource(
-//			openAPIBuilderObjectFactory, 
-//			requestBuilder, 
-//			responseBuilder, 
-//			operationParser, 
-//			requestMappingHandlerMapping, 
-//			actuatorProvider, 
-//			operationCustomizers, 
-//			openApiCustomisers, 
-//			springDocConfigProperties, 
-//			springSecurityOAuth2Provider, 
-//			routerFunctionProvider, 
-//			repositoryRestResourceProvider);
-//	}
-	
 	@Bean
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public ObjectMapper objectMapper(@Autowired HttpServletRequest request) {
@@ -220,19 +190,21 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	}
 	
 	@Bean
-	public MethodValidationPostProcessor methodValidationPostProcessor() {
+	public static MethodValidationPostProcessor methodValidationPostProcessor() {
 		return new MethodValidationPostProcessor();
 	}
 	
-//	@Bean
-//	public MultipartResolver multipartResolver() {
+	@Bean
+	public MultipartResolver multipartResolver() {
+		// TODO add back max file size restrictions somehow
+		return new StandardServletMultipartResolver();
 //		final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
 //	    final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
 //	    multipartResolver.setMaxUploadSizePerFile(httpConfig.getMaxFileSizeBytes());
 //	    multipartResolver.setMaxUploadSize(httpConfig.getMaxRequestSizeBytes());
 //	    multipartResolver.setMaxInMemorySize(httpConfig.getMaxInMemorySizeBytes());
 //	    return multipartResolver;
-//	}
+	}
 	
 	@Bean
 	public IdentityProvider identityProvider() {
