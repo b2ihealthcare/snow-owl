@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,7 +122,7 @@ class CollectionDeserializers
                     value = jp.getIntValue();
                 } else {
                     if (t != JsonToken.VALUE_NULL) {
-                        throw ctxt.mappingException(_valueClass.getComponentType());
+                        ctxt.reportWrongTokenException(_valueClass.getComponentType(), JsonToken.VALUE_NUMBER_INT, "Invalid token: expected int or float numbers");
                     }
                     value = 0;
                 }
@@ -155,7 +155,7 @@ class CollectionDeserializers
                     value = jp.getLongValue();
                 } else {
                     if (t != JsonToken.VALUE_NULL) {
-                        throw ctxt.mappingException(_valueClass.getComponentType());
+                    	ctxt.reportWrongTokenException(_valueClass.getComponentType(), JsonToken.VALUE_NUMBER_INT, "Invalid token: expected int or float numbers");
                     }
                     value = 0;
                 }
@@ -188,7 +188,7 @@ class CollectionDeserializers
                     value = jp.getFloatValue();
                 } else {
                     if (t != JsonToken.VALUE_NULL) {
-                        throw ctxt.mappingException(_valueClass.getComponentType());
+                    	ctxt.reportWrongTokenException(_valueClass.getComponentType(), JsonToken.VALUE_NUMBER_INT, "Invalid token: expected int or float numbers");
                     }
                     value = 0;
                 }
