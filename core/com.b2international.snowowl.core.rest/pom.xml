@@ -120,7 +120,6 @@
 							<!-- Copying only the necessary JARs from the
 							dependencies and their transitive stuff -->
 							<includeArtifactIds>
-								commons-logging,
 								spring-aop,
 								spring-beans,
 								spring-context,
@@ -137,6 +136,8 @@
 								spring-boot,
 								spring-boot-autoconfigure,
 								swagger-core-jakarta,
+								micrometer-commons,
+								micrometer-observation,
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>
