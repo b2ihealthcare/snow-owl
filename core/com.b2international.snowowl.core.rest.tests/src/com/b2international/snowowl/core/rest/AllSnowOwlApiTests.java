@@ -53,9 +53,11 @@ public class AllSnowOwlApiTests {
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnowOwlApiTests.class))
-			.around(new BundleStartRule("org.eclipse.jetty.osgi"))
+			.around(new BundleStartRule("org.apache.aries.spifly.dynamic.bundle"))
+			.around(new BundleStartRule("org.eclipse.jetty.ee10.webapp"))
 			.around(new BundleStartRule("org.eclipse.jetty.ee10.osgi.boot"))
-//			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
+			.around(new BundleStartRule("org.eclipse.jetty.osgi"))
+			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
 			;
 
 }
