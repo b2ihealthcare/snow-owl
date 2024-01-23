@@ -8,9 +8,9 @@ Automatic-Module-Name: com.b2international.snowowl.snomed.cis
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.1.5)",
- org.apache.httpcomponents.httpclient;bundle-version="[4.5.10,4.5.11)",
- org.apache.httpcomponents.httpcore;bundle-version="[4.4.12,4.4.13)",
+ org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.5,4.1.6)",
+ org.apache.httpcomponents.httpclient;bundle-version="[4.5.14,4.5.15)",
+ org.apache.httpcomponents.httpcore;bundle-version="[4.4.16,4.4.17)",
  com.b2international.snowowl.core
 Import-Package: org.slf4j;version="2.0.0"
 Export-Package: com.b2international.snowowl.snomed.cis,
