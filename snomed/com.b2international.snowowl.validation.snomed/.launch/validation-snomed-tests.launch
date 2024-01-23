@@ -40,8 +40,8 @@
     <booleanAttribute key="run_in_ui_thread" value="false"/>
     <setAttribute key="selected_target_bundles">
         <setEntry value="assertj-core@default:default"/>
-        <setEntry value="ch.qos.logback.classic@default:default"/>
-        <setEntry value="ch.qos.logback.core@default:default"/>
+        <setEntry value="ch.qos.logback.classic@2:true"/>
+        <setEntry value="ch.qos.logback.core@2:true"/>
         <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.diffplug.osgi.extension.sun.reflect@default:false"/>
@@ -78,9 +78,19 @@
         <setEntry value="io.rest-assured.json-path@default:default"/>
         <setEntry value="io.rest-assured.xml-path@default:default"/>
         <setEntry value="io.rest-assured@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-annotations.jakarta@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-models.jakarta@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
+        <setEntry value="jakarta.activation-api@default:default"/>
+        <setEntry value="jakarta.annotation-api@default:default"/>
+        <setEntry value="jakarta.el-api@default:default"/>
+        <setEntry value="jakarta.enterprise.cdi-api@default:default"/>
         <setEntry value="jakarta.inject.jakarta.inject-api@default:default"/>
+        <setEntry value="jakarta.interceptor-api@default:default"/>
         <setEntry value="jakarta.servlet-api@default:default"/>
+        <setEntry value="jakarta.transaction-api@default:default"/>
+        <setEntry value="jakarta.validation.jakarta.validation-api@default:default"/>
+        <setEntry value="jakarta.xml.bind-api@default:default"/>
         <setEntry value="jcl.over.slf4j@default:default"/>
         <setEntry value="jul.to.slf4j@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
@@ -90,11 +100,12 @@
         <setEntry value="net.jodah.typetools@default:default"/>
         <setEntry value="org.antlr.runtime*3.2.0.v20230929-1400@default:default"/>
         <setEntry value="org.aopalliance@default:default"/>
-        <setEntry value="org.apache.aries.spifly.dynamic.bundle@default:default"/>
+        <setEntry value="org.apache.aries.spifly.dynamic.bundle@2:true"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.commons-io@default:default"/>
         <setEntry value="org.apache.commons.lang3@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
+        <setEntry value="org.apache.commons.text@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
         <setEntry value="org.apache.felix.gogo.runtime@default:default"/>
         <setEntry value="org.apache.felix.gogo.shell@default:default"/>
@@ -174,7 +185,6 @@
         <setEntry value="org.osgi.util.pushstream@default:default"/>
         <setEntry value="org.osgi.util.xml@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
-        <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
         <setEntry value="stax2-api@default:default"/>
@@ -189,6 +199,7 @@
         <setEntry value="com.b2international.index.test.tools@default:default"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
+        <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
         <setEntry value="com.b2international.snowowl.identity.ldap@default:false"/>
@@ -197,6 +208,7 @@
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
+        <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
         <setEntry value="com.b2international.snowowl.validation.snomed@default:default"/>
     </setAttribute>
