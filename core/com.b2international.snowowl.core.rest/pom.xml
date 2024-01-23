@@ -124,6 +124,7 @@
 								spring-beans,
 								spring-context,
 								spring-core,
+								spring-expression,
 								spring-jcl,
 								spring-security-config,
 								spring-security-core,
