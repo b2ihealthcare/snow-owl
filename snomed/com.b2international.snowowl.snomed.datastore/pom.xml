@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.snomed.otf</groupId>
 			<artifactId>snomed-owl-toolkit</artifactId>
-			<version>5.0.0</version>
+			<version>5.1.0</version>
 		</dependency>
 	</dependencies>
 	
@@ -45,14 +45,12 @@
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
+<!--								owlapi-api,-->
+<!--								owlapi-impl,-->
+<!--								owlapi-parsers,-->
+<!--								owlapi-apibinding,-->
 								snomed-owl-toolkit,
-								owlapi-api,
-								owlapi-impl,
-								owlapi-parsers,
-								owlapi-apibinding,
-								elk-owlapi,
-								snomed-boot,
-								fastutil,
+								snomed-boot
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
