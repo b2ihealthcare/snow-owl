@@ -104,6 +104,8 @@ public class RestExtensions {
 				RestAssured.baseURI = serverLocation;
 			}
 			
+			RestAssured.urlEncodingEnabled = false;
+			
 			RestAssured.config = RestAssuredConfig.config()
 				.objectMapperConfig(objectMapperConfig().defaultObjectMapper(new Jackson2Mapper(new CustomJackson2ObjectMapperFactory())))
 				.logConfig(logConfig().enableLoggingOfRequestAndResponseIfValidationFails());
