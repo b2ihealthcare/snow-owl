@@ -16,9 +16,9 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.snomed.otf</groupId>
+			<groupId>com.b2international</groupId>
 			<artifactId>snomed-owl-toolkit</artifactId>
-			<version>5.1.0</version>
+			<version>5.1.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	
@@ -45,10 +45,6 @@
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
-<!--								owlapi-api,-->
-<!--								owlapi-impl,-->
-<!--								owlapi-parsers,-->
-<!--								owlapi-apibinding,-->
 								snomed-owl-toolkit,
 								snomed-boot
 							</includeArtifactIds>

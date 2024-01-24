@@ -11,13 +11,13 @@ Import-Package: com.b2international.index.compat,
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/snomed-boot-5.0.0.jar,
- lib/snomed-owl-toolkit-5.1.0.jar
+ lib/snomed-owl-toolkit-5.1.1-SNAPSHOT.jar
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.expressions;bundle-version="3.4.400",
  com.fasterxml.jackson.dataformat.jackson-dataformat-csv;bundle-version="2.16.1",
  org.eclipse.xtext.xbase.lib,
- it.unimi.dsi.fastutil;bundle-version="[8.5.12,9.0.0)",
  org.semanticweb.owl.owlapi;bundle-version="[4.5.26,5.0.0)",
+ it.unimi.dsi.fastutil;bundle-version="[8.5.12,9.0.0)",
  com.b2international.mapdb;bundle-version="[3.0.10,4.0.0)",
  com.b2international.snowowl.snomed.cis;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
