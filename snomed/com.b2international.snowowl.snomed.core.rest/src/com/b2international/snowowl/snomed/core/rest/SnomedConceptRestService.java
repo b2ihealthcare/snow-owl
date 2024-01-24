@@ -273,7 +273,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			final SnomedResourceRequest<SnomedConceptRestUpdate> body,
 			
 			@Parameter(description = "Force update flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
@@ -320,7 +320,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			final String conceptId,
 
 			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = false)

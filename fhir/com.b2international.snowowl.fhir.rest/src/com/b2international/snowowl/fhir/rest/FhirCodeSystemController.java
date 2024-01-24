@@ -523,13 +523,13 @@ public class FhirCodeSystemController extends AbstractFhirController {
 	public ResponseEntity<Void> deleteCodeSystem(
 			
 		@Parameter(description = """
-			The identifier of the Code System resource""")
+				The identifier of the Code System resource""")
 		@PathVariable(value = "id") 
 		final String id,
 			
 		@Parameter(description = """
-			Force deletion flag""")
-		@RequestParam(defaultValue="false", required=false)
+				Force deletion flag""")
+		@RequestParam(value = "force", defaultValue="false", required=false)
 		final Boolean force,
 
 		@Parameter(description = """

@@ -236,7 +236,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			final String memberId,
 			
 			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
@@ -279,7 +279,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			final SnomedResourceRequest<SnomedMemberRestUpdate> body,
 			
 			@Parameter(description = "Force update flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)

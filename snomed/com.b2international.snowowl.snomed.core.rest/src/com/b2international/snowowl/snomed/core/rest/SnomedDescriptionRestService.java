@@ -236,7 +236,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			final SnomedResourceRequest<SnomedDescriptionRestUpdate> body,
 			
 			@Parameter(description = "Force update flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
@@ -280,7 +280,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			final String descriptionId,
 			
 			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = false)

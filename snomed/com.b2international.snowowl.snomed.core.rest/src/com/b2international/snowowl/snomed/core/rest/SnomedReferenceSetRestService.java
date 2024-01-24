@@ -362,7 +362,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			final String refsetId,
 			
 			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
