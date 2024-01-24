@@ -18,6 +18,8 @@ package com.b2international.snowowl.test.commons;
 import java.nio.file.Path;
 
 import org.junit.rules.ExternalResource;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -204,6 +206,14 @@ public class SnowOwlAppRule extends ExternalResource {
 	public static SnowOwlAppRule snowOwl(Class<?> testSuiteClass) {
 		final Path configPath = testSuiteClass != null ? PlatformUtil.toAbsolutePath(testSuiteClass, "/configuration") : null;
 		return new SnowOwlAppRule().config(configPath);
+	}
+
+	public TestRule bootRestApi() {
+		return RuleChain.outerRule(this)
+				.around(new BundleStartRule("org.eclipse.jetty.ee10.webapp"))
+				.around(new BundleStartRule("org.eclipse.jetty.ee10.osgi.boot"))
+				.around(new BundleStartRule("org.eclipse.jetty.osgi"))
+				.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	}
 
 }
