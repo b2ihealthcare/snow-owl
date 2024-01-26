@@ -19,7 +19,10 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.config.LogConfig.logConfig;
 import static io.restassured.config.ObjectMapperConfig.objectMapperConfig;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,7 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.google.common.base.*;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import io.restassured.RestAssured;
 import io.restassured.common.mapper.resolver.ObjectMapperResolver;
@@ -242,6 +246,20 @@ public class RestExtensions {
 	
 	public static String generateToken(String userId, Permission...permissions) {
 		return ApplicationContext.getServiceForClass(JWTSupport.class).generate(new User(userId, List.of(permissions)));
+	}
+	
+	public static Map<String, Object> encodeQueryParameters(Map<String, Object> queryParams) {
+		return Maps.transformValues(queryParams, value -> {
+			if (value instanceof String) {
+				try {
+					return URLEncoder.encode((String) value, StandardCharsets.UTF_8.toString());
+				} catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				return value;
+			}
+		});
 	}
 
 }
