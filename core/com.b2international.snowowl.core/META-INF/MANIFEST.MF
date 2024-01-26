@@ -94,7 +94,9 @@ Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.validation.rule,
  com.b2international.snowowl.core.validation.whitelist,
  com.b2international.snowowl.core.version
-Import-Package: org.slf4j;version="2.0.0"
+Import-Package: jakarta.validation;version="3.0.2",
+ jakarta.validation.constraints;version="3.0.2",
+ org.slf4j;version="2.0.0"
 Bundle-ClassPath: .,
  lib/java-jwt-3.18.1.jar,
  lib/jwks-rsa-0.20.0.jar

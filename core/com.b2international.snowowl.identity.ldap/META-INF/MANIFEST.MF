@@ -4,7 +4,9 @@ Bundle-Name: Snow Owl LDAP Identity Module
 Bundle-SymbolicName: com.b2international.snowowl.identity.ldap
 Bundle-Version: 9.0.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Import-Package: javax.naming,
+Import-Package: jakarta.validation;version="3.0.2",
+ jakarta.validation.constraints;version="3.0.2",
+ javax.naming,
  javax.naming.directory,
  javax.naming.ldap,
  org.slf4j;version="2.0.0"
