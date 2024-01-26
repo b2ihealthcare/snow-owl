@@ -41,8 +41,8 @@
     <booleanAttribute key="run_in_ui_thread" value="false"/>
     <setAttribute key="selected_target_bundles">
         <setEntry value="assertj-core@default:default"/>
-        <setEntry value="ch.qos.logback.classic@default:default"/>
-        <setEntry value="ch.qos.logback.core@default:default"/>
+        <setEntry value="ch.qos.logback.classic@2:true"/>
+        <setEntry value="ch.qos.logback.core@2:true"/>
         <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
@@ -90,6 +90,8 @@
         <setEntry value="jakarta.servlet-api@default:default"/>
         <setEntry value="jakarta.transaction-api@default:default"/>
         <setEntry value="jakarta.validation.jakarta.validation-api@default:default"/>
+        <setEntry value="jakarta.websocket-api@default:default"/>
+        <setEntry value="jakarta.websocket-client-api@default:default"/>
         <setEntry value="jakarta.xml.bind-api@default:default"/>
         <setEntry value="jcl.over.slf4j@default:default"/>
         <setEntry value="jul.to.slf4j@default:default"/>
@@ -101,7 +103,7 @@
         <setEntry value="org.antlr.runtime*3.2.0.v20230929-1400@default:default"/>
         <setEntry value="org.aopalliance@default:default"/>
         <setEntry value="org.apache.ant@default:default"/>
-        <setEntry value="org.apache.aries.spifly.dynamic.bundle@default:default"/>
+        <setEntry value="org.apache.aries.spifly.dynamic.bundle@2:true"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.commons-io@default:default"/>
@@ -155,13 +157,25 @@
         <setEntry value="org.eclipse.jetty.alpn.client@default:default"/>
         <setEntry value="org.eclipse.jetty.client@default:default"/>
         <setEntry value="org.eclipse.jetty.deploy@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.annotations@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.osgi.boot@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.plus@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.servlet@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.webapp@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.websocket.jakarta.client@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.websocket.jakarta.common@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.websocket.jakarta.server@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.websocket.server@default:default"/>
+        <setEntry value="org.eclipse.jetty.ee10.websocket.servlet@default:default"/>
         <setEntry value="org.eclipse.jetty.http@default:default"/>
         <setEntry value="org.eclipse.jetty.io@default:default"/>
         <setEntry value="org.eclipse.jetty.jmx@default:default"/>
         <setEntry value="org.eclipse.jetty.jndi@default:default"/>
+        <setEntry value="org.eclipse.jetty.osgi@default:default"/>
         <setEntry value="org.eclipse.jetty.security@default:default"/>
         <setEntry value="org.eclipse.jetty.server@default:default"/>
         <setEntry value="org.eclipse.jetty.servlet-api@default:default"/>
+        <setEntry value="org.eclipse.jetty.session@default:default"/>
         <setEntry value="org.eclipse.jetty.util@default:default"/>
         <setEntry value="org.eclipse.jetty.websocket-api@default:default"/>
         <setEntry value="org.eclipse.jetty.websocket.api@default:default"/>
@@ -187,6 +201,7 @@
         <setEntry value="org.eclipse.xtext.util@default:default"/>
         <setEntry value="org.eclipse.xtext.xbase.lib@default:default"/>
         <setEntry value="org.eclipse.xtext@default:default"/>
+        <setEntry value="org.glassfish.expressly@default:default"/>
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hamcrest@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
@@ -222,7 +237,6 @@
         <setEntry value="org.protege.editor.owl@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
         <setEntry value="org.semanticweb.owl.owlapi@default:default"/>
-        <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
         <setEntry value="stax2-api@default:default"/>
@@ -251,6 +265,7 @@
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.fhir@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
+        <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
         <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
     </setAttribute>

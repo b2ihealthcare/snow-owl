@@ -82,7 +82,7 @@ public class IssueTest extends FhirTest {
 		
 		Issue expectedIssue = validationErrorIssueBuilder
 				.addLocation("Instant.instant")
-				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'instant' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'instant' content is invalid [null]. Violation: must not be null.")
 				.build();
 		
 		assertThat(exception, FhirExceptionIssueMatcher.issue(expectedIssue));

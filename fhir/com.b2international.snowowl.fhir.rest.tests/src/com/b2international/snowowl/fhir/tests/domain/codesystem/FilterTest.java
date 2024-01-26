@@ -64,7 +64,7 @@ public class FilterTest extends FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error")
 			.addLocation("Filter.code")
-			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: must not be null.")
 			.build();
 		
 		exception.expect(ValidationException.class);

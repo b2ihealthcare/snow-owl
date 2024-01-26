@@ -161,6 +161,7 @@
         <setEntry value="org.eclipse.xtext.util@default:default"/>
         <setEntry value="org.eclipse.xtext.xbase.lib@default:default"/>
         <setEntry value="org.eclipse.xtext@default:default"/>
+        <setEntry value="org.glassfish.expressly@default:default"/>
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hamcrest@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
@@ -191,7 +192,7 @@
         <setEntry value="org.osgi.util.pushstream@default:default"/>
         <setEntry value="org.osgi.util.xml@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
-        <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
+        <setEntry value="org.semanticweb.owl.owlapi@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
         <setEntry value="stax2-api@default:default"/>
@@ -207,6 +208,7 @@
         <setEntry value="com.b2international.index.test.tools@default:default"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
+        <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
         <setEntry value="com.b2international.snowowl.fhir.core@default:default"/>
@@ -218,6 +220,7 @@
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.fhir@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
+        <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
