@@ -155,6 +155,7 @@
         <setEntry value="org.eclipse.xtext.util@default:default"/>
         <setEntry value="org.eclipse.xtext.xbase.lib@default:default"/>
         <setEntry value="org.eclipse.xtext@default:default"/>
+        <setEntry value="org.glassfish.expressly@default:default"/>
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hamcrest@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
@@ -185,6 +186,7 @@
         <setEntry value="org.osgi.util.pushstream@default:default"/>
         <setEntry value="org.osgi.util.xml@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
+        <setEntry value="org.semanticweb.owl.owlapi@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
         <setEntry value="stax2-api@default:default"/>

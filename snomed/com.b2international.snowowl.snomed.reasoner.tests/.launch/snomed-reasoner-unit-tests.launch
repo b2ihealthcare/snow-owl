@@ -75,8 +75,10 @@
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
+        <setEntry value="jakarta.el-api@default:default"/>
         <setEntry value="jakarta.inject.jakarta.inject-api@default:default"/>
         <setEntry value="jakarta.servlet-api@default:default"/>
+        <setEntry value="jakarta.validation.jakarta.validation-api@default:default"/>
         <setEntry value="jcl.over.slf4j@default:default"/>
         <setEntry value="jul.to.slf4j@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
@@ -133,6 +135,7 @@
         <setEntry value="org.eclipse.xtext.util@default:default"/>
         <setEntry value="org.eclipse.xtext.xbase.lib@default:default"/>
         <setEntry value="org.eclipse.xtext@default:default"/>
+        <setEntry value="org.glassfish.expressly@default:default"/>
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hamcrest@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
