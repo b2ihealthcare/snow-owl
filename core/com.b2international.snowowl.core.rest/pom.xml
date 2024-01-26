@@ -136,9 +136,7 @@
 								springdoc-openapi-starter-webmvc-api,
 								spring-boot,
 								spring-boot-autoconfigure,
-								swagger-core-jakarta,
-								micrometer-commons,
-								micrometer-observation,
+								swagger-core-jakarta
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>
