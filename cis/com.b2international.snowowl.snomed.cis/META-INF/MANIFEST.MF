@@ -12,7 +12,9 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.apache.httpcomponents.httpclient;bundle-version="[4.5.14,4.5.15)",
  org.apache.httpcomponents.httpcore;bundle-version="[4.4.16,4.4.17)",
  com.b2international.snowowl.core
-Import-Package: org.slf4j;version="2.0.0"
+Import-Package: jakarta.validation;version="3.0.2",
+ jakarta.validation.constraints;version="3.0.2",
+ org.slf4j;version="2.0.0"
 Export-Package: com.b2international.snowowl.snomed.cis,
  com.b2international.snowowl.snomed.cis.action,
  com.b2international.snowowl.snomed.cis.client,

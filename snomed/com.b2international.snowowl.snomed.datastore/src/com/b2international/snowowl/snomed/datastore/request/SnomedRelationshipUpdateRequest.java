@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Set;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.EffectiveTimes;

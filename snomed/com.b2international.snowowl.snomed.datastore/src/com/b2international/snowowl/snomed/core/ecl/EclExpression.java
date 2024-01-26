@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;

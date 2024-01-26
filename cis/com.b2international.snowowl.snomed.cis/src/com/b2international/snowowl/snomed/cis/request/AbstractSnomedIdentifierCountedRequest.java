@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.cis.request;
 
 import javax.annotation.Nonnegative;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
