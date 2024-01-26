@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.AssertTrue;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;

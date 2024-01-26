@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
 import java.util.Collection;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;

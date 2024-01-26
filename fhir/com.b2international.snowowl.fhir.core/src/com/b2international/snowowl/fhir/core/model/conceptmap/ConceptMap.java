@@ -20,8 +20,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
-import javax.validation.Valid;
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;

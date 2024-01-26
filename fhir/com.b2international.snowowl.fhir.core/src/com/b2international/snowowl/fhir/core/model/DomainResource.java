@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;

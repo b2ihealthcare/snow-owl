@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;

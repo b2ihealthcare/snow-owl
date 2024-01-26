@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.model.dt;
 import java.util.Arrays;
 import java.util.Collection;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;

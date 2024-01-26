@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.exceptions;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;

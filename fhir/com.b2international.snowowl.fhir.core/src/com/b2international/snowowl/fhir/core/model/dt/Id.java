@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

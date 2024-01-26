@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.search.Mandatory;

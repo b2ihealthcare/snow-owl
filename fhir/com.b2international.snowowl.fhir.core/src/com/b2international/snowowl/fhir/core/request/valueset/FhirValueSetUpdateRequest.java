@@ -19,9 +19,9 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.ResourceURI;

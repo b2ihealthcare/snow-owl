@@ -18,8 +18,8 @@ package com.b2international.snowowl.fhir.core.model.dt;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * URI validator for the {@link ValidUri} annotation

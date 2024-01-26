@@ -17,8 +17,8 @@ package com.b2international.snowowl.fhir.core.model.capabilitystatement;
 
 import java.util.Collection;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.RestfulCapabilityMode;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
