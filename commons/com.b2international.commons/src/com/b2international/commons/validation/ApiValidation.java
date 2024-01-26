@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ import static java.util.Collections.singletonList;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.ValidationProviderResolver;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.executable.ExecutableValidator;
-import javax.validation.metadata.BeanDescriptor;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidationProviderResolver;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.executable.ExecutableValidator;
+import jakarta.validation.metadata.BeanDescriptor;
+import jakarta.validation.spi.ValidationProvider;
 
 import org.hibernate.validator.HibernateValidator;
 
@@ -53,7 +54,7 @@ public class ApiValidation {
 	private static class HibernateValidationProviderResolver implements ValidationProviderResolver {
 
 		@Override
-		public List getValidationProviders() {
+		public List<ValidationProvider<?>> getValidationProviders() {
 			return singletonList(new HibernateValidator());
 		}
 

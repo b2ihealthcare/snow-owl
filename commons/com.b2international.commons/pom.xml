@@ -22,12 +22,12 @@
 		<jgrapht.version>1.5.2</jgrapht.version>
 		<!-- Micrometer Metrics framework -->
 		<micrometer.version>1.12.2</micrometer.version>
-		
-		<jsr305.version>1.3.9</jsr305.version>
+		<!-- Bean Validation -->
+		<hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
+		<!-- Console Lib -->
 		<picocli.version>3.5.1</picocli.version>
+		<!-- Java Annotations -->
 		<jsr305.version>1.3.9</jsr305.version>
-		<hibernate.validator.version>5.3.6.Final</hibernate.validator.version>
-		<validation.api.version>1.1.0.Final</validation.api.version>
 		<javax.annotation.version>1.3.1</javax.annotation.version>
 	</properties>
 
@@ -70,6 +70,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+  			<groupId>org.hibernate</groupId>
+  			<artifactId>hibernate-validator</artifactId>
+  			<version>${hibernate.validator.version}</version>
+  			<scope>provided</scope>
+		</dependency>
+		<dependency>
   			<groupId>com.google.code.findbugs</groupId>
   			<artifactId>jsr305</artifactId>
   			<version>${jsr305.version}</version>
@@ -80,20 +86,6 @@
 		  	<artifactId>picocli</artifactId>
 		  	<version>${picocli.version}</version>
 		  	<scope>provided</scope>
-		</dependency>
-
-
-		<dependency>
-  			<groupId>javax.validation</groupId>
-  			<artifactId>validation-api</artifactId>
-  			<version>${validation.api.version}</version>
-  			<scope>provided</scope>
-		</dependency>
-		<dependency>
-  			<groupId>org.hibernate</groupId>
-  			<artifactId>hibernate-validator</artifactId>
-  			<version>${hibernate.validator.version}</version>
-  			<scope>provided</scope>
 		</dependency>
 		<dependency>
 		 	<groupId>javax.annotation</groupId>
@@ -136,9 +128,8 @@
 								simpleclient_tracer_common,
 								hibernate-validator,
 								jboss-logging,
-								jsr305,
 								picocli,
-								validation-api,
+								jsr305,
 								javax.annotation-api,
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
