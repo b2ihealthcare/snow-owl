@@ -249,17 +249,19 @@ public class RestExtensions {
 	}
 	
 	public static Map<String, Object> encodeQueryParameters(Map<String, Object> queryParams) {
-		return Maps.transformValues(queryParams, value -> {
-			if (value instanceof String) {
-				try {
-					return URLEncoder.encode((String) value, StandardCharsets.UTF_8.toString());
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-			} else {
-				return value;
+		return Maps.transformValues(queryParams, RestExtensions::encodeQueryParameter);
+	}
+
+	public static Object encodeQueryParameter(Object parameter) {
+		if (parameter instanceof String) {
+			try {
+				return URLEncoder.encode((String) parameter, StandardCharsets.UTF_8.toString());
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
 			}
-		});
+		} else {
+			return parameter;
+		}
 	}
 
 }

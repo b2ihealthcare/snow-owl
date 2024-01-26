@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
@@ -37,18 +38,17 @@ public abstract class SnomedExportRestRequests {
 	private SnomedExportRestRequests() {
 	}
 	
-	public static Response export(String path, Map<String, ?> exportConfiguration) {
+	public static Response export(String path, Map<String, Object> exportConfiguration) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.queryParams(exportConfiguration)
-			.pathParam("path", path)
-			.get("/{path}/export");
+			.queryParams(RestExtensions.encodeQueryParameters(exportConfiguration))
+			.get("/{path}/export", path);
 	}
 	
-	public static File doExport(final IBranchPath branchPath, final Map<String, ?> exportConfiguration) throws Exception {
+	public static File doExport(final IBranchPath branchPath, final Map<String, Object> exportConfiguration) throws Exception {
 		return doExport(branchPath.getPath(), exportConfiguration);
 	}
 	
-	public static File doExport(final String branchPath, final Map<String, ?> exportConfiguration) throws Exception {
+	public static File doExport(final String branchPath, final Map<String, Object> exportConfiguration) throws Exception {
 		File tmpDir = null;
 		File exportArchive = null;
 
