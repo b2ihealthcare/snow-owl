@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.index.Activator;
 import com.google.common.collect.ImmutableList;
 
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 
 /**
  * @since 5.10
@@ -195,11 +195,11 @@ public final class EsNode extends Node {
 	}
 	
 	private static void waitForPendingTasks(Client client) {
-		RetryPolicy<Integer> retryPolicy = new RetryPolicy<Integer>();
-		retryPolicy
+		RetryPolicy<Integer> retryPolicy = RetryPolicy.<Integer>builder()
 			.handleResultIf(pendingTasks -> pendingTasks > 0)
 			.withMaxAttempts(-1)
-			.withBackoff(50, 1000, ChronoUnit.MILLIS);
+			.withBackoff(50, 1000, ChronoUnit.MILLIS)
+			.build();
 		Failsafe.with(retryPolicy).get(() -> {
 			LOG.info("Waiting for pending cluster tasks to finish.");
 			return client.admin()
