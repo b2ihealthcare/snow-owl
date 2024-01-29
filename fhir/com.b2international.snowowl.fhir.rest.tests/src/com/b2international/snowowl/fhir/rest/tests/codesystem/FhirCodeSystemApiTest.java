@@ -30,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * FHIR /CodeSystem Resource API Tests
@@ -100,7 +101,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_NameFilter_NoMatch() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("name", "unknown name")
+			.queryParam("name", RestExtensions.encodeQueryParameter("unknown name"))
 			.when().get(CODESYSTEM)
 			.then().assertThat()
 			.statusCode(200)

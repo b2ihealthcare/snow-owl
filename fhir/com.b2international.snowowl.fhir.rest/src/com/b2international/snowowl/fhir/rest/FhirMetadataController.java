@@ -38,7 +38,6 @@ import org.linuxforhealth.fhir.model.r5.resource.TerminologyCapabilities;
 import org.linuxforhealth.fhir.model.r5.type.*;
 import org.linuxforhealth.fhir.model.r5.type.code.*;
 import org.osgi.framework.Version;
-import org.springdoc.core.service.OpenAPIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +51,7 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
+import com.b2international.snowowl.core.rest.SnowOwlOpenApiWebMvcResource;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
@@ -76,7 +76,7 @@ import io.swagger.v3.oas.models.Paths;
 public class FhirMetadataController extends AbstractFhirController {
 	
 	@Autowired
-	private OpenAPIService openApiService;
+	private SnowOwlOpenApiWebMvcResource openApiResource;
 	
 	@Autowired
 	private FhirApiConfig config; 
@@ -222,8 +222,8 @@ public class FhirMetadataController extends AbstractFhirController {
 	}
 	
 	private Metadata initMetadata() {
-		// build the ENGLISH version of the OpenAPI and use it to populate the FHIR metadata
-		final OpenAPI openAPI = openApiService.build(Locale.ENGLISH);
+		// get the ENGLISH version of the OpenAPI and use it to populate the FHIR metadata
+		final OpenAPI openAPI = openApiResource.getOpenApi(Locale.ENGLISH);
 		final Collection<CapabilityStatement.Rest.Resource> resources = collectResources(openAPI);
 		final Collection<OperationDefinition> operationDefinitions = collectOperationDefinitions(openAPI);
 		

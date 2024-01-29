@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 8.0
@@ -95,7 +96,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 	@Test
 	public void expandSnomedCodeSystemURL_FhirVsEclChildOfRoot() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008?fhir_vs=ecl/<!138875005")
+			.queryParam("url", RestExtensions.encodeQueryParameter(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008?fhir_vs=ecl/<!138875005"))
 			.when().get("/ValueSet/$expand")
 			.then()
 			.statusCode(200)
@@ -124,7 +125,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 	@Test
 	public void expandSnomedCodeSystemURL_AfterAndNext() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008?fhir_vs=ecl/<!138875005")
+			.queryParam("url", RestExtensions.encodeQueryParameter(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008?fhir_vs=ecl/<!138875005"))
 			.queryParam("count", 5)
 			.when().get("/ValueSet/$expand")
 			.then()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,14 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.springdoc.core.customizers.OpenApiCustomizer;
-import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.customizers.SpringDocCustomizers;
 import org.springdoc.core.properties.SpringDocConfigProperties;
-import org.springdoc.core.providers.ActuatorProvider;
-import org.springdoc.core.providers.RepositoryRestResourceProvider;
-import org.springdoc.core.providers.RouterFunctionProvider;
-import org.springdoc.core.providers.SecurityOAuth2Provider;
+import org.springdoc.core.providers.SpringDocProviders;
 import org.springdoc.core.service.AbstractRequestService;
 import org.springdoc.core.service.GenericResponseService;
 import org.springdoc.core.service.OpenAPIService;
 import org.springdoc.core.service.OperationService;
 import org.springdoc.core.utils.SpringDocUtils;
-import org.springdoc.webmvc.api.OpenApiWebMvcResource;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -141,6 +136,26 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	public OpenAPI openAPI() {
 		return new OpenAPI();
+	}
+	
+	@Bean
+	public SnowOwlOpenApiWebMvcResource openApiWebMvcResource(
+			@Autowired ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, 
+			@Autowired AbstractRequestService requestBuilder, 
+			@Autowired GenericResponseService responseBuilder, 
+			@Autowired OperationService operationParser, 
+			@Autowired SpringDocConfigProperties springDocConfigProperties,
+			@Autowired SpringDocProviders springDocProviders,
+			@Autowired SpringDocCustomizers springDocCustomizers) {
+		
+		return new SnowOwlOpenApiWebMvcResource(
+			openAPIBuilderObjectFactory, 
+			requestBuilder, 
+			responseBuilder, 
+			operationParser, 
+			springDocConfigProperties,
+			springDocProviders,
+			springDocCustomizers);
 	}
 	
 	@Bean
