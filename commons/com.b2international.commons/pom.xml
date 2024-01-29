@@ -113,7 +113,7 @@
 							<includeArtifactIds>
 								bucket4j-core,
 								zjsonpatch,
-								commons-collections4
+								commons-collections4,
 								jgrapht-core,
 								jheaps,
 								micrometer-core,
