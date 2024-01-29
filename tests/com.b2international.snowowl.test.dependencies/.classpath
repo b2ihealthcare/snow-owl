@@ -13,15 +13,15 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/annotations-17.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.21.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.25.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/contiperf-2.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/docker-java-api-3.2.13.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/docker-java-transport-3.2.13.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/docker-java-transport-zerodep-3.2.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/docker-java-api-3.3.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/docker-java-transport-3.3.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/docker-java-transport-zerodep-3.3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/duct-tape-1.0.8.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-1.17.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jna-5.8.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/system-rules-1.18.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/testcontainers-1.17.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-1.19.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jna-5.13.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/system-rules-1.19.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/testcontainers-1.19.4.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
