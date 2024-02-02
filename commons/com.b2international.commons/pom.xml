@@ -17,7 +17,6 @@
 		<bucket4j.version>8.7.0</bucket4j.version>
 		<!-- RFC 6902 JSON Patch implementation - zjsonpatch requires Jackson 2.14+ and Commons Collections 4.4 -->
 		<zjsonpatch.version>0.4.16</zjsonpatch.version>
-		<commons.collections.version>4.4</commons.collections.version>
 		<!-- Graph algorithms lib -->
 		<jgrapht.version>1.5.2</jgrapht.version>
 		<!-- Micrometer Metrics framework -->
@@ -45,12 +44,6 @@
 			<version>${zjsonpatch.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>${commons.collections.version}</version>
-            <scope>provided</scope>
-        </dependency>
 		<dependency>
   			<groupId>org.jgrapht</groupId>
   			<artifactId>jgrapht-core</artifactId>
@@ -113,7 +106,6 @@
 							<includeArtifactIds>
 								bucket4j-core,
 								zjsonpatch,
-								commons-collections4,
 								jgrapht-core,
 								jheaps,
 								micrometer-core,
