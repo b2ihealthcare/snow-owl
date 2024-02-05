@@ -22,9 +22,7 @@
 		<npm.version>10.3.0</npm.version>
 	</properties>
 
-	<!-- NOTE: in case of dependency changes, please update the
-	includeArtifactIds section in the maven-dependency-plugin configuration as
-	well, listing all (exact and transitive) dependency artifactIds -->
+	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -75,7 +73,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>clean-folders</id>
@@ -101,6 +99,7 @@
 									<directory>snow-owl-api-docs/build</directory>
 								</fileset>
 							</filesets>
+							<skip>true</skip>
 						</configuration>
 					</execution>
 				</executions>
@@ -111,6 +110,7 @@
 				<version>3.1.1</version>
 				<executions>
 					<execution>
+						<?m2e execute onConfiguration?>
 						<id>copy-runtime-dependencies</id>
 						<phase>generate-sources</phase>
 						<goals>
@@ -149,6 +149,7 @@
 				<version>1.15.0</version>
 				<executions>
 					<execution>
+						<?m2e execute onConfiguration?>
 						<id>install node and npm</id>
 						<goals>
 							<goal>install-node-and-npm</goal>
@@ -156,6 +157,7 @@
 						<phase>generate-resources</phase>
 					</execution>
 					<execution>
+						<?m2e execute onConfiguration?>
 						<id>npm install</id>
 						<goals>
 							<goal>npm</goal>
@@ -166,6 +168,7 @@
 						</configuration>
 					</execution>
 					<execution>
+						<?m2e execute onConfiguration?>
 						<id>npm build</id>
 						<goals>
 							<goal>npm</goal>
@@ -190,6 +193,7 @@
 				<version>3.1.0</version>
 				<executions>
 					<execution>
+						<?m2e execute onConfiguration?>
 						<id>copy-static-resources</id>
 						<phase>generate-resources</phase>
 						<goals>
@@ -209,85 +213,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-dependency-plugin</artifactId>
-										<versionRange>[3.0.2,)</versionRange>
-										<goals>
-											<goal>copy-dependencies</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>false</runOnIncremental>
-											<runOnConfiguration>true</runOnConfiguration>
-										</execute>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-clean-plugin</artifactId>
-										<versionRange>[3.1.0,)</versionRange>
-										<goals>
-											<goal>clean</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>com.github.eirslett</groupId>
-										<artifactId>frontend-maven-plugin</artifactId>
-										<versionRange>[1.15.0,)</versionRange>
-										<goals>
-											<goal>install-node-and-npm</goal>
-											<goal>npm</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>false</runOnIncremental>
-											<runOnConfiguration>true</runOnConfiguration>
-										</execute>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-resources-plugin</artifactId>
-										<versionRange>[3.1.0,)</versionRange>
-										<goals>
-											<goal>copy-resources</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>false</runOnIncremental>
-											<runOnConfiguration>true</runOnConfiguration>
-										</execute>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 
 	<profiles>
