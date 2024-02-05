@@ -12,6 +12,11 @@
 		<unit id="org.eclipse.platform.feature.group" version="4.30.0.v20231201-0512"/>
 		<repository location="https://download.eclipse.org/eclipse/updates/4.30/R-4.30-202312010110/"/>
 	</location>
+	<!-- NOTE: Orbit repository is required to fetch an OSGi version of tagsoup required by rest-assured library -->
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<unit id="org.ccil.cowan.tagsoup" version="1.2.0.v201202211000"/>
+		<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20210223232630/repository"/>
+	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.emf.base.feature.group" version="2.35.0.v20230829-0934"/>
 		<unit id="org.eclipse.emf.ecore.feature.group" version="2.35.0.v20230829-0934"/>
