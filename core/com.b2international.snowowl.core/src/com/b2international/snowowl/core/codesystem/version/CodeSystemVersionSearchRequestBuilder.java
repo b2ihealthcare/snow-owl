@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem.version;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -25,14 +23,14 @@ import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSear
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemVersionSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CodeSystemVersionSearchRequestBuilder, RepositoryContext, CodeSystemVersions>
+		extends SearchPageableCollectionResourceRequestBuilder<CodeSystemVersionSearchRequestBuilder, RepositoryContext, CodeSystemVersions>
  		implements RepositoryRequestBuilder<CodeSystemVersions> {
 
 	private String versionId;

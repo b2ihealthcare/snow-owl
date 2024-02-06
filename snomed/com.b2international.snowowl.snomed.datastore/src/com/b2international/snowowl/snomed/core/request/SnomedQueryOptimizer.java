@@ -60,36 +60,33 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				.filter(ex -> isSingleConceptExpression(eclCache, ex.getQuery()))
 				.index(ex -> toSingleConceptId(eclCache, ex.getQuery()));
 		
-		final SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept()
-				.filterByIds(singleConceptInclusions.keySet())
-				.setLimit(10_000);
-
-		final SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> itr = new SearchResourceRequestIterator<>(
-				req, builder -> builder.build().execute(context));
-
 		// Record the ancestors (both direct and indirect) of each single concept inclusion
 		final Multimap<String, QueryExpression> membersByAncestor = HashMultimap.create();
-
-		itr.forEachRemaining(batch -> {
-			batch.forEach(child -> {
-				final Collection<QueryExpression> childExpressions = singleConceptInclusions.get(child.getId());
-				final List<String> parentIds = child.getParentIdsAsString();
-				final List<String> ancestorIds = child.getAncestorIdsAsString();
-				
-				parentIds.forEach(parentId -> {
-					if (!IComponent.ROOT_ID.equals(parentId) && !Concepts.ROOT_CONCEPT.equals(parentId)) {
-						membersByAncestor.putAll(parentId, childExpressions);
-					}
-				});
-				
-				ancestorIds.forEach(ancestorId -> {
-					if (!IComponent.ROOT_ID.equals(ancestorId) && !Concepts.ROOT_CONCEPT.equals(ancestorId)) {
-						membersByAncestor.putAll(ancestorId, childExpressions);
-					}
-				});
-			});
-		});
 		
+		SnomedRequests.prepareSearchConcept()
+				.filterByIds(singleConceptInclusions.keySet())
+				.setLimit(10_000)
+				.stream(context)
+				.flatMap(SnomedConcepts::stream)
+				.forEach(child -> {
+					final Collection<QueryExpression> childExpressions = singleConceptInclusions.get(child.getId());
+					final List<String> parentIds = child.getParentIdsAsString();
+					final List<String> ancestorIds = child.getAncestorIdsAsString();
+					
+					parentIds.forEach(parentId -> {
+						if (!IComponent.ROOT_ID.equals(parentId) && !Concepts.ROOT_CONCEPT.equals(parentId)) {
+							membersByAncestor.putAll(parentId, childExpressions);
+						}
+					});
+					
+					ancestorIds.forEach(ancestorId -> {
+						if (!IComponent.ROOT_ID.equals(ancestorId) && !Concepts.ROOT_CONCEPT.equals(ancestorId)) {
+							membersByAncestor.putAll(ancestorId, childExpressions);
+						}
+					});
+				});
+
+
 		// Get number of referenced descendants (taking possible duplicates into account)
 		final Map<String, Long> uniqueDescendantsByParent = ImmutableMap.copyOf(Maps.transformValues(
 				membersByAncestor.asMap(), 

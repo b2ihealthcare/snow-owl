@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static com.b2international.index.revision.Revision.Fields.ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.*;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.*;
@@ -46,13 +47,11 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -452,24 +451,6 @@ final class SnomedEclRefinementEvaluator {
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
-		return evalMembers(context, focusConceptIds, typeIds, type, value, operator)
-				.then(matchingMembers -> FluentIterable.from(matchingMembers)
-					.transform(input -> new Property(
-							input.getReferencedComponent().getId(), 
-							(String) input.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID),
-							input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
-							(Integer) input.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)))
-					.toSet()
-				);
-	}
-
-	private Promise<SnomedReferenceSetMembers> evalMembers(
-			final BranchContext context, 
-			final Set<String> focusConceptIds,
-			final Collection<String> typeIds, 
-			final DataType type, 
-			final Object value, 
-			SearchResourceRequest.Operator operator) {
 		
 		final Options propFilter = Options.builder()
 				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, getCharacteristicTypes(expressionForm))
@@ -482,14 +463,22 @@ final class SnomedEclRefinementEvaluator {
 		// TODO: does this request need to support filtering by group?
 		
 		return SnomedRequests.prepareSearchMember()
-				.all()
 				.filterByActive(true)
 				.filterByRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.filterByReferencedComponent(focusConceptIds)
 				.filterByProps(propFilter)
 				.setEclExpressionForm(expressionForm)
-				.build(context.id(), context.path())
-				.execute(context.service(IEventBus.class));
+				.setLimit(10_000)
+				.<Property>transformAsync(context, req -> req.build(context.id(), context.path()), members -> members.stream().map(input -> {
+					return new Property(
+							input.getReferencedComponent().getId(), 
+							(String) input.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID),
+							input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
+							(Integer) input.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)
+						);
+					})
+				);
+		
 	}
 
 	private Promise<Collection<Property>> evalStatementsWithValue(
@@ -563,8 +552,7 @@ final class SnomedEclRefinementEvaluator {
 		final SearchResourceRequest.Operator operator) {
 
 		// TODO: does this request need to support filtering by group?
-		Promise<Collection<Property>> relationships = SnomedRequests.prepareSearchRelationship()
-				.all()
+		Promise<Collection<Property>> statementsWithValue = SnomedRequests.prepareSearchRelationship()
 				.filterByActive(true)
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
 				.filterBySource(focusConceptIds)
@@ -573,25 +561,25 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
 				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, NUMERIC_VALUE, STRING_VALUE)
-				.build(context.id(), context.path())
-				.execute(context.service(IEventBus.class))
-				.then(matchingMembers -> FluentIterable.from(matchingMembers)
-						.transform(input -> new Property(
-								input.getSourceId(), 
-								input.getTypeId(),
-								input.getValueAsObject().toObject(),
-								input.getGroup()))
-						.toSet());
+				.setLimit(10_000)
+				.transformAsync(context, req -> req.build(context.id(), context.path()), relationships -> relationships.stream().map(relationship -> {
+					return new Property(
+							relationship.getSourceId(), 
+							relationship.getTypeId(),
+							relationship.getValueAsObject().toObject(),
+							relationship.getGroup());
+					})
+				); 
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
 			final Promise<Collection<Property>> axioms = evalAxiomsWithValue(context, focusConceptIds, typeIds, value, operator);
-			return Promise.all(relationships, axioms).then(results -> {
+			return Promise.all(statementsWithValue, axioms).then(results -> {
 				final Collection<Property> r = (Collection<Property>) results.get(0);
 				final Collection<Property> a = (Collection<Property>) results.get(1);
 				return FluentIterable.concat(r, a).toSet();
 			});
 		} else {
-			return relationships;
+			return statementsWithValue;
 		}
 	}
 
@@ -733,23 +721,28 @@ final class SnomedEclRefinementEvaluator {
 		}
 		
 		final SnomedRelationshipSearchRequestBuilder searchRelationships = SnomedRequests.prepareSearchRelationship()
-				.all()
 				.filterByActive(true) 
 				.filterBySource(sourceFilter)
 				.filterByType(typeFilter)
 				.filterByDestination(destinationFilter)
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
 				.setEclExpressionForm(expressionForm)
-				.setFields(fieldsToLoad.build());
+				.setFields(fieldsToLoad.build())
+				.setLimit(10_000);
 		
 		// if a grouping refinement, then filter relationships with group >= 1
 		if (groupedRelationshipsOnly) {
 			searchRelationships.filterByGroup(1, Integer.MAX_VALUE);
 		}
 		
-		Promise<Collection<Property>> relationshipSearch = searchRelationships.build(context.id(), context.path())
-			.execute(context.service(IEventBus.class))
-			.then(input -> input.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
+		Promise<Collection<Property>> relationshipSearch = searchRelationships
+				.transformAsync(
+					context,
+					req -> req.build(context.id(), context.path()),
+					relationships -> relationships.stream().map(r -> {
+						return new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup());
+					})
+				);
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
 			final Set<Property> axiomStatements = evalAxiomStatements(context, groupedRelationshipsOnly, sourceFilter, typeFilter, destinationFilter);

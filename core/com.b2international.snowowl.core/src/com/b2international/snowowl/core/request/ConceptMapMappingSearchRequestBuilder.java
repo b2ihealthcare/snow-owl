@@ -24,7 +24,8 @@ import com.google.common.collect.ImmutableSet;
 /**
 * @since 7.8
 */
-public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
+public final class ConceptMapMappingSearchRequestBuilder 
+		extends SearchPageableCollectionResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
 		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMapId) {

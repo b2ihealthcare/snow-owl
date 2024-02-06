@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ import com.b2international.snowowl.core.branch.SearchMergeRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.merge.Merges;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 
 /**
  * @since 7.1 
  */
-public final class SearchMergeRequestBuilder extends SearchResourceRequestBuilder<SearchMergeRequestBuilder, RepositoryContext, Merges> implements RepositoryRequestBuilder<Merges>  {
+public final class SearchMergeRequestBuilder 
+		extends SearchPageableCollectionResourceRequestBuilder<SearchMergeRequestBuilder, RepositoryContext, Merges> 
+		implements RepositoryRequestBuilder<Merges>  {
 
 	SearchMergeRequestBuilder() {}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.b2international.snowowl.core.validation.rule;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequest.OptionKey;
@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequ
  * @since 6.0
  */
 public final class ValidationRuleSearchRequestBuilder
-		extends SearchResourceRequestBuilder<ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRules>
+		extends SearchPageableCollectionResourceRequestBuilder<ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRules>
 		implements SystemRequestBuilder<ValidationRules> {
 
 	ValidationRuleSearchRequestBuilder() {}
