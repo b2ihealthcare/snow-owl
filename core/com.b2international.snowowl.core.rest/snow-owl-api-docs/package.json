@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "./site",
   "dependencies": {
-    "antd": "^4.24.10",
+    "antd": "^4.24.15",
     "qs": "^6.11.2",
     "rapidoc": "^9.3.4",
     "react": "^17.0.2",
