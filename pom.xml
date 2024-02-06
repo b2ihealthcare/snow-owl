@@ -31,7 +31,8 @@
 		
 		<!-- Testing -->
 		<testHeapSize>1g</testHeapSize>
-		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -Dosgi.classloader.type=nonparallel -Djetty.http.port=9090 -XX:+AlwaysPreTouch --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
+		<testLogConfigFile>${basedir}/src/configuration/logback-maven.xml</testLogConfigFile>
+		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -Dosgi.classloader.type=nonparallel -Djetty.http.port=9090 -XX:+AlwaysPreTouch --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.x509=ALL-UNNAMED -Dlogback.configurationFile=${testLogConfigFile}</testArgLine>
 
 		<!-- Artifact distribution -->
 		<maven.repository.id>nexus_deployment</maven.repository.id>
@@ -270,7 +271,6 @@
 						<release>17</release>
 						<excludeResources>
 							<excludeResource>**/*.groovy</excludeResource>
-							<excludeResource>**/*.xtend</excludeResource>
 						</excludeResources>
 					</configuration>
 				</plugin>
@@ -278,7 +278,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.0</version>
+					<version>3.11.0</version>
 					<configuration>
 						<release>17</release>
 					</configuration>
