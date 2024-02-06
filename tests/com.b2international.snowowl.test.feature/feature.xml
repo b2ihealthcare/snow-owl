@@ -28,12 +28,6 @@ Visit us at https://b2ihealthcare.com
          version="0.0.0"/>
 
    <plugin
-         id="org.hamcrest.core"
-         download-size="0"
-         install-size="0"
-         version="1.99.0"/>
-
-   <plugin
          id="com.b2international.index.test.tools"
          download-size="0"
          install-size="0"
@@ -42,6 +36,34 @@ Visit us at https://b2ihealthcare.com
 
    <plugin
          id="com.b2international.snowowl.snomed.core.rest.tests"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.hamcrest"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.hamcrest.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.junit"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="assertj-core"
          download-size="0"
          install-size="0"
          version="0.0.0"
