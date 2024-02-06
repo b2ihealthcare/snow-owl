@@ -23,7 +23,7 @@
 		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>4.0.4</tycho.version>
-		<jacoco.version>0.8.7</jacoco.version>
+		<jacoco.version>0.8.11</jacoco.version>
 		
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
