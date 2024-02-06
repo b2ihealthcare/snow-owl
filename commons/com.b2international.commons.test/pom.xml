@@ -33,6 +33,23 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
+					<bundleStartLevel>
+						<bundle>
+						    <id>org.apache.aries.spifly.dynamic.bundle</id>
+					    	<level>2</level>
+						    <autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+						    <id>ch.qos.logback.classic</id>
+					    	<level>2</level>
+						    <autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+						    <id>ch.qos.logback.core</id>
+					    	<level>2</level>
+						    <autoStart>true</autoStart>
+						</bundle>
+					</bundleStartLevel>
 					<includes>
 						<include>**/AllCommonsTests.java</include>
 					</includes>
