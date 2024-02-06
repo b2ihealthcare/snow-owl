@@ -87,6 +87,9 @@
 				<version>${tycho.version}</version>
 				<configuration>
 					<executionEnvironment>org.eclipse.justj.openjdk.hotspot.jre.full-17</executionEnvironment>
+					<dependency-resolution>
+						<localArtifacts>ignore</localArtifacts>
+					</dependency-resolution>
 					<target>
 						<artifact>
 							<groupId>${project.groupId}</groupId>
