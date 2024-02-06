@@ -14,6 +14,10 @@ Visit us at https://b2ihealthcare.com
       Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
    </copyright>
 
+   <requires>
+      <import feature="com.b2international.snowowl.core.feature" version="9.0.0" match="compatible"/>
+   </requires>
+
    <plugin
          id="com.b2international.snowowl.core.rest"
          download-size="0"

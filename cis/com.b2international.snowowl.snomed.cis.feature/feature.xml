@@ -20,6 +20,7 @@
    <requires>
       <import feature="com.b2international.snowowl.core.feature" version="9.0.1.qualifier"/>
       <import feature="com.b2international.snowowl.snomed.core.feature" version="9.0.1.qualifier"/>
+      <import feature="com.b2international.snowowl.core.rest.feature" version="9.0.1.qualifier"/>
    </requires>
 
    <plugin
