@@ -499,12 +499,6 @@
 				<version>5.0.7-SNAPSHOT</version>
 				<type>jar</type>
 			</dependency>
-			<dependency>
-				<groupId>edu.stanford.protege</groupId>
-				<artifactId>org.protege.xmlcatalog</artifactId>
-				<version>1.0.5</version>
-				<type>jar</type>
-			</dependency>
 			<!-- Built-in reasoner, ELK based on the Protege bindings -->
 			<dependency>
 				<groupId>org.semanticweb.elk</groupId>
