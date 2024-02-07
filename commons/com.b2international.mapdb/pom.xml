@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<mapdb.version>3.0.7</mapdb.version>
+		<mapdb.version>3.1.0</mapdb.version>
 		<eclipse.collections.version>9.1.0</eclipse.collections.version>
 	</properties>
 	
