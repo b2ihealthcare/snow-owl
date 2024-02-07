@@ -6,18 +6,18 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-java-8.12.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-8.12.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jakarta.json-api-2.0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jsr305-3.0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opentelemetry-api-1.29.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opentelemetry-context-1.29.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/parsson-1.0.5.jar"/>
 	<classpathentry kind="src" output="target/classes" path="src">
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-java-8.12.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-8.12.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jakarta.json-api-2.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jsr305-3.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/opentelemetry-api-1.29.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/opentelemetry-context-1.29.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/parsson-1.0.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
