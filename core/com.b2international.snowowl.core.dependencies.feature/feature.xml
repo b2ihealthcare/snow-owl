@@ -723,13 +723,6 @@ Visit us at https://b2ihealthcare.com
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.jetty.servlet-api"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="jakarta.transaction-api"
          download-size="0"
          install-size="0"
@@ -759,13 +752,6 @@ Visit us at https://b2ihealthcare.com
 
    <plugin
          id="org.eclipse.jetty.client"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.jetty.websocket-api"
          download-size="0"
          install-size="0"
          version="0.0.0"
