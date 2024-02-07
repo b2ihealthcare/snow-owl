@@ -348,6 +348,12 @@
 				<type>jar</type>
 			</dependency>
 			<dependency>
+			    <groupId>org.eclipse.jetty</groupId>
+			    <artifactId>jetty-session</artifactId>
+			    <version>12.0.3</version>
+			    <type>jar</type>
+			</dependency>
+			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
 				<version>12.0.3</version>
