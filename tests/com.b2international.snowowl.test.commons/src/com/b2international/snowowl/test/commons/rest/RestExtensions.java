@@ -252,10 +252,10 @@ public class RestExtensions {
 		return Maps.transformValues(queryParams, RestExtensions::encodeQueryParameter);
 	}
 
-	public static Object encodeQueryParameter(Object parameter) {
+	public static <T> T encodeQueryParameter(T parameter) {
 		if (parameter instanceof String) {
 			try {
-				return URLEncoder.encode((String) parameter, StandardCharsets.UTF_8.toString());
+				return (T) URLEncoder.encode((String) parameter, StandardCharsets.UTF_8.toString());
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
