@@ -76,6 +76,7 @@
 				<version>3.2.0</version>
 				<executions>
 					<execution>
+						<?m2e ignore?>
 						<id>clean-folders</id>
 						<phase>generate-sources</phase>
 						<goals>
@@ -99,7 +100,6 @@
 									<directory>snow-owl-api-docs/build</directory>
 								</fileset>
 							</filesets>
-							<skip>true</skip>
 						</configuration>
 					</execution>
 				</executions>
