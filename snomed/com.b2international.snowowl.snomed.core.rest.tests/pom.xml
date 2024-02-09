@@ -87,7 +87,6 @@
 					<includes>
 						<include>**/AllSnomedApiTests.java</include>
 					</includes>
-					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>

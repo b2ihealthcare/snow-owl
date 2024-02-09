@@ -74,7 +74,6 @@
 					<includes>
 						<include>**/AllSnowOwlApiTests.java</include>
 					</includes>
-					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>
