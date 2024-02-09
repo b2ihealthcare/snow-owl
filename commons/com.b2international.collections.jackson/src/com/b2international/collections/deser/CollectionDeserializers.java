@@ -188,7 +188,7 @@ class CollectionDeserializers
                     value = jp.getFloatValue();
                 } else {
                     if (t != JsonToken.VALUE_NULL) {
-                    	ctxt.reportWrongTokenException(_valueClass.getComponentType(), JsonToken.VALUE_NUMBER_INT, "Invalid token: expected int or float numbers");
+                    	ctxt.reportWrongTokenException(_valueClass.getComponentType(), JsonToken.VALUE_NUMBER_FLOAT, "Invalid token: expected int or float numbers");
                     }
                     value = 0;
                 }
