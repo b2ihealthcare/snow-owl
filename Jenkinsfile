@@ -46,7 +46,7 @@ try {
 
 	slack.notifyBuild()
 
-	node('build') {
+	node('build-jdk11') {
 
 		stage('Checkout repository') {
 
@@ -62,7 +62,7 @@ try {
 		stage('Build') {
 
 			withMaven(globalMavenSettingsConfig: custom_maven_global_settings, mavenSettingsConfig: custom_maven_settings, publisherStrategy: 'EXPLICIT', traceability: true) {
-				sh "./mvnw clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true"
+				sh "./mvnw clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 			}
 
 		}
