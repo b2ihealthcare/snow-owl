@@ -82,19 +82,19 @@ These instructions will get Snow Owl up and running on your local machine for de
 ## Prerequisites
 
 Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
-* Download Eclipse IDE for Eclipse Committers 2023-09 package from here: https://www.eclipse.org/downloads/packages/release/2023-09/r/eclipse-ide-eclipse-committers
+* Download Eclipse IDE for Eclipse Committers 2023-09 package from here: https://www.eclipse.org/downloads/packages/release/2023-12/r/eclipse-ide-eclipse-committers
 
 Required Eclipse plug-ins in order (install the listed features via `Help` &rarr; `Install New Software...`):
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
-* Groovy Development Tools (https://groovy.jfrog.io/artifactory/plugins-release/e4.29)
+* Groovy Development Tools (https://groovy.jfrog.io/ui/native/plugins-release/e4.30)
   * Eclipse Groovy Development Tools - 5.1.0 (in category "Main Package")
-* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.12.1/)
-  * MWE SDK 1.6.1 (MWE)
-* Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.25.0/)
-  * Xtend IDE 2.25.0 (Xtext)
-  * Xtext Complete SDK 2.25.0 (Xtext)
+* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.16.0/)
+  * MWE SDK 1.10.0 (MWE)
+* Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.33.0/)
+  * Xtend IDE 2.33.0 (Xtext)
+  * Xtext Complete SDK 2.33.0 (Xtext)
  
 ### Eclipse Preferences
 
