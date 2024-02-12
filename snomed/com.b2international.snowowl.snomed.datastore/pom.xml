@@ -18,16 +18,9 @@
 		<dependency>
 			<groupId>com.b2international</groupId>
 			<artifactId>snomed-owl-toolkit</artifactId>
-			<version>5.1.1-SNAPSHOT</version>
+			<version>5.1.1</version>
 		</dependency>
 	</dependencies>
-	
-	<repositories>
-		<repository>
-			<id>snomed-international-releases</id>
-			<url>https://nexus3.ihtsdotools.org/repository/maven-releases/</url>
-		</repository>
-	</repositories>
 	
 	<build>
 		<plugins>
