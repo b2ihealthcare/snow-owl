@@ -484,7 +484,7 @@
 			<dependency>
 				<groupId>com.b2international.snowowl</groupId>
 				<artifactId>owlapi-osgidistribution</artifactId>
-				<version>4.5.26-SNAPSHOT</version>
+				<version>4.5.26.b2i</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
