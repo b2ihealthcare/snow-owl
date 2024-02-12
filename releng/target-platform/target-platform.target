@@ -490,19 +490,19 @@
 			<dependency>
 				<groupId>com.b2international.snowowl</groupId>
 				<artifactId>protege-common</artifactId>
-				<version>5.0.7-SNAPSHOT</version>
+				<version>5.0.7.b2i</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.b2international.snowowl</groupId>
 				<artifactId>protege-editor-core</artifactId>
-				<version>5.0.7-SNAPSHOT</version>
+				<version>5.0.7.b2i</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.b2international.snowowl</groupId>
 				<artifactId>protege-editor-owl</artifactId>
-				<version>5.0.7-SNAPSHOT</version>
+				<version>5.0.7.b2i</version>
 				<type>jar</type>
 			</dependency>
 			<!-- Built-in reasoner, ELK based on the Protege bindings -->
