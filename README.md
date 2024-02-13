@@ -54,7 +54,7 @@ Not the version you're looking for? View [past releases](https://github.com/b2ih
 
 ### Install and Run
 
-NOTE: You need to have a recent version of Java installed (Java 11+, https://adoptopenjdk.net/).
+NOTE: You need to have a recent version of Java installed (Java 11+, https://adoptium.net/).
 
 Once you have downloaded the appropriate package:
 
@@ -74,15 +74,17 @@ Once you have downloaded the appropriate package:
 
 # Building from source
 
-Snow Owl uses Maven for its build system. In order to create a distribution, simply run the following command in the cloned directory. 
+Snow Owl uses Maven for its build system. In order to create a distribution, you will only need the [Java Development Kit - 11](https://adoptium.net/temurin/releases/?version=11&package=jdk) installed.
+ 
+Simply run the following command in the cloned directory. The Maven Wrapper will automatically download the required Maven version (and store it under `~/.m2/wrapper/dists`).
 
-    mvn clean package
+    ./mvnw clean package
 
 The distribution packages can be found in the `releng/com.b2international.snowowl.server.update/target` folder, when the build is complete.
 
 To run the test cases, use the following command:
 
-    mvn clean verify
+    ./mvnw clean verify
 
 # Development
 
@@ -127,7 +129,7 @@ Make sure you have the following preferences enabled/disabled.
 
 * Make sure the `settings.xml` in your ~/.m2/settings.xml location is updated with the content from the `settings.xml` from this repository's root folder.
 
-## First steps
+### First steps
 
 1. Import all projects into your Eclipse workspace and wait for the build to complete
 2. Select all projects and hit `Alt` + `F5` and trigger an update to all Maven projects manually (to download dependencies from Maven)
